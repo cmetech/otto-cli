@@ -1,0 +1,11 @@
+{
+  "id": "loop24",
+  "name": "LOOP24",
+  "version": "0.1.0",
+  "description": "LOOP24-specific services — gateway connection probe, future LangFlow flow triggers, brand banner and theme",
+  "tier": "core",
+  "requires": { "platform": ">=2.29.0" },
+  "provides": {
+    "hooks": ["session_start"]
+  }
+}

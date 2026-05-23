@@ -586,7 +586,10 @@ function detectTerminalBackground(): "dark" | "light" {
 }
 
 function getDefaultTheme(): string {
-	return detectTerminalBackground();
+	// LOOP24 fork: brand-default theme regardless of terminal background.
+	// Users can still opt into "dark", "light", "tui-classic", or "vivid"
+	// via /theme; this only sets the initial active theme.
+	return "loop24";
 }
 
 // ============================================================================
@@ -681,7 +684,14 @@ function startThemeWatcher(): void {
 	}
 
 	// Only watch if it's a custom theme (not built-in)
-	if (!currentThemeName || currentThemeName === "dark" || currentThemeName === "light") {
+	if (
+		!currentThemeName ||
+		currentThemeName === "dark" ||
+		currentThemeName === "light" ||
+		currentThemeName === "loop24" ||
+		currentThemeName === "tui-classic" ||
+		currentThemeName === "vivid"
+	) {
 		return;
 	}
 

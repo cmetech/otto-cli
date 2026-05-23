@@ -75,7 +75,6 @@ dist/
 .superpowers/
 *.log
 .DS_Store
-~/.loop24/
 .env
 ```
 

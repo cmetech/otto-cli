@@ -6,6 +6,11 @@
  * @gsd/pi-coding-agent module (this file may be pulled in early by the
  * onboarding/welcome paths).
  */
+// Load LOOP24 services config first — its module-load side effect populates
+// process.env from ~/.loop24/config.json for any env var that is unset.
+// This ensures the LOOP24_GATEWAY_URL read below picks up config-file values
+// when no env override is in place.
+import './loop24-config.js'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 import { readFileSync } from 'node:fs'

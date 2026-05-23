@@ -3,6 +3,7 @@ import assert from "node:assert/strict"
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync, existsSync, statSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { spawnSync } from "node:child_process"
 import {
   DEFAULT_CONFIG,
   loadConfig,
@@ -116,4 +117,70 @@ test("saveConfig is atomic — partial write does not corrupt existing file", ()
   const cfg = loadConfig()
   assert.equal(cfg.gateway.url, "http://updated:2/v1")
   assert.equal(cfg.gateway.token, "new-tok")
+})
+
+test("brand.ts picks up config.json values through env propagation", () => {
+  // We can't directly test module-load side effects (modules are cached) —
+  // spawn a fresh node process where LOOP24_HOME points at our tmpHome and
+  // ~/.loop24/config.json contains a known gateway URL.
+  saveConfig({
+    gateway: { url: "http://from-config-file:9999/v1", token: null },
+    langflow: { url: "http://127.0.0.1:7860", apiKey: null, enabled: true },
+  })
+
+  const probe = `import('./src/brand.ts').then(m => process.stdout.write(String(m.LOOP24_GATEWAY_URL)))`
+  const result = spawnSync(
+    "node",
+    [
+      "--import",
+      "./src/resources/extensions/workflow/tests/resolve-ts.mjs",
+      "--experimental-strip-types",
+      "--input-type=module",
+      "-e",
+      probe,
+    ],
+    {
+      env: {
+        ...process.env,
+        LOOP24_HOME: tmpHome,
+        // Explicitly unset any inherited env override
+        LOOP24_GATEWAY_URL: "",
+      },
+      cwd: process.cwd(),
+      encoding: "utf-8",
+    },
+  )
+  assert.equal(result.status, 0, `node probe failed: ${result.stderr}`)
+  assert.equal(result.stdout.trim(), "http://from-config-file:9999/v1")
+})
+
+test("env var wins over config.json when both are set", () => {
+  saveConfig({
+    gateway: { url: "http://from-config:9999/v1", token: null },
+    langflow: { url: "http://127.0.0.1:7860", apiKey: null, enabled: true },
+  })
+
+  const probe = `import('./src/brand.ts').then(m => process.stdout.write(String(m.LOOP24_GATEWAY_URL)))`
+  const result = spawnSync(
+    "node",
+    [
+      "--import",
+      "./src/resources/extensions/workflow/tests/resolve-ts.mjs",
+      "--experimental-strip-types",
+      "--input-type=module",
+      "-e",
+      probe,
+    ],
+    {
+      env: {
+        ...process.env,
+        LOOP24_HOME: tmpHome,
+        LOOP24_GATEWAY_URL: "http://from-env-var:1111/v1",
+      },
+      cwd: process.cwd(),
+      encoding: "utf-8",
+    },
+  )
+  assert.equal(result.status, 0, `node probe failed: ${result.stderr}`)
+  assert.equal(result.stdout.trim(), "http://from-env-var:1111/v1")
 })

@@ -8,6 +8,8 @@
 
 **Tech Stack:** TypeScript, Node ≥22 (built-in `fetch`, no axios), Node's built-in test runner (`node --test --experimental-strip-types`), pi-tui (custom TUI), `js-yaml` for YAML parsing (already a transitive dependency — verify), Pi extension API (`ExtensionAPI` from `@gsd/pi-coding-agent`), brand helpers from `src/brand.ts` and `workflow/strings.ts`.
 
+**⚠️ TS strip-types constraint:** all files that run through `--experimental-strip-types` (tests via the resolver, dist-test bundles) must avoid non-erasable TS syntax: parameter-property constructors (`constructor(private readonly x: T) {}`), `enum`, `namespace`, `import =`. Use explicit field declarations + assignment in constructors. Hit during Task 3.
+
 **Scope boundary:**
 
 In scope:

@@ -4,7 +4,7 @@
 
 **Goal:** All LLM traffic exits LOOP24 through a configurable gateway URL with a Bearer auth header. End-to-end verified against a local dev mock gateway that transparently proxies to Anthropic. When the real `loop24-gateway` Anthropic surface (`SURF-V2-01`) ships, the only change is the URL.
 
-**Architecture:** Add a single branch at the top of `packages/pi-ai/src/providers/anthropic.ts`'s `resolveAnthropicProviderOptions()` function. When `LOOP24_GATEWAY_URL` is set in the environment, the provider returns gateway-shaped options: `baseURL` points at the gateway, `authToken` is `LOOP24_GATEWAY_TOKEN` (or null if unset), `apiKey` is null (skips `x-api-key` header — gateway handles upstream Anthropic auth). The existing per-provider beta-header and headers-merge logic is preserved. A small dev mock gateway lives at `scripts/dev-gateway/` for local testing.
+**Architecture:** Add a single branch at the top of `packages/pi-ai/src/providers/anthropic.ts`'s `buildAnthropicClientOptions()` function. When `LOOP24_GATEWAY_URL` is set in the environment, the provider returns gateway-shaped options: `baseURL` points at the gateway, `authToken` is `LOOP24_GATEWAY_TOKEN` (or null if unset), `apiKey` is null (skips `x-api-key` header — gateway handles upstream Anthropic auth). The existing per-provider beta-header and headers-merge logic is preserved. A small dev mock gateway lives at `scripts/dev-gateway/` for local testing.
 
 **Tech Stack:** TypeScript, Node ≥22 (built-in fetch + http), Node's built-in test runner (`node --test --experimental-strip-types`), `@anthropic-ai/sdk` (unchanged — we only configure it differently), `brand.ts` for env-var-driven config.
 
@@ -12,7 +12,7 @@
 
 In scope:
 - Env-var-driven gateway config: `LOOP24_GATEWAY_URL`, `LOOP24_GATEWAY_TOKEN` (both optional — absent = direct-to-Anthropic, present = routed)
-- A new branch in `resolveAnthropicProviderOptions()` that produces gateway-shaped SDK options when `LOOP24_GATEWAY_URL` is set
+- A new branch in `buildAnthropicClientOptions()` that produces gateway-shaped SDK options when `LOOP24_GATEWAY_URL` is set
 - Unit tests for the new branch (verify baseURL override, auth shape, header passthrough)
 - A dev mock gateway under `scripts/dev-gateway/` — transparent HTTP proxy for `POST /v1/messages` to api.anthropic.com
 - An integration test that spins up the mock, sets env vars, sends a small message, asserts round-trip
@@ -38,7 +38,7 @@ Out of scope (deferred):
 
 | File | Action | Purpose |
 |---|---|---|
-| `packages/pi-ai/src/providers/anthropic.ts` | Modify (one new branch at top of `resolveAnthropicProviderOptions`) | Gateway-shaped SDK options when `LOOP24_GATEWAY_URL` is set |
+| `packages/pi-ai/src/providers/anthropic.ts` | Modify (one new branch at top of `buildAnthropicClientOptions`) | Gateway-shaped SDK options when `LOOP24_GATEWAY_URL` is set |
 | `packages/pi-ai/src/providers/anthropic.gateway.test.ts` | Create | Unit tests for the new branch |
 | `scripts/dev-gateway/server.js` | Create | Local transparent proxy to api.anthropic.com |
 | `scripts/dev-gateway/README.md` | Create | How to run the mock gateway, why it exists |
@@ -48,7 +48,7 @@ Out of scope (deferred):
 
 ### Why we patch `anthropic.ts` directly
 
-We could have added "loop24-gateway" as a registered Anthropic-compatible provider (matching the `usesAnthropicBearerAuth(provider)` pattern). That would require also updating model definitions, provider capability registries, and the provider router — much larger blast radius. The env-var branch at the top of `resolveAnthropicProviderOptions()` is smaller, locally reasoned-about, and reversible. We can promote to a proper provider registration later if it becomes worth it.
+We could have added "loop24-gateway" as a registered Anthropic-compatible provider (matching the `usesAnthropicBearerAuth(provider)` pattern). That would require also updating model definitions, provider capability registries, and the provider router — much larger blast radius. The env-var branch at the top of `buildAnthropicClientOptions()` is smaller, locally reasoned-about, and reversible. We can promote to a proper provider registration later if it becomes worth it.
 
 ---
 
@@ -114,11 +114,11 @@ wizard — Phase 1 ships env-var-only on purpose."
 **Files:**
 - Modify: `packages/pi-ai/src/providers/anthropic.ts`
 
-- [ ] **Step 1: Inspect the current `resolveAnthropicProviderOptions` function**
+- [ ] **Step 1: Inspect the current `buildAnthropicClientOptions` function**
 
 ```bash
 cd /Users/coreyellis/Projects/repos/local/loop24-client
-grep -n "^function resolveAnthropicProviderOptions\|^export function resolveAnthropicProviderOptions" packages/pi-ai/src/providers/anthropic.ts
+grep -n "^function buildAnthropicClientOptions\|^export function buildAnthropicClientOptions" packages/pi-ai/src/providers/anthropic.ts
 sed -n '70,140p' packages/pi-ai/src/providers/anthropic.ts
 ```
 
@@ -195,7 +195,7 @@ cd /Users/coreyellis/Projects/repos/local/loop24-client
 git add packages/pi-ai/src/providers/anthropic.ts
 git commit -m "feat(pi-ai): route Anthropic traffic via LOOP24_GATEWAY_URL when set
 
-Adds an env-var branch at the top of resolveAnthropicProviderOptions.
+Adds an env-var branch at the top of buildAnthropicClientOptions.
 When LOOP24_GATEWAY_URL is configured:
 - baseURL points at the gateway
 - Bearer auth via LOOP24_GATEWAY_TOKEN (or apiKey as fallback)
@@ -220,7 +220,7 @@ cd /Users/coreyellis/Projects/repos/local/loop24-client
 head -50 packages/pi-ai/src/providers/anthropic-bearer-auth.test.ts
 ```
 
-Note how the test imports `resolveAnthropicProviderOptions` (or whatever helper it uses), how it constructs a fake `model` object, and how assertions are structured. **Mirror this style exactly** — don't reinvent.
+Note how the test imports `buildAnthropicClientOptions` (or whatever helper it uses), how it constructs a fake `model` object, and how assertions are structured. **Mirror this style exactly** — don't reinvent.
 
 - [ ] **Step 2: Write the test file**
 
@@ -228,7 +228,7 @@ Create `/Users/coreyellis/Projects/repos/local/loop24-client/packages/pi-ai/src/
 ```typescript
 import { test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { resolveAnthropicProviderOptions } from "./anthropic.js";
+import { buildAnthropicClientOptions } from "./anthropic.js";
 // ^ If the function isn't exported, you have two choices:
 //   1. Export it from anthropic.ts (add `export` keyword to its declaration)
 //   2. Move the test to live next to the function and use the unexposed binding
@@ -261,14 +261,14 @@ afterEach(() => {
 });
 
 test("returns direct-to-Anthropic options when LOOP24_GATEWAY_URL is unset", () => {
-  const opts = resolveAnthropicProviderOptions(makeModel() as never, "test-api-key", false);
+  const opts = buildAnthropicClientOptions(makeModel() as never, "test-api-key", false);
   // No gateway URL means we get the default branch — apiKey is set, baseURL is the Anthropic default (or model.baseUrl).
   assert.equal((opts as { apiKey: string | null }).apiKey, "test-api-key");
 });
 
 test("routes through gateway URL when LOOP24_GATEWAY_URL is set", () => {
   process.env.LOOP24_GATEWAY_URL = "http://127.0.0.1:7250";
-  const opts = resolveAnthropicProviderOptions(makeModel() as never, "test-api-key", false) as {
+  const opts = buildAnthropicClientOptions(makeModel() as never, "test-api-key", false) as {
     baseURL: string;
     apiKey: string | null;
     authToken: string | undefined;
@@ -280,7 +280,7 @@ test("routes through gateway URL when LOOP24_GATEWAY_URL is set", () => {
 test("uses LOOP24_GATEWAY_TOKEN as bearer credential when set", () => {
   process.env.LOOP24_GATEWAY_URL = "http://127.0.0.1:7250";
   process.env.LOOP24_GATEWAY_TOKEN = "gateway-secret-abc";
-  const opts = resolveAnthropicProviderOptions(makeModel() as never, "anthropic-api-key", false) as {
+  const opts = buildAnthropicClientOptions(makeModel() as never, "anthropic-api-key", false) as {
     authToken: string | undefined;
     apiKey: string | null;
   };
@@ -290,7 +290,7 @@ test("uses LOOP24_GATEWAY_TOKEN as bearer credential when set", () => {
 
 test("falls back to apiKey as bearer credential when LOOP24_GATEWAY_TOKEN is unset", () => {
   process.env.LOOP24_GATEWAY_URL = "http://127.0.0.1:7250";
-  const opts = resolveAnthropicProviderOptions(makeModel() as never, "fallback-key", false) as {
+  const opts = buildAnthropicClientOptions(makeModel() as never, "fallback-key", false) as {
     authToken: string | undefined;
   };
   assert.equal(opts.authToken, "fallback-key");
@@ -301,7 +301,7 @@ test("preserves model.headers when gateway-routed", () => {
   const model = makeModel({
     headers: { "x-custom-trace": "trace-id-123" },
   });
-  const opts = resolveAnthropicProviderOptions(model as never, "key", false) as {
+  const opts = buildAnthropicClientOptions(model as never, "key", false) as {
     defaultHeaders: Record<string, string>;
   };
   assert.equal(opts.defaultHeaders["x-custom-trace"], "trace-id-123");
@@ -309,7 +309,7 @@ test("preserves model.headers when gateway-routed", () => {
 
 test("LOOP24_GATEWAY_URL with only whitespace is treated as unset", () => {
   process.env.LOOP24_GATEWAY_URL = "   ";
-  const opts = resolveAnthropicProviderOptions(makeModel() as never, "key", false) as { apiKey: string | null };
+  const opts = buildAnthropicClientOptions(makeModel() as never, "key", false) as { apiKey: string | null };
   // Whitespace-only should NOT route through gateway — apiKey should remain set.
   assert.equal(opts.apiKey, "key");
 });
@@ -326,10 +326,10 @@ node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experim
 ```
 Expected: 6/6 pass.
 
-If `resolveAnthropicProviderOptions` is NOT exported, you'll get a compile error. Export it:
+If `buildAnthropicClientOptions` is NOT exported, you'll get a compile error. Export it:
 ```bash
 # Find its declaration and add `export` if missing
-grep -n "function resolveAnthropicProviderOptions" packages/pi-ai/src/providers/anthropic.ts
+grep -n "function buildAnthropicClientOptions" packages/pi-ai/src/providers/anthropic.ts
 ```
 Edit to add `export` to the declaration. Re-run tests.
 
@@ -344,7 +344,7 @@ Six tests covering: direct-to-Anthropic when unset, gateway URL routing,
 LOOP24_GATEWAY_TOKEN bearer credential, apiKey fallback when token unset,
 model.headers passthrough, whitespace-only URL treated as unset.
 
-If resolveAnthropicProviderOptions wasn't already exported, this commit
+If buildAnthropicClientOptions wasn't already exported, this commit
 also exports it so the test can import it directly."
 ```
 
@@ -562,7 +562,7 @@ import { createServer, type Server, type IncomingMessage, type ServerResponse } 
  * the SDK) and separately verify the dev mock gateway forwards as expected.
  */
 
-import { resolveAnthropicProviderOptions } from "../../packages/pi-ai/src/providers/anthropic.js";
+import { buildAnthropicClientOptions } from "../../packages/pi-ai/src/providers/anthropic.js";
 
 function makeModel(): unknown {
   return {
@@ -621,7 +621,7 @@ test("gateway routing options round-trip end-to-end (mock gateway hit)", async (
       process.env.LOOP24_GATEWAY_URL = gatewayUrl;
       process.env.LOOP24_GATEWAY_TOKEN = "test-bearer-token";
       try {
-        const opts = resolveAnthropicProviderOptions(makeModel() as never, "ignored-apikey", false) as {
+        const opts = buildAnthropicClientOptions(makeModel() as never, "ignored-apikey", false) as {
           baseURL: string;
           apiKey: string | null;
           authToken: string | undefined;
@@ -658,7 +658,7 @@ test("gateway routing options round-trip end-to-end (mock gateway hit)", async (
 test("absence of LOOP24_GATEWAY_URL keeps the direct-to-Anthropic path", () => {
   delete process.env.LOOP24_GATEWAY_URL;
   delete process.env.LOOP24_GATEWAY_TOKEN;
-  const opts = resolveAnthropicProviderOptions(makeModel() as never, "real-apikey", false) as { apiKey: string | null };
+  const opts = buildAnthropicClientOptions(makeModel() as never, "real-apikey", false) as { apiKey: string | null };
   assert.equal(opts.apiKey, "real-apikey", "apiKey is set when no gateway configured");
 });
 ```
@@ -847,7 +847,7 @@ Expected: all pass.
 
 Add a "Phase 1 — Gateway routing" section documenting:
 - `brand.ts` exports: `LOOP24_GATEWAY_URL`, `LOOP24_GATEWAY_TOKEN`
-- `anthropic.ts` patch: new branch at top of `resolveAnthropicProviderOptions` for gateway routing
+- `anthropic.ts` patch: new branch at top of `buildAnthropicClientOptions` for gateway routing
 - `anthropic.gateway.test.ts`: 6 unit tests
 - `tests/integration/loop24-gateway.test.ts`: 2 integration tests
 - `scripts/dev-gateway/`: transparent proxy + README
@@ -894,7 +894,7 @@ Phase 1 is complete when ALL of these are true:
 
 **Placeholder scan:** no TBD / TODO. Step 2 of Task 2 has an explicit note about verifying parameter names match the actual function signature — that's a concrete instruction, not a placeholder.
 
-**Type consistency:** `LOOP24_GATEWAY_URL`, `LOOP24_GATEWAY_TOKEN` used identically across all tasks. `resolveAnthropicProviderOptions` referenced consistently. Test names follow the same shape across the unit and integration suites.
+**Type consistency:** `LOOP24_GATEWAY_URL`, `LOOP24_GATEWAY_TOKEN` used identically across all tasks. `buildAnthropicClientOptions` referenced consistently. Test names follow the same shape across the unit and integration suites.
 
 **Scope check:** 7 tasks. Each lands a coherent commit. Largest is Task 2 (the actual provider patch) — touches one file, narrow surface.
 

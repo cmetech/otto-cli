@@ -8,7 +8,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { printWelcomeScreen } from '../welcome-screen.ts'
+import { buildWelcomeScreenLines, printWelcomeScreen } from '../welcome-screen.ts'
 
 function capture(opts: Parameters<typeof printWelcomeScreen>[0]): string {
   const chunks: string[] = []
@@ -16,12 +16,15 @@ function capture(opts: Parameters<typeof printWelcomeScreen>[0]): string {
   ;(process.stderr as any).write = (chunk: string) => { chunks.push(chunk); return true }
   const origIsTTY = (process.stderr as any).isTTY
   ;(process.stderr as any).isTTY = true
+  const origColumns = (process.stderr as any).columns
+  if (!(process.stderr as any).columns) (process.stderr as any).columns = 120
 
   try {
     printWelcomeScreen(opts)
   } finally {
     ;(process.stderr as any).write = original
     ;(process.stderr as any).isTTY = origIsTTY
+    ;(process.stderr as any).columns = origColumns
   }
 
   return chunks.join('')
@@ -32,26 +35,21 @@ function strip(s: string): string {
   return s.replace(/\x1b\[[0-9;]*m/g, '')
 }
 
-test('renders OGSD block logo', () => {
+test('renders LOOP24 block logo', () => {
   const out = strip(capture({ version: '1.0.0' }))
-  assert.ok(out.includes('██████╗  ██████╗ ███████╗██████╗'), 'logo top row missing')
-  assert.ok(out.includes('██║   ██║██║  ███╗███████╗██║  ██║'), 'logo middle row missing')
-  assert.ok(out.includes('╚██████╔╝╚██████╔╝███████║██████╔╝'), 'logo bottom row missing')
+  assert.ok(out.includes('██╗      ██████╗  ██████╗ ██████╗ ██████╗ ██╗  ██╗'), 'logo top row missing')
+  assert.ok(out.includes('██║     ██║   ██║██║   ██║██████╔╝ █████╔╝███████║'), 'logo middle row missing')
+  assert.ok(out.includes('███████╗╚██████╔╝╚██████╔╝██║     ███████╗     ██║'), 'logo bottom row missing')
 })
 
-test('renders version', () => {
+test('renders version and title', () => {
   const out = strip(capture({ version: '2.38.0' }))
   assert.ok(out.includes('v2.38.0'), 'version missing')
   assert.ok(out.includes('Project Console'), 'command-center title missing')
 })
 
-test('renders GSD project state or fallback hint', (t) => {
-  // Model/provider intentionally removed from the welcome screen — they live
-  // in the persistent footer. Without .gsd/STATE.md present the welcome
-  // should surface the "No active GSD project" fallback instead.
-  // chdir into an empty tmp dir so the fallback path is actually exercised
-  // regardless of what the repo we're running from has in .gsd/.
-  const tmp = mkdtempSync(join(tmpdir(), 'gsd-welcome-fallback-'))
+test('renders LOOP24 project state or fallback hint', (t) => {
+  const tmp = mkdtempSync(join(tmpdir(), 'loop24-welcome-fallback-'))
   const origCwd = process.cwd()
   process.chdir(tmp)
   t.after(() => {
@@ -61,15 +59,15 @@ test('renders GSD project state or fallback hint', (t) => {
 
   const out = strip(capture({ version: '1.0.0', modelName: 'claude-opus-4-6', provider: 'Anthropic' }))
   assert.ok(
-    out.includes('No active GSD project') || /Active\s+M\d+/.test(out),
-    'welcome should show GSD state lines or the no-project fallback',
+    out.includes('No active LOOP24 project') || /Active\s+M\d+/.test(out),
+    'welcome should show project state lines or the no-project fallback',
   )
 })
 
-test('renders cwd hint', () => {
+test('renders command hints', () => {
   const out = strip(capture({ version: '1.0.0' }))
-  assert.ok(out.includes('/gsd to begin'), 'hint line missing')
-  assert.ok(out.includes('/gsd start'), 'primary command missing')
+  assert.ok(out.includes('/loop24 to begin'), 'hint line missing')
+  assert.ok(out.includes('/loop24 start'), 'primary command missing')
 })
 
 test('skips when not a TTY', (t) => {
@@ -106,10 +104,10 @@ test('omits remote channel when not provided', () => {
 })
 
 test('Project row truncates with ellipsis when milestone text overflows panel width', (t) => {
-  const tmp = mkdtempSync(join(tmpdir(), 'gsd-welcome-test-'))
-  mkdirSync(join(tmp, '.gsd'))
+  const tmp = mkdtempSync(join(tmpdir(), 'loop24-welcome-test-'))
+  mkdirSync(join(tmp, '.loop24'))
   writeFileSync(
-    join(tmp, '.gsd', 'STATE.md'),
+    join(tmp, '.loop24', 'STATE.md'),
     [
       '**Active Milestone:** M001: Todo App – Core add/complete/delete with localStorage persistence and offline sync support',
       '**Phase:** evaluating-gates',
@@ -136,9 +134,9 @@ test('Project row truncates with ellipsis when milestone text overflows panel wi
 })
 
 test('Project row does not truncate short milestone text', (t) => {
-  const tmp = mkdtempSync(join(tmpdir(), 'gsd-welcome-test-'))
-  mkdirSync(join(tmp, '.gsd'))
-  writeFileSync(join(tmp, '.gsd', 'STATE.md'), '**Active Milestone:** M001: Short title\n')
+  const tmp = mkdtempSync(join(tmpdir(), 'loop24-welcome-test-'))
+  mkdirSync(join(tmp, '.loop24'))
+  writeFileSync(join(tmp, '.loop24', 'STATE.md'), '**Active Milestone:** M001: Short title\n')
   const origCwd = process.cwd()
   process.chdir(tmp)
   const origColumns = (process.stderr as any).columns
@@ -157,18 +155,42 @@ test('Project row does not truncate short milestone text', (t) => {
   assert.ok(!projectLine!.includes('…'), 'short title should not be truncated')
 })
 
-test('command-center renders one OGSD block logo with a full-width closing rule', (t) => {
+test('command-center renders one LOOP24 block logo with a full-width closing rule', (t) => {
   const origColumns = process.stderr.columns
   ;(process.stderr as any).columns = 250
   t.after(() => { ;(process.stderr as any).columns = origColumns })
 
   const out = strip(capture({ version: '1.0.0' }))
   const lines = out.split('\n')
-  assert.equal(lines.filter(l => l.includes('██████╗  ██████╗ ███████╗██████╗')).length, 1, 'expected one OGSD logo top row')
-  assert.equal(lines.filter(l => l.includes('██║   ██║██║  ███╗███████╗██║  ██║')).length, 1, 'expected one OGSD logo middle row')
-  assert.equal(lines.filter(l => l.includes('╚██████╔╝╚██████╔╝███████║██████╔╝')).length, 1, 'expected one OGSD logo bottom row')
-  // Exactly one closing rule, spanning the terminal width (columns - 1 = 249).
+  assert.equal(lines.filter(l => l.includes('██╗      ██████╗  ██████╗ ██████╗ ██████╗ ██╗  ██╗')).length, 1, 'expected one LOOP24 logo top row')
+  assert.equal(lines.filter(l => l.includes('██║     ██║   ██║██║   ██║██████╔╝ █████╔╝███████║')).length, 1, 'expected one LOOP24 logo middle row')
+  assert.equal(lines.filter(l => l.includes('███████╗╚██████╔╝╚██████╔╝██║     ███████╗     ██║')).length, 1, 'expected one LOOP24 logo bottom row')
   const ruleLines = lines.filter(l => /^─+$/.test(l.trim()))
   assert.equal(ruleLines.length, 1, 'expected exactly one closing rule line')
   assert.equal(ruleLines[0].trim().length, 249, `rule should be 249 chars wide, got ${ruleLines[0].trim().length}`)
+})
+
+test('narrow terminal falls back to simple text', () => {
+  const lines = buildWelcomeScreenLines({ version: '1.0.0', width: 60 })
+  const out = strip(lines.join('\n'))
+  assert.ok(out.includes('LOOP24 v1.0.0'), 'narrow fallback should include brand and version')
+  assert.ok(!out.includes('██'), 'narrow fallback should not include block logo')
+})
+
+test('buildWelcomeScreenLines returns array of strings', () => {
+  const lines = buildWelcomeScreenLines({ version: '1.0.0', width: 120 })
+  assert.ok(Array.isArray(lines), 'should return an array')
+  assert.ok(lines.length > 0, 'should return at least one line')
+  for (const line of lines) {
+    assert.equal(typeof line, 'string', 'each element should be a string')
+  }
+})
+
+test('no line exceeds terminal width', () => {
+  const width = 100
+  const lines = buildWelcomeScreenLines({ version: '1.0.0', width })
+  for (const line of lines) {
+    const plain = strip(line)
+    assert.ok(plain.length <= width, `line exceeds width (${plain.length} > ${width}): "${plain}"`)
+  }
 })

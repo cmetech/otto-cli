@@ -4,7 +4,7 @@
 
 **Goal:** Hard-fork gsd-pi into a working `loop24` binary that launches with LOOP24 branding, registers `/loop24 <subcommand>` instead of `/gsd <subcommand>`, and contains no user-visible "GSD" references — while keeping the existing workflow extension functional against direct Anthropic.
 
-**Architecture:** Selective file copy from `~/Projects/repos/local/gsd-pi` (skipping `web/`, `vscode-extension/`, `studio/`, `native/`, `packages/native/`). One-time templating of the command namespace and brand strings via four piConfig fields (`name`, `configDir`, `commandNamespace`, `brandName`) read into exported constants. Rename the `gsd/` extension directory to `workflow/`. Replace the loader banner. Drop a `loop24` theme into the existing pi-tui theme registry.
+**Architecture:** Selective file copy from `~/Projects/repos/local/gsd-pi` (skipping `web/`, `vscode-extension/`, `studio/`, `native/` — the Rust source — but **keeping `packages/native/`**, which contains JS wrappers with pure-JS fallbacks for every native function via a graceful proxy in `packages/native/src/native.ts`). One-time templating of the command namespace and brand strings via four piConfig fields (`name`, `configDir`, `commandNamespace`, `brandName`) read into exported constants. Rename the `gsd/` extension directory to `workflow/`. Replace the loader banner. Drop a `loop24` theme into the existing pi-tui theme registry.
 
 **Tech Stack:** TypeScript, Node ≥22, npm workspaces, Node's built-in test runner (`node --test --experimental-strip-types`), pi-tui (custom TUI), `@anthropic-ai/sdk` (unchanged for Phase 0 — direct Anthropic).
 
@@ -42,12 +42,13 @@
 - `gsd-pi/web/`
 - `gsd-pi/vscode-extension/`
 - `gsd-pi/studio/`
-- `gsd-pi/native/`
-- `gsd-pi/packages/native/`
+- `gsd-pi/native/` — the Rust source for the addon. **NOT** `packages/native/`, which we keep (JS wrappers with fallbacks).
 - `gsd-pi/.git/` (clean break — fresh git history)
 - `gsd-pi/node_modules/`
 - `gsd-pi/dist/`
 - `gsd-pi/.plans/` (gsd-pi's own internal planning dir, irrelevant to LOOP24)
+- `gsd-pi/gitbook/`, `gsd-pi/mintlify-docs/`
+- All `@opengsd/engine-*` entries in `package.json` `optionalDependencies` — these are the compiled `.node` files that match the Rust source in `native/`. Without them, `packages/native/src/native.ts` logs a one-line warning at startup and falls back to its JS implementations via a proxy. Individual modules (text, fd, image, etc.) have JS fallback functions that consumers call when the native path is unavailable.
 
 ---
 
@@ -92,6 +93,8 @@ Expected: commit succeeds with two files (`.gitignore` and the docs).
 
 ## Task 2: Import gsd-pi source (selective copy)
 
+**Critical context for the implementer:** `packages/native/` is the **JS wrapper** package — it contains TypeScript code with pure-JS fallback implementations (see `packages/native/src/native.ts`'s `loadNative()` function, which logs a warning and returns a throw-on-call proxy when the Rust addon isn't found, and individual modules like `packages/native/src/text/index.ts` which have `fallbackVisibleWidth()` etc. functions). We KEEP `packages/native/`. We drop only `native/` (the Rust source) and the `@opengsd/engine-*` optional dependencies (the compiled `.node` files). At runtime, the JS fallbacks handle missing native code automatically.
+
 **Files:**
 - All files under `loop24-client/` except the dropped paths listed above.
 
@@ -108,45 +111,76 @@ rsync -a \
   --exclude='vscode-extension/' \
   --exclude='studio/' \
   --exclude='native/' \
-  --exclude='packages/native/' \
   --exclude='.plans/' \
   --exclude='gitbook/' \
   --exclude='mintlify-docs/' \
   /Users/coreyellis/Projects/repos/local/gsd-pi/ \
   /Users/coreyellis/Projects/repos/local/loop24-client/
 ```
-Expected: completes silently. Verify with `ls loop24-client/` — should now show `package.json`, `src/`, `packages/`, `scripts/`, etc.
 
-- [ ] **Step 2: Confirm dropped directories did not get copied**
+**Note:** `packages/native/` is intentionally NOT excluded. It contains JS wrappers and fallbacks we need.
 
-Run:
-```bash
-cd /Users/coreyellis/Projects/repos/local/loop24-client
-ls -d web vscode-extension studio native packages/native 2>&1 | grep -v "No such file" || echo "OK: all dropped directories absent"
-```
-Expected: `OK: all dropped directories absent`
+Expected: completes silently. Verify with `ls` — should show `package.json`, `src/`, `packages/` (including `packages/native/`), `scripts/`, etc.
 
-- [ ] **Step 3: Remove gsd-pi-specific workspace entries from package.json that point at dropped dirs**
-
-Open `loop24-client/package.json` and inspect the `workspaces` array. Remove any entry that points at a dropped path. Currently the only known offender is `packages/native` — verify and remove.
+- [ ] **Step 2: Confirm correct dirs were dropped, correct ones were kept**
 
 Run:
 ```bash
 cd /Users/coreyellis/Projects/repos/local/loop24-client
-grep -A 20 '"workspaces"' package.json | head -25
+echo "--- These should be ABSENT (dropped):"
+for d in web vscode-extension studio native gitbook mintlify-docs; do
+  if [ -e "$d" ]; then echo "FAIL: $d still present"; else echo "OK: $d absent"; fi
+done
+echo "--- This should be PRESENT (kept):"
+if [ -d "packages/native" ]; then echo "OK: packages/native present (JS wrappers)"; else echo "FAIL: packages/native missing"; fi
 ```
-Expected output shows the workspaces array. Edit to remove `packages/native` if present. Also remove from `optionalDependencies` any `@opengsd/engine-*` entries (they are native Rust binaries we dropped).
+Expected: all dropped dirs absent, `packages/native` present.
 
-- [ ] **Step 4: Install dependencies**
+- [ ] **Step 3: Restore our .gitignore (rsync overwrote it with gsd-pi's)**
+
+The rsync replaced our 6-line `.gitignore` with gsd-pi's much longer one. Both are valid, but gsd-pi's doesn't include `.superpowers/`. Append it:
+
+Run:
+```bash
+cd /Users/coreyellis/Projects/repos/local/loop24-client
+grep -q '^\.superpowers/$' .gitignore || echo '.superpowers/' >> .gitignore
+```
+Expected: silently appends `.superpowers/` if not present. Verify with `grep .superpowers .gitignore`.
+
+- [ ] **Step 4: Remove `@opengsd/engine-*` optional dependencies from package.json**
+
+These point at compiled Rust binaries we don't have. Their absence is handled gracefully by `packages/native/src/native.ts` (logs a one-line "Falling back to JS" warning at startup, then uses the JS fallbacks).
+
+Edit `loop24-client/package.json` and remove all entries matching `@opengsd/engine-*` from the `optionalDependencies` block. The block may be entirely removed if `@opengsd/engine-*` were its only entries.
+
+Verify with:
+```bash
+cd /Users/coreyellis/Projects/repos/local/loop24-client
+grep '@opengsd/engine' package.json && echo "FAIL: @opengsd/engine-* entries still present" || echo "OK: all @opengsd/engine-* entries removed"
+```
+
+- [ ] **Step 5: Remove the `build:native-pkg` step from the root build script**
+
+The root `package.json` has a `build:pi` or `build` script that includes `build:native-pkg` — this attempts to compile the Rust source from `native/` which we just dropped. Find that step and remove it.
+
+Inspect:
+```bash
+cd /Users/coreyellis/Projects/repos/local/loop24-client
+grep -E '"build|"build:' package.json | head -20
+```
+
+Find any script that runs `build:native-pkg` or `npm run -w @gsd/native build:native` or similar and edit it out. The TypeScript build inside `packages/native/` is fine and should remain — only the Rust-compilation step is removed.
+
+- [ ] **Step 6: Install dependencies**
 
 Run:
 ```bash
 cd /Users/coreyellis/Projects/repos/local/loop24-client
 npm install
 ```
-Expected: completes without errors. If `native` references throw errors, return to Step 3 and ensure all references are removed.
+Expected: completes. May print warnings about missing optional `@opengsd/engine-*` packages — that is expected and fine. If hard errors appear, return to Step 4 and ensure `@opengsd/engine-*` entries are fully removed from package.json.
 
-- [ ] **Step 5: Build the project**
+- [ ] **Step 7: Build the project**
 
 Run:
 ```bash
@@ -155,22 +189,29 @@ npm run build
 ```
 Expected: completes without errors. Produces `dist/loader.js`.
 
-- [ ] **Step 6: Smoke-test the binary (baseline before any branding changes)**
+If the build fails with errors like "Cannot find module '@gsd/native/...'" — that means a code path still imports a native module that doesn't have a JS fallback. **Stop and report as BLOCKED.** Do NOT write your own stubs; ask the controller to investigate which module is missing a fallback.
+
+- [ ] **Step 8: Smoke-test the binary (baseline before any branding changes)**
 
 Run:
 ```bash
 cd /Users/coreyellis/Projects/repos/local/loop24-client
 node dist/loader.js --version
 ```
-Expected: prints the version string from `package.json` (e.g., `1.0.1`). This is our baseline — we know the fork is structurally sound before we change anything.
+Expected: prints the version string from `package.json` (e.g., `1.0.1`). May also print a one-line `[gsd] Native addon not available for ...` warning to stderr — that is the expected fallback message and is fine.
 
-- [ ] **Step 7: Commit the import**
+- [ ] **Step 9: Commit the import**
 
 Run:
 ```bash
 cd /Users/coreyellis/Projects/repos/local/loop24-client
 git add -A
-git commit -m "fork: import gsd-pi source (sans web/vscode/studio/native)"
+git commit -m "fork: import gsd-pi source
+
+Selective rsync from ~/Projects/repos/local/gsd-pi. Drops web/,
+vscode-extension/, studio/, native/ (Rust source), gitbook/, mintlify-docs/.
+Keeps packages/native/ (JS wrappers — JS fallbacks handle missing Rust addon).
+Removes @opengsd/engine-* optional deps and the build:native-pkg root script."
 ```
 Expected: large commit succeeds. This is the **fork point** — everything after this is LOOP24-specific.
 

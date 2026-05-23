@@ -12,6 +12,7 @@ import { ensureManagedTools } from './tool-bootstrap.js'
 import { loadStoredEnvKeys } from './wizard.js'
 import { migratePiCredentials } from './pi-migration.js'
 import { shouldRunOnboarding, runOnboarding } from './onboarding.js'
+import { runLoop24Wizard, shouldRunLoop24Wizard } from './loop24-wizard.js'
 import chalk from 'chalk'
 import { checkForUpdates } from './update-check.js'
 import { shouldBypassManagedResourceMismatchGate } from './cli-policy.js'
@@ -371,6 +372,14 @@ if (cliFlags.messages[0] === 'config') {
   process.exit(0)
 }
 
+// `loop24 setup` — re-run the LOOP24 services wizard (gateway + langflow)
+// and exit. Distinct from `loop24 config` (LLM auth wizard) — both subcommands
+// re-trigger the corresponding first-run flow.
+if (cliFlags.messages[0] === 'setup') {
+  await runLoop24Wizard()
+  process.exit(0)
+}
+
 // `gsd web stop [path|all]` — stop web server before anything else
 if (cliFlags.messages[0] === 'web' && cliFlags.messages[1] === 'stop') {
   const webBranch = await runWebCliBranch(cliFlags, {
@@ -568,6 +577,21 @@ markStartup('ModelRegistry')
 const settingsManager = SettingsManager.create(process.cwd(), agentDir)
 applySecurityOverrides(settingsManager)
 markStartup('SettingsManager.create')
+
+// LOOP24 services first-run wizard (gateway + langflow). Runs once when
+// ~/.loop24/config.json is missing — populates the file via clack prompts
+// and persists with mode 0600. Env vars still win at runtime, so CI is
+// unaffected.
+if (shouldRunLoop24Wizard({ isPrint: isPrintMode, isTTY: !!process.stdin.isTTY })) {
+  await runLoop24Wizard()
+
+  // Same stdin cleanup pattern runOnboarding uses — clack leaves listeners
+  // and may leave stdin paused.
+  process.stdin.removeAllListeners('data')
+  process.stdin.removeAllListeners('keypress')
+  if (process.stdin.setRawMode) process.stdin.setRawMode(false)
+  process.stdin.pause()
+}
 
 // Run onboarding wizard on first launch (no LLM provider configured)
 if (!isPrintMode && shouldRunOnboarding(authStorage, settingsManager.getDefaultProvider())) {

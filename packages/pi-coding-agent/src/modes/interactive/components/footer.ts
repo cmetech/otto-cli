@@ -2,6 +2,7 @@
 // File Purpose: Interactive terminal footer renderer for workspace, model, usage, context, and extension status.
 
 import { type Component, truncateToWidth, visibleWidth } from "@gsd/pi-tui";
+import { BRAND_NAME } from "../../../config.js";
 import type { AgentSession } from "../../../core/agent-session.js";
 import type { ReadonlyFooterDataProvider } from "../../../core/footer-data-provider.js";
 import { theme } from "../theme/theme.js";
@@ -247,17 +248,17 @@ export class FooterComponent implements Component {
 				: "";
 
 		const footerRight = [rightSide, extStatusText].filter(Boolean).join(" ");
-		const gsdSegment = theme.fg("accent", "● GSD");
+		const brandSegment = theme.fg("accent", `● ${BRAND_NAME}`);
 		const dimStatsLeft = theme.fg("dim", statsLeft);
 		const innerWidth = Math.max(1, width - 2);
 		const rightWidth = visibleWidth(footerRight);
 		const leftBudget = footerRight ? Math.max(1, innerWidth - rightWidth - 3) : innerWidth;
 		const sepWidth = visibleWidth("  │  ");
-		const pwdBudget = Math.max(1, leftBudget - visibleWidth(gsdSegment) - visibleWidth(dimStatsLeft) - sepWidth * 2);
+		const pwdBudget = Math.max(1, leftBudget - visibleWidth(brandSegment) - visibleWidth(dimStatsLeft) - sepWidth * 2);
 		const pwdSegment = theme.fg("dim", truncateFooterPath(pwd, pwdBudget));
 
 		const leftSegments = [
-			gsdSegment,
+			brandSegment,
 			pwdSegment,
 			dimStatsLeft,
 		];

@@ -212,7 +212,7 @@ export function printHelp(version: string): void {
   process.stdout.write('  --version, -v            Print version and exit\n')
   process.stdout.write('  --help, -h               Print this help and exit\n')
   process.stdout.write('\nSubcommands:\n')
-  process.stdout.write('  config                   Re-run the setup wizard\n')
+  process.stdout.write('  config [subject]         Configure services: gateway, langflow, llm, all (or interactive menu)\n')
   process.stdout.write('  install <source>         Install a package/extension source\n')
   process.stdout.write('  remove <source>          Remove an installed package source\n')
   process.stdout.write('  list                     List installed package sources\n')

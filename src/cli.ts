@@ -12,7 +12,7 @@ import { ensureManagedTools } from './tool-bootstrap.js'
 import { loadStoredEnvKeys } from './wizard.js'
 import { migratePiCredentials } from './pi-migration.js'
 import { shouldRunOnboarding, runOnboarding } from './onboarding.js'
-import { runLoop24Wizard, shouldRunLoop24Wizard } from './loop24-wizard.js'
+import { runLoop24Wizard, shouldRunLoop24Wizard, selectConfigSection } from './loop24-wizard.js'
 import { applyConfigToEnv, configPath } from './loop24-config.js'
 import { COMMAND_NAMESPACE } from './brand.js'
 import chalk from 'chalk'
@@ -337,7 +337,6 @@ const subcommandsExemptFromEarlyTtyCheck = new Set([
   'list',
   'remove',
   'sessions',
-  'setup',
   'update',
   'upgrade',
   'web',
@@ -351,7 +350,7 @@ const isSubcommandExemptFromEarlyTtyCheck = subcommandsExemptFromEarlyTtyCheck.h
 // (piped/non-TTY) and the wizard else-if branch (--mode rpc/mcp/text).
 const MISSING_CONFIG_WARN =
   `[${COMMAND_NAMESPACE}] No ~/.loop24/config.json yet. ` +
-  `Run "${COMMAND_NAMESPACE} setup" to configure, or set LOOP24_GATEWAY_URL / LANGFLOW_SERVER_URL.\n`
+  `Run "${COMMAND_NAMESPACE} config" to configure, or set LOOP24_GATEWAY_URL / LANGFLOW_SERVER_URL.\n`
 
 if (!process.stdin.isTTY && !isPrintMode && !isSubcommandExemptFromEarlyTtyCheck && !cliFlags.listModels && !cliFlags.web) {
   if (!existsSync(configPath()) && !process.env.LOOP24_GATEWAY_URL) {
@@ -377,21 +376,48 @@ if (packageCommandNames.has(cliFlags.messages[0] as PackageCommand)) {
   }
 }
 
-// `gsd config` — replay the setup wizard and exit
+// `loop24 config [gateway|langflow|llm|all]` — interactive menu if no second arg,
+// otherwise dispatch to the named section. Phase 2b.1 unified what used to be
+// two separate subcommands (`loop24 config` for LLM auth + `loop24 setup` for
+// services) into a single entry point.
 if (cliFlags.messages[0] === 'config') {
+  const subject = cliFlags.messages[1]
   const { AuthStorage } = await loadPiCodingAgentModule()
   const authStorage = AuthStorage.create(authFilePath)
   loadStoredEnvKeys(authStorage)
-  await runOnboarding(authStorage)
-  process.exit(0)
-}
 
-// `loop24 setup` — re-run the LOOP24 services wizard (gateway + langflow)
-// and exit. Distinct from `loop24 config` (LLM auth wizard) — both subcommands
-// re-trigger the corresponding first-run flow.
-if (cliFlags.messages[0] === 'setup') {
-  const saved = await runLoop24Wizard()
-  if (saved) applyConfigToEnv(saved)
+  if (subject === 'llm') {
+    await runOnboarding(authStorage)
+    process.exit(0)
+  }
+
+  if (subject === 'gateway' || subject === 'langflow') {
+    const saved = await runLoop24Wizard({ section: subject })
+    if (saved) applyConfigToEnv(saved)
+    process.exit(0)
+  }
+
+  if (subject === 'all') {
+    const saved = await runLoop24Wizard({ section: 'all' })
+    if (saved) applyConfigToEnv(saved)
+    await runOnboarding(authStorage)
+    process.exit(0)
+  }
+
+  // No second arg → interactive menu.
+  const choice = await selectConfigSection()
+  if (choice === null) {
+    process.exit(0)
+  }
+  if (choice === 'llm') {
+    await runOnboarding(authStorage)
+  } else {
+    const saved = await runLoop24Wizard({ section: choice })
+    if (saved) applyConfigToEnv(saved)
+    if (choice === 'all') {
+      await runOnboarding(authStorage)
+    }
+  }
   process.exit(0)
 }
 

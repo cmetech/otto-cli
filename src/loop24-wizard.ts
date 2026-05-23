@@ -10,8 +10,8 @@
  * imports so a missing @clack/prompts dependency degrades to a single
  * warn line instead of crashing boot.
  *
- * Re-entry: idempotent. Re-running just overwrites the existing config
- * (Task 5 wires this into the `loop24 setup` subcommand).
+ * Re-entry: idempotent. Re-running just overwrites the existing config.
+ * Available as `loop24 config [gateway|langflow|all]`.
  */
 
 import { existsSync } from 'node:fs'
@@ -43,12 +43,138 @@ function isValidHttpUrl(s: string): boolean {
   } catch { return false }
 }
 
+export type WizardSection = "gateway" | "langflow" | "all"
+
+export interface WizardOptions {
+  section?: WizardSection  // default "all"
+}
+
+// ── Internal section helpers ──────────────────────────────────────────────────
+
+async function promptGateway(
+  p: ClackModule,
+  existing: Loop24Config["gateway"],
+  colors: { dim: (s: string) => string; green: (s: string) => string; red: (s: string) => string },
+): Promise<{ url: string; token: string | null } | "cancelled"> {
+  const { dim, green, red } = colors
+
+  const gatewayUrlDefault = existing.url ?? "http://127.0.0.1:8080/v1"
+  const gatewayUrlAns = await p.text({
+    message: 'Gateway URL?',
+    placeholder: gatewayUrlDefault,
+    initialValue: gatewayUrlDefault,
+    validate: (val) => {
+      const v = val?.trim()
+      if (!v) return 'Gateway URL is required'
+      if (!isValidHttpUrl(v)) return 'Must be a valid http(s) URL'
+      return
+    },
+  })
+  if (p.isCancel(gatewayUrlAns)) { p.cancel('Setup cancelled.'); return "cancelled" }
+  const gatewayUrl = (gatewayUrlAns as string).trim()
+
+  const wantsToken = await p.confirm({
+    message: 'Does the gateway require a bearer token?',
+    initialValue: existing.token !== null,
+  })
+  if (p.isCancel(wantsToken)) { p.cancel('Setup cancelled.'); return "cancelled" }
+
+  let gatewayToken: string | null = null
+  if (wantsToken) {
+    const tok = await p.password({ message: 'Paste the gateway bearer token:', mask: '●' })
+    if (p.isCancel(tok)) { p.cancel('Setup cancelled.'); return "cancelled" }
+    const t = (tok as string).trim()
+    gatewayToken = t || null
+  }
+
+  // Probe gateway
+  const s1 = p.spinner()
+  s1.start(`Probing gateway at ${gatewayUrl}...`)
+  const gwProbe = await probeGateway(gatewayUrl)
+  if (gwProbe.ok) {
+    s1.stop(green(`Gateway reachable at ${gatewayUrl}`))
+  } else {
+    s1.stop(red(`Gateway probe failed: ${gwProbe.reason}`))
+    p.log.warn(`Saving anyway — the gateway may not be running yet.`)
+  }
+
+  return { url: gatewayUrl, token: gatewayToken }
+}
+
+async function promptLangflow(
+  p: ClackModule,
+  existing: Loop24Config["langflow"],
+  colors: { dim: (s: string) => string; green: (s: string) => string; red: (s: string) => string },
+): Promise<{ url: string; apiKey: string | null; enabled: boolean } | "cancelled"> {
+  const { dim, green, red } = colors
+
+  const langflowEnabled = await p.confirm({
+    message: 'Use LangFlow?',
+    initialValue: existing.enabled,
+  })
+  if (p.isCancel(langflowEnabled)) { p.cancel('Setup cancelled.'); return "cancelled" }
+
+  let langflowUrl = existing.url
+  let langflowApiKey: string | null = existing.apiKey
+
+  if (langflowEnabled) {
+    const lfUrlAns = await p.text({
+      message: 'LangFlow URL?',
+      placeholder: langflowUrl,
+      initialValue: langflowUrl,
+      validate: (val) => {
+        const v = val?.trim()
+        if (!v) return 'LangFlow URL is required'
+        if (!isValidHttpUrl(v)) return 'Must be a valid http(s) URL'
+        return
+      },
+    })
+    if (p.isCancel(lfUrlAns)) { p.cancel('Setup cancelled.'); return "cancelled" }
+    langflowUrl = (lfUrlAns as string).trim()
+
+    const wantsKey = await p.confirm({
+      message: 'Does LangFlow require an API key?',
+      initialValue: existing.apiKey !== null,
+    })
+    if (p.isCancel(wantsKey)) { p.cancel('Setup cancelled.'); return "cancelled" }
+
+    if (wantsKey) {
+      const k = await p.password({ message: 'Paste the LangFlow API key:', mask: '●' })
+      if (p.isCancel(k)) { p.cancel('Setup cancelled.'); return "cancelled" }
+      const trimmed = (k as string).trim()
+      langflowApiKey = trimmed || null
+    } else {
+      langflowApiKey = null
+    }
+
+    // Probe LangFlow
+    const s2 = p.spinner()
+    s2.start(`Probing LangFlow at ${langflowUrl}...`)
+    const lfProbe = await probeLangflow(langflowUrl, 2000, langflowApiKey ?? undefined)
+    if (lfProbe.ok) {
+      s2.stop(green(`LangFlow reachable${lfProbe.version ? ` (v${lfProbe.version})` : ""}`))
+    } else {
+      s2.stop(red(`LangFlow probe failed: ${lfProbe.reason}`))
+      p.log.warn(`Saving anyway — LangFlow may not be running yet.`)
+    }
+  }
+
+  return { url: langflowUrl, apiKey: langflowApiKey, enabled: !!langflowEnabled }
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
+
 /**
  * Run the wizard interactively. Returns the saved config on success, null on
  * user cancel. Never throws — any I/O failure during save is logged and the
  * function returns null.
+ *
+ * opts.section defaults to "all". Pass "gateway" or "langflow" to run only
+ * that section's prompts and merge the result into the existing config.
  */
-export async function runLoop24Wizard(): Promise<Loop24Config | null> {
+export async function runLoop24Wizard(opts?: WizardOptions): Promise<Loop24Config | null> {
+  const section: WizardSection = opts?.section ?? "all"
+
   const p = await loadClack()
   const chalk = await loadChalk()
 
@@ -64,8 +190,14 @@ export async function runLoop24Wizard(): Promise<Loop24Config | null> {
   const dim = chalk ? (s: string) => chalk.dim(s) : (s: string) => s
   const green = chalk ? (s: string) => chalk.green(s) : (s: string) => s
   const red = chalk ? (s: string) => chalk.red(s) : (s: string) => s
+  const colors = { dim, green, red }
 
-  p.intro(brandYellow(`${BRAND_NAME} — services setup`))
+  const introLabel =
+    section === "gateway" ? `${BRAND_NAME} — gateway config` :
+    section === "langflow" ? `${BRAND_NAME} — LangFlow config` :
+    `${BRAND_NAME} — services setup`
+
+  p.intro(brandYellow(introLabel))
   p.log.info(dim(`Saves to ${configPath()} (mode 0600).`))
   p.log.info(dim(`Env vars (LOOP24_GATEWAY_URL etc.) always override this file.`))
 
@@ -73,107 +205,30 @@ export async function runLoop24Wizard(): Promise<Loop24Config | null> {
   // current values as the prompt defaults.
   const existing = loadConfig()
 
-  // ── Gateway URL ───────────────────────────────────────────────────────────
-  // Port 8080 is a placeholder until the real loop24-gateway lands (design spec Q1).
-  const gatewayUrlDefault = existing.gateway.url ?? "http://127.0.0.1:8080/v1"
-  const gatewayUrlAns = await p.text({
-    message: 'Gateway URL?',
-    placeholder: gatewayUrlDefault,
-    initialValue: gatewayUrlDefault,
-    validate: (val) => {
-      const v = val?.trim()
-      if (!v) return 'Gateway URL is required'
-      if (!isValidHttpUrl(v)) return 'Must be a valid http(s) URL'
-      return
-    },
-  })
-  if (p.isCancel(gatewayUrlAns)) { p.cancel('Setup cancelled.'); return null }
-  const gatewayUrl = (gatewayUrlAns as string).trim()
+  // Accumulated result — start with existing values and overwrite sections.
+  let gatewayResult: { url: string; token: string | null } | null = null
+  let langflowResult: { url: string; apiKey: string | null; enabled: boolean } | null = null
 
-  // ── Gateway token (optional) ──────────────────────────────────────────────
-  const wantsToken = await p.confirm({
-    message: 'Does the gateway require a bearer token?',
-    initialValue: existing.gateway.token !== null,
-  })
-  if (p.isCancel(wantsToken)) { p.cancel('Setup cancelled.'); return null }
-
-  let gatewayToken: string | null = null
-  if (wantsToken) {
-    const tok = await p.password({ message: 'Paste the gateway bearer token:', mask: '●' })
-    if (p.isCancel(tok)) { p.cancel('Setup cancelled.'); return null }
-    const t = (tok as string).trim()
-    gatewayToken = t || null
+  if (section === "gateway" || section === "all") {
+    const result = await promptGateway(p, existing.gateway, colors)
+    if (result === "cancelled") return null
+    gatewayResult = result
   }
 
-  // ── Probe gateway ─────────────────────────────────────────────────────────
-  const s1 = p.spinner()
-  s1.start(`Probing gateway at ${gatewayUrl}...`)
-  const gwProbe = await probeGateway(gatewayUrl)
-  if (gwProbe.ok) {
-    s1.stop(green(`Gateway reachable at ${gatewayUrl}`))
-  } else {
-    s1.stop(red(`Gateway probe failed: ${gwProbe.reason}`))
-    p.log.warn(`Saving anyway — the gateway may not be running yet.`)
+  if (section === "langflow" || section === "all") {
+    const result = await promptLangflow(p, existing.langflow, colors)
+    if (result === "cancelled") return null
+    langflowResult = result
   }
 
-  // ── LangFlow enabled? ─────────────────────────────────────────────────────
-  const langflowEnabled = await p.confirm({
-    message: 'Use LangFlow?',
-    initialValue: existing.langflow.enabled,
-  })
-  if (p.isCancel(langflowEnabled)) { p.cancel('Setup cancelled.'); return null }
-
-  let langflowUrl = existing.langflow.url
-  let langflowApiKey: string | null = existing.langflow.apiKey
-
-  if (langflowEnabled) {
-    // ── LangFlow URL ────────────────────────────────────────────────────────
-    const lfUrlAns = await p.text({
-      message: 'LangFlow URL?',
-      placeholder: langflowUrl,
-      initialValue: langflowUrl,
-      validate: (val) => {
-        const v = val?.trim()
-        if (!v) return 'LangFlow URL is required'
-        if (!isValidHttpUrl(v)) return 'Must be a valid http(s) URL'
-        return
-      },
-    })
-    if (p.isCancel(lfUrlAns)) { p.cancel('Setup cancelled.'); return null }
-    langflowUrl = (lfUrlAns as string).trim()
-
-    // ── LangFlow API key (optional) ─────────────────────────────────────────
-    const wantsKey = await p.confirm({
-      message: 'Does LangFlow require an API key?',
-      initialValue: existing.langflow.apiKey !== null,
-    })
-    if (p.isCancel(wantsKey)) { p.cancel('Setup cancelled.'); return null }
-
-    if (wantsKey) {
-      const k = await p.password({ message: 'Paste the LangFlow API key:', mask: '●' })
-      if (p.isCancel(k)) { p.cancel('Setup cancelled.'); return null }
-      const trimmed = (k as string).trim()
-      langflowApiKey = trimmed || null
-    } else {
-      langflowApiKey = null
-    }
-
-    // ── Probe LangFlow ──────────────────────────────────────────────────────
-    const s2 = p.spinner()
-    s2.start(`Probing LangFlow at ${langflowUrl}...`)
-    const lfProbe = await probeLangflow(langflowUrl, 2000, langflowApiKey ?? undefined)
-    if (lfProbe.ok) {
-      s2.stop(green(`LangFlow reachable${lfProbe.version ? ` (v${lfProbe.version})` : ""}`))
-    } else {
-      s2.stop(red(`LangFlow probe failed: ${lfProbe.reason}`))
-      p.log.warn(`Saving anyway — LangFlow may not be running yet.`)
-    }
-  }
-
-  // ── Save ──────────────────────────────────────────────────────────────────
+  // ── Merge & save ─────────────────────────────────────────────────────────
   const cfg: Loop24Config = {
-    gateway: { url: gatewayUrl, token: gatewayToken },
-    langflow: { url: langflowUrl, apiKey: langflowApiKey, enabled: !!langflowEnabled },
+    gateway: gatewayResult
+      ? { url: gatewayResult.url, token: gatewayResult.token }
+      : existing.gateway,
+    langflow: langflowResult
+      ? { url: langflowResult.url, apiKey: langflowResult.apiKey, enabled: langflowResult.enabled }
+      : existing.langflow,
   }
 
   try {
@@ -183,19 +238,68 @@ export async function runLoop24Wizard(): Promise<Loop24Config | null> {
     return null
   }
 
-  const summary: string[] = [
-    `${green('✓')} Gateway: ${gatewayUrl}${gatewayToken ? dim(' (with token)') : ''}`,
-    langflowEnabled
-      ? `${green('✓')} LangFlow: ${langflowUrl}${langflowApiKey ? dim(' (with API key)') : ''}`
-      : `${dim('↷')} LangFlow: disabled`,
-    '',
-    `${dim('Saved to')} ${configPath()}`,
-    `${dim('Re-run with')} ${COMMAND_NAMESPACE} setup`,
-  ]
-  p.note(summary.join('\n'), 'Setup complete')
+  // ── Summary (only show lines for sections we actually ran) ──────────────
+  const summaryLines: string[] = []
+
+  if (gatewayResult) {
+    summaryLines.push(
+      `${green('✓')} Gateway: ${gatewayResult.url}${gatewayResult.token ? dim(' (with token)') : ''}`,
+    )
+  }
+
+  if (langflowResult) {
+    summaryLines.push(
+      langflowResult.enabled
+        ? `${green('✓')} LangFlow: ${langflowResult.url}${langflowResult.apiKey ? dim(' (with API key)') : ''}`
+        : `${dim('↷')} LangFlow: disabled`,
+    )
+  }
+
+  summaryLines.push('')
+  summaryLines.push(`${dim('Saved to')} ${configPath()}`)
+  summaryLines.push(`${dim('Re-run with')} ${COMMAND_NAMESPACE} config`)
+
+  p.note(summaryLines.join('\n'), 'Setup complete')
   p.outro(dim(`Launching ${BRAND_NAME}...`))
 
   return cfg
+}
+
+/**
+ * Interactive menu — asks the user which config section to run.
+ * Returns the selected section, or null if the user cancelled.
+ * The "llm" choice is returned to the caller to route to runOnboarding.
+ */
+export async function selectConfigSection(): Promise<"gateway" | "langflow" | "llm" | "all" | null> {
+  const p = await loadClack()
+
+  if (!p) {
+    process.stderr.write(
+      `[${COMMAND_NAMESPACE}] @clack/prompts not found — cannot show config menu.\n` +
+      `[${COMMAND_NAMESPACE}] Use: ${COMMAND_NAMESPACE} config gateway|langflow|llm|all\n`,
+    )
+    return null
+  }
+
+  const brandYellow = (s: string) => `\x1b[38;2;250;210;45m${s}\x1b[0m`
+  p.intro(brandYellow(`${BRAND_NAME} — configure`))
+
+  const choice = await p.select({
+    message: 'What do you want to configure?',
+    options: [
+      { value: 'gateway', label: 'Gateway URL + token' },
+      { value: 'langflow', label: 'LangFlow URL + key' },
+      { value: 'llm', label: 'LLM provider (Anthropic, OpenAI, etc.)' },
+      { value: 'all', label: 'Everything' },
+    ],
+  })
+
+  if (p.isCancel(choice)) {
+    p.cancel('Cancelled.')
+    return null
+  }
+
+  return choice as "gateway" | "langflow" | "llm" | "all"
 }
 
 /**

@@ -318,6 +318,81 @@ grep and are scheduled for a Phase 0.6 sweep:
 ### Tests added
 - langflow-client.test.ts (5), flow-trigger-schema.test.ts (7), flow-trigger-loader.test.ts (5) = 17 new tests, all passing.
 
+## Phase 2b — First-run wizard (tagged: phase-2b-first-run-wizard)
+
+### src/loop24-config.ts (NEW)
+- Synchronous reader/writer for `~/.loop24/config.json` (schema:
+  `{ gateway: { url, token }, langflow: { url, apiKey, enabled } }`).
+- Atomic save: tmp+rename, mode `0600`, parent dir created with `0700`.
+- Honors `LOOP24_HOME` env override (test seam).
+- Module-load side effect: applies config.json values to `process.env`
+  for any env var that is currently unset. Env always wins. This is the
+  seam that lets `packages/pi-ai/src/providers/anthropic.ts` and the
+  loop24 extension's `session_start` probe keep reading
+  `process.env.LOOP24_GATEWAY_URL` / `LANGFLOW_SERVER_URL` without
+  any code change — they automatically pick up config.json values.
+- `applyConfigToEnv()` exported so the wizard can re-propagate values
+  into the current process after `saveConfig()` (the module-load side
+  effect already fired before the user's wizard run).
+- `probeGateway(url, timeoutMs?)` and `probeLangflow(url, timeoutMs?, apiKey?)`
+  helpers for service validation. Both never throw; on timeout the
+  `reason` is `"timed out after <N>ms"` rather than the unhelpful
+  default `AbortError` message.
+
+### src/loop24-wizard.ts (NEW)
+- `runLoop24Wizard()`: clack-based interactive wizard. Prompts for gateway
+  URL, optional bearer token, LangFlow enabled, LangFlow URL, optional API
+  key. Probes each service after capture; soft-warns on probe failure
+  (saves anyway — users frequently configure before services are running).
+- `shouldRunLoop24Wizard({ isPrint, isTTY })`: true when config.json is
+  missing AND on TTY AND not in `--print` mode.
+- Mirrors `src/onboarding.ts`'s clack pattern. No TDD on the interactive
+  shell — pure pieces (probes, save) are covered in
+  `src/tests/loop24-config.test.ts`.
+
+### src/brand.ts (MODIFIED)
+- Added `import './loop24-config.js'` at the top of the imports block.
+  Side-effect-only import: triggers loop24-config's load-time
+  env-propagation so `process.env.LOOP24_GATEWAY_URL` is populated from
+  config.json BEFORE brand.ts reads it a few lines later.
+
+### src/cli.ts (MODIFIED)
+- Added `loop24 setup` subcommand (parallel to `loop24 config`). Re-runs
+  `runLoop24Wizard()` and exits. `setup` added to
+  `subcommandsExemptFromEarlyTtyCheck` so it works from scripts / non-TTY.
+- Added first-run trigger immediately before the existing
+  `shouldRunOnboarding` block: if `shouldRunLoop24Wizard(...)` returns
+  true, the LOOP24 services wizard runs before the LLM-auth wizard.
+  After the wizard returns, calls `applyConfigToEnv(saved)` so the
+  current process picks up the freshly-saved values (not just future
+  launches).
+- Added headless fallback: when config.json is missing AND
+  `LOOP24_GATEWAY_URL` is unset AND not `--print` mode, emit a single
+  stderr line pointing at `loop24 setup`. The same warn fires from two
+  code paths (early non-TTY exit guard + the else-if to the wizard
+  trigger) because the two paths cover non-overlapping headless modes
+  (piped stdin → early exit; --mode rpc/mcp/text → else-if). Message
+  extracted to `MISSING_CONFIG_WARN` const to keep the two writes in sync.
+
+### src/tests/loop24-config.test.ts (NEW)
+- 18 tests: defaults, partial-merge, mode `0600`, atomic overwrite,
+  env-precedence (via spawn-based brand.ts probe), probe helpers
+  (`probeGateway`/`probeLangflow`) against in-process mock HTTP servers,
+  and an explicit timeout-reason test.
+
+### Naming decision: `loop24 setup` (not `loop24 config`)
+`loop24 config` was already wired in Phase 0 to launch the LLM-auth wizard
+via `runOnboarding`. Two wizards under one subcommand would either chain
+them (annoying for re-runs) or require an extra prompt. Adding a separate
+subcommand is the simplest non-breaking change. If we ever consolidate,
+the cleanup is mechanical.
+
+### Env-var precedence (canonical, post-Phase 2b)
+Env var > config.json field > built-in default. The env-var override is
+applied by loop24-config.ts's load-time side effect (it only populates
+`process.env` when the env var is unset, so any value the user sets in
+their shell wins).
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`

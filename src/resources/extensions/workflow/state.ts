@@ -65,16 +65,17 @@ import {
 } from './gsd-db.js';
 import type { MilestoneRow } from './db-milestone-artifact-rows.js';
 import type { SliceRow, TaskRow } from './db-task-slice-rows.js';
+import { CMD, slashCommand } from './strings.js';
 
 function formatNeedsAttentionBlocker(milestoneId: string): string {
   return [
     `Milestone ${milestoneId} is blocked because milestone validation returned needs-attention.`,
     `Fix options:`,
-    `1. Review the validation details: \`/gsd status\``,
-    `2. If you fixed the missing evidence or issue, re-run milestone validation: \`/gsd validate-milestone\``,
-    `3. If the finding is acceptable, override it: \`/gsd verdict pass --rationale "why this is okay"\``,
-    `4. If this should wait, defer it explicitly: \`/gsd park ${milestoneId}\``,
-    `After validation or override passes, run \`/gsd auto\` to complete and merge the milestone.`,
+    `1. Review the validation details: \`${slashCommand("status")}\``,
+    `2. If you fixed the missing evidence or issue, re-run milestone validation: \`${slashCommand("validate-milestone")}\``,
+    `3. If the finding is acceptable, override it: \`${slashCommand("verdict")} pass --rationale "why this is okay"\``,
+    `4. If this should wait, defer it explicitly: \`${slashCommand("park")} ${milestoneId}\``,
+    `After validation or override passes, run \`${slashCommand("auto")}\` to complete and merge the milestone.`,
   ].join("\n");
 }
 
@@ -82,9 +83,9 @@ function formatNeedsRemediationBlocker(milestoneId: string): string {
   return [
     `Milestone ${milestoneId} is blocked because milestone validation returned needs-remediation, but all slices are complete.`,
     `Fix options:`,
-    `1. Add remediation slices with \`gsd_reassess_roadmap\`, then run \`/gsd auto\``,
-    `2. If the finding is acceptable, override it: \`/gsd verdict pass --rationale "why this is okay"\``,
-    `3. If this should wait, defer it explicitly: \`/gsd park ${milestoneId}\``,
+    `1. Add remediation slices with \`gsd_reassess_roadmap\`, then run \`${slashCommand("auto")}\``,
+    `2. If the finding is acceptable, override it: \`${slashCommand("verdict")} pass --rationale "why this is okay"\``,
+    `3. If this should wait, defer it explicitly: \`${slashCommand("park")} ${milestoneId}\``,
   ].join("\n");
 }
 
@@ -397,7 +398,7 @@ export async function deriveState(
       phase: "pre-planning",
       recentDecisions: [],
       blockers: ["DB unavailable — runtime markdown state derivation is disabled"],
-      nextAction: "Open or create the canonical GSD database before deriving workflow state. If this project only has markdown state, run /gsd migrate explicitly.",
+      nextAction: `Open or create the canonical GSD database before deriving workflow state. If this project only has markdown state, run ${slashCommand("migrate")} explicitly.`,
       registry: [],
       requirements: { active: 0, validated: 0, deferred: 0, outOfScope: 0, blocked: 0, total: 0 },
       progress: { milestones: { done: 0, total: 0 } },
@@ -577,7 +578,7 @@ function handleNoActiveMilestone(
       activeMilestone: null, activeSlice: null, activeTask: null,
       phase: 'pre-planning',
       recentDecisions: [], blockers: [],
-      nextAction: `All remaining milestones are parked (${parkedIds}). Run /gsd unpark <id> or create a new milestone.`,
+      nextAction: `All remaining milestones are parked (${parkedIds}). Run ${slashCommand("unpark")} <id> or create a new milestone.`,
       registry, requirements,
       progress: { milestones: milestoneProgress },
     };
@@ -588,7 +589,7 @@ function handleNoActiveMilestone(
       activeMilestone: null, activeSlice: null, activeTask: null,
       phase: 'pre-planning',
       recentDecisions: [], blockers: [],
-      nextAction: 'No milestones found. Run /gsd to create one.',
+      nextAction: `No milestones found. Run /${CMD} to create one.`,
       registry: [], requirements,
       progress: { milestones: { done: 0, total: 0 } },
     };
@@ -730,7 +731,7 @@ export async function deriveStateFromDb(
     return {
       activeMilestone: null, activeSlice: null, activeTask: null,
       phase: 'pre-planning', recentDecisions: [], blockers: [],
-      nextAction: 'No milestones found. Run /gsd to create one.',
+      nextAction: `No milestones found. Run /${CMD} to create one.`,
       registry: [], requirements,
       progress: { milestones: { done: 0, total: 0 } },
     };
@@ -905,7 +906,7 @@ export async function deriveStateFromDb(
       activeMilestone, activeSlice, activeTask,
       phase: 'escalating-task', recentDecisions: [],
       blockers: [`Task ${escalatingTaskId} requires a user decision before the loop can proceed`],
-      nextAction: `Run /gsd escalate show ${escalatingTaskId} to review, then /gsd escalate resolve ${escalatingTaskId} <choice> to proceed.`,
+      nextAction: `Run ${slashCommand(`escalate show ${escalatingTaskId}`)} to review, then ${slashCommand(`escalate resolve ${escalatingTaskId} <choice>`)} to proceed.`,
       activeWorkspace: undefined,
       registry, requirements,
       progress: { milestones: milestoneProgress, slices: sliceProgress, tasks: taskProgress },
@@ -1011,7 +1012,7 @@ export async function _deriveStateImpl(
       phase: 'pre-planning',
       recentDecisions: [],
       blockers: [],
-      nextAction: 'No milestones found. Run /gsd to create one.',
+      nextAction: `No milestones found. Run /${CMD} to create one.`,
       registry: [],
       requirements,
       progress: {
@@ -1252,7 +1253,7 @@ export async function _deriveStateImpl(
         phase: 'pre-planning',
         recentDecisions: [],
         blockers: [],
-        nextAction: `All remaining milestones are parked (${parkedIds}). Run /gsd unpark <id> or create a new milestone.`,
+        nextAction: `All remaining milestones are parked (${parkedIds}). Run ${slashCommand("unpark")} <id> or create a new milestone.`,
         registry,
         requirements,
         progress: {
@@ -1269,7 +1270,7 @@ export async function _deriveStateImpl(
         phase: 'pre-planning',
         recentDecisions: [],
         blockers: [],
-        nextAction: 'No milestones found. Run /gsd to create one.',
+        nextAction: `No milestones found. Run /${CMD} to create one.`,
         registry: [],
         requirements,
         progress: {

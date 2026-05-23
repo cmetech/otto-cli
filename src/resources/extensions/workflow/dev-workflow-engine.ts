@@ -20,6 +20,7 @@ import type { DispatchAction, DispatchContext } from "./auto-dispatch.js";
 import { deriveState } from "./state.js";
 import { resolveDispatch } from "./auto-dispatch.js";
 import { loadEffectiveGSDPreferences } from "./preferences.js";
+import { BRAND } from "./strings.js";
 
 // ─── Bridge: DispatchAction → EngineDispatchAction ────────────────────────
 
@@ -101,7 +102,7 @@ export class DevWorkflowEngine implements WorkflowEngine {
 
   getDisplayMetadata(state: EngineState): DisplayMetadata {
     return {
-      engineLabel: "GSD Dev",
+      engineLabel: `${BRAND} Dev`,
       currentPhase: state.phase,
       progressSummary: `${state.currentMilestoneId ?? "no milestone"} / ${state.activeSliceId ?? "—"} / ${state.activeTaskId ?? "—"}`,
       stepCount: null,

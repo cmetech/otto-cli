@@ -314,6 +314,7 @@ import {
 } from "./db/auto-workers.js";
 import { releaseMilestoneLease } from "./db/milestone-leases.js";
 import { normalizeRealPath } from "./paths.js";
+import { slashCommand } from "./strings.js";
 
 // ── ENCAPSULATION INVARIANT ─────────────────────────────────────────────────
 // ALL mutable auto-mode state lives in the AutoSession class (auto/session.ts).
@@ -1462,7 +1463,7 @@ export async function stopAuto(
       }
     } catch (e) {
       ctx?.ui.notify(
-        `Worktree cleanup failed for ${s.currentMilestoneId ?? "current milestone"}: ${e instanceof Error ? e.message : String(e)}. Resolve the preserved branch/worktree and run /gsd auto to resume.`,
+        `Worktree cleanup failed for ${s.currentMilestoneId ?? "current milestone"}: ${e instanceof Error ? e.message : String(e)}. Resolve the preserved branch/worktree and run ${slashCommand("auto")} to resume.`,
         "warning",
       );
       debugLog("stop-cleanup-worktree", { error: e instanceof Error ? e.message : String(e) });
@@ -1719,9 +1720,9 @@ export async function stopAuto(
         title: status === "blocked" ? "Auto-mode blocked" : status === "failed" ? "Auto-mode stopped with an issue" : "Auto-mode stopped",
         detail: displayReason || "Auto-mode stopped.",
         nextAction: status === "blocked"
-          ? "Fix the blocker, then run /gsd auto to resume."
-          : "Run /gsd status to inspect the current project state, or /gsd auto to continue.",
-        commands: ["/gsd status to inspect", "/gsd auto to run", "/gsd report for snapshots", "/gsd notifications for history"],
+          ? `Fix the blocker, then run ${slashCommand("auto")} to resume.`
+          : `Run ${slashCommand("status")} to inspect the current project state, or ${slashCommand("auto")} to continue.`,
+        commands: [`${slashCommand("status")} to inspect`, `${slashCommand("auto")} to run`, `${slashCommand("report")} for snapshots`, `${slashCommand("notifications")} for history`],
       });
       if (ctx) initHealthWidget(ctx);
     }
@@ -1904,13 +1905,13 @@ export async function pauseAuto(
   s.pendingVerificationRetry = null;
   ctx?.ui.setStatus("gsd-auto", "paused");
   ctx?.ui.setWidget("gsd-progress", undefined);
-  const resumeCmd = s.stepMode ? "/gsd next" : "/gsd auto";
+  const resumeCmd = s.stepMode ? slashCommand("next") : slashCommand("auto");
   setLifecycleOutcome(ctx, {
     status: "paused",
     title: `${s.stepMode ? "Step" : "Auto"}-mode paused`,
     detail: _errorContext?.message ?? "Paused by user request.",
     nextAction: `Type to steer, or run ${resumeCmd} to resume.`,
-    commands: [resumeCmd, "/gsd status for overview", "/gsd notifications for history"],
+    commands: [resumeCmd, `${slashCommand("status")} for overview`, `${slashCommand("notifications")} for history`],
     unitLabel: pausedUnitLabel,
   });
   if (ctx) initHealthWidget(ctx);
@@ -2258,7 +2259,7 @@ export function createWiredAutoOrchestrationModule(
           }
           return {
             kind: "fail",
-            reason: gate.reason ?? "Pre-dispatch health check failed — run /gsd doctor for details.",
+            reason: gate.reason ?? `Pre-dispatch health check failed — run ${slashCommand("doctor")} for details.`,
           };
         } catch (error) {
           return { kind: "threw", error };
@@ -2374,14 +2375,14 @@ export function createWiredAutoOrchestrationModule(
 }
 
 function notifyResumeBlocked(ctx: ExtensionContext, result: Extract<AutoAdvanceResult, { kind: "blocked" }>): void {
-  const resumeCmd = s.stepMode ? "/gsd next" : "/gsd auto";
+  const resumeCmd = s.stepMode ? slashCommand("next") : slashCommand("auto");
   ctx.ui.notify(`Auto-mode blocked: ${result.reason}. Fix and run ${resumeCmd} to resume.`, "warning");
   setLifecycleOutcome(ctx, {
     status: "blocked",
     title: "Auto-mode blocked",
     detail: result.reason,
     nextAction: `Fix the blocker, then run ${resumeCmd} to resume.`,
-    commands: ["/gsd status for overview", `${resumeCmd} to resume`, "/gsd doctor to diagnose"],
+    commands: [`${slashCommand("status")} for overview`, `${resumeCmd} to resume`, `${slashCommand("doctor")} to diagnose`],
   });
 }
 

@@ -52,6 +52,7 @@ import { getSlice } from "./gsd-db.js";
 import { getLedger } from "./metrics.js";
 import { getUnitCostSpikeAction } from "./auto-budget.js";
 import { formatPostUnitStatusCard } from "./auto-status-message.js";
+import { slashCommand } from "./strings.js";
 
 export interface VerificationContext {
   s: AutoSession;
@@ -299,10 +300,10 @@ async function runValidateMilestonePostCheck(
     process.stderr.write(
       [
         `validate-milestone: pausing — verdict=needs-attention for ${mid}.`,
-        `Review details with /gsd status.`,
-        `After fixing the issue, run /gsd validate-milestone.`,
-        `To accept the finding, run /gsd verdict pass --rationale "why this is okay".`,
-        `To defer it, run /gsd park ${mid}.`,
+        `Review details with ${slashCommand("status")}.`,
+        `After fixing the issue, run ${slashCommand("validate-milestone")}.`,
+        `To accept the finding, run ${slashCommand("verdict")} pass --rationale "why this is okay".`,
+        `To defer it, run ${slashCommand("park")} ${mid}.`,
         "",
       ].join("\n"),
     );

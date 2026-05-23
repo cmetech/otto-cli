@@ -94,6 +94,7 @@ import { resolveWorktreeProjectRoot } from "./worktree-root.js";
 import { listUnmergedGitPaths } from "./git-conflict-state.js";
 import { runTurnGitAction } from "./git-service.js";
 import { parseUnitId } from "./unit-id.js";
+import { slashCommand } from "./strings.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -319,7 +320,7 @@ function resolveArtifactBasePath(
 function missingSliceStop(mid: string, phase: string): DispatchAction {
   return {
     action: "stop",
-    reason: `${mid}: phase "${phase}" has no active slice — run /gsd doctor.`,
+    reason: `${mid}: phase "${phase}" has no active slice — run ${slashCommand("doctor")}.`,
     level: "error",
   };
 }
@@ -515,7 +516,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
         action: "stop",
         reason:
           state.nextAction ||
-          `${mid}: task escalation awaits user resolution. Run /gsd escalate list to see pending items.`,
+          `${mid}: task escalation awaits user resolution. Run ${slashCommand("escalate list")} to see pending items.`,
         level: "info",
       };
     },
@@ -626,7 +627,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
       if (attempts >= MAX_UAT_ATTEMPTS) {
         return {
           action: "stop" as const,
-          reason: `Cannot dispatch run-uat for ${mid}/${sliceId}: retry limit reached after ${attempts} attempt(s) without a PASS assessment. Fix the underlying UAT/tool issue, reset the retry counter with /gsd doctor --fix, then rerun /gsd auto.`,
+          reason: `Cannot dispatch run-uat for ${mid}/${sliceId}: retry limit reached after ${attempts} attempt(s) without a PASS assessment. Fix the underlying UAT/tool issue, reset the retry counter with ${slashCommand("doctor")} --fix, then rerun ${slashCommand("auto")}.`,
           level: "warning" as const,
         };
       }
@@ -952,7 +953,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
       if (sliceContextFile && existsSync(sliceContextFile)) return null; // discussion already done, proceed
       return {
         action: "stop" as const,
-        reason: `Slice ${state.activeSlice.id} requires discussion before planning (require_slice_discussion is enabled). Run /gsd discuss to discuss this slice, then /gsd auto to resume.`,
+        reason: `Slice ${state.activeSlice.id} requires discussion before planning (require_slice_discussion is enabled). Run ${slashCommand("discuss")} to discuss this slice, then ${slashCommand("auto")} to resume.`,
         level: "warning" as const,
       };
     },
@@ -1141,7 +1142,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
           session.preExecRetryCount?.delete(unitId);
           return {
             action: "stop",
-            reason: `Pre-execution checks failed ${retryCount} times for ${unitId} — manual intervention required. Blocking findings: ${findings}. Fix the plan manually, then run /gsd auto to resume.`,
+            reason: `Pre-execution checks failed ${retryCount} times for ${unitId} — manual intervention required. Blocking findings: ${findings}. Fix the plan manually, then run ${slashCommand("auto")} to resume.`,
             level: "error",
             matchedRule: "planning → plan-slice",
           };
@@ -1489,7 +1490,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
         if (!mDir) {
           return {
             action: "stop",
-            reason: `Cannot skip milestone validation for ${mid}: milestone artifacts are missing under ${artifactBasePath}. Run /gsd doctor before resuming auto-mode.`,
+            reason: `Cannot skip milestone validation for ${mid}: milestone artifacts are missing under ${artifactBasePath}. Run ${slashCommand("doctor")} before resuming auto-mode.`,
             level: "warning",
           };
         }
@@ -1637,7 +1638,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
           if (verdict !== "pass") {
             return {
               action: "stop",
-              reason: `Cannot complete milestone ${mid}: VALIDATION verdict is "${verdict}". Address the validation findings and re-run validation, or run \`/gsd verdict pass --rationale "..."\` to override.`,
+              reason: `Cannot complete milestone ${mid}: VALIDATION verdict is "${verdict}". Address the validation findings and re-run validation, or run \`${slashCommand("verdict")} pass --rationale "..."\` to override.`,
               level: "warning",
             };
           }
@@ -1649,7 +1650,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
       if (missingSlices.length > 0) {
         return {
           action: "stop",
-          reason: `Cannot complete milestone ${mid}: slices ${missingSlices.join(", ")} are missing SUMMARY files. Run /gsd doctor to diagnose.`,
+          reason: `Cannot complete milestone ${mid}: slices ${missingSlices.join(", ")} are missing SUMMARY files. Run ${slashCommand("doctor")} to diagnose.`,
           level: "error",
         };
       }
@@ -1763,7 +1764,7 @@ export async function resolveDispatch(
       action: "stop",
       reason:
         `Dispatch milestone mismatch: context mid "${ctx.mid}" does not match active milestone "${activeMid}". ` +
-        "This usually means a project-level deep setup pseudo-id leaked into milestone dispatch; rerun /gsd auto after setup state is reconciled.",
+        `This usually means a project-level deep setup pseudo-id leaked into milestone dispatch; rerun ${slashCommand("auto")} after setup state is reconciled.`,
       level: "warning",
     };
   }
@@ -1814,7 +1815,7 @@ export async function resolveDispatch(
   // (e.g. after reassessment modifies the roadmap and state needs re-derivation).
   return {
     action: "stop",
-    reason: `Unhandled phase "${ctx.state.phase}" — run /gsd doctor to diagnose.`,
+    reason: `Unhandled phase "${ctx.state.phase}" — run ${slashCommand("doctor")} to diagnose.`,
     level: "warning",
     matchedRule: "<no-match>",
   };

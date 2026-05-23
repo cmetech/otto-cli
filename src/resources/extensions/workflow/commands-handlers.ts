@@ -35,6 +35,7 @@ import {
   restoreGsdWorkflowTools,
   scopeGsdWorkflowToolsForDispatch,
 } from "./bootstrap/register-hooks.js";
+import { BRAND, slashCommand } from "./strings.js";
 
 const UPDATE_REGISTRY_URL = "https://registry.npmjs.org/@opengsd%2fgsd-pi/latest";
 const UPDATE_FETCH_TIMEOUT_MS = 5000;
@@ -142,7 +143,7 @@ export async function handleDoctor(args: string, ctx: ExtensionCommandContext, p
     scope: effectiveScope,
     includeWarnings: mode === "audit",
     maxIssues: mode === "audit" ? 50 : 12,
-    title: mode === "audit" ? "GSD doctor audit." : mode === "heal" ? "GSD doctor heal prep." : undefined,
+    title: mode === "audit" ? `${BRAND} doctor audit.` : mode === "heal" ? `${BRAND} doctor heal prep.` : undefined,
   });
 
   ctx.ui.notify(reportText, report.ok ? "info" : "warning");
@@ -207,7 +208,7 @@ export async function handleCapture(args: string, ctx: ExtensionCommandContext):
   // Strip surrounding quotes from the argument
   let text = args.trim();
   if (!text) {
-    ctx.ui.notify('Usage: /gsd capture "your thought here"', "warning");
+    ctx.ui.notify(`Usage: ${slashCommand('capture')} "your thought here"`, "warning");
     return;
   }
   // Remove wrapping quotes (single or double)
@@ -215,7 +216,7 @@ export async function handleCapture(args: string, ctx: ExtensionCommandContext):
     text = text.slice(1, -1);
   }
   if (!text) {
-    ctx.ui.notify('Usage: /gsd capture "your thought here"', "warning");
+    ctx.ui.notify(`Usage: ${slashCommand('capture')} "your thought here"`, "warning");
     return;
   }
 
@@ -351,7 +352,7 @@ export async function handleKnowledge(args: string, ctx: ExtensionCommandContext
 
   if (!typeArg || !["rule", "pattern", "lesson"].includes(typeArg)) {
     ctx.ui.notify(
-      "Usage: /gsd knowledge <rule|pattern|lesson> <description>\nExample: /gsd knowledge rule Use real DB for integration tests",
+      `Usage: ${slashCommand("knowledge")} <rule|pattern|lesson> <description>\nExample: ${slashCommand("knowledge")} rule Use real DB for integration tests`,
       "warning",
     );
     return;
@@ -359,7 +360,7 @@ export async function handleKnowledge(args: string, ctx: ExtensionCommandContext
 
   const entryText = parts.slice(1).join(" ").trim();
   if (!entryText) {
-    ctx.ui.notify(`Usage: /gsd knowledge ${typeArg} <description>`, "warning");
+    ctx.ui.notify(`Usage: ${slashCommand(`knowledge ${typeArg}`)} <description>`, "warning");
     return;
   }
 
@@ -394,7 +395,7 @@ export async function handleKnowledge(args: string, ctx: ExtensionCommandContext
 export async function handleRunHook(args: string, ctx: ExtensionCommandContext, pi: ExtensionAPI): Promise<void> {
   const parts = args.trim().split(/\s+/);
   if (parts.length < 3) {
-    ctx.ui.notify(`Usage: /gsd run-hook <hook-name> <unit-type> <unit-id>
+    ctx.ui.notify(`Usage: ${slashCommand("run-hook")} <hook-name> <unit-type> <unit-id>
 
 Unit types:
   execute-task   - Task execution (unit-id: M001/S01/T01)
@@ -404,8 +405,8 @@ Unit types:
   complete-milestone - Milestone completion (unit-id: M001)
 
 Examples:
-  /gsd run-hook code-review execute-task M001/S01/T01
-  /gsd run-hook lint-check plan-slice M001/S01`, "warning");
+  ${slashCommand("run-hook")} code-review execute-task M001/S01/T01
+  ${slashCommand("run-hook")} lint-check plan-slice M001/S01`, "warning");
     return;
   }
 

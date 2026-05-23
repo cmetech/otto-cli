@@ -30,6 +30,7 @@ import { resolvePlugin, type WorkflowPlugin } from "./workflow-plugins.js";
 import { currentDirectoryRoot } from "./commands/context.js";
 import { formatRecommendedProcessPaths } from "./process-task-path.js";
 import { incrementLegacyTelemetry } from "./legacy-telemetry.js";
+import { slashCommand } from "./strings.js";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -186,7 +187,7 @@ export async function handleStart(
   if (isAutoActive()) {
     ctx.ui.notify(
       "Cannot start a workflow template while auto-mode is running.\n" +
-      "Run /gsd pause first, then /gsd start.",
+      `Run ${slashCommand("pause")} first, then ${slashCommand("start")}.`,
       "warning",
     );
     return;
@@ -195,7 +196,7 @@ export async function handleStart(
   if (isAutoPaused()) {
     ctx.ui.notify(
       "Auto-mode is paused. Starting a workflow template will run independently.\n" +
-      "The paused auto-mode session can be resumed later with /gsd auto.",
+      `The paused auto-mode session can be resumed later with ${slashCommand("auto")}.`,
       "info",
     );
   }
@@ -264,7 +265,7 @@ export async function handleStart(
         `In-progress workflow found:\n` +
         `  ${wf.templateName}: "${wf.description}"\n` +
         `  Phase ${completedCount + 1}/${wf.phases.length}: ${activePhase?.name ?? "unknown"}\n\n` +
-        `Run /gsd start resume to continue it.\n`,
+        `Run ${slashCommand("start")} resume to continue it.\n`,
         "info",
       );
     }
@@ -306,10 +307,10 @@ export async function handleStart(
       );
     } else if (detected.length > 1) {
       const choices = detected.slice(0, 4).map(
-        (m) => `  /gsd start ${m.id} ${cleanedArgs}`
+        (m) => `  ${slashCommand("start")} ${m.id} ${cleanedArgs}`
       );
       ctx.ui.notify(
-        `Multiple templates could match. Pick one:\n\n${choices.join("\n")}\n\nOr specify explicitly: /gsd start <template> <description>`,
+        `Multiple templates could match. Pick one:\n\n${choices.join("\n")}\n\nOr specify explicitly: ${slashCommand("start")} <template> <description>`,
         "info",
       );
       return;
@@ -320,7 +321,7 @@ export async function handleStart(
   if (!match) {
     if (!trimmed) {
       ctx.ui.notify(
-        "Usage: /gsd start <template> [description]\n\n" +
+        `Usage: ${slashCommand("start")} <template> [description]\n\n` +
         "Templates:\n" +
         "  bugfix          Triage → fix → verify → ship\n" +
         "  small-feature   Scope → plan → implement → verify\n" +
@@ -329,23 +330,23 @@ export async function handleStart(
         "  refactor        Inventory → plan → migrate → verify\n" +
         "  security-audit  Scan → triage → remediate → re-scan\n" +
         "  dep-upgrade     Assess → upgrade → fix → verify\n" +
-        "  full-project    Complete GSD with full ceremony\n\n" +
+        "  full-project    Complete workflow with full ceremony\n\n" +
         "Examples:\n" +
-        "  /gsd start bugfix fix login button not responding\n" +
-        "  /gsd start spike evaluate auth libraries\n" +
-        "  /gsd start hotfix critical: API returns 500\n\n" +
+        `  ${slashCommand("start")} bugfix fix login button not responding\n` +
+        `  ${slashCommand("start")} spike evaluate auth libraries\n` +
+        `  ${slashCommand("start")} hotfix critical: API returns 500\n\n` +
         "Recommended task paths:\n" +
         formatRecommendedProcessPaths() +
         "\n\n" +
         "Flags:\n" +
         "  --dry-run       Preview what would happen without executing\n" +
         "  --issue <ref>   Link to a GitHub issue\n\n" +
-        "Run /gsd templates for detailed template info.",
+        `Run ${slashCommand("templates")} for detailed template info.`,
         "info",
       );
     } else {
       ctx.ui.notify(
-        `No template matched "${firstWord}". Run /gsd start to see available templates.`,
+        `No template matched "${firstWord}". Run ${slashCommand("start")} to see available templates.`,
         "warning",
       );
     }
@@ -410,21 +411,21 @@ export async function handleStart(
     const root = gsdRoot(basePath);
     if (!existsSync(root)) {
       ctx.ui.notify(
-        "Routing to /gsd init for full project setup...",
+        `Routing to ${slashCommand("init")} for full project setup...`,
         "info",
       );
       // Trigger /gsd init by dispatching to the handler
       pi.sendMessage(
         {
           customType: "gsd-workflow-template",
-          content: "The user wants to start a full GSD project. Run `/gsd init` to bootstrap the project, then `/gsd auto` to begin execution.",
+          content: `The user wants to start a full project. Run \`${slashCommand("init")}\` to bootstrap the project, then \`${slashCommand("auto")}\` to begin execution.`,
           display: false,
         },
         { triggerTurn: true },
       );
     } else {
       ctx.ui.notify(
-        "Project already initialized. Use `/gsd auto` to continue or `/gsd discuss` to start a new milestone.",
+        `Project already initialized. Use \`${slashCommand("auto")}\` to continue or \`${slashCommand("discuss")}\` to start a new milestone.`,
         "info",
       );
     }
@@ -537,7 +538,7 @@ export async function handleTemplates(
       ctx.ui.notify(info, "info");
     } else {
       ctx.ui.notify(
-        `Unknown template "${name}". Run /gsd templates to see available templates.`,
+        `Unknown template "${name}". Run ${slashCommand("templates")} to see available templates.`,
         "warning",
       );
     }
@@ -587,7 +588,7 @@ export function dispatchMarkdownPhasePlugin(
   if (isAutoActive()) {
     ctx.ui.notify(
       "Cannot start a markdown-phase workflow while auto-mode is running.\n" +
-      "Run /gsd pause first.",
+      `Run ${slashCommand("pause")} first.`,
       "warning",
     );
     return;

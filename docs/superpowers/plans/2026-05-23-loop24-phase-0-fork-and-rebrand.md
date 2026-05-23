@@ -100,6 +100,8 @@ Expected: commit succeeds with two files (`.gitignore` and the docs).
 
 - [ ] **Step 1: Copy gsd-pi source selectively**
 
+⚠️ **Watch out for the `native/` pattern.** rsync's `--exclude='native/'` matches `native/` at ANY depth, including `packages/native/` which we want to keep. Use the leading-slash form `--exclude='/native/'` to anchor to the source root.
+
 Run:
 ```bash
 cd /Users/coreyellis/Projects/repos/local/loop24-client
@@ -107,20 +109,20 @@ rsync -a \
   --exclude='.git/' \
   --exclude='node_modules/' \
   --exclude='dist/' \
-  --exclude='web/' \
-  --exclude='vscode-extension/' \
-  --exclude='studio/' \
-  --exclude='native/' \
-  --exclude='.plans/' \
-  --exclude='gitbook/' \
-  --exclude='mintlify-docs/' \
+  --exclude='/web/' \
+  --exclude='/vscode-extension/' \
+  --exclude='/studio/' \
+  --exclude='/native/' \
+  --exclude='/.plans/' \
+  --exclude='/gitbook/' \
+  --exclude='/mintlify-docs/' \
   /Users/coreyellis/Projects/repos/local/gsd-pi/ \
   /Users/coreyellis/Projects/repos/local/loop24-client/
 ```
 
-**Note:** `packages/native/` is intentionally NOT excluded. It contains JS wrappers and fallbacks we need.
+**Note:** `packages/native/` is intentionally NOT excluded — it contains JS wrappers and fallbacks we need. The leading `/` on the directory excludes prevents `native/` from also matching `packages/native/`.
 
-Expected: completes silently. Verify with `ls` — should show `package.json`, `src/`, `packages/` (including `packages/native/`), `scripts/`, etc.
+Expected: completes silently. Verify with `ls packages/` — should include `native/`.
 
 - [ ] **Step 2: Confirm correct dirs were dropped, correct ones were kept**
 
@@ -159,17 +161,29 @@ cd /Users/coreyellis/Projects/repos/local/loop24-client
 grep '@opengsd/engine' package.json && echo "FAIL: @opengsd/engine-* entries still present" || echo "OK: all @opengsd/engine-* entries removed"
 ```
 
-- [ ] **Step 5: Remove the `build:native-pkg` step from the root build script**
+- [ ] **Step 5: Trim build script orchestration for the dropped subsystems**
 
-The root `package.json` has a `build:pi` or `build` script that includes `build:native-pkg` — this attempts to compile the Rust source from `native/` which we just dropped. Find that step and remove it.
+The root `package.json` has scripts that reference dropped subsystems. There are TWO distinct native-related script names that are easy to confuse — be precise:
+
+| Script | What it does | Action |
+|---|---|---|
+| `build:native-pkg` | Runs `tsc` inside `packages/native/` (TypeScript build for the JS wrappers we KEEP) | **KEEP** — required; downstream packages import from `packages/native/dist/`. |
+| `build:native` / `build:native:dev` | Runs `node native/scripts/build.js` (Rust compilation) | **Orphan now** — points at deleted `native/` dir. Leave entries in `package.json` for now (Phase 0 doesn't invoke them); cleanup is out of scope. |
+| `build:web-if-stale` (or `node scripts/build-web-if-stale.cjs` inline in `build`) | Runs `npm --prefix web ci` then `npm run build` in `web/` | **REMOVE** from any pipeline script that calls it — `web/` is dropped, the script will fail. |
 
 Inspect:
 ```bash
 cd /Users/coreyellis/Projects/repos/local/loop24-client
-grep -E '"build|"build:' package.json | head -20
+grep -nE '"build|"build:' package.json
 ```
 
-Find any script that runs `build:native-pkg` or `npm run -w @gsd/native build:native` or similar and edit it out. The TypeScript build inside `packages/native/` is fine and should remain — only the Rust-compilation step is removed.
+In the `"build"` script, remove the `&& node scripts/build-web-if-stale.cjs` suffix (or any equivalent `build:web-if-stale` invocation). The result should be something like `"build": "npm run build:core"`.
+
+Verify with:
+```bash
+cd /Users/coreyellis/Projects/repos/local/loop24-client
+grep '"build"' package.json | grep -v build-web && echo "OK: web build step removed" || echo "FAIL: web build step still present"
+```
 
 - [ ] **Step 6: Install dependencies**
 

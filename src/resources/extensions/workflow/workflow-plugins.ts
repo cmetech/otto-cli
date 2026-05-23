@@ -58,7 +58,7 @@ function resolveBundledDir(): string {
   const moduleDir = dirname(fileURLToPath(import.meta.url));
   const local = join(moduleDir, "workflow-templates");
   if (existsSync(local)) return local;
-  const agentGsdDir = join(gsdHome(), "agent", "extensions", "gsd", "workflow-templates");
+  const agentGsdDir = join(gsdHome(), "agent", "extensions", "workflow", "workflow-templates");
   if (existsSync(agentGsdDir)) return agentGsdDir;
   return local;
 }

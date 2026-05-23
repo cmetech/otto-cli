@@ -50,13 +50,13 @@ export function resolveBundledGsdExtensionModule(
   const packageRoot = resolvePackageRoot(importUrl);
   const distResources = join(packageRoot, "dist", "resources");
   const jsFile = moduleFile.replace(/\.ts$/, ".js");
-  const distModule = join(distResources, "extensions", "gsd", jsFile);
+  const distModule = join(distResources, "extensions", "workflow", jsFile);
   if (hasCompleteBundledResources(distResources, fileExists) && fileExists(distModule)) {
     return distModule;
   }
 
   const tsFile = moduleFile.replace(/\.js$/, ".ts");
-  return join(packageRoot, "src", "resources", "extensions", "gsd", tsFile);
+  return join(packageRoot, "src", "resources", "extensions", "workflow", tsFile);
 }
 
 /**

@@ -64,7 +64,7 @@ export function resolveExtensionDirFromCandidates(
  */
 function resolveExtensionDir(): string {
   const moduleDir = dirname(fileURLToPath(import.meta.url));
-  const agentGsdDir = join(gsdHome(), "agent", "extensions", "gsd");
+  const agentGsdDir = join(gsdHome(), "agent", "extensions", "workflow");
   return resolveExtensionDirFromCandidates(moduleDir, agentGsdDir);
 }
 

@@ -124,13 +124,13 @@ export function saveConfig(cfg: Loop24Config): void {
 // ─── Env propagation (module side effect) ─────────────────────────────────────
 
 /**
- * Populate process.env from config.json for any env var that is unset.
- * Env always wins — we never overwrite an existing process.env entry.
+ * Populate process.env from a Loop24Config for any env var that is currently
+ * unset. Env always wins — never overwrites an existing process.env entry.
  *
- * This is the seam that lets the rest of the codebase keep using env-var
- * reads while gaining config-file fallback "for free".
+ * Called at module load (with loadConfig() result) and also by the wizard
+ * after saveConfig() so the CURRENT process picks up freshly-written values.
  */
-function applyConfigToEnv(cfg: Loop24Config): void {
+export function applyConfigToEnv(cfg: Loop24Config): void {
   if (!process.env.LOOP24_GATEWAY_URL?.trim() && cfg.gateway.url) {
     process.env.LOOP24_GATEWAY_URL = cfg.gateway.url
   }

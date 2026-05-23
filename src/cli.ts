@@ -13,6 +13,7 @@ import { loadStoredEnvKeys } from './wizard.js'
 import { migratePiCredentials } from './pi-migration.js'
 import { shouldRunOnboarding, runOnboarding } from './onboarding.js'
 import { runLoop24Wizard, shouldRunLoop24Wizard } from './loop24-wizard.js'
+import { applyConfigToEnv } from './loop24-config.js'
 import chalk from 'chalk'
 import { checkForUpdates } from './update-check.js'
 import { shouldBypassManagedResourceMismatchGate } from './cli-policy.js'
@@ -335,6 +336,7 @@ const subcommandsExemptFromEarlyTtyCheck = new Set([
   'list',
   'remove',
   'sessions',
+  'setup',
   'update',
   'upgrade',
   'web',
@@ -376,7 +378,8 @@ if (cliFlags.messages[0] === 'config') {
 // and exit. Distinct from `loop24 config` (LLM auth wizard) — both subcommands
 // re-trigger the corresponding first-run flow.
 if (cliFlags.messages[0] === 'setup') {
-  await runLoop24Wizard()
+  const saved = await runLoop24Wizard()
+  if (saved) applyConfigToEnv(saved)
   process.exit(0)
 }
 
@@ -583,7 +586,11 @@ markStartup('SettingsManager.create')
 // and persists with mode 0600. Env vars still win at runtime, so CI is
 // unaffected.
 if (shouldRunLoop24Wizard({ isPrint: isPrintMode, isTTY: !!process.stdin.isTTY })) {
-  await runLoop24Wizard()
+  const saved = await runLoop24Wizard()
+  // Propagate wizard-saved config into the current process's env so the
+  // subsequent LLM-auth wizard and agent loop see the new values immediately
+  // (the module-load side effect ran before the user wrote the config).
+  if (saved) applyConfigToEnv(saved)
 
   // Same stdin cleanup pattern runOnboarding uses — clack leaves listeners
   // and may leave stdin paused.

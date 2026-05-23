@@ -570,25 +570,12 @@ export function getThemeByName(name: string): Theme | undefined {
 	}
 }
 
-function detectTerminalBackground(): "dark" | "light" {
-	const colorfgbg = process.env.COLORFGBG || "";
-	if (colorfgbg) {
-		const parts = colorfgbg.split(";");
-		if (parts.length >= 2) {
-			const bg = parseInt(parts[1], 10);
-			if (!Number.isNaN(bg)) {
-				const result = bg < 8 ? "dark" : "light";
-				return result;
-			}
-		}
-	}
-	return "dark";
-}
-
 function getDefaultTheme(): string {
 	// LOOP24 fork: brand-default theme regardless of terminal background.
 	// Users can still opt into "dark", "light", "tui-classic", or "vivid"
-	// via /theme; this only sets the initial active theme.
+	// via /theme; this only sets the initial active theme. The previous
+	// detectTerminalBackground() heuristic (COLORFGBG env-var based) was
+	// removed alongside this change — see commit history.
 	return "loop24";
 }
 

@@ -445,8 +445,11 @@ unchanged."
 ## Task 5: Template the top-level slash command registration
 
 **Files:**
-- Modify: `src/resources/extensions/workflow/commands-bootstrap.ts:273`
-- Create: integration smoke test
+- Modify: `src/resources/extensions/workflow/commands/index.ts:5-6` (the live `registerGSDCommand` function — called from `workflow/index.ts:22` at extension load)
+- Modify: `packages/pi-coding-agent/src/index.ts` (re-export `COMMAND_NAMESPACE` so the workflow extension can import it from the bare module name `@gsd/pi-coding-agent`)
+- Modify: test files that assert the literal `"gsd"` via `pi.commands.get("gsd")` — at least `src/resources/extensions/workflow/tests/update-command.test.ts` and `src/resources/extensions/workflow/tests/autocomplete-regressions-1675.test.ts`. Replace with `pi.commands.get(COMMAND_NAMESPACE)`.
+
+**DO NOT touch `commands-bootstrap.ts:273` (the `registerLazyGSDCommand` function).** It is dead code — no callers — and templating it has zero functional effect on the user-visible command name. Note its dead-code status in LOOP24-PATCHES.md (Task 9).
 
 - [ ] **Step 1: Inspect the current registration**
 

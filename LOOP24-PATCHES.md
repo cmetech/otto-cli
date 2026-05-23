@@ -269,6 +269,28 @@ grep and are scheduled for a Phase 0.6 sweep:
 - `src/resources/extensions/workflow/commands-inspect.ts` — `/gsd inspect failed: …` warning prefix.
 - `src/resources/extensions/workflow/memory-relations.ts` — `/gsd memory link` comment-only reference (safe to leave).
 
+## Phase 1 — Gateway routing (tagged: phase-1-gateway-routing)
+
+### src/brand.ts
+- Exports `LOOP24_GATEWAY_URL` and `LOOP24_GATEWAY_TOKEN` read from env vars (whitespace-trim → undefined).
+
+### packages/pi-ai/src/providers/anthropic.ts
+- New env-var branch at the top of `buildAnthropicClientOptions`: when `LOOP24_GATEWAY_URL` is set, returns gateway-shaped options (baseURL → gateway, apiKey null, authToken from LOOP24_GATEWAY_TOKEN or fallback to apiKey). Existing direct-to-Anthropic behavior unchanged when env var unset.
+
+### packages/pi-ai/src/providers/anthropic.gateway.test.ts (NEW)
+- 6 unit tests covering: direct path when unset, gateway routing when set, bearer token usage, apiKey fallback, model.headers passthrough, whitespace-only URL treated as unset.
+
+### src/tests/integration/loop24-gateway.test.ts (NEW)
+- 2 integration tests using an in-process node:http mock — verify options shape AND that fetch through the mock with the bearer header round-trips correctly (offline-deterministic, no real API key needed).
+
+### scripts/dev-gateway/ (NEW)
+- `server.js` — transparent HTTP proxy to api.anthropic.com. Strips client Authorization header, injects x-api-key from `ANTHROPIC_API_KEY`. `/health` endpoint for the connection probe. Stand-in for the real loop24-gateway's `SURF-V2-01` Anthropic surface until that team ships it.
+- `README.md` — usage docs.
+
+### src/resources/extensions/loop24/extension-manifest.json (NEW)
+### src/resources/extensions/loop24/index.ts (NEW)
+- Scaffolded the loop24 extension. `session_start` hook probes `LOOP24_GATEWAY_URL/health` with 1500ms timeout and emits `gateway: routed → <host>` (or `unreachable`, or `direct`) status line in brand colors after the loader banner. Phase 3 will extend this with flow-trigger loading.
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`

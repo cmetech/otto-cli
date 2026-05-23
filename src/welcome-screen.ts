@@ -1,8 +1,8 @@
-// Project/App: GSD-2
-// File Purpose: Startup welcome screen rendering for the GSD terminal experience.
+// Project/App: LOOP24
+// File Purpose: Startup welcome screen rendering for the LOOP24 terminal experience.
 
 /**
- * GSD Welcome Screen
+ * LOOP24 Welcome Screen
  *
  * Command-center layout: compact block logo, project
  * state, primary action, branch/workspace, and secondary hints.
@@ -14,15 +14,15 @@ import { join } from 'node:path'
 import os from 'node:os'
 import chalk from 'chalk'
 import stripAnsi from 'strip-ansi'
-import { BRAND_NAME, BRAND_TAGLINE } from './brand.js'
+import { BRAND_NAME, BRAND_TAGLINE, COMMAND_NAMESPACE, CONFIG_DIR_NAME } from './brand.js'
 
-const OGSD_LOGO: readonly string[] = [
-  '  ██████╗  ██████╗ ███████╗██████╗ ',
-  ' ██╔═══██╗██╔════╝ ██╔════╝██╔══██╗',
-  ' ██║   ██║██║  ███╗███████╗██║  ██║',
-  ' ██║   ██║██║   ██║╚════██║██║  ██║',
-  ' ╚██████╔╝╚██████╔╝███████║██████╔╝',
-  '  ╚═════╝  ╚═════╝ ╚══════╝╚═════╝ ',
+const LOOP24_LOGO: readonly string[] = [
+  '██╗      ██████╗  ██████╗ ██████╗ ██████╗ ██╗  ██╗',
+  '██║     ██╔═══██╗██╔═══██╗██╔══██╗╚════██╗██║  ██║',
+  '██║     ██║   ██║██║   ██║██████╔╝ █████╔╝███████║',
+  '██║     ██║   ██║██║   ██║██╔═══╝ ██╔═══╝ ╚════██║',
+  '███████╗╚██████╔╝╚██████╔╝██║     ███████╗     ██║',
+  '╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚══════╝     ╚═╝',
 ]
 
 interface GsdState {
@@ -34,7 +34,7 @@ interface GsdState {
 
 function readGsdState(): GsdState | undefined {
   try {
-    const raw = readFileSync(join(process.cwd(), '.gsd', 'STATE.md'), 'utf-8')
+    const raw = readFileSync(join(process.cwd(), CONFIG_DIR_NAME, 'STATE.md'), 'utf-8')
     const state: GsdState = {}
     const milestone = raw.match(/^\*\*Active Milestone:\*\*\s*(.+)$/m)
     if (milestone) state.milestone = milestone[1].trim()
@@ -57,7 +57,7 @@ function readGsdState(): GsdState | undefined {
 function countMcpServers(): number {
   const configPaths = [
     join(process.cwd(), '.mcp.json'),
-    join(process.cwd(), '.gsd', 'mcp.json'),
+    join(process.cwd(), CONFIG_DIR_NAME, 'mcp.json'),
   ]
   const seen = new Set<string>()
   for (const p of configPaths) {
@@ -134,7 +134,7 @@ export function buildWelcomeScreenLines(opts: WelcomeScreenOptions): string[] {
   if (remoteChannel)                  toolParts.push(`${remoteChannel.charAt(0).toUpperCase() + remoteChannel.slice(1)} ✓`)
 
   const innerWidth = Math.max(1, termWidth - 2)
-  const logoWidth = Math.max(...OGSD_LOGO.map((line) => visLen(line)))
+  const logoWidth = Math.max(...LOOP24_LOGO.map((line) => visLen(line)))
   // Plain spaces, not a `│` divider — a vertical bar would be dragged into
   // every copied logo row.
   const divider = '   '
@@ -143,18 +143,18 @@ export function buildWelcomeScreenLines(opts: WelcomeScreenOptions): string[] {
     return ['', `  ${BRAND_NAME} v${version} — ${BRAND_TAGLINE}`, `  ${shortCwd}`, '']
   }
 
-  // "Welcome back" context lines — GSD state if available, else hint.
+  // "Welcome back" context lines — project state if available, else hint.
   // Intentionally avoids data already shown in the footer (model, provider,
   // pwd, branch).
   const state = readGsdState()
-  let projectText = 'No active GSD project'
-  let commandText = '/gsd start'
+  let projectText = `No active ${BRAND_NAME} project`
+  let commandText = `/${COMMAND_NAMESPACE} start`
   let modeText = 'manual'
   if (state?.milestone) {
     const statusParts = [state.milestone, state.phase, state.slice].filter(Boolean)
     projectText = statusParts.join(' · ')
     const maxActionWidth = Math.max(10, panelWidth - 30)
-    commandText = state.nextAction ? clampVisible(state.nextAction, maxActionWidth) : '/gsd next'
+    commandText = state.nextAction ? clampVisible(state.nextAction, maxActionWidth) : `/${COMMAND_NAMESPACE} next`
     modeText = state.phase ?? 'active'
   }
 
@@ -169,23 +169,23 @@ export function buildWelcomeScreenLines(opts: WelcomeScreenOptions): string[] {
   const value = (s: string) => chalk.hex('#dce4f2')(s)
   const accent = (s: string) => chalk.hex('#8db7ff')(s)
   const panelRows = [
-    rightAlign(`${accent('GSD')} ${chalk.bold(value('Project Console'))}`, chalk.dim(`v${version}`), panelWidth),
+    rightAlign(`${accent(BRAND_NAME)} ${chalk.bold(value('Project Console'))}`, chalk.dim(`v${version}`), panelWidth),
     rightAlign(`${label('Project')} ${value(projectText)}`, `${label('Command')} ${accent(commandText)}`, panelWidth),
     rightAlign(`${label('Workspace')} ${value(shortCwd)}`, `${label('Mode')} ${value(modeText)}`, panelWidth),
     rightAlign(`${label('MCP')} ${chalk.dim(mcpText)}`, `${label('Status')} ${value(state?.milestone ? 'active' : 'idle')}`, panelWidth),
-    rightAlign(`${label('Next')} ${accent('/gsd to begin')}`, `${label('Setup')} ${accent('/gsd start')}`, panelWidth),
-    rightAlign(chalk.dim('/gsd templates'), chalk.dim('/gsd help'), panelWidth),
+    rightAlign(`${label('Next')} ${accent(`/${COMMAND_NAMESPACE} to begin`)}`, `${label('Setup')} ${accent(`/${COMMAND_NAMESPACE} start`)}`, panelWidth),
+    rightAlign(chalk.dim(`/${COMMAND_NAMESPACE} templates`), chalk.dim(`/${COMMAND_NAMESPACE} help`), panelWidth),
   ]
 
   // ── Render ──────────────────────────────────────────────────────────────────
   // No outer box: logo + panel are indented, with a single closing rule. Every
   // content line is plain text, so terminal selection copies cleanly.
   const out: string[] = ['']
-  for (let i = 0; i < OGSD_LOGO.length; i++) {
-    const logo = rpad(chalk.hex('#a7ba78')(OGSD_LOGO[i]), logoWidth)
+  for (let i = 0; i < LOOP24_LOGO.length; i++) {
+    const logo = rpad(chalk.hex('#FAD22D')(LOOP24_LOGO[i]), logoWidth)
     out.push('  ' + clampVisible(`${logo}${divider}${panelRows[i] ?? ''}`, termWidth - 2))
   }
-  out.push(chalk.hex('#a7ba78')('─'.repeat(Math.max(0, termWidth))))
+  out.push(chalk.hex('#FAD22D')('─'.repeat(Math.max(0, termWidth))))
   out.push('')
 
   return out.map((line) => clampVisible(line, termWidth))

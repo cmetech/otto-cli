@@ -196,6 +196,20 @@ These plan corrections are documented in `/docs/superpowers/plans/2026-05-23-loo
 #### src/welcome-screen.ts
 - Replaced two `Get Shit Done v${version}` strings (narrow-terminal and panel-too-thin fallbacks) with `${BRAND_NAME} v${version} — ${BRAND_TAGLINE}` (matches loader banner tagline). Brand strings read from `src/brand.ts`. The block-letter ASCII variable `OGSD_LOGO`, the file header comments, `GsdState`/`readGsdState`/`.gsd/STATE.md` references, and the `GSD` accent label on the panel header are still in place — they belong to the broader welcome-screen rebrand effort tracked in deferred cleanups.
 
+#### src/welcome-screen.ts (second pass)
+- `OGSD_LOGO` ASCII art (renamed to `LOOP24_LOGO`) replaced with LOOP24 block letters; color changed from olive `#a7ba78` to brand yellow `#FAD22D` (logo block + closing rule).
+- Panel header `accent('GSD')`, `"No active GSD project"` copy, and `/gsd <sub>` command references now read from `BRAND_NAME` / `COMMAND_NAMESPACE`.
+- `.gsd/STATE.md` and `.gsd/mcp.json` path references now use `CONFIG_DIR_NAME` so state lives under `.loop24/` per `piConfig.configDir`. **Migration note:** users with existing `.gsd/STATE.md` in their project directories will appear as "No active LOOP24 project" until they migrate (no automatic migration performed — this is per-project state, not user-global config).
+- File header comments updated from `GSD-2` / "GSD terminal experience" / "GSD Welcome Screen" to LOOP24 prose.
+- `GsdState` interface and `readGsdState()` function name intentionally left — internal identifiers, out of scope.
+
+#### src/onboarding.ts (second pass)
+- `[gsd]` log prefixes (line ~129 throw, line ~297 stderr fallback) → `[${COMMAND_NAMESPACE}]`.
+- Step labels and skip-hints referencing `/login inside GSD`, `/search-provider inside GSD`, `/gsd remote inside GSD`, `/gsd onboarding --resume`, `/gsd onboarding`, `/model … inside GSD`, plus Discord-channel warnings (`/gsd remote discord`), the Telegram connection-confirmation text (`GSD remote questions connected.`), the remote-questions prompt copy, the Discord channel-selection prompt, the outro (`Launching GSD...`) — all templated through `BRAND_NAME` / `COMMAND_NAMESPACE`. Comments, type names, and `@gsd/pi-coding-agent` package import stay.
+
+#### src/tests/initial-gsd-header-filter.test.ts (DELETED)
+- Test imported `../../web/lib/initial-gsd-header-filter.ts`, but `web/` was deliberately dropped during the initial fork import (see Initial Source Import section above). The test was a dead orphan — it has never passed in this fork, since the module it tests doesn't exist. Deleted rather than papered over.
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`

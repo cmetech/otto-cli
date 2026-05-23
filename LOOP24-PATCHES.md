@@ -512,10 +512,14 @@ Three scripts reference the deleted `native/` Rust directory and are never calle
 
 These scripts remain in the file but would fail if invoked. Scheduled for removal in a future cleanup sweep.
 
-### 3. piConfig Duplication: Root `package.json` and `packages/pi-coding-agent/package.json`
-**Location:** Both files have identical `piConfig` blocks
+### 3. piConfig Triplication: Root `package.json`, `packages/pi-coding-agent/package.json`, AND `pkg/package.json`
+**Locations:** All three files carry a `piConfig` block
 
-Both packages carry an identical configuration block. The workspace-package version wins at runtime because `getPackageDir()` walks up from `__dirname` and finds it first. Both files have a `_comment` field documenting this. Future cleanup: extract to a shared configuration loader or add CI parity check to ensure they stay in sync.
+Three places must stay in sync. The truly load-bearing one is `pkg/package.json` — `src/loader.ts:84-88` explicitly sets `process.env.PI_PACKAGE_DIR=pkg/`, which short-circuits `getPackageDir()` in pi-coding-agent's `config.js` and forces it to read `pkg/package.json` regardless of where the import resolves from. The workspace-package's piConfig and the root piConfig are only used when `PI_PACKAGE_DIR` is unset (e.g., running tests / standalone imports, not when running the `loop24` binary).
+
+A Phase 2c bug surfaced from this: `pkg/package.json` was left with the original gsd-pi piConfig (`name: "gsd"`, `configDir: ".gsd"`, no `commandNamespace`/`brandName`) after the fork. At TUI runtime, `getPackageDir()` returned `pkg/`, `COMMAND_NAMESPACE` fell back to `APP_NAME = "gsd"`, and every `pi.registerCommand(COMMAND_NAMESPACE, ...)` in the workflow extension registered under the literal name `"gsd"` — making `/loop24 status` return "Unknown command" while `/gsd` showed up in autocomplete but had no working dispatch. Fixed at commit `1ffe53c` (Phase 2c follow-up): aligned all three piConfigs to `{ name: "loop24", configDir: ".loop24", commandNamespace: "loop24", brandName: "LOOP24" }`.
+
+Future cleanup: collapse to one source of truth (generate the other two from one canonical file, or remove the `pkg/` shim entirely if the loader can read from the workspace package). Until then, **any piConfig edit must update all three files in lockstep**. A CI parity check would catch drift cheaply.
 
 ### 4. Loop24 Signal Theme: JSON ↔ TS Const Duplication
 **Location:** 

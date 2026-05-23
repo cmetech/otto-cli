@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { COMMAND_NAMESPACE } from "@gsd/pi-coding-agent";
+
 import { registerGSDCommand } from "../commands.ts";
 import { handleGSDCommand } from "../commands/dispatcher.ts";
 
@@ -36,8 +38,8 @@ test("/gsd description includes discuss", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
-  assert.ok(gsd, "registerGSDCommand should register /gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
+  assert.ok(gsd, `registerGSDCommand should register /${COMMAND_NAMESPACE}`);
   assert.ok(
     gsd.description.includes("discuss"),
     "description should include discuss",
@@ -48,7 +50,7 @@ test("/gsd description includes debug", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
   assert.ok(gsd.description.includes("debug"), "description should include debug");
 });
 
@@ -56,7 +58,7 @@ test("/gsd next completions include --debug", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("next ");
   const debug = completions.find((c: any) => c.value === "next --debug");
   assert.ok(debug, "next --debug should appear in completions");
@@ -66,7 +68,7 @@ test("/gsd debug completions include list|status|continue|--diagnose", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("debug ");
   const values = completions.map((c: any) => c.value);
   for (const expected of ["debug list", "debug status", "debug continue", "debug --diagnose"]) {
@@ -78,7 +80,7 @@ test("/gsd widget completions include full|small|min|off", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("widget ");
   const values = completions.map((c: any) => c.value);
   for (const expected of ["widget full", "widget small", "widget min", "widget off"]) {
@@ -90,7 +92,7 @@ test("/gsd logs completions still include debug after adding /gsd debug", () => 
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("logs ");
   const values = completions.map((c: any) => c.value);
   assert.ok(values.includes("logs debug"), "logs debug completion should remain available");

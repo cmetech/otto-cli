@@ -1,9 +1,9 @@
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import { COMMAND_NAMESPACE, type ExtensionAPI, type ExtensionCommandContext } from "@gsd/pi-coding-agent";
 
 import { GSD_COMMAND_DESCRIPTION, getGsdArgumentCompletions } from "./catalog.js";
 
 export function registerGSDCommand(pi: ExtensionAPI): void {
-  pi.registerCommand("gsd", {
+  pi.registerCommand(COMMAND_NAMESPACE, {
     description: GSD_COMMAND_DESCRIPTION,
     getArgumentCompletions: getGsdArgumentCompletions,
     handler: async (args: string, ctx: ExtensionCommandContext) => {

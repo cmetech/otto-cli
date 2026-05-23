@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { COMMAND_NAMESPACE } from "@gsd/pi-coding-agent";
+
 import { registerGSDCommand } from "../commands.ts";
 import { handleOpsCommand } from "../commands/handlers/ops.ts";
 
@@ -36,8 +38,8 @@ test("/gsd update appears in subcommand completions", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
-  assert.ok(gsd, "registerGSDCommand should register /gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
+  assert.ok(gsd, `registerGSDCommand should register /${COMMAND_NAMESPACE}`);
 
   const completions = gsd.getArgumentCompletions("update");
   const updateEntry = completions.find((c: any) => c.value === "update");
@@ -49,8 +51,8 @@ test("/gsd upgrade appears in subcommand completions", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
-  assert.ok(gsd, "registerGSDCommand should register /gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
+  assert.ok(gsd, `registerGSDCommand should register /${COMMAND_NAMESPACE}`);
 
   const completions = gsd.getArgumentCompletions("upgrade");
   const upgradeEntry = completions.find((c: any) => c.value === "upgrade");
@@ -62,7 +64,7 @@ test("/gsd update appears in help description", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
   assert.ok(gsd?.description?.includes("update"), "description should mention update");
 });
 
@@ -70,7 +72,7 @@ test("/gsd upgrade appears in help description", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
   assert.ok(gsd?.description?.includes("upgrade"), "description should mention upgrade");
 });
 
@@ -78,7 +80,7 @@ test("/gsd update is listed in completions with correct description", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("");
   const updateEntry = completions.find((c: any) => c.value === "update");
   assert.ok(updateEntry, "update should appear in full completion list");
@@ -118,7 +120,7 @@ test("/gsd upgrade is listed in completions with correct description", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("");
   const upgradeEntry = completions.find((c: any) => c.value === "upgrade");
   assert.ok(upgradeEntry, "upgrade should appear in full completion list");
@@ -132,7 +134,7 @@ test("/gsd codebase appears in top-level completions", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("code");
   const codebaseEntry = completions.find((c: any) => c.value === "codebase");
   assert.ok(codebaseEntry, "codebase should appear in completions");
@@ -143,6 +145,6 @@ test("/gsd codebase appears in help description", () => {
   const pi = createMockPi();
   registerGSDCommand(pi as any);
 
-  const gsd = pi.commands.get("gsd");
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
   assert.ok(gsd?.description?.includes("codebase"), "description should mention codebase");
 });

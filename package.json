@@ -17,9 +17,7 @@
     "extensions/*"
   ],
   "bin": {
-    "gsd": "dist/loader.js",
-    "gsd-cli": "dist/loader.js",
-    "gsd-pi": "scripts/install.js"
+    "loop24": "dist/loader.js"
   },
   "files": [
     "dist",

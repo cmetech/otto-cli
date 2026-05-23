@@ -1,4 +1,4 @@
-import { importExtensionModule, type ExtensionAPI, type ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import { importExtensionModule, type ExtensionAPI, type ExtensionCommandContext, COMMAND_NAMESPACE } from "@gsd/pi-coding-agent";
 import { VISUAL_BRIEF_MODES } from "../visual-brief/prompts.js";
 
 const TOP_LEVEL_SUBCOMMANDS = [
@@ -270,7 +270,7 @@ function getGsdArgumentCompletions(prefix: string) {
 }
 
 export function registerLazyGSDCommand(pi: ExtensionAPI): void {
-  pi.registerCommand("gsd", {
+  pi.registerCommand(COMMAND_NAMESPACE, {
     description: "GSD — Get Shit Done",
     getArgumentCompletions: getGsdArgumentCompletions,
     handler: async (args: string, ctx: ExtensionCommandContext) => {

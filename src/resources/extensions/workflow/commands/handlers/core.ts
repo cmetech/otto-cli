@@ -4,7 +4,7 @@ import type { GSDState } from "../../types.js";
 import { createRequire } from "node:module";
 
 import { computeProgressScore, formatProgressLine } from "../../progress-score.js";
-import { loadEffectiveGSDPreferences, getGlobalGSDPreferencesPath, getProjectGSDPreferencesPath } from "../../preferences.js";
+import { getGlobalGSDPreferencesPath, getProjectGSDPreferencesPath } from "../../preferences.js";
 import { ensurePreferencesFile, handlePrefs, handlePrefsMode, handlePrefsWizard, handleLanguage } from "../../commands-prefs-wizard.js";
 import { runEnvironmentChecks } from "../../doctor-environment.js";
 import { deriveState } from "../../state.js";

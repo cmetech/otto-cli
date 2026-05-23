@@ -184,7 +184,11 @@ export async function probeGateway(url: string, timeoutMs = 2000): Promise<Probe
     if (res.ok) return { ok: true }
     return { ok: false, reason: `${res.status} ${res.statusText}` }
   } catch (err) {
-    return { ok: false, reason: (err as Error).message }
+    const e = err as Error & { name?: string }
+    const reason = e.name === "AbortError"
+      ? `timed out after ${timeoutMs}ms`
+      : e.message
+    return { ok: false, reason }
   } finally {
     clearTimeout(timer)
   }
@@ -207,7 +211,11 @@ export async function probeLangflow(url: string, timeoutMs = 2000, apiKey?: stri
     const body = (await res.json()) as { version?: string }
     return { ok: true, version: body.version }
   } catch (err) {
-    return { ok: false, reason: (err as Error).message }
+    const e = err as Error & { name?: string }
+    const reason = e.name === "AbortError"
+      ? `timed out after ${timeoutMs}ms`
+      : e.message
+    return { ok: false, reason }
   } finally {
     clearTimeout(timer)
   }

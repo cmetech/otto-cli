@@ -292,3 +292,17 @@ test("probeLangflow forwards apiKey as x-api-key header", async () => {
     },
   )
 })
+
+test("probeGateway timeout reason includes the configured timeoutMs", async () => {
+  // Spin up a server that never responds — forces the abort path.
+  await withMockServer(
+    (_req, _res) => {
+      // intentionally do not call res.end() — server hangs
+    },
+    async (url) => {
+      const result = await probeGateway(url, 100)
+      assert.equal(result.ok, false)
+      assert.ok(result.reason && result.reason.includes("100ms"), `reason should include timeoutMs, got: ${result.reason}`)
+    },
+  )
+})

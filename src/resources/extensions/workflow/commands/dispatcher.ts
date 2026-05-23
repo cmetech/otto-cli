@@ -3,6 +3,7 @@
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
 
+import { slashCommand } from "../strings.js";
 import { GSDNoProjectError, projectRoot, withCommandCwd } from "./context.js";
 import { handleAutoCommand } from "./handlers/auto.js";
 import { handleCoreCommand } from "./handlers/core.js";
@@ -97,5 +98,8 @@ export async function handleGSDCommand(
     return;
   }
 
-  ctx.ui.notify(`Unknown: /gsd ${trimmed}. Run /gsd help for available commands.`, "warning");
+  ctx.ui.notify(
+    `Unknown: ${slashCommand(trimmed)}. Run ${slashCommand("help")} for available commands.`,
+    "warning",
+  );
 }

@@ -5,6 +5,7 @@ import { COMMAND_NAMESPACE } from "@gsd/pi-coding-agent";
 
 import { registerGSDCommand } from "../commands.ts";
 import { handleGSDCommand } from "../commands/dispatcher.ts";
+import { slashCommand } from "../strings.ts";
 
 function createMockPi() {
   const commands = new Map<string, any>();
@@ -104,7 +105,9 @@ test("/gsd help full includes /gsd debug command", async () => {
   await handleGSDCommand("help full", ctx as any, {} as any);
 
   const helpText = ctx.notifications.map((n) => n.message).join("\n");
-  assert.match(helpText, /\/gsd debug\s+Create\/list\/continue persistent debug sessions/);
+  // Escape regex special chars in the slashCommand reference so this works for any namespace.
+  const debugRef = slashCommand("debug").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  assert.match(helpText, new RegExp(`${debugRef}\\s+Create\\/list\\/continue persistent debug sessions`));
 });
 
 test("bare /gsd skip shows usage and does not fall through to unknown-command warning", async () => {

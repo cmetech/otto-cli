@@ -19,7 +19,13 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 
+import { COMMAND_NAMESPACE } from "@gsd/pi-coding-agent";
+
 import registerExtension from "../index.ts";
+
+// The top-level slash command is registered under COMMAND_NAMESPACE
+// (e.g. "loop24"), not the historical literal "gsd".
+const ROOT_CMD = COMMAND_NAMESPACE;
 
 type RegisterFn = (name: string, def: unknown) => void;
 
@@ -45,28 +51,24 @@ function makePi(overrides: Partial<Record<string, unknown>> = {}) {
 }
 
 describe("extension bootstrap isolation (#4168, #4172)", () => {
-  test("happy path: /gsd command is registered", async () => {
+  test(`happy path: /${COMMAND_NAMESPACE} command is registered`, async () => {
     const { pi, registered } = makePi();
     await registerExtension(pi as any);
     const names = registered.map(([n]) => n);
     assert.ok(
-      names.includes("gsd"),
-      `expected 'gsd' in registered commands, got ${JSON.stringify(names)}`,
+      names.includes(ROOT_CMD),
+      `expected '${ROOT_CMD}' in registered commands, got ${JSON.stringify(names)}`,
     );
   });
 
-  test("degraded path: /gsd still registered when registerCommand throws for non-core commands", async () => {
+  test(`degraded path: /${COMMAND_NAMESPACE} still registered when registerCommand throws for non-core commands`, async () => {
     // Simulate the Windows-style failure: pi.registerCommand throws for a
     // specific non-core command ('kill' is a simple target registered by
-    // the full bootstrap) — the full bootstrap must fail but /gsd must
-    // already be registered before the failure occurs.
+    // the full bootstrap) — the full bootstrap must fail but the top-level
+    // namespace command must already be registered before the failure.
     const registered: Array<[string, unknown]> = [];
     const pi = {
       registerCommand: (name: string, def: unknown) => {
-        if (name !== "gsd" && name !== "worktree" && name !== "exit") {
-          // Let /gsd, /worktree, /exit succeed (they precede the non-core
-          // loop); throw when the first non-core registration fires.
-        }
         if (name === "kill") throw new Error("simulated windows failure");
         registered.push([name, def]);
       },
@@ -77,22 +79,23 @@ describe("extension bootstrap isolation (#4168, #4172)", () => {
     };
 
     // registerExtension must not throw — the outer try/catch in index.ts
-    // swallows bootstrap failures after /gsd is already registered.
+    // swallows bootstrap failures after the top-level command is registered.
     await registerExtension(pi as any);
 
     const names = registered.map(([n]) => n);
     assert.ok(
-      names.includes("gsd"),
-      "expected 'gsd' to be registered even when a later command registration throws",
+      names.includes(ROOT_CMD),
+      `expected '${ROOT_CMD}' to be registered even when a later command registration throws`,
     );
   });
 
-  test("degraded path: /gsd registered BEFORE any non-core command", async () => {
-    // Ordering guard: the first registerCommand call must be for 'gsd',
-    // because index.ts awaits registerGSDCommand(pi) before importing
-    // register-extension. Regression scenario: if a future refactor moves
-    // registerGSDCommand into the try block or after other registrations,
-    // a failure in those earlier registrations would take /gsd down too.
+  test(`degraded path: /${COMMAND_NAMESPACE} registered BEFORE any non-core command`, async () => {
+    // Ordering guard: the first registerCommand call must be for the
+    // top-level namespace, because index.ts awaits registerGSDCommand(pi)
+    // before importing register-extension. Regression scenario: if a future
+    // refactor moves registerGSDCommand into the try block or after other
+    // registrations, a failure in those earlier registrations would take
+    // the top-level command down too.
     const calls: string[] = [];
     const pi = {
       registerCommand: (name: string) => {
@@ -107,8 +110,8 @@ describe("extension bootstrap isolation (#4168, #4172)", () => {
     assert.ok(calls.length > 0, "expected at least one registerCommand call");
     assert.equal(
       calls[0],
-      "gsd",
-      `expected 'gsd' to be the first command registered, got ${JSON.stringify(calls)}`,
+      ROOT_CMD,
+      `expected '${ROOT_CMD}' to be the first command registered, got ${JSON.stringify(calls)}`,
     );
   });
 });
@@ -144,7 +147,7 @@ describe("registerGsdExtension defensive registration", () => {
     );
   });
 
-  test("does NOT register /gsd (caller's responsibility, avoids double-registration)", () => {
+  test(`does NOT register /${COMMAND_NAMESPACE} (caller's responsibility, avoids double-registration)`, () => {
     const registered: string[] = [];
     const pi = {
       registerCommand: (name: string) => {
@@ -157,8 +160,8 @@ describe("registerGsdExtension defensive registration", () => {
     };
     registerGsdExtension(pi as any);
     assert.ok(
-      !registered.includes("gsd"),
-      `registerGsdExtension must NOT register 'gsd' (it is registered separately by index.ts), got ${JSON.stringify(registered)}`,
+      !registered.includes(ROOT_CMD),
+      `registerGsdExtension must NOT register '${ROOT_CMD}' (it is registered separately by index.ts), got ${JSON.stringify(registered)}`,
     );
   });
 });

@@ -5,15 +5,19 @@ import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 
 import { TOP_LEVEL_SUBCOMMANDS } from "../commands/catalog.ts";
+import { CMD } from "../strings.ts";
 
 /**
  * Extracts command names from the showHelp("full") lines array.
- * Each help line follows the pattern: "  /gsd <cmd>  ..."
+ * Each help line follows the pattern: "  /<CMD> <cmd>  ..."
  */
 function extractHelpCommands(lines: string[]): Set<string> {
   const cmds = new Set<string>();
+  // Build the regex dynamically so it adapts to whatever commandNamespace is active.
+  const escapedCmd = CMD.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`^\\s+\\/${escapedCmd}\\s+(\\S+)`);
   for (const line of lines) {
-    const m = line.match(/^\s+\/gsd\s+(\S+)/);
+    const m = line.match(re);
     if (m) cmds.add(m[1]);
   }
   return cmds;
@@ -51,7 +55,7 @@ describe("help menu coverage", () => {
     assert.deepStrictEqual(
       missing,
       [],
-      `Commands registered in TOP_LEVEL_SUBCOMMANDS but missing from /gsd help full:\n  ${missing.join(", ")}`,
+      `Commands registered in TOP_LEVEL_SUBCOMMANDS but missing from /${CMD} help full:\n  ${missing.join(", ")}`,
     );
   });
 });

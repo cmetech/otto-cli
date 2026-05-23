@@ -17,6 +17,7 @@ import {
   openDatabase,
 } from "../gsd-db.ts";
 import { invalidateStateCache } from "../state.ts";
+import { BRAND } from "../strings.ts";
 
 interface NotifyCall {
   message: string;
@@ -168,7 +169,11 @@ test("dispatcher still allows recovery commands while validation is blocked", as
 
     assert.equal(calls.length, 1);
     assert.equal(calls[0].kind, "info");
-    assert.match(calls[0].message, /GSD/);
+    // help text begins with "<BRAND> — Get Shit Done"
+    assert.ok(
+      calls[0].message.includes(BRAND),
+      `expected help text to mention brand "${BRAND}"; got: ${calls[0].message.slice(0, 120)}`,
+    );
     assert.doesNotMatch(calls[0].message, /cannot run/);
   } finally {
     closeDatabase();

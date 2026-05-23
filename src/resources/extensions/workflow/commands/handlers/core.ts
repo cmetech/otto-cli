@@ -14,141 +14,159 @@ import { projectRoot } from "../context.js";
 import { formattedShortcutPair } from "../../shortcut-defs.js";
 import { getVisualBriefOutputDir } from "../../../visual-brief/artifact-policy.js";
 import { buildVisualBriefPrompt, parseVisualBriefArgs, VISUAL_BRIEF_USAGE } from "../../../visual-brief/prompts.js";
+import { BRAND, CMD, slashCommand } from "../../strings.js";
+
+/**
+ * Pad a slash-command reference (e.g. "/loop24 status") to a target visual width
+ * so help-text columns stay aligned regardless of the active command namespace.
+ */
+function padSlash(sub: string, targetWidth: number): string {
+  const ref = slashCommand(sub);
+  const pad = Math.max(1, targetWidth - ref.length);
+  return ref + " ".repeat(pad);
+}
 
 export function showHelp(ctx: ExtensionCommandContext, args = ""): void {
+  // Column width chosen so the longest reference we display (e.g. "/loop24 parallel watch")
+  // still leaves at least one space before the description.
+  const COL_SHORT = 20; // for the summary block
+  const COL_FULL = 22;  // for the wider full block
+  const p = (sub: string, col: number = COL_SHORT) => `  ${padSlash(sub, col)}`;
+
   const summaryLines = [
-    "GSD — Get Shit Done\n",
+    `${BRAND} — Get Shit Done\n`,
     "QUICK START",
-    "  /gsd start <tpl>   Start a workflow template",
-    "  /gsd               Open the state-aware home menu",
-    "  /gsd auto          Run all queued units continuously",
-    "  /gsd pause         Pause auto-mode",
-    "  /gsd stop          Stop auto-mode gracefully",
+    `${p("start <tpl>")} Start a workflow template`,
+    `  ${slashCommand("").trimEnd()}${" ".repeat(Math.max(1, COL_SHORT - slashCommand("").trimEnd().length))}Open the state-aware home menu`,
+    `${p("auto")} Run all queued units continuously`,
+    `${p("pause")} Pause auto-mode`,
+    `${p("stop")} Stop auto-mode gracefully`,
     "",
     "VISIBILITY",
-    `  /gsd status         Interactive 10-tab TUI  (${formattedShortcutPair("dashboard")})`,
-    `  /gsd parallel watch Parallel monitor  (${formattedShortcutPair("parallel")})`,
-    `  /gsd notifications  Notification history  (${formattedShortcutPair("notifications")})`,
-    "  /gsd visualize      Interactive 10-tab TUI",
-    "  /gsd report         Generate all HTML reports and open browser",
-    "  /gsd brief <mode>   Visual HTML brief (diagram, plan, diff, recap, table, slides)",
-    "  /gsd queue          Show queued/dispatched units",
+    `${p("status")} Interactive 10-tab TUI  (${formattedShortcutPair("dashboard")})`,
+    `${p("parallel watch")} Parallel monitor  (${formattedShortcutPair("parallel")})`,
+    `${p("notifications")} Notification history  (${formattedShortcutPair("notifications")})`,
+    `${p("visualize")} Interactive 10-tab TUI`,
+    `${p("report")} Generate all HTML reports and open browser`,
+    `${p("brief <mode>")} Visual HTML brief (diagram, plan, diff, recap, table, slides)`,
+    `${p("queue")} Show queued/dispatched units`,
     "",
     "COURSE CORRECTION",
-    "  /gsd steer <desc>   Apply user override to active work",
-    "  /gsd capture <text> Quick-capture a thought to CAPTURES.md",
-    "  /gsd triage         Classify and route pending captures",
-    "  /gsd undo           Revert last completed unit  [--force]",
-    "  /gsd rethink        Conversational project reorganization",
+    `${p("steer <desc>")} Apply user override to active work`,
+    `${p("capture <text>")} Quick-capture a thought to CAPTURES.md`,
+    `${p("triage")} Classify and route pending captures`,
+    `${p("undo")} Revert last completed unit  [--force]`,
+    `${p("rethink")} Conversational project reorganization`,
     "",
     "OBSERVABILITY",
-    "  /gsd logs           Browse activity and debug logs",
-    "  /gsd debug          Create/list/continue persistent debug sessions",
+    `${p("logs")} Browse activity and debug logs`,
+    `${p("debug")} Create/list/continue persistent debug sessions`,
     "",
     "SETUP",
-    "  /gsd onboarding     Re-run setup wizard  [--resume|--reset|--step <name>]",
-    "  /gsd setup          Configuration hub  [llm|model|search|remote|keys|prefs|onboarding]",
-    "  /gsd init           Project init wizard",
-    "  /gsd model          Switch active session model",
-    "  /gsd prefs          Manage preferences (alias for /gsd setup prefs)",
-    "  /gsd keys           API key manager (LLM + tool keys)",
-    "  /gsd doctor         Diagnose and repair .gsd/ state",
-    "  /gsd closeout       Recover failed git closeout actions",
+    `${p("onboarding")} Re-run setup wizard  [--resume|--reset|--step <name>]`,
+    `${p("setup")} Configuration hub  [llm|model|search|remote|keys|prefs|onboarding]`,
+    `${p("init")} Project init wizard`,
+    `${p("model")} Switch active session model`,
+    `${p("prefs")} Manage preferences (alias for ${slashCommand("setup")} prefs)`,
+    `${p("keys")} API key manager (LLM + tool keys)`,
+    `${p("doctor")} Diagnose and repair .gsd/ state`,
+    `${p("closeout")} Recover failed git closeout actions`,
     "",
-    "Use /gsd help full for the complete command reference.",
+    `Use ${slashCommand("help")} full for the complete command reference.`,
   ];
 
+  const pf = (sub: string) => `  ${padSlash(sub, COL_FULL)}`;
   const fullLines = [
-    "GSD — Get Shit Done\n",
+    `${BRAND} — Get Shit Done\n`,
     "WORKFLOW",
-    "  /gsd start <tpl>   Start a workflow template (bugfix, spike, feature, hotfix, etc.)",
-    "  /gsd templates     List available workflow templates  [info <name>]",
-    "  /gsd               Open the state-aware home menu",
-    "  /gsd next           Execute next task, then pause  [--dry-run] [--verbose]",
-    "  /gsd auto           Run all queued units continuously  [--verbose]",
-    "  /gsd stop           Stop auto-mode gracefully",
-    "  /gsd pause          Pause auto-mode (preserves state, /gsd auto to resume)",
-    "  /gsd discuss        Start guided milestone/slice discussion",
-    "  /gsd new-milestone  Create milestone from headless context (used by gsd headless)",
-    "  /gsd new-project    Bootstrap a new project (use --deep for staged project-level discovery)",
-    "  /gsd quick          Execute a quick task without full planning overhead",
-    "  /gsd dispatch       Dispatch a specific phase directly  [research|plan|execute|complete|uat|replan]",
-    "  /gsd verdict <v>    Override milestone validation verdict  [pass|needs-attention|needs-remediation] [--milestone Mxxx] [--rationale \"...\"]",
-    "  /gsd parallel       Parallel milestone orchestration  [start|status|stop|pause|resume|merge|watch]",
-    "  /gsd workflow       Custom workflow lifecycle  [new|run|list|validate|pause|resume]",
+    `${pf("start <tpl>")} Start a workflow template (bugfix, spike, feature, hotfix, etc.)`,
+    `${pf("templates")} List available workflow templates  [info <name>]`,
+    `  ${slashCommand("").trimEnd()}${" ".repeat(Math.max(1, COL_FULL - slashCommand("").trimEnd().length))}Open the state-aware home menu`,
+    `${pf("next")} Execute next task, then pause  [--dry-run] [--verbose]`,
+    `${pf("auto")} Run all queued units continuously  [--verbose]`,
+    `${pf("stop")} Stop auto-mode gracefully`,
+    `${pf("pause")} Pause auto-mode (preserves state, ${slashCommand("auto")} to resume)`,
+    `${pf("discuss")} Start guided milestone/slice discussion`,
+    `${pf("new-milestone")} Create milestone from headless context (used by ${CMD} headless)`,
+    `${pf("new-project")} Bootstrap a new project (use --deep for staged project-level discovery)`,
+    `${pf("quick")} Execute a quick task without full planning overhead`,
+    `${pf("dispatch")} Dispatch a specific phase directly  [research|plan|execute|complete|uat|replan]`,
+    `${pf("verdict <v>")} Override milestone validation verdict  [pass|needs-attention|needs-remediation] [--milestone Mxxx] [--rationale \"...\"]`,
+    `${pf("parallel")} Parallel milestone orchestration  [start|status|stop|pause|resume|merge|watch]`,
+    `${pf("workflow")} Custom workflow lifecycle  [new|run|list|validate|pause|resume]`,
     "",
     "VISIBILITY",
-    `  /gsd status         Interactive 10-tab TUI  (${formattedShortcutPair("dashboard")})`,
-    `  /gsd parallel watch Open parallel worker monitor  (${formattedShortcutPair("parallel")})`,
-    "  /gsd widget         Cycle status widget  [full|small|min|off]",
-    "  /gsd visualize      Interactive 10-tab TUI (progress, timeline, deps, metrics, health, agent, changes, knowledge, captures, export)",
-    "  /gsd brief <mode>   Generate a visual HTML brief  [diagram|plan|diff|recap|table|slides] [topic] [--slides]",
-    "  /gsd queue          Show queued/dispatched units and execution order",
-    "  /gsd history        View execution history  [--cost] [--phase] [--model] [N]",
-    "  /gsd changelog      Show categorized release notes  [version]",
-    `  /gsd notifications  View persistent notification history  [clear|tail|filter]  (${formattedShortcutPair("notifications")})`,
-    "  /gsd logs           Browse activity logs, debug logs, and metrics  [debug|tail|clear]",
-    "  /gsd debug          Create/list/continue persistent debug sessions",
+    `${pf("status")} Interactive 10-tab TUI  (${formattedShortcutPair("dashboard")})`,
+    `${pf("parallel watch")} Open parallel worker monitor  (${formattedShortcutPair("parallel")})`,
+    `${pf("widget")} Cycle status widget  [full|small|min|off]`,
+    `${pf("visualize")} Interactive 10-tab TUI (progress, timeline, deps, metrics, health, agent, changes, knowledge, captures, export)`,
+    `${pf("brief <mode>")} Generate a visual HTML brief  [diagram|plan|diff|recap|table|slides] [topic] [--slides]`,
+    `${pf("queue")} Show queued/dispatched units and execution order`,
+    `${pf("history")} View execution history  [--cost] [--phase] [--model] [N]`,
+    `${pf("changelog")} Show categorized release notes  [version]`,
+    `${pf("notifications")} View persistent notification history  [clear|tail|filter]  (${formattedShortcutPair("notifications")})`,
+    `${pf("logs")} Browse activity logs, debug logs, and metrics  [debug|tail|clear]`,
+    `${pf("debug")} Create/list/continue persistent debug sessions`,
     "",
     "COURSE CORRECTION",
-    "  /gsd steer <desc>   Apply user override to active work",
-    "  /gsd capture <text> Quick-capture a thought to CAPTURES.md",
-    "  /gsd triage         Classify and route pending captures",
-    "  /gsd skip <unit>    Prevent a unit from auto-mode dispatch",
-    "  /gsd undo           Revert last completed unit  [--force]",
-    "  /gsd undo-task      Reset a specific task's completion state  [DB + markdown]",
-    "  /gsd reset-slice    Reset a slice and all its tasks  [DB + markdown]",
-    "  /gsd rate           Rate last unit's model tier  [over|ok|under]",
-    "  /gsd rethink        Conversational project reorganization — reorder, park, discard, add milestones",
-    "  /gsd park [id]      Park a milestone — skip without deleting  [reason]",
-    "  /gsd unpark [id]    Reactivate a parked milestone",
+    `${pf("steer <desc>")} Apply user override to active work`,
+    `${pf("capture <text>")} Quick-capture a thought to CAPTURES.md`,
+    `${pf("triage")} Classify and route pending captures`,
+    `${pf("skip <unit>")} Prevent a unit from auto-mode dispatch`,
+    `${pf("undo")} Revert last completed unit  [--force]`,
+    `${pf("undo-task")} Reset a specific task's completion state  [DB + markdown]`,
+    `${pf("reset-slice")} Reset a slice and all its tasks  [DB + markdown]`,
+    `${pf("rate")} Rate last unit's model tier  [over|ok|under]`,
+    `${pf("rethink")} Conversational project reorganization — reorder, park, discard, add milestones`,
+    `${pf("park [id]")} Park a milestone — skip without deleting  [reason]`,
+    `${pf("unpark [id]")} Reactivate a parked milestone`,
     "",
     "PROJECT KNOWLEDGE",
-    "  /gsd knowledge <type> <text>   Add a rule to KNOWLEDGE.md or capture a pattern/lesson to memories",
-    "  /gsd codebase [generate|update|stats]   Manage the CODEBASE.md cache used in prompt context",
+    `${pf("knowledge <type> <text>")} Add a rule to KNOWLEDGE.md or capture a pattern/lesson to memories`,
+    `${pf("codebase [generate|update|stats]")} Manage the CODEBASE.md cache used in prompt context`,
     "",
     "SHIPPING & BACKLOG",
-    "  /gsd ship           Create a PR from milestone artifacts  [--dry-run|--draft|--base|--force]",
-    "  /gsd do <text>      Route freeform text to the right GSD command",
-    "  /gsd session-report Show session cost, tokens, and work summary  [--json|--save]",
-    "  /gsd backlog        Manage backlog items  [add|promote|remove|list]",
-    "  /gsd pr-branch      Create a clean PR branch filtering .gsd/ commits  [--dry-run|--name]",
-    "  /gsd add-tests      Generate tests for completed slices",
-    "  /gsd eval-review <sliceId>  Audit a slice's AI evaluation strategy  [--force|--show]",
-    "  /gsd scan           Rapid codebase assessment  [--focus tech|arch|quality|concerns|tech+arch]",
+    `${pf("ship")} Create a PR from milestone artifacts  [--dry-run|--draft|--base|--force]`,
+    `${pf("do <text>")} Route freeform text to the right ${BRAND} command`,
+    `${pf("session-report")} Show session cost, tokens, and work summary  [--json|--save]`,
+    `${pf("backlog")} Manage backlog items  [add|promote|remove|list]`,
+    `${pf("pr-branch")} Create a clean PR branch filtering .gsd/ commits  [--dry-run|--name]`,
+    `${pf("add-tests")} Generate tests for completed slices`,
+    `${pf("eval-review <sliceId>")} Audit a slice's AI evaluation strategy  [--force|--show]`,
+    `${pf("scan")} Rapid codebase assessment  [--focus tech|arch|quality|concerns|tech+arch]`,
     "",
     "SETUP & CONFIGURATION",
-    "  /gsd onboarding     Re-run setup wizard  [--resume|--reset|--step <name>]",
-    "  /gsd setup          Configuration hub  [llm|model|search|remote|keys|prefs|onboarding]",
-    "  /gsd init           Project init wizard — detect, configure, bootstrap .gsd/",
-    "  /gsd model          Switch active session model  [provider/model|model-id]",
-    "  /gsd mode           Set workflow mode (solo/team)  [global|project]",
-    "  /gsd prefs          Manage preferences  [global|project|status|wizard|setup|import-claude]  (alias for /gsd setup prefs)",
-    "  /gsd cmux           Manage cmux integration  [status|on|off|notifications|sidebar|splits|browser]",
-    "  /gsd keys           API key manager (LLM + tool keys)  [list|add|remove|test|rotate|doctor]",
-    "  /gsd config         (deprecated) Set tool API keys — use /gsd keys instead",
-    "  /gsd show-config    Show effective configuration (models, routing, toggles)",
-    "  /gsd hooks          Show post-unit hook configuration",
-    "  /gsd run-hook       Manually trigger a specific hook",
-    "  /gsd skill-health   Skill lifecycle dashboard",
-    "  /gsd extensions     Manage extensions  [list|enable|disable|info]",
-    "  /gsd fast           Toggle OpenAI service tier  [on|off|flex|status]",
-    "  /gsd mcp            MCP server management  [status|check|test|enable|disable|import|delete|init]",
+    `${pf("onboarding")} Re-run setup wizard  [--resume|--reset|--step <name>]`,
+    `${pf("setup")} Configuration hub  [llm|model|search|remote|keys|prefs|onboarding]`,
+    `${pf("init")} Project init wizard — detect, configure, bootstrap .gsd/`,
+    `${pf("model")} Switch active session model  [provider/model|model-id]`,
+    `${pf("mode")} Set workflow mode (solo/team)  [global|project]`,
+    `${pf("prefs")} Manage preferences  [global|project|status|wizard|setup|import-claude]  (alias for ${slashCommand("setup")} prefs)`,
+    `${pf("cmux")} Manage cmux integration  [status|on|off|notifications|sidebar|splits|browser]`,
+    `${pf("keys")} API key manager (LLM + tool keys)  [list|add|remove|test|rotate|doctor]`,
+    `${pf("config")} (deprecated) Set tool API keys — use ${slashCommand("keys")} instead`,
+    `${pf("show-config")} Show effective configuration (models, routing, toggles)`,
+    `${pf("hooks")} Show post-unit hook configuration`,
+    `${pf("run-hook")} Manually trigger a specific hook`,
+    `${pf("skill-health")} Skill lifecycle dashboard`,
+    `${pf("extensions")} Manage extensions  [list|enable|disable|info]`,
+    `${pf("fast")} Toggle OpenAI service tier  [on|off|flex|status]`,
+    `${pf("mcp")} MCP server management  [status|check|test|enable|disable|import|delete|init]`,
     "",
     "MAINTENANCE",
-    "  /gsd doctor         Diagnose and repair .gsd/ state  [audit|fix|heal] [scope]",
-    "  /gsd forensics      Examine execution logs and post-mortem analysis",
-    "  /gsd report         Generate all HTML reports and open browser  [--json|--markdown|--html] [--all]",
-    "  /gsd export         Alias for /gsd report",
-    "  /gsd cleanup        Remove merged branches or snapshots  [branches|snapshots]",
-    "  /gsd closeout       Recover failed git closeout actions  [status|retry|resolve] [unit-id]",
-    "  /gsd worktree       Manage worktrees from the TUI  [list|merge|clean|remove]",
-    "  /gsd migrate        Migrate .planning/ (v1) to DB-backed .gsd/ with backup + audit",
-    "  /gsd remote         Control remote auto-mode  [slack|discord|status|disconnect]",
-    "  /gsd inspect        Show SQLite DB diagnostics (schema, row counts, recent entries)",
-    "  /gsd update         Update GSD to the latest version via npm",
-    "  /gsd upgrade        Alias for /gsd update",
-    "  /gsd language       Set or clear the global response language  [off|clear|<language>]",
+    `${pf("doctor")} Diagnose and repair .gsd/ state  [audit|fix|heal] [scope]`,
+    `${pf("forensics")} Examine execution logs and post-mortem analysis`,
+    `${pf("report")} Generate all HTML reports and open browser  [--json|--markdown|--html] [--all]`,
+    `${pf("export")} Alias for ${slashCommand("report")}`,
+    `${pf("cleanup")} Remove merged branches or snapshots  [branches|snapshots]`,
+    `${pf("closeout")} Recover failed git closeout actions  [status|retry|resolve] [unit-id]`,
+    `${pf("worktree")} Manage worktrees from the TUI  [list|merge|clean|remove]`,
+    `${pf("migrate")} Migrate .planning/ (v1) to DB-backed .gsd/ with backup + audit`,
+    `${pf("remote")} Control remote auto-mode  [slack|discord|status|disconnect]`,
+    `${pf("inspect")} Show SQLite DB diagnostics (schema, row counts, recent entries)`,
+    `${pf("update")} Update ${BRAND} to the latest version via npm`,
+    `${pf("upgrade")} Alias for ${slashCommand("update")}`,
+    `${pf("language")} Set or clear the global response language  [off|clear|<language>]`,
   ];
   const full = ["full", "--full", "all"].includes(args.trim().toLowerCase());
   ctx.ui.notify((full ? fullLines : summaryLines).join("\n"), "info");
@@ -162,7 +180,7 @@ export async function handleStatus(ctx: ExtensionCommandContext): Promise<void> 
   const state = await deriveState(basePath);
 
   if (state.registry.length === 0) {
-    ctx.ui.notify("No GSD milestones found. Run /gsd to start.", "info");
+    ctx.ui.notify(`No ${BRAND} milestones found. Run /${CMD} to start.`, "info");
     return;
   }
 
@@ -210,7 +228,7 @@ export async function handleVisualize(ctx: ExtensionCommandContext): Promise<voi
   );
 
   if (result === undefined) {
-    ctx.ui.notify("Visualizer requires an interactive terminal. Use /gsd status for a text-based overview.", "warning");
+    ctx.ui.notify(`Visualizer requires an interactive terminal. Use ${slashCommand("status")} for a text-based overview.`, "warning");
   }
 }
 
@@ -277,7 +295,7 @@ export async function handleSetup(args: string, ctx: ExtensionCommandContext, pi
     return;
   }
   if (args === "keys") {
-    ctx.ui.notify("Tip: /gsd keys is the canonical command for API key management.", "info");
+    ctx.ui.notify(`Tip: ${slashCommand("keys")} is the canonical command for API key management.`, "info");
     const { handleKeys } = await import("../../key-manager.js");
     await handleKeys("", ctx);
     return;
@@ -294,11 +312,11 @@ export async function handleSetup(args: string, ctx: ExtensionCommandContext, pi
   const onboardingDone = isOnboardingComplete();
   const record = readOnboardingRecord();
 
-  const statusLines: string[] = ["GSD Setup\n"];
+  const statusLines: string[] = [`${BRAND} Setup\n`];
   statusLines.push(
     onboardingDone
       ? `  Onboarding:         ✓ complete${record.completedAt ? ` (${record.completedAt.slice(0, 10)})` : ""}`
-      : `  Onboarding:         ○ not complete  —  /gsd onboarding to start`,
+      : `  Onboarding:         ○ not complete  —  ${slashCommand("onboarding")} to start`,
   );
   statusLines.push(`  Global preferences: ${globalConfigured ? "configured" : "not set"}`);
   statusLines.push(`  Project state:      ${detection.state}`);
@@ -309,14 +327,14 @@ export async function handleSetup(args: string, ctx: ExtensionCommandContext, pi
   ctx.ui.notify(statusLines.join("\n"), "info");
   ctx.ui.notify(
     "Configuration hub:\n" +
-    "  /gsd setup llm        — LLM provider & auth\n" +
-    "  /gsd setup model      — Default model picker\n" +
-    "  /gsd setup search     — Web search provider\n" +
-    "  /gsd setup remote     — Remote questions (Discord/Slack/Telegram)\n" +
-    "  /gsd setup keys       — API keys (alias for /gsd keys)\n" +
-    "  /gsd setup prefs      — Global preferences (alias for /gsd prefs)\n" +
-    "  /gsd setup onboarding — Full wizard (alias for /gsd onboarding)\n\n" +
-    "Tip: /gsd onboarding --resume to continue an incomplete setup.",
+    `  ${slashCommand("setup")} llm        — LLM provider & auth\n` +
+    `  ${slashCommand("setup")} model      — Default model picker\n` +
+    `  ${slashCommand("setup")} search     — Web search provider\n` +
+    `  ${slashCommand("setup")} remote     — Remote questions (Discord/Slack/Telegram)\n` +
+    `  ${slashCommand("setup")} keys       — API keys (alias for ${slashCommand("keys")})\n` +
+    `  ${slashCommand("setup")} prefs      — Global preferences (alias for ${slashCommand("prefs")})\n` +
+    `  ${slashCommand("setup")} onboarding — Full wizard (alias for ${slashCommand("onboarding")})\n\n` +
+    `Tip: ${slashCommand("onboarding")} --resume to continue an incomplete setup.`,
     "info",
   );
 }
@@ -542,7 +560,7 @@ export async function handleCoreCommand(
 }
 
 export function formatTextStatus(state: GSDState): string {
-  const lines: string[] = ["GSD Status\n"];
+  const lines: string[] = [`${BRAND} Status\n`];
   lines.push(formatProgressLine(computeProgressScore()));
   lines.push("");
   lines.push(`Phase: ${state.phase}`);

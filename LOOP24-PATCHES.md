@@ -68,7 +68,17 @@ Removed all `@opengsd/engine-*` entries from `optionalDependencies` (Rust compil
 - Added a TODO comment noting the eventual collapse of both banner env vars to LOOP24_FIRST_RUN_BANNER after test suite update.
 
 ### `src/help-text.ts`
-**No changes.** File was already clean of literal 'GSD' references; brand strings are handled dynamically at runtime through the workflow extension (see below).
+**Caught by Task 10 smoke verification — missed during Task 6 brand-string extraction (which focused on the workflow extension, not loader-adjacent top-level files).**
+
+Replaced ~40 literal occurrences of "GSD" / "gsd" / "Get Shit Done" / "@opengsd" across the `--help` and subcommand-help output with values read from `package.json` `piConfig` at module load. The strategy mirrors `loader.ts` (synchronous `readFileSync` + `JSON.parse` — no compiled-module imports), which keeps this file fast enough for the loader's `--help` fast-path that runs before any heavy imports load.
+
+- Reads `piConfig.brandName` (`BRAND`), `piConfig.commandNamespace` (`CMD`), and `piConfig.configDir` (`CONFIG_DIR`) with safe defaults (`LOOP24`, `loop24`, `.loop24`) if `package.json` cannot be parsed.
+- Banner line now emits `${BRAND} v${version} — compliant agent for developers` to match the loop24 first-run banner tagline.
+- Removed the `npm install -g @opengsd/gsd-pi@latest` "equivalent to" hints from the `update` / `upgrade` subcommand help — LOOP24 has no public npm presence yet, so advertising an install command is misleading. Help now just says "Update LOOP24 to the latest version."
+- Subcommand help (`config`, `install`, `worktree`, `graph`, `headless`, etc.) interpolates `${CMD}` for usage lines and examples.
+- Knowledge-graph help references `${CONFIG_DIR}/` (e.g., `.loop24/graphs/graph.json`) instead of hardcoded `.gsd/`.
+
+Verified with `node dist/loader.js --help | grep -i 'gsd\|@opengsd'` → no matches; first line reads `LOOP24 v1.0.1 — compliant agent for developers`.
 
 ### Directory Rename: `src/resources/extensions/gsd/` → `src/resources/extensions/workflow/`
 **Commits: 630bf30, a8cd563**

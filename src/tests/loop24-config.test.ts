@@ -119,6 +119,10 @@ test("saveConfig is atomic — partial write does not corrupt existing file", ()
   assert.equal(cfg.gateway.token, "new-tok")
 })
 
+// Project-standard TS-strip-types resolver hook used by every spawn-based test.
+// Redirects relative *.js imports to dist/ when running with --experimental-strip-types.
+const RESOLVE_TS_HOOK = "./src/resources/extensions/workflow/tests/resolve-ts.mjs"
+
 test("brand.ts picks up config.json values through env propagation", () => {
   // We can't directly test module-load side effects (modules are cached) —
   // spawn a fresh node process where LOOP24_HOME points at our tmpHome and
@@ -133,7 +137,7 @@ test("brand.ts picks up config.json values through env propagation", () => {
     "node",
     [
       "--import",
-      "./src/resources/extensions/workflow/tests/resolve-ts.mjs",
+      RESOLVE_TS_HOOK,
       "--experimental-strip-types",
       "--input-type=module",
       "-e",
@@ -143,7 +147,7 @@ test("brand.ts picks up config.json values through env propagation", () => {
       env: {
         ...process.env,
         LOOP24_HOME: tmpHome,
-        // Explicitly unset any inherited env override
+        // Clear any inherited value so the config-file fallback activates
         LOOP24_GATEWAY_URL: "",
       },
       cwd: process.cwd(),
@@ -165,7 +169,7 @@ test("env var wins over config.json when both are set", () => {
     "node",
     [
       "--import",
-      "./src/resources/extensions/workflow/tests/resolve-ts.mjs",
+      RESOLVE_TS_HOOK,
       "--experimental-strip-types",
       "--input-type=module",
       "-e",

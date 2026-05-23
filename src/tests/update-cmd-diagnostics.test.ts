@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import { join } from "node:path";
 
 import { runUpdate } from "../update-cmd.ts";
-import { handleUpdate } from "../resources/extensions/gsd/commands-handlers.ts";
+import { handleUpdate } from "../resources/extensions/workflow/commands-handlers.ts";
 
 test("update-cmd prints latest version before comparison (#3445)", async () => {
   const originalFetch = globalThis.fetch;

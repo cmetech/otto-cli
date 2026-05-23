@@ -22,8 +22,8 @@ import {
   markStepCompleted,
   markStepSkipped,
   isOnboardingComplete,
-} from './resources/extensions/gsd/onboarding-state.js'
-import { getLlmProviderIds } from './resources/extensions/gsd/setup-catalog.js'
+} from './resources/extensions/workflow/onboarding-state.js'
+import { getLlmProviderIds } from './resources/extensions/workflow/setup-catalog.js'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

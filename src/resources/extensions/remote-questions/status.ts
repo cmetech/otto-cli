@@ -5,7 +5,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { readPromptRecord } from "./store.js";
-import { gsdHome } from "../gsd/gsd-home.js";
+import { gsdHome } from "../workflow/gsd-home.js";
 
 export interface LatestPromptSummary {
   id: string;

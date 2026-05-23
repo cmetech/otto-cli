@@ -5,7 +5,7 @@ import {
   getNewBudgetAlertLevel,
   getBudgetEnforcementAction,
   getUnitCostSpikeAction,
-} from "../resources/extensions/gsd/auto-budget.js";
+} from "../resources/extensions/workflow/auto-budget.js";
 
 describe("auto-budget", () => {
   describe("getBudgetAlertLevel", () => {

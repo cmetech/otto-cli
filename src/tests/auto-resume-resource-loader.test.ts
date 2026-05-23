@@ -58,13 +58,13 @@ test("dev CLI wrapper passes itself as every child-process CLI entrypoint", () =
 
   assert.deepEqual(
     devCli.buildDevCliSpawnArgs({
-      resolveTsPath: "/repo/src/resources/extensions/gsd/tests/resolve-ts.mjs",
+      resolveTsPath: "/repo/src/resources/extensions/workflow/tests/resolve-ts.mjs",
       srcLoaderPath: "/repo/src/loader.ts",
       argv: ["--web"],
     }),
     [
       "--import",
-      "/repo/src/resources/extensions/gsd/tests/resolve-ts.mjs",
+      "/repo/src/resources/extensions/workflow/tests/resolve-ts.mjs",
       "--experimental-strip-types",
       "/repo/src/loader.ts",
       "--web",

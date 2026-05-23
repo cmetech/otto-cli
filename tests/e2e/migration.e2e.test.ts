@@ -10,7 +10,7 @@
  *      SCHEMA_VERSION.
  *
  * This is a complement to the unit tests in
- * `src/resources/extensions/gsd/tests/schema-v*-sequence.test.ts` — they
+ * `src/resources/extensions/workflow/tests/schema-v*-sequence.test.ts` — they
  * test the migration code in-process; this exercises the same code path
  * **through the shipped binary** so a bad build or missing dist asset
  * would surface here, not at user install time.
@@ -56,7 +56,7 @@ async function tryLoadSqlite(): Promise<{ ok: true; mod: SqliteModule } | { ok: 
 /**
  * Seed a `.gsd/gsd.db` at schema_version = 20.
  * Mirrors the seed logic from
- * src/resources/extensions/gsd/tests/schema-v21-sequence.test.ts so the
+ * src/resources/extensions/workflow/tests/schema-v21-sequence.test.ts so the
  * forward-migration path from a known stale point is exercised.
  *
  * The migration code is permissive about extra/missing tables — the

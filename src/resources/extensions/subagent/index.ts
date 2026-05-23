@@ -35,8 +35,8 @@ import {
 	readIsolationMode,
 } from "./isolation.js";
 import { registerWorker, updateWorker } from "./worker-registry.js";
-import { loadEffectiveGSDPreferences } from "../gsd/preferences.js";
-import { emitJournalEvent } from "../gsd/journal.js";
+import { loadEffectiveGSDPreferences } from "../workflow/preferences.js";
+import { emitJournalEvent } from "../workflow/journal.js";
 import { CmuxClient, shellEscape } from "../cmux/index.js";
 import {
 	buildShellEnvAssignments,

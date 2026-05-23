@@ -7,7 +7,7 @@ import {
 	cleanupSessionProcesses,
 	processes,
 } from "../resources/extensions/bg-shell/process-manager.ts";
-import { waitForCondition } from "../resources/extensions/gsd/tests/test-helpers.ts";
+import { waitForCondition } from "../resources/extensions/workflow/tests/test-helpers.ts";
 
 function isPidAlive(pid: number | undefined): boolean {
 	if (!pid || pid <= 0) return false;

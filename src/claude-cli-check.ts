@@ -39,7 +39,7 @@ function spawnClaude(command: string, args: string[], opts: { timeout: number; s
  * `execFileSync` does not auto-resolve the extension — calling bare
  * `claude` would fail with ENOENT even when the CLI is installed and
  * authenticated. Mirrors the `NPM_COMMAND` pattern in
- * `src/resources/extensions/gsd/pre-execution-checks.ts`.
+ * `src/resources/extensions/workflow/pre-execution-checks.ts`.
  */
 export function getClaudeCommand(platform: NodeJS.Platform = process.platform): string {
   return platform === 'win32' ? 'claude.cmd' : 'claude'

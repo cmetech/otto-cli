@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 /**
  * Lightweight PATH scan for the `claude` binary — no subprocess, no network.
- * Mirrors the check in src/resources/extensions/gsd/doctor-providers.ts so the
+ * Mirrors the check in src/resources/extensions/workflow/doctor-providers.ts so the
  * legacy Anthropic OAuth self-heal path can only trigger when the user has a
  * working Claude Code CLI to fall back to.
  */

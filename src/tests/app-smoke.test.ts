@@ -457,7 +457,7 @@ test("loadStoredEnvKeys does not overwrite existing env vars", async (t) => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 test("deriveState returns pre-planning phase for empty .gsd/ directory", async (t) => {
-  const { deriveState } = await import("../resources/extensions/gsd/state.ts");
+  const { deriveState } = await import("../resources/extensions/workflow/state.ts");
   const tmp = mkdtempSync(join(tmpdir(), "gsd-state-smoke-"));
 
   // Create minimal .gsd/ structure with no milestones
@@ -479,7 +479,7 @@ test("deriveState returns pre-planning phase for empty .gsd/ directory", async (
 });
 
 test("deriveState returns pre-planning phase when no .gsd/ directory exists", async (t) => {
-  const { deriveState } = await import("../resources/extensions/gsd/state.ts");
+  const { deriveState } = await import("../resources/extensions/workflow/state.ts");
   // Use a temp dir with no .gsd/ subdirectory at all
   const tmp = mkdtempSync(join(tmpdir(), "gsd-state-nogsd-"));
 
@@ -493,7 +493,7 @@ test("deriveState returns pre-planning phase when no .gsd/ directory exists", as
 });
 
 test("deriveState shape is structurally complete", async (t) => {
-  const { deriveState } = await import("../resources/extensions/gsd/state.ts");
+  const { deriveState } = await import("../resources/extensions/workflow/state.ts");
   const tmp = mkdtempSync(join(tmpdir(), "gsd-state-shape-"));
   mkdirSync(join(tmp, ".gsd"), { recursive: true });
 
@@ -524,7 +524,7 @@ test("deriveState shape is structurally complete", async (t) => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 test("runGSDDoctor completes without throwing on empty .gsd/ directory", async (t) => {
-  const { runGSDDoctor } = await import("../resources/extensions/gsd/doctor.ts");
+  const { runGSDDoctor } = await import("../resources/extensions/workflow/doctor.ts");
   const tmp = mkdtempSync(join(tmpdir(), "gsd-doctor-smoke-"));
   mkdirSync(join(tmp, ".gsd"), { recursive: true });
 
@@ -545,7 +545,7 @@ test("runGSDDoctor completes without throwing on empty .gsd/ directory", async (
 });
 
 test("runGSDDoctor issue objects have required fields", async (t) => {
-  const { runGSDDoctor } = await import("../resources/extensions/gsd/doctor.ts");
+  const { runGSDDoctor } = await import("../resources/extensions/workflow/doctor.ts");
   const tmp = mkdtempSync(join(tmpdir(), "gsd-doctor-fields-"));
   mkdirSync(join(tmp, ".gsd"), { recursive: true });
 
@@ -573,7 +573,7 @@ test("runGSDDoctor issue objects have required fields", async (t) => {
 });
 
 test("runGSDDoctor with fix:false never modifies the filesystem", async (t) => {
-  const { runGSDDoctor } = await import("../resources/extensions/gsd/doctor.ts");
+  const { runGSDDoctor } = await import("../resources/extensions/workflow/doctor.ts");
   const tmp = mkdtempSync(join(tmpdir(), "gsd-doctor-readonly-"));
   const gsdDir = join(tmp, ".gsd");
   mkdirSync(gsdDir, { recursive: true });

@@ -9,7 +9,7 @@
  * for the `gh` CLI body parameters.
  */
 
-import { buildPrEvidence } from "../gsd/pr-evidence.js";
+import { buildPrEvidence } from "../workflow/pr-evidence.js";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 

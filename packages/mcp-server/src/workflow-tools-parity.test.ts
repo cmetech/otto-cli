@@ -26,8 +26,8 @@ import { fileURLToPath } from "node:url";
 import {
   closeDatabase,
   getTask,
-} from "../../../src/resources/extensions/gsd/gsd-db.ts";
-import { executeTaskComplete } from "../../../src/resources/extensions/gsd/tools/workflow-tool-executors.ts";
+} from "../../../src/resources/extensions/workflow/gsd-db.ts";
+import { executeTaskComplete } from "../../../src/resources/extensions/workflow/tools/workflow-tool-executors.ts";
 import { registerWorkflowTools } from "./workflow-tools.ts";
 
 function makeTmpBase(): string {
@@ -172,11 +172,11 @@ const COMPLETION_ARGS = {
 
 const workflowBridgeExtension = import.meta.url.includes("/dist-test/") ? "js" : "ts";
 process.env.GSD_WORKFLOW_EXECUTORS_MODULE ??= fileURLToPath(new URL(
-  `../../../src/resources/extensions/gsd/tools/workflow-tool-executors.${workflowBridgeExtension}`,
+  `../../../src/resources/extensions/workflow/tools/workflow-tool-executors.${workflowBridgeExtension}`,
   import.meta.url,
 ));
 process.env.GSD_WORKFLOW_WRITE_GATE_MODULE ??= fileURLToPath(new URL(
-  `../../../src/resources/extensions/gsd/bootstrap/write-gate.${workflowBridgeExtension}`,
+  `../../../src/resources/extensions/workflow/bootstrap/write-gate.${workflowBridgeExtension}`,
   import.meta.url,
 ));
 

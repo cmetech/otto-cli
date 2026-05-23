@@ -6,7 +6,7 @@
  */
 
 import { isAnthropicApi } from "@gsd/pi-ai";
-import { resolveSearchProviderFromPreferences } from "../gsd/preferences.js";
+import { resolveSearchProviderFromPreferences } from "../workflow/preferences.js";
 
 /** Tool names for the Brave-backed custom search tools */
 export const BRAVE_TOOL_NAMES = ["search-the-web", "search_and_read"];

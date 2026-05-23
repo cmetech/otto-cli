@@ -7,11 +7,11 @@ import { AuthStorage } from "@gsd/pi-coding-agent";
 import { Editor, type EditorTheme, Key, matchesKey, truncateToWidth } from "@gsd/pi-tui";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { getGlobalGSDPreferencesPath, loadEffectiveGSDPreferences } from "../gsd/preferences.js";
+import { getGlobalGSDPreferencesPath, loadEffectiveGSDPreferences } from "../workflow/preferences.js";
 import { getRemoteConfigStatus, isValidChannelId, resolveRemoteConfig } from "./config.js";
 import { maskEditorLine, sanitizeError } from "../shared/mod.js";
 import { getLatestPromptSummary } from "./status.js";
-import { gsdHome } from "../gsd/gsd-home.js";
+import { gsdHome } from "../workflow/gsd-home.js";
 
 export async function handleRemote(
   subcommand: string,

@@ -24,7 +24,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { ensureDbOpen } from "../resources/extensions/gsd/bootstrap/dynamic-tools.ts";
+import { ensureDbOpen } from "../resources/extensions/workflow/bootstrap/dynamic-tools.ts";
 import {
   isDbAvailable,
   closeDatabase,
@@ -34,9 +34,9 @@ import {
   getMilestoneSlices,
   getSliceTasks,
   insertGateRow,
-} from "../resources/extensions/gsd/gsd-db.ts";
-import { migrateHierarchyToDb } from "../resources/extensions/gsd/md-importer.ts";
-import { invalidateStateCache } from "../resources/extensions/gsd/state.ts";
+} from "../resources/extensions/workflow/gsd-db.ts";
+import { migrateHierarchyToDb } from "../resources/extensions/workflow/md-importer.ts";
+import { invalidateStateCache } from "../resources/extensions/workflow/state.ts";
 
 function makeMarkdownFixture(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-headless-recover-"));

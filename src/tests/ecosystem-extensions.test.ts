@@ -13,8 +13,8 @@ import {
   getSnapshotPhase,
   mapAutoLoopPhase,
   updateSnapshot,
-} from "../resources/extensions/gsd/ecosystem/gsd-extension-api.js";
-import type { GSDState } from "../resources/extensions/gsd/types.js";
+} from "../resources/extensions/workflow/ecosystem/gsd-extension-api.js";
+import type { GSDState } from "../resources/extensions/workflow/types.js";
 
 // ─── Test fixtures ──────────────────────────────────────────────────────
 

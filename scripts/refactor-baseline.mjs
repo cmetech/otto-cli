@@ -13,7 +13,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = resolve(__dirname, "..");
 
 const DEFAULT_PROMPT_DIRS = [
-  "src/resources/extensions/gsd/prompts",
+  "src/resources/extensions/workflow/prompts",
 ];
 
 const DEFAULT_CONTEXT_FILES = [

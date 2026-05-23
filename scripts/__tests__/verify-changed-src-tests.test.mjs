@@ -15,7 +15,7 @@ import {
 
 test('isSourceCandidate accepts source files and skips integration and declarations', () => {
   assert.equal(isSourceCandidate('src/foo.ts'), true);
-  assert.equal(isSourceCandidate('src/resources/extensions/gsd/auto-prompts.ts'), true);
+  assert.equal(isSourceCandidate('src/resources/extensions/workflow/auto-prompts.ts'), true);
   assert.equal(isSourceCandidate('src/tests/integration/web.test.ts'), false);
   assert.equal(isSourceCandidate('src/foo.d.ts'), false);
   assert.equal(isSourceCandidate('web/lib/store.ts'), false);
@@ -23,18 +23,18 @@ test('isSourceCandidate accepts source files and skips integration and declarati
 
 test('isTestFile recognizes node test naming', () => {
   assert.equal(isTestFile('src/tests/foo.test.ts'), true);
-  assert.equal(isTestFile('src/resources/extensions/gsd/tests/foo.test.mjs'), true);
+  assert.equal(isTestFile('src/resources/extensions/workflow/tests/foo.test.mjs'), true);
   assert.equal(isTestFile('src/foo.ts'), false);
 });
 
 test('candidateTestsForSource prefers nearby extension and root src test candidates', () => {
   assert.deepEqual(
-    candidateTestsForSource('src/resources/extensions/gsd/auto-prompts.ts'),
+    candidateTestsForSource('src/resources/extensions/workflow/auto-prompts.ts'),
     [
-      'src/resources/extensions/gsd/tests/auto-prompts.test.ts',
-      'src/resources/extensions/gsd/tests/auto-prompts.test.mjs',
-      'src/resources/extensions/gsd/auto-prompts.test.ts',
-      'src/resources/extensions/gsd/auto-prompts.test.mjs',
+      'src/resources/extensions/workflow/tests/auto-prompts.test.ts',
+      'src/resources/extensions/workflow/tests/auto-prompts.test.mjs',
+      'src/resources/extensions/workflow/auto-prompts.test.ts',
+      'src/resources/extensions/workflow/auto-prompts.test.mjs',
       'src/tests/auto-prompts.test.ts',
       'src/tests/auto-prompts.test.mjs',
     ],
@@ -43,7 +43,7 @@ test('candidateTestsForSource prefers nearby extension and root src test candida
 
 test('selectChangedSrcTests returns existing focused tests and uncovered source files', () => {
   const existing = new Set([
-    'src/resources/extensions/gsd/tests/auto-prompts.test.ts',
+    'src/resources/extensions/workflow/tests/auto-prompts.test.ts',
     'src/tests/token-counter.test.ts',
   ]);
   const exists = (path) => {
@@ -52,7 +52,7 @@ test('selectChangedSrcTests returns existing focused tests and uncovered source 
   };
 
   const selection = selectChangedSrcTests([
-    'src/resources/extensions/gsd/auto-prompts.ts',
+    'src/resources/extensions/workflow/auto-prompts.ts',
     'src/token-counter.ts',
     'src/no-direct-test.ts',
     'src/tests/already.test.ts',
@@ -60,7 +60,7 @@ test('selectChangedSrcTests returns existing focused tests and uncovered source 
   ], exists);
 
   assert.deepEqual(selection.tests, [
-    'src/resources/extensions/gsd/tests/auto-prompts.test.ts',
+    'src/resources/extensions/workflow/tests/auto-prompts.test.ts',
     'src/tests/token-counter.test.ts',
   ]);
   assert.deepEqual(selection.uncovered, ['src/no-direct-test.ts']);
@@ -71,7 +71,7 @@ test('buildNodeTestArgs keeps the shared TypeScript loader', () => {
     buildNodeTestArgs(['dist-test/src/tests/token-counter.test.js']),
     [
       '--import',
-      './src/resources/extensions/gsd/tests/resolve-ts.mjs',
+      './src/resources/extensions/workflow/tests/resolve-ts.mjs',
       '--experimental-strip-types',
       '--test',
       'dist-test/src/tests/token-counter.test.js',

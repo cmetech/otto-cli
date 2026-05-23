@@ -582,7 +582,7 @@ function getWriteGateModuleCandidates(): string[] {
   }
 
   candidates.push(
-    ...buildBridgeImportCandidates("../../../src/resources/extensions/gsd/bootstrap/write-gate.js")
+    ...buildBridgeImportCandidates("../../../src/resources/extensions/workflow/bootstrap/write-gate.js")
       .map((p) => new URL(p, import.meta.url).href),
   );
 
@@ -644,7 +644,7 @@ async function importLocalModule<T>(relativePath: string): Promise<T> {
 
 async function loadProjectPreferences(projectDir: string): Promise<unknown | null> {
   const { loadEffectiveGSDPreferences } = await importLocalModule<any>(
-    "../../../src/resources/extensions/gsd/preferences.js",
+    "../../../src/resources/extensions/workflow/preferences.js",
   );
   try {
     return loadEffectiveGSDPreferences(projectDir).preferences;
@@ -665,7 +665,7 @@ function getWorkflowExecutorModuleCandidates(env: NodeJS.ProcessEnv = process.en
   }
 
   candidates.push(
-    ...buildBridgeImportCandidates("../../../src/resources/extensions/gsd/tools/workflow-tool-executors.js")
+    ...buildBridgeImportCandidates("../../../src/resources/extensions/workflow/tools/workflow-tool-executors.js")
       .map((p) => new URL(p, import.meta.url).href),
   );
 
@@ -691,7 +691,7 @@ async function getWorkflowToolExecutors(): Promise<WorkflowToolExecutors> {
       throw new Error(
         "Unable to load GSD workflow executor bridge for MCP mutation tools. " +
         "Set GSD_WORKFLOW_EXECUTORS_MODULE to an importable workflow-tool-executors module, " +
-        "or run the MCP server from a GSD checkout that includes src/resources/extensions/gsd/tools/workflow-tool-executors.(js|ts). " +
+        "or run the MCP server from a GSD checkout that includes src/resources/extensions/workflow/tools/workflow-tool-executors.(js|ts). " +
         `Attempts: ${attempts.join("; ")}`,
       );
     })();
@@ -844,7 +844,7 @@ async function runSerializedWorkflowDbOperation<T>(
 ): Promise<T> {
   return runSerializedWorkflowOperation(async () => {
     const { ensureDbOpen } = await importLocalModule<WorkflowDbBootstrapModule>(
-      "../../../src/resources/extensions/gsd/bootstrap/dynamic-tools.js",
+      "../../../src/resources/extensions/workflow/bootstrap/dynamic-tools.js",
     );
     const dbAvailable = await ensureDbOpen(projectDir);
     if (!dbAvailable) {
@@ -1006,7 +1006,7 @@ async function handleSaveGateResult(
 
 async function ensureMilestoneDbRow(milestoneId: string): Promise<void> {
   try {
-    const { insertMilestone } = await importLocalModule<any>("../../../src/resources/extensions/gsd/gsd-db.js");
+    const { insertMilestone } = await importLocalModule<any>("../../../src/resources/extensions/workflow/gsd-db.js");
     insertMilestone({ id: milestoneId, status: "queued" });
   } catch {
     // Ignore pre-existing rows or transient DB availability issues.
@@ -1015,7 +1015,7 @@ async function ensureMilestoneDbRow(milestoneId: string): Promise<void> {
 
 async function findDatabaseMilestoneIds(): Promise<string[]> {
   try {
-    const { getAllMilestones } = await importLocalModule<any>("../../../src/resources/extensions/gsd/gsd-db.js");
+    const { getAllMilestones } = await importLocalModule<any>("../../../src/resources/extensions/workflow/gsd-db.js");
     return (getAllMilestones?.() ?? [])
       .map((milestone: unknown) => {
         const id = (milestone as { id?: unknown })?.id;
@@ -1042,7 +1042,7 @@ async function generateOrReuseMilestoneId(projectDir: string): Promise<string> {
     getReservedMilestoneIds,
     nextMilestoneId,
     milestoneIdSort,
-  } = await importLocalModule<any>("../../../src/resources/extensions/gsd/milestone-ids.js");
+  } = await importLocalModule<any>("../../../src/resources/extensions/workflow/milestone-ids.js");
 
   const reserved = claimReservedId();
   if (reserved) {
@@ -1060,7 +1060,7 @@ async function generateOrReuseMilestoneId(projectDir: string): Promise<string> {
 
   // Attempt ghost-ID reuse before falling back to max+1.
   const { isReusableGhostMilestone } = await importLocalModule<any>(
-    "../../../src/resources/extensions/gsd/state.js",
+    "../../../src/resources/extensions/workflow/state.js",
   );
   const sorted = [...allIds].sort(milestoneIdSort);
   for (const candidate of sorted) {
@@ -1071,7 +1071,7 @@ async function generateOrReuseMilestoneId(projectDir: string): Promise<string> {
   }
 
   const prefsMod = await importLocalModule<any>(
-    "../../../src/resources/extensions/gsd/preferences.js",
+    "../../../src/resources/extensions/workflow/preferences.js",
   ).catch(() => null);
   // Graceful degradation: a corrupt preferences file should not crash
   // milestone-id generation. Fall back to non-unique IDs if anything
@@ -1595,7 +1595,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       const { projectDir, ...params } = parsed;
       await enforceWorkflowWriteGate("gsd_decision_save", projectDir);
       const result = await runSerializedWorkflowDbOperation(projectDir, async () => {
-        const { saveDecisionToDb } = await importLocalModule<any>("../../../src/resources/extensions/gsd/db-writer.js");
+        const { saveDecisionToDb } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db-writer.js");
         return saveDecisionToDb(params, projectDir);
       });
       return { content: [{ type: "text" as const, text: `Saved decision ${result.id}` }] };
@@ -1612,7 +1612,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       const { projectDir, ...params } = parsed;
       await enforceWorkflowWriteGate("gsd_decision_save", projectDir);
       const result = await runSerializedWorkflowDbOperation(projectDir, async () => {
-        const { saveDecisionToDb } = await importLocalModule<any>("../../../src/resources/extensions/gsd/db-writer.js");
+        const { saveDecisionToDb } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db-writer.js");
         return saveDecisionToDb(params, projectDir);
       });
       return { content: [{ type: "text" as const, text: `Saved decision ${result.id}` }] };
@@ -1628,7 +1628,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       const { projectDir, id, ...updates } = parsed;
       await enforceWorkflowWriteGate("gsd_requirement_update", projectDir);
       await runSerializedWorkflowDbOperation(projectDir, async () => {
-        const { updateRequirementInDb } = await importLocalModule<any>("../../../src/resources/extensions/gsd/db-writer.js");
+        const { updateRequirementInDb } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db-writer.js");
         return updateRequirementInDb(id, updates, projectDir);
       });
       return { content: [{ type: "text" as const, text: `Updated requirement ${id}` }] };
@@ -1645,7 +1645,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       const { projectDir, id, ...updates } = parsed;
       await enforceWorkflowWriteGate("gsd_requirement_update", projectDir);
       await runSerializedWorkflowDbOperation(projectDir, async () => {
-        const { updateRequirementInDb } = await importLocalModule<any>("../../../src/resources/extensions/gsd/db-writer.js");
+        const { updateRequirementInDb } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db-writer.js");
         return updateRequirementInDb(id, updates, projectDir);
       });
       return { content: [{ type: "text" as const, text: `Updated requirement ${id}` }] };
@@ -1661,7 +1661,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       const { projectDir, ...params } = parsed;
       await enforceWorkflowWriteGate("gsd_requirement_save", projectDir);
       const result = await runSerializedWorkflowDbOperation(projectDir, async () => {
-        const { saveRequirementToDb } = await importLocalModule<any>("../../../src/resources/extensions/gsd/db-writer.js");
+        const { saveRequirementToDb } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db-writer.js");
         return saveRequirementToDb(params, projectDir);
       });
       return { content: [{ type: "text" as const, text: `Saved requirement ${result.id}` }] };
@@ -1678,7 +1678,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       const { projectDir, ...params } = parsed;
       await enforceWorkflowWriteGate("gsd_requirement_save", projectDir);
       const result = await runSerializedWorkflowDbOperation(projectDir, async () => {
-        const { saveRequirementToDb } = await importLocalModule<any>("../../../src/resources/extensions/gsd/db-writer.js");
+        const { saveRequirementToDb } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db-writer.js");
         return saveRequirementToDb(params, projectDir);
       });
       return { content: [{ type: "text" as const, text: `Saved requirement ${result.id}` }] };
@@ -1753,7 +1753,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       const { projectDir, ...params } = parsed;
       await enforceWorkflowWriteGate("gsd_plan_task", projectDir, params.milestoneId);
       const result = await runSerializedWorkflowDbOperation(projectDir, async () => {
-        const { handlePlanTask } = await importLocalModule<any>("../../../src/resources/extensions/gsd/tools/plan-task.js");
+        const { handlePlanTask } = await importLocalModule<any>("../../../src/resources/extensions/workflow/tools/plan-task.js");
         return handlePlanTask(params, projectDir);
       });
       if ("error" in result) {
@@ -1775,7 +1775,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       const { projectDir, ...params } = parsed;
       await enforceWorkflowWriteGate("gsd_plan_task", projectDir, params.milestoneId);
       const result = await runSerializedWorkflowDbOperation(projectDir, async () => {
-        const { handlePlanTask } = await importLocalModule<any>("../../../src/resources/extensions/gsd/tools/plan-task.js");
+        const { handlePlanTask } = await importLocalModule<any>("../../../src/resources/extensions/workflow/tools/plan-task.js");
         return handlePlanTask(params, projectDir);
       });
       if ("error" in result) {
@@ -1837,9 +1837,9 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       const { projectDir, milestoneId, sliceId, reason } = parseWorkflowArgs(skipSliceSchema, args);
       await enforceWorkflowWriteGate("gsd_skip_slice", projectDir, milestoneId);
       await runSerializedWorkflowDbOperation(projectDir, async () => {
-        const { handleSkipSlice } = await importLocalModule<any>("../../../src/resources/extensions/gsd/tools/skip-slice.js");
-        const { invalidateStateCache } = await importLocalModule<any>("../../../src/resources/extensions/gsd/state.js");
-        const { rebuildState } = await importLocalModule<any>("../../../src/resources/extensions/gsd/doctor.js");
+        const { handleSkipSlice } = await importLocalModule<any>("../../../src/resources/extensions/workflow/tools/skip-slice.js");
+        const { invalidateStateCache } = await importLocalModule<any>("../../../src/resources/extensions/workflow/state.js");
+        const { rebuildState } = await importLocalModule<any>("../../../src/resources/extensions/workflow/doctor.js");
         const result = handleSkipSlice({ milestoneId, sliceId, reason });
         if (result.error) {
           throw new Error(result.error);
@@ -2064,7 +2064,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
     journalQueryParams,
     async (args: Record<string, unknown>) => {
       const { projectDir, limit, ...filters } = parseWorkflowArgs(journalQuerySchema, args);
-      const { queryJournal } = await importLocalModule<any>("../../../src/resources/extensions/gsd/journal.js");
+      const { queryJournal } = await importLocalModule<any>("../../../src/resources/extensions/workflow/journal.js");
       const entries = queryJournal(projectDir, filters).slice(0, limit ?? 100);
       if (entries.length === 0) {
         return { content: [{ type: "text" as const, text: "No matching journal entries found." }] };
@@ -2081,7 +2081,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       const { projectDir, ...params } = parseWorkflowArgs(execSchema, args);
       await enforceWorkflowWriteGate("gsd_exec", projectDir);
       const { executeGsdExec } = await importLocalModule<any>(
-        "../../../src/resources/extensions/gsd/tools/exec-tool.js",
+        "../../../src/resources/extensions/workflow/tools/exec-tool.js",
       );
       return adaptExecutorResult(
         await runSerializedWorkflowOperation(async () =>
@@ -2101,7 +2101,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
     async (args: Record<string, unknown>) => {
       const { projectDir, ...params } = parseWorkflowArgs(execSearchSchema, args);
       const { executeExecSearch } = await importLocalModule<any>(
-        "../../../src/resources/extensions/gsd/tools/exec-search-tool.js",
+        "../../../src/resources/extensions/workflow/tools/exec-search-tool.js",
       );
       return adaptExecutorResult(
         executeExecSearch(params, {
@@ -2119,7 +2119,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
     async (args: Record<string, unknown>) => {
       const { projectDir, ...params } = parseWorkflowArgs(resumeSchema, args);
       const { executeResume } = await importLocalModule<any>(
-        "../../../src/resources/extensions/gsd/tools/resume-tool.js",
+        "../../../src/resources/extensions/workflow/tools/resume-tool.js",
       );
       return adaptExecutorResult(
         executeResume(params, {
@@ -2177,7 +2177,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       await enforceWorkflowWriteGate("gsd_capture_thought", projectDir);
       return runSerializedWorkflowDbOperation(projectDir, async () => {
         const { executeMemoryCapture } = await importLocalModule<any>(
-          "../../../src/resources/extensions/gsd/tools/memory-tools.js",
+          "../../../src/resources/extensions/workflow/tools/memory-tools.js",
         );
         return executeMemoryCapture(params);
       });
@@ -2215,7 +2215,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       const { projectDir, ...params } = parseWorkflowArgs(memoryQuerySchema, args);
       return runSerializedWorkflowDbOperation(projectDir, async () => {
         const { executeMemoryQuery } = await importLocalModule<any>(
-          "../../../src/resources/extensions/gsd/tools/memory-tools.js",
+          "../../../src/resources/extensions/workflow/tools/memory-tools.js",
         );
         return executeMemoryQuery(params);
       });
@@ -2248,7 +2248,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
       const { projectDir, ...params } = parseWorkflowArgs(memoryGraphSchema, args);
       return runSerializedWorkflowDbOperation(projectDir, async () => {
         const { executeGsdGraph } = await importLocalModule<any>(
-          "../../../src/resources/extensions/gsd/tools/memory-tools.js",
+          "../../../src/resources/extensions/workflow/tools/memory-tools.js",
         );
         return executeGsdGraph(params);
       });

@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { afterEach, test } from "node:test";
 
 import { handleWorktreeFlag } from "../worktree-cli.ts";
-import { createWorktree, worktreePath } from "../resources/extensions/gsd/worktree-manager.ts";
+import { createWorktree, worktreePath } from "../resources/extensions/workflow/worktree-manager.ts";
 
 let cleanupPaths: string[] = [];
 let originalCwd = process.cwd();

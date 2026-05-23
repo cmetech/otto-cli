@@ -334,10 +334,10 @@ jobs:
       - name: Run Windows portability tests
         if: needs.fast-gates.outputs.portability-changed == 'true'
         run: >-
-          node --import ./src/resources/extensions/gsd/tests/resolve-ts.mjs
+          node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs
           --experimental-strip-types --test
           src/tests/windows-portability.test.ts
-          src/resources/extensions/gsd/tests/validate-directory.test.ts
+          src/resources/extensions/workflow/tests/validate-directory.test.ts
           src/tests/integration/web-mode-windows-hide.test.ts
 
       - name: Run Windows e2e smoke suite (non-blocking)

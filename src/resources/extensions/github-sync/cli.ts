@@ -6,7 +6,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { GIT_NO_PROMPT_ENV } from "../gsd/git-constants.js";
+import { GIT_NO_PROMPT_ENV } from "../workflow/git-constants.js";
 
 // ─── Result Type ────────────────────────────────────────────────────────────
 

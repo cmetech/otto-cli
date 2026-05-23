@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { rewriteCommandWithRtk as rewriteSharedCommandWithRtk } from "../resources/extensions/shared/rtk.ts";
-import { runVerificationGate } from "../resources/extensions/gsd/verification-gate.ts";
+import { runVerificationGate } from "../resources/extensions/workflow/verification-gate.ts";
 import { AsyncJobManager } from "../resources/extensions/async-jobs/job-manager.ts";
 import { createAsyncBashTool } from "../resources/extensions/async-jobs/async-bash-tool.ts";
 import { cleanupAll, startProcess } from "../resources/extensions/bg-shell/process-manager.ts";

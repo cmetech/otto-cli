@@ -10,7 +10,7 @@ import { join, basename } from "node:path";
 
 import type { Rule } from "./ttsr-manager.js";
 import { splitFrontmatter, parseFrontmatterMap } from "../shared/frontmatter.js";
-import { gsdHome } from "../gsd/gsd-home.js";
+import { gsdHome } from "../workflow/gsd-home.js";
 
 function parseRuleFile(filePath: string): Rule | null {
 	let content: string;

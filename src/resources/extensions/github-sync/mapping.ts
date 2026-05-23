@@ -8,7 +8,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { atomicWriteSync } from "../gsd/atomic-write.js";
+import { atomicWriteSync } from "../workflow/atomic-write.js";
 import type { SyncMapping, MilestoneSyncRecord, SliceSyncRecord, SyncEntityRecord } from "./types.js";
 
 const MAPPING_FILENAME = "github-sync.json";

@@ -13,7 +13,7 @@ import * as path from "node:path";
 import { promisify } from "node:util";
 
 const execFile = promisify(execFileCb);
-import { gsdHome } from "../gsd/gsd-home.js";
+import { gsdHome } from "../workflow/gsd-home.js";
 
 // ============================================================================
 // Types

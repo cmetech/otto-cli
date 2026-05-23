@@ -15,7 +15,7 @@ test("resolveModulePaths returns tsLoaderPath and validates it exists", () => {
   })
   assert.equal(
     result.tsLoaderPath,
-    "/fake/package/src/resources/extensions/gsd/tests/resolve-ts.mjs",
+    "/fake/package/src/resources/extensions/workflow/tests/resolve-ts.mjs",
   )
 })
 
@@ -39,7 +39,7 @@ test("resolveModulePaths throws when TS loader is missing", () => {
 test("resolveModulePaths throws when any module path is missing", () => {
   const packageRoot = "/fake/package"
   const existingSets = new Set([
-    "/fake/package/src/resources/extensions/gsd/tests/resolve-ts.mjs",
+    "/fake/package/src/resources/extensions/workflow/tests/resolve-ts.mjs",
   ])
   assert.throws(
     () =>

@@ -10,7 +10,7 @@
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { gsdHome } from "../gsd/gsd-home.js";
+import { gsdHome } from "../workflow/gsd-home.js";
 
 export const VOICE_VENV_DIR = path.join(
 	gsdHome(),

@@ -3,7 +3,7 @@
  *
  * Scans ALL production .ts files and flags patterns that break on
  * Windows, Linux, or macOS. Modelled after the git-locale static
- * check in src/resources/extensions/gsd/tests/git-locale.test.ts.
+ * check in src/resources/extensions/workflow/tests/git-locale.test.ts.
  *
  * Patterns 1, 3, 4 → hard fail (clear bugs).
  * Patterns 2, 5, 6 → warn only (logged, no assertion failure).

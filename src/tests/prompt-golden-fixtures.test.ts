@@ -83,14 +83,14 @@ function promptMetric(prompt: string): { chars: number; bytes: number; lines: nu
 }
 
 async function loadPromptBuilders(base: string): Promise<{
-  buildCompleteSlicePrompt: typeof import("../resources/extensions/gsd/auto-prompts.ts").buildCompleteSlicePrompt;
-  buildExecuteTaskPrompt: typeof import("../resources/extensions/gsd/auto-prompts.ts").buildExecuteTaskPrompt;
-  buildPlanSlicePrompt: typeof import("../resources/extensions/gsd/auto-prompts.ts").buildPlanSlicePrompt;
-  invalidateAllCaches: typeof import("../resources/extensions/gsd/cache.ts").invalidateAllCaches;
+  buildCompleteSlicePrompt: typeof import("../resources/extensions/workflow/auto-prompts.ts").buildCompleteSlicePrompt;
+  buildExecuteTaskPrompt: typeof import("../resources/extensions/workflow/auto-prompts.ts").buildExecuteTaskPrompt;
+  buildPlanSlicePrompt: typeof import("../resources/extensions/workflow/auto-prompts.ts").buildPlanSlicePrompt;
+  invalidateAllCaches: typeof import("../resources/extensions/workflow/cache.ts").invalidateAllCaches;
 }> {
   process.env.GSD_HOME = join(base, ".test-gsd-home");
-  const prompts = await import("../resources/extensions/gsd/auto-prompts.ts");
-  const cache = await import("../resources/extensions/gsd/cache.ts");
+  const prompts = await import("../resources/extensions/workflow/auto-prompts.ts");
+  const cache = await import("../resources/extensions/workflow/cache.ts");
   return { ...prompts, invalidateAllCaches: cache.invalidateAllCaches };
 }
 

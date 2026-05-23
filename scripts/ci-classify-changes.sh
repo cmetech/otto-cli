@@ -44,7 +44,7 @@ is_portability_file() {
 
 is_windows_e2e_file() {
   case "$1" in
-    tests/e2e/*|src/loader*|src/rtk*|src/native*|src/resources/extensions/gsd/gsd-db*|src/resources/extensions/gsd/extension-host*|src/resources/extensions/gsd/auto-worktree*|src/resources/extensions/gsd/workflow-mcp*|packages/pi-coding-agent/*|packages/pi-ai/*|packages/pi-agent-core/*|packages/native/*|packages/mcp-server/*|packages/rpc-client/*|native/*|package.json|package-lock.json|tsconfig*.json) return 0 ;;
+    tests/e2e/*|src/loader*|src/rtk*|src/native*|src/resources/extensions/workflow/gsd-db*|src/resources/extensions/workflow/extension-host*|src/resources/extensions/workflow/auto-worktree*|src/resources/extensions/workflow/workflow-mcp*|packages/pi-coding-agent/*|packages/pi-ai/*|packages/pi-agent-core/*|packages/native/*|packages/mcp-server/*|packages/rpc-client/*|native/*|package.json|package-lock.json|tsconfig*.json) return 0 ;;
     packages/*/tsconfig.json) return 0 ;;
     *) return 1 ;;
   esac

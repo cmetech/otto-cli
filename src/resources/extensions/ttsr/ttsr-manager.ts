@@ -10,7 +10,7 @@
  * per-rule JS RegExp iteration when the native module is not loaded.
  */
 import { createRequire } from "node:module";
-import { debugTime, debugCount, debugPeak } from "../gsd/debug-logger.js";
+import { debugTime, debugCount, debugPeak } from "../workflow/debug-logger.js";
 
 const _require = createRequire(import.meta.url);
 type PicomatchMatcher = (input: string) => boolean;

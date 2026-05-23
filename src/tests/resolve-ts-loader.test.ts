@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { load as loadWithTestLoader, resolve as resolveWithTestLoader } from "../resources/extensions/gsd/tests/dist-redirect.mjs"
+import { load as loadWithTestLoader, resolve as resolveWithTestLoader } from "../resources/extensions/workflow/tests/dist-redirect.mjs"
 
 const nextResolve = async (specifier: string) => ({ url: specifier })
 

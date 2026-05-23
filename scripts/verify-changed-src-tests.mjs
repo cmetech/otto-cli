@@ -78,7 +78,7 @@ export function selectChangedSrcTests(changedFiles, exists = existsSync) {
 export function buildNodeTestArgs(testFiles) {
   return [
     '--import',
-    './src/resources/extensions/gsd/tests/resolve-ts.mjs',
+    './src/resources/extensions/workflow/tests/resolve-ts.mjs',
     '--experimental-strip-types',
     '--test',
     ...testFiles,

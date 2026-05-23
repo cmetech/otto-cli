@@ -118,7 +118,7 @@ function buildUnknown(cmd: string): string {
 async function buildStatus(basePath: string): Promise<string> {
   let autoData: AutoDashboardSnapshot | null = null;
   try {
-    const autoMod = await tryImportModule<AutoMod>("../gsd/auto.js");
+    const autoMod = await tryImportModule<AutoMod>("../workflow/auto.js");
     if (autoMod) {
       autoData = autoMod.getAutoDashboardData();
     }
@@ -220,7 +220,7 @@ async function buildProgress(basePath: string): Promise<string> {
 async function buildBudget(basePath: string): Promise<string> {
   let totals: ProjectTotalsSnapshot | null = null;
   try {
-    const metricsMod = await tryImportModule<MetricsMod>("../gsd/metrics.js");
+    const metricsMod = await tryImportModule<MetricsMod>("../workflow/metrics.js");
     if (metricsMod) {
       const ledger = metricsMod.getLedger();
       if (ledger) {
@@ -257,7 +257,7 @@ async function buildBudget(basePath: string): Promise<string> {
 
 async function buildPause(basePath: string): Promise<string> {
   try {
-    const capturesMod = await import("../gsd/captures.js");
+    const capturesMod = await import("../workflow/captures.js");
     const id = capturesMod.appendCapture(basePath, "Remote pause via Telegram /pause command");
     capturesMod.markCaptureResolved(
       basePath,
@@ -276,7 +276,7 @@ async function buildPause(basePath: string): Promise<string> {
 
 async function buildResume(basePath: string): Promise<string> {
   try {
-    const capturesMod = await import("../gsd/captures.js");
+    const capturesMod = await import("../workflow/captures.js");
     const stopCaptures = capturesMod.loadStopCaptures(basePath);
     if (stopCaptures.length === 0) {
       return "No pending pause directives found. Auto-mode is not paused (or paused for another reason).";
@@ -396,7 +396,7 @@ interface MilestoneSnapshot {
 async function readMilestonesFromDb(): Promise<MilestoneSnapshot[]> {
   try {
     const dbMod = await tryImportModule<{ getAllMilestones(): MilestoneSnapshot[] }>(
-      "../gsd/gsd-db.js",
+      "../workflow/gsd-db.js",
     );
     return dbMod?.getAllMilestones() ?? [];
   } catch {

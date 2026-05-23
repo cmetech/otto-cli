@@ -18,7 +18,7 @@ const {
   setCommandSurfacePending,
   surfaceOutcomeToOpenRequest,
 } = await import("../../../web/lib/command-surface-contract.ts")
-const gsdExtension = await import("../../resources/extensions/gsd/index.ts")
+const gsdExtension = await import("../../resources/extensions/workflow/index.ts")
 
 const EXPECTED_BUILTIN_OUTCOMES = new Map<string, "rpc" | "surface" | "reject">([
   ["settings", "surface"],

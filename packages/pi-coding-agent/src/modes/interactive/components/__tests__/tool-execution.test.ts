@@ -173,7 +173,7 @@ describe("ToolExecutionComponent", () => {
 	test("renders compact capitalized read rows from file_path args", () => {
 		const rendered = renderToolCollapsed(
 			"Read",
-			{ file_path: "~/Github/gsd-2/src/resources/extensions/gsd/health-widget-core.ts" },
+			{ file_path: "~/Github/gsd-2/src/resources/extensions/workflow/health-widget-core.ts" },
 			{ content: [{ type: "text", text: "hidden body output" }], isError: false },
 		);
 
@@ -190,7 +190,7 @@ describe("ToolExecutionComponent", () => {
 				content: [{ type: "text", text: "hidden body output" }],
 				isError: false,
 				details: {
-					path: "/tmp/project/src/resources/extensions/gsd/health-widget-core.ts",
+					path: "/tmp/project/src/resources/extensions/workflow/health-widget-core.ts",
 					range: { start: 1, end: 12 },
 				},
 			},
@@ -275,7 +275,7 @@ describe("ToolExecutionComponent", () => {
 	test("keeps meaningful collapsed search targets", () => {
 		const rendered = renderToolCollapsed(
 			"Grep",
-			{ pattern: "Project Initialized", path: "src/resources/extensions/gsd", glob: "*.ts" },
+			{ pattern: "Project Initialized", path: "src/resources/extensions/workflow", glob: "*.ts" },
 			{ content: [{ type: "text", text: "hidden body output" }], isError: false },
 		);
 

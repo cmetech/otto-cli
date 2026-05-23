@@ -10,7 +10,7 @@
 
 # Core agent orchestration — RFC required, senior review only
 packages/pi-agent-core/             @jeremymcs
-src/resources/extensions/gsd/       @jeremymcs
+src/resources/extensions/workflow/       @jeremymcs
 
 # AI/LLM provider integrations
 packages/pi-ai/                     @jeremymcs

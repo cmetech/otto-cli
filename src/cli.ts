@@ -191,7 +191,7 @@ async function doRtkBootstrap(): Promise<void> {
   // Honor GSD_RTK_DISABLED if already explicitly set in the environment
   // (env var takes precedence over preferences for manual override).
   if (!rtkDisabled) {
-    const { loadEffectiveGSDPreferences } = await import('./resources/extensions/gsd/preferences.js')
+    const { loadEffectiveGSDPreferences } = await import('./resources/extensions/workflow/preferences.js')
     const prefs = loadEffectiveGSDPreferences()
     const rtkEnabled = prefs?.preferences.experimental?.rtk === true
     if (!rtkEnabled) {

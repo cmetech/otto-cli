@@ -7,7 +7,7 @@
  * a module variable is sufficient — no file I/O needed.
  */
 
-import { buildAuditEnvelope, emitUokAuditEvent } from "../gsd/uok/audit.js";
+import { buildAuditEnvelope, emitUokAuditEvent } from "../workflow/uok/audit.js";
 
 let _active = false;
 let _currentPhase: string | null = null;

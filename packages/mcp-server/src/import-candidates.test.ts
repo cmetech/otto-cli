@@ -6,23 +6,23 @@ import { _buildImportCandidates } from "./workflow-tools.js";
 
 describe("_buildImportCandidates", () => {
   it("includes dist/ fallback for src/ paths", () => {
-    const candidates = _buildImportCandidates("../../../src/resources/extensions/gsd/db-writer.js");
+    const candidates = _buildImportCandidates("../../../src/resources/extensions/workflow/db-writer.js");
     assert.ok(
-      candidates.some((c) => c.includes("/dist/resources/extensions/gsd/db-writer.js")),
+      candidates.some((c) => c.includes("/dist/resources/extensions/workflow/db-writer.js")),
       "should include dist/ swapped candidate",
     );
   });
 
   it("includes src/ fallback for dist/ paths", () => {
-    const candidates = _buildImportCandidates("../../../dist/resources/extensions/gsd/db-writer.js");
+    const candidates = _buildImportCandidates("../../../dist/resources/extensions/workflow/db-writer.js");
     assert.ok(
-      candidates.some((c) => c.includes("/src/resources/extensions/gsd/db-writer.js")),
+      candidates.some((c) => c.includes("/src/resources/extensions/workflow/db-writer.js")),
       "should include src/ swapped candidate",
     );
   });
 
   it("includes .ts variants for .js paths", () => {
-    const candidates = _buildImportCandidates("../../../src/resources/extensions/gsd/db-writer.js");
+    const candidates = _buildImportCandidates("../../../src/resources/extensions/workflow/db-writer.js");
     assert.ok(
       candidates.some((c) => c.endsWith("db-writer.ts") && c.includes("/src/")),
       "should include .ts variant for original src/ path",
@@ -34,13 +34,13 @@ describe("_buildImportCandidates", () => {
   });
 
   it("returns source TypeScript before stale JavaScript fallbacks", () => {
-    const input = "../../../src/resources/extensions/gsd/db-writer.js";
+    const input = "../../../src/resources/extensions/workflow/db-writer.js";
     const candidates = _buildImportCandidates(input);
     assert.deepEqual(candidates, [
-      "../../../src/resources/extensions/gsd/db-writer.ts",
-      "../../../src/resources/extensions/gsd/db-writer.js",
-      "../../../dist/resources/extensions/gsd/db-writer.ts",
-      "../../../dist/resources/extensions/gsd/db-writer.js",
+      "../../../src/resources/extensions/workflow/db-writer.ts",
+      "../../../src/resources/extensions/workflow/db-writer.js",
+      "../../../dist/resources/extensions/workflow/db-writer.ts",
+      "../../../dist/resources/extensions/workflow/db-writer.js",
     ]);
   });
 

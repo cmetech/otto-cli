@@ -19,9 +19,9 @@ import {
   insertSlice,
   openDatabase,
   upsertMilestonePlanning,
-} from "../../../src/resources/extensions/gsd/gsd-db.ts";
-import { buildReassessRoadmapPrompt } from "../../../src/resources/extensions/gsd/auto-prompts.ts";
-import { invalidateAllCaches } from "../../../src/resources/extensions/gsd/cache.ts";
+} from "../../../src/resources/extensions/workflow/gsd-db.ts";
+import { buildReassessRoadmapPrompt } from "../../../src/resources/extensions/workflow/auto-prompts.ts";
+import { invalidateAllCaches } from "../../../src/resources/extensions/workflow/cache.ts";
 import {
   _buildBridgeImportCandidates,
   _buildImportCandidates,
@@ -156,11 +156,11 @@ function cacheBustedWorkflowToolsImport(tag: string): string {
 
 const workflowBridgeExtension = import.meta.url.includes("/dist-test/") ? "js" : "ts";
 process.env.GSD_WORKFLOW_EXECUTORS_MODULE ??= fileURLToPath(new URL(
-  `../../../src/resources/extensions/gsd/tools/workflow-tool-executors.${workflowBridgeExtension}`,
+  `../../../src/resources/extensions/workflow/tools/workflow-tool-executors.${workflowBridgeExtension}`,
   import.meta.url,
 ));
 process.env.GSD_WORKFLOW_WRITE_GATE_MODULE ??= fileURLToPath(new URL(
-  `../../../src/resources/extensions/gsd/bootstrap/write-gate.${workflowBridgeExtension}`,
+  `../../../src/resources/extensions/workflow/bootstrap/write-gate.${workflowBridgeExtension}`,
   import.meta.url,
 ));
 
@@ -191,24 +191,24 @@ describe("workflow MCP tools", () => {
 
   it("prefers source TypeScript for generic local module imports", () => {
     assert.deepEqual(
-      _buildImportCandidates("../../../src/resources/extensions/gsd/tools/workflow-tool-executors.js"),
+      _buildImportCandidates("../../../src/resources/extensions/workflow/tools/workflow-tool-executors.js"),
       [
-        "../../../src/resources/extensions/gsd/tools/workflow-tool-executors.ts",
-        "../../../src/resources/extensions/gsd/tools/workflow-tool-executors.js",
-        "../../../dist/resources/extensions/gsd/tools/workflow-tool-executors.ts",
-        "../../../dist/resources/extensions/gsd/tools/workflow-tool-executors.js",
+        "../../../src/resources/extensions/workflow/tools/workflow-tool-executors.ts",
+        "../../../src/resources/extensions/workflow/tools/workflow-tool-executors.js",
+        "../../../dist/resources/extensions/workflow/tools/workflow-tool-executors.ts",
+        "../../../dist/resources/extensions/workflow/tools/workflow-tool-executors.js",
       ],
     );
   });
 
   it("prefers compiled runtime bridge modules before source fallbacks", () => {
     assert.deepEqual(
-      _buildBridgeImportCandidates("../../../src/resources/extensions/gsd/tools/workflow-tool-executors.js"),
+      _buildBridgeImportCandidates("../../../src/resources/extensions/workflow/tools/workflow-tool-executors.js"),
       [
-        "../../../dist/resources/extensions/gsd/tools/workflow-tool-executors.js",
-        "../../../dist/resources/extensions/gsd/tools/workflow-tool-executors.ts",
-        "../../../src/resources/extensions/gsd/tools/workflow-tool-executors.js",
-        "../../../src/resources/extensions/gsd/tools/workflow-tool-executors.ts",
+        "../../../dist/resources/extensions/workflow/tools/workflow-tool-executors.js",
+        "../../../dist/resources/extensions/workflow/tools/workflow-tool-executors.ts",
+        "../../../src/resources/extensions/workflow/tools/workflow-tool-executors.js",
+        "../../../src/resources/extensions/workflow/tools/workflow-tool-executors.ts",
       ],
     );
   });
@@ -1128,7 +1128,7 @@ export const executeTaskComplete = async (params, projectDir) => {
             title: "Add planning bridge",
             description: "Implement the shared executor path.",
             estimate: "15m",
-            files: ["src/resources/extensions/gsd/tools/workflow-tool-executors.ts"],
+            files: ["src/resources/extensions/workflow/tools/workflow-tool-executors.ts"],
             verify: "node --test",
             inputs: [".gsd/milestones/M001/M001-ROADMAP.md"],
             expectedOutput: ["S01-PLAN.md", "T01-PLAN.md"],

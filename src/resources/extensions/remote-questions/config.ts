@@ -3,7 +3,7 @@
  */
 
 import { AuthStorage } from "@gsd/pi-coding-agent";
-import { loadEffectiveGSDPreferences, type RemoteQuestionsConfig } from "../gsd/preferences.js";
+import { loadEffectiveGSDPreferences, type RemoteQuestionsConfig } from "../workflow/preferences.js";
 import type { RemoteChannel } from "./types.js";
 
 export interface ResolvedConfig {

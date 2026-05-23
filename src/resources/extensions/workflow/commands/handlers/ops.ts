@@ -20,6 +20,7 @@ import { handlePrBranch } from "../../commands-pr-branch.js";
 import { currentDirectoryRoot, projectRoot } from "../context.js";
 import { findUnmergedCompletedMilestones } from "../../unmerged-milestone-guard.js";
 import { mergeCompletedMilestone } from "../../parallel-merge.js";
+import { CMD, slashCommand } from "../../strings.js";
 
 async function handleCompletedMilestoneRecovery(
   phase: string,
@@ -44,7 +45,7 @@ async function handleCompletedMilestoneRecovery(
   const result = await mergeCompletedMilestone(basePath, blocker.milestoneId);
   if (result.success) {
     ctx.ui.notify(
-      `Milestone ${blocker.milestoneId} merged to ${blocker.integrationBranch}. Run /gsd again when ready.`,
+      `Milestone ${blocker.milestoneId} merged to ${blocker.integrationBranch}. Run /${CMD} again when ready.`,
       "info",
     );
   } else {
@@ -139,7 +140,7 @@ export async function handleOpsCommand(trimmed: string, ctx: ExtensionCommandCon
     return true;
   }
   if (trimmed === "skip") {
-    ctx.ui.notify("Usage: /gsd skip <unit-id>  Example: /gsd skip M001/S01/T03", "warning");
+    ctx.ui.notify(`Usage: ${slashCommand("skip")} <unit-id>  Example: ${slashCommand("skip")} M001/S01/T03`, "warning");
     return true;
   }
   if (trimmed.startsWith("skip ")) {
@@ -207,7 +208,7 @@ export async function handleOpsCommand(trimmed: string, ctx: ExtensionCommandCon
     return true;
   }
   if (trimmed === "run-hook") {
-    ctx.ui.notify(`Usage: /gsd run-hook <hook-name> <unit-type> <unit-id>
+    ctx.ui.notify(`Usage: ${slashCommand("run-hook")} <hook-name> <unit-type> <unit-id>
 
 Unit types:
   execute-task   - Task execution (unit-id: M001/S01/T01)
@@ -217,8 +218,8 @@ Unit types:
   complete-milestone - Milestone completion (unit-id: M001)
 
 Examples:
-  /gsd run-hook code-review execute-task M001/S01/T01
-  /gsd run-hook lint-check plan-slice M001/S01`, "warning");
+  ${slashCommand("run-hook")} code-review execute-task M001/S01/T01
+  ${slashCommand("run-hook")} lint-check plan-slice M001/S01`, "warning");
     return true;
   }
   if (trimmed.startsWith("steer ")) {
@@ -226,7 +227,7 @@ Examples:
     return true;
   }
   if (trimmed === "steer") {
-    ctx.ui.notify("Usage: /gsd steer <description of change>. Example: /gsd steer Use Postgres instead of SQLite", "warning");
+    ctx.ui.notify(`Usage: ${slashCommand("steer")} <description of change>. Example: ${slashCommand("steer")} Use Postgres instead of SQLite`, "warning");
     return true;
   }
   if (trimmed.startsWith("knowledge ")) {
@@ -234,7 +235,7 @@ Examples:
     return true;
   }
   if (trimmed === "knowledge") {
-    ctx.ui.notify("Usage: /gsd knowledge <rule|pattern|lesson> <description>. Example: /gsd knowledge rule Use real DB for integration tests", "warning");
+    ctx.ui.notify(`Usage: ${slashCommand("knowledge")} <rule|pattern|lesson> <description>. Example: ${slashCommand("knowledge")} rule Use real DB for integration tests`, "warning");
     return true;
   }
   if (trimmed === "migrate" || trimmed.startsWith("migrate ")) {
@@ -249,7 +250,7 @@ Examples:
   if (trimmed === "dispatch" || trimmed.startsWith("dispatch ")) {
     const phase = trimmed.replace(/^dispatch\s*/, "").trim();
     if (!phase) {
-      ctx.ui.notify("Usage: /gsd dispatch <phase>  (research|plan|execute|complete|validate|reassess|uat|replan)", "warning");
+      ctx.ui.notify(`Usage: ${slashCommand("dispatch")} <phase>  (research|plan|execute|complete|validate|reassess|uat|replan)`, "warning");
       return true;
     }
     const basePath = projectRoot();

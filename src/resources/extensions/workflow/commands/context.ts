@@ -6,6 +6,7 @@ import { resolveProjectRoot } from "../worktree.js";
 import { showNextAction } from "../../shared/tui.js";
 import { handleStatus } from "./handlers/core.js";
 import { homedir } from "node:os";
+import { BRAND, CMD, slashCommand } from "../strings.js";
 
 export interface GsdDispatchContext {
   ctx: ExtensionCommandContext;
@@ -52,7 +53,7 @@ export function projectRoot(): string {
   const pathToCheck = root !== cwd ? cwd : root;
   const result = validateDirectory(pathToCheck);
   if (result.severity === "blocked") {
-    throw new GSDNoProjectError(result.reason ?? "GSD must be run inside a project directory.");
+    throw new GSDNoProjectError(result.reason ?? `${BRAND} must be run inside a project directory.`);
   }
   return root;
 }
@@ -70,7 +71,7 @@ export function currentDirectoryRoot(): string {
   }
   const result = validateDirectory(cwd);
   if (result.severity === "blocked") {
-    throw new GSDNoProjectError(result.reason ?? "GSD must be run inside a project directory.");
+    throw new GSDNoProjectError(result.reason ?? `${BRAND} must be run inside a project directory.`);
   }
   return cwd;
 }
@@ -93,7 +94,7 @@ export async function guardRemoteSession(
   if (process.env.GSD_WEB_BRIDGE_TUI === "1") {
     ctx.ui.notify(
       `Another auto-mode session (PID ${remote.pid}) is running on this project (${unitLabel}). ` +
-      `Stop it first with /gsd stop, or use /gsd steer to redirect it.`,
+      `Stop it first with ${slashCommand("stop")}, or use ${slashCommand("steer")} to redirect it.`,
       "warning",
     );
     return false;
@@ -109,13 +110,13 @@ export async function guardRemoteSession(
       {
         id: "status",
         label: "View status",
-        description: "Show the current GSD progress dashboard.",
+        description: `Show the current ${BRAND} progress dashboard.`,
         recommended: true,
       },
       {
         id: "steer",
         label: "Steer the session",
-        description: "Use /gsd steer <instruction> to redirect the running session.",
+        description: `Use ${slashCommand("steer")} <instruction> to redirect the running session.`,
       },
       {
         id: "stop",
@@ -128,7 +129,7 @@ export async function guardRemoteSession(
         description: "Start a new session, terminating the existing one.",
       },
     ],
-    notYetMessage: "Run /gsd when ready.",
+    notYetMessage: `Run /${CMD} when ready.`,
   });
 
   if (choice === "status") {
@@ -137,8 +138,8 @@ export async function guardRemoteSession(
   }
   if (choice === "steer") {
     ctx.ui.notify(
-      "Use /gsd steer <instruction> to redirect the running auto-mode session.\n" +
-      "Example: /gsd steer Use Postgres instead of SQLite",
+      `Use ${slashCommand("steer")} <instruction> to redirect the running auto-mode session.\n` +
+      `Example: ${slashCommand("steer")} Use Postgres instead of SQLite`,
       "info",
     );
     return false;

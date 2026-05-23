@@ -2,8 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { runPreDispatch } from "../auto/phases.ts";
+import { CMD } from "../strings.ts";
 
-test("blocked remediation warning uses /gsd dispatch reassess and hides internal tool name", async () => {
+test(`blocked remediation warning uses /${CMD} dispatch reassess and hides internal tool name`, async () => {
   const notifications: Array<{ message: string; level?: string }> = [];
   const desktopMessages: string[] = [];
 
@@ -80,10 +81,10 @@ test("blocked remediation warning uses /gsd dispatch reassess and hides internal
   assert.deepEqual(result, { action: "break", reason: "blocked" });
 
   const warning = notifications.find((n) => n.level === "warning")?.message ?? "";
-  assert.match(warning, /\/gsd dispatch reassess/);
+  assert.match(warning, new RegExp(`/${CMD} dispatch reassess`));
   assert.doesNotMatch(warning, /gsd_reassess_roadmap/);
 
   const desktop = desktopMessages[0] ?? "";
-  assert.match(desktop, /\/gsd dispatch reassess/);
+  assert.match(desktop, new RegExp(`/${CMD} dispatch reassess`));
   assert.doesNotMatch(desktop, /gsd_reassess_roadmap/);
 });

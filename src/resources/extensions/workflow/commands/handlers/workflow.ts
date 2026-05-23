@@ -43,6 +43,7 @@ import {
   uninstallPlugin,
   validateFetchedContent,
 } from "../../workflow-install.js";
+import { slashCommand } from "../../strings.js";
 
 /**
  * Parse optional `/gsd discuss` targeting args.
@@ -68,20 +69,20 @@ function parseDiscussArgs(args: string): { target: string | null; error: string 
   if (milestoneFlag >= 0) {
     const target = tokens[milestoneFlag + 1];
     if (!target || target.startsWith("--")) {
-      return { target: null, error: "Missing value for --milestone. Usage: /gsd discuss --milestone M014" };
+      return { target: null, error: `Missing value for --milestone. Usage: ${slashCommand("discuss")} --milestone M014` };
     }
     if (target.includes("/")) {
-      return { target: null, error: "Invalid --milestone value. Usage: /gsd discuss --milestone M014" };
+      return { target: null, error: `Invalid --milestone value. Usage: ${slashCommand("discuss")} --milestone M014` };
     }
     return { target, error: null };
   }
   if (sliceFlag >= 0) {
     const target = tokens[sliceFlag + 1];
     if (!target || target.startsWith("--")) {
-      return { target: null, error: "Missing value for --slice. Usage: /gsd discuss --slice M014/S03" };
+      return { target: null, error: `Missing value for --slice. Usage: ${slashCommand("discuss")} --slice M014/S03` };
     }
     if (!target.includes("/")) {
-      return { target: null, error: "Invalid --slice value. Usage: /gsd discuss --slice M014/S03" };
+      return { target: null, error: `Invalid --slice value. Usage: ${slashCommand("discuss")} --slice M014/S03` };
     }
     return { target, error: null };
   }
@@ -102,7 +103,7 @@ function requireNotAutoActive(commandName: string, ctx: ExtensionCommandContext)
   if (!isAutoActive()) return false;
   ctx.ui.notify(
     `${commandName} cannot run while auto-mode is active.\n` +
-    `Stop auto-mode first with /gsd stop, then run ${commandName}.`,
+    `Stop auto-mode first with ${slashCommand("stop")}, then run ${commandName}.`,
     "error",
   );
   return true;
@@ -118,7 +119,7 @@ const RESERVED_SUBCOMMANDS = new Set([
 const HEADLESS_CHAIN_AUTO_FLAG = "--headless-chain-auto";
 
 const WORKFLOW_USAGE = [
-  "Usage: /gsd workflow [<name> | <subcommand>]",
+  `Usage: ${slashCommand("workflow")} [<name> | <subcommand>]`,
   "",
   "  <name> [args]     — Run a plugin directly (resolves project/global/bundled)",
   "  new               — Create a new workflow definition (via skill)",
@@ -248,7 +249,7 @@ function dispatchPluginByMode(
       if (isAutoActive()) {
         ctx.ui.notify(
           "Cannot start a markdown-phase workflow while auto-mode is running.\n" +
-          "Run /gsd pause first.",
+          `Run ${slashCommand("pause")} first.`,
           "warning",
         );
         return;
@@ -261,7 +262,7 @@ function dispatchPluginByMode(
     case "auto-milestone": {
       ctx.ui.notify(
         `'${plugin.name}' runs via the full milestone pipeline.\n` +
-        `Use /gsd auto or /gsd start ${plugin.name}.`,
+        `Use ${slashCommand("auto")} or ${slashCommand("start")} ${plugin.name}.`,
         "info",
       );
       return;
@@ -296,7 +297,7 @@ async function handleCustomWorkflow(
   // ── run <name> [param=value ...] ──
   if (head === "run") {
     if (!rest) {
-      ctx.ui.notify("Usage: /gsd workflow run <name> [param=value ...]", "warning");
+      ctx.ui.notify(`Usage: ${slashCommand("workflow")} run <name> [param=value ...]`, "warning");
       return true;
     }
     const { defName, overrides } = parseWorkflowRunArgs(rest);
@@ -335,13 +336,13 @@ async function handleCustomWorkflow(
   // ── info <name> ──
   if (head === "info") {
     if (!rest) {
-      ctx.ui.notify("Usage: /gsd workflow info <name>", "warning");
+      ctx.ui.notify(`Usage: ${slashCommand("workflow")} info <name>`, "warning");
       return true;
     }
     const base = projectRoot();
     const plugin = resolvePlugin(base, rest);
     if (!plugin) {
-      ctx.ui.notify(`Plugin not found: ${rest}\nRun /gsd workflow to list plugins.`, "warning");
+      ctx.ui.notify(`Plugin not found: ${rest}\nRun ${slashCommand("workflow")} to list plugins.`, "warning");
       return true;
     }
     ctx.ui.notify(formatPluginInfo(plugin), "info");
@@ -352,7 +353,7 @@ async function handleCustomWorkflow(
   if (head === "install") {
     if (!rest) {
       ctx.ui.notify(
-        "Usage: /gsd workflow install <source> [--project] [--name <n>]\n\n" +
+        `Usage: ${slashCommand("workflow")} install <source> [--project] [--name <n>]\n\n` +
         "Sources:\n" +
         "  https://…/path/workflow.yaml\n" +
         "  gist:<id>\n" +
@@ -398,7 +399,7 @@ async function handleCustomWorkflow(
         `Preview (first 20 lines):`,
         "  " + preview.split("\n").join("\n  "),
         "",
-        `Proceeding with install. Run /gsd workflow uninstall ${name} to revert.`,
+        `Proceeding with install. Run ${slashCommand("workflow")} uninstall ${name} to revert.`,
       ].join("\n");
       ctx.ui.notify(summary, "info");
 
@@ -417,7 +418,7 @@ async function handleCustomWorkflow(
   // ── uninstall <name> ──
   if (head === "uninstall") {
     if (!rest) {
-      ctx.ui.notify("Usage: /gsd workflow uninstall <name>", "warning");
+      ctx.ui.notify(`Usage: ${slashCommand("workflow")} uninstall <name>`, "warning");
       return true;
     }
     const base = projectRoot();
@@ -439,7 +440,7 @@ async function handleCustomWorkflow(
   // ── validate <name> ──
   if (head === "validate") {
     if (!rest) {
-      ctx.ui.notify("Usage: /gsd workflow validate <name>", "warning");
+      ctx.ui.notify(`Usage: ${slashCommand("workflow")} validate <name>`, "warning");
       return true;
     }
     const base = projectRoot();
@@ -497,7 +498,7 @@ async function handleCustomWorkflow(
   if (head === "pause" && !rest) {
     const engineId = getActiveEngineId();
     if (engineId === "dev" || engineId === null) {
-      ctx.ui.notify("No custom workflow is running. Use /gsd pause for dev workflow.", "warning");
+      ctx.ui.notify(`No custom workflow is running. Use ${slashCommand("pause")} for dev workflow.`, "warning");
       return true;
     }
     if (!isAutoActive()) {
@@ -513,7 +514,7 @@ async function handleCustomWorkflow(
   if (head === "resume" && !rest) {
     const engineId = getActiveEngineId();
     if (engineId === "dev" || engineId === null) {
-      ctx.ui.notify("No custom workflow to resume. Use /gsd auto for dev workflow.", "warning");
+      ctx.ui.notify(`No custom workflow to resume. Use ${slashCommand("auto")} for dev workflow.`, "warning");
       return true;
     }
     startAutoDetached(ctx, pi, projectRoot(), false);
@@ -540,14 +541,14 @@ async function handleCustomWorkflow(
 export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionCommandContext, pi: ExtensionAPI): Promise<boolean> {
   // ── /gsd do — natural language routing (must be early to route to other commands) ──
   if (trimmed === "do" || trimmed.startsWith("do ")) {
-    if (requireNotAutoActive("/gsd do", ctx)) return true;
+    if (requireNotAutoActive(slashCommand("do"), ctx)) return true;
     const { handleDo } = await import("../../commands-do.js");
     await handleDo(trimmed.replace(/^do\s*/, "").trim(), ctx, pi);
     return true;
   }
   // ── Backlog management ──
   if (trimmed === "backlog" || trimmed.startsWith("backlog ")) {
-    if (requireNotAutoActive("/gsd backlog", ctx)) return true;
+    if (requireNotAutoActive(slashCommand("backlog"), ctx)) return true;
     const { handleBacklog } = await import("../../commands-backlog.js");
     await handleBacklog(trimmed.replace(/^backlog\s*/, "").trim(), ctx, pi);
     return true;
@@ -559,17 +560,17 @@ export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionComma
   }
 
   if (trimmed === "queue") {
-    if (requireNotAutoActive("/gsd queue", ctx)) return true;
+    if (requireNotAutoActive(slashCommand("queue"), ctx)) return true;
     await showQueue(ctx, pi, projectRoot());
     return true;
   }
   if (trimmed === "discuss") {
-    if (requireNotAutoActive("/gsd discuss", ctx)) return true;
+    if (requireNotAutoActive(slashCommand("discuss"), ctx)) return true;
     await showDiscuss(ctx, pi, projectRoot());
     return true;
   }
   if (trimmed.startsWith("discuss ")) {
-    if (requireNotAutoActive("/gsd discuss", ctx)) return true;
+    if (requireNotAutoActive(slashCommand("discuss"), ctx)) return true;
     const args = trimmed.replace(/^discuss\s*/, "").trim();
     const parsed = parseDiscussArgs(args);
     if (parsed.error) {
@@ -580,12 +581,12 @@ export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionComma
     return true;
   }
   if (trimmed === "quick" || trimmed.startsWith("quick ")) {
-    if (requireNotAutoActive("/gsd quick", ctx)) return true;
+    if (requireNotAutoActive(slashCommand("quick"), ctx)) return true;
     await handleQuick(trimmed.replace(/^quick\s*/, "").trim(), ctx, pi);
     return true;
   }
   if (trimmed === "new-milestone" || trimmed.startsWith("new-milestone ")) {
-    if (requireNotAutoActive("/gsd new-milestone", ctx)) return true;
+    if (requireNotAutoActive(slashCommand("new-milestone"), ctx)) return true;
     const basePath = projectRoot();
     const args = trimmed.replace(/^new-milestone\s*/, "").trim();
     if (/(^|\s)--deep(\s|$)/.test(args)) {
@@ -610,7 +611,7 @@ export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionComma
     // Direct entrypoint for new-project bootstrap.
     // Routes through showSmartEntry (same as new-milestone for first project),
     // but accepts --deep to opt into staged project-level discovery (deep mode).
-    if (requireNotAutoActive("/gsd new-project", ctx)) return true;
+    if (requireNotAutoActive(slashCommand("new-project"), ctx)) return true;
     const basePath = currentDirectoryRoot();
     const args = trimmed.replace(/^new-project\s*/, "").trim();
     if (/(^|\s)--deep(\s|$)/.test(args)) {
@@ -630,7 +631,7 @@ export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionComma
     return true;
   }
   if (trimmed === "park" || trimmed.startsWith("park ")) {
-    if (requireNotAutoActive("/gsd park", ctx)) return true;
+    if (requireNotAutoActive(slashCommand("park"), ctx)) return true;
     const basePath = projectRoot();
     const arg = trimmed.replace(/^park\s*/, "").trim();
     let targetId = arg;
@@ -643,20 +644,20 @@ export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionComma
       targetId = state.activeMilestone.id;
     }
     if (isParked(basePath, targetId)) {
-      ctx.ui.notify(`${targetId} is already parked. Use /gsd unpark ${targetId} to reactivate.`, "info");
+      ctx.ui.notify(`${targetId} is already parked. Use ${slashCommand("unpark")} ${targetId} to reactivate.`, "info");
       return true;
     }
     const reasonParts = arg.replace(targetId, "").trim().replace(/^["']|["']$/g, "");
-    const reason = reasonParts || "Parked via /gsd park";
+    const reason = reasonParts || `Parked via ${slashCommand("park")}`;
     const success = parkMilestone(basePath, targetId, reason);
     ctx.ui.notify(
-      success ? `Parked ${targetId}. Run /gsd unpark ${targetId} to reactivate.` : `Could not park ${targetId} — milestone not found.`,
+      success ? `Parked ${targetId}. Run ${slashCommand("unpark")} ${targetId} to reactivate.` : `Could not park ${targetId} — milestone not found.`,
       success ? "info" : "warning",
     );
     return true;
   }
   if (trimmed === "unpark" || trimmed.startsWith("unpark ")) {
-    if (requireNotAutoActive("/gsd unpark", ctx)) return true;
+    if (requireNotAutoActive(slashCommand("unpark"), ctx)) return true;
     const basePath = projectRoot();
     const arg = trimmed.replace(/^unpark\s*/, "").trim();
     let targetId = arg;
@@ -670,7 +671,7 @@ export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionComma
       if (parkedEntries.length === 1) {
         targetId = parkedEntries[0].id;
       } else {
-        ctx.ui.notify(`Parked milestones: ${parkedEntries.map((entry) => entry.id).join(", ")}. Specify which to unpark: /gsd unpark <id>`, "info");
+        ctx.ui.notify(`Parked milestones: ${parkedEntries.map((entry) => entry.id).join(", ")}. Specify which to unpark: ${slashCommand("unpark")} <id>`, "info");
         return true;
       }
     }

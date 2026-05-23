@@ -21,6 +21,7 @@ import {
   readOnboardingRecord,
   resetOnboarding,
 } from "../../onboarding-state.js"
+import { BRAND, slashCommand } from "../../strings.js"
 
 interface ParsedArgs {
   reset: boolean
@@ -63,25 +64,25 @@ async function runStep(ctx: ExtensionCommandContext, stepId: OnboardingStepId): 
   switch (stepId) {
     case "llm":
       ctx.ui.notify(
-        "LLM provider setup: run /login to sign in via OAuth, or /gsd keys add to paste an API key.",
+        `LLM provider setup: run /login to sign in via OAuth, or ${slashCommand("keys")} add to paste an API key.`,
         "info",
       )
       return
     case "search":
       ctx.ui.notify(
-        "Web search setup: run /gsd keys add and pick a search provider (brave, tavily, etc.).",
+        `Web search setup: run ${slashCommand("keys")} add and pick a search provider (brave, tavily, etc.).`,
         "info",
       )
       return
     case "remote":
       ctx.ui.notify(
-        "Remote questions setup: run /gsd remote to configure Discord / Slack / Telegram notifications.",
+        `Remote questions setup: run ${slashCommand("remote")} to configure Discord / Slack / Telegram notifications.`,
         "info",
       )
       return
     case "tool-keys":
       ctx.ui.notify(
-        "Tool keys setup: run /gsd keys add to save API keys for Context7, Jina, Groq voice, etc.",
+        `Tool keys setup: run ${slashCommand("keys")} add to save API keys for Context7, Jina, Groq voice, etc.`,
         "info",
       )
       return
@@ -105,11 +106,11 @@ async function runStep(ctx: ExtensionCommandContext, stepId: OnboardingStepId): 
           return
         }
       } catch { /* fall through */ }
-      ctx.ui.notify("Run /gsd doctor to validate your setup.", "info")
+      ctx.ui.notify(`Run ${slashCommand("doctor")} to validate your setup.`, "info")
       return
     }
     case "skills":
-      ctx.ui.notify("Skill install runs during /gsd init. Use /gsd init or /skill manage.", "info")
+      ctx.ui.notify(`Skill install runs during ${slashCommand("init")}. Use ${slashCommand("init")} or /skill manage.`, "info")
       return
     case "project": {
       const { handleCoreCommand } = await import("./core.js")
@@ -133,7 +134,7 @@ async function renderSetupHub(ctx: ExtensionCommandContext): Promise<void> {
   })
   const labelToStep = new Map(labels.map((label, i) => [label, ONBOARDING_STEPS[i].id]))
 
-  const choice = await ctx.ui.select("GSD Setup — pick a step to configure", labels)
+  const choice = await ctx.ui.select(`${BRAND} Setup — pick a step to configure`, labels)
   if (typeof choice !== "string") return
   const stepId = labelToStep.get(choice)
   if (!stepId) return
@@ -142,7 +143,7 @@ async function renderSetupHub(ctx: ExtensionCommandContext): Promise<void> {
 
 function renderStatus(): string {
   const r = readOnboardingRecord()
-  const lines: string[] = ["GSD Onboarding\n"]
+  const lines: string[] = [`${BRAND} Onboarding\n`]
   if (r.completedAt) {
     lines.push(`  Completed: ${r.completedAt}`)
   } else {
@@ -179,7 +180,7 @@ export async function handleOnboarding(rawArgs: string, ctx: ExtensionCommandCon
   if (args.reset) {
     resetOnboarding()
     ctx.ui.notify(
-      "Onboarding state cleared. API keys/credentials are unchanged — manage them with /gsd keys. Restart GSD to re-run the first-run wizard, or pick a step below.",
+      `Onboarding state cleared. API keys/credentials are unchanged — manage them with ${slashCommand("keys")}. Restart ${BRAND} to re-run the first-run wizard, or pick a step below.`,
       "info",
     )
     await renderSetupHub(ctx)

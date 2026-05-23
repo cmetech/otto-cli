@@ -18,6 +18,7 @@ import { join, dirname } from "node:path";
 import { mkdirSync } from "node:fs";
 import { getErrorMessage } from "./error-utils.js";
 import { gsdHome } from "./gsd-home.js";
+import { BRAND, slashCommand } from "./strings.js";
 
 // ─── Provider Registry ─────────────────────────────────────────────────────────
 
@@ -219,7 +220,7 @@ export function formatKeyDashboard(statuses: KeyStatus[]): string {
     { label: "Remote Integrations", key: "remote" },
   ];
 
-  const lines: string[] = ["GSD API Key Manager\n"];
+  const lines: string[] = [`${BRAND} API Key Manager\n`];
 
   for (const cat of categories) {
     const items = statuses.filter((s) => s.provider.category === cat.key);
@@ -271,7 +272,7 @@ export async function handleAddKey(
   if (providerArg) {
     provider = findProvider(providerArg);
     if (!provider) {
-      ctx.ui.notify(`Unknown provider: "${providerArg}". Use /gsd keys list to see available providers.`, "error");
+      ctx.ui.notify(`Unknown provider: "${providerArg}". Use ${slashCommand("keys")} list to see available providers.`, "error");
       return false;
     }
   } else {
@@ -773,7 +774,7 @@ export function runKeyDoctor(auth: AuthStorage): DoctorFinding[] {
         findings.push({
           severity: "warning",
           provider: provider.id,
-          message: `${provider.label}: empty key stored (from skipped setup) — run /gsd keys add ${provider.id}`,
+          message: `${provider.label}: empty key stored (from skipped setup) — run ${slashCommand("keys")} add ${provider.id}`,
         });
       }
     }
@@ -843,7 +844,7 @@ export function runKeyDoctor(auth: AuthStorage): DoctorFinding[] {
   if (!hasAnyLlm) {
     findings.push({
       severity: "error",
-      message: "No LLM provider configured — run /gsd keys add or /login",
+      message: `No LLM provider configured — run ${slashCommand("keys")} add or /login`,
     });
   }
 
@@ -1003,14 +1004,14 @@ export async function handleKeys(
 
     default:
       ctx.ui.notify(
-        "Usage: /gsd keys [list|add|remove|test|rotate|doctor]\n\n" +
-        "  /gsd keys              Show key status dashboard\n" +
-        "  /gsd keys list         List all configured keys\n" +
-        "  /gsd keys add [id]     Add a key for a provider\n" +
-        "  /gsd keys remove [id]  Remove a key\n" +
-        "  /gsd keys test [id]    Validate key(s) with API call\n" +
-        "  /gsd keys rotate [id]  Replace an existing key\n" +
-        "  /gsd keys doctor       Health check all keys",
+        `Usage: ${slashCommand("keys")} [list|add|remove|test|rotate|doctor]\n\n` +
+        `  ${slashCommand("keys")}              Show key status dashboard\n` +
+        `  ${slashCommand("keys")} list         List all configured keys\n` +
+        `  ${slashCommand("keys")} add [id]     Add a key for a provider\n` +
+        `  ${slashCommand("keys")} remove [id]  Remove a key\n` +
+        `  ${slashCommand("keys")} test [id]    Validate key(s) with API call\n` +
+        `  ${slashCommand("keys")} rotate [id]  Replace an existing key\n` +
+        `  ${slashCommand("keys")} doctor       Health check all keys`,
         "info",
       );
       return;

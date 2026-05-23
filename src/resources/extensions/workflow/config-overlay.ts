@@ -21,6 +21,7 @@ import {
   resolveModelWithFallbacksForUnit,
   resolveAutoSupervisorConfig,
 } from "./preferences.js";
+import { BRAND, slashCommand } from "./strings.js";
 
 // ─── Data Collection ──────────────────────────────────────────────────────
 
@@ -202,7 +203,7 @@ function collectConfigSections(): ConfigSection[] {
 
 export function formatConfigText(): string {
   const sections = collectConfigSections();
-  const lines: string[] = ["GSD Configuration\n"];
+  const lines: string[] = [`${BRAND} Configuration\n`];
 
   let maxLabel = 0;
   for (const section of sections) {
@@ -293,7 +294,7 @@ export class GSDConfigOverlay {
     const allLines: string[] = [];
 
     // Header
-    allLines.push(t.bold(t.fg("accent", " GSD Configuration ")));
+    allLines.push(t.bold(t.fg("accent", ` ${BRAND} Configuration `)));
     allLines.push(t.fg("muted", "\u2500".repeat(w)));
 
     // Find max label width for alignment
@@ -318,7 +319,7 @@ export class GSDConfigOverlay {
 
     allLines.push("");
     allLines.push(t.fg("muted", `  ${"\u2500".repeat(w - 4)}`));
-    allLines.push(t.fg("muted", "  esc/q close  \u2502  \u2191\u2193/jk scroll  \u2502  /gsd prefs to edit"));
+    allLines.push(t.fg("muted", `  esc/q close  \u2502  \u2191\u2193/jk scroll  \u2502  ${slashCommand("prefs")} to edit`));
 
     // Apply scroll
     const maxScroll = Math.max(0, allLines.length - 20);

@@ -8,6 +8,7 @@ import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
 import { deriveState } from "./state.js";
 import { nativeBranchList, nativeDetectMainBranch, nativeBranchListMerged, nativeBranchDelete, nativeForEachRef, nativeUpdateRef } from "./native-git-bridge.js";
 import { logWarning } from "./workflow-logger.js";
+import { slashCommand } from "./strings.js";
 
 export async function handleCleanupBranches(ctx: ExtensionCommandContext, basePath: string): Promise<void> {
   let branches: string[];
@@ -240,7 +241,7 @@ export async function handleCleanupWorktrees(ctx: ExtensionCommandContext, baseP
 
 export async function handleSkip(unitArg: string, ctx: ExtensionCommandContext, basePath: string): Promise<void> {
   if (!unitArg) {
-    ctx.ui.notify("Usage: /gsd skip <unit-id>  (e.g., /gsd skip execute-task/M001/S01/T03 or /gsd skip T03)", "info");
+    ctx.ui.notify(`Usage: ${slashCommand("skip")} <unit-id>  (e.g., ${slashCommand("skip")} execute-task/M001/S01/T03 or ${slashCommand("skip")} T03)`, "info");
     return;
   }
 

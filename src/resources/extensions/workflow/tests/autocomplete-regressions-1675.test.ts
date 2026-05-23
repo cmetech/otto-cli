@@ -110,17 +110,19 @@ test("/gsd help full includes /gsd debug command", async () => {
   assert.match(helpText, new RegExp(`${debugRef}\\s+Create\\/list\\/continue persistent debug sessions`));
 });
 
-test("bare /gsd skip shows usage and does not fall through to unknown-command warning", async () => {
+test(`bare ${slashCommand("skip")} shows usage and does not fall through to unknown-command warning`, async () => {
   const ctx = createMockCtx();
 
   await handleGSDCommand("skip", ctx as any, {} as any);
 
+  const skipUsage = `Usage: ${slashCommand("skip")} <unit-id>`;
   assert.ok(
-    ctx.notifications.some((n) => n.message.includes("Usage: /gsd skip <unit-id>")),
+    ctx.notifications.some((n) => n.message.includes(skipUsage)),
     "should show skip usage guidance",
   );
+  const unknownPrefix = `Unknown: ${slashCommand("skip")}`;
   assert.ok(
-    !ctx.notifications.some((n) => n.message.startsWith("Unknown: /gsd skip")),
+    !ctx.notifications.some((n) => n.message.startsWith(unknownPrefix)),
     "should not emit unknown-command warning for bare skip",
   );
 });
@@ -140,9 +142,10 @@ test("direct loop verbs do not fall through to unknown-command warning", async (
   for (const verb of loopVerbs) {
     const ctx = createMockCtx();
     await handleGSDCommand(verb, ctx as any, {} as any);
+    const unknownPrefix = `Unknown: ${slashCommand(verb)}`;
     assert.ok(
-      !ctx.notifications.some((n) => n.message.startsWith(`Unknown: /gsd ${verb}`)),
-      `${verb} should be recognized as a valid /gsd command alias`,
+      !ctx.notifications.some((n) => n.message.startsWith(unknownPrefix)),
+      `${verb} should be recognized as a valid /${COMMAND_NAMESPACE} command alias`,
     );
   }
 });

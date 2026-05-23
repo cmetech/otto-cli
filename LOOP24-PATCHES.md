@@ -210,6 +210,65 @@ These plan corrections are documented in `/docs/superpowers/plans/2026-05-23-loo
 #### src/tests/initial-gsd-header-filter.test.ts (DELETED)
 - Test imported `../../web/lib/initial-gsd-header-filter.ts`, but `web/` was deliberately dropped during the initial fork import (see Initial Source Import section above). The test was a dead orphan — it has never passed in this fork, since the module it tests doesn't exist. Deleted rather than papered over.
 
+## Phase 0.5 — Namespace-completion sweep (2026-05-23)
+
+Finishes the secondary user-facing surfaces deliberately deferred from Phase 0
+(item 6 of "Known Deferred Cleanups" — now reduced to a smaller residue list,
+see below). Replaces literal `"GSD"` / `/gsd` strings in the workflow extension
+with `BRAND` / `CMD` / `slashCommand()` references from
+`src/resources/extensions/workflow/strings.ts`.
+
+### Files swept
+
+- **`src/resources/extensions/workflow/commands-maintenance.ts`** — `handleSkip` usage banner now reads `${slashCommand("skip")} ...`.
+- **`src/resources/extensions/workflow/commands/handlers/ops.ts`** — added `CMD, slashCommand` import; templated the merge-resume hint, skip usage, run-hook usage block, steer usage, knowledge usage, and dispatch usage strings.
+- **`src/resources/extensions/workflow/commands/handlers/workflow.ts`** — added `slashCommand` import; templated `parseDiscussArgs` errors, `requireNotAutoActive` stop hint, `WORKFLOW_USAGE` header, `dispatchPluginByMode` `markdown-phase` and `auto-milestone` guidance, all `handleCustomWorkflow` usage banners (`run`, `info`, `install`, `uninstall`, `validate`), pause/resume "use dev workflow" hints, all ~30 `requireNotAutoActive` call-site labels (`do`, `backlog`, `queue`, `discuss`x2, `quick`, `new-milestone`, `new-project`, `park`, `unpark`), and the park/unpark reactivation hints.
+- **`src/resources/extensions/workflow/commands/handlers/escalate.ts`** — added `slashCommand` import; templated `helpMessage()` (`/gsd escalate` headline + `/gsd escalate resolve` reference), resolve-subcommand usage banner, decision-recorded continuation hint, and rejected-to-blocker continuation hint.
+- **`src/resources/extensions/workflow/commands/handlers/onboarding.ts`** — added `BRAND, slashCommand` import; templated all per-step notify strings (`llm`, `search`, `remote`, `tool-keys`, `doctor`, `skills`), the setup-hub select-prompt title, the status header, and the reset-confirmation message.
+- **`src/resources/extensions/workflow/commands/context.ts`** — added `BRAND, CMD, slashCommand` import; templated both `GSDNoProjectError` fallback reason strings (kept the class name itself), the web-bridge stop-or-steer hint, the `showNextAction` description fields (`status` and `steer`), the `notYetMessage`, and the steer-hint multi-line notify. **Class name `GSDNoProjectError` deliberately kept** per scope rules.
+- **`src/resources/extensions/workflow/notifications.ts`** — added `BRAND` import; templated the `formatNotificationTitle` body (now returns `${BRAND}` / `${BRAND} — projectName`) and the default-title check in `sendDesktopNotification`. **Backward-compat shim:** the title check now matches both `BRAND` and the literal `"GSD"` so the many still-unswept `sendDesktopNotification("GSD", ...)` call sites in `auto/phases.ts`, `undo.ts`, etc. keep getting the project-name prefix.
+- **`src/resources/extensions/workflow/config-overlay.ts`** — added `BRAND, slashCommand` import; templated the plain-text `formatConfigText` header, the TUI overlay header `accent`, and the footer "/gsd prefs to edit" hint.
+- **`src/resources/extensions/workflow/key-manager.ts`** — added `BRAND, slashCommand` import; templated the "GSD API Key Manager" header, the unknown-provider hint, the empty-key doctor finding, the no-LLM-provider doctor finding, and the seven-line `/gsd keys [subcommand]` usage block.
+- **`src/resources/extensions/workflow/auto/phases.ts`** — added `slashCommand` import; templated `sanitizeBlockerForUser` (the `gsd_reassess_roadmap` → `/gsd dispatch reassess` substitution) and `formatBlockedResumeMessage` (both branches). Other `"GSD"` literals in this file (`sendDesktopNotification("GSD", ...)` titles, ~10 sites) intentionally NOT touched — covered by the notifications.ts backward-compat shim, listed in residue below.
+
+### Tests updated
+
+- **`src/resources/extensions/workflow/tests/auto-blocked-remediation-message.test.ts`** — added `CMD` import; rewrote `assert.match` regexes to be built dynamically from `CMD` instead of literal `/gsd dispatch reassess`; updated test title.
+- **`src/resources/extensions/workflow/tests/autocomplete-regressions-1675.test.ts`** — already imported `slashCommand`; rewrote the bare-skip and loop-verb assertions to construct the expected `"Usage: …"` and `"Unknown: …"` strings via `slashCommand()` rather than literal `/gsd …`. Updated the bare-skip test title.
+
+### Tests verified
+
+```
+node --import .../tests/resolve-ts.mjs --experimental-strip-types --test \
+  packages/pi-coding-agent/src/config.test.ts \
+  src/resources/extensions/workflow/tests/update-command.test.ts \
+  src/resources/extensions/workflow/tests/autocomplete-regressions-1675.test.ts \
+  src/resources/extensions/workflow/tests/help-menu-coverage.test.ts \
+  src/resources/extensions/workflow/tests/extension-bootstrap-isolation.test.ts \
+  src/resources/extensions/workflow/tests/auto-blocked-remediation-message.test.ts
+```
+→ 32 tests pass, 0 fail. `npm run build` clean. `node dist/loader.js --help | grep -i gsd` → empty.
+
+### Phase 0.5 residue (new deferred items uncovered during sweep)
+
+The following files still contain `/gsd` / `"GSD"` user-facing literals that
+weren't in the Phase 0.5 explicit list. They became visible during the survey
+grep and are scheduled for a Phase 0.6 sweep:
+
+- `src/resources/extensions/workflow/auto.ts` — `/gsd next`, `/gsd auto`, `/gsd status`, `/gsd report`, `/gsd notifications`, `/gsd doctor` references in `commands:` arrays of session/closeout banners.
+- `src/resources/extensions/workflow/auto/phases.ts` — ~10 `sendDesktopNotification("GSD", ...)` callers (kept working via the notifications.ts compat shim).
+- `src/resources/extensions/workflow/state.ts` — validation-failed and remediation guidance multi-step instructions still reference `/gsd status`, `/gsd validate-milestone`, `/gsd verdict pass`, `/gsd park`, `/gsd auto`.
+- `src/resources/extensions/workflow/auto-verification.ts` — verdict-override hint.
+- `src/resources/extensions/workflow/auto-dispatch.ts` — milestone-completion blocker reason.
+- `src/resources/extensions/workflow/undo.ts` — `sendDesktopNotification("GSD", ...)` call.
+- `src/resources/extensions/workflow/commands-handlers.ts` — `GSD-WORKFLOW.md` filename and doctor-audit/heal title strings.
+- `src/resources/extensions/workflow/commands-workflow-templates.ts` — start/init/discuss guidance in two `content:` strings.
+- `src/resources/extensions/workflow/commands-codebase.ts` — `"GSD also refreshes CODEBASE.md…"` description.
+- `src/resources/extensions/workflow/dev-workflow-engine.ts` — `engineLabel: "GSD Dev"`.
+- `src/resources/extensions/workflow/doctor-format.ts` — `"GSD doctor found blocking issues."` / `"GSD doctor report."` titles.
+- `src/resources/extensions/workflow/commands-inspect.ts` — `/gsd inspect failed: …` warning prefix.
+- `src/resources/extensions/workflow/memory-relations.ts` — `/gsd memory link` comment-only reference (safe to leave).
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`
@@ -244,21 +303,22 @@ The canonical brand-palette artifact is the JSON file (lives under the extension
 
 Both `process.env.GSD_FIRST_RUN_BANNER` and `process.env.LOOP24_FIRST_RUN_BANNER` are set at startup. The legacy var is still read by `src/resources/extensions/workflow/tests/session-start-footer.test.ts`. A TODO comment in loader.ts flags this. Future cleanup: update that test to read `LOOP24_FIRST_RUN_BANNER` and remove the legacy var.
 
-### 6. User-Facing Brand Strings Still Hardcoded as "GSD" in Several Non-Dispatcher Files
-**Locations:** Multiple files; flagged in commit message c63103e
+### 6. User-Facing Brand Strings — RESOLVED in Phase 0.5
 
-Task 6 extracted high-traffic prompts/help through `strings.ts`, but remaining hardcoded "GSD" references exist in:
-- `packages/pi-coding-agent/src/config/config-overlay.ts`: "GSD Configuration" header
-- `packages/pi-coding-agent/src/config/key-manager.ts`: "GSD API Key Manager" header
-- `src/resources/extensions/workflow/commands/handlers/onboarding.ts`: "GSD Setup" / "GSD Onboarding" headers
-- `src/resources/extensions/workflow/commands/handlers/escalate.ts`: helpMessage text
-- `src/resources/extensions/workflow/commands/context.ts`: "GSD must be run inside a project directory." error message
-- `packages/pi-coding-agent/src/commands/notifications.ts`: formatNotificationTitle prefix "GSD — ..."
-- `src/resources/extensions/workflow/commands-maintenance.ts` + `src/resources/extensions/workflow/commands/handlers/ops.ts`: "Usage: /gsd skip ..." examples
-- `src/resources/extensions/workflow/commands/handlers/workflow.ts`: ~30 `requireNotAutoActive("/gsd <sub>", ctx)` call sites (internal labels; user-visible portion is the assembled message).
-- `src/resources/extensions/workflow/tests/auto-blocked-remediation-message.test.ts`: fixture text.
+The original deferred items in this section (config-overlay header,
+key-manager header, onboarding headers, escalate helpMessage,
+GSDNoProjectError reason, notifications title prefix, skip-usage
+examples, ~30 `requireNotAutoActive` call sites, and the
+auto-blocked-remediation test fixture) were swept in Phase 0.5 above.
 
-These are all candidates for a second comprehensive brand-string sweep in a future cleanup task. Deliberately left in Phase 0 to keep scope conservative.
+Note: the deferred-item list incorrectly pointed at `packages/pi-coding-agent/src/config/…` and `packages/pi-coding-agent/src/commands/…` paths during Phase 0; the actual files live in `src/resources/extensions/workflow/`. The Phase 0.5 sweep operated on the real locations.
+
+A smaller residue (auto.ts session banners, state.ts validation guidance,
+auto-verification.ts, auto-dispatch.ts, undo.ts, commands-handlers.ts,
+commands-workflow-templates.ts, commands-codebase.ts,
+dev-workflow-engine.ts, doctor-format.ts, commands-inspect.ts) is listed
+in the "Phase 0.5 residue" subsection above and remains for a future
+Phase 0.6 cleanup sweep.
 
 ### 7. Internal References Intentionally NOT Changed
 **Scope:** Function names, type names, internal identifiers

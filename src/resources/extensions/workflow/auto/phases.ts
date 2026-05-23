@@ -39,6 +39,7 @@ import { MergeConflictError } from "../git-service.js";
 import { setCurrentPhase, clearCurrentPhase } from "../../shared/gsd-phase-state.js";
 import { pauseAutoForProviderError } from "../provider-error-pause.js";
 import { resumeAutoAfterProviderDelay } from "../bootstrap/provider-error-resume.js";
+import { slashCommand } from "../strings.js";
 import { join, basename } from "node:path";
 import { existsSync, cpSync } from "node:fs";
 import {
@@ -250,7 +251,7 @@ function classifyBlocker(blocker: string): BlockerKind {
 }
 
 function sanitizeBlockerForUser(blocker: string): string {
-  return blocker.replaceAll("gsd_reassess_roadmap", "/gsd dispatch reassess");
+  return blocker.replaceAll("gsd_reassess_roadmap", `${slashCommand("dispatch")} reassess`);
 }
 
 /**
@@ -266,9 +267,9 @@ function formatBlockedResumeMessage(blockers: string[]): string {
     (classifiedBlocker) => classifiedBlocker.kind === "needs-remediation-dead-end"
   );
   if (hasNeedsRemediationDeadEnd) {
-    return "Blocked: milestone validation requires remediation but all slices are complete. Run /gsd dispatch reassess to add remediation slices, then /gsd auto to continue.";
+    return `Blocked: milestone validation requires remediation but all slices are complete. Run ${slashCommand("dispatch")} reassess to add remediation slices, then ${slashCommand("auto")} to continue.`;
   }
-  return `Blocked: ${classifiedBlockers.map((classifiedBlocker) => classifiedBlocker.blocker).join(", ")}. Fix and run /gsd auto to resume.`;
+  return `Blocked: ${classifiedBlockers.map((classifiedBlocker) => classifiedBlocker.blocker).join(", ")}. Fix and run ${slashCommand("auto")} to resume.`;
 }
 
 function resolveEmptyWorktreeWithProjectContent(

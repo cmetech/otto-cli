@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import type { NotificationPreferences } from "./types.js";
 import { loadEffectiveGSDPreferences } from "./preferences.js";
 import { sendRemoteNotification } from "../remote-questions/notify.js";
+import { BRAND } from "./strings.js";
 
 export type NotifyLevel = "info" | "success" | "warning" | "error";
 export type NotificationKind = "complete" | "error" | "budget" | "milestone" | "attention";
@@ -25,9 +26,11 @@ export function sendDesktopNotification(
   kind: NotificationKind = "complete",
   projectName?: string,
 ): void {
-  // When a projectName is provided and the title is the default "GSD",
+  // When a projectName is provided and the title is the default brand,
   // replace it with a project-qualified title for multi-project clarity.
-  if (projectName && title === "GSD") {
+  // Accept the literal "GSD" too — legacy call sites still pass it pending
+  // a broader sweep of sendDesktopNotification callers (see LOOP24-PATCHES.md).
+  if (projectName && (title === BRAND || title === "GSD")) {
     title = formatNotificationTitle(projectName);
   }
   const loaded = loadEffectiveGSDPreferences()?.preferences;
@@ -90,12 +93,12 @@ export function shouldSendDesktopNotification(
 
 /**
  * Format a notification title that includes the project name for context.
- * Returns "GSD — projectName" when a project name is available, otherwise "GSD".
+ * Returns "<BRAND> — projectName" when a project name is available, otherwise just "<BRAND>".
  */
 export function formatNotificationTitle(projectName?: string): string {
   const trimmed = projectName?.trim();
-  if (trimmed) return `GSD — ${trimmed}`;
-  return "GSD";
+  if (trimmed) return `${BRAND} — ${trimmed}`;
+  return BRAND;
 }
 
 export function buildDesktopNotificationCommand(

@@ -14,6 +14,7 @@ import { join } from 'node:path'
 import os from 'node:os'
 import chalk from 'chalk'
 import stripAnsi from 'strip-ansi'
+import { BRAND_NAME, BRAND_TAGLINE } from './brand.js'
 
 const OGSD_LOGO: readonly string[] = [
   '  ██████╗  ██████╗ ███████╗██████╗ ',
@@ -121,7 +122,7 @@ export function buildWelcomeScreenLines(opts: WelcomeScreenOptions): string[] {
 
   // Narrow terminal fallback
   if (termWidth < 70) {
-    return ['', `  Get Shit Done v${version}`, `  ${shortCwd}`, '']
+    return ['', `  ${BRAND_NAME} v${version} — ${BRAND_TAGLINE}`, `  ${shortCwd}`, '']
   }
 
   const toolParts: string[] = []
@@ -139,7 +140,7 @@ export function buildWelcomeScreenLines(opts: WelcomeScreenOptions): string[] {
   const divider = '   '
   const panelWidth = innerWidth - logoWidth - visLen(divider)
   if (panelWidth < 34) {
-    return ['', `  Get Shit Done v${version}`, `  ${shortCwd}`, '']
+    return ['', `  ${BRAND_NAME} v${version} — ${BRAND_TAGLINE}`, `  ${shortCwd}`, '']
   }
 
   // "Welcome back" context lines — GSD state if available, else hint.

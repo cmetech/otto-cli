@@ -184,6 +184,18 @@ These plan corrections are documented in `/docs/superpowers/plans/2026-05-23-loo
 #### packages/native/src/native.ts
 - Changed the native-fallback log prefix from `[gsd]` to `[loop24]`. Visible at every launch on platforms without the Rust addon (always, for our fork). Other `gsd` references in this file (env var names, addon filename strings) deliberately untouched — would require coordinated changes to the build pipeline.
 
+#### src/brand.ts (NEW FILE)
+- Small synchronous helper that reads `piConfig` from `package.json` at module load and exports `BRAND_NAME`, `COMMAND_NAMESPACE`, `CONFIG_DIR_NAME`, and `BRAND_TAGLINE`. Mirrors the inline pattern already used by `src/help-text.ts` and `src/app-paths.ts` — extracted because both `src/onboarding.ts` and `src/welcome-screen.ts` now need the same brand strings, and duplicating the ~15-line piConfig boilerplate twice was awkward. Does not import from `@gsd/pi-coding-agent` (keeps the loader-adjacent fast path lean).
+
+#### src/logo.ts
+- Replaced the GSD block-letter ASCII with the LOOP24 block-letter art (same content as `src/resources/extensions/loop24/branding/banner.txt`). Export name `GSD_LOGO` kept for backward compatibility with `scripts/postinstall.js` and `src/onboarding.ts`. The ASCII content is now duplicated between `logo.ts` and `banner.txt` — a follow-up could deduplicate by having `logo.ts` read `banner.txt` at module load.
+
+#### src/onboarding.ts
+- Replaced the cyan onboarding banner color with brand yellow `#FAD22D` (inline 24-bit ANSI — picocolors has no rgb helper). Replaced `"Welcome to GSD — let's get you set up"` with `"Welcome to ${BRAND_NAME}"` (read from `src/brand.ts`). Other GSD references further down in `onboarding.ts` (step labels, error messages, `/gsd ...` slash-command hints) are still pending — listed in deferred cleanups (item 6).
+
+#### src/welcome-screen.ts
+- Replaced two `Get Shit Done v${version}` strings (narrow-terminal and panel-too-thin fallbacks) with `${BRAND_NAME} v${version} — ${BRAND_TAGLINE}` (matches loader banner tagline). Brand strings read from `src/brand.ts`. The block-letter ASCII variable `OGSD_LOGO`, the file header comments, `GsdState`/`readGsdState`/`.gsd/STATE.md` references, and the `GSD` accent label on the panel header are still in place — they belong to the broader welcome-screen rebrand effort tracked in deferred cleanups.
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`

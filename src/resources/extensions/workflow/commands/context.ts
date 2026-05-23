@@ -78,7 +78,7 @@ export function currentDirectoryRoot(): string {
 
 export async function guardRemoteSession(
   ctx: ExtensionCommandContext,
-  pi: ExtensionAPI,
+  _pi: ExtensionAPI,
 ): Promise<boolean> {
   if (isAutoActive() || isAutoPaused()) return true;
 

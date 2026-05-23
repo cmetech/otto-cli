@@ -233,7 +233,6 @@ export class GSDConfigOverlay {
   private sections: ConfigSection[];
   private cachedLines?: string[];
   private scrollOffset = 0;
-  private disposed = false;
 
   constructor(
     tui: { requestRender: () => void },
@@ -251,7 +250,7 @@ export class GSDConfigOverlay {
   }
 
   dispose(): void {
-    this.disposed = true;
+    // No-op for now — kept so handleInput's escape/q path still has a hook to extend later.
   }
 
   handleInput(data: string): void {

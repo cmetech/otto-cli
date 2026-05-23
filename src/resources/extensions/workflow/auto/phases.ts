@@ -64,7 +64,7 @@ import { setRuntimeKv } from "../db/runtime-kv.js";
 import { getLatestForUnit } from "../db/unit-dispatches.js";
 import { reconcileBeforeSpawn } from "../state-reconciliation.js";
 import type { MinimalModelRegistry } from "../context-budget.js";
-import type { PostflightResult, PreflightResult } from "../clean-root-preflight.js";
+import type { PostflightResult } from "../clean-root-preflight.js";
 import { ensurePlanV2Graph, isEmptyPlanV2GraphResult, isMissingFinalizedContextResult } from "../uok/plan-v2.js";
 import { resolveUokFlags } from "../uok/flags.js";
 import { UokGateRunner } from "../uok/gate-runner.js";
@@ -520,22 +520,6 @@ async function stopOnPostflightRecoveryNeeded(
   );
   await deps.stopAuto(ctx, pi, reason);
   return { action: "break", reason: "postflight-stash-restore-failed" };
-}
-
-async function restorePreflightStashOrStop(
-  ic: IterationContext,
-  preflight: PreflightResult,
-  milestoneId: string,
-): Promise<{ action: "break"; reason: string } | null> {
-  if (!preflight.stashPushed) return null;
-  const { ctx, s, deps } = ic;
-  const result = deps.postflightPopStash(
-    s.originalBasePath || s.basePath,
-    milestoneId,
-    preflight.stashMarker,
-    ctx.ui.notify.bind(ctx.ui),
-  );
-  return stopOnPostflightRecoveryNeeded(ic, result, milestoneId);
 }
 
 /**

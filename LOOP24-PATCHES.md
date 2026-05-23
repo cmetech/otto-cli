@@ -393,6 +393,43 @@ applied by loop24-config.ts's load-time side effect (it only populates
 `process.env` when the env var is unset, so any value the user sets in
 their shell wins).
 
+## Phase 2b.1 — Unified config subcommand (tagged: phase-2b.1-unified-config)
+
+### Why
+
+`loop24 setup` (added in Phase 2b) sat awkwardly alongside the existing
+`loop24 config` (LLM-auth wizard). Two parallel "configure something"
+subcommands is a usability wart — standard CLIs use one entry point with
+sub-actions. Phase 2b.1 collapses to a single `loop24 config [subject]`
+shape.
+
+### src/loop24-wizard.ts (MODIFIED)
+- `runLoop24Wizard` now takes `{ section: 'gateway' | 'langflow' | 'all' }`
+  (default 'all' = today's behavior). Internal helpers `promptGateway` and
+  `promptLangflow` hold the per-section prompt+probe logic; the orchestrator
+  wires them according to the requested section. Intro line adapts to the
+  partial scope ("LOOP24 — gateway config" / "— LangFlow config" / "— services setup").
+- New export: `selectConfigSection()` shows a clack `p.select` of the four
+  configurable surfaces (gateway / langflow / llm / all) and returns the choice
+  or null on cancel. Used by `loop24 config` with no second arg.
+- Summary "Re-run with" hint updated from `loop24 setup` to `loop24 config`.
+
+### src/cli.ts (MODIFIED)
+- `loop24 config` branch now dispatches on `cliFlags.messages[1]`:
+  - `gateway` → `runLoop24Wizard({ section: 'gateway' })`
+  - `langflow` → `runLoop24Wizard({ section: 'langflow' })`
+  - `llm` → existing `runOnboarding` (preserves Phase 0 behavior)
+  - `all` → `runLoop24Wizard({ section: 'all' })` then `runOnboarding`
+  - no arg → `selectConfigSection()` interactive menu, then dispatch
+- Removed: `loop24 setup` branch entirely.
+- Removed: `'setup'` from `subcommandsExemptFromEarlyTtyCheck` (no longer a subcommand).
+- Updated: `MISSING_CONFIG_WARN` now points at `loop24 config` not `loop24 setup`.
+
+### Breaking change scope
+`loop24 setup` is no longer a subcommand. Phase 2b shipped less than an
+hour before Phase 2b.1 with zero deployed users, so the breakage is
+contained to documentation and any in-flight ad-hoc invocations.
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`

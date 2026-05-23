@@ -9,6 +9,7 @@
     "name": "pi-coding-agent"
   },
   "piConfig": {
+    "_comment": "DUPLICATED in root package.json — this workspace pkg wins at runtime because getPackageDir() walks up from __dirname. Keep both in sync.",
     "name": "loop24",
     "configDir": ".loop24",
     "commandNamespace": "loop24",

@@ -36,6 +36,7 @@
     "README.md"
   ],
   "piConfig": {
+    "_comment": "DUPLICATED in packages/pi-coding-agent/package.json — getPackageDir() walks up from __dirname and finds the workspace pkg first, so the workspace piConfig wins at runtime. Keep both in sync.",
     "name": "loop24",
     "configDir": ".loop24",
     "commandNamespace": "loop24",

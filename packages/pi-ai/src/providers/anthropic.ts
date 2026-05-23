@@ -82,6 +82,35 @@ export function buildAnthropicClientOptions(
 	// The beta header is deprecated on Opus 4.6 and redundant on Sonnet 4.6, so skip it.
 	const needsInterleavedBeta = interleavedThinking && !supportsAdaptiveThinking(model.id);
 
+	// LOOP24 gateway routing: when LOOP24_GATEWAY_URL is set, all Anthropic
+	// traffic flows through our local/internal gateway with Bearer auth.
+	// The gateway handles upstream Anthropic auth, so we send no x-api-key.
+	// Per Phase 1 design — env-var only, no persistent config yet.
+	const loop24GatewayUrl = process.env.LOOP24_GATEWAY_URL?.trim();
+	if (loop24GatewayUrl) {
+		const loop24GatewayToken = process.env.LOOP24_GATEWAY_TOKEN?.trim();
+		const betaFeatures: string[] = [];
+		if (needsInterleavedBeta) {
+			betaFeatures.push("interleaved-thinking-2025-05-14");
+		}
+		return {
+			apiKey: null,
+			authToken: loop24GatewayToken ?? apiKey,
+			baseURL: loop24GatewayUrl,
+			dangerouslyAllowBrowser: true,
+			defaultHeaders: mergeHeaders(
+				{
+					accept: "application/json",
+					"anthropic-dangerous-direct-browser-access": "true",
+					...(betaFeatures.length > 0 ? { "anthropic-beta": betaFeatures.join(",") } : {}),
+				},
+				model.headers,
+				dynamicHeaders,
+				optionsHeaders,
+			),
+		};
+	}
+
 	// Copilot: Bearer auth, selective betas (no fine-grained-tool-streaming)
 	if (model.provider === "github-copilot") {
 		const betaFeatures: string[] = [];

@@ -381,14 +381,33 @@ Open `loop24-client/package.json`. The `test:integration` script currently reads
 ```
 Replace `extensions/gsd/` with `extensions/workflow/` everywhere it appears in the scripts section. Also update the test file glob: `src/resources/extensions/gsd/tests/integration/*.test.ts` → `src/resources/extensions/workflow/tests/integration/*.test.ts`.
 
-- [ ] **Step 4: Update all TypeScript imports referencing the old path**
+- [ ] **Step 4: Update all references via three sed passes**
 
-For each file from Step 2's grep that contains `extensions/gsd/` in import statements or string literals, replace with `extensions/workflow/`. Use:
+The references live in more file types than the obvious `.ts/.mjs`. Run all three sweeps to cover absolute paths, relative imports, and non-code config files.
+
+**Sweep A — absolute paths** (`resources/extensions/gsd`) across all build-relevant file types:
 ```bash
 cd /Users/coreyellis/Projects/repos/local/loop24-client
-grep -rl "resources/extensions/gsd" --include="*.ts" --include="*.mjs" . | grep -v node_modules | grep -v dist | xargs sed -i '' 's|resources/extensions/gsd|resources/extensions/workflow|g'
+grep -rl "resources/extensions/gsd" --include="*.ts" --include="*.tsx" --include="*.json" --include="*.mjs" --include="*.js" . | grep -v node_modules | grep -v dist | xargs sed -i '' 's|resources/extensions/gsd|resources/extensions/workflow|g'
 ```
-Note: `sed -i ''` (with empty quotes) is the macOS form. After running, re-run the grep from Step 2 to verify all matches are gone.
+
+**Sweep B — relative imports** that sibling extensions use (`./gsd/`, `../gsd/`). The original plan missed these and the build will fail with TS2307 errors if you skip them:
+```bash
+cd /Users/coreyellis/Projects/repos/local/loop24-client
+grep -rl "from ['\"]\\./gsd/\|from ['\"]\\.\\./gsd/" --include="*.ts" --include="*.tsx" --include="*.mjs" --include="*.js" . | grep -v node_modules | grep -v dist | xargs sed -i '' -E 's|(\.\.?)/gsd/|\1/workflow/|g'
+```
+
+**Sweep C — CI / scan / ownership config files** outside the code file types. Leaving these stale silently breaks CI and scan ignores:
+```bash
+cd /Users/coreyellis/Projects/repos/local/loop24-client
+for f in .github/workflows/*.yml .github/workflows/*.yaml .github/CODEOWNERS scripts/ci-classify-changes.sh .prompt-injection-scanignore .secretscanignore; do
+  [ -f "$f" ] && sed -i '' 's|extensions/gsd|extensions/workflow|g' "$f"
+done
+```
+
+Note: `sed -i ''` (with empty quotes) is the macOS form. After running all three sweeps, re-run the grep from Step 2 (extending its `--include` list to match the file types above) to verify all matches are gone.
+
+**Documentation files (`docs/**`, `*.md`, SKILL.md)** are deliberately NOT swept — they describe the extension rather than import it. Defer to Task 9 (LOOP24-PATCHES.md) or a separate doc-cleanup task.
 
 - [ ] **Step 5: Build and confirm**
 

@@ -4,7 +4,7 @@ import type {
   PackageCommand,
   SettingsManager as SettingsManagerInstance,
 } from '@gsd/pi-coding-agent'
-import { readFileSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { agentDir, sessionsDir, authFilePath } from './app-paths.js'
 import { initResources, buildResourceLoader, getNewerManagedResourceVersion } from './resource-loader.js'
@@ -13,7 +13,8 @@ import { loadStoredEnvKeys } from './wizard.js'
 import { migratePiCredentials } from './pi-migration.js'
 import { shouldRunOnboarding, runOnboarding } from './onboarding.js'
 import { runLoop24Wizard, shouldRunLoop24Wizard } from './loop24-wizard.js'
-import { applyConfigToEnv } from './loop24-config.js'
+import { applyConfigToEnv, configPath } from './loop24-config.js'
+import { COMMAND_NAMESPACE } from './brand.js'
 import chalk from 'chalk'
 import { checkForUpdates } from './update-check.js'
 import { shouldBypassManagedResourceMismatchGate } from './cli-policy.js'
@@ -345,6 +346,12 @@ const subcommandsExemptFromEarlyTtyCheck = new Set([
 ])
 const isSubcommandExemptFromEarlyTtyCheck = subcommandsExemptFromEarlyTtyCheck.has(cliFlags.messages[0] ?? '')
 if (!process.stdin.isTTY && !isPrintMode && !isSubcommandExemptFromEarlyTtyCheck && !cliFlags.listModels && !cliFlags.web) {
+  if (!existsSync(configPath()) && !process.env.LOOP24_GATEWAY_URL) {
+    process.stderr.write(
+      `[${COMMAND_NAMESPACE}] No ~/.loop24/config.json yet. ` +
+      `Run "${COMMAND_NAMESPACE} setup" to configure, or set LOOP24_GATEWAY_URL / LANGFLOW_SERVER_URL.\n`,
+    )
+  }
   printNonTtyErrorAndExit(undefined, false)
 }
 
@@ -598,6 +605,13 @@ if (shouldRunLoop24Wizard({ isPrint: isPrintMode, isTTY: !!process.stdin.isTTY }
   process.stdin.removeAllListeners('keypress')
   if (process.stdin.setRawMode) process.stdin.setRawMode(false)
   process.stdin.pause()
+} else if (!existsSync(configPath()) && !process.env.LOOP24_GATEWAY_URL && !isPrintMode) {
+  // Config file missing AND no env override — headless / piped stdin / CI.
+  // Emit a single warn line so the user knows the wizard is available.
+  process.stderr.write(
+    `[${COMMAND_NAMESPACE}] No ~/.loop24/config.json yet. ` +
+    `Run "${COMMAND_NAMESPACE} setup" to configure, or set LOOP24_GATEWAY_URL / LANGFLOW_SERVER_URL.\n`,
+  )
 }
 
 // Run onboarding wizard on first launch (no LLM provider configured)

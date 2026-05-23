@@ -72,7 +72,6 @@ function loadNative(): Record<string, unknown> {
     }
   }
 
-  const details = errors.map((e) => `  - ${e}`).join("\n");
   const supportedPlatforms = Object.keys(platformPackageMap);
 
   // Graceful fallback: on unsupported platforms (e.g., win32-arm64), return a

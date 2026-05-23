@@ -89,6 +89,14 @@ process.env.PI_PACKAGE_DIR = pkgDir
 process.env.PI_SKIP_VERSION_CHECK = '1'  // GSD runs its own update check in cli.ts — suppress pi's
 process.title = 'loop24'
 
+// LOOP24_CLEAR_ON_START — opt-in pre-launch screen clear. pi-tui renders inline
+// (no alternate screen buffer), which keeps shell history visible above the TUI
+// but can look "squished" when previous terminal output is already on screen.
+// Users who want a fresh-app feel set this in their shell config.
+if (process.env.LOOP24_CLEAR_ON_START && process.env.LOOP24_CLEAR_ON_START !== '0') {
+  process.stdout.write('\x1b[2J\x1b[H')  // Clear screen + home cursor
+}
+
 // Print LOOP24 banner on first launch (before ~/.loop24/ exists).
 // Set LOOP24_FIRST_RUN_BANNER (and legacy GSD_FIRST_RUN_BANNER) so cli.ts and
 // tests skip the duplicate welcome screen.

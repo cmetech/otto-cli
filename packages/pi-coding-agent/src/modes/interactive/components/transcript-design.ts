@@ -2,6 +2,7 @@
 // File Purpose: Shared recommended transcript rendering primitives for assistant, tool, command, footer, and auto-mode TUI surfaces.
 
 import { alignRight, padRight, style, truncateToWidth, visibleWidth } from "@gsd/pi-tui";
+import { BRAND_NAME } from "../../../config.js";
 import { theme, type ThemeBg, type ThemeColor } from "../theme/theme.js";
 import { formatTimestamp, type TimestampFormat } from "./timestamp.js";
 
@@ -213,7 +214,7 @@ export function renderChatFrame(
 export function renderAssistantRail(
 	lines: string[],
 	width: number,
-	opts: { label: string; meta?: string; railColor?: ThemeColor; connected?: boolean } = { label: "GSD" },
+	opts: { label: string; meta?: string; railColor?: ThemeColor; connected?: boolean } = { label: BRAND_NAME },
 ): string[] {
 	const railColor = opts.railColor ?? "borderAccent";
 	const source = trimOuterBlankLines(lines);

@@ -2,6 +2,7 @@
 // File Purpose: Assistant message rail renderer for interactive terminal sessions.
 import type { AssistantMessage } from "@gsd/pi-ai";
 import { Container, Markdown, type MarkdownTheme, Spacer, Text } from "@gsd/pi-tui";
+import { BRAND_NAME } from "../../../config.js";
 import { getMarkdownTheme, theme } from "../theme/theme.js";
 import { type TimestampFormat } from "./timestamp.js";
 import { formatTimestamp } from "./timestamp.js";
@@ -187,7 +188,7 @@ export class AssistantMessageComponent extends Container {
 			metaParts.push(formatTimestamp(this.lastMessage.timestamp, this.timestampFormat));
 		}
 		const rendered = renderAssistantRail(lines, frameWidth, {
-			label: "GSD",
+			label: BRAND_NAME,
 			meta: metaParts.length > 0 ? `· ${metaParts.join(" · ")}` : undefined,
 		});
 		return this.renderCache.set(`${width}:${this.renderVersion}`, rendered.length > 0 ? ["", ...rendered] : rendered);

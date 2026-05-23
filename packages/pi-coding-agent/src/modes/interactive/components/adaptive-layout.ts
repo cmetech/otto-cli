@@ -2,6 +2,7 @@
 // File Purpose: Adaptive command-center dashboard for the interactive TUI.
 
 import { style, truncateToWidth, type Component } from "@gsd/pi-tui";
+import { BRAND_NAME } from "../../../config.js";
 import type { TuiAdaptiveMode, TuiMode } from "../tui-mode.js";
 import { resolveTuiMode } from "../tui-mode.js";
 import { theme, type ThemeColor } from "../theme/theme.js";
@@ -77,7 +78,7 @@ export class AdaptiveLayoutComponent implements Component {
 				];
 
 		return roundedPanel(rows, width, {
-			title: "GSD Command Center",
+			title: `${BRAND_NAME} Command Center`,
 			rightTitle: `${modeLabel} · ${state.lastError ? "blocked" : "ready"}`,
 			tone: state.lastError ? "error" : "default",
 		});
@@ -128,7 +129,7 @@ export class AdaptiveLayoutComponent implements Component {
 
 	private renderCompact(width: number, mode: TuiMode, state: AdaptiveLayoutState): string[] {
 		const phase = state.lastError ?? state.gsdPhase ?? (state.activeToolCount > 0 ? `${state.activeToolCount} tools` : "ready");
-		const line = `${theme.fg("modeCompact", "GSD compact")} ${theme.fg("surfaceMuted", `${mode} · ${phase}`)}`;
+		const line = `${theme.fg("modeCompact", `${BRAND_NAME} compact`)} ${theme.fg("surfaceMuted", `${mode} · ${phase}`)}`;
 		return style()
 			.border("minimal")
 			.borderColor((text) => theme.fg("surfaceBorder", text))

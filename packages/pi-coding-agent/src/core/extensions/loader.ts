@@ -447,7 +447,7 @@ export function createExtensionRuntime(): ExtensionRuntime {
  * Registration methods write to the extension object.
  * Action methods delegate to the shared runtime.
  */
-function createExtensionAPI(
+export function createExtensionAPI(
 	extension: Extension,
 	runtime: ExtensionRuntime,
 	cwd: string,
@@ -475,6 +475,9 @@ function createExtensionAPI(
 
 		registerCommand(name: string, options: Omit<RegisteredCommand, "name">): void {
 			extension.commands.set(name, { name, ...options });
+			if (process.env.LOOP24_DEBUG_EXTENSIONS) {
+				process.stderr.write(`[loop24-debug] registered command '${name}' from ${extension.path}\n`);
+			}
 		},
 
 		registerBeforeInstall(handler: LifecycleHookHandler): void {
@@ -811,7 +814,7 @@ function isNonExtensionLibrary(resolvedPath: string): boolean {
 /**
  * Create an Extension object with empty collections.
  */
-function createExtension(extensionPath: string, resolvedPath: string): Extension {
+export function createExtension(extensionPath: string, resolvedPath: string): Extension {
 	return {
 		path: extensionPath,
 		resolvedPath,

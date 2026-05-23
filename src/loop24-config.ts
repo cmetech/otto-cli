@@ -155,3 +155,60 @@ try {
 } catch {
   /* defensive — should never throw, but absolutely must not break boot */
 }
+
+// ─── Probes ───────────────────────────────────────────────────────────────────
+
+export interface ProbeResult {
+  ok: boolean
+  reason?: string  // populated when ok=false
+}
+
+export interface LangflowProbeResult extends ProbeResult {
+  version?: string
+}
+
+/**
+ * Probe gateway /health. Returns ok=true on 2xx, ok=false with a reason on
+ * any other outcome (non-2xx, network error, timeout). Never throws.
+ *
+ * Default 2000ms timeout — runs interactively in the wizard, so a short
+ * budget is OK. Used by both the wizard (post-prompt validation) and the
+ * loop24 extension's session_start probe (which has its own 1500ms timeout).
+ */
+export async function probeGateway(url: string, timeoutMs = 2000): Promise<ProbeResult> {
+  const target = `${url.replace(/\/+$/, "")}/health`
+  const ctl = new AbortController()
+  const timer = setTimeout(() => ctl.abort(), timeoutMs)
+  try {
+    const res = await fetch(target, { signal: ctl.signal })
+    if (res.ok) return { ok: true }
+    return { ok: false, reason: `${res.status} ${res.statusText}` }
+  } catch (err) {
+    return { ok: false, reason: (err as Error).message }
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/**
+ * Probe LangFlow /api/v1/version. Returns ok=true + version string on success.
+ * Optional apiKey is sent as x-api-key header (LangFlow's auth shape; verified
+ * in LANGFLOW-API.md from Phase 3).
+ */
+export async function probeLangflow(url: string, timeoutMs = 2000, apiKey?: string): Promise<LangflowProbeResult> {
+  const target = `${url.replace(/\/+$/, "")}/api/v1/version`
+  const ctl = new AbortController()
+  const timer = setTimeout(() => ctl.abort(), timeoutMs)
+  try {
+    const headers: Record<string, string> = {}
+    if (apiKey) headers["x-api-key"] = apiKey
+    const res = await fetch(target, { signal: ctl.signal, headers })
+    if (!res.ok) return { ok: false, reason: `${res.status} ${res.statusText}` }
+    const body = (await res.json()) as { version?: string }
+    return { ok: true, version: body.version }
+  } catch (err) {
+    return { ok: false, reason: (err as Error).message }
+  } finally {
+    clearTimeout(timer)
+  }
+}

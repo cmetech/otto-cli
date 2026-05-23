@@ -188,3 +188,107 @@ test("env var wins over config.json when both are set", () => {
   assert.equal(result.status, 0, `node probe failed: ${result.stderr}`)
   assert.equal(result.stdout.trim(), "http://from-env-var:1111/v1")
 })
+
+import { createServer, type Server } from "node:http"
+import { probeGateway, probeLangflow } from "../loop24-config.js"
+
+async function withMockServer(
+  handler: (req: import("node:http").IncomingMessage, res: import("node:http").ServerResponse) => void | Promise<void>,
+  fn: (url: string) => Promise<void>,
+): Promise<void> {
+  const server: Server = createServer((req, res) => {
+    Promise.resolve(handler(req, res)).catch(() => res.end())
+  })
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", () => r()))
+  const addr = server.address()
+  if (!addr || typeof addr === "string") throw new Error("no addr")
+  try {
+    await fn(`http://127.0.0.1:${addr.port}`)
+  } finally {
+    await new Promise<void>((r) => server.close(() => r()))
+  }
+}
+
+test("probeGateway returns ok=true when /health responds 200", async () => {
+  await withMockServer(
+    (req, res) => {
+      assert.equal(req.url, "/health")
+      res.statusCode = 200
+      res.setHeader("content-type", "application/json")
+      res.end(JSON.stringify({ status: "ok" }))
+    },
+    async (url) => {
+      const result = await probeGateway(url)
+      assert.equal(result.ok, true)
+    },
+  )
+})
+
+test("probeGateway returns ok=false when /health 5xx", async () => {
+  await withMockServer(
+    (_req, res) => {
+      res.statusCode = 500
+      res.end("boom")
+    },
+    async (url) => {
+      const result = await probeGateway(url)
+      assert.equal(result.ok, false)
+      assert.ok(result.reason && result.reason.includes("500"))
+    },
+  )
+})
+
+test("probeGateway returns ok=false on unreachable host (short timeout)", async () => {
+  // Port 1 is always closed locally.
+  const result = await probeGateway("http://127.0.0.1:1", 200)
+  assert.equal(result.ok, false)
+  assert.ok(result.reason)
+})
+
+test("probeGateway strips trailing slash from url before appending /health", async () => {
+  let receivedPath: string | undefined
+  await withMockServer(
+    (req, res) => {
+      receivedPath = req.url
+      res.end("{}")
+    },
+    async (url) => {
+      await probeGateway(url + "/")
+      assert.equal(receivedPath, "/health")
+    },
+  )
+})
+
+test("probeLangflow returns ok=true with version when /api/v1/version responds", async () => {
+  await withMockServer(
+    (req, res) => {
+      assert.equal(req.url, "/api/v1/version")
+      res.setHeader("content-type", "application/json")
+      res.end(JSON.stringify({ version: "1.5.0" }))
+    },
+    async (url) => {
+      const result = await probeLangflow(url)
+      assert.equal(result.ok, true)
+      assert.equal(result.version, "1.5.0")
+    },
+  )
+})
+
+test("probeLangflow returns ok=false on unreachable host", async () => {
+  const result = await probeLangflow("http://127.0.0.1:1", 200)
+  assert.equal(result.ok, false)
+})
+
+test("probeLangflow forwards apiKey as x-api-key header", async () => {
+  let receivedKey: string | undefined
+  await withMockServer(
+    (req, res) => {
+      receivedKey = req.headers["x-api-key"] as string | undefined
+      res.end(JSON.stringify({ version: "1.5.0" }))
+    },
+    async (url) => {
+      await probeLangflow(url, 5000, "test-key-123")
+      assert.equal(receivedKey, "test-key-123")
+    },
+  )
+})

@@ -19,6 +19,7 @@ import { runSkillInstallStep } from "./skill-catalog.js";
 import { generateCodebaseMap, writeCodebaseMap } from "./codebase-generator.js";
 import { handlePrefsWizard, writePreferencesFile } from "./commands-prefs-wizard.js";
 import { loadEffectiveGSDPreferences } from "./preferences.js";
+import { BRAND } from "./strings.js";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -418,7 +419,7 @@ export async function handleReinit(
   }
 
   const choice = await showNextAction(ctx, {
-    title: "GSD — Already Initialized",
+    title: `${BRAND} — Already Initialized`,
     summary,
     actions: [
       {

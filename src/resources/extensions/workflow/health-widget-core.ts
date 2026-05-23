@@ -8,6 +8,7 @@
 import { existsSync } from "node:fs";
 import { detectProjectState } from "./detection.js";
 import { gsdRoot } from "./paths.js";
+import { BRAND } from "./strings.js";
 
 export type HealthWidgetProjectState = "none" | "initialized" | "active";
 
@@ -70,7 +71,7 @@ export function buildHealthLines(data: HealthWidgetData, width?: number): string
   }
 
   if (data.projectState === "initialized") {
-    return ["  GSD  Project Initialized"];
+    return [`  ${BRAND}  Project Initialized`];
   }
 
   const leftParts: string[] = [];

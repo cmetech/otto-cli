@@ -23,6 +23,7 @@ import { logWarning } from "../workflow-logger.js";
 // session hook calling startAuto) would be silently dropped because Node's
 // EventEmitter does not buffer events for late subscribers.
 import { initCmuxEventListeners } from "../../cmux/index.js";
+import { BRAND } from "../strings.js";
 
 export { writeCrashLog } from "./crash-log.js";
 
@@ -109,7 +110,7 @@ export function registerGsdExtension(pi: ExtensionAPI): void {
   const ecosystemHandlers: GSDEcosystemBeforeAgentStartHandler[] = [];
 
   pi.registerCommand("kill", {
-    description: "Exit GSD immediately (no cleanup)",
+    description: `Exit ${BRAND} immediately (no cleanup)`,
     handler: async (_args: string, _ctx: ExtensionCommandContext) => {
       process.exit(0);
     },

@@ -430,6 +430,71 @@ shape.
 hour before Phase 2b.1 with zero deployed users, so the breakage is
 contained to documentation and any in-flight ad-hoc invocations.
 
+## Phase 2c — GSD residue sweep + debug toggle (tagged: phase-2c-residue-sweep)
+
+### packages/pi-coding-agent/src/core/extensions/loader.ts (MODIFIED)
+- `pi.registerCommand` closure emits a stderr line when
+  `LOOP24_DEBUG_EXTENSIONS` is set:
+  `[loop24-debug] registered command 'NAME' from /path/to/extension`.
+- Exports `createExtensionAPI` and `createExtension` so the test can
+  exercise the closure directly without spinning up a full extension load.
+
+### packages/pi-coding-agent/src/core/extensions/loader.debug.test.ts (NEW)
+- 2 tests: env var on → log line appears; env var unset → no output.
+
+### src/resources/extensions/workflow/extension-manifest.json (MODIFIED)
+- `provides.commands` changed from `["gsd", ...]` to `["loop24", ...]`
+  to match what the runtime actually registers. The extension `id` is
+  kept as `"gsd"` because the registry tracks enable/disable state by id.
+
+### src/bundled-resource-path.ts (MODIFIED)
+- `resolveBundledGsdExtensionModule()` now reads from
+  `extensions/workflow/` (both dist and src fallback paths), aligning
+  with the Phase 0 directory rename.
+
+### src/resources/extensions/workflow/*.ts (MODIFIED — 15 files)
+- Display strings: `health-widget-core.ts`, `init-wizard.ts`,
+  `exit-command.ts`, `commands/catalog.ts`.
+- Hardcoded `extensions/gsd/` paths: `prompt-loader.ts`,
+  `workflow-plugins.ts`, `forensics.ts`, `workflow-templates.ts`.
+- Phase 0.5 residue files: `auto.ts`, `state.ts`, `auto-verification.ts`,
+  `auto-dispatch.ts`, `undo.ts`, `commands-handlers.ts`,
+  `commands-workflow-templates.ts`, `commands-codebase.ts`,
+  `dev-workflow-engine.ts`, `doctor-format.ts`, `commands-inspect.ts`.
+
+Also modified: `bootstrap/register-extension.ts` (kill command description).
+
+All user-visible `GSD` / `Get Shit Done` / `/gsd <sub>` literals now flow
+through `BRAND` / `CMD` / `slashCommand()` from `workflow/strings.ts`.
+Internal identifiers (function names, type names, error codes,
+`MISSING_GSD_MARKER`, etc.) are kept per Phase 0 Known Deferred Cleanups
+item 7.
+
+### Live diagnostic finding (Phase 2c smoke test)
+Running `LOOP24_DEBUG_EXTENSIONS=1 loop24 --print "hi"` before `rm -rf ~/.loop24/agent` showed:
+```
+[loop24-debug] registered command 'gsd' from ...workflow/index.js
+```
+This CONFIRMS the bug: the stale agent dir contains old code that still
+registers the literal `"gsd"` command name. After `rm -rf ~/.loop24/agent`
+and a fresh startup, the extension loader resyncs from the updated dist,
+and the new code registers `"loop24"` instead. The `/loop24` command
+should then appear in the TUI autocomplete as expected.
+
+### Out of scope (still residue, will be addressed when something triggers a sweep)
+- `mcp-client/manager.ts:349`, `mcp-client/index.ts:147`,
+  `mcp-client/auth.ts:89`: MCP client identifier `name: "gsd"` sent to
+  remote MCP servers. Changing it requires re-handshake with any tracking
+  server. Internal protocol field, not user-facing.
+- `~/.gsd/crash/` log directory in `crash-log.ts`. Only matters after an
+  extension crash; can move when something else changes there.
+- `commands-extensions.ts:215+`: `MISSING_GSD_MARKER` validation messages
+  for third-party-extension `package.json` schema. Internal error code.
+- `runner.ts:119`: `PROTECTED_EXTENSION_COMMANDS = new Set(["gsd"])`.
+  After our rename, nothing registers `"gsd"` literally anymore, so the
+  protection list is effectively dead. Leave for now — removing it is
+  the kind of cleanup that might break a sibling tool's expectations.
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`

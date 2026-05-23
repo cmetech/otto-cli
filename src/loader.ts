@@ -75,7 +75,6 @@ import { resolveBundledResourcesDirFromPackageRoot } from './bundled-resource-pa
 import { discoverExtensionEntryPaths } from './extension-discovery.js'
 import { loadRegistry, readManifestFromEntryPath, isExtensionEnabled } from './extension-registry.js'
 import { applyLoaderCliEntrypointEnv } from './loader-entrypoint.js'
-import { renderLogo } from './logo.js'
 
 // pkg/ is a shim directory: contains gsd's piConfig (package.json) and pi's
 // theme assets (dist/modes/interactive/theme/) without a src/ directory.
@@ -88,22 +87,30 @@ const pkgDir = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'pkg')
 // reads to determine APP_NAME and CONFIG_DIR_NAME
 process.env.PI_PACKAGE_DIR = pkgDir
 process.env.PI_SKIP_VERSION_CHECK = '1'  // GSD runs its own update check in cli.ts — suppress pi's
-process.title = 'gsd'
+process.title = 'loop24'
 
-// Print branded banner on first launch (before ~/.gsd/ exists).
-// Set GSD_FIRST_RUN_BANNER so cli.ts skips the duplicate welcome screen.
+// Print LOOP24 banner on first launch (before ~/.loop24/ exists).
+// Set LOOP24_FIRST_RUN_BANNER (and legacy GSD_FIRST_RUN_BANNER) so cli.ts and
+// tests skip the duplicate welcome screen.
+// TODO(loop24): collapse to LOOP24_FIRST_RUN_BANNER after sweep
 if (!existsSync(appRoot)) {
-  const cyan  = '\x1b[36m'
-  const green = '\x1b[32m'
-  const dim   = '\x1b[2m'
-  const reset = '\x1b[0m'
-  const colorCyan = (s: string) => `${cyan}${s}${reset}`
+  const yellow = '\x1b[38;2;250;210;45m'    // brand primary #FAD22D
+  const dim    = '\x1b[2m'
+  const green  = '\x1b[38;2;63;206;142m'    // brand green #3FCE8E
+  const reset  = '\x1b[0m'
+
+  let banner = ''
+  try {
+    const bannerPath = join(gsdRoot, 'src/resources/extensions/loop24/branding/banner.txt')
+    banner = readFileSync(bannerPath, 'utf-8')
+  } catch { /* fall back to text-only */ }
+
   process.stderr.write(
-    renderLogo(colorCyan) +
-    '\n' +
-    `  Get Shit Done ${dim}v${gsdVersion}${reset}\n` +
+    `${yellow}${banner}${reset}\n` +
+    `  compliant agent for developers ${dim}v${gsdVersion}${reset}\n` +
     `  ${green}Welcome.${reset} Setting up your environment...\n\n`
   )
+  process.env.LOOP24_FIRST_RUN_BANNER = '1'
   process.env.GSD_FIRST_RUN_BANNER = '1'
 }
 

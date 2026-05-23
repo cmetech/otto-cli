@@ -399,8 +399,10 @@ if (cliFlags.messages[0] === 'config') {
 
   if (subject === 'all') {
     const saved = await runLoop24Wizard({ section: 'all' })
-    if (saved) applyConfigToEnv(saved)
-    await runOnboarding(authStorage)
+    if (saved) {
+      applyConfigToEnv(saved)
+      await runOnboarding(authStorage)
+    }
     process.exit(0)
   }
 
@@ -413,9 +415,11 @@ if (cliFlags.messages[0] === 'config') {
     await runOnboarding(authStorage)
   } else {
     const saved = await runLoop24Wizard({ section: choice })
-    if (saved) applyConfigToEnv(saved)
-    if (choice === 'all') {
-      await runOnboarding(authStorage)
+    if (saved) {
+      applyConfigToEnv(saved)
+      if (choice === 'all') {
+        await runOnboarding(authStorage)
+      }
     }
   }
   process.exit(0)

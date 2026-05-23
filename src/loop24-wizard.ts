@@ -56,7 +56,7 @@ async function promptGateway(
   existing: Loop24Config["gateway"],
   colors: { dim: (s: string) => string; green: (s: string) => string; red: (s: string) => string },
 ): Promise<{ url: string; token: string | null } | "cancelled"> {
-  const { dim, green, red } = colors
+  const { green, red } = colors
 
   const gatewayUrlDefault = existing.url ?? "http://127.0.0.1:8080/v1"
   const gatewayUrlAns = await p.text({
@@ -106,7 +106,7 @@ async function promptLangflow(
   existing: Loop24Config["langflow"],
   colors: { dim: (s: string) => string; green: (s: string) => string; red: (s: string) => string },
 ): Promise<{ url: string; apiKey: string | null; enabled: boolean } | "cancelled"> {
-  const { dim, green, red } = colors
+  const { green, red } = colors
 
   const langflowEnabled = await p.confirm({
     message: 'Use LangFlow?',

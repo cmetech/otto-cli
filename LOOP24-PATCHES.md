@@ -175,6 +175,15 @@ During Phase 0 execution, several plan bugs were caught and the plan was patched
 
 These plan corrections are documented in `/docs/superpowers/plans/2026-05-23-loop24-phase-0-fork-and-rebrand.md`.
 
+### Post-tag patches (after `phase-0-fork-and-rebrand`)
+
+#### src/app-paths.ts
+- `appRoot` now reads `piConfig.configDir` from `package.json` at module load (same pattern as `src/help-text.ts`) instead of hardcoding `~/.gsd`. Accepts `LOOP24_HOME` (preferred) and `GSD_HOME` (legacy) as overrides.
+- Without this fix, the first-run banner check in `loader.ts:96` reads stale `~/.gsd/` state and the banner never fires for users with prior gsd-pi installs. Also: sessions/auth/web-pid all wrote under `~/.gsd/` instead of `~/.loop24/`.
+
+#### packages/native/src/native.ts
+- Changed the native-fallback log prefix from `[gsd]` to `[loop24]`. Visible at every launch on platforms without the Rust addon (always, for our fork). Other `gsd` references in this file (env var names, addon filename strings) deliberately untouched — would require coordinated changes to the build pipeline.
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`

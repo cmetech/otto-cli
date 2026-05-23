@@ -291,6 +291,33 @@ grep and are scheduled for a Phase 0.6 sweep:
 ### src/resources/extensions/loop24/index.ts (NEW)
 - Scaffolded the loop24 extension. `session_start` hook probes `LOOP24_GATEWAY_URL/health` with 1500ms timeout and emits `gateway: routed → <host>` (or `unreachable`, or `direct`) status line in brand colors after the loader banner. Phase 3 will extend this with flow-trigger loading.
 
+## Phase 3 — LangFlow runtime triggers (tagged: phase-3-langflow-triggers)
+
+### src/resources/extensions/loop24/clients/LANGFLOW-API.md (NEW)
+- Reference doc captured from live LangFlow v1.9.3. Documents auth model (x-api-key), endpoint shapes, streaming framing (NDJSON), text-extraction path.
+
+### src/resources/extensions/loop24/clients/langflow.ts (NEW)
+- LangFlowClient class with getVersion() (non-throwing, safe for hot path) and runFlow(flowId, input) (throws on non-2xx). Uses Node 22+ built-in fetch. Optional x-api-key via LangFlowClientOptions.apiKey. Five TDD tests.
+
+### src/resources/extensions/loop24/commands/flow-triggers/_schema.ts (NEW)
+- Declarative FlowTrigger interface + hand-rolled validateFlowTrigger(). Seven TDD tests. No external schema dep.
+
+### src/resources/extensions/loop24/commands/flow-triggers/_loader.ts (NEW)
+- Scans the flow-triggers/ directory, parses each *.yaml (using the `yaml` package), validates each, returns { commands, errors }. Never throws. Five TDD tests.
+
+### src/resources/extensions/loop24/commands/flow-triggers/example-echo.yaml (NEW)
+- One example YAML demonstrating the schema. User must edit `flow.id` to point at an actual flow on their LangFlow.
+
+### src/resources/extensions/loop24/index.ts (MODIFIED — added flow-trigger loader + langflow probe)
+- session_start hook now probes both gateway and langflow.
+- Loads flow-triggers/*.yaml fire-and-forget at extension init, registers each as a slash command via pi.registerCommand. Handler parses --name value args, maps to flow inputs, calls LangFlowClient.runFlow, writes result to stdout.
+
+### packages: `yaml` added (verified present)
+- Used by _loader.ts to parse YAML files.
+
+### Tests added
+- langflow-client.test.ts (5), flow-trigger-schema.test.ts (7), flow-trigger-loader.test.ts (5) = 17 new tests, all passing.
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`

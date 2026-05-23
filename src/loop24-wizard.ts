@@ -74,6 +74,7 @@ export async function runLoop24Wizard(): Promise<Loop24Config | null> {
   const existing = loadConfig()
 
   // ── Gateway URL ───────────────────────────────────────────────────────────
+  // Port 8080 is a placeholder until the real loop24-gateway lands (design spec Q1).
   const gatewayUrlDefault = existing.gateway.url ?? "http://127.0.0.1:8080/v1"
   const gatewayUrlAns = await p.text({
     message: 'Gateway URL?',
@@ -189,7 +190,7 @@ export async function runLoop24Wizard(): Promise<Loop24Config | null> {
       : `${dim('↷')} LangFlow: disabled`,
     '',
     `${dim('Saved to')} ${configPath()}`,
-    `${dim('Re-run with')} loop24 setup`,
+    `${dim('Re-run with')} ${COMMAND_NAMESPACE} setup`,
   ]
   p.note(summary.join('\n'), 'Setup complete')
   p.outro(dim(`Launching ${BRAND_NAME}...`))

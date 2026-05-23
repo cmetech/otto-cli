@@ -1,5 +1,5 @@
 {
-  "name": "@opengsd/gsd-pi",
+  "name": "@loop24/client",
   "version": "1.0.1",
   "description": "GSD Pi local-first coding agent",
   "license": "MIT",
@@ -36,8 +36,10 @@
     "README.md"
   ],
   "piConfig": {
-    "name": "gsd",
-    "configDir": ".gsd"
+    "name": "loop24",
+    "configDir": ".loop24",
+    "commandNamespace": "loop24",
+    "brandName": "LOOP24"
   },
   "engines": {
     "node": ">=22.0.0"

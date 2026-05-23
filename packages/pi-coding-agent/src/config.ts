@@ -170,6 +170,8 @@ const pkg = JSON.parse(readFileSync(getPackageJsonPath(), "utf-8"));
 
 export const APP_NAME: string = pkg.piConfig?.name || "pi";
 export const CONFIG_DIR_NAME: string = pkg.piConfig?.configDir || ".pi";
+export const COMMAND_NAMESPACE: string = pkg.piConfig?.commandNamespace || APP_NAME;
+export const BRAND_NAME: string = pkg.piConfig?.brandName || APP_NAME.toUpperCase();
 export const VERSION: string = pkg.version;
 
 // e.g., PI_CODING_AGENT_DIR or TAU_CODING_AGENT_DIR

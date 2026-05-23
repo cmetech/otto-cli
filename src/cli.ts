@@ -345,12 +345,17 @@ const subcommandsExemptFromEarlyTtyCheck = new Set([
   'wt',
 ])
 const isSubcommandExemptFromEarlyTtyCheck = subcommandsExemptFromEarlyTtyCheck.has(cliFlags.messages[0] ?? '')
+
+// Warn shown to non-interactive users when neither config.json nor the
+// gateway env var is in place. Same message used by the early-exit guard
+// (piped/non-TTY) and the wizard else-if branch (--mode rpc/mcp/text).
+const MISSING_CONFIG_WARN =
+  `[${COMMAND_NAMESPACE}] No ~/.loop24/config.json yet. ` +
+  `Run "${COMMAND_NAMESPACE} setup" to configure, or set LOOP24_GATEWAY_URL / LANGFLOW_SERVER_URL.\n`
+
 if (!process.stdin.isTTY && !isPrintMode && !isSubcommandExemptFromEarlyTtyCheck && !cliFlags.listModels && !cliFlags.web) {
   if (!existsSync(configPath()) && !process.env.LOOP24_GATEWAY_URL) {
-    process.stderr.write(
-      `[${COMMAND_NAMESPACE}] No ~/.loop24/config.json yet. ` +
-      `Run "${COMMAND_NAMESPACE} setup" to configure, or set LOOP24_GATEWAY_URL / LANGFLOW_SERVER_URL.\n`,
-    )
+    process.stderr.write(MISSING_CONFIG_WARN)
   }
   printNonTtyErrorAndExit(undefined, false)
 }
@@ -608,10 +613,7 @@ if (shouldRunLoop24Wizard({ isPrint: isPrintMode, isTTY: !!process.stdin.isTTY }
 } else if (!existsSync(configPath()) && !process.env.LOOP24_GATEWAY_URL && !isPrintMode) {
   // Config file missing AND no env override — headless / piped stdin / CI.
   // Emit a single warn line so the user knows the wizard is available.
-  process.stderr.write(
-    `[${COMMAND_NAMESPACE}] No ~/.loop24/config.json yet. ` +
-    `Run "${COMMAND_NAMESPACE} setup" to configure, or set LOOP24_GATEWAY_URL / LANGFLOW_SERVER_URL.\n`,
-  )
+  process.stderr.write(MISSING_CONFIG_WARN)
 }
 
 // Run onboarding wizard on first launch (no LLM provider configured)

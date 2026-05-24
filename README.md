@@ -1,108 +1,73 @@
-<!-- GSD Pi - Project overview and setup guide -->
+<!-- LOOP24 — local developer chat assistant with gateway compliance + LangFlow integration -->
 
-# GSD Pi
+# LOOP24
 
-GSD Pi is a local-first coding agent for planning, implementing, verifying, and tracking project work from the command line.
+LOOP24 is a terminal-based chat assistant for developers. It is a permanent hard fork of [gsd-pi](https://github.com/open-gsd/gsd-pi) that:
 
-It combines a terminal agent, project workflow tools, worktree-aware Git automation, and optional UI integrations so a project can move from idea to reviewed implementation with less manual coordination.
+- Routes every LLM token through `loop24-gateway` (your internal compliance proxy) when configured.
+- Keeps local tool execution (filesystem, bash, git) on the developer's laptop.
+- Adds a `loop24` extension hosting custom commands — LangFlow flow triggers, a flow builder, and a prompt engineer.
+- Re-brands the terminal UI with the Loop24 visual identity (yellow primary, brand block banner).
+
+LOOP24 is **not** trying to be a general-purpose AI assistant. It is a developer agent that happens to also trigger non-coding workflows through LangFlow.
 
 ## Status
 
-This repository is starting a new development baseline at version `1.0.0` under the `open-gsd/gsd-pi` project.
+v0.x — internal release. Distribution is git clone + install script (Phase 1). An internal npm registry (`@loop24/client`) is planned but not yet active.
 
-Older release history has been archived outside the active changelog so new work can be reviewed from a clean project surface.
+## Quickstart
 
-## Install
-
-Install from npm (not by cloning this repo):
+Requires **Node ≥22** and **git** on PATH.
 
 ```bash
-npm install -g @opengsd/gsd-pi@latest
+git clone <your-internal-host>/loop24-client.git
+cd loop24-client
+./scripts/install.sh
 ```
 
-Source: [`open-gsd/gsd-pi`](https://github.com/open-gsd/gsd-pi).
+This installs dependencies, builds the binary, symlinks `loop24` into `~/.local/bin/`, and offers to launch the first-run config wizard so you can point LOOP24 at your gateway and (optionally) LangFlow.
 
-## Migrate From Older Installs
-
-GSD Pi now installs from the scoped npm package `@opengsd/gsd-pi`. If you previously installed the older unscoped `gsd-pi` package, remove it first so the old global binary does not shadow the new package.
-
-macOS / Linux:
+After install:
 
 ```bash
-npm uninstall -g gsd-pi
-rm -f ~/.gsd/.update-check ~/.gsd/agent/managed-resources.json
-npm install -g @opengsd/gsd-pi@latest
-which gsd
-gsd --version
+loop24            # interactive TUI
+loop24 --help     # subcommands
+loop24 config     # re-run any part of the config wizard
 ```
 
-Windows PowerShell:
+See [`docs/INSTALL.md`](docs/INSTALL.md) for prerequisites, manual install, uninstall, and troubleshooting.
 
-```powershell
-npm uninstall -g gsd-pi
-Remove-Item "$env:USERPROFILE\.gsd\.update-check" -Force -ErrorAction SilentlyContinue
-Remove-Item "$env:USERPROFILE\.gsd\agent\managed-resources.json" -Force -ErrorAction SilentlyContinue
-npm install -g @opengsd/gsd-pi@latest
-where.exe gsd
-gsd --version
-```
+## What's inside
 
-After migration, routine upgrades use:
+| Command | Purpose |
+|---|---|
+| `/loop24 build-flow <description>` | Generate a LangFlow flow JSON from a natural-language description |
+| `/loop24 prompt-engineer <task>` | Polish a rough task description into a structured prompt for a coding agent |
+| `/loop24 <flow-name>` | Trigger any LangFlow flow declared in `extensions/loop24/commands/flow-triggers/*.yaml` |
+| `/loop24 plan`, `/loop24 quick`, etc. | Inherited from gsd-pi — multi-step workflow commands for software engineering tasks |
 
-```bash
-gsd upgrade
-```
+## Documentation
 
-You can also run `npx @opengsd/gsd-pi@latest` to launch the installer from the new package. For deeper recovery steps, see [Upgrade GSD Pi](./docs/user-docs/getting-started.md#upgrade-gsd-pi) and [Upgrade from older GSD-2 installs](./docs/user-docs/troubleshooting.md#upgrade-from-older-gsd-2-installs).
+- [`docs/INSTALL.md`](docs/INSTALL.md) — install / uninstall / troubleshoot
+- [`docs/superpowers/specs/`](docs/superpowers/specs/) — design specifications
+- [`docs/superpowers/plans/`](docs/superpowers/plans/) — implementation plans (one per phase)
+- [`LOOP24-PATCHES.md`](LOOP24-PATCHES.md) — every fork edit + known deferred cleanups
 
-## Quick Start
+## Configuration
 
-```bash
-gsd
-```
+LOOP24 reads from `~/.loop24/config.json` (created by the first-run wizard) and env-var overrides:
 
-Run the setup flow, choose your preferred model provider, and open a project directory. GSD stores project planning and runtime state in `.gsd/`.
+| Env var | Purpose | Default |
+|---|---|---|
+| `LOOP24_GATEWAY_URL` | Compliance proxy for all LLM traffic | (none — direct to Anthropic) |
+| `LOOP24_GATEWAY_TOKEN` | Optional Bearer auth for the gateway | (none) |
+| `LANGFLOW_SERVER_URL` | LangFlow server for flow triggers | `http://127.0.0.1:7860` |
+| `LANGFLOW_API_KEY` | LangFlow API key (x-api-key header) | (none) |
+| `ANTHROPIC_API_KEY` | Direct Anthropic key when no gateway | (none) |
+| `LOOP24_PYTHON_BIN` | Python 3 interpreter for build-flow tools | `python3` on PATH |
+| `LOOP24_PROMPT_ENGINEER_MODEL` | Model for `/loop24 prompt-engineer` | `claude-haiku-4-5-20251001` |
 
-For a full first-run walkthrough, see [Getting Started With GSD2](./docs/user-docs/getting-started.md).
-
-## Common Session Commands
-
-Start GSD from your shell:
-
-```bash
-gsd
-```
-
-Then use slash commands inside the GSD session:
-
-```text
-/gsd config
-/gsd auto
-/gsd quick "Describe the task"
-/gsd status
-```
-
-## What GSD Pi Does
-
-- Plans work into milestones, slices, and tasks.
-- Runs coding sessions with project context and verification steps.
-- Uses Git worktrees to isolate implementation work.
-- Tracks project state in a local database with markdown projections for review.
-- Supports extension-based tools and provider integrations.
-- Produces artifacts such as plans, summaries, validation notes, and reports.
-
-## Repository Layout
-
-| Path | Purpose |
-| --- | --- |
-| `src/` | Core runtime resources and bundled extensions |
-| `packages/` | Workspace packages used by the CLI, agent, TUI, RPC, and native bridge |
-| `native/` | Native engine packaging and platform binaries |
-| `studio/` | Desktop studio app |
-| `web/` | Web UI and API surface |
-| `vscode-extension/` | VS Code integration |
-| `docs/` | User and developer documentation |
-| `scripts/` | Build, release, migration, and maintenance scripts |
+Env vars always win over config file. Run `loop24 config` to interactively set any subset (`gateway`, `langflow`, `llm`, or `all`).
 
 ## Development
 
@@ -112,33 +77,8 @@ npm run build
 npm test
 ```
 
-Before opening a pull request, run:
-
-```bash
-npm run verify:fast   # CI fast-gates locally (scans + policy)
-npm run verify:pr     # build + typecheck + unit tests
-```
-
-## Versioning
-
-The active public baseline starts at `1.0.0`.
-
-Historical tags and archived refs may exist for traceability, but active release notes should be written from this baseline forward.
-
-## Community
-
-Join the [GSD Discord community](https://discord.com/invite/nKXTsAcmbT).
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=open-gsd%2Fgsd-pi&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=open-gsd/gsd-pi&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=open-gsd/gsd-pi&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=open-gsd/gsd-pi&type=date&legend=top-left" />
- </picture>
-</a>
+Plans live in [`docs/superpowers/plans/`](docs/superpowers/plans/) — one per phase, executed by subagents.
 
 ## License
 
-MIT
+MIT — see [`LICENSE`](LICENSE). Inherited from upstream gsd-pi; copyright Lex Christopherson 2026.

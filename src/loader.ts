@@ -246,7 +246,7 @@ try {
   }
 } catch { /* non-fatal */ }
 
-const workflowScopeDir = join(workflowNodeModules, '@gsd')
+const workflowScopeDir = join(workflowNodeModules, '@loop24')
 
 // Validate critical workspace packages are resolvable. If still missing after the
 // symlink+copy attempts, emit a clear diagnostic instead of a cryptic

@@ -495,6 +495,74 @@ should then appear in the TUI autocomplete as expected.
   protection list is effectively dead. Leave for now — removing it is
   the kind of cleanup that might break a sibling tool's expectations.
 
+## Phase 6 — Install script + docs (tagged: phase-6-install-docs)
+
+Phase 1 distribution per design spec §7: clone + install.sh + symlink +
+wizard. Three deliverables — no runtime code changes.
+
+### scripts/install.sh (NEW)
+POSIX-portable bash, idempotent. Flow:
+  1. Verify repo root looks like loop24-client (package.json contains
+     `"@loop24/client"`)
+  2. Prereq checks: git, Node ≥22, npm (required); python3 (optional, warn
+     only — only build-flow needs it)
+  3. `npm install` + `npm run build`
+  4. Symlink `dist/loader.js` → `~/.local/bin/loop24` (override target dir
+     with `--bin-dir DIR`)
+  5. Print PATH advice if `~/.local/bin` not on PATH
+  6. Offer to launch `loop24 config all` (skip with `--no-wizard` or in
+     non-interactive shells)
+
+Flags: `--no-wizard`, `--bin-dir DIR`, `-h|--help`. Uses 24-bit ANSI for
+brand colors when stdout is a TTY; degrades to plain text otherwise.
+Re-runnable safely on an existing install.
+
+### docs/INSTALL.md (NEW)
+Long-form install/uninstall/troubleshoot guide. Sections:
+  - Prerequisites (required + per-feature optional)
+  - Install (recommended: `scripts/install.sh`; alternative: manual steps)
+  - Update (git pull + re-run install.sh)
+  - Uninstall (symlink + workspace + optional `~/.loop24/` state)
+  - Troubleshooting (Node version, PATH, build failure, missing python3,
+    LangFlow offline, no API key, headless dispatch limitation)
+
+### README.md (REPLACED)
+Rewritten from the inherited gsd-pi shape. New structure:
+  - One-paragraph LOOP24 overview (compliance proxy + local tools +
+    LangFlow integration)
+  - Status note (v0.x internal release; Phase 7 npm publish blocked on
+    registry availability)
+  - Quickstart (3-line `git clone` + `install.sh`)
+  - "What's inside" table (build-flow, prompt-engineer, flow triggers,
+    inherited workflow commands)
+  - Documentation links (INSTALL.md, design spec, plans, LOOP24-PATCHES.md)
+  - Configuration table (7 env vars + their defaults)
+  - License pointer
+
+Removed: gsd-pi history, `npm install -g @opengsd/gsd-pi` install hints,
+"migrate from older installs" section, Discord community link, Star History
+chart, repository-layout table (referenced dropped dirs `studio/`, `web/`,
+`vscode-extension/`, `native/`). License preserved (MIT, inherited from
+upstream — see `LICENSE`).
+
+### Clean-room verification
+Cloned the repo into a fresh temp dir, ran
+`./scripts/install.sh --no-wizard --bin-dir <temp>/bin`:
+  - All prereq checks pass on this laptop (git 2.x, Node v22+, npm,
+    python3 3.12.9)
+  - `npm install` + `npm run build` complete cleanly
+  - Symlink created at the target bin dir
+  - `loop24 --version` prints `1.0.1`
+  - `loop24 --help` prints `LOOP24 v1.0.1 — compliant agent for developers`
+  - **End-to-end elapsed time: 41 seconds**
+
+### Out of scope (deferred to Phase 7)
+- `npm install -g @loop24/client` (Phase 7, blocked on internal npm
+  registry — see open Q4 in design spec)
+- `loop24 update` self-update command (current update path: `git pull && ./scripts/install.sh --no-wizard`)
+- Windows install (macOS + Linux only in v1 per design spec)
+- Homebrew formula
+
 ## Phase 5 — Prompt engineer command (tagged: phase-5-prompt-engineer)
 
 Per design spec §6.4 — the "smallest piece" in the LOOP24 roadmap. Ships

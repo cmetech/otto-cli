@@ -124,7 +124,7 @@ The user reviews this map BEFORE Tasks 2-10 execute. Changes/redirects to specif
 
 ## 5. Env vars (LOOP24_X canonical + GSD_X fallback)
 
-These are the 11 vars explicitly listed in the Phase 8 plan. For all others (`GSD_PROJECT_ROOT`, `GSD_WEB_PROJECT_CWD`, etc.) that appear in the broader `GSD_*` constant list above: those are internal module constants, not process env vars passed across process boundaries — they are covered by Section 4.
+The 11 vars explicitly listed in the Phase 8 plan, **plus 4 additional env vars confirmed during 2026-05-24 open-questions resolution** (originally suspected to be module constants; confirmed as `process.env` reads/writes). For all others in the broader `GSD_*` constant list (Section 4): those are internal module constants.
 
 | Old | New (canonical) | All sites | Setter sites | Notes |
 |---|---|---|---|---|
@@ -139,6 +139,10 @@ These are the 11 vars explicitly listed in the Phase 8 plan. For all others (`GS
 | `GSD_SKIP_RTK_INSTALL` | `LOOP24_SKIP_RTK_INSTALL` | 3 | 1 | `LOOP24_SKIP_RTK_INSTALL` free (0 existing hits). Note: `GSD_SKIP_RTK_INSTALL_ENV` (2 hits) is likely a string constant holding the env var name — must update its value too. |
 | `GSD_RTK_DISABLED` | `LOOP24_RTK_DISABLED` | 10 | 4 | `LOOP24_RTK_DISABLED` free (0 existing hits). Note: `GSD_RTK_DISABLED_ENV` (2 hits) is a string constant holding the env var name — must update its value. |
 | `GSD_TEST_CLONE_MARKETPLACES` | `LOOP24_TEST_CLONE_MARKETPLACES` | 1 | 1 | `LOOP24_TEST_CLONE_MARKETPLACES` free (0 existing hits). |
+| `GSD_PROJECT_ROOT` | `LOOP24_PROJECT_ROOT` | 47 | 6+ | **Added 2026-05-24.** Confirmed env var: `process.env.GSD_PROJECT_ROOT = projectRoot` (auto.ts:356); reader `process.env.GSD_PROJECT_ROOT?.trim()` in worktree-root.ts; spread into worker process envs in parallel-orchestrator.ts and slice-parallel-orchestrator.ts. `LOOP24_PROJECT_ROOT` free (0 existing hits). |
+| `GSD_WORKFLOW_PROJECT_ROOT` | `LOOP24_WORKFLOW_PROJECT_ROOT` | 47 | 1 | **Added 2026-05-24.** Confirmed env var: set in workflow-mcp.ts:216 (`GSD_WORKFLOW_PROJECT_ROOT: projectRoot`) and read at :235-236. Used in MCP server env spreads. `LOOP24_WORKFLOW_PROJECT_ROOT` free (0 existing hits). |
+| `GSD_ENABLE_NATIVE_GSD_GIT` | `LOOP24_ENABLE_NATIVE_GIT` | 3 | 0 | **Added 2026-05-24.** Confirmed env var: `process.env.GSD_ENABLE_NATIVE_GSD_GIT === "1"` in native-git-bridge.ts:19. Feature flag for native git path. Inner duplicate `GSD` dropped; "native" already qualifies the feature. `LOOP24_ENABLE_NATIVE_GIT` free (0 existing hits). |
+| `GSD_ENABLE_NATIVE_GSD_PARSER` | `LOOP24_ENABLE_NATIVE_PARSER` | 1 | 0 | **Added 2026-05-24.** Confirmed env var: `process.env.GSD_ENABLE_NATIVE_GSD_PARSER === "1"` in native-parser-bridge.ts:11. Feature flag for native parser path. `LOOP24_ENABLE_NATIVE_PARSER` free (0 existing hits). |
 
 ---
 
@@ -204,12 +208,12 @@ grep -rohE "\b(read|write|get|set|create|delete|update|format|notify|build|with|
 
 ---
 
-## Open questions / decisions deferred to the user
+## Open questions — RESOLVED 2026-05-24
 
-1. **`writeGsdState` / `writeWorkflowState` collision:** The plan flags `writeWorkflowState` as already used in 3 files. The inventory found `readGsdState` (1 file) and `readGsdFile` (1 file) but did not surface a `writeGsdState` function in the grep output — only `readGsdState`. Either `writeGsdState` does not exist as a named export (it may be inlined or named differently), or it falls outside the grep pattern. **Recommend:** the executor of Task 3 (identifier renames) grep specifically for `writeGsdState` before proceeding and confirm whether it needs a rename. Proposed name if found: `persistWorkflowDbState` (matches plan's suggestion and `WorkflowDbState` type rename).
+1. **`writeGsdState` — RESOLVED: does not exist.** Grep `writeGsdState\|writeGSDState` in src/ packages/ returns zero hits. The plan's pre-flight collision note was speculative. What does exist: `readGsdState` (1 file, already in map → `readAgentState`) and `writeGsdIdMarker` (1 file, already in map → `writeIdMarker`). The pre-existing `writeWorkflowState` (in commands-workflow-templates.ts) is a separate concept and stays as-is. **No additional rename needed.**
 
-2. **`GSD_PROJECT_ROOT` vs `GSD_WORKFLOW_PROJECT_ROOT` (85 + 55 hits):** These appear to be internal module-scoped constants in the broader `GSD_*` constant list, but they have very high usage (85 and 55 files). They are NOT in the Phase 8 plan's 11-var env-var list. Confirm whether these are process env vars (needing `LOOP24_` treatment) or purely module-level constants (Section 4 treatment). If env vars, they should be added to the env-var table above.
+2. **`GSD_PROJECT_ROOT` / `GSD_WORKFLOW_PROJECT_ROOT` — RESOLVED: process env vars.** Both confirmed as env vars via direct `process.env.GSD_PROJECT_ROOT = …` writes (auto.ts:356) and reads (worktree-root.ts:64). Spread into spawned worker process envs in parallel-orchestrator.ts:609 and slice-parallel-orchestrator.ts:104. Added to Section 5 env-var table with `LOOP24_PROJECT_ROOT` and `LOOP24_WORKFLOW_PROJECT_ROOT` canonical names + `GSD_X` fallback shim. **Section 4 (constants) does NOT contain these; they were never miscategorized in the map body, only flagged here.**
 
-3. **`GSD_ENABLE_NATIVE_GSD_GIT` / `GSD_ENABLE_NATIVE_GSD_PARSER` (3 + 1 hits):** These contain a nested `GSD` in the value part of the name. After the outer `GSD_` prefix is removed, the remaining name still contains `GSD`. Proposed: `ENABLE_NATIVE_AGENT_GIT` / `ENABLE_NATIVE_AGENT_PARSER`, but this is a judgment call on whether "native" vs "agent" is the better qualifier. Listed here for explicit user sign-off.
+3. **`GSD_ENABLE_NATIVE_GSD_GIT` / `GSD_ENABLE_NATIVE_GSD_PARSER` — RESOLVED: process env vars; `LOOP24_ENABLE_NATIVE_GIT/_PARSER`.** Both confirmed env vars (`process.env.GSD_ENABLE_NATIVE_GSD_GIT === "1"` in native-git-bridge.ts:19; same shape in native-parser-bridge.ts:11). Reclassified from Section 4 to Section 5. Earlier `ENABLE_NATIVE_AGENT_GIT` proposal rejected: (i) "agent" misleads — these toggle parser/git internals, not agent behavior; (ii) env vars take LOOP24_ canonical, not bare; (iii) inner duplicate `GSD` drops cleanly since "native" qualifies the feature. Final names: `LOOP24_ENABLE_NATIVE_GIT` and `LOOP24_ENABLE_NATIVE_PARSER`.
 
-4. **`GSD_ENABLE_NATIVE_GSD_GIT` constant scope:** Only 3 hits — likely a feature flag. Included in Section 4 above as `GSD_ENABLE_NATIVE_GSD_GIT` → `ENABLE_NATIVE_AGENT_GIT` pending confirmation in item 3.
+4. (merged into item 3)

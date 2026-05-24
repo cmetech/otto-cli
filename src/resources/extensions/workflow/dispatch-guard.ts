@@ -82,7 +82,7 @@ export function getPriorSliceCompletionBlocker(
   // check — other milestones are being handled by their own workers.
   // Without this, the dispatch guard sees incomplete slices in M010/M011
   // (cloned into the worktree DB) and blocks M012 from ever starting. #2797
-  const milestoneLock = process.env.GSD_MILESTONE_LOCK;
+  const milestoneLock = (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK);
 
   // Use findMilestoneIds to respect custom queue order.
   // Only check milestones that come BEFORE the target in queue order.

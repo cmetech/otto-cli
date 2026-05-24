@@ -436,7 +436,7 @@ async function generateMilestoneReport(
     (m: { id: string }) => m.id === milestoneId,
   );
   const msTitle = completedMs?.title ?? milestoneId;
-  const gsdVersion = process.env.GSD_VERSION ?? "0.0.0";
+  const gsdVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) ?? "0.0.0";
   const projName = basename(reportBasePath);
   const doneSlices = snapData.milestones.reduce(
     (acc: number, m: { slices: { done: boolean }[] }) =>
@@ -989,7 +989,7 @@ export async function runPreDispatch(
   if (
     prefs?.slice_parallel?.enabled &&
     mid &&
-    !process.env.GSD_PARALLEL_WORKER &&
+    !(process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) &&
     isDbAvailable()
   ) {
     try {
@@ -1778,7 +1778,7 @@ export async function runGuards(
     // In parallel worker mode, only count cost from the current auto-mode session
     // to avoid hitting the ceiling due to historical project-wide spend (#2184).
     let costUnits = currentLedger?.units;
-    if (process.env.GSD_PARALLEL_WORKER && s.autoStartTime && Array.isArray(costUnits)) {
+    if ((process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) && s.autoStartTime && Array.isArray(costUnits)) {
       const sessionStartISO = new Date(s.autoStartTime).toISOString();
       costUnits = costUnits.filter(
         (u: { startedAt?: string }) => u.startedAt != null && u.startedAt >= sessionStartISO,

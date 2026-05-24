@@ -32,7 +32,7 @@ import {
 import { stopWebMode } from './web-mode.js'
 import { getProjectSessionsDir } from './project-sessions.js'
 import { markStartup, printStartupTimings } from './startup-timings.js'
-import { applyRtkProcessEnv, GSD_RTK_DISABLED_ENV, isTruthy } from './rtk-shared.js'
+import { applyRtkProcessEnv, GSD_RTK_DISABLED_ENV, LOOP24_RTK_DISABLED_ENV, isTruthy } from './rtk-shared.js'
 import type { EnsureRtkResult } from './rtk.js'
 
 type PiCodingAgentModule = typeof import('@gsd/pi-coding-agent')
@@ -53,7 +53,7 @@ if (parseInt(process.versions.node) >= 22) {
 }
 
 function exitIfManagedResourcesAreNewer(currentAgentDir: string): void {
-  const currentVersion = process.env.GSD_VERSION || '0.0.0'
+  const currentVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || '0.0.0'
   const managedVersion = getNewerManagedResourceVersion(currentAgentDir, currentVersion)
   if (!managedVersion) {
     return
@@ -176,7 +176,7 @@ const isPrintMode = cliFlags.print || cliFlags.mode !== undefined
 // subcommand, otherwise fall back to general help.
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   const helpSubcommand = cliFlags.messages[0]
-  const version = process.env.GSD_VERSION || '0.0.0'
+  const version = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || '0.0.0'
   if (!helpSubcommand || !printSubcommandHelp(helpSubcommand, version)) {
     printHelp(version)
   }
@@ -188,7 +188,7 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
 let rtkBootstrapPromise: Promise<void> | undefined
 async function doRtkBootstrap(): Promise<void> {
   let rtkStatus: EnsureRtkResult | undefined
-  let rtkDisabled = isTruthy(process.env[GSD_RTK_DISABLED_ENV])
+  let rtkDisabled = isTruthy(process.env[LOOP24_RTK_DISABLED_ENV] ?? process.env[GSD_RTK_DISABLED_ENV])
 
   // RTK is opt-in via experimental.rtk preference. Default: disabled.
   // Honor GSD_RTK_DISABLED if already explicitly set in the environment
@@ -198,6 +198,7 @@ async function doRtkBootstrap(): Promise<void> {
     const prefs = loadEffectiveGSDPreferences()
     const rtkEnabled = prefs?.preferences.experimental?.rtk === true
     if (!rtkEnabled) {
+      process.env[LOOP24_RTK_DISABLED_ENV] = '1'
       process.env[GSD_RTK_DISABLED_ENV] = '1'
       rtkDisabled = true
     }
@@ -821,7 +822,7 @@ if (isPrintMode) {
 
     await startMcpServer({
       tools: session.agent.state.tools ?? [],
-      version: process.env.GSD_VERSION || '0.0.0',
+      version: (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || '0.0.0',
     })
     // MCP server runs until the transport closes; keep alive
     await new Promise(() => {})

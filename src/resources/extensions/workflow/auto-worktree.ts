@@ -552,7 +552,7 @@ export function syncStateToProjectRoot(
  */
 export function readResourceVersion(): string | null {
   const agentDir =
-    process.env.GSD_CODING_AGENT_DIR || join(gsdHome(), "agent");
+    (process.env.LOOP24_CODING_AGENT_DIR ?? process.env.GSD_CODING_AGENT_DIR) || join(gsdHome(), "agent");
   const manifestPath = join(agentDir, "managed-resources.json");
   try {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));

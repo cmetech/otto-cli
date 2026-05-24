@@ -61,7 +61,7 @@ export function resolveWorktreeProjectRoot(
   const explicitOriginal = originalBasePath?.trim();
   if (explicitOriginal) return resolveProjectRootFromPath(explicitOriginal);
 
-  const envProjectRoot = process.env.GSD_PROJECT_ROOT?.trim();
+  const envProjectRoot = (process.env.LOOP24_PROJECT_ROOT ?? process.env.GSD_PROJECT_ROOT)?.trim();
   if (envProjectRoot && isWorktreePath(basePath)) {
     return resolveProjectRootFromPath(envProjectRoot);
   }

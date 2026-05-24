@@ -123,7 +123,7 @@ export async function handleExport(args: string, ctx: ExtensionCommandContext, b
       const { basename: bn } = await import("node:path");
       const data = await loadVisualizerData(basePath);
       const projName = basename(basePath);
-      const gsdVersion = process.env.GSD_VERSION ?? "0.0.0";
+      const gsdVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) ?? "0.0.0";
       const doneMilestones = data.milestones.filter(m => m.status === "complete").length;
 
       const htmlOpts = {

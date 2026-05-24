@@ -68,9 +68,10 @@ function getManagedResourceManifestPath(agentDir: string): string {
 }
 
 function getBundledGsdVersion(): string {
-  // Prefer GSD_VERSION env var (set once by loader.ts) to avoid re-reading package.json
-  if (process.env.GSD_VERSION && process.env.GSD_VERSION !== '0.0.0') {
-    return process.env.GSD_VERSION
+  // Prefer LOOP24_VERSION env var (set once by loader.ts) to avoid re-reading package.json
+  const envVersion = process.env.LOOP24_VERSION ?? process.env.GSD_VERSION
+  if (envVersion && envVersion !== '0.0.0') {
+    return envVersion
   }
   try {
     const pkg = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf-8'))

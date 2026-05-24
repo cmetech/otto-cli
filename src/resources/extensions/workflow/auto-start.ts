@@ -833,7 +833,7 @@ export async function bootstrapAutoSession(
     );
 
     // ── Debug mode ──
-    if (!isDebugEnabled() && process.env.GSD_DEBUG === "1") {
+    if (!isDebugEnabled() && (process.env.LOOP24_DEBUG ?? process.env.GSD_DEBUG) === "1") {
       enableDebug(base);
     }
     if (isDebugEnabled()) {
@@ -1393,7 +1393,7 @@ export async function bootstrapAutoSession(
     // is configured, so parallel milestone workers use a cheaper model than the
     // coordinator session (e.g. Haiku for execution, Sonnet for planning).
     const workerModelOverride = process.env.GSD_WORKER_MODEL;
-    if (workerModelOverride && process.env.GSD_PARALLEL_WORKER === "1") {
+    if (workerModelOverride && (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) === "1") {
       const availableModels = ctx.modelRegistry.getAvailable();
       const { resolveModelId } = await import("./auto-model-selection.js");
       const overrideModel = resolveModelId(workerModelOverride, availableModels, ctx.model?.provider);

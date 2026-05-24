@@ -16,7 +16,7 @@ import { join } from "node:path";
  */
 export function writeCrashLog(err: Error, source: string): void {
   try {
-    const crashDir = join(process.env.GSD_HOME ?? join(homedir(), ".gsd"), "crash");
+    const crashDir = join((process.env.LOOP24_HOME ?? process.env.GSD_HOME) ?? join(homedir(), ".gsd"), "crash");
     mkdirSync(crashDir, { recursive: true });
     const ts = new Date().toISOString().replace(/[:.]/g, "-");
     const logPath = join(crashDir, `${ts}.log`);

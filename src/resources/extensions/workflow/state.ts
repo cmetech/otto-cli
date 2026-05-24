@@ -280,7 +280,7 @@ export function invalidateStateCache(): void {
 export async function getActiveMilestoneId(basePath: string): Promise<string | null> {
   // Parallel worker isolation. Normal DB state derivation remains DB-only;
   // lock env vars are execution routing for explicit worker processes.
-  const milestoneLock = process.env.GSD_PARALLEL_WORKER ? process.env.GSD_MILESTONE_LOCK : undefined;
+  const milestoneLock = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK) : undefined;
   if (milestoneLock) {
     if (isDbAvailable()) {
       const locked = getAllMilestones().find(m => m.id === milestoneLock);
@@ -675,7 +675,7 @@ function resolveSliceDependencies(activeMilestoneSlices: SliceRow[]): { activeSl
     activeMilestoneSlices.filter(s => isStatusDone(s.status)).map(s => s.id)
   );
 
-  const sliceLock = process.env.GSD_PARALLEL_WORKER ? process.env.GSD_SLICE_LOCK : undefined;
+  const sliceLock = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_SLICE_LOCK ?? process.env.GSD_SLICE_LOCK) : undefined;
   if (sliceLock) {
     const lockedSlice = activeMilestoneSlices.find(s => s.id === sliceLock);
     if (lockedSlice) {
@@ -720,7 +720,7 @@ export async function deriveStateFromDb(
 
   const allMilestones = getAllMilestones();
 
-  const milestoneLock = process.env.GSD_PARALLEL_WORKER ? process.env.GSD_MILESTONE_LOCK : undefined;
+  const milestoneLock = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK) : undefined;
   const milestones = milestoneLock
     ? allMilestones.filter(m => m.id === milestoneLock)
     : allMilestones;
@@ -775,7 +775,7 @@ export async function deriveStateFromDb(
   const activeSliceContext = resolveSliceDependencies(activeMilestoneSlices);
   if (!activeSliceContext.activeSlice) {
     // If locked slice wasn't found, it returns null but logs warning, we need to return 'blocked'
-    const sliceLock = process.env.GSD_PARALLEL_WORKER ? process.env.GSD_SLICE_LOCK : undefined;
+    const sliceLock = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_SLICE_LOCK ?? process.env.GSD_SLICE_LOCK) : undefined;
     if (sliceLock) {
       return {
         activeMilestone, activeSlice: null, activeTask: null,
@@ -965,7 +965,7 @@ export async function _deriveStateImpl(
   // only sees its assigned milestone (all others are treated as if they
   // don't exist). This gives each worker complete isolation without
   // modifying any other state derivation logic.
-  const milestoneLock = process.env.GSD_PARALLEL_WORKER ? process.env.GSD_MILESTONE_LOCK : undefined;
+  const milestoneLock = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK) : undefined;
   if (milestoneLock && milestoneIds.includes(milestoneLock)) {
     milestoneIds.length = 0;
     milestoneIds.push(milestoneLock);
@@ -1444,7 +1444,7 @@ export async function _deriveStateImpl(
 
   // ── Slice-level parallel worker isolation ─────────────────────────────
   // When GSD_PARALLEL_WORKER and GSD_SLICE_LOCK are set, override activeSlice to only the locked slice.
-  const sliceLockLegacy = process.env.GSD_PARALLEL_WORKER ? process.env.GSD_SLICE_LOCK : undefined;
+  const sliceLockLegacy = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_SLICE_LOCK ?? process.env.GSD_SLICE_LOCK) : undefined;
   if (sliceLockLegacy) {
     const lockedSlice = activeRoadmap.slices.find(s => s.id === sliceLockLegacy);
     if (lockedSlice) {

@@ -252,7 +252,7 @@ export async function handleBrief(args: string, ctx: ExtensionCommandContext, pi
 const briefRequire = createRequire(import.meta.url);
 
 function resolveGsdVersion(): string | undefined {
-  const envVersion = process.env.GSD_VERSION?.trim();
+  const envVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION)?.trim();
   if (envVersion) return envVersion;
   try {
     const pkg = briefRequire("../../../../../../package.json") as { version?: unknown };

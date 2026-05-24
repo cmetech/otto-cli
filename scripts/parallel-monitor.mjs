@@ -334,8 +334,11 @@ function respawnWorker(mid) {
       detached: true,
       env: {
         ...process.env,
+        LOOP24_MILESTONE_LOCK: mid,
         GSD_MILESTONE_LOCK: mid,
+        LOOP24_PROJECT_ROOT: PROJECT_ROOT,
         GSD_PROJECT_ROOT: PROJECT_ROOT,
+        LOOP24_PARALLEL_WORKER: '1',
         GSD_PARALLEL_WORKER: '1',
       },
       stdio: ['ignore', stdoutFd, stderrFd],

@@ -25,7 +25,7 @@ try {
 }
 
 // LOOP24_HOME (preferred) and GSD_HOME (legacy) both accepted as overrides.
-export const appRoot = process.env.LOOP24_HOME || process.env.GSD_HOME || join(homedir(), _configDir)
+export const appRoot = process.env.LOOP24_HOME || (process.env.LOOP24_HOME ?? process.env.GSD_HOME) || join(homedir(), _configDir)
 export const agentDir = join(appRoot, 'agent')
 export const sessionsDir = join(appRoot, 'sessions')
 export const authFilePath = join(agentDir, 'auth.json')

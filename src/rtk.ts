@@ -23,6 +23,7 @@ import {
 } from "./rtk-shared.js";
 
 export const RTK_VERSION = "0.33.1";
+export const LOOP24_SKIP_RTK_INSTALL_ENV = "LOOP24_SKIP_RTK_INSTALL";
 export const GSD_SKIP_RTK_INSTALL_ENV = "GSD_SKIP_RTK_INSTALL";
 export {
   GSD_RTK_DISABLED_ENV,
@@ -263,7 +264,7 @@ export async function ensureRtkAvailable(options: EnsureRtkOptions = {}): Promis
   if (!isRtkEnabled(env)) {
     return { enabled: false, supported: true, available: false, source: "disabled", reason: `${GSD_RTK_DISABLED_ENV} is set` };
   }
-  if (isTruthy(env[GSD_SKIP_RTK_INSTALL_ENV])) {
+  if (isTruthy(env[LOOP24_SKIP_RTK_INSTALL_ENV] ?? env[GSD_SKIP_RTK_INSTALL_ENV])) {
     const configuredPath = env[GSD_RTK_PATH_ENV];
     if (configuredPath && existsSync(configuredPath)) {
       return { enabled: true, supported: true, available: true, source: "managed", binaryPath: configuredPath };

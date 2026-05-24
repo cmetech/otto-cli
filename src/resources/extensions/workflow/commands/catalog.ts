@@ -433,7 +433,8 @@ function resolveProjectRootFromGitFile(worktreePath: string): string | null {
 }
 
 function resolveProjectRootForCompletion(basePath: string): string {
-  if (process.env.GSD_PROJECT_ROOT) return process.env.GSD_PROJECT_ROOT;
+  const envProjectRoot = process.env.LOOP24_PROJECT_ROOT ?? process.env.GSD_PROJECT_ROOT;
+  if (envProjectRoot) return envProjectRoot;
 
   const normalizedPath = normalizePathForCompare(basePath);
   const segment = findWorktreeSegment(normalizedPath);

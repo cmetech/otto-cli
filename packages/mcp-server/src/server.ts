@@ -533,13 +533,13 @@ function isAskUserQuestionsWriteGateModule(value: unknown): value is AskUserQues
 async function loadAskUserQuestionsWriteGateModule(): Promise<AskUserQuestionsWriteGateModule | null> {
   if (!askUserQuestionsWriteGateModulePromise) {
     askUserQuestionsWriteGateModulePromise = (async () => {
-      const modulePath = process.env.GSD_WORKFLOW_WRITE_GATE_MODULE?.trim();
+      const modulePath = (process.env.LOOP24_WORKFLOW_WRITE_GATE_MODULE ?? process.env.GSD_WORKFLOW_WRITE_GATE_MODULE)?.trim();
       if (!modulePath) return null;
       try {
         if (/^[a-z]{2,}:/i.test(modulePath) && !modulePath.startsWith('file:')) {
           throw new Error('GSD_WORKFLOW_WRITE_GATE_MODULE only supports file: URLs or filesystem paths.');
         }
-        const baseRoot = process.env.GSD_WORKFLOW_PROJECT_ROOT?.trim() || process.cwd();
+        const baseRoot = (process.env.LOOP24_WORKFLOW_PROJECT_ROOT ?? process.env.GSD_WORKFLOW_PROJECT_ROOT)?.trim() || process.cwd();
         const specifier = modulePath.startsWith('file:') ? modulePath : pathToFileURL(resolve(baseRoot, modulePath)).href;
         const loaded = await import(specifier);
         return isAskUserQuestionsWriteGateModule(loaded) ? loaded : null;
@@ -553,7 +553,7 @@ async function loadAskUserQuestionsWriteGateModule(): Promise<AskUserQuestionsWr
 }
 
 function askUserQuestionsWriteGateBasePath(deps: AskUserQuestionsHandlerDeps): string {
-  return deps.writeGateBasePath ?? process.env.GSD_WORKFLOW_PROJECT_ROOT?.trim() ?? process.cwd();
+  return deps.writeGateBasePath ?? (process.env.LOOP24_WORKFLOW_PROJECT_ROOT ?? process.env.GSD_WORKFLOW_PROJECT_ROOT)?.trim() ?? process.cwd();
 }
 
 async function resolveAskUserQuestionsWriteGate(deps: AskUserQuestionsHandlerDeps): Promise<AskUserQuestionsWriteGateModule | null> {

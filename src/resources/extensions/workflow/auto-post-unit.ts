@@ -1057,7 +1057,7 @@ export async function postUnitPreVerification(pctx: PostUnitContext, opts?: PreV
   const { s, ctx, pi, stopAuto, pauseAuto } = pctx;
 
   // ── Parallel worker signal check ──
-  const milestoneLock = process.env.GSD_MILESTONE_LOCK;
+  const milestoneLock = (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK);
   if (milestoneLock) {
     const signal = consumeSignal(s.basePath, milestoneLock);
     if (signal) {

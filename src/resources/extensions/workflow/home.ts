@@ -24,7 +24,6 @@ import { join, resolve } from "node:path";
  * and redaction sites don't have to.
  */
 export function gsdHome(): string {
-  return process.env.GSD_HOME
-    ? resolve(process.env.GSD_HOME)
-    : join(homedir(), ".gsd");
+  const envHome = process.env.LOOP24_HOME ?? process.env.GSD_HOME;
+  return envHome ? resolve(envHome) : join(homedir(), ".gsd");
 }

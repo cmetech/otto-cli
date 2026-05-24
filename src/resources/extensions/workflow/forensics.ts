@@ -330,7 +330,7 @@ export async function buildForensicReport(basePath: string): Promise<ForensicRep
   // 8. version — use GSD_VERSION env var set by the loader at startup.
   // Extensions run from ~/.loop24/agent/extensions/workflow/ at runtime, so path-traversal
   // from import.meta.url would resolve to ~/package.json (wrong on every system).
-  const gsdVersion = process.env.GSD_VERSION || "unknown";
+  const gsdVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || "unknown";
 
   // 9. Scan journal for flow timeline and structured events
   const journalSummary = scanJournalForForensics(basePath);

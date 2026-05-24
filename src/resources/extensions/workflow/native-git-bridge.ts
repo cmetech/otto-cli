@@ -16,7 +16,7 @@ import { isInfrastructureError } from "./auto/infra-errors.js";
 
 // Issue #453: keep auto-mode bookkeeping on the stable git CLI path unless a
 // caller explicitly opts into the native helper.
-const NATIVE_GSD_GIT_ENABLED = process.env.GSD_ENABLE_NATIVE_GSD_GIT === "1";
+const NATIVE_GSD_GIT_ENABLED = (process.env.LOOP24_ENABLE_NATIVE_GIT ?? process.env.GSD_ENABLE_NATIVE_GSD_GIT) === "1";
 const TRANSIENT_GIT_RETRY_CODES = new Set(["ENOBUFS", "EAGAIN"]);
 const GIT_RETRY_DELAY_MS = 200;
 

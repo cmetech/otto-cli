@@ -127,17 +127,16 @@ if (!existsSync(appRoot)) {
     `  compliant agent for developers ${dim}v${gsdVersion}${reset}\n` +
     `  ${green}Welcome.${reset} Setting up your environment...\n\n`
   )
-  process.env.LOOP24_FIRST_RUN_BANNER = '1'
-  process.env.GSD_FIRST_RUN_BANNER = '1'
+  process.env.LOOP24_FIRST_RUN_BANNER = process.env.GSD_FIRST_RUN_BANNER = '1'
 }
 
 // GSD_CODING_AGENT_DIR — tells pi's getAgentDir() to return ~/.loop24/agent/ instead of ~/.pi/agent/
-process.env.GSD_CODING_AGENT_DIR = agentDir
+process.env.LOOP24_CODING_AGENT_DIR = process.env.GSD_CODING_AGENT_DIR = agentDir
 
 // GSD_PKG_ROOT — absolute path to @ericsson/loop24 package root. Used by deployed extensions
 // (e.g. auto.ts resume path) to import modules like resource-loader.js that live
 // in the package tree, not in the deployed ~/.loop24/agent/ tree.
-process.env.GSD_PKG_ROOT = gsdRoot
+process.env.LOOP24_PKG_ROOT = process.env.GSD_PKG_ROOT = gsdRoot
 
 // RTK environment — make ~/.loop24/agent/bin visible to all child-process paths,
 // not just the bash tool, and force-disable RTK telemetry for managed use.
@@ -158,7 +157,7 @@ const { Module } = await import('module');
 (Module as any)._initPaths?.()
 
 // GSD_VERSION — expose package version so extensions can display it (env var name kept for compatibility)
-process.env.GSD_VERSION = gsdVersion
+process.env.LOOP24_VERSION = process.env.GSD_VERSION = gsdVersion
 
 // GSD_BIN_PATH — absolute path to the CLI entrypoint, used by patched
 // subagent/parallel workers to spawn loop24 instead of pi when dispatching
@@ -190,7 +189,7 @@ const discoveredExtensionPaths = discoverExtensionEntryPaths(bundledExtDir)
     return isExtensionEnabled(registry, manifest.id)
   })
 
-process.env.GSD_BUNDLED_EXTENSION_PATHS = serializeBundledExtensionPaths(discoveredExtensionPaths)
+process.env.LOOP24_BUNDLED_EXTENSION_PATHS = process.env.GSD_BUNDLED_EXTENSION_PATHS = serializeBundledExtensionPaths(discoveredExtensionPaths)
 
 // Respect HTTP_PROXY / HTTPS_PROXY / NO_PROXY env vars for all outbound requests.
 // pi-coding-agent's cli.ts sets this, but the loader bypasses that entry point — so we

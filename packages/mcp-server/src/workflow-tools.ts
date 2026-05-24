@@ -572,7 +572,7 @@ function buildBridgeImportCandidates(relativePath: string): string[] {
 
 function getWriteGateModuleCandidates(): string[] {
   const candidates: string[] = [];
-  const explicitModule = process.env.GSD_WORKFLOW_WRITE_GATE_MODULE?.trim();
+  const explicitModule = (process.env.LOOP24_WORKFLOW_WRITE_GATE_MODULE ?? process.env.GSD_WORKFLOW_WRITE_GATE_MODULE)?.trim();
   if (explicitModule) {
     if (/^[a-z]{2,}:/i.test(explicitModule) && !explicitModule.startsWith("file:")) {
       throw new Error("GSD_WORKFLOW_WRITE_GATE_MODULE only supports file: URLs or filesystem paths.");

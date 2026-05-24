@@ -124,7 +124,7 @@ export default function ollama(pi: ExtensionAPI) {
 		// probe still soft-fails (registration is best-effort) — we just stop
 		// dropping the error on the floor. See #4982.
 		const debugOllama = (where: string, error: unknown): void => {
-			if (process.env.GSD_DEBUG) {
+			if ((process.env.LOOP24_DEBUG ?? process.env.GSD_DEBUG)) {
 				const msg = error instanceof Error ? error.message : String(error);
 				process.stderr.write(`[ollama] ${where} probe failed: ${msg}\n`);
 			}

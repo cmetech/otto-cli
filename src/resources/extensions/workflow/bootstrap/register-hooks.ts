@@ -46,12 +46,12 @@ type WelcomeScreenModule = {
 
 async function loadWelcomeScreenModule(): Promise<WelcomeScreenModule | undefined> {
   const candidates: string[] = [];
-  const gsdBinPath = process.env.GSD_BIN_PATH;
+  const gsdBinPath = (process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH);
   if (gsdBinPath) {
     candidates.push(join(dirname(gsdBinPath), "welcome-screen.js"));
   }
 
-  const packageRoot = process.env.GSD_PKG_ROOT;
+  const packageRoot = (process.env.LOOP24_PKG_ROOT ?? process.env.GSD_PKG_ROOT);
   if (packageRoot) {
     candidates.push(join(packageRoot, "dist", "welcome-screen.js"));
     candidates.push(join(packageRoot, "src", "welcome-screen.ts"));
@@ -92,7 +92,7 @@ async function installWelcomeHeader(ctx: ExtensionContext): Promise<void> {
         render(width: number): string[] {
           if (cachedLines !== undefined && cachedWidth === width) return cachedLines;
           cachedLines = welcome.buildWelcomeScreenLines({
-            version: process.env.GSD_VERSION || "0.0.0",
+            version: (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || "0.0.0",
             remoteChannel,
             width,
           });
@@ -512,7 +512,7 @@ export function registerHooks(
     try {
       const { loadEffectiveGSDPreferences } = await import("../preferences.js");
       const prefs = loadEffectiveGSDPreferences(basePath);
-      process.env.GSD_SHOW_TOKEN_COST = prefs?.preferences.show_token_cost ? "1" : "";
+      process.env.LOOP24_SHOW_TOKEN_COST = process.env.GSD_SHOW_TOKEN_COST = prefs?.preferences.show_token_cost ? "1" : "";
     } catch { /* non-fatal */ }
     await installWelcomeHeader(ctx);
     await loadToolApiKeysForSession();

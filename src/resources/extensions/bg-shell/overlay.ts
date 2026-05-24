@@ -126,7 +126,7 @@ export class BgManagerOverlay {
 					this.invalidate();
 					this.tui.requestRender();
 				}).catch((err) => {
-					if (process.env.GSD_DEBUG) console.error('[bg-shell] restart failed:', err);
+					if ((process.env.LOOP24_DEBUG ?? process.env.GSD_DEBUG)) console.error('[bg-shell] restart failed:', err);
 					this.invalidate();
 					this.tui.requestRender();
 				});

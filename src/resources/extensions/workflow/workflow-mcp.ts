@@ -210,10 +210,12 @@ function buildWorkflowLaunchEnv(
   return {
     ...(explicitEnv ?? {}),
     ...(gsdCliPath ? { GSD_CLI_PATH: gsdCliPath, GSD_BIN_PATH: gsdCliPath } : {}),
-    ...(executorModulePath ? { GSD_WORKFLOW_EXECUTORS_MODULE: executorModulePath } : {}),
-    ...(writeGateModulePath ? { GSD_WORKFLOW_WRITE_GATE_MODULE: writeGateModulePath } : {}),
+    ...(executorModulePath ? { LOOP24_WORKFLOW_EXECUTORS_MODULE: executorModulePath, GSD_WORKFLOW_EXECUTORS_MODULE: executorModulePath } : {}),
+    ...(writeGateModulePath ? { LOOP24_WORKFLOW_WRITE_GATE_MODULE: writeGateModulePath, GSD_WORKFLOW_WRITE_GATE_MODULE: writeGateModulePath } : {}),
     ...(nodeOptions ? { NODE_OPTIONS: nodeOptions } : {}),
+    LOOP24_PERSIST_WRITE_GATE_STATE: "1",
     GSD_PERSIST_WRITE_GATE_STATE: "1",
+    LOOP24_WORKFLOW_PROJECT_ROOT: projectRoot,
     GSD_WORKFLOW_PROJECT_ROOT: projectRoot,
   };
 }

@@ -366,7 +366,7 @@ export async function startParallel(
   prefs: WorkflowPreferences | undefined,
 ): Promise<{ started: string[]; errors: Array<{ mid: string; error: string }> }> {
   // Prevent workers from spawning nested parallel sessions
-  if (process.env.GSD_PARALLEL_WORKER) {
+  if ((process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER)) {
     return { started: [], errors: [{ mid: "all", error: "Cannot start parallel from within a parallel worker" }] };
   }
 
@@ -601,13 +601,16 @@ export function spawnWorker(
   try {
     const workerEnv: Record<string, string | undefined> = {
       ...process.env,
+      LOOP24_MILESTONE_LOCK: milestoneId,
       GSD_MILESTONE_LOCK: milestoneId,
       // Pass the real project root so workers don't need to re-derive it.
       // Without this, process.cwd() resolves symlinks and the worktree
       // path heuristic can match the user-level ~/.gsd instead of the
       // project .gsd, causing writes to ~ and corrupting user config.
+      LOOP24_PROJECT_ROOT: basePath,
       GSD_PROJECT_ROOT: basePath,
       // Prevent workers from spawning their own parallel sessions
+      LOOP24_PARALLEL_WORKER: "1",
       GSD_PARALLEL_WORKER: "1",
     };
 
@@ -743,9 +746,10 @@ export function spawnWorker(
  * finding the binary relative to the current module.
  */
 function resolveGsdBin(): string | null {
-  // GSD_BIN_PATH is set by loader.ts to the absolute path of dist/loader.js
-  if (process.env.GSD_BIN_PATH && existsSync(process.env.GSD_BIN_PATH)) {
-    return process.env.GSD_BIN_PATH;
+  // LOOP24_BIN_PATH (or legacy GSD_BIN_PATH) is set by loader.ts to the absolute path of dist/loader.js
+  const envBinPath = process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH;
+  if (envBinPath && existsSync(envBinPath)) {
+    return envBinPath;
   }
 
   // Fallback: try to find loader.js relative to this file

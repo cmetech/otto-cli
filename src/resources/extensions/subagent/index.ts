@@ -500,11 +500,11 @@ async function runSingleAgent(
 		let wasAborted = false;
 
 		const exitCode = await new Promise<number>((resolve) => {
-			const bundledPaths = (process.env.GSD_BUNDLED_EXTENSION_PATHS ?? "").split(path.delimiter).map(s => s.trim()).filter(Boolean);
+			const bundledPaths = ((process.env.LOOP24_BUNDLED_EXTENSION_PATHS ?? process.env.GSD_BUNDLED_EXTENSION_PATHS) ?? "").split(path.delimiter).map(s => s.trim()).filter(Boolean);
 			const extensionArgs = bundledPaths.flatMap(p => ["--extension", p]);
 			const proc = spawn(
 				process.execPath,
-				[process.env.GSD_BIN_PATH!, ...extensionArgs, ...launch.args],
+				[(process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH)!, ...extensionArgs, ...launch.args],
 				{ cwd: launch.cwd, env: launch.env, shell: false, stdio: ["ignore", "pipe", "pipe"] },
 			);
 			liveSubagentProcesses.add(proc);
@@ -635,7 +635,7 @@ async function runSingleAgentInCmuxSplit(
 			return runSingleAgent(defaultCwd, agents, agentName, task, cwd, step, signal, onUpdate, makeDetails, modelOverride, contextMode, parentSessionManager, sessionOverride, trackingName);
 		}
 
-		const bundledPaths = (process.env.GSD_BUNDLED_EXTENSION_PATHS ?? "").split(path.delimiter).map((s) => s.trim()).filter(Boolean);
+		const bundledPaths = ((process.env.LOOP24_BUNDLED_EXTENSION_PATHS ?? process.env.GSD_BUNDLED_EXTENSION_PATHS) ?? "").split(path.delimiter).map((s) => s.trim()).filter(Boolean);
 		const extensionArgs = bundledPaths.flatMap((p) => ["--extension", p]);
 		const launch = createSubagentLaunchPlan({
 			agent,
@@ -649,7 +649,7 @@ async function runSingleAgentInCmuxSplit(
 			defaultCwd,
 		});
 		if (launch.session.mode === "fork") currentResult.sessionFile = launch.session.sessionFile;
-		const processArgs = [process.env.GSD_BIN_PATH!, ...extensionArgs, ...launch.args];
+		const processArgs = [(process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH)!, ...extensionArgs, ...launch.args];
 		// Normalize all paths to forward slashes before embedding in bash strings.
 		// On Windows, backslashes are interpreted as escape characters by bash,
 		// mangling paths like C:\Users\user into C:Useruser (#1436).

@@ -94,7 +94,7 @@ const STATIC_BUNDLED_MODULES: Record<string, unknown> = {
 const VIRTUAL_MODULES: Record<string, unknown> = { ...STATIC_BUNDLED_MODULES };
 
 const require = createRequire(import.meta.url);
-const EXTENSION_TIMING_ENABLED = process.env.GSD_STARTUP_TIMING === "1" || process.env.PI_TIMING === "1";
+const EXTENSION_TIMING_ENABLED = (process.env.LOOP24_STARTUP_TIMING ?? process.env.GSD_STARTUP_TIMING) === "1" || process.env.PI_TIMING === "1";
 
 /**
  * Bundled npm packages whose subpath exports should be auto-resolved for extensions.

@@ -91,7 +91,7 @@ function toErrorMessage(error: unknown): string {
 }
 
 function logDebugFailure(scope: string, error: unknown): void {
-  if (process.env.GSD_DEBUG === '1') {
+  if ((process.env.LOOP24_DEBUG ?? process.env.GSD_DEBUG) === '1') {
     process.stderr.write(chalk.dim(`[gsd] ${scope} failed: ${toErrorMessage(error)}\n`))
   }
 }
@@ -397,8 +397,8 @@ async function handleWorktreeFlag(worktreeFlag: boolean | string): Promise<void>
       // Single active worktree — resume it
       const wt = withChanges[0]
       process.chdir(wt.path)
-      process.env.GSD_CLI_WORKTREE = wt.name
-      process.env.GSD_CLI_WORKTREE_BASE = basePath
+      process.env.LOOP24_CLI_WORKTREE = process.env.GSD_CLI_WORKTREE = wt.name
+      process.env.LOOP24_CLI_WORKTREE_BASE = process.env.GSD_CLI_WORKTREE_BASE = basePath
       process.stderr.write(chalk.green(`✓ Resumed worktree ${chalk.bold(wt.name)}\n`))
       process.stderr.write(chalk.dim(`  path   ${wt.path}\n`))
       process.stderr.write(chalk.dim(`  branch ${wt.branch}\n\n`))
@@ -429,8 +429,8 @@ async function handleWorktreeFlag(worktreeFlag: boolean | string): Promise<void>
 
   if (found) {
     process.chdir(found.path)
-    process.env.GSD_CLI_WORKTREE = name
-    process.env.GSD_CLI_WORKTREE_BASE = basePath
+    process.env.LOOP24_CLI_WORKTREE = process.env.GSD_CLI_WORKTREE = name
+    process.env.LOOP24_CLI_WORKTREE_BASE = process.env.GSD_CLI_WORKTREE_BASE = basePath
     process.stderr.write(chalk.green(`✓ Resumed worktree ${chalk.bold(name)}\n`))
     process.stderr.write(chalk.dim(`  path   ${found.path}\n`))
     process.stderr.write(chalk.dim(`  branch ${found.branch}\n\n`))
@@ -449,8 +449,8 @@ async function createAndEnter(ext: ExtensionModules, basePath: string, name: str
     }
 
     process.chdir(info.path)
-    process.env.GSD_CLI_WORKTREE = name
-    process.env.GSD_CLI_WORKTREE_BASE = basePath
+    process.env.LOOP24_CLI_WORKTREE = process.env.GSD_CLI_WORKTREE = name
+    process.env.LOOP24_CLI_WORKTREE_BASE = process.env.GSD_CLI_WORKTREE_BASE = basePath
     process.stderr.write(chalk.green(`✓ Created worktree ${chalk.bold(name)}\n`))
     process.stderr.write(chalk.dim(`  path   ${info.path}\n`))
     process.stderr.write(chalk.dim(`  branch ${info.branch}\n\n`))

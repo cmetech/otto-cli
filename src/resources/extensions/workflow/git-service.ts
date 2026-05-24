@@ -785,7 +785,7 @@ export class GitServiceImpl {
     // must only commit files belonging to its own milestone. Exclude all other
     // milestone directories from staging to prevent cross-milestone pollution
     // (e.g., an M033 worker fabricating M032 artifacts in the same commit).
-    const milestoneLock = process.env.GSD_MILESTONE_LOCK;
+    const milestoneLock = (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK);
     if (milestoneLock) {
       const msDir = join(gsdRoot(this.basePath), "milestones");
       if (existsSync(msDir)) {

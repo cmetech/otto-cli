@@ -154,16 +154,16 @@ const PLAYWRIGHT_SKIP =
   args.includes('--skip-chromium')
 
 const RTK_SKIP =
-  process.env.GSD_SKIP_RTK_INSTALL === '1' ||
-  process.env.GSD_SKIP_RTK_INSTALL === 'true' ||
-  process.env.GSD_RTK_DISABLED === '1' ||
-  process.env.GSD_RTK_DISABLED === 'true' ||
+  (process.env.LOOP24_SKIP_RTK_INSTALL ?? process.env.GSD_SKIP_RTK_INSTALL) === '1' ||
+  (process.env.LOOP24_SKIP_RTK_INSTALL ?? process.env.GSD_SKIP_RTK_INSTALL) === 'true' ||
+  (process.env.LOOP24_RTK_DISABLED ?? process.env.GSD_RTK_DISABLED) === '1' ||
+  (process.env.LOOP24_RTK_DISABLED ?? process.env.GSD_RTK_DISABLED) === 'true' ||
   args.includes('--skip-rtk')
 
 const RTK_VERSION = '0.33.1'
 const RTK_REPO = 'rtk-ai/rtk'
 const RTK_ENV = { ...process.env, RTK_TELEMETRY_DISABLED: '1' }
-const managedBinDir = join(process.env.GSD_HOME || join(homedir(), '.gsd'), 'agent', 'bin')
+const managedBinDir = join((process.env.LOOP24_HOME ?? process.env.GSD_HOME) || join(homedir(), '.gsd'), 'agent', 'bin')
 const managedBinaryPath = join(managedBinDir, platform() === 'win32' ? 'rtk.exe' : 'rtk')
 
 // ── Step: npm install -g ───────────────────────────────────────────────────

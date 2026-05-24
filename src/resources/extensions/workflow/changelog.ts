@@ -138,7 +138,7 @@ export async function handleChangelog(
   }
 
   // ── Determine version filter ────────────────────────────────────────────
-  const currentVersion = process.env.GSD_VERSION || "";
+  const currentVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || "";
   let sinceVersion: string | undefined;
   let showCurrentOnly = false;
 

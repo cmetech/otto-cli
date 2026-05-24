@@ -581,7 +581,7 @@ export async function autoLoop(
       if (shouldUseCustomEnginePath({
         activeEngineId: s.activeEngineId,
         hasSidecarItem: Boolean(sidecarItem),
-        engineBypass: process.env.GSD_ENGINE_BYPASS === "1",
+        engineBypass: (process.env.LOOP24_ENGINE_BYPASS ?? process.env.GSD_ENGINE_BYPASS) === "1",
       })) {
         debugLog("autoLoop", { phase: "custom-engine-derive", iteration, engineId: s.activeEngineId });
 

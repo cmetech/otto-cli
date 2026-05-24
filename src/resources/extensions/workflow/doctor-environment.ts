@@ -50,7 +50,7 @@ const WORKTREE_PATH_SEGMENT = `${join(".gsd", "worktrees")}/`;
  *   2. `.loop24/worktrees/` segment in basePath
  */
 function resolveWorktreeProjectRoot(basePath: string): string | null {
-  const envRoot = process.env.GSD_WORKTREE;
+  const envRoot = (process.env.LOOP24_WORKTREE ?? process.env.GSD_WORKTREE);
   if (envRoot) return envRoot;
 
   const normalised = basePath.replace(/\\/g, "/");

@@ -103,7 +103,7 @@ const LOCK_FILE = "auto.lock";
  * to avoid contending on the shared `.loop24/auto.lock` (#2184).
  */
 export function effectiveLockFile(): string {
-  const mid = process.env.GSD_PARALLEL_WORKER ? process.env.GSD_MILESTONE_LOCK : null;
+  const mid = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK) : null;
   return mid ? `auto-${mid}.lock` : LOCK_FILE;
 }
 
@@ -113,7 +113,7 @@ export function effectiveLockFile(): string {
  * `.loop24/` so workers don't contend on the same proper-lockfile directory (#2184).
  */
 export function effectiveLockTarget(gsdDir: string): string {
-  const mid = process.env.GSD_PARALLEL_WORKER ? process.env.GSD_MILESTONE_LOCK : null;
+  const mid = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK) : null;
   return mid ? join(gsdDir, "parallel", mid) : gsdDir;
 }
 

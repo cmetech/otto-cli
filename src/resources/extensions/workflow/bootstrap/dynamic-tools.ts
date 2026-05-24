@@ -15,7 +15,7 @@ export function safeWorkspaceCwd(): string {
   try {
     return process.cwd();
   } catch {
-    const projectRoot = process.env.GSD_PROJECT_ROOT;
+    const projectRoot = (process.env.LOOP24_PROJECT_ROOT ?? process.env.GSD_PROJECT_ROOT);
     if (projectRoot && existsSync(projectRoot)) return projectRoot;
     return homedir();
   }

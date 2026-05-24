@@ -99,9 +99,13 @@ export function _buildSliceWorkerEnvForTest(
 ): NodeJS.ProcessEnv {
   return {
     ...sourceEnv,
+    LOOP24_SLICE_LOCK: sliceId,
     GSD_SLICE_LOCK: sliceId,
+    LOOP24_MILESTONE_LOCK: milestoneId,
     GSD_MILESTONE_LOCK: milestoneId,
+    LOOP24_PROJECT_ROOT: basePath,
     GSD_PROJECT_ROOT: basePath,
+    LOOP24_PARALLEL_WORKER: "1",
     GSD_PARALLEL_WORKER: "1",
     GSD_SLICE_WORKER_TOKEN: workerToken,
   };
@@ -475,7 +479,7 @@ export async function startSliceParallel(
   opts: StartSliceParallelOpts = {},
 ): Promise<{ started: string[]; errors: Array<{ sid: string; error: string }> }> {
   // Prevent nesting: if already a parallel worker, refuse
-  if (process.env.GSD_PARALLEL_WORKER) {
+  if ((process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER)) {
     return { started: [], errors: [{ sid: "all", error: "Cannot start slice-parallel from within a parallel worker" }] };
   }
 
@@ -693,8 +697,9 @@ function filterConflictingSlices(
  * Same logic as parallel-orchestrator.ts resolveGsdBin().
  */
 function resolveGsdBin(): string | null {
-  if (process.env.GSD_BIN_PATH && existsSync(process.env.GSD_BIN_PATH)) {
-    return process.env.GSD_BIN_PATH;
+  const envBinPath = process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH;
+  if (envBinPath && existsSync(envBinPath)) {
+    return envBinPath;
   }
 
   let thisDir: string;

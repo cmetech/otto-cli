@@ -5,9 +5,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { formatValidationBlockedMessage } from "../validation-block-guard.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 
-function state(overrides: Partial<GSDState>): GSDState {
+function state(overrides: Partial<WorkflowDbState>): WorkflowDbState {
   return {
     activeMilestone: { id: "M001", title: "Validation Block" },
     activeSlice: null,

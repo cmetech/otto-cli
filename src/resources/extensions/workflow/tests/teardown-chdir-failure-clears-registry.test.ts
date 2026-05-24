@@ -7,7 +7,7 @@
  *
  * The original H3 fix (d1276b021) wrapped only `removeWorktree(...)` in a
  * try/finally. But `process.chdir(originalBasePath)` at the top of the function
- * can throw a GSDError if the target directory no longer exists. In that case
+ * can throw a WorkflowError if the target directory no longer exists. In that case
  * execution exits the function before ever reaching the inner try/finally, leaving
  * `activeWorkspace` stale.
  *

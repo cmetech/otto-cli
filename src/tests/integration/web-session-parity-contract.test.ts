@@ -15,7 +15,7 @@ const browserRoute = await import("../../../web/app/api/session/browser/route.ts
 const manageRoute = await import("../../../web/app/api/session/manage/route.ts")
 const gitRoute = await import("../../../web/app/api/git/route.ts")
 const commandSurfaceContract = await import("../../../web/lib/command-surface-contract.ts")
-const { GSDWorkspaceStore } = await import("../../../web/lib/gsd-workspace-store.tsx")
+const { WorkspaceStore } = await import("../../../web/lib/gsd-workspace-store.tsx")
 const { AuthStorage } = await import("@gsd/pi-coding-agent")
 
 class FakeRpcChild extends EventEmitter {
@@ -677,7 +677,7 @@ test("browser session, settings, and git surfaces keep inspectable state through
   assert.equal(loadedGit.gitSummary.loaded, true)
   assert.equal(loadedGit.gitSummary.result?.kind, "not_repo")
 
-  const store = new GSDWorkspaceStore("/tmp/project")
+  const store = new WorkspaceStore("/tmp/project")
   assert.equal(typeof store.loadGitSummary, "function")
   assert.equal(typeof store.renameSessionFromSurface, "function")
   assert.equal(typeof store.switchSessionFromSurface, "function")

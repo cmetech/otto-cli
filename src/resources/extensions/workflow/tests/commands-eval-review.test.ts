@@ -28,7 +28,7 @@ import {
   type EvalReviewArgs,
   type EvalReviewState,
 } from "../commands-eval-review.js";
-import { GSD_COMMAND_DESCRIPTION, TOP_LEVEL_SUBCOMMANDS } from "../commands/catalog.js";
+import { WORKFLOW_COMMAND_DESCRIPTION, TOP_LEVEL_SUBCOMMANDS } from "../commands/catalog.js";
 import { _clearGsdRootCache } from "../paths.js";
 
 // ─── parseEvalReviewArgs ──────────────────────────────────────────────────────
@@ -522,10 +522,10 @@ describe("catalog registration", () => {
     assert.ok((entry?.desc ?? "").length > 0, "eval-review entry must have a non-empty description");
   });
 
-  it("appends eval-review to the GSD_COMMAND_DESCRIPTION pipe-separated list", () => {
+  it("appends eval-review to the WORKFLOW_COMMAND_DESCRIPTION pipe-separated list", () => {
     assert.ok(
-      GSD_COMMAND_DESCRIPTION.includes("|eval-review"),
-      "GSD_COMMAND_DESCRIPTION must include the eval-review token (pipe-prefixed)",
+      WORKFLOW_COMMAND_DESCRIPTION.includes("|eval-review"),
+      "WORKFLOW_COMMAND_DESCRIPTION must include the eval-review token (pipe-prefixed)",
     );
   });
 });

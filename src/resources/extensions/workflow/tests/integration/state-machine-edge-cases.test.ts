@@ -255,7 +255,7 @@ function createMultiMilestoneFixture(): string {
 function buildDispatchCtx(
   base: string,
   mid: string,
-  stateOverrides: Partial<import("../../types.ts").GSDState> = {},
+  stateOverrides: Partial<import("../../types.ts").WorkflowDbState> = {},
 ): DispatchContext {
   return {
     basePath: base,

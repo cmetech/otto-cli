@@ -41,26 +41,26 @@ describe('resolveConfigPath', () => {
     assert.ok(p.endsWith('my-daemon.yaml'));
   });
 
-  it('falls back to GSD_DAEMON_CONFIG env var', () => {
-    const prev = process.env['GSD_DAEMON_CONFIG'];
+  it('falls back to DAEMON_CONFIG env var', () => {
+    const prev = process.env['DAEMON_CONFIG'];
     try {
-      process.env['GSD_DAEMON_CONFIG'] = '/env/path.yaml';
+      process.env['DAEMON_CONFIG'] = '/env/path.yaml';
       const p = resolveConfigPath();
       assert.equal(p, '/env/path.yaml');
     } finally {
-      if (prev === undefined) delete process.env['GSD_DAEMON_CONFIG'];
-      else process.env['GSD_DAEMON_CONFIG'] = prev;
+      if (prev === undefined) delete process.env['DAEMON_CONFIG'];
+      else process.env['DAEMON_CONFIG'] = prev;
     }
   });
 
   it('defaults to ~/.gsd/daemon.yaml', () => {
-    const prev = process.env['GSD_DAEMON_CONFIG'];
+    const prev = process.env['DAEMON_CONFIG'];
     try {
-      delete process.env['GSD_DAEMON_CONFIG'];
+      delete process.env['DAEMON_CONFIG'];
       const p = resolveConfigPath();
       assert.equal(p, join(homedir(), '.gsd', 'daemon.yaml'));
     } finally {
-      if (prev !== undefined) process.env['GSD_DAEMON_CONFIG'] = prev;
+      if (prev !== undefined) process.env['DAEMON_CONFIG'] = prev;
     }
   });
 });

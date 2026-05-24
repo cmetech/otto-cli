@@ -3,7 +3,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { GSD_COMMAND_DESCRIPTION, getWorkflowArgumentCompletions } from "../commands/catalog.ts";
+import { WORKFLOW_COMMAND_DESCRIPTION, getWorkflowArgumentCompletions } from "../commands/catalog.ts";
 import { handleCoreCommand, showHelp } from "../commands/handlers/core.ts";
 import { VISUAL_BRIEF_USAGE } from "../../visual-brief/prompts.ts";
 
@@ -31,7 +31,7 @@ function createMockPi() {
 }
 
 test("/gsd brief appears in the command description and top-level completions", () => {
-  assert.match(GSD_COMMAND_DESCRIPTION, /brief/);
+  assert.match(WORKFLOW_COMMAND_DESCRIPTION, /brief/);
 
   const completions = getWorkflowArgumentCompletions("br");
   const entry = completions.find((completion) => completion.value === "brief");

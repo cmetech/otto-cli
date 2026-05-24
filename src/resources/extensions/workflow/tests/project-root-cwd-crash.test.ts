@@ -14,7 +14,7 @@
 
 import { describe, test, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import { GSDNoProjectError, projectRoot } from '../commands/context.ts';
+import { NoProjectError, projectRoot } from '../commands/context.ts';
 
 describe('projectRoot cwd crash guard (#3598)', () => {
   test('reports the home-directory guard instead of leaking cwd ENOENT', () => {
@@ -26,7 +26,7 @@ describe('projectRoot cwd crash guard (#3598)', () => {
     try {
       assert.throws(
         () => projectRoot(),
-        (err) => err instanceof GSDNoProjectError && !String(err.message).includes('ENOENT'),
+        (err) => err instanceof NoProjectError && !String(err.message).includes('ENOENT'),
       );
     } finally {
       cwd.mock.restore();

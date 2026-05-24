@@ -231,15 +231,15 @@ console.log('\n=== complete-task: accessor CRUD ===');
 
 console.log('\n=== complete-task: accessor stale-state error ===');
 {
-  // No DB open — accessors should throw GSD_STALE_STATE
+  // No DB open — accessors should throw STALE_STATE
   closeDatabase();
   let threw = false;
   try {
     insertMilestone({ id: 'M001' });
   } catch (err: any) {
     threw = true;
-    assertTrue(err.code === 'GSD_STALE_STATE' || err.message.includes('No database open'),
-      'should throw GSD_STALE_STATE when no DB open');
+    assertTrue(err.code === 'STALE_STATE' || err.message.includes('No database open'),
+      'should throw STALE_STATE when no DB open');
   }
   assertTrue(threw, 'insertMilestone should throw when no DB open');
 
@@ -248,8 +248,8 @@ console.log('\n=== complete-task: accessor stale-state error ===');
     insertSlice({ id: 'S01', milestoneId: 'M001' });
   } catch (err: any) {
     threw = true;
-    assertTrue(err.code === 'GSD_STALE_STATE' || err.message.includes('No database open'),
-      'insertSlice should throw GSD_STALE_STATE');
+    assertTrue(err.code === 'STALE_STATE' || err.message.includes('No database open'),
+      'insertSlice should throw STALE_STATE');
   }
   assertTrue(threw, 'insertSlice should throw when no DB open');
 
@@ -258,8 +258,8 @@ console.log('\n=== complete-task: accessor stale-state error ===');
     insertTask({ id: 'T01', sliceId: 'S01', milestoneId: 'M001' });
   } catch (err: any) {
     threw = true;
-    assertTrue(err.code === 'GSD_STALE_STATE' || err.message.includes('No database open'),
-      'insertTask should throw GSD_STALE_STATE');
+    assertTrue(err.code === 'STALE_STATE' || err.message.includes('No database open'),
+      'insertTask should throw STALE_STATE');
   }
   assertTrue(threw, 'insertTask should throw when no DB open');
 
@@ -271,8 +271,8 @@ console.log('\n=== complete-task: accessor stale-state error ===');
     });
   } catch (err: any) {
     threw = true;
-    assertTrue(err.code === 'GSD_STALE_STATE' || err.message.includes('No database open'),
-      'insertVerificationEvidence should throw GSD_STALE_STATE');
+    assertTrue(err.code === 'STALE_STATE' || err.message.includes('No database open'),
+      'insertVerificationEvidence should throw STALE_STATE');
   }
   assertTrue(threw, 'insertVerificationEvidence should throw when no DB open');
 }

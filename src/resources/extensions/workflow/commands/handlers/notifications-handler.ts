@@ -11,7 +11,7 @@ import {
   unsuppressPersistence,
   type NotifySeverity,
 } from "../../notification-store.js";
-import { GSDNotificationOverlay, notificationOverlayOptions } from "../../notification-overlay.js";
+import { NotificationOverlay, notificationOverlayOptions } from "../../notification-overlay.js";
 
 const MAX_INLINE_ENTRIES = 40;
 
@@ -105,7 +105,7 @@ export async function handleNotificationsCommand(
     if (ctx.hasUI) {
       try {
         const result = await ctx.ui.custom<boolean>(
-          (tui, theme, _kb, done) => new GSDNotificationOverlay(tui, theme, () => done(true)),
+          (tui, theme, _kb, done) => new NotificationOverlay(tui, theme, () => done(true)),
           {
             overlay: true,
             overlayOptions: notificationOverlayOptions(),

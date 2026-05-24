@@ -4,7 +4,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import type { GSDState, Phase } from "../types.js";
+import type { WorkflowDbState, Phase } from "../types.js";
 import { gsdRoot, resolveMilestoneFile, resolveSliceFile } from "../paths.js";
 import { isDbAvailable, getMilestoneSlices, getSliceTasks } from "../db.js";
 import type { SliceRow } from "../db-task-slice-rows.js";
@@ -93,7 +93,7 @@ function countSliceResearchArtifacts(basePath: string, milestoneId: string, slic
   return count;
 }
 
-export function compileUnitGraphFromState(basePath: string, state: GSDState): PlanV2CompileResult {
+export function compileUnitGraphFromState(basePath: string, state: WorkflowDbState): PlanV2CompileResult {
   const mid = state.activeMilestone?.id;
   if (!mid) return { ok: false, reason: "no active milestone" };
   if (!isDbAvailable()) return { ok: false, reason: "database not available" };
@@ -188,7 +188,7 @@ export function compileUnitGraphFromState(basePath: string, state: GSDState): Pl
   };
 }
 
-export function ensurePlanV2Graph(basePath: string, state: GSDState): PlanV2CompileResult {
+export function ensurePlanV2Graph(basePath: string, state: WorkflowDbState): PlanV2CompileResult {
   const compiled = compileUnitGraphFromState(basePath, state);
   if (!compiled.ok) return compiled;
   if ((compiled.nodeCount ?? 0) <= 0) {

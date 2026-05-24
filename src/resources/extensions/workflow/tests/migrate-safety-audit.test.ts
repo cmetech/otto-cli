@@ -22,7 +22,7 @@ import {
 import { assertMigrationDbReadiness, executeMigrationWrite, importWrittenMigrationToDb } from "../migrate/command.ts";
 import { writeAgentDirectory } from "../migrate/writer.ts";
 import { closeDatabase, getArtifact } from "../db.ts";
-import type { GSDProject } from "../migrate/types.ts";
+import type { WorkflowProject } from "../migrate/types.ts";
 
 function makeBase(prefix: string): string {
   return mkdtempSync(join(tmpdir(), prefix));
@@ -47,7 +47,7 @@ function createPlanningSource(base: string): string {
   return planning;
 }
 
-function projectFixture(): GSDProject {
+function projectFixture(): WorkflowProject {
   return {
     projectContent: "# Migrated Project\n\nA legacy project.\n",
     decisionsContent: "",

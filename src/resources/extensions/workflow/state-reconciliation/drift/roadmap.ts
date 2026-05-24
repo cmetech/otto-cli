@@ -16,7 +16,7 @@ import { findMilestoneIds } from "../../milestone-ids.js";
 import { parseRoadmap } from "../../parsers-legacy.js";
 import { resolveMilestoneFile } from "../../paths.js";
 import { isClosedStatus } from "../../status-guards.js";
-import type { GSDState } from "../../types.js";
+import type { WorkflowDbState } from "../../types.js";
 import type { DriftContext, DriftHandler, DriftRecord } from "../types.js";
 
 type RoadmapDivergenceDrift = Extract<
@@ -65,7 +65,7 @@ function milestoneHasDivergence(
 }
 
 export function detectRoadmapDivergenceDrift(
-  _state: GSDState,
+  _state: WorkflowDbState,
   ctx: DriftContext,
 ): RoadmapDivergenceDrift[] {
   if (!isDbAvailable()) return [];

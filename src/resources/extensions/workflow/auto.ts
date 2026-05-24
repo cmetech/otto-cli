@@ -21,7 +21,7 @@ import type {
 
 import { deriveState } from "./state.js";
 import { parseUnitId } from "./unit-id.js";
-import type { GSDState } from "./types.js";
+import type { WorkflowDbState } from "./types.js";
 import {
   assessInterruptedSession,
   readPausedSessionMetadata,
@@ -73,7 +73,7 @@ import {
   getIsolationMode,
 } from "./preferences.js";
 import { sendDesktopNotification } from "./notifications.js";
-import type { GSDPreferences } from "./preferences.js";
+import type { WorkflowPreferences } from "./preferences.js";
 import {
   getBudgetAlertLevel,
   getNewBudgetAlertLevel,
@@ -192,11 +192,11 @@ import { getUnmergedMilestoneBlockMessageForBase } from "./unmerged-milestone-gu
 
 function makeCmuxEmitters(pi: ExtensionAPI) {
   return {
-    syncCmuxSidebar: (preferences: GSDPreferences | undefined, state: GSDState) =>
+    syncCmuxSidebar: (preferences: WorkflowPreferences | undefined, state: WorkflowDbState) =>
       pi.events.emit(CMUX_CHANNELS.SIDEBAR, { action: "sync" as const, preferences, state }),
-    logCmuxEvent: (preferences: GSDPreferences | undefined, message: string, level?: CmuxLogLevel) =>
+    logCmuxEvent: (preferences: WorkflowPreferences | undefined, message: string, level?: CmuxLogLevel) =>
       pi.events.emit(CMUX_CHANNELS.LOG, { preferences, message, level: level ?? "info" }),
-    clearCmuxSidebar: (preferences: GSDPreferences | undefined) =>
+    clearCmuxSidebar: (preferences: WorkflowPreferences | undefined) =>
       pi.events.emit(CMUX_CHANNELS.SIDEBAR, { action: "clear" as const, preferences }),
   };
 }
@@ -2969,7 +2969,7 @@ function updateProgressWidget(
   ctx: ExtensionContext,
   unitType: string,
   unitId: string,
-  state: GSDState,
+  state: WorkflowDbState,
 ): void {
   const badge = s.currentUnitRouting?.tier
     ? ({ light: "L", standard: "S", heavy: "H" }[s.currentUnitRouting.tier] ??
@@ -3006,7 +3006,7 @@ export function ensurePreconditions(
   unitType: string,
   unitId: string,
   base: string,
-  state: GSDState,
+  state: WorkflowDbState,
 ): void {
   const { milestone: mid, slice: sid } = parseUnitId(unitId);
 

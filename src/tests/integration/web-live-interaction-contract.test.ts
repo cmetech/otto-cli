@@ -264,7 +264,7 @@ async function readSseEvents(response: Response, count: number): Promise<any[]> 
 // ---------------------------------------------------------------------------
 // Inline store event routing harness
 //
-// This mirrors the GSDWorkspaceStore's handleEvent routing logic
+// This mirrors the WorkspaceStore's handleEvent routing logic
 // so we can verify state transitions without importing .tsx.
 // The contract test verifies this logic matches the real store behavior
 // by testing the same event shapes the SSE bridge produces.
@@ -309,7 +309,7 @@ function consumeEditorTextBuffer(state: MinimalLiveState): { state: MinimalLiveS
   };
 }
 
-/** Mirrors GSDWorkspaceStore.routeLiveInteractionEvent */
+/** Mirrors WorkspaceStore.routeLiveInteractionEvent */
 function routeEvent(state: MinimalLiveState, event: any): MinimalLiveState {
   const s = { ...state };
 

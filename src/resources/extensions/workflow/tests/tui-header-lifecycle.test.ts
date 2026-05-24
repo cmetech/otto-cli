@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { visibleWidth } from "@gsd/pi-tui";
 
 import { setCompletionProgressWidget, updateProgressWidget } from "../auto-dashboard.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 
 interface CapturedSetHeader {
   factory: ((tui: unknown, theme: unknown) => { render(width: number): string[]; invalidate(): void }) | undefined;
@@ -30,12 +30,12 @@ function cleanup(dir: string): void {
   try { rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort */ }
 }
 
-const baseState: GSDState = {
+const baseState: WorkflowDbState = {
   phase: "executing",
   activeMilestone: { id: "M001", title: "Milestone" },
   activeSlice: { id: "S01", title: "Slice" },
   activeTask: { id: "T01", title: "Task" },
-} as unknown as GSDState;
+} as unknown as WorkflowDbState;
 
 const baseAccessors = {
   getAutoStartTime: () => 0,

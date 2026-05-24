@@ -7,7 +7,7 @@ import { getAutoWorktreePath, isInAutoWorktree } from "./auto-worktree.js";
 import { ensureDbOpen } from "./bootstrap/dynamic-tools.js";
 import { getIsolationMode } from "./preferences.js";
 import { deriveState } from "./state.js";
-import type { GSDState } from "./types.js";
+import type { WorkflowDbState } from "./types.js";
 import { detectWorktreeName } from "./worktree.js";
 
 const VALIDATION_BLOCK_RE =
@@ -27,7 +27,7 @@ const ALLOWED_COMMANDS = new Set([
   "doctor",
 ]);
 
-export function isValidationBlockedState(state: GSDState): boolean {
+export function isValidationBlockedState(state: WorkflowDbState): boolean {
   if (state.phase !== "blocked") return false;
   return state.blockers.some((blocker) => VALIDATION_BLOCK_RE.test(blocker));
 }
@@ -44,7 +44,7 @@ export function isValidationBlockAllowedCommand(trimmed: string): boolean {
 }
 
 export function formatValidationBlockedMessage(
-  state: GSDState,
+  state: WorkflowDbState,
   attemptedCommand = "",
 ): string | null {
   if (!isValidationBlockedState(state)) return null;

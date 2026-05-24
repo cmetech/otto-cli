@@ -23,7 +23,7 @@ import { readFile } from "node:fs/promises";
 import { logWarning } from "./workflow-logger.js";
 import { isClosedStatus } from "./status-guards.js";
 import { deriveState } from "./state.js";
-import type { GSDState } from "./types.js";
+import type { WorkflowDbState } from "./types.js";
 import { renderPlanFromDb, renderRoadmapFromDb } from "./markdown-renderer.js";
 import { readManifest } from "./workflow-manifest.js";
 
@@ -335,11 +335,11 @@ export function renderSummaryProjection(basePath: string, milestoneId: string, s
 // ─── STATE.md Projection ────────────────────────────────────────────────
 
 /**
- * Render STATE.md content from GSDState.
+ * Render STATE.md content from WorkflowDbState.
  * Matches the buildStateMarkdown output format from doctor.ts exactly.
  * Pure function — no side effects.
  */
-export function renderStateContent(state: GSDState): string {
+export function renderStateContent(state: WorkflowDbState): string {
   const lines: string[] = [];
   lines.push("# GSD State", "");
 

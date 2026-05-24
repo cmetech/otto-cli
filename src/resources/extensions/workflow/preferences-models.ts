@@ -16,16 +16,16 @@ import type { ComplexityTier } from "./complexity-classifier.js";
 import type { TokenProfile, InlineLevel } from "./types.js";
 
 import type {
-  GSDPreferences,
-  GSDModelConfigV2,
-  GSDPhaseModelConfig,
+  WorkflowPreferences,
+  ModelConfigV2,
+  PhaseModelConfig,
   ResolvedModelConfig,
   AutoSupervisorConfig,
 } from "./preferences-types.js";
 import { loadEffectiveGSDPreferences, getGlobalGSDPreferencesPath } from "./preferences.js";
 
 // Re-export types so existing consumers of ./preferences-models.js keep working
-export type { GSDPhaseModelConfig, GSDModelConfig, GSDModelConfigV2, ResolvedModelConfig } from "./preferences-types.js";
+export type { PhaseModelConfig, ModelConfig, ModelConfigV2, ResolvedModelConfig } from "./preferences-types.js";
 
 /**
  * Resolve which model ID to use for a given auto-mode unit type.
@@ -48,9 +48,9 @@ export function resolveModelWithFallbacksForUnit(unitType: string): ResolvedMode
   const prefs = loadEffectiveGSDPreferences(undefined, { availableModelIds: [] });
   const models = prefs?.preferences?.models;
   if (!models) return undefined;
-  const m = models as GSDModelConfigV2;
+  const m = models as ModelConfigV2;
 
-  let phaseConfig: string | GSDPhaseModelConfig | undefined;
+  let phaseConfig: string | PhaseModelConfig | undefined;
   switch (unitType) {
     case "research-milestone":
     case "research-slice":
@@ -155,10 +155,10 @@ export function resolveDefaultSessionModel(
   const models = prefs?.preferences?.models;
   if (!models) return undefined;
 
-  const m = models as GSDModelConfigV2;
+  const m = models as ModelConfigV2;
 
   // Priority: execution → planning → first configured value
-  const candidates: Array<string | GSDPhaseModelConfig | undefined> = [
+  const candidates: Array<string | PhaseModelConfig | undefined> = [
     m.execution,
     m.planning,
     m.research,
@@ -307,7 +307,7 @@ export function validateModelId(modelId: string): boolean {
  * Performs a safe read-modify-write: reads current content, updates the models
  * YAML block, and writes back. Creates the file if it doesn't exist.
  */
-export function updatePreferencesModels(models: GSDModelConfigV2): void {
+export function updatePreferencesModels(models: ModelConfigV2): void {
   const prefsPath = getGlobalGSDPreferencesPath();
 
   let content = "";
@@ -321,7 +321,7 @@ export function updatePreferencesModels(models: GSDModelConfigV2): void {
     if (typeof value === "string") {
       lines.push(`  ${phase}: ${value}`);
     } else if (value && typeof value === "object") {
-      const config = value as GSDPhaseModelConfig;
+      const config = value as PhaseModelConfig;
       lines.push(`  ${phase}:`);
       lines.push(`    model: ${config.model}`);
       if (config.provider) {
@@ -417,7 +417,7 @@ const PROFILE_TIER_MAP: Record<TokenProfile, Record<string, ComplexityTier>> = {
 
 /**
  * Resolve profile defaults for a given token profile tier.
- * Returns a partial GSDPreferences that is used as the base layer --
+ * Returns a partial WorkflowPreferences that is used as the base layer --
  * explicit user preferences always override these defaults.
  *
  * Model IDs are resolved from capability tiers, not hardcoded to any
@@ -434,7 +434,7 @@ export function resolveProfileDefaults(
   profile: TokenProfile,
   availableModelIds?: string[],
   routingConfig: DynamicRoutingConfig = defaultRoutingConfig(),
-): Partial<GSDPreferences> {
+): Partial<WorkflowPreferences> {
   // burn-max never writes model defaults — preserve user-selected models.
   // For the other three profiles, derive concrete model IDs from the tier map
   // against the available-model list when the registry is provided. If callers
@@ -443,7 +443,7 @@ export function resolveProfileDefaults(
   const resolveTierModel = (tier: ComplexityTier): string => Array.isArray(availableModelIds)
     ? resolveModelForTier(tier, availableModelIds, routingConfig)
     : canonicalModelForTier(tier);
-  const models: GSDModelConfigV2 | undefined = profile === "burn-max"
+  const models: ModelConfigV2 | undefined = profile === "burn-max"
     ? undefined
     : {
         planning: resolveTierModel(tierMap.planning),
@@ -551,7 +551,7 @@ export function resolveContextSelection(): import("./types.js").ContextSelection
  * Resolve the search provider preference from preferences.md.
  * Returns undefined if not configured (caller falls back to existing behavior).
  */
-export function resolveSearchProviderFromPreferences(): GSDPreferences["search_provider"] | undefined {
+export function resolveSearchProviderFromPreferences(): WorkflowPreferences["search_provider"] | undefined {
   const prefs = loadEffectiveGSDPreferences();
   return prefs?.preferences.search_provider;
 }

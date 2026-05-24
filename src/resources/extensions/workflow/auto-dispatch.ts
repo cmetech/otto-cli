@@ -12,8 +12,8 @@
  * without modifying orchestration code.
  */
 
-import type { GSDState } from "./types.js";
-import type { GSDPreferences } from "./preferences.js";
+import type { WorkflowDbState } from "./types.js";
+import type { WorkflowPreferences } from "./preferences.js";
 import type { UatType } from "./files.js";
 import type { MinimalModelRegistry } from "./context-budget.js";
 import { loadFile, extractUatType, loadActiveOverrides } from "./files.js";
@@ -121,8 +121,8 @@ export interface DispatchContext {
   basePath: string;
   mid: string;
   midTitle: string;
-  state: GSDState;
-  prefs: GSDPreferences | undefined;
+  state: WorkflowDbState;
+  prefs: WorkflowPreferences | undefined;
   session?: import("./auto/session.js").AutoSession;
   structuredQuestionsAvailable?: "true" | "false";
   /** Session model context window in tokens, forwarded to the budget engine's prompt builders. */
@@ -139,7 +139,7 @@ type ResearchProjectPromptBuilder = typeof buildResearchProjectPrompt;
 let reassessmentChecker: ReassessmentChecker = checkNeedsReassessment;
 let researchProjectPromptBuilder: ResearchProjectPromptBuilder = buildResearchProjectPrompt;
 
-function shouldBypassMilestoneDepthGateInAuto(prefs: GSDPreferences | undefined): boolean {
+function shouldBypassMilestoneDepthGateInAuto(prefs: WorkflowPreferences | undefined): boolean {
   return isAutoActive() && prefs?.planning_depth !== "deep";
 }
 
@@ -275,18 +275,18 @@ async function readUatGateVerdict(
  * Returns false in light mode (or when prefs absent) so the milestone
  * rules behave exactly as before.
  */
-export function getDeepStageGate(prefs: GSDPreferences | undefined, basePath: string): DeepStageGate {
+export function getDeepStageGate(prefs: WorkflowPreferences | undefined, basePath: string): DeepStageGate {
   return resolveDeepProjectSetupState(prefs, basePath);
 }
 
-export function hasPendingDeepStage(prefs: GSDPreferences | undefined, basePath: string): boolean {
+export function hasPendingDeepStage(prefs: WorkflowPreferences | undefined, basePath: string): boolean {
   const gate = getDeepStageGate(prefs, basePath);
   return gate.status === "pending" || gate.status === "blocked";
 }
 
 export function shouldRunDeepProjectSetup(
-  state: Pick<GSDState, "phase">,
-  prefs: GSDPreferences | undefined,
+  state: Pick<WorkflowDbState, "phase">,
+  prefs: WorkflowPreferences | undefined,
   basePath: string,
   options: { hasSurvivorBranch?: boolean } = {},
 ): boolean {
@@ -325,7 +325,7 @@ function missingSliceStop(mid: string, phase: string): DispatchAction {
   };
 }
 
-function isRegistryMilestoneComplete(state: GSDState, mid: string): boolean {
+function isRegistryMilestoneComplete(state: WorkflowDbState, mid: string): boolean {
   return state.registry.some((milestone) =>
     milestone.id === mid && milestone.status === "complete"
   );

@@ -7,7 +7,7 @@ import { join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@gsd/pi-coding-agent";
 import { Key } from "@gsd/pi-tui";
 
-import { GSD_SHORTCUTS } from "../shortcut-defs.js";
+import { SHORTCUTS } from "../shortcut-defs.js";
 import { shortcutDesc } from "../../shared/mod.js";
 
 async function getProjectRoot(): Promise<string> {
@@ -24,7 +24,7 @@ export function registerShortcuts(pi: ExtensionAPI): void {
   } as const;
 
   const openDashboardOverlay = async (ctx: ExtensionContext) => {
-    const [{ GSDDashboardOverlay }, basePath] = await Promise.all([
+    const [{ DashboardOverlay }, basePath] = await Promise.all([
       import("../dashboard-overlay.js"),
       getProjectRoot(),
     ]);
@@ -33,7 +33,7 @@ export function registerShortcuts(pi: ExtensionAPI): void {
       return;
     }
     await ctx.ui.custom<boolean>(
-      (tui, theme, _kb, done) => new GSDDashboardOverlay(tui, theme, () => done(true)),
+      (tui, theme, _kb, done) => new DashboardOverlay(tui, theme, () => done(true)),
       {
         overlay: true,
         overlayOptions,
@@ -42,9 +42,9 @@ export function registerShortcuts(pi: ExtensionAPI): void {
   };
 
   const openNotificationsOverlay = async (ctx: ExtensionContext) => {
-    const { GSDNotificationOverlay, notificationOverlayOptions } = await import("../notification-overlay.js");
+    const { NotificationOverlay, notificationOverlayOptions } = await import("../notification-overlay.js");
     await ctx.ui.custom<boolean>(
-      (tui, theme, _kb, done) => new GSDNotificationOverlay(tui, theme, () => done(true)),
+      (tui, theme, _kb, done) => new NotificationOverlay(tui, theme, () => done(true)),
       {
         overlay: true,
         overlayOptions: notificationOverlayOptions(),
@@ -69,30 +69,30 @@ export function registerShortcuts(pi: ExtensionAPI): void {
     );
   };
 
-  pi.registerShortcut(Key.ctrlAlt(GSD_SHORTCUTS.dashboard.key), {
-    description: shortcutDesc(GSD_SHORTCUTS.dashboard.action, GSD_SHORTCUTS.dashboard.command),
+  pi.registerShortcut(Key.ctrlAlt(SHORTCUTS.dashboard.key), {
+    description: shortcutDesc(SHORTCUTS.dashboard.action, SHORTCUTS.dashboard.command),
     handler: openDashboardOverlay,
   });
 
   // Fallback for terminals where Ctrl+Alt letter chords are not forwarded reliably.
-  pi.registerShortcut(Key.ctrlShift(GSD_SHORTCUTS.dashboard.key), {
-    description: shortcutDesc(`${GSD_SHORTCUTS.dashboard.action} (fallback)`, GSD_SHORTCUTS.dashboard.command),
+  pi.registerShortcut(Key.ctrlShift(SHORTCUTS.dashboard.key), {
+    description: shortcutDesc(`${SHORTCUTS.dashboard.action} (fallback)`, SHORTCUTS.dashboard.command),
     handler: openDashboardOverlay,
   });
 
-  pi.registerShortcut(Key.ctrlAlt(GSD_SHORTCUTS.notifications.key), {
-    description: shortcutDesc(GSD_SHORTCUTS.notifications.action, GSD_SHORTCUTS.notifications.command),
+  pi.registerShortcut(Key.ctrlAlt(SHORTCUTS.notifications.key), {
+    description: shortcutDesc(SHORTCUTS.notifications.action, SHORTCUTS.notifications.command),
     handler: openNotificationsOverlay,
   });
 
   // Fallback for terminals where Ctrl+Alt letter chords are not forwarded reliably.
-  pi.registerShortcut(Key.ctrlShift(GSD_SHORTCUTS.notifications.key), {
-    description: shortcutDesc(`${GSD_SHORTCUTS.notifications.action} (fallback)`, GSD_SHORTCUTS.notifications.command),
+  pi.registerShortcut(Key.ctrlShift(SHORTCUTS.notifications.key), {
+    description: shortcutDesc(`${SHORTCUTS.notifications.action} (fallback)`, SHORTCUTS.notifications.command),
     handler: openNotificationsOverlay,
   });
 
-  pi.registerShortcut(Key.ctrlAlt(GSD_SHORTCUTS.parallel.key), {
-    description: shortcutDesc(GSD_SHORTCUTS.parallel.action, GSD_SHORTCUTS.parallel.command),
+  pi.registerShortcut(Key.ctrlAlt(SHORTCUTS.parallel.key), {
+    description: shortcutDesc(SHORTCUTS.parallel.action, SHORTCUTS.parallel.command),
     handler: openParallelOverlay,
   });
 

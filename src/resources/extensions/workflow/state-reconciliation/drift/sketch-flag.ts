@@ -16,13 +16,13 @@ import {
   setSliceSketchFlag,
 } from "../../db.js";
 import { resolveSliceFile } from "../../paths.js";
-import type { GSDState } from "../../types.js";
+import type { WorkflowDbState } from "../../types.js";
 import type { DriftContext, DriftHandler, DriftRecord } from "../types.js";
 
 type SketchFlagDrift = Extract<DriftRecord, { kind: "stale-sketch-flag" }>;
 
 export function detectStaleSketchFlags(
-  state: GSDState,
+  state: WorkflowDbState,
   ctx: DriftContext,
 ): SketchFlagDrift[] {
   if (!isDbAvailable()) return [];

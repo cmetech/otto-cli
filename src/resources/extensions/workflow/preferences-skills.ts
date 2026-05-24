@@ -12,7 +12,7 @@ import { gsdHome } from "./home.js";
 import { statSync } from "node:fs";
 
 import type {
-  GSDPreferences,
+  WorkflowPreferences,
   SkillDiscoveryMode,
   SkillResolution,
   SkillResolutionReport,
@@ -20,7 +20,7 @@ import type {
 import { validatePreferences } from "./preferences-validation.js";
 
 // Re-export types so existing consumers of ./preferences-skills.js keep working
-export type { GSDSkillRule, SkillDiscoveryMode, SkillResolution, SkillResolutionReport } from "./preferences-types.js";
+export type { SkillRule, SkillDiscoveryMode, SkillResolution, SkillResolutionReport } from "./preferences-types.js";
 
 /**
  * Known skill directories, in priority order.
@@ -110,7 +110,7 @@ export function resolveSkillReference(ref: string, cwd: string): SkillResolution
  * Resolve all skill references in a preferences object.
  * Caches resolution per reference string to avoid redundant filesystem scans.
  */
-export function resolveAllSkillReferences(preferences: GSDPreferences, cwd: string): SkillResolutionReport {
+export function resolveAllSkillReferences(preferences: WorkflowPreferences, cwd: string): SkillResolutionReport {
   const validated = validatePreferences(preferences).preferences;
   preferences = validated;
 

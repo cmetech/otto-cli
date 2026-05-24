@@ -8,7 +8,7 @@ import { pathToFileURL } from "node:url";
 import type { ExtensionAPI, ExtensionContext } from "@gsd/pi-coding-agent";
 import { isToolCallEventType } from "@gsd/pi-coding-agent";
 
-import type { GSDEcosystemBeforeAgentStartHandler } from "../ecosystem/extension-api.js";
+import type { EcosystemBeforeAgentStartHandler } from "../ecosystem/extension-api.js";
 import { updateSnapshot } from "../ecosystem/extension-api.js";
 
 import { buildMilestoneFileName, resolveMilestonePath, resolveSliceFile, resolveSlicePath } from "../paths.js";
@@ -480,7 +480,7 @@ async function writeContextModeCompactionSnapshot(basePath: string): Promise<voi
 
 export function registerHooks(
   pi: ExtensionAPI,
-  ecosystemHandlers: GSDEcosystemBeforeAgentStartHandler[],
+  ecosystemHandlers: EcosystemBeforeAgentStartHandler[],
 ): void {
   // ADR-005 Phase 3b: surface pi-ai ProviderSwitchReport via audit, notification, and counter.
   // Idempotent — only the first registerHooks call installs.

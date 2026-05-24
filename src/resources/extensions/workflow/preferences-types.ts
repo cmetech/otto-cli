@@ -66,7 +66,7 @@ import type { GitHubSyncConfig } from "../github-sync/types.js";
 export type WorkflowMode = "solo" | "team";
 
 /** Default preference values for each workflow mode. */
-export const MODE_DEFAULTS: Record<WorkflowMode, Partial<GSDPreferences>> = {
+export const MODE_DEFAULTS: Record<WorkflowMode, Partial<WorkflowPreferences>> = {
   solo: {
     git: {
       auto_push: true,
@@ -89,7 +89,7 @@ export const MODE_DEFAULTS: Record<WorkflowMode, Partial<GSDPreferences>> = {
   },
 };
 
-/** All recognized top-level keys in GSDPreferences. Used to detect typos / stale config. */
+/** All recognized top-level keys in WorkflowPreferences. Used to detect typos / stale config. */
 export const KNOWN_PREFERENCE_KEYS = new Set<string>([
   "version",
   "mode",
@@ -190,7 +190,7 @@ export type UnitLabel = (typeof KNOWN_UNIT_LABELS)[number];
 
 export const SKILL_ACTIONS = new Set(["use", "prefer", "avoid"]);
 
-export interface GSDSkillRule {
+export interface SkillRule {
   when: string;
   use?: string[];
   prefer?: string[];
@@ -201,7 +201,7 @@ export interface GSDSkillRule {
  * Model configuration for a single phase.
  * Supports primary model with optional fallbacks for resilience.
  */
-export interface GSDPhaseModelConfig {
+export interface PhaseModelConfig {
   /** Primary model ID (e.g., "claude-opus-4-6") */
   model: string;
   /** Provider name to disambiguate when the same model ID exists across providers (e.g., "bedrock", "anthropic") */
@@ -212,9 +212,9 @@ export interface GSDPhaseModelConfig {
 
 /**
  * Legacy model config -- simple string per phase.
- * Kept for backward compatibility; will be migrated to GSDModelConfigV2 on load.
+ * Kept for backward compatibility; will be migrated to ModelConfigV2 on load.
  */
-export interface GSDModelConfig {
+export interface ModelConfig {
   research?: string;
   planning?: string;
   discuss?: string;
@@ -229,15 +229,15 @@ export interface GSDModelConfig {
  * Extended model config with per-phase fallback support.
  * Each phase can specify a primary model and ordered fallbacks.
  */
-export interface GSDModelConfigV2 {
-  research?: string | GSDPhaseModelConfig;
-  planning?: string | GSDPhaseModelConfig;
-  discuss?: string | GSDPhaseModelConfig;
-  execution?: string | GSDPhaseModelConfig;
-  execution_simple?: string | GSDPhaseModelConfig;
-  completion?: string | GSDPhaseModelConfig;
-  validation?: string | GSDPhaseModelConfig;
-  subagent?: string | GSDPhaseModelConfig;
+export interface ModelConfigV2 {
+  research?: string | PhaseModelConfig;
+  planning?: string | PhaseModelConfig;
+  discuss?: string | PhaseModelConfig;
+  execution?: string | PhaseModelConfig;
+  execution_simple?: string | PhaseModelConfig;
+  completion?: string | PhaseModelConfig;
+  validation?: string | PhaseModelConfig;
+  subagent?: string | PhaseModelConfig;
 }
 
 /** Normalized model selection with resolved fallbacks */
@@ -352,15 +352,15 @@ export interface WorkspacePreferences {
   repositories?: Record<string, WorkspaceRepositoryPreference>;
 }
 
-export interface GSDPreferences {
+export interface WorkflowPreferences {
   version?: number;
   mode?: WorkflowMode;
   always_use_skills?: string[];
   prefer_skills?: string[];
   avoid_skills?: string[];
-  skill_rules?: GSDSkillRule[];
+  skill_rules?: SkillRule[];
   custom_instructions?: string[];
-  models?: GSDModelConfig | GSDModelConfigV2;
+  models?: ModelConfig | ModelConfigV2;
   skill_discovery?: SkillDiscoveryMode;
   skill_staleness_days?: number;  // Skills unused for N days get deprioritized (#599). 0 = disabled. Default: 60.
   auto_supervisor?: AutoSupervisorConfig;
@@ -541,7 +541,7 @@ export interface GSDPreferences {
 export interface LoadedGSDPreferences {
   path: string;
   scope: "global" | "project";
-  preferences: GSDPreferences;
+  preferences: WorkflowPreferences;
   /** Validation warnings (unknown keys, type mismatches, deprecations). Empty when preferences are clean. */
   warnings?: string[];
 }

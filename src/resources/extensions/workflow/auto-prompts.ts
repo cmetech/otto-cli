@@ -22,8 +22,8 @@ import {
 import { resolveSkillDiscoveryMode, resolveInlineLevel, loadEffectiveGSDPreferences, resolveAllSkillReferences } from "./preferences.js";
 import { isContextModeEnabled } from "./preferences-types.js";
 import { parseRoadmap } from "./parsers-legacy.js";
-import type { GSDState, InlineLevel } from "./types.js";
-import type { GSDPreferences } from "./preferences.js";
+import type { WorkflowDbState, InlineLevel } from "./types.js";
+import type { WorkflowPreferences } from "./preferences.js";
 import { getLoadedSkills, type Skill } from "@gsd/pi-coding-agent";
 import { join, basename } from "node:path";
 import { existsSync } from "node:fs";
@@ -291,7 +291,7 @@ function resolveEffectiveUatType(content: string): UatType {
   return uatType;
 }
 
-function shouldDispatchUatForContent(content: string, prefs: GSDPreferences | undefined): boolean {
+function shouldDispatchUatForContent(content: string, prefs: WorkflowPreferences | undefined): boolean {
   const uatType = resolveEffectiveUatType(content);
   return !!prefs?.uat_dispatch || uatType !== "artifact-driven" || hasBrowserRequiredText(content);
 }
@@ -1223,7 +1223,7 @@ function skillMatchesContext(skill: Skill, contextTokens: Set<string>): boolean 
 
 function resolvePreferenceSkillNames(refs: string[], base: string): string[] {
   if (refs.length === 0) return [];
-  const prefs: GSDPreferences = { always_use_skills: refs };
+  const prefs: WorkflowPreferences = { always_use_skills: refs };
   const report = resolveAllSkillReferences(prefs, base);
   return refs.map(ref => {
     const resolution = report.resolutions.get(ref);
@@ -1239,7 +1239,7 @@ function ruleMatchesContext(when: string, contextTokens: Set<string>): boolean {
 }
 
 function resolveSkillRuleMatches(
-  prefs: GSDPreferences | undefined,
+  prefs: WorkflowPreferences | undefined,
   contextTokens: Set<string>,
   base: string,
 ): { include: string[]; avoid: string[] } {
@@ -1256,7 +1256,7 @@ function resolveSkillRuleMatches(
 }
 
 function resolvePreferredSkillNames(
-  prefs: GSDPreferences | undefined,
+  prefs: WorkflowPreferences | undefined,
   visibleSkills: Skill[],
   contextTokens: Set<string>,
   base: string,
@@ -1311,7 +1311,7 @@ export function buildSkillActivationBlock(params: {
   taskTitle?: string;
   extraContext?: string[];
   taskPlanContent?: string | null;
-  preferences?: GSDPreferences;
+  preferences?: WorkflowPreferences;
   /**
    * Unit type dispatching this prompt. When provided, skills are filtered
    * through the per-unit-type manifest (see `skill-manifest.ts`). Unknown
@@ -1634,7 +1634,7 @@ export async function getDependencyTaskSummaryPaths(
  * - All slices are complete (milestone done — no point reassessing)
  */
 export async function checkNeedsReassessment(
-  base: string, mid: string, state: GSDState,
+  base: string, mid: string, state: WorkflowDbState,
 ): Promise<{ sliceId: string } | null> {
   // DB primary path — fall through to file-based when DB has no data for this milestone
   try {
@@ -1689,7 +1689,7 @@ export async function checkNeedsReassessment(
  * - UAT result file already exists (idempotent — already ran)
  */
 export async function checkNeedsRunUat(
-  base: string, mid: string, state: GSDState, prefs: GSDPreferences | undefined,
+  base: string, mid: string, state: WorkflowDbState, prefs: WorkflowPreferences | undefined,
 ): Promise<{ sliceId: string; uatType: UatType } | null> {
   // DB primary path — fall through to file-based when DB has no data for this milestone
   try {

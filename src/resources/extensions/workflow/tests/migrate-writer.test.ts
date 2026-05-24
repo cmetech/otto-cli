@@ -24,19 +24,19 @@ import {
   parseRequirementCounts,
 } from '../files.ts';
 import type {
-  GSDMilestone,
-  GSDSlice,
-  GSDTask,
-  GSDRequirement,
-  GSDSliceSummaryData,
-  GSDTaskSummaryData,
+  WorkflowMilestone,
+  WorkflowSlice,
+  WorkflowTask,
+  WorkflowRequirement,
+  SliceSummaryData,
+  TaskSummaryData,
 } from '../migrate/types.ts';
 import { describe, test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 // ─── Test Data Builders ────────────────────────────────────────────────────
 
-function makeTask(overrides: Partial<GSDTask> = {}): GSDTask {
+function makeTask(overrides: Partial<WorkflowTask> = {}): WorkflowTask {
   return {
     id: 'T01',
     title: 'Setup Auth',
@@ -50,7 +50,7 @@ function makeTask(overrides: Partial<GSDTask> = {}): GSDTask {
   };
 }
 
-function makeSlice(overrides: Partial<GSDSlice> = {}): GSDSlice {
+function makeSlice(overrides: Partial<WorkflowSlice> = {}): WorkflowSlice {
   return {
     id: 'S01',
     title: 'Auth System',
@@ -66,7 +66,7 @@ function makeSlice(overrides: Partial<GSDSlice> = {}): GSDSlice {
   };
 }
 
-function makeMilestone(overrides: Partial<GSDMilestone> = {}): GSDMilestone {
+function makeMilestone(overrides: Partial<WorkflowMilestone> = {}): WorkflowMilestone {
   return {
     id: 'M001',
     title: 'Core Platform',
@@ -79,7 +79,7 @@ function makeMilestone(overrides: Partial<GSDMilestone> = {}): GSDMilestone {
   };
 }
 
-function makeSliceSummary(overrides: Partial<GSDSliceSummaryData> = {}): GSDSliceSummaryData {
+function makeSliceSummary(overrides: Partial<SliceSummaryData> = {}): SliceSummaryData {
   return {
     completedAt: '2026-03-10',
     provides: ['auth-flow', 'jwt-tokens'],
@@ -92,7 +92,7 @@ function makeSliceSummary(overrides: Partial<GSDSliceSummaryData> = {}): GSDSlic
   };
 }
 
-function makeTaskSummary(overrides: Partial<GSDTaskSummaryData> = {}): GSDTaskSummaryData {
+function makeTaskSummary(overrides: Partial<TaskSummaryData> = {}): TaskSummaryData {
   return {
     completedAt: '2026-03-09',
     provides: ['auth-endpoint'],
@@ -239,7 +239,7 @@ test('Scenario D: Task summary round-trip', () => {
 });
 
 test('Scenario E: Requirements round-trip with mixed statuses', () => {
-  const requirements: GSDRequirement[] = [
+  const requirements: WorkflowRequirement[] = [
     { id: 'R001', title: 'Auth Required', class: 'core-capability', status: 'active', description: 'Must have auth', source: 'spec', primarySlice: 'S01' },
     { id: 'R002', title: 'Logging', class: 'observability', status: 'active', description: 'Must log', source: 'spec', primarySlice: 'S02' },
     { id: 'R003', title: 'OAuth Support', class: 'core-capability', status: 'validated', description: 'OAuth working', source: 'testing', primarySlice: 'S01' },

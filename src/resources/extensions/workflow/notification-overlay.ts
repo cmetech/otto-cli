@@ -70,7 +70,7 @@ function notificationSignature(entries: readonly NotificationEntry[]): string {
     .join("\n");
 }
 
-export class GSDNotificationOverlay {
+export class NotificationOverlay {
   private tui: { requestRender: () => void };
   private theme: Theme;
   private onClose: () => void;

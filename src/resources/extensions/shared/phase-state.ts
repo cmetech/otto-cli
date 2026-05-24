@@ -12,14 +12,14 @@ import { buildAuditEnvelope, emitUokAuditEvent } from "../workflow/uok/audit.js"
 let _active = false;
 let _currentPhase: string | null = null;
 
-export interface GSDPhaseAuditContext {
+export interface PhaseAuditContext {
 	basePath: string;
 	traceId: string;
 	turnId?: string;
 	causedBy?: string;
 }
 
-let _auditContext: GSDPhaseAuditContext | null = null;
+let _auditContext: PhaseAuditContext | null = null;
 
 function emitPhaseChange(action: string, previousPhase: string | null, nextPhase: string | null): void {
 	if (!_auditContext) return;
@@ -41,12 +41,12 @@ function emitPhaseChange(action: string, previousPhase: string | null, nextPhase
 	);
 }
 
-export function configureGSDPhaseAudit(context: GSDPhaseAuditContext | null): void {
+export function configureGSDPhaseAudit(context: PhaseAuditContext | null): void {
 	_auditContext = context;
 }
 
 /** Mark auto-mode as active. */
-export function activateGSD(context?: GSDPhaseAuditContext): void {
+export function activateGSD(context?: PhaseAuditContext): void {
 	if (context) _auditContext = context;
 	const previousPhase = _currentPhase;
 	_active = true;
@@ -63,11 +63,11 @@ export function deactivateGSD(): void {
 }
 
 /** Set the currently dispatched workflow phase (e.g. "plan-milestone"). */
-export function setCurrentPhase(phase: string, context?: GSDPhaseAuditContext): boolean {
+export function setCurrentPhase(phase: string, context?: PhaseAuditContext): boolean {
 	if (context) _auditContext = context;
 	if (!_active) {
 		process.emitWarning(`Ignoring GSD phase "${phase}" while GSD auto-mode is inactive`, {
-			code: "GSD_PHASE_INACTIVE",
+			code: "PHASE_INACTIVE",
 		});
 		return false;
 	}

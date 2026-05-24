@@ -14,12 +14,12 @@
  *     `satisfies Record<GateId, GateDefinition>`, so adding a new GateId
  *     without a registry entry is a compile error.
  *   - `getGatesForTurn(turn)` returns the definitions a turn owns.
- *   - `assertGateCoverage(pending, turn)` throws a GSDError if the pending
+ *   - `assertGateCoverage(pending, turn)` throws a WorkflowError if the pending
  *     list for a turn contains unknown gates, or if any gate owned by the
  *     turn is missing from the pending list.
  */
 
-import { GSDError, GSD_PARSE_ERROR } from "./errors.js";
+import { WorkflowError, PARSE_ERROR } from "./errors.js";
 import type { GateId, GateRow, GateScope } from "./types.js";
 
 /** Which workflow turn is responsible for evaluating / closing a gate. */
@@ -191,7 +191,7 @@ export function getGateDefinition(id: string): GateDefinition | undefined {
 export function getOwnerTurn(id: GateId): OwnerTurn {
   const def = GATE_REGISTRY[id];
   if (!def) {
-    throw new GSDError(GSD_PARSE_ERROR, `gate-registry: unknown gate id "${id}"`);
+    throw new WorkflowError(PARSE_ERROR, `gate-registry: unknown gate id "${id}"`);
   }
   return def.ownerTurn;
 }
@@ -230,8 +230,8 @@ export function assertGateCoverage(
   }
 
   if (unknown.length > 0) {
-    throw new GSDError(
-      GSD_PARSE_ERROR,
+    throw new WorkflowError(
+      PARSE_ERROR,
       `assertGateCoverage: turn "${turn}" received pending gates it does not own: ${unknown.join(", ")}`,
     );
   }
@@ -242,8 +242,8 @@ export function assertGateCoverage(
       if (!pendingIds.has(id)) missing.push(id);
     }
     if (missing.length > 0) {
-      throw new GSDError(
-        GSD_PARSE_ERROR,
+      throw new WorkflowError(
+        PARSE_ERROR,
         `assertGateCoverage: turn "${turn}" is missing required gates: ${missing.join(", ")}`,
       );
     }

@@ -18,10 +18,10 @@ export interface GsdDispatchContext {
  * Typed error for when the agent is run outside a valid project directory.
  * Command handlers catch this to show a friendly message instead of a raw exception.
  */
-export class GSDNoProjectError extends Error {
+export class NoProjectError extends Error {
   constructor(reason: string) {
     super(reason);
-    this.name = "GSDNoProjectError";
+    this.name = "NoProjectError";
   }
 }
 
@@ -53,7 +53,7 @@ export function projectRoot(): string {
   const pathToCheck = root !== cwd ? cwd : root;
   const result = validateDirectory(pathToCheck);
   if (result.severity === "blocked") {
-    throw new GSDNoProjectError(result.reason ?? `${BRAND} must be run inside a project directory.`);
+    throw new NoProjectError(result.reason ?? `${BRAND} must be run inside a project directory.`);
   }
   return root;
 }
@@ -71,7 +71,7 @@ export function currentDirectoryRoot(): string {
   }
   const result = validateDirectory(cwd);
   if (result.severity === "blocked") {
-    throw new GSDNoProjectError(result.reason ?? `${BRAND} must be run inside a project directory.`);
+    throw new NoProjectError(result.reason ?? `${BRAND} must be run inside a project directory.`);
   }
   return cwd;
 }

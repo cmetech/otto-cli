@@ -21,7 +21,7 @@
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join, resolve, sep } from "node:path";
-import { GSDError, GSD_PARSE_ERROR, GSD_STALE_STATE, GSD_LOCK_HELD, GSD_GIT_ERROR, GSD_MERGE_CONFLICT } from "./errors.js";
+import { WorkflowError, PARSE_ERROR, STALE_STATE, LOCK_HELD, GIT_ERROR, MERGE_CONFLICT } from "./errors.js";
 import { logWarning } from "./workflow-logger.js";
 import {
   nativeBranchList,
@@ -100,8 +100,8 @@ function normalizeBasePathForWorktreeOps(basePath: string): string {
     isWorktreePath(basePath) &&
     normalizeWorktreePathForCompare(resolved) === normalizeWorktreePathForCompare(basePath)
   ) {
-    throw new GSDError(
-      GSD_GIT_ERROR,
+    throw new WorkflowError(
+      GIT_ERROR,
       `Cannot resolve project root from worktree path: ${basePath}. Run the command from the project root or set GSD_PROJECT_ROOT.`,
     );
   }
@@ -233,7 +233,7 @@ export function createWorktree(basePath: string, name: string, opts: { branch?: 
 
   // Validate name: alphanumeric, hyphens, underscores only
   if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
-    throw new GSDError(GSD_PARSE_ERROR, `Invalid worktree name "${name}". Use only letters, numbers, hyphens, and underscores.`);
+    throw new WorkflowError(PARSE_ERROR, `Invalid worktree name "${name}". Use only letters, numbers, hyphens, and underscores.`);
   }
 
   const wtPath = worktreePath(basePath, name);
@@ -252,8 +252,8 @@ export function createWorktree(basePath: string, name: string, opts: { branch?: 
       } catch (error) {
         const code = (error as NodeJS.ErrnoException)?.code;
         if (code === "EPERM" || code === "EBUSY") {
-          throw new GSDError(
-            GSD_GIT_ERROR,
+          throw new WorkflowError(
+            GIT_ERROR,
             `Cannot remove stale worktree directory at ${wtPath} (${code}: directory may be locked by another process). Close editors/antivirus/git tools using this path and retry.`,
             { cause: error as Error },
           );
@@ -261,7 +261,7 @@ export function createWorktree(basePath: string, name: string, opts: { branch?: 
         throw error;
       }
     } else {
-      throw new GSDError(GSD_STALE_STATE, `Worktree "${name}" already exists at ${wtPath}`);
+      throw new WorkflowError(STALE_STATE, `Worktree "${name}" already exists at ${wtPath}`);
     }
   }
 
@@ -281,8 +281,8 @@ export function createWorktree(basePath: string, name: string, opts: { branch?: 
   // which would flow into `git worktree add ... ""` and crash with
   // `fatal: not a valid object name`. (Issue #4980 HIGH-9)
   if (!startPoint || startPoint.length === 0) {
-    throw new GSDError(
-      GSD_GIT_ERROR,
+    throw new WorkflowError(
+      GIT_ERROR,
       "Repository has no commits yet (unborn branch). Make an initial commit before creating worktrees.",
     );
   }
@@ -296,8 +296,8 @@ export function createWorktree(basePath: string, name: string, opts: { branch?: 
     const branchInUse = worktreeEntries.some(entry => entry.branch === branch);
 
     if (branchInUse) {
-      throw new GSDError(
-        GSD_LOCK_HELD,
+      throw new WorkflowError(
+        LOCK_HELD,
         `Branch "${branch}" is already in use by another worktree. ` +
         `Remove the existing worktree first with /worktree remove ${name}.`,
       );
@@ -316,8 +316,8 @@ export function createWorktree(basePath: string, name: string, opts: { branch?: 
       // deleted at teardown). (Issue #4980 HIGH-3)
       const branchIsAncestor = nativeIsAncestor(basePath, branch, startPoint);
       if (!branchIsAncestor) {
-        throw new GSDError(
-          GSD_GIT_ERROR,
+        throw new WorkflowError(
+          GIT_ERROR,
           `Branch "${branch}" already exists with commits not reachable from "${startPoint}". ` +
           `Refusing to force-reset — would orphan prior work. ` +
           `If you intend to keep those commits, retry with reuseExistingBranch=true. ` +
@@ -733,7 +733,7 @@ export function removeWorktree(
 /**
  * Paths to skip in all worktree diffs (internal/runtime artifacts).
  *
- * NOTE: These arrays must stay synchronized with GSD_RUNTIME_PATTERNS in gitignore.ts.
+ * NOTE: These arrays must stay synchronized with RUNTIME_PATTERNS in gitignore.ts.
  * That file is the canonical source of truth for runtime ignore patterns.
  * This module uses a split representation (paths/exact/prefixes) for efficient matching.
  */
@@ -895,12 +895,12 @@ export function mergeWorktreeToMain(basePath: string, name: string, commitMessag
   const current = nativeGetCurrentBranch(basePath);
 
   if (current !== mainBranch) {
-    throw new GSDError(GSD_GIT_ERROR, `Must be on ${mainBranch} to merge. Currently on ${current}.`);
+    throw new WorkflowError(GIT_ERROR, `Must be on ${mainBranch} to merge. Currently on ${current}.`);
   }
 
   const result = nativeMergeSquash(basePath, branch);
   if (!result.success) {
-    throw new GSDError(GSD_MERGE_CONFLICT, `Merge conflicts detected in: ${result.conflicts.join(", ")}`);
+    throw new WorkflowError(MERGE_CONFLICT, `Merge conflicts detected in: ${result.conflicts.join(", ")}`);
   }
 
   nativeCommit(basePath, commitMessage);

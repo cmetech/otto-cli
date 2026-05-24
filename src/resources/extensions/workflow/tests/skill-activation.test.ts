@@ -11,7 +11,7 @@ import {
 } from "../auto-prompts.js";
 import { warnIfManifestHasMissingSkills } from "../skill-manifest.js";
 import { _resetLogs, drainLogs, setStderrLoggingEnabled } from "../workflow-logger.js";
-import type { GSDPreferences } from "../preferences.js";
+import type { WorkflowPreferences } from "../preferences.js";
 
 function makeTempBase(): string {
   return mkdtempSync(join(tmpdir(), "gsd-skill-activation-"));
@@ -39,7 +39,7 @@ function writeProjectPreferences(base: string, preferences: string): void {
 function buildBlock(
   base: string,
   params: Partial<Parameters<typeof buildSkillActivationBlock>[0]> = {},
-  preferences: GSDPreferences = {},
+  preferences: WorkflowPreferences = {},
 ): string {
   return buildSkillActivationBlock({
     base,

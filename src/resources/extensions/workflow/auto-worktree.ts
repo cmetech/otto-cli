@@ -21,7 +21,7 @@ import {
   lstatSync as lstatSyncFn,
 } from "node:fs";
 import { isAbsolute, join, relative, resolve, sep as pathSep } from "node:path";
-import { GSDError, GSD_IO_ERROR, GSD_GIT_ERROR } from "./errors.js";
+import { WorkflowError, IO_ERROR, GIT_ERROR } from "./errors.js";
 import {
   reconcileWorktreeDb,
   isDbAvailable,
@@ -1028,8 +1028,8 @@ export function enterBranchModeForMilestone(
       concurrentlyCreated &&
       !nativeIsAncestor(basePath, branch, startPoint)
     ) {
-      throw new GSDError(
-        GSD_GIT_ERROR,
+      throw new WorkflowError(
+        GIT_ERROR,
         `Branch "${branch}" was created concurrently with commits not reachable from "${startPoint}". ` +
         `Refusing to force-reset — would orphan prior work. ` +
         `Resume the existing milestone or run \`git branch -D ${branch}\` to discard.`,
@@ -1271,8 +1271,8 @@ export function createAutoWorktree(
   try {
     execFileSync("git", ["rev-parse", "--verify", "HEAD"], { cwd: basePath, stdio: "pipe" });
   } catch {
-    throw new GSDError(
-      GSD_GIT_ERROR,
+    throw new WorkflowError(
+      GIT_ERROR,
       `Cannot create worktree: repository has no commits yet. Worktree isolation requires at least one commit.`,
     );
   }
@@ -1345,8 +1345,8 @@ export function createAutoWorktree(
   } catch (err) {
     // If chdir fails, the worktree was created but we couldn't enter it.
     // Don't set activeWorkspace -- caller can retry or clean up.
-    throw new GSDError(
-      GSD_IO_ERROR,
+    throw new WorkflowError(
+      IO_ERROR,
       `Auto-worktree created at ${info.path} but chdir failed: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
@@ -1386,8 +1386,8 @@ export function teardownAutoWorktree(
     try {
       process.chdir(originalBasePath);
     } catch (err) {
-      throw new GSDError(
-        GSD_IO_ERROR,
+      throw new WorkflowError(
+        IO_ERROR,
         `Failed to chdir back to ${originalBasePath} during teardown: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
@@ -1538,8 +1538,8 @@ export function enterAutoWorktree(
 
   const p = worktreePath(basePath, milestoneId);
   if (!existsSync(p)) {
-    throw new GSDError(
-      GSD_IO_ERROR,
+    throw new WorkflowError(
+      IO_ERROR,
       `Auto-worktree for ${milestoneId} does not exist at ${p}`,
     );
   }
@@ -1547,23 +1547,23 @@ export function enterAutoWorktree(
   // Validate this is a real git worktree, not a stray directory (#695)
   const gitPath = join(p, ".git");
   if (!existsSync(gitPath)) {
-    throw new GSDError(
-      GSD_GIT_ERROR,
+    throw new WorkflowError(
+      GIT_ERROR,
       `Auto-worktree path ${p} exists but is not a git worktree (no .git)`,
     );
   }
   try {
     const content = readFileSync(gitPath, "utf8").trim();
     if (!content.startsWith("gitdir: ")) {
-      throw new GSDError(
-        GSD_GIT_ERROR,
+      throw new WorkflowError(
+        GIT_ERROR,
         `Auto-worktree path ${p} has a .git but it is not a worktree gitdir pointer`,
       );
     }
   } catch (err) {
     if (err instanceof Error && err.message.includes("worktree")) throw err;
-    throw new GSDError(
-      GSD_IO_ERROR,
+    throw new WorkflowError(
+      IO_ERROR,
       `Auto-worktree path ${p} exists but .git is unreadable`,
     );
   }
@@ -1574,8 +1574,8 @@ export function enterAutoWorktree(
     process.chdir(p);
     setActiveWorkspace(createWorkspace(basePath));
   } catch (err) {
-    throw new GSDError(
-      GSD_IO_ERROR,
+    throw new WorkflowError(
+      IO_ERROR,
       `Failed to enter auto-worktree at ${p}: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
@@ -1651,8 +1651,8 @@ function autoCommitDirtyState(cwd: string): boolean {
     return result !== null;
   } catch (e) {
     debugLog("autoCommitDirtyState", { error: String(e) });
-    throw new GSDError(
-      GSD_GIT_ERROR,
+    throw new WorkflowError(
+      GIT_ERROR,
       `Failed to auto-commit dirty worktree state before milestone merge: ${e instanceof Error ? e.message : String(e)}`,
     );
   }
@@ -1785,8 +1785,8 @@ export function mergeMilestoneToMain(
   // integration branch.
   if (normalizeLocalBranchRef(mainBranch) === milestoneBranch) {
     process.chdir(previousCwd);
-    throw new GSDError(
-      GSD_GIT_ERROR,
+    throw new WorkflowError(
+      GIT_ERROR,
       `Resolved integration branch "${mainBranch}" is the same ref as milestone branch ` +
       `"${milestoneBranch}" — refusing to self-merge. ${branchResolution.reason}. ` +
       `Repair milestone integration metadata before retrying milestone completion.`,
@@ -1807,8 +1807,8 @@ export function mergeMilestoneToMain(
   const currentBranchAtBase = nativeGetCurrentBranch(originalBasePath_);
   if (!currentBranchAtBase || currentBranchAtBase.length === 0) {
     process.chdir(previousCwd);
-    throw new GSDError(
-      GSD_GIT_ERROR,
+    throw new WorkflowError(
+      GIT_ERROR,
       `Project root is in detached HEAD state — cannot perform milestone merge. ` +
       `Checkout an integration branch (e.g. \`git checkout ${mainBranch}\`) before resuming.`,
     );
@@ -1882,8 +1882,8 @@ export function mergeMilestoneToMain(
         } else {
           // Diverged — fail loudly rather than silently losing commits
           process.chdir(previousCwd);
-          throw new GSDError(
-            GSD_GIT_ERROR,
+          throw new WorkflowError(
+            GIT_ERROR,
             `Worktree HEAD (${worktreeHead.slice(0, 8)}) diverged from ` +
               `${milestoneBranch} (${branchHead.slice(0, 8)}). ` +
               `Manual reconciliation required before merge.`,
@@ -1891,9 +1891,9 @@ export function mergeMilestoneToMain(
         }
       }
     } catch (err) {
-      // Re-throw GSDError (divergence); swallow rev-parse failures
+      // Re-throw WorkflowError (divergence); swallow rev-parse failures
       // (e.g. worktree dir already removed by external cleanup)
-      if (err instanceof GSDError) throw err;
+      if (err instanceof WorkflowError) throw err;
       debugLog("mergeMilestoneToMain", {
         action: "reconcile-skipped",
         reason: String(err),
@@ -1919,8 +1919,8 @@ export function mergeMilestoneToMain(
       );
       if (unanchoredCodeChanges.length > 0) {
         process.chdir(previousCwd);
-        throw new GSDError(
-          GSD_GIT_ERROR,
+        throw new WorkflowError(
+          GIT_ERROR,
           `Milestone branch "${milestoneBranch}" is reachable from "${mainBranch}" ` +
             `but has ${unanchoredCodeChanges.length} milestone-touched code file(s) not on current "${mainBranch}". ` +
             `Aborting worktree teardown to prevent data loss.`,
@@ -2138,8 +2138,8 @@ export function mergeMilestoneToMain(
       const fileList = mergeResult.dirtyFiles?.length
         ? `Dirty files:\n${mergeResult.dirtyFiles.map((f) => `  ${f}`).join("\n")}`
         : `Check \`git status\` in the project root for details.`;
-      throw new GSDError(
-        GSD_GIT_ERROR,
+      throw new WorkflowError(
+        GIT_ERROR,
         `Squash merge of ${milestoneBranch} rejected: working tree has dirty or untracked files ` +
           `that conflict with the merge. ${fileList}`,
       );
@@ -2365,8 +2365,8 @@ export function mergeMilestoneToMain(
     if (codeChanges.length > 0) {
       // Milestone has unanchored code changes — abort teardown.
       process.chdir(previousCwd);
-      throw new GSDError(
-        GSD_GIT_ERROR,
+      throw new WorkflowError(
+        GIT_ERROR,
         `Squash merge produced nothing to commit but milestone branch "${milestoneBranch}" ` +
           `has ${codeChanges.length} code file(s) not on "${mainBranch}". ` +
           `Aborting worktree teardown to prevent data loss.`,
@@ -2539,14 +2539,14 @@ export function mergeMilestoneToMain(
           const dirtyCheck = nativeWorkingTreeStatus(worktreeCwd);
           if (dirtyCheck) {
             process.chdir(previousCwd);
-            throw new GSDError(
-              GSD_GIT_ERROR,
+            throw new WorkflowError(
+              GIT_ERROR,
               `Milestone worktree still has uncommitted changes after squash merge. ` +
                 `Aborting teardown to preserve ${milestoneBranch}. Status:\n${dirtyCheck}`,
             );
           }
         } catch (e) {
-          if (e instanceof GSDError) throw e;
+          if (e instanceof WorkflowError) throw e;
           debugLog("mergeMilestoneToMain", {
             phase: "pre-teardown-dirty-check-error",
             error: String(e),

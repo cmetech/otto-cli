@@ -226,7 +226,7 @@ export function formatConfigText(): string {
 
 // ─── Overlay Class ────────────────────────────────────────────────────────
 
-export class GSDConfigOverlay {
+export class ConfigOverlay {
   private tui: { requestRender: () => void };
   private theme: Theme;
   private onClose: () => void;

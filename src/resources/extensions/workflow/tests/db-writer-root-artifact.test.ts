@@ -157,7 +157,7 @@ describe("saveArtifactToDbByScope: empty milestoneId throws defensive error", ()
     rmSync(tmp, { recursive: true, force: true });
   });
 
-  test("scope with empty milestoneId throws GSDError mentioning saveArtifactToDbForWorkspace", async () => {
+  test("scope with empty milestoneId throws WorkflowError mentioning saveArtifactToDbForWorkspace", async () => {
     const ws = createWorkspace(tmp);
     const emptyScope = scopeMilestone(ws, "");
     const opts = {

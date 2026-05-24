@@ -16,7 +16,7 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 
 import { hasPendingDeepStage, shouldRunDeepProjectSetup } from "../auto-dispatch.ts";
-import type { GSDPreferences } from "../preferences.ts";
+import type { WorkflowPreferences } from "../preferences.ts";
 import { loadEffectiveGSDPreferences } from "../preferences.ts";
 
 function makeBase(): string {
@@ -25,8 +25,8 @@ function makeBase(): string {
   return base;
 }
 
-const lightPrefs: GSDPreferences = { planning_depth: "light" } as GSDPreferences;
-const deepPrefs: GSDPreferences = { planning_depth: "deep" } as GSDPreferences;
+const lightPrefs: WorkflowPreferences = { planning_depth: "light" } as WorkflowPreferences;
+const deepPrefs: WorkflowPreferences = { planning_depth: "deep" } as WorkflowPreferences;
 
 test("hasPendingDeepStage: returns false when prefs is undefined (light by omission)", () => {
   const base = makeBase();

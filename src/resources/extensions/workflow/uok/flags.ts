@@ -1,4 +1,4 @@
-import type { GSDPreferences } from "../preferences.js";
+import type { WorkflowPreferences } from "../preferences.js";
 import { loadEffectiveGSDPreferences } from "../preferences.js";
 
 export interface UokFlags {
@@ -21,7 +21,7 @@ function envForcesLegacyFallback(): boolean {
   return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
 }
 
-export function resolveUokFlags(prefs: GSDPreferences | undefined): UokFlags {
+export function resolveUokFlags(prefs: WorkflowPreferences | undefined): UokFlags {
   const uok = prefs?.uok;
   const legacyFallback = uok?.legacy_fallback?.enabled === true || envForcesLegacyFallback();
   const enabledByPreference = uok?.enabled ?? true;

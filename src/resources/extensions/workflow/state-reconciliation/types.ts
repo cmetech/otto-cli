@@ -2,7 +2,7 @@
 // File Purpose: ADR-017 types for drift-driven state reconciliation.
 
 import type { DeriveStateOptions } from "../state.js";
-import type { GSDState } from "../types.js";
+import type { WorkflowDbState } from "../types.js";
 
 /**
  * Discriminated union over drift kinds the State Reconciliation Module
@@ -27,7 +27,7 @@ export type DriftRecord =
  */
 export interface DriftContext {
   basePath: string;
-  state: GSDState;
+  state: WorkflowDbState;
 }
 
 /**
@@ -39,7 +39,7 @@ export interface DriftContext {
  */
 export interface DriftHandler<T extends DriftRecord = DriftRecord> {
   kind: T["kind"];
-  detect: (state: GSDState, ctx: DriftContext) => T[] | Promise<T[]>;
+  detect: (state: WorkflowDbState, ctx: DriftContext) => T[] | Promise<T[]>;
   repair: (record: T, ctx: DriftContext) => Promise<void> | void;
 }
 
@@ -56,7 +56,7 @@ export interface DriftHandler<T extends DriftRecord = DriftRecord> {
  */
 export interface ReconciliationResult {
   ok: true;
-  stateSnapshot: GSDState;
+  stateSnapshot: WorkflowDbState;
   repaired: readonly DriftRecord[];
   blockers: readonly string[];
 }
@@ -70,7 +70,7 @@ export interface ReconciliationDeps {
   deriveState: (
     basePath: string,
     opts?: DeriveStateOptions,
-  ) => Promise<GSDState>;
+  ) => Promise<WorkflowDbState>;
   /**
    * Override of the drift handler catalog. Defaults to DRIFT_REGISTRY. Each
    * handler is parameterized over its own DriftRecord variant; the union of

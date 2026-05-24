@@ -69,7 +69,7 @@ import { crossReferenceEvidence, type ClaimedEvidence } from "./safety/evidence-
 import { validateContent } from "./safety/content-validator.js";
 import { resolveSafetyHarnessConfig } from "./safety/safety-harness.js";
 import { resolveExpectedArtifactPath as resolveArtifactForContent } from "./auto-artifact-paths.js";
-import { getIsolationMode, loadEffectiveGSDPreferences, type GSDPreferences } from "./preferences.js";
+import { getIsolationMode, loadEffectiveGSDPreferences, type WorkflowPreferences } from "./preferences.js";
 import { getSliceTasks } from "./db.js";
 import { runPreExecutionChecks, type PreExecutionResult } from "./pre-execution-checks.js";
 import { writePreExecutionEvidence, type PreExecutionCheckJSON } from "./verification-evidence.js";
@@ -248,7 +248,7 @@ async function hasArtifactCostGuardAdvancedPastUnit(
   ctx: ExtensionContext,
   unitType: string,
   unitId: string,
-  prefs: GSDPreferences | undefined,
+  prefs: WorkflowPreferences | undefined,
 ): Promise<boolean> {
   try {
     const state = await deriveState(s.canonicalProjectRoot);
@@ -623,7 +623,7 @@ function buildStepCompleteCallout(
 
 export const STEP_COMPLETE_FALLBACK_MESSAGE = buildStepCompleteCallout();
 
-export function buildStepCompleteMessage(nextState: import("./types.js").GSDState): string | null {
+export function buildStepCompleteMessage(nextState: import("./types.js").WorkflowDbState): string | null {
   if (nextState.phase === "complete") {
     return null;
   }
@@ -631,7 +631,7 @@ export function buildStepCompleteMessage(nextState: import("./types.js").GSDStat
 }
 
 function buildStepCompleteMessageForUnit(
-  nextState: import("./types.js").GSDState,
+  nextState: import("./types.js").WorkflowDbState,
   currentUnit?: NonNullable<AutoSession["currentUnit"]> | null,
 ): string | null {
   if (nextState.phase === "complete") {
@@ -641,7 +641,7 @@ function buildStepCompleteMessageForUnit(
 }
 
 export function buildStepCompleteOutcome(
-  nextState: import("./types.js").GSDState,
+  nextState: import("./types.js").WorkflowDbState,
   currentUnit?: NonNullable<AutoSession["currentUnit"]> | null,
 ): AutoOutcomeSurfaceSnapshot | null {
   if (nextState.phase === "complete") {
@@ -660,7 +660,7 @@ export function buildStepCompleteOutcome(
 
 export function setStepCompleteSurface(
   ctx: ExtensionContext,
-  nextState: import("./types.js").GSDState,
+  nextState: import("./types.js").WorkflowDbState,
   currentUnit?: NonNullable<AutoSession["currentUnit"]> | null,
 ): string | null {
   const outcome = buildStepCompleteOutcome(nextState, currentUnit);
@@ -723,7 +723,7 @@ export interface PostUnitContext {
   lockBase: () => string;
   stopAuto: (ctx?: ExtensionContext, pi?: ExtensionAPI, reason?: string) => Promise<void>;
   pauseAuto: (ctx?: ExtensionContext, pi?: ExtensionAPI) => Promise<void>;
-  updateProgressWidget: (ctx: ExtensionContext, unitType: string, unitId: string, state: import("./types.js").GSDState) => void;
+  updateProgressWidget: (ctx: ExtensionContext, unitType: string, unitId: string, state: import("./types.js").WorkflowDbState) => void;
 }
 
 export const USER_DRIVEN_DEEP_UNITS = new Set([

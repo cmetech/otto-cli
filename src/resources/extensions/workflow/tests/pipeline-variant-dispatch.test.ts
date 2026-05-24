@@ -19,7 +19,7 @@ import {
   insertSlice,
 } from "../db.ts";
 import { invalidateAllCaches } from "../cache.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 
 const PARALLEL_RESEARCH_RULE = "planning (multiple slices need research) → parallel-research-slices";
 const SINGLE_RESEARCH_RULE = "planning (no research, not S01) → research-slice";
@@ -100,10 +100,10 @@ function findRule(name: string) {
 function makeCtx(params: {
   base: string;
   mid: string;
-  phase: GSDState["phase"];
+  phase: WorkflowDbState["phase"];
   activeSlice?: { id: string; title: string };
 }): DispatchContext {
-  const state: GSDState = {
+  const state: WorkflowDbState = {
     phase: params.phase,
     activeMilestone: { id: params.mid, title: "Test" },
     activeSlice: params.activeSlice ?? null,

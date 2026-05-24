@@ -12,7 +12,7 @@ import {
   renderStateContent,
 } from '../workflow-projections.ts';
 import type { SliceRow, TaskRow, MilestoneRow } from '../db.ts';
-import type { GSDState } from '../types.ts';
+import type { WorkflowDbState } from '../types.ts';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -112,7 +112,7 @@ function makeMilestoneRow(overrides?: Partial<MilestoneRow>): MilestoneRow {
   };
 }
 
-function makeGSDState(overrides?: Partial<GSDState>): GSDState {
+function makeGSDState(overrides?: Partial<WorkflowDbState>): WorkflowDbState {
   return {
     activeMilestone: { id: 'M001', title: 'Topic-to-pipeline foundation' },
     activeSlice: { id: 'S01', title: 'Auth Layer' },

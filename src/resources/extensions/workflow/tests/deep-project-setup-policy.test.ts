@@ -8,9 +8,9 @@ import { randomUUID } from "node:crypto";
 import {
   resolveDeepProjectSetupState,
 } from "../deep-project-setup-policy.ts";
-import type { GSDPreferences } from "../preferences.ts";
+import type { WorkflowPreferences } from "../preferences.ts";
 
-const deepPrefs = { planning_depth: "deep" } as GSDPreferences;
+const deepPrefs = { planning_depth: "deep" } as WorkflowPreferences;
 
 const validProject = readFileSync(
   new URL("../schemas/__fixtures__/valid-project.md", import.meta.url),

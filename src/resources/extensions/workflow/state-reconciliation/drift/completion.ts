@@ -22,7 +22,7 @@ import {
   resolveSliceFile,
   resolveTaskFile,
 } from "../../paths.js";
-import type { GSDState } from "../../types.js";
+import type { WorkflowDbState } from "../../types.js";
 import type { DriftContext, DriftHandler, DriftRecord } from "../types.js";
 
 type CompletionTimestampDrift = Extract<
@@ -41,7 +41,7 @@ function summaryMtimeIso(path: string): string | null {
 }
 
 export function detectMissingCompletionTimestampDrift(
-  state: GSDState,
+  state: WorkflowDbState,
   ctx: DriftContext,
 ): CompletionTimestampDrift[] {
   if (!isDbAvailable()) return [];

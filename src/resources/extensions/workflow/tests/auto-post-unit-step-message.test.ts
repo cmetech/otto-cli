@@ -13,9 +13,9 @@ import {
   shouldReturnStepWizardAfterUnit,
   STEP_COMPLETE_FALLBACK_MESSAGE,
 } from "../auto-post-unit.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 
-function makeState(overrides: Partial<GSDState>): GSDState {
+function makeState(overrides: Partial<WorkflowDbState>): WorkflowDbState {
   return {
     activeMilestone: null,
     activeSlice: null,
@@ -65,7 +65,7 @@ test("buildStepCompleteMessage: mid-flight step renders only the completion rece
 
 test("buildStepCompleteMessage: unknown phase still renders only the completion receipt", () => {
   // Cast to bypass Phase union so we exercise the default branch of describeNextUnit.
-  const state = makeState({ phase: "totally-unknown" as unknown as GSDState["phase"] });
+  const state = makeState({ phase: "totally-unknown" as unknown as WorkflowDbState["phase"] });
   const msg = buildStepCompleteMessage(state);
   assert.ok(msg);
   const text = plain(msg);

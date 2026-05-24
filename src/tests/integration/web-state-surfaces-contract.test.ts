@@ -14,7 +14,7 @@ const filesRoute = await import("../../../web/app/api/files/route.ts");
 const workspaceStatus = await import("../../../web/lib/workspace-status.ts");
 const commandSurface = await import("../../../web/lib/command-surface-contract.ts");
 const {
-  GSDWorkspaceStore,
+  WorkspaceStore,
   getLiveAutoDashboard,
   getLiveResumableSessions,
   getLiveWorkspaceIndex,
@@ -372,7 +372,7 @@ test("files API returns empty tree when .gsd/ does not exist", async (t) => {
 // ─── Group 6: Store-backed browser state surfaces ───────────────────
 
 test("workspace store keeps extension status, widgets, title overrides, and editor prefills stateful", () => {
-  const store = new GSDWorkspaceStore("/tmp/project") as any;
+  const store = new WorkspaceStore("/tmp/project") as any;
   store.patchState({
     statusTexts: { health: "All systems ready" },
     widgetContents: { health: { lines: ["ok"], placement: "belowEditor" } },
@@ -398,7 +398,7 @@ test("workspace store keeps extension status, widgets, title overrides, and edit
 });
 
 test("live browser selectors prefer targeted live refresh data over boot seed data", () => {
-  const store = new GSDWorkspaceStore("/tmp/project") as any;
+  const store = new WorkspaceStore("/tmp/project") as any;
   const snapshot = store.getSnapshot();
   const workspace = {
     milestones: [{ id: "M001", title: "Live milestone", slices: [] }],

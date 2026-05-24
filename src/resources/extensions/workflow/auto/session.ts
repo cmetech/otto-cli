@@ -61,7 +61,7 @@ export interface PendingOrchestrationDispatch {
   unitId: string;
   prompt: string;
   pauseAfterUatDispatch: boolean;
-  state: import("../types.js").GSDState;
+  state: import("../types.js").WorkflowDbState;
   mid: string | undefined;
   midTitle: string | undefined;
 }

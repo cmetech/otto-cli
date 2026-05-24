@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { git } from "./test-utils.ts";
-import { GSD_GIT_ERROR } from "../errors.js";
+import { GIT_ERROR } from "../errors.js";
 
 test("nativeAddAllWithExclusions preserves infrastructure failures from git add", async () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-native-git-infra-"));
@@ -38,7 +38,7 @@ test("nativeAddAllWithExclusions preserves infrastructure failures from git add"
       () => nativeAddAllWithExclusions(repo, [".gsd/activity/"]),
       (err) => {
         const shaped = err as { code?: string; stderr?: string; message?: string };
-        assert.notEqual(shaped.code, GSD_GIT_ERROR);
+        assert.notEqual(shaped.code, GIT_ERROR);
         assert.match(`${shaped.stderr ?? ""}${shaped.message ?? ""}`, /ENFILE/);
         return true;
       },

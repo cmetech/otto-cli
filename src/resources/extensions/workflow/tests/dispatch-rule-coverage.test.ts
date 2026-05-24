@@ -1,6 +1,6 @@
 // gsd-2 / dispatch rule coverage canary test
 //
-// Iterates DISPATCH_RULES in order against representative GSDState stubs and
+// Iterates DISPATCH_RULES in order against representative WorkflowDbState stubs and
 // asserts that the first matching rule has the expected name and unitType
 // (mirroring auto-dispatch's first-match-wins semantics). The goal is a
 // canary: if a future PR adds a new rule in the wrong position and steals
@@ -14,11 +14,11 @@ import { tmpdir } from "node:os";
 
 import { DISPATCH_RULES } from "../auto-dispatch.ts";
 import type { DispatchContext, DispatchAction } from "../auto-dispatch.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 
 // ─── State helpers ────────────────────────────────────────────────────────
 
-function makeState(overrides: Partial<GSDState> = {}): GSDState {
+function makeState(overrides: Partial<WorkflowDbState> = {}): WorkflowDbState {
   return {
     activeMilestone: { id: "M001", title: "Test Milestone" },
     activeSlice: null,
@@ -32,7 +32,7 @@ function makeState(overrides: Partial<GSDState> = {}): GSDState {
   };
 }
 
-function makeCtx(basePath: string, state: GSDState, mid = "M001"): DispatchContext {
+function makeCtx(basePath: string, state: WorkflowDbState, mid = "M001"): DispatchContext {
   return {
     basePath,
     mid,

@@ -21,7 +21,7 @@ import {
   nativeRebaseAbort,
   nativeResetHard,
 } from "../../native-git-bridge.js";
-import type { GSDState } from "../../types.js";
+import type { WorkflowDbState } from "../../types.js";
 import { logError, logWarning } from "../../workflow-logger.js";
 import { isWorktreePath } from "../../worktree-root.js";
 import type { DriftContext, DriftHandler, DriftRecord } from "../types.js";
@@ -384,7 +384,7 @@ function hasMergeStateLeftovers(basePath: string): boolean {
 }
 
 export function detectMergeStateDrift(
-  _state: GSDState,
+  _state: WorkflowDbState,
   ctx: DriftContext,
 ): MergeStateDrift[] {
   if (hasMergeStateLeftovers(ctx.basePath)) {

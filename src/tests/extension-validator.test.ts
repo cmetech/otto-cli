@@ -19,45 +19,45 @@ describe('checkInstallDiscriminator', () => {
   test('returns error when gsd section is missing', () => {
     const result = checkInstallDiscriminator({ pi: { extensions: ['./index.ts'] } })
     assert.ok(result !== null)
-    assert.equal(result.code, 'MISSING_GSD_MARKER')
+    assert.equal(result.code, 'MISSING_WORKFLOW_MARKER')
     assert.equal(result.field, 'gsd.extension')
   })
 
   test('returns error when gsd.extension is number 1 (not boolean true)', () => {
     const result = checkInstallDiscriminator({ gsd: { extension: 1 } })
     assert.ok(result !== null)
-    assert.equal(result.code, 'MISSING_GSD_MARKER', 'strict === true check must reject numeric 1')
+    assert.equal(result.code, 'MISSING_WORKFLOW_MARKER', 'strict === true check must reject numeric 1')
   })
 
   test("returns error when gsd.extension is string 'true'", () => {
     const result = checkInstallDiscriminator({ gsd: { extension: 'true' } })
     assert.ok(result !== null)
-    assert.equal(result.code, 'MISSING_GSD_MARKER', "strict === true check must reject string 'true'")
+    assert.equal(result.code, 'MISSING_WORKFLOW_MARKER', "strict === true check must reject string 'true'")
   })
 
   test('returns error for null input', () => {
     const result = checkInstallDiscriminator(null)
     assert.ok(result !== null)
-    assert.equal(result.code, 'MISSING_GSD_MARKER')
+    assert.equal(result.code, 'MISSING_WORKFLOW_MARKER')
   })
 
   test('returns error when gsd.extension is undefined', () => {
     const result = checkInstallDiscriminator({ gsd: {} })
     assert.ok(result !== null)
-    assert.equal(result.code, 'MISSING_GSD_MARKER')
+    assert.equal(result.code, 'MISSING_WORKFLOW_MARKER')
     assert.equal(result.field, 'gsd.extension')
   })
 
   test('returns error when gsd is an array (not object)', () => {
     const result = checkInstallDiscriminator({ gsd: ['extension'] })
     assert.ok(result !== null)
-    assert.equal(result.code, 'MISSING_GSD_MARKER')
+    assert.equal(result.code, 'MISSING_WORKFLOW_MARKER')
   })
 
   test('returns error when input is a string (not object)', () => {
     const result = checkInstallDiscriminator('{"gsd":{"extension":true}}')
     assert.ok(result !== null)
-    assert.equal(result.code, 'MISSING_GSD_MARKER')
+    assert.equal(result.code, 'MISSING_WORKFLOW_MARKER')
   })
 })
 
@@ -164,10 +164,10 @@ describe('validateExtensionPackage', () => {
       { extensionId: 'gsd.bad' }
     )
     assert.equal(result.valid, false)
-    // Expects at least: MISSING_GSD_MARKER + RESERVED_NAMESPACE + WRONG_DEP_FIELD
+    // Expects at least: MISSING_WORKFLOW_MARKER + RESERVED_NAMESPACE + WRONG_DEP_FIELD
     assert.ok(result.errors.length >= 3, `expected >= 3 errors, got ${result.errors.length}: ${JSON.stringify(result.errors.map(e => e.code))}`)
     const codes = result.errors.map(e => e.code)
-    assert.ok(codes.includes('MISSING_GSD_MARKER'))
+    assert.ok(codes.includes('MISSING_WORKFLOW_MARKER'))
     assert.ok(codes.includes('RESERVED_NAMESPACE'))
     assert.ok(codes.includes('WRONG_DEP_FIELD'))
   })

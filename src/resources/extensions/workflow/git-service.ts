@@ -41,7 +41,7 @@ import {
   nativeIsIgnored,
   _resetHasChangesCache,
 } from "./native-git-bridge.js";
-import { GSDError, GSD_MERGE_CONFLICT, GSD_GIT_ERROR } from "./errors.js";
+import { WorkflowError, MERGE_CONFLICT, GIT_ERROR } from "./errors.js";
 import { getErrorMessage } from "./error-utils.js";
 import { isInfrastructureError } from "./auto/infra-errors.js";
 
@@ -316,7 +316,7 @@ function isInsideSubmodule(path: string, submodulePaths: ReadonlySet<string>): b
  * The working tree is left in a conflicted state (no reset) so the
  * caller can dispatch a fix-merge session to resolve it.
  */
-export class MergeConflictError extends GSDError {
+export class MergeConflictError extends WorkflowError {
   readonly conflictedFiles: string[];
   readonly strategy: "squash" | "merge";
   readonly branch: string;
@@ -329,7 +329,7 @@ export class MergeConflictError extends GSDError {
     mainBranch: string,
   ) {
     super(
-      GSD_MERGE_CONFLICT,
+      MERGE_CONFLICT,
       `${strategy === "merge" ? "Merge" : "Squash-merge"} of "${branch}" into "${mainBranch}" ` +
       `failed with conflicts in ${conflictedFiles.length} non-.gsd file(s): ${conflictedFiles.join(", ")}`,
     );
@@ -354,7 +354,7 @@ export interface PreMergeCheckResult {
  * runtime paths that should be excluded from smart staging.
  * These are transient/generated artifacts that should never be committed.
  *
- * NOTE: GSD_RUNTIME_PATTERNS in gitignore.ts is the canonical source of truth.
+ * NOTE: RUNTIME_PATTERNS in gitignore.ts is the canonical source of truth.
  * This array must stay synchronized with it.
  */
 export const RUNTIME_EXCLUSION_PATHS: readonly string[] = [
@@ -694,7 +694,7 @@ export function runGit(basePath: string, args: string[], options: { allowFailure
   } catch (error) {
     if (options.allowFailure) return "";
     const message = getErrorMessage(error);
-    throw new GSDError(GSD_GIT_ERROR, `git ${args.join(" ")} failed in ${basePath}: ${filterGitSvnNoise(message)}`);
+    throw new WorkflowError(GIT_ERROR, `git ${args.join(" ")} failed in ${basePath}: ${filterGitSvnNoise(message)}`);
   }
 }
 
@@ -977,13 +977,13 @@ export class GitServiceImpl {
       // Opt-in guard — users can disable to keep snapshot commits for forensics
       if (this.prefs.absorb_snapshot_commits === false) return;
 
-      const GSD_SNAPSHOT_PREFIX = "gsd snapshot:";
+      const SNAPSHOT_PREFIX = "gsd snapshot:";
       let count = 0;
 
       // Walk back from HEAD~1 counting consecutive snapshot commits (cap at 10)
       for (let i = 1; i <= 10; i++) {
         const subject = nativeCommitSubject(this.basePath, `HEAD~${i}`);
-        if (!subject.startsWith(GSD_SNAPSHOT_PREFIX)) break;
+        if (!subject.startsWith(SNAPSHOT_PREFIX)) break;
         count = i;
       }
 

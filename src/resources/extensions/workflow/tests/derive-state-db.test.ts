@@ -122,7 +122,7 @@ const REQUIREMENTS_CONTENT = `# Requirements
 
 describe('derive-state-db', async () => {
 
-  // ─── Test 1: DB-backed deriveState produces identical GSDState ─────────
+  // ─── Test 1: DB-backed deriveState produces identical WorkflowDbState ─────────
   test('derive-state-db: DB path matches file path', async () => {
     const base = createFixtureBase();
     try {

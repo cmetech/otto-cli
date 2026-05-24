@@ -10,7 +10,7 @@
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface ValidationError {
-  code: string;    // "MISSING_GSD_MARKER" | "RESERVED_NAMESPACE" | "WRONG_DEP_FIELD"
+  code: string;    // "MISSING_WORKFLOW_MARKER" | "RESERVED_NAMESPACE" | "WRONG_DEP_FIELD"
   message: string; // Human-readable, actionable
   field?: string;  // e.g. "dependencies", "gsd.extension"
 }
@@ -40,7 +40,7 @@ export interface ValidationOptions {
 export function checkInstallDiscriminator(pkg: unknown): ValidationError | null {
   if (typeof pkg !== 'object' || pkg === null) {
     return {
-      code: 'MISSING_GSD_MARKER',
+      code: 'MISSING_WORKFLOW_MARKER',
       message: 'package.json must declare "gsd": { "extension": true } to be recognized as a GSD extension.',
       field: 'gsd.extension',
     }
@@ -51,7 +51,7 @@ export function checkInstallDiscriminator(pkg: unknown): ValidationError | null 
 
   if (typeof gsd !== 'object' || gsd === null) {
     return {
-      code: 'MISSING_GSD_MARKER',
+      code: 'MISSING_WORKFLOW_MARKER',
       message: 'package.json must declare "gsd": { "extension": true } to be recognized as a GSD extension.',
       field: 'gsd.extension',
     }
@@ -60,7 +60,7 @@ export function checkInstallDiscriminator(pkg: unknown): ValidationError | null 
   const gsdObj = gsd as Record<string, unknown>
   if (gsdObj.extension !== true) {
     return {
-      code: 'MISSING_GSD_MARKER',
+      code: 'MISSING_WORKFLOW_MARKER',
       message: 'package.json must declare "gsd": { "extension": true } to be recognized as a GSD extension.',
       field: 'gsd.extension',
     }

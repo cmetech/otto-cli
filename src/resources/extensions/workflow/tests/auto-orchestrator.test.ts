@@ -9,7 +9,7 @@ import { join } from "node:path";
 
 import { createAutoOrchestrator, STUCK_WINDOW_SIZE } from "../auto/orchestrator.js";
 import type { AutoOrchestratorDeps } from "../auto/contracts.js";
-import type { GSDState } from "../types.js";
+import type { WorkflowDbState } from "../types.js";
 import { createWiredDispatchAdapter, resolveLiveOrchestratorBasePath } from "../auto.js";
 import { resolveDispatch, type DispatchContext } from "../auto-dispatch.js";
 import { RuleRegistry, setRegistry, resetRegistry } from "../rule-registry.js";
@@ -22,7 +22,7 @@ function assertBlockedResult(
   assert.equal(result.kind, "blocked");
 }
 
-function makeState(): GSDState {
+function makeState(): WorkflowDbState {
   return {
     activeMilestone: { id: "M001", title: "Milestone" },
     activeSlice: null,
@@ -392,7 +392,7 @@ test("advance() stops when dispatch has no next unit", async () => {
 });
 
 test("advance() reports completion when complete state has no next unit", async () => {
-  const completeState: GSDState = {
+  const completeState: WorkflowDbState = {
     ...makeState(),
     activeMilestone: null,
     phase: "complete",

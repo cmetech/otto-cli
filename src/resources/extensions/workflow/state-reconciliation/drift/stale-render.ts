@@ -13,7 +13,7 @@ import {
   renderSliceSummary,
   renderTaskSummary,
 } from "../../markdown-renderer.js";
-import type { GSDState } from "../../types.js";
+import type { WorkflowDbState } from "../../types.js";
 import { logWarning } from "../../workflow-logger.js";
 import type { DriftContext, DriftHandler, DriftRecord } from "../types.js";
 
@@ -130,7 +130,7 @@ async function repairStaleRenderFromBasePath(
 // ─── Drift Handler API ───────────────────────────────────────────────────────
 
 export function detectStaleRenderDrift(
-  _state: GSDState,
+  _state: WorkflowDbState,
   ctx: DriftContext,
 ): StaleRenderDrift[] {
   return detectStaleRenderDriftFromBasePath(ctx.basePath);

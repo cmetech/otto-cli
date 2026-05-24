@@ -24,7 +24,7 @@ import {
 } from "./native-git-bridge.js";
 import { inferCommitType } from "./git-service.js";
 import { autoCommitCurrentBranch } from "./worktree.js";
-import { GSDError, GSD_GIT_ERROR } from "./errors.js";
+import { WorkflowError, GIT_ERROR } from "./errors.js";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -201,7 +201,7 @@ async function handleMerge(args: string, ctx: ExtensionCommandContext): Promise<
     mergeWorktreeToMain(basePath, target, commitMessage);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (err instanceof GSDError && err.code === GSD_GIT_ERROR) {
+    if (err instanceof WorkflowError && err.code === GIT_ERROR) {
       ctx.ui.notify(
         `Merge requires the main branch to be checked out: ${msg}\n\nSwitch to ${mainBranch} (e.g. 'git checkout ${mainBranch}'), then re-run /gsd worktree merge ${target}.`,
         "error",
@@ -230,7 +230,7 @@ async function handleMerge(args: string, ctx: ExtensionCommandContext): Promise<
       ...successLines,
       "",
       `Cleanup failed after the merge succeeded: ${msg}`,
-      err instanceof GSDError && err.code === GSD_GIT_ERROR
+      err instanceof WorkflowError && err.code === GIT_ERROR
         ? `Switch to ${mainBranch} (e.g. 'git checkout ${mainBranch}'), then remove the worktree manually with /gsd worktree remove ${target} --force.`
         : `Remove the worktree manually with /gsd worktree remove ${target} --force, or run 'git worktree prune' to clean up dangling registrations.`,
     ];

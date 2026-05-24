@@ -338,14 +338,14 @@ export function externalProjectsRoot(): string {
  * removes them. It is called early in `ensureGsdSymlink()` so that the
  * canonical `.gsd` path is always the one in use.
  */
-const GSD_NUMBERED_VARIANT_RE = /^\.gsd \d+$/;
+const NUMBERED_VARIANT_RE = /^\.gsd \d+$/;
 
 export function cleanNumberedGsdVariants(projectPath: string): string[] {
   const removed: string[] = [];
   try {
     const entries = readdirSync(projectPath);
     for (const entry of entries) {
-      if (GSD_NUMBERED_VARIANT_RE.test(entry)) {
+      if (NUMBERED_VARIANT_RE.test(entry)) {
         const fullPath = join(projectPath, entry);
         try {
           rmSync(fullPath, { recursive: true, force: true });

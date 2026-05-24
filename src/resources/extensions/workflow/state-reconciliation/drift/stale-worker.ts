@@ -10,13 +10,13 @@ import {
   readSessionLockData,
   removeStaleSessionLock,
 } from "../../session-lock.js";
-import type { GSDState } from "../../types.js";
+import type { WorkflowDbState } from "../../types.js";
 import type { DriftContext, DriftHandler, DriftRecord } from "../types.js";
 
 type StaleWorkerDrift = Extract<DriftRecord, { kind: "stale-worker" }>;
 
 export function detectStaleWorkerDrift(
-  _state: GSDState,
+  _state: WorkflowDbState,
   ctx: DriftContext,
 ): StaleWorkerDrift[] {
   const data = readSessionLockData(ctx.basePath);

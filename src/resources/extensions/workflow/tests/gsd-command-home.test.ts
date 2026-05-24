@@ -8,9 +8,9 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 import { buildHomeModel, showGsdHome } from "../command-home.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 
-function baseState(overrides: Partial<GSDState> = {}): GSDState {
+function baseState(overrides: Partial<WorkflowDbState> = {}): WorkflowDbState {
   return {
     activeMilestone: { id: "M001", title: "Menu Cleanup" },
     activeSlice: { id: "S01", title: "Home Menu" },

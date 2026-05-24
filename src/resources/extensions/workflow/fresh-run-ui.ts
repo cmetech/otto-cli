@@ -12,13 +12,13 @@ const FRESH_RUN_COMMANDS = new Set([
   "new-milestone",
 ]);
 
-const GSD_WIDGET_KEYS = [
+const WIDGET_KEYS = [
   "gsd-outcome",
   "gsd-progress",
   "gsd-health",
 ];
 
-const GSD_STATUS_KEYS = [
+const STATUS_KEYS = [
   "gsd-step",
   "gsd-auto",
 ];
@@ -34,10 +34,10 @@ export function isFreshGsdWorkCommand(trimmed: string): boolean {
 
 export function clearFreshGsdRunSurfaces(ctx: ExtensionCommandContext): void {
   const ui = ctx.ui;
-  for (const key of GSD_WIDGET_KEYS) {
+  for (const key of WIDGET_KEYS) {
     ui.setWidget?.(key, undefined);
   }
-  for (const key of GSD_STATUS_KEYS) {
+  for (const key of STATUS_KEYS) {
     ui.setStatus?.(key, undefined);
   }
 }

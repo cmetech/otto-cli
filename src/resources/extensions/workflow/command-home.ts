@@ -7,7 +7,7 @@ import { showNextAction } from "../shared/tui.js";
 import type { NextAction } from "../shared/next-action-ui.js";
 import { startAutoDetached } from "./auto.js";
 import { deriveState } from "./state.js";
-import type { GSDState } from "./types.js";
+import type { WorkflowDbState } from "./types.js";
 
 export type GsdHomeActionId =
   | "continue_step"
@@ -31,14 +31,14 @@ export interface GsdHomeModel {
   actions: GsdHomeAction[];
 }
 
-function activeWorkLabel(state: GSDState): string {
+function activeWorkLabel(state: WorkflowDbState): string {
   if (state.activeTask) return `${state.activeTask.id}: ${state.activeTask.title}`;
   if (state.activeSlice) return `${state.activeSlice.id}: ${state.activeSlice.title}`;
   if (state.activeMilestone) return `${state.activeMilestone.id}: ${state.activeMilestone.title}`;
   return "No active milestone.";
 }
 
-function isBlocked(state: GSDState): boolean {
+function isBlocked(state: WorkflowDbState): boolean {
   return state.phase === "blocked" || state.blockers.length > 0;
 }
 
@@ -46,7 +46,7 @@ function disabled(description: string, reason: string): string {
   return `Unavailable: ${reason}. ${description}`;
 }
 
-export function buildHomeModel(state: GSDState): GsdHomeModel {
+export function buildHomeModel(state: WorkflowDbState): GsdHomeModel {
   const blocked = isBlocked(state);
   const complete = state.phase === "complete";
   const hasActiveWork = Boolean(state.activeMilestone);

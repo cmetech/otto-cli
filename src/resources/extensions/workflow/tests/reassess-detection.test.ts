@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 
 import { checkNeedsReassessment } from "../auto-prompts.ts";
 import { invalidateAllCaches } from "../cache.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-test-reassess-${randomUUID()}`);
@@ -44,7 +44,7 @@ const ROADMAP_S01_DONE_S02_TODO = `# M001 Roadmap
 - [ ] **S02: Second** \`risk:medium\` \`depends:[S01]\`
 `;
 
-const dummyState: GSDState = {
+const dummyState: WorkflowDbState = {
   phase: "executing",
   activeMilestone: { id: "M001", title: "Test" },
   activeSlice: { id: "S02", title: "Second" },

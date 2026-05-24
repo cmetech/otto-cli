@@ -1,10 +1,10 @@
 import { COMMAND_NAMESPACE, type ExtensionAPI, type ExtensionCommandContext } from "@gsd/pi-coding-agent";
 
-import { GSD_COMMAND_DESCRIPTION, getWorkflowArgumentCompletions } from "./catalog.js";
+import { WORKFLOW_COMMAND_DESCRIPTION, getWorkflowArgumentCompletions } from "./catalog.js";
 
 export function registerWorkflowCommand(pi: ExtensionAPI): void {
   pi.registerCommand(COMMAND_NAMESPACE, {
-    description: GSD_COMMAND_DESCRIPTION,
+    description: WORKFLOW_COMMAND_DESCRIPTION,
     getArgumentCompletions: getWorkflowArgumentCompletions,
     handler: async (args: string, ctx: ExtensionCommandContext) => {
       const { dispatchWorkflowCommand } = await import("./dispatcher.js");

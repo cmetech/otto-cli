@@ -40,9 +40,9 @@ import {
   type ReconciliationDeps,
 } from "../state-reconciliation.ts";
 import { classifyFailure } from "../recovery-classification.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 
-function makeState(overrides: Partial<GSDState> = {}): GSDState {
+function makeState(overrides: Partial<WorkflowDbState> = {}): WorkflowDbState {
   return {
     activeMilestone: { id: "M001", title: "Milestone" },
     activeSlice: null,

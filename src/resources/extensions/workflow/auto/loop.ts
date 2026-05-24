@@ -16,7 +16,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { AutoSession } from "./session.js";
 import type { LoopDeps, StopAutoOptions } from "./loop-deps.js";
-import type { GSDState } from "../types.js";
+import type { WorkflowDbState } from "../types.js";
 import {
   MAX_LOOP_ITERATIONS,
   type LoopState,
@@ -129,7 +129,7 @@ function isDeadLocalLeaseHolder(workerId: string, projectRoot: string): boolean 
 }
 
 function resolveCompletionStopFromState(
-  stateSnapshot: GSDState | undefined,
+  stateSnapshot: WorkflowDbState | undefined,
 ): { reason: string; options: StopAutoOptions } | null {
   if (stateSnapshot?.phase !== "complete") return null;
   const completedMilestone = stateSnapshot.lastCompletedMilestone ?? stateSnapshot.activeMilestone;

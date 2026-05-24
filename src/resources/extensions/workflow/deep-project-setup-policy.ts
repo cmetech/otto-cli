@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { CONFIG_DIR_NAME } from "./strings.js";
 import { join } from "node:path";
 
-import type { GSDPreferences } from "./preferences.js";
+import type { WorkflowPreferences } from "./preferences.js";
 import { atomicWriteSync } from "./atomic-write.js";
 import { clearParseCache } from "./files.js";
 import { gsdRoot, clearPathCache } from "./paths.js";
@@ -127,7 +127,7 @@ function downstreamSetupArtifactsValid(root: string, basePath: string): boolean 
 }
 
 export function resolveDeepProjectSetupState(
-  prefs: GSDPreferences | undefined,
+  prefs: WorkflowPreferences | undefined,
   basePath: string,
 ): DeepProjectSetupState {
   if (prefs?.planning_depth !== "deep") {

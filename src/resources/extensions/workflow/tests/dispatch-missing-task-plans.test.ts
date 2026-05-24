@@ -17,10 +17,10 @@ import { tmpdir } from "node:os";
 import { resolveDispatch } from "../auto-dispatch.ts";
 import type { DispatchContext } from "../auto-dispatch.ts";
 import type { AutoSession } from "../auto/session.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 import { enableDebug, disableDebug, getDebugLogPath } from "../debug-logger.ts";
 
-function makeState(overrides: Partial<GSDState> = {}): GSDState {
+function makeState(overrides: Partial<WorkflowDbState> = {}): WorkflowDbState {
   return {
     activeMilestone: { id: "M002", title: "Test Milestone" },
     activeSlice: { id: "S03", title: "Third Slice" },
@@ -34,7 +34,7 @@ function makeState(overrides: Partial<GSDState> = {}): GSDState {
   };
 }
 
-function makeContext(basePath: string, stateOverrides?: Partial<GSDState>): DispatchContext {
+function makeContext(basePath: string, stateOverrides?: Partial<WorkflowDbState>): DispatchContext {
   return {
     basePath,
     mid: "M002",

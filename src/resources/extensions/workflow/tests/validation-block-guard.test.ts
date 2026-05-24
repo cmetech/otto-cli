@@ -9,9 +9,9 @@ import {
   isValidationBlockAllowedCommand,
   isValidationBlockedState,
 } from "../validation-block-guard.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 
-function blockedState(): GSDState {
+function blockedState(): WorkflowDbState {
   return {
     activeMilestone: { id: "M006", title: "Mark All Complete" },
     activeSlice: null,

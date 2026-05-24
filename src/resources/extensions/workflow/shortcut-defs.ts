@@ -3,9 +3,9 @@
 import { formatShortcut } from "./files.js";
 import { slashCommand } from "./strings.js";
 
-export type GSDShortcutId = "dashboard" | "notifications" | "parallel";
+export type ShortcutId = "dashboard" | "notifications" | "parallel";
 
-type GSDShortcutDef = {
+type ShortcutDef = {
   key: "g" | "n" | "p";
   action: string;
   command: string;
@@ -13,7 +13,7 @@ type GSDShortcutDef = {
   hasFallback: boolean;
 };
 
-export const GSD_SHORTCUTS: Record<GSDShortcutId, GSDShortcutDef> = {
+export const SHORTCUTS: Record<ShortcutId, ShortcutDef> = {
   dashboard: {
     key: "g",
     action: "Open GSD dashboard",
@@ -38,20 +38,20 @@ function combo(prefix: "Ctrl+Alt+" | "Ctrl+Shift+", key: string): string {
   return `${prefix}${key.toUpperCase()}`;
 }
 
-export function primaryShortcutCombo(id: GSDShortcutId): string {
-  return combo("Ctrl+Alt+", GSD_SHORTCUTS[id].key);
+export function primaryShortcutCombo(id: ShortcutId): string {
+  return combo("Ctrl+Alt+", SHORTCUTS[id].key);
 }
 
-export function fallbackShortcutCombo(id: GSDShortcutId): string {
-  return combo("Ctrl+Shift+", GSD_SHORTCUTS[id].key);
+export function fallbackShortcutCombo(id: ShortcutId): string {
+  return combo("Ctrl+Shift+", SHORTCUTS[id].key);
 }
 
-export function shortcutPair(id: GSDShortcutId, formatter: (combo: string) => string = (combo) => combo): string {
+export function shortcutPair(id: ShortcutId, formatter: (combo: string) => string = (combo) => combo): string {
   const primary = formatter(primaryShortcutCombo(id));
-  if (!GSD_SHORTCUTS[id].hasFallback) return primary;
+  if (!SHORTCUTS[id].hasFallback) return primary;
   return `${primary} / ${formatter(fallbackShortcutCombo(id))}`;
 }
 
-export function formattedShortcutPair(id: GSDShortcutId): string {
+export function formattedShortcutPair(id: ShortcutId): string {
   return shortcutPair(id, formatShortcut);
 }

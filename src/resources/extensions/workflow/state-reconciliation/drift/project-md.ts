@@ -10,7 +10,7 @@ import { existsSync } from "node:fs";
 import { getMilestone, isDbAvailable } from "../../db.js";
 import { findMilestoneIds } from "../../milestone-ids.js";
 import { resolveMilestoneFile } from "../../paths.js";
-import type { GSDState } from "../../types.js";
+import type { WorkflowDbState } from "../../types.js";
 import type { DriftContext, DriftHandler, DriftRecord } from "../types.js";
 
 type UnregisteredMilestoneDrift = Extract<
@@ -30,7 +30,7 @@ function milestoneHasContent(basePath: string, milestoneId: string): boolean {
 }
 
 export function detectUnregisteredMilestoneDrift(
-  _state: GSDState,
+  _state: WorkflowDbState,
   ctx: DriftContext,
 ): UnregisteredMilestoneDrift[] {
   if (!isDbAvailable()) return [];

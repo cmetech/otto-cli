@@ -18,7 +18,7 @@ import {
   countMarkdownHierarchy,
 } from "../migration-auto-check.ts";
 import { writeAgentDirectory } from "../migrate/writer.ts";
-import type { GSDProject } from "../migrate/types.ts";
+import type { WorkflowProject } from "../migrate/types.ts";
 
 function makeBase(): string {
   return mkdtempSync(join(tmpdir(), "gsd-migration-auto-check-"));
@@ -29,7 +29,7 @@ function cleanup(base: string): void {
   rmSync(base, { recursive: true, force: true });
 }
 
-function projectFixture(): GSDProject {
+function projectFixture(): WorkflowProject {
   return {
     projectContent: "# Legacy Project\n",
     decisionsContent: "",

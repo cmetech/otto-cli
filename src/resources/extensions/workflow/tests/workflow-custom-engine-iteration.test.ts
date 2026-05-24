@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 import { buildCustomEngineIterationData } from "../auto/workflow-custom-engine-iteration.ts";
 
 test("buildCustomEngineIterationData derives state from canonical project root", async () => {
@@ -17,7 +17,7 @@ test("buildCustomEngineIterationData derives state from canonical project root",
     currentMilestoneId: "M001",
     deriveState: async root => {
       roots.push(root);
-      return { phase: "executing" } as GSDState;
+      return { phase: "executing" } as WorkflowDbState;
     },
     logPostDerive: () => {},
   });
@@ -29,7 +29,7 @@ test("buildCustomEngineIterationData maps engine step into iteration data", asyn
   const state = {
     phase: "executing",
     activeMilestone: { id: "M001", title: "Milestone 1" },
-  } as GSDState;
+  } as WorkflowDbState;
 
   const iterData = await buildCustomEngineIterationData({
     step: { unitType: "engine-task", unitId: "E001", prompt: "Run engine task" },
@@ -58,7 +58,7 @@ test("buildCustomEngineIterationData defaults milestone id to workflow", async (
     basePath: "/worktree",
     canonicalProjectRoot: "/project",
     currentMilestoneId: null,
-    deriveState: async () => ({ phase: "executing" }) as GSDState,
+    deriveState: async () => ({ phase: "executing" }) as WorkflowDbState,
     logPostDerive: () => {},
   });
 
@@ -79,7 +79,7 @@ test("buildCustomEngineIterationData logs active unit details", async () => {
       activeMilestone: { id: "M001", title: "Milestone 1" },
       activeSlice: { id: "S01" },
       activeTask: { id: "T01" },
-    }) as GSDState,
+    }) as WorkflowDbState,
     logPostDerive: details => logs.push(details),
   });
 

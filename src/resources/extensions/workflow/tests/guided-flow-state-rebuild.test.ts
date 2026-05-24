@@ -90,7 +90,7 @@ describe("guided-flow STATE.md rebuild (#3475)", () => {
     assert.ok(!rebuilt.includes("M008"), "Rebuilt STATE.md should NOT reference stale M008");
   });
 
-  test("buildStateMarkdown produces correct active milestone from GSDState", async () => {
+  test("buildStateMarkdown produces correct active milestone from WorkflowDbState", async () => {
     base = createFixtureBase();
     openDatabase(":memory:");
 

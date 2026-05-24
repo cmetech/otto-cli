@@ -21,7 +21,7 @@ import { parseUnitId } from "./unit-id.js";
 import { isDbAvailable, getTask, getSliceTasks, getMilestoneSlices } from "./db.js";
 import type { TaskRow } from "./db-task-slice-rows.js";
 import { loadEffectiveGSDPreferences } from "./preferences.js";
-import type { GSDPreferences } from "./preferences-types.js";
+import type { WorkflowPreferences } from "./preferences-types.js";
 import { extractVerdict } from "./verdict-parser.js";
 import { isClosedStatus } from "./status-guards.js";
 import { loadFile } from "./files.js";
@@ -87,7 +87,7 @@ function getCurrentUnitCostStats(unitId: string): { unitCostUsd: number; rolling
 
 function resolveVerificationTargets(
   basePath: string,
-  prefs: GSDPreferences | undefined,
+  prefs: WorkflowPreferences | undefined,
   task: TaskRow | null,
   slice: SliceRow | null,
 ): VerificationTarget[] {

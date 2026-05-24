@@ -6,7 +6,7 @@ import {
   deriveState as defaultDeriveState,
   invalidateStateCache as defaultInvalidate,
 } from "../state.js";
-import type { GSDState } from "../types.js";
+import type { WorkflowDbState } from "../types.js";
 
 import {
   ReconciliationFailedError,
@@ -120,7 +120,7 @@ export async function reconcileBeforeDispatch(
 }
 
 async function detectAllDrift(
-  state: GSDState,
+  state: WorkflowDbState,
   ctx: DriftContext,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   registry: ReadonlyArray<DriftHandler<any>>,

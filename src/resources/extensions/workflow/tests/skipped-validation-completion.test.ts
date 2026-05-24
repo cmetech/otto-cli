@@ -18,7 +18,7 @@ import {
   upsertMilestonePlanning,
 } from "../db.ts";
 import { invalidateAllCaches } from "../cache.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 
 const COMPLETE_RULE = "completing-milestone → complete-milestone";
 
@@ -108,7 +108,7 @@ function findRule(name: string) {
 }
 
 function makeCtx(base: string): DispatchContext {
-  const state: GSDState = {
+  const state: WorkflowDbState = {
     phase: "completing-milestone",
     activeMilestone: { id: "M001", title: "Preference-skipped validation milestone" },
     activeSlice: null,

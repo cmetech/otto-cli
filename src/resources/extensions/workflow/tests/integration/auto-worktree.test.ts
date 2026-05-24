@@ -406,7 +406,7 @@ describe("auto-worktree lifecycle", () => {
     }
   });
 
-  test("#2482: throws GSDError when repo has no commits", () => {
+  test("#2482: throws WorkflowError when repo has no commits", () => {
     // Create a bare git init with no commits — HEAD is invalid
     tempDir = realpathSync(mkdtempSync(join(tmpdir(), "auto-wt-empty-")));
     run("git init", tempDir);
@@ -417,8 +417,8 @@ describe("auto-worktree lifecycle", () => {
       () => createAutoWorktree(tempDir, "M001"),
       (err: unknown) => {
         assert.ok(err instanceof Error, "should throw an Error");
-        assert.ok("code" in err, "should have a code property (GSDError)");
-        assert.strictEqual((err as { code: string }).code, "GSD_GIT_ERROR");
+        assert.ok("code" in err, "should have a code property (WorkflowError)");
+        assert.strictEqual((err as { code: string }).code, "GIT_ERROR");
         assert.ok(
           err.message.includes("repository has no commits yet"),
           `message should mention no commits, got: ${err.message}`,

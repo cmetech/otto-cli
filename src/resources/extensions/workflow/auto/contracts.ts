@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Auto Orchestration module interfaces and ADR-015 invariant adapter contracts.
 
-import type { GSDState } from "../types.js";
+import type { WorkflowDbState } from "../types.js";
 import type { MinimalModelRegistry } from "../context-budget.js";
 import type { AutoSession } from "./session.js";
 
@@ -25,10 +25,10 @@ export interface AutoStatus {
 export type AutoAdvanceResult =
   | { kind: "started" }
   | { kind: "resumed" }
-  | { kind: "advanced"; unit: UnitRef; stateSnapshot: GSDState }
-  | { kind: "skipped"; reason: string; stateSnapshot?: GSDState }
-  | { kind: "blocked"; reason: string; action: "pause" | "stop"; stateSnapshot?: GSDState }
-  | { kind: "stopped"; reason: string; stateSnapshot?: GSDState }
+  | { kind: "advanced"; unit: UnitRef; stateSnapshot: WorkflowDbState }
+  | { kind: "skipped"; reason: string; stateSnapshot?: WorkflowDbState }
+  | { kind: "blocked"; reason: string; action: "pause" | "stop"; stateSnapshot?: WorkflowDbState }
+  | { kind: "stopped"; reason: string; stateSnapshot?: WorkflowDbState }
   | { kind: "paused"; reason: string }
   | { kind: "error"; reason: string };
 
@@ -44,7 +44,7 @@ export interface AutoOrchestrationModule {
 
 export interface DispatchAdapter {
   decideNextUnit(input: {
-    stateSnapshot: GSDState;
+    stateSnapshot: WorkflowDbState;
     /** Optional live session context, forwarded to dispatch rules that need session-derived state. */
     session?: AutoSession;
     /** Mirrors `DispatchContext.structuredQuestionsAvailable` — "true"/"false" string per the dispatch contract. */
@@ -87,11 +87,11 @@ export interface RecoveryAdapter {
 }
 
 export type InvariantAdapterResult =
-  | { ok: true; reason?: string; stateSnapshot?: GSDState }
-  | { ok: false; reason: string; stateSnapshot?: GSDState };
+  | { ok: true; reason?: string; stateSnapshot?: WorkflowDbState }
+  | { ok: false; reason: string; stateSnapshot?: WorkflowDbState };
 
 export interface StateReconciliationAdapter {
-  reconcileBeforeDispatch(): Promise<InvariantAdapterResult & { stateSnapshot?: GSDState }>;
+  reconcileBeforeDispatch(): Promise<InvariantAdapterResult & { stateSnapshot?: WorkflowDbState }>;
 }
 
 export interface ToolContractAdapter {

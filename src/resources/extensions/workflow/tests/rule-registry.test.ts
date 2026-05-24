@@ -17,7 +17,7 @@ import {
 import type { UnifiedRule } from "../rule-types.ts";
 import type { DispatchAction, DispatchContext } from "../auto-dispatch.ts";
 import { DISPATCH_RULES, getDispatchRuleNames } from "../auto-dispatch.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 
 // ─── Mock Rule Factories ──────────────────────────────────────────────────
 

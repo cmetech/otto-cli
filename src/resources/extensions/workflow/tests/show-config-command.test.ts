@@ -5,7 +5,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { GSDConfigOverlay, formatConfigText } from "../config-overlay.ts";
+import { ConfigOverlay, formatConfigText } from "../config-overlay.ts";
 import { handleCoreCommand } from "../commands/handlers/core.ts";
 
 const theme = {
@@ -13,10 +13,10 @@ const theme = {
   fg: (_name: string, s: string) => s,
 };
 
-test("GSDConfigOverlay renders and responds to input", () => {
+test("ConfigOverlay renders and responds to input", () => {
   let renderRequests = 0;
   let closed = false;
-  const overlay = new GSDConfigOverlay(
+  const overlay = new ConfigOverlay(
     { requestRender: () => { renderRequests++; } },
     theme as any,
     () => { closed = true; },

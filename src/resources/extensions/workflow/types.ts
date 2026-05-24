@@ -235,7 +235,7 @@ export interface RequirementCounts {
   total: number;
 }
 
-export interface GSDState {
+export interface WorkflowDbState {
   activeMilestone: ActiveRef | null;
   activeSlice: ActiveRef | null;
   activeTask: ActiveRef | null;
@@ -256,10 +256,10 @@ export interface GSDState {
 }
 
 // ─── Ecosystem Extension API Types ────────────────────────────────────
-// Pure data type — no runtime deps. The GSDExtensionAPI interface itself
+// Pure data type — no runtime deps. The WorkflowExtensionAPI interface itself
 // lives in ecosystem/gsd-extension-api.ts (it imports from pi).
 
-export interface GSDActiveUnit {
+export interface ActiveUnit {
   milestoneId: string;
   milestoneTitle: string;
   sliceId: string;

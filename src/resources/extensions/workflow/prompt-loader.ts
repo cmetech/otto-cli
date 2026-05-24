@@ -17,7 +17,7 @@
  */
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
-import { GSDError, GSD_PARSE_ERROR } from "./errors.js";
+import { WorkflowError, PARSE_ERROR } from "./errors.js";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { logWarning } from "./workflow-logger.js";
@@ -198,8 +198,8 @@ export function loadPrompt(name: string, vars: Record<string, string> = {}): str
       .map(m => m.slice(2, -2))
       .filter(key => !(key in effectiveVars));
     if (missing.length > 0) {
-      throw new GSDError(
-        GSD_PARSE_ERROR,
+      throw new WorkflowError(
+        PARSE_ERROR,
         `loadPrompt("${name}"): template declares {{${missing.join("}}, {{")}}} but no value was provided. ` +
         `This usually means the extension code in memory is older than the template on disk. ` +
         `Restart pi to reload the extension.`,

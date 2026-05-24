@@ -7,7 +7,7 @@ import { isDbAvailable, openDatabase, getMilestoneSlices, getSliceTasks } from "
 import { resolveMilestoneFile, resolveMilestonePath, resolveSliceFile, resolveSlicePath, resolveTaskFile, resolveTasksDir, milestonesDir, gsdRoot, relMilestoneFile, relSliceFile, relTaskFile, relSlicePath, relGsdRootFile, resolveGsdRootFile, relMilestonePath, resolveGsdPathContract } from "./paths.js";
 import { deriveState, isMilestoneComplete } from "./state.js";
 import { invalidateAllCaches } from "./cache.js";
-import { loadEffectiveGSDPreferences, type GSDPreferences } from "./preferences.js";
+import { loadEffectiveGSDPreferences, type WorkflowPreferences } from "./preferences.js";
 import { isClosedStatus } from "./status-guards.js";
 
 import type { DoctorIssue, DoctorIssueCode, DoctorReport } from "./doctor-types.js";
@@ -28,7 +28,7 @@ export { computeProgressScore, computeProgressScoreWithContext, formatProgressLi
 
 export { validateTitle } from "./validation.js";
 
-function validatePreferenceShape(preferences: GSDPreferences): string[] {
+function validatePreferenceShape(preferences: WorkflowPreferences): string[] {
   const issues: string[] = [];
   const listFields = ["always_use_skills", "prefer_skills", "avoid_skills", "custom_instructions"] as const;
   for (const field of listFields) {

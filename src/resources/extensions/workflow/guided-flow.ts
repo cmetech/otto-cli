@@ -7,7 +7,7 @@
  */
 
 import type { ExtensionAPI, ExtensionContext, ExtensionCommandContext } from "@gsd/pi-coding-agent";
-import type { GSDState } from "./types.js";
+import type { WorkflowDbState } from "./types.js";
 import { showNextAction } from "../shared/tui.js";
 import { loadFile, saveFile } from "./files.js";
 import { isDbAvailable, getMilestone, getMilestoneSlices } from "./db.js";
@@ -211,7 +211,7 @@ export function isGhostMilestoneByScope(scope: MilestoneScope): boolean {
   return isGhostMilestone(scope.workspace.projectRoot, scope.milestoneId);
 }
 
-function needsPlanV2Gate(state: GSDState): boolean {
+function needsPlanV2Gate(state: WorkflowDbState): boolean {
   return state.phase === "executing"
     || state.phase === "summarizing"
     || state.phase === "validating-milestone"
@@ -223,7 +223,7 @@ type PlanV2GateDecision = "pass" | "recover-missing-context" | "block";
 function runPlanV2Gate(
   ctx: ExtensionContext,
   basePath: string,
-  state: GSDState,
+  state: WorkflowDbState,
 ): PlanV2GateDecision {
   const prefs = loadEffectiveGSDPreferences(basePath)?.preferences;
   const uokFlags = resolveUokFlags(prefs);

@@ -27,7 +27,7 @@ import {
   KNOWN_PREFERENCE_KEYS,
   MODE_DEFAULTS,
   type WorkflowMode,
-  type GSDPreferences,
+  type WorkflowPreferences,
   type LoadedGSDPreferences,
   type SkillResolution,
   type SkillDiscoveryMode,
@@ -43,10 +43,10 @@ import { gsdHome } from "./home.js";
 
 export type {
   WorkflowMode,
-  GSDSkillRule,
-  GSDPhaseModelConfig,
-  GSDModelConfig,
-  GSDModelConfigV2,
+  SkillRule,
+  PhaseModelConfig,
+  ModelConfig,
+  ModelConfigV2,
   ResolvedModelConfig,
   SkillDiscoveryMode,
   AutoSupervisorConfig,
@@ -57,7 +57,7 @@ export type {
   CodebaseMapPreferences,
   ClaudeCodeMcpPerModelEntry,
   ClaudeCodeMcpConfig,
-  GSDPreferences,
+  WorkflowPreferences,
   LoadedGSDPreferences,
   SkillResolution,
   SkillResolutionReport,
@@ -145,7 +145,7 @@ export function getProjectGSDPreferencesPath(basePath?: string): string {
  *
  * Accepts:
  *   - a `LoadedGSDPreferences` wrapper (`{ path, scope, preferences, ... }`)
- *   - a bare `GSDPreferences` object
+ *   - a bare `WorkflowPreferences` object
  *   - `null` / `undefined` / any malformed value
  *
  * Returns a fresh `Record<string, unknown>` so callers may spread additional
@@ -160,7 +160,7 @@ export function normalizePreferencesShape(
   if (!loaded || typeof loaded !== "object") return {};
   const obj = loaded as Record<string, unknown>;
   // Wrapper shape (`LoadedGSDPreferences`) carries the nested preferences
-  // under a `.preferences` key. Bare `GSDPreferences` never declares one
+  // under a `.preferences` key. Bare `WorkflowPreferences` never declares one
   // (see preferences-types.ts), so the presence of that key is a reliable
   // discriminator. Tolerate `preferences: undefined` by falling through to
   // the empty-object return below.
@@ -221,7 +221,7 @@ export function loadEffectiveGSDPreferences(
     );
     result = {
       ...result,
-      preferences: mergePreferences(profileDefaults as GSDPreferences, result.preferences),
+      preferences: mergePreferences(profileDefaults as WorkflowPreferences, result.preferences),
     };
   }
 
@@ -249,7 +249,7 @@ function stripInheritedPlanningDepth(
   // planning_depth is a project bootstrap routing flag, not a user-global
   // preference. A global ~/.loop24/PREFERENCES.md value should not make every
   // fresh repo behave like `/loop24 new-project --deep`.
-  const preferences: GSDPreferences = { ...loaded.preferences };
+  const preferences: WorkflowPreferences = { ...loaded.preferences };
   delete preferences.planning_depth;
   return { ...loaded, preferences };
 }
@@ -283,7 +283,7 @@ export function _resetParseWarningFlag(): void {
 }
 
 /** @internal Exported for testing only */
-export function parsePreferencesMarkdown(content: string): GSDPreferences | null {
+export function parsePreferencesMarkdown(content: string): WorkflowPreferences | null {
   // Use indexOf instead of [\s\S]*? regex to avoid backtracking (#468)
   const startMarker = content.startsWith('---\r\n') ? '---\r\n' : '---\n';
   if (content.startsWith(startMarker)) {
@@ -312,25 +312,25 @@ export function parsePreferencesMarkdown(content: string): GSDPreferences | null
 }
 
 let _warnedFrontmatterParse = false;
-function parseFrontmatterBlock(frontmatter: string): GSDPreferences {
+function parseFrontmatterBlock(frontmatter: string): WorkflowPreferences {
   try {
     const parsed = parseYaml(frontmatter);
     if (typeof parsed !== 'object' || parsed === null) {
-      return {} as GSDPreferences;
+      return {} as WorkflowPreferences;
     }
-    return parsed as GSDPreferences;
+    return parsed as WorkflowPreferences;
   } catch (e) {
     // Warn at most once per session to avoid flooding TUI (#3376)
     if (!_warnedFrontmatterParse) {
       _warnedFrontmatterParse = true;
       logWarning("guided", `YAML parse error in preferences frontmatter (suppressing further): ${(e as Error).message}`);
     }
-    return {} as GSDPreferences;
+    return {} as WorkflowPreferences;
   }
 }
 
 /**
- * Parse heading+list format into a nested object, then cast to GSDPreferences.
+ * Parse heading+list format into a nested object, then cast to WorkflowPreferences.
  * Handles markdown like:
  *   ## Git
  *   - isolation: none
@@ -338,7 +338,7 @@ function parseFrontmatterBlock(frontmatter: string): GSDPreferences {
  *   ## Models
  *   - planner: sonnet
  */
-function parseHeadingListFormat(content: string): GSDPreferences {
+function parseHeadingListFormat(content: string): WorkflowPreferences {
   const result: Record<string, string[]> = {};
   let currentSection: string | null = null;
 
@@ -391,7 +391,7 @@ function parseHeadingListFormat(content: string): GSDPreferences {
     }
   }
 
-  return typed as GSDPreferences;
+  return typed as WorkflowPreferences;
 }
 
 // ─── Merging ────────────────────────────────────────────────────────────────
@@ -400,13 +400,13 @@ function parseHeadingListFormat(content: string): GSDPreferences {
  * Apply mode defaults as the lowest-priority layer.
  * Mode defaults fill in undefined fields; any explicit user value wins.
  */
-export function applyModeDefaults(mode: WorkflowMode, prefs: GSDPreferences): GSDPreferences {
+export function applyModeDefaults(mode: WorkflowMode, prefs: WorkflowPreferences): WorkflowPreferences {
   const defaults = MODE_DEFAULTS[mode];
   if (!defaults) return prefs;
   return mergePreferences(defaults, prefs);
 }
 
-function mergePreferences(base: GSDPreferences, override: GSDPreferences): GSDPreferences {
+function mergePreferences(base: WorkflowPreferences, override: WorkflowPreferences): WorkflowPreferences {
   return {
     // Preserve validated preference keys that do not need custom merge logic.
     // The explicit fields below still own defaults, arrays, and deep merges.
@@ -570,7 +570,7 @@ function mergePreDispatchHooks(
 
 // ─── System Prompt Rendering ──────────────────────────────────────────────────
 
-export function renderPreferencesForSystemPrompt(preferences: GSDPreferences, resolutions?: Map<string, SkillResolution>): string {
+export function renderPreferencesForSystemPrompt(preferences: WorkflowPreferences, resolutions?: Map<string, SkillResolution>): string {
   const validated = validatePreferences(preferences);
   const lines: string[] = ["## GSD Skill Preferences"];
 
@@ -685,7 +685,7 @@ export function getIsolationMode(basePath?: string): "none" | "worktree" | "bran
   return "none"; // default — no isolation, work on current branch
 }
 
-export function resolveParallelConfig(prefs: GSDPreferences | undefined): import("./types.js").ParallelConfig {
+export function resolveParallelConfig(prefs: WorkflowPreferences | undefined): import("./types.js").ParallelConfig {
   return {
     enabled: prefs?.parallel?.enabled ?? false,
     max_workers: Math.max(1, Math.min(4, prefs?.parallel?.max_workers ?? 2)),

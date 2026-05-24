@@ -21,7 +21,7 @@ import { execFileSync } from 'node:child_process';
 //   * readdir-backed lookups — keyed on the directory's mtime, so any add/
 //     remove/rename invalidates the cache automatically.
 
-const GSD_ROOT_TTL_MS = 30_000;
+const ROOT_TTL_MS = 30_000;
 const MAX_CACHE_ENTRIES = 256;
 const gsdRootCache = new Map<string, { value: string; expiresAt: number }>();
 
@@ -47,7 +47,7 @@ function cachedGsdRoot(projectDir: string): string | null {
 }
 
 function rememberGsdRoot(projectDir: string, value: string): void {
-  setBoundedCache(gsdRootCache, projectDir, { value, expiresAt: Date.now() + GSD_ROOT_TTL_MS });
+  setBoundedCache(gsdRootCache, projectDir, { value, expiresAt: Date.now() + ROOT_TTL_MS });
 }
 
 interface MtimeEntry<V> { mtimeMs: number; value: V }

@@ -9,7 +9,7 @@ import { join } from "node:path";
 
 import { visibleWidth } from "@gsd/pi-tui";
 import { appendNotification, initNotificationStore, _resetNotificationStore } from "../notification-store.ts";
-import { GSDNotificationOverlay, notificationOverlayOptions } from "../notification-overlay.ts";
+import { NotificationOverlay, notificationOverlayOptions } from "../notification-overlay.ts";
 import { wrapVisibleText } from "../tui/render-kit.ts";
 
 const fakeTheme = {
@@ -88,7 +88,7 @@ describe("notification overlay — wrapText", () => {
     initNotificationStore(dir);
     appendNotification("A long notification with " + "x".repeat(180), "warning");
 
-    const overlay = new GSDNotificationOverlay({ requestRender() {} }, fakeTheme as any, () => {});
+    const overlay = new NotificationOverlay({ requestRender() {} }, fakeTheme as any, () => {});
     t.after(() => overlay.dispose());
 
     for (const width of [40, 80, 120]) {
@@ -117,7 +117,7 @@ describe("notification overlay — wrapText", () => {
       appendNotification(`notification-${i + 1} with enough text to exercise clipping`, "warning");
     }
 
-    const overlay = new GSDNotificationOverlay({ requestRender() {} }, fakeTheme as any, () => {});
+    const overlay = new NotificationOverlay({ requestRender() {} }, fakeTheme as any, () => {});
     t.after(() => overlay.dispose());
 
     const rendered = overlay.render(100);

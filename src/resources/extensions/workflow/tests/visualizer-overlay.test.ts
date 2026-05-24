@@ -13,7 +13,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { GSDVisualizerOverlay, TAB_COUNT } from "../visualizer-overlay.ts";
+import { VisualizerOverlay, TAB_COUNT } from "../visualizer-overlay.ts";
 
 function makeTui() {
   const renders: number[] = [];
@@ -34,7 +34,7 @@ const mockTheme = {
 
 function makeOverlay(t: { after: (fn: () => void) => void }, onClose: () => void = () => {}) {
   const { tui, renders } = makeTui();
-  const overlay = new GSDVisualizerOverlay(tui as any, mockTheme, onClose);
+  const overlay = new VisualizerOverlay(tui as any, mockTheme, onClose);
   t.after(() => overlay.dispose());
   return { overlay, renders };
 }
@@ -341,7 +341,7 @@ test("overlay scrollOffsets array has one slot per tab", (t) => {
 
 test("overlay dispose is idempotent and flips the disposed flag", (t) => {
   const { tui } = makeTui();
-  const overlay = new GSDVisualizerOverlay(tui as any, mockTheme, () => {});
+  const overlay = new VisualizerOverlay(tui as any, mockTheme, () => {});
   // Ensure constructor-owned resources are released even if an assertion
   // below fails — dispose() is documented as idempotent, so a teardown
   // call after the body's explicit dispose is a no-op.

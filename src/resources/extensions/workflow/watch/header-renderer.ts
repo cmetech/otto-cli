@@ -12,7 +12,7 @@ import { splashPalette } from "./splash-palette.js";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const GSD_LOGO: readonly string[] = [
+const LOGO: readonly string[] = [
   "   ██████╗ ███████╗██████╗ ",
   "  ██╔════╝ ██╔════╝██╔══██╗",
   "  ██║  ███╗███████╗██║  ██║",
@@ -244,7 +244,7 @@ export function renderHeaderLines(data: HeaderData, width: number): string[] {
   if (width < 40) return renderStackedHeader(data, width);
   const outerWidth = width;
   const innerWidth = Math.max(0, outerWidth - PANEL_INDENT.length);
-  const logoLines = GSD_LOGO;
+  const logoLines = LOGO;
   const logoWidth = Math.max(...logoLines.map((line) => visibleWidth(line)));
   // Plain spaces, not a `│` divider — a vertical bar here would be dragged
   // into every copied logo row.

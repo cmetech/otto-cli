@@ -280,24 +280,24 @@ export interface PlanningPhaseFile {
 // Mirror current runtime shapes so deriveState() works on migrated output.
 // ═══════════════════════════════════════════════════════════════════════════
 
-export interface GSDProject {
-  milestones: GSDMilestone[];
+export interface WorkflowProject {
+  milestones: WorkflowMilestone[];
   /** Raw PROJECT.md text (pass through from old format) */
   projectContent: string;
-  requirements: GSDRequirement[];
+  requirements: WorkflowRequirement[];
   /** Empty or pass-through from old project key decisions */
   decisionsContent: string;
   /** Counts surfaced in preview/audit for legacy inputs that used to be skipped. */
-  migrationInputs?: GSDMigrationInputs;
+  migrationInputs?: MigrationInputs;
 }
 
-export interface GSDMigrationInputs {
+export interface MigrationInputs {
   milestonePhaseDirs: number;
   decisions: number;
   seeds: number;
 }
 
-export interface GSDMilestone {
+export interface WorkflowMilestone {
   /** e.g. "M001", "M002" */
   id: string;
   /** From old milestone section title or roadmap H1 */
@@ -306,14 +306,14 @@ export interface GSDMilestone {
   vision: string;
   /** Empty [] if none found */
   successCriteria: string[];
-  slices: GSDSlice[];
+  slices: WorkflowSlice[];
   /** Consolidated research blob, null if no research */
   research: string | null;
   /** Empty [] — old format has no boundary map equivalent */
-  boundaryMap: GSDBoundaryEntry[];
+  boundaryMap: BoundaryEntry[];
 }
 
-export interface GSDSlice {
+export interface WorkflowSlice {
   /** e.g. "S01", "S02" */
   id: string;
   /** Titlecased from phase slug */
@@ -328,14 +328,14 @@ export interface GSDSlice {
   demo: string;
   /** Same as demo or phase slug */
   goal: string;
-  tasks: GSDTask[];
+  tasks: WorkflowTask[];
   /** Per-phase research content, null if none */
   research: string | null;
   /** Only populated if done */
-  summary: GSDSliceSummaryData | null;
+  summary: SliceSummaryData | null;
 }
 
-export interface GSDTask {
+export interface WorkflowTask {
   /** e.g. "T01", "T02" */
   id: string;
   /** From plan frontmatter or phase slug + plan number */
@@ -351,10 +351,10 @@ export interface GSDTask {
   /** From plan frontmatter must_haves.truths */
   mustHaves: string[];
   /** Only populated if done */
-  summary: GSDTaskSummaryData | null;
+  summary: TaskSummaryData | null;
 }
 
-export interface GSDRequirement {
+export interface WorkflowRequirement {
   /** e.g. "R001" */
   id: string;
   title: string;
@@ -369,7 +369,7 @@ export interface GSDRequirement {
   primarySlice: string;
 }
 
-export interface GSDSliceSummaryData {
+export interface SliceSummaryData {
   /** From last plan summary's completed field */
   completedAt: string;
   provides: string[];
@@ -381,7 +381,7 @@ export interface GSDSliceSummaryData {
   whatHappened: string;
 }
 
-export interface GSDTaskSummaryData {
+export interface TaskSummaryData {
   completedAt: string;
   provides: string[];
   keyFiles: string[];
@@ -390,7 +390,7 @@ export interface GSDTaskSummaryData {
   whatHappened: string;
 }
 
-export interface GSDBoundaryEntry {
+export interface BoundaryEntry {
   fromSlice: string;
   toSlice: string;
   produces: string;

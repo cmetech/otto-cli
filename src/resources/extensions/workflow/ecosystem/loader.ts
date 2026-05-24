@@ -1,5 +1,5 @@
 // LOOP24 — Ecosystem extension loader for ./.loop24/extensions/
-// Discovers and registers single-file extensions that consume GSDExtensionAPI.
+// Discovers and registers single-file extensions that consume WorkflowExtensionAPI.
 // Trust-gated (mirrors pi's `.pi/extensions/` model) and isolated from pi's
 // own loader chain — handlers run in the agent's own dispatch step, not pi's.
 
@@ -13,8 +13,8 @@ import { getAgentDir } from "@gsd/pi-coding-agent";
 import { logWarning } from "../workflow-logger.js";
 import {
   createWorkflowExtensionAPI,
-  type GSDEcosystemBeforeAgentStartHandler,
-  type GSDExtensionAPI,
+  type EcosystemBeforeAgentStartHandler,
+  type WorkflowExtensionAPI,
 } from "./extension-api.js";
 
 // ─── Trust check (inlined; pi does not export isProjectTrusted from its
@@ -49,7 +49,7 @@ let _untrustedWarned = false;
  */
 export function loadEcosystemExtensions(
   pi: ExtensionAPI,
-  sharedHandlers: GSDEcosystemBeforeAgentStartHandler[],
+  sharedHandlers: EcosystemBeforeAgentStartHandler[],
   cwd: string = process.cwd(),
 ): Promise<void> {
   if (_readyPromise) return _readyPromise;
@@ -76,7 +76,7 @@ export function _resetEcosystemLoader(): void {
 
 async function _loadEcosystemExtensionsImpl(
   pi: ExtensionAPI,
-  sharedHandlers: GSDEcosystemBeforeAgentStartHandler[],
+  sharedHandlers: EcosystemBeforeAgentStartHandler[],
   cwd: string,
 ): Promise<void> {
   const extDir = path.join(cwd, ".gsd", "extensions");
@@ -122,7 +122,7 @@ async function _loadEcosystemExtensionsImpl(
 
   // The wrapper api is built once per loader run and shared by all extensions
   // so they all read from the same module-level snapshot.
-  const api: GSDExtensionAPI = createWorkflowExtensionAPI(pi, sharedHandlers);
+  const api: WorkflowExtensionAPI = createWorkflowExtensionAPI(pi, sharedHandlers);
 
   for (const entry of entries) {
     await _loadOne(extDir, realExtDir, entry, api);
@@ -133,7 +133,7 @@ async function _loadOne(
   extDir: string,
   realExtDir: string,
   entry: string,
-  api: GSDExtensionAPI,
+  api: WorkflowExtensionAPI,
 ): Promise<void> {
   const fullPath = path.join(extDir, entry);
 

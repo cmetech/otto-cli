@@ -55,7 +55,7 @@ function formatCharCount(chars: number): string {
   return `${chars} chars`;
 }
 
-export class GSDDashboardOverlay {
+export class DashboardOverlay {
   private tui: { requestRender: () => void };
   private theme: Theme;
   private onClose: () => void;

@@ -271,7 +271,7 @@ export function resolveTaskJsonFiles(tasksDir: string, suffix: string): string[]
 
 // ─── Full Path Builders ────────────────────────────────────────────────────
 
-export const GSD_ROOT_FILES = {
+export const ROOT_FILES = {
   PROJECT: "PROJECT.md",
   DECISIONS: "DECISIONS.md",
   QUEUE: "QUEUE.md",
@@ -282,9 +282,9 @@ export const GSD_ROOT_FILES = {
   CODEBASE: "CODEBASE.md",
 } as const;
 
-export type GSDRootFileKey = keyof typeof GSD_ROOT_FILES;
+export type RootFileKey = keyof typeof ROOT_FILES;
 
-const LEGACY_GSD_ROOT_FILES: Record<GSDRootFileKey, string> = {
+const LEGACY_GSD_ROOT_FILES: Record<RootFileKey, string> = {
   PROJECT: "project.md",
   DECISIONS: "decisions.md",
   QUEUE: "queue.md",
@@ -563,17 +563,17 @@ export function resolveRuntimeFile(basePath: string): string {
   return join(gsdRoot(basePath), "RUNTIME.md");
 }
 
-export function resolveGsdRootFile(basePath: string, key: GSDRootFileKey): string {
+export function resolveGsdRootFile(basePath: string, key: RootFileKey): string {
   const root = gsdRoot(basePath);
-  const canonical = join(root, GSD_ROOT_FILES[key]);
+  const canonical = join(root, ROOT_FILES[key]);
   if (existsSync(canonical)) return canonical;
   const legacy = join(root, LEGACY_GSD_ROOT_FILES[key]);
   if (existsSync(legacy)) return legacy;
   return canonical;
 }
 
-export function relGsdRootFile(key: GSDRootFileKey): string {
-  return `.gsd/${GSD_ROOT_FILES[key]}`;
+export function relGsdRootFile(key: RootFileKey): string {
+  return `.gsd/${ROOT_FILES[key]}`;
 }
 
 /**

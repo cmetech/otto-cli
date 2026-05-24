@@ -5,7 +5,7 @@ import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync, realpathSync
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { GSDError } from "../../errors.js";
+import { WorkflowError } from "../../errors.js";
 import { mergeMilestoneToMain } from "../../auto-worktree.ts";
 
 function run(cmd: string, cwd: string): string {
@@ -68,7 +68,7 @@ test("mergeMilestoneToMain preserves milestone worktree when pre-teardown dirty 
     caught = err;
   }
 
-  assert.ok(caught instanceof GSDError, "expected dirty pre-teardown guard to throw GSDError");
+  assert.ok(caught instanceof WorkflowError, "expected dirty pre-teardown guard to throw WorkflowError");
   assert.match(String((caught as Error).message), /still has uncommitted changes after squash merge/i);
   assert.equal(existsSync(worktreePath), true, "worktree directory should be preserved on pre-teardown failure");
 

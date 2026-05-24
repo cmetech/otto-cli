@@ -23,7 +23,7 @@ const DEPTH_VERIFICATION_MILESTONE_RE = /depth_verification[_-](M\d+(?:-[a-z0-9]
  * Path segment that identifies .loop24/ planning artifacts.
  * Writes to these paths are allowed during queue mode.
  */
-const GSD_DIR_RE = /(^|[/\\])\.gsd([/\\]|$)/;
+const DIR_RE = /(^|[/\\])\.gsd([/\\]|$)/;
 
 /**
  * Read-only tool names that are always safe during queue mode.
@@ -625,7 +625,7 @@ export function shouldBlockQueueExecutionInSnapshot(
 
   // write/edit — allow if targeting .loop24/ planning artifacts
   if (toolName === "write" || toolName === "edit") {
-    if (GSD_DIR_RE.test(input)) return { block: false };
+    if (DIR_RE.test(input)) return { block: false };
     return {
       block: true,
       reason: `Blocked: /gsd queue is a planning tool — it creates milestones, not executes work. ` +

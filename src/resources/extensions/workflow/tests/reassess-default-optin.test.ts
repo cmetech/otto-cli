@@ -19,8 +19,8 @@ import {
 import { buildPlanSlicePrompt } from "../auto-prompts.ts";
 import { registerDbTools } from "../bootstrap/db-tools.ts";
 import { resolveProfileDefaults } from "../preferences-models.ts";
-import type { GSDState } from "../types.ts";
-import type { GSDPreferences } from "../preferences.ts";
+import type { WorkflowDbState } from "../types.ts";
+import type { WorkflowPreferences } from "../preferences.ts";
 
 const REASSESS_RULE_NAME = "reassess-roadmap (post-completion)";
 
@@ -30,8 +30,8 @@ function makeIsolatedBase(): string {
   return base;
 }
 
-function makeCtx(prefs: GSDPreferences | undefined, basePath: string): DispatchContext {
-  const state: GSDState = {
+function makeCtx(prefs: WorkflowPreferences | undefined, basePath: string): DispatchContext {
+  const state: WorkflowDbState = {
     phase: "executing",
     activeMilestone: { id: "M001", title: "Test" },
     activeSlice: { id: "S01", title: "First" },
@@ -50,7 +50,7 @@ function reassessRule() {
   return rule!;
 }
 
-const guardCases: Array<{ name: string; prefs: GSDPreferences | undefined; message?: string }> = [
+const guardCases: Array<{ name: string; prefs: WorkflowPreferences | undefined; message?: string }> = [
   {
     name: "prefs is undefined (new default)",
     prefs: undefined,
@@ -58,15 +58,15 @@ const guardCases: Array<{ name: string; prefs: GSDPreferences | undefined; messa
   },
   {
     name: "prefs.phases is undefined",
-    prefs: {} as GSDPreferences,
+    prefs: {} as WorkflowPreferences,
   },
   {
     name: "phases.reassess_after_slice is explicitly false",
-    prefs: { phases: { reassess_after_slice: false } } as unknown as GSDPreferences,
+    prefs: { phases: { reassess_after_slice: false } } as unknown as WorkflowPreferences,
   },
   {
     name: "phases.skip_reassess is true (short-circuit guard preserved)",
-    prefs: { phases: { skip_reassess: true, reassess_after_slice: true } } as unknown as GSDPreferences,
+    prefs: { phases: { skip_reassess: true, reassess_after_slice: true } } as unknown as WorkflowPreferences,
     message: "skip_reassess must win over reassess_after_slice",
   },
 ];
@@ -100,7 +100,7 @@ test("ADR-003 §4: reassess-roadmap opt-in path dispatches after reassessment de
   });
   t.after(restoreChecker);
 
-  const prefs = { phases: { reassess_after_slice: true } } as unknown as GSDPreferences;
+  const prefs = { phases: { reassess_after_slice: true } } as unknown as WorkflowPreferences;
   const result: DispatchAction | null = await reassessRule().match(makeCtx(prefs, base));
 
   assert.deepStrictEqual(checkerCalls, [{ basePath: base, mid: "M001", activeSliceId: "S01" }]);

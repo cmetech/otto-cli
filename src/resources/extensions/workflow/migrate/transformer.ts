@@ -1,4 +1,4 @@
-// Migration transformer — converts parsed PlanningProject into GSDProject.
+// Migration transformer — converts parsed PlanningProject into WorkflowProject.
 // Pure function: no I/O, no side effects, no imports outside migrate/.
 
 import type {
@@ -11,14 +11,14 @@ import type {
   PlanningResearch,
   PlanningRequirement,
   PlanningMilestone,
-  GSDProject,
-  GSDMilestone,
-  GSDSlice,
-  GSDTask,
-  GSDRequirement,
-  GSDSliceSummaryData,
-  GSDTaskSummaryData,
-  GSDBoundaryEntry,
+  WorkflowProject,
+  WorkflowMilestone,
+  WorkflowSlice,
+  WorkflowTask,
+  WorkflowRequirement,
+  SliceSummaryData,
+  TaskSummaryData,
+  BoundaryEntry,
 } from './types.js';
 import { parseOldRequirements } from './parsers.js';
 
@@ -79,7 +79,7 @@ function consolidateResearch(files: PlanningResearch[]): string | null {
 
 // ─── Task Mapping ──────────────────────────────────────────────────────────
 
-function buildTaskSummary(summary: PlanningSummary): GSDTaskSummaryData {
+function buildTaskSummary(summary: PlanningSummary): TaskSummaryData {
   return {
     completedAt: summary.frontmatter.completed ?? '',
     provides: summary.frontmatter.provides ?? [],
@@ -89,7 +89,7 @@ function buildTaskSummary(summary: PlanningSummary): GSDTaskSummaryData {
   };
 }
 
-function mapTask(plan: PlanningPlan, index: number, summaries: Record<string, PlanningSummary>): GSDTask {
+function mapTask(plan: PlanningPlan, index: number, summaries: Record<string, PlanningSummary>): WorkflowTask {
   const summary = summaries[plan.planNumber];
   const done = summary !== undefined;
   return {
@@ -114,7 +114,7 @@ function buildTaskTitle(plan: PlanningPlan): string {
 
 // ─── Slice Mapping ─────────────────────────────────────────────────────────
 
-function buildSliceSummary(phase: PlanningPhase): GSDSliceSummaryData | null {
+function buildSliceSummary(phase: PlanningPhase): SliceSummaryData | null {
   // Aggregate from all summaries in the phase
   const summaryEntries = Object.values(phase.summaries);
   if (summaryEntries.length === 0) return null;
@@ -165,12 +165,12 @@ function mapSlice(
   entry: PlanningRoadmapEntry,
   index: number,
   prevSliceId: string | null,
-): GSDSlice {
+): WorkflowSlice {
   const sliceId = padId('S', index + 1);
   const slug = phase?.slug ?? entry.title;
   const demo = phase ? deriveDemo(phase, slug) : `unit tests prove ${entry.title} works`;
 
-  let tasks: GSDTask[] = [];
+  let tasks: WorkflowTask[] = [];
   if (phase) {
     const planNumbers = Object.keys(phase.plans).sort(comparePlanNumbers);
     tasks = planNumbers.map((pn, i) => mapTask(phase.plans[pn], i, phase.summaries));
@@ -216,11 +216,11 @@ function buildMilestoneFromEntries(
   entries: PlanningRoadmapEntry[],
   phases: Record<string, PlanningPhase>,
   research: PlanningResearch[],
-): GSDMilestone {
+): WorkflowMilestone {
   // Sort entries by phase number (float sort)
   const sorted = [...entries].sort((a, b) => a.number - b.number);
 
-  const slices: GSDSlice[] = [];
+  const slices: WorkflowSlice[] = [];
   for (let i = 0; i < sorted.length; i++) {
     const entry = sorted[i];
     const phase = findPhase(phases, entry.number, entry.title);
@@ -261,7 +261,7 @@ function normalizeRequirementId(id: string): string | null {
   return null;
 }
 
-function mapRequirements(reqs: PlanningRequirement[]): GSDRequirement[] {
+function mapRequirements(reqs: PlanningRequirement[]): WorkflowRequirement[] {
   let autoId = 0;
   const reservedIds = new Set(
     reqs
@@ -380,7 +380,7 @@ function extractDecisionTitle(fileName: string, content: string): string {
   return fileName.replace(/\.md$/i, '').replace(/^\d{4}-\d{2}-\d{2}-/, '').replace(/-/g, ' ');
 }
 
-function buildMilestoneFromLegacyMilestone(source: PlanningMilestone, index: number): GSDMilestone {
+function buildMilestoneFromLegacyMilestone(source: PlanningMilestone, index: number): WorkflowMilestone {
   const entries: PlanningRoadmapEntry[] = [];
   if (source.roadmap) {
     entries.push(...parseRoadmapEntries(source.roadmap));
@@ -419,8 +419,8 @@ function parseRoadmapEntries(content: string): PlanningRoadmapEntry[] {
 
 // ─── Main Entry Point ──────────────────────────────────────────────────────
 
-export function transformToGSD(parsed: PlanningProject): GSDProject {
-  const milestones: GSDMilestone[] = [];
+export function transformToGSD(parsed: PlanningProject): WorkflowProject {
+  const milestones: WorkflowMilestone[] = [];
 
   const roadmap = parsed.roadmap;
   const legacyMilestonesWithPhases = parsed.milestones.filter((milestone) => Object.keys(milestone.phases).length > 0);
@@ -434,7 +434,7 @@ export function transformToGSD(parsed: PlanningProject): GSDProject {
       milestones.push(buildMilestoneFromLegacyMilestone(sorted[mi], mi));
     }
   } else if (isMultiMilestone) {
-    // Multi-milestone mode: each roadmap milestone section → one GSDMilestone
+    // Multi-milestone mode: each roadmap milestone section → one WorkflowMilestone
     for (let mi = 0; mi < roadmap!.milestones.length; mi++) {
       const rm = roadmap!.milestones[mi];
       milestones.push(

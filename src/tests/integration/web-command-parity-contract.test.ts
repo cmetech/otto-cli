@@ -9,7 +9,7 @@ const {
   getBrowserSlashCommandTerminalNotice,
 } = await import("../../../web/lib/browser-slash-command-dispatch.ts")
 const {
-  GSDWorkspaceStore,
+  WorkspaceStore,
 } = await import("../../../web/lib/gsd-workspace-store.tsx")
 const {
   applyCommandSurfaceActionResult,
@@ -709,7 +709,7 @@ test("surface action state keeps compaction summaries inspectable", () => {
 })
 
 test("shared store session actions keep command-surface mutation state inspectable", async () => {
-  const store = new GSDWorkspaceStore("/tmp/project")
+  const store = new WorkspaceStore("/tmp/project")
 
   assert.equal(typeof store.switchSessionFromSurface, "function")
   assert.equal(typeof store.renameSessionFromSurface, "function")

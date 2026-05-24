@@ -24,7 +24,7 @@ import { GIT_NO_PROMPT_ENV } from "./git-constants.js";
  * With external state (symlink), these are a no-op in most cases,
  * but retained for backwards compatibility during migration.
  */
-const GSD_RUNTIME_PATTERNS = [
+const RUNTIME_PATTERNS = [
   ".gsd/activity/",
   ".gsd/audit/",
   ".gsd/forensics/",
@@ -257,7 +257,7 @@ export function ensureGitignore(
  * version control.
  */
 export function untrackRuntimeFiles(basePath: string): void {
-  const runtimePaths = GSD_RUNTIME_PATTERNS;
+  const runtimePaths = RUNTIME_PATTERNS;
 
   for (const pattern of runtimePaths) {
     // Use -r for directory patterns (trailing slash), strip the slash for the command

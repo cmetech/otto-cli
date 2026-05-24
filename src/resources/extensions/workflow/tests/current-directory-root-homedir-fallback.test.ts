@@ -10,7 +10,7 @@
  * The test monkey-patches process.cwd() to throw ENOENT, simulating a
  * deleted cwd. currentDirectoryRoot() must NOT propagate the raw error;
  * instead it falls back to homedir(), which validateDirectory correctly
- * rejects as "blocked", yielding GSDNoProjectError — the same controlled
+ * rejects as "blocked", yielding NoProjectError — the same controlled
  * error path handlers already know how to catch.
  *
  * The error message is also asserted to match validateDirectory(homedir()),
@@ -21,7 +21,7 @@ import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { homedir } from "node:os";
 
-import { currentDirectoryRoot, GSDNoProjectError } from "../commands/context.ts";
+import { currentDirectoryRoot, NoProjectError } from "../commands/context.ts";
 import { validateDirectory } from "../validate-directory.ts";
 
 describe("currentDirectoryRoot() homedir() fallback on deleted cwd", () => {
@@ -39,7 +39,7 @@ describe("currentDirectoryRoot() homedir() fallback on deleted cwd", () => {
     process.cwd = originalCwd;
   });
 
-  test("does not propagate ENOENT — throws GSDNoProjectError via homedir() fallback", () => {
+  test("does not propagate ENOENT — throws NoProjectError via homedir() fallback", () => {
     const expected = validateDirectory(homedir());
     assert.equal(expected.severity, "blocked", "homedir() itself should be blocked");
 
@@ -47,8 +47,8 @@ describe("currentDirectoryRoot() homedir() fallback on deleted cwd", () => {
       () => currentDirectoryRoot(),
       (err: unknown) => {
         assert.ok(
-          err instanceof GSDNoProjectError,
-          `expected GSDNoProjectError, got: ${err}`,
+          err instanceof NoProjectError,
+          `expected NoProjectError, got: ${err}`,
         );
         assert.equal(
           (err as Error).message,
@@ -57,7 +57,7 @@ describe("currentDirectoryRoot() homedir() fallback on deleted cwd", () => {
         );
         return true;
       },
-      "should throw GSDNoProjectError (homedir fallback validated), not raw ENOENT",
+      "should throw NoProjectError (homedir fallback validated), not raw ENOENT",
     );
   });
 });

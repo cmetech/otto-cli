@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Custom-engine iteration-data adapter for auto-mode loop.
 
-import type { GSDState } from "../types.js";
+import type { WorkflowDbState } from "../types.js";
 import type { IterationData } from "./types.js";
 
 export interface CustomEngineStep {
@@ -15,12 +15,12 @@ export interface BuildCustomEngineIterationDataInput {
   basePath: string;
   canonicalProjectRoot: string;
   currentMilestoneId?: string | null;
-  deriveState: (basePath: string) => Promise<GSDState>;
+  deriveState: (basePath: string) => Promise<WorkflowDbState>;
   logPostDerive: (details: {
     site: "custom-engine-gsd-state";
     basePath: string;
     canonicalProjectRoot: string;
-    derivedPhase: GSDState["phase"];
+    derivedPhase: WorkflowDbState["phase"];
     activeUnit: string | undefined;
   }) => void;
 }

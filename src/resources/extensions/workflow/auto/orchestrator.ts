@@ -2,7 +2,7 @@
 // File Purpose: Auto Orchestration module implementation and ADR-015 invariant pipeline owner.
 
 import type { AutoAdvanceResult, AutoOrchestrationModule, AutoOrchestratorDeps, AutoSessionContext, AutoStatus } from "./contracts.js";
-import type { GSDState } from "../types.js";
+import type { WorkflowDbState } from "../types.js";
 
 function now(): number {
   return Date.now();
@@ -18,7 +18,7 @@ function now(): number {
  */
 export const STUCK_WINDOW_SIZE = 6;
 
-function noRemainingUnitsReason(stateSnapshot: GSDState): string {
+function noRemainingUnitsReason(stateSnapshot: WorkflowDbState): string {
   if (stateSnapshot.phase === "complete") {
     return "all milestones complete";
   }

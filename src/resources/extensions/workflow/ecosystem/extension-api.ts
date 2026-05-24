@@ -31,20 +31,20 @@ export interface BeforeAgentStartEventResult {
   systemPrompt?: string;
 }
 
-import type { GSDActiveUnit, GSDState, Phase } from "../types.js";
+import type { ActiveUnit, WorkflowDbState, Phase } from "../types.js";
 import { isAgentActive, getCurrentPhase } from "../../shared/phase-state.js";
 import { logWarning } from "../workflow-logger.js";
 
 // ─── Public Interface ───────────────────────────────────────────────────
 
-export interface GSDExtensionAPI extends ExtensionAPI {
+export interface WorkflowExtensionAPI extends ExtensionAPI {
   /** Current workflow phase, or null if no project state. */
   getPhase(): Phase | null;
   /** Currently active milestone/slice/task triple, or null if none. */
-  getActiveUnit(): GSDActiveUnit | null;
+  getActiveUnit(): ActiveUnit | null;
 }
 
-export type GSDEcosystemBeforeAgentStartHandler = ExtensionHandler<
+export type EcosystemBeforeAgentStartHandler = ExtensionHandler<
   BeforeAgentStartEvent,
   BeforeAgentStartEventResult
 >;
@@ -71,7 +71,7 @@ export function mapAutoLoopPhase(raw: string): Phase | null {
   return AUTO_LOOP_PHASE_MAP[raw] ?? null;
 }
 
-function resolvePhase(state: GSDState | null): Phase | null {
+function resolvePhase(state: WorkflowDbState | null): Phase | null {
   if (!state) return null;
   if (isAgentActive()) {
     const raw = getCurrentPhase();
@@ -85,7 +85,7 @@ function resolvePhase(state: GSDState | null): Phase | null {
   return state.phase;
 }
 
-function resolveActiveUnit(state: GSDState | null): GSDActiveUnit | null {
+function resolveActiveUnit(state: WorkflowDbState | null): ActiveUnit | null {
   if (!state) return null;
   const m = state.activeMilestone;
   const s = state.activeSlice;
@@ -105,13 +105,13 @@ function resolveActiveUnit(state: GSDState | null): GSDActiveUnit | null {
 
 interface Snapshot {
   phase: Phase | null;
-  activeUnit: GSDActiveUnit | null;
+  activeUnit: ActiveUnit | null;
 }
 
 let _snapshot: Snapshot = { phase: null, activeUnit: null };
 
-/** Refresh the snapshot from a freshly derived GSDState (or null on failure). */
-export function updateSnapshot(state: GSDState | null): void {
+/** Refresh the snapshot from a freshly derived WorkflowDbState (or null on failure). */
+export function updateSnapshot(state: WorkflowDbState | null): void {
   _snapshot = {
     phase: resolvePhase(state),
     activeUnit: resolveActiveUnit(state),
@@ -122,7 +122,7 @@ export function getSnapshotPhase(): Phase | null {
   return _snapshot.phase;
 }
 
-export function getSnapshotActiveUnit(): GSDActiveUnit | null {
+export function getSnapshotActiveUnit(): ActiveUnit | null {
   return _snapshot.activeUnit;
 }
 
@@ -134,22 +134,22 @@ export function _resetSnapshot(): void {
 // ─── Wrapper factory ────────────────────────────────────────────────────
 
 /**
- * Build a GSDExtensionAPI by manually delegating every ExtensionAPI method
+ * Build a WorkflowExtensionAPI by manually delegating every ExtensionAPI method
  * to the underlying pi instance, except `on("before_agent_start", ...)`
  * which is captured into `sharedHandlers` for the workflow-owned dispatch.
  *
- * Uses `satisfies GSDExtensionAPI` (NOT `as`) so TypeScript catches drift
+ * Uses `satisfies WorkflowExtensionAPI` (NOT `as`) so TypeScript catches drift
  * when pi adds new ExtensionAPI methods.
  */
 export function createWorkflowExtensionAPI(
   pi: ExtensionAPI,
-  sharedHandlers: GSDEcosystemBeforeAgentStartHandler[],
-): GSDExtensionAPI {
+  sharedHandlers: EcosystemBeforeAgentStartHandler[],
+): WorkflowExtensionAPI {
   const wrapper = {
     // ── Event subscription (single intercept point) ────────────────────
     on(event: any, handler: any): void {
       if (event === "before_agent_start") {
-        sharedHandlers.push(handler as GSDEcosystemBeforeAgentStartHandler);
+        sharedHandlers.push(handler as EcosystemBeforeAgentStartHandler);
         return;
       }
       (pi.on as (e: any, h: any) => void)(event, handler);
@@ -226,8 +226,8 @@ export function createWorkflowExtensionAPI(
 
     // ── workflow-specific additions ─────────────────────────────────────────
     getPhase: (): Phase | null => _snapshot.phase,
-    getActiveUnit: (): GSDActiveUnit | null => _snapshot.activeUnit,
-  } satisfies GSDExtensionAPI;
+    getActiveUnit: (): ActiveUnit | null => _snapshot.activeUnit,
+  } satisfies WorkflowExtensionAPI;
 
   return wrapper;
 }

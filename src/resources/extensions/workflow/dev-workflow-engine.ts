@@ -14,7 +14,7 @@ import type {
   ReconcileResult,
   DisplayMetadata,
 } from "./engine-types.js";
-import type { GSDState } from "./types.js";
+import type { WorkflowDbState } from "./types.js";
 import type { DispatchAction, DispatchContext } from "./auto-dispatch.js";
 
 import { deriveState } from "./state.js";
@@ -58,7 +58,7 @@ export class DevWorkflowEngine implements WorkflowEngine {
   readonly engineId = "dev" as const;
 
   async deriveState(basePath: string): Promise<EngineState> {
-    const gsd: GSDState = await deriveState(basePath);
+    const gsd: WorkflowDbState = await deriveState(basePath);
     return {
       phase: gsd.phase,
       currentMilestoneId: gsd.activeMilestone?.id ?? null,
@@ -73,7 +73,7 @@ export class DevWorkflowEngine implements WorkflowEngine {
     state: EngineState,
     context: { basePath: string },
   ): Promise<EngineDispatchAction> {
-    const gsd = state.raw as GSDState;
+    const gsd = state.raw as WorkflowDbState;
     const mid = gsd.activeMilestone?.id ?? "";
     const midTitle = gsd.activeMilestone?.title ?? "";
     const loaded = loadEffectiveGSDPreferences();

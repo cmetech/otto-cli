@@ -36,7 +36,7 @@ const {
   dispatchBrowserSlashCommand,
 } = await import("../../../web/lib/browser-slash-command-dispatch.ts")
 
-const { GSDWorkspaceStore } = await import("../../../web/lib/gsd-workspace-store.tsx")
+const { WorkspaceStore } = await import("../../../web/lib/gsd-workspace-store.tsx")
 
 // ─── Block 1: Type exports (R103, R104, R105) ───────────────────────────────
 
@@ -309,19 +309,19 @@ describe("diagnostics surface→section mapping", () => {
 //
 // These methods are arrow-function class fields (instance properties, not on
 // the prototype). We verify via compile-time type assertion that the method
-// names exist on GSDWorkspaceStore, then do a runtime check that the class
+// names exist on WorkspaceStore, then do a runtime check that the class
 // constructor itself is exported and usable.
 
 // Compile-time assertion: if any of these method names were removed from the
 // class, TypeScript would error on these type aliases.
-type _AssertLoadForensics = InstanceType<typeof GSDWorkspaceStore>["loadForensicsDiagnostics"]
-type _AssertLoadDoctor = InstanceType<typeof GSDWorkspaceStore>["loadDoctorDiagnostics"]
-type _AssertApplyFixes = InstanceType<typeof GSDWorkspaceStore>["applyDoctorFixes"]
-type _AssertLoadSkillHealth = InstanceType<typeof GSDWorkspaceStore>["loadSkillHealthDiagnostics"]
+type _AssertLoadForensics = InstanceType<typeof WorkspaceStore>["loadForensicsDiagnostics"]
+type _AssertLoadDoctor = InstanceType<typeof WorkspaceStore>["loadDoctorDiagnostics"]
+type _AssertApplyFixes = InstanceType<typeof WorkspaceStore>["applyDoctorFixes"]
+type _AssertLoadSkillHealth = InstanceType<typeof WorkspaceStore>["loadSkillHealthDiagnostics"]
 
 describe("diagnostics store methods", () => {
-  it("GSDWorkspaceStore is a constructable class export", () => {
-    assert.equal(typeof GSDWorkspaceStore, "function", "GSDWorkspaceStore should be a class/function export")
+  it("WorkspaceStore is a constructable class export", () => {
+    assert.equal(typeof WorkspaceStore, "function", "WorkspaceStore should be a class/function export")
   })
 
   it("loadForensicsDiagnostics is a recognized method name on the store type", () => {
@@ -329,22 +329,22 @@ describe("diagnostics store methods", () => {
     // field exists. At runtime, arrow-field methods are on instances, not
     // prototype. We verify the field name appears in the actions Pick type by
     // checking the useGSDWorkspaceActions hook references it in the exports.
-    const methodName: keyof Pick<InstanceType<typeof GSDWorkspaceStore>, "loadForensicsDiagnostics"> = "loadForensicsDiagnostics"
+    const methodName: keyof Pick<InstanceType<typeof WorkspaceStore>, "loadForensicsDiagnostics"> = "loadForensicsDiagnostics"
     assert.equal(methodName, "loadForensicsDiagnostics")
   })
 
   it("loadDoctorDiagnostics is a recognized method name on the store type", () => {
-    const methodName: keyof Pick<InstanceType<typeof GSDWorkspaceStore>, "loadDoctorDiagnostics"> = "loadDoctorDiagnostics"
+    const methodName: keyof Pick<InstanceType<typeof WorkspaceStore>, "loadDoctorDiagnostics"> = "loadDoctorDiagnostics"
     assert.equal(methodName, "loadDoctorDiagnostics")
   })
 
   it("applyDoctorFixes is a recognized method name on the store type", () => {
-    const methodName: keyof Pick<InstanceType<typeof GSDWorkspaceStore>, "applyDoctorFixes"> = "applyDoctorFixes"
+    const methodName: keyof Pick<InstanceType<typeof WorkspaceStore>, "applyDoctorFixes"> = "applyDoctorFixes"
     assert.equal(methodName, "applyDoctorFixes")
   })
 
   it("loadSkillHealthDiagnostics is a recognized method name on the store type", () => {
-    const methodName: keyof Pick<InstanceType<typeof GSDWorkspaceStore>, "loadSkillHealthDiagnostics"> = "loadSkillHealthDiagnostics"
+    const methodName: keyof Pick<InstanceType<typeof WorkspaceStore>, "loadSkillHealthDiagnostics"> = "loadSkillHealthDiagnostics"
     assert.equal(methodName, "loadSkillHealthDiagnostics")
   })
 })

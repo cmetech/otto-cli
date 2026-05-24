@@ -18,7 +18,7 @@ import { createJiti } from '@mariozechner/jiti'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { homedir } from 'node:os'
-import type { GSDState } from './resources/extensions/workflow/types.js'
+import type { WorkflowDbState } from './resources/extensions/workflow/types.js'
 import { resolveBundledGsdExtensionModule } from './bundled-resource-path.js'
 
 const jiti = createJiti(fileURLToPath(import.meta.url), { interopDefault: true, debug: false })
@@ -81,7 +81,7 @@ async function loadExtensionModules() {
   const autoStartModule = await jiti.import(gsdExtensionPath('auto-start.ts'), {}) as any
   return {
     openProjectDbIfPresent: autoStartModule.openProjectDbIfPresent as (basePath: string) => Promise<void>,
-    deriveState: stateModule.deriveState as (basePath: string) => Promise<GSDState>,
+    deriveState: stateModule.deriveState as (basePath: string) => Promise<WorkflowDbState>,
     resolveDispatch: dispatchModule.resolveDispatch as (opts: any) => Promise<any>,
     readAllSessionStatuses: sessionModule.readAllSessionStatuses as (basePath: string) => any[],
     loadEffectiveGSDPreferences: prefsModule.loadEffectiveGSDPreferences as () => any,
@@ -91,7 +91,7 @@ async function loadExtensionModules() {
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface QuerySnapshot {
-  state: GSDState
+  state: WorkflowDbState
   next: {
     action: 'dispatch' | 'stop' | 'skip'
     unitType?: string

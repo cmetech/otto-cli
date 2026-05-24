@@ -52,7 +52,7 @@ function buildTabBarEntries(activeTab: number, filterText: string, capturesPendi
   });
 }
 
-export class GSDVisualizerOverlay {
+export class VisualizerOverlay {
   private tui: { requestRender: () => void };
   private theme: Theme;
   private onClose: () => void;

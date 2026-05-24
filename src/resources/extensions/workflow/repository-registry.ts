@@ -3,7 +3,7 @@
 
 import { execFileSync } from "node:child_process";
 import { isAbsolute, relative, resolve } from "node:path";
-import type { GSDPreferences, WorkspacePreferences, WorkspaceRepositoryPreference } from "./preferences-types.js";
+import type { WorkflowPreferences, WorkspacePreferences, WorkspaceRepositoryPreference } from "./preferences-types.js";
 import { GIT_NO_PROMPT_ENV } from "./git-constants.js";
 import { resolveGsdPathContract } from "./paths.js";
 
@@ -102,7 +102,7 @@ export function createRepositoryRegistry(
 
 export function createRepositoryRegistryFromPreferences(
   basePath: string,
-  preferences?: Pick<GSDPreferences, "workspace">,
+  preferences?: Pick<WorkflowPreferences, "workspace">,
 ): RepositoryRegistry {
   return createRepositoryRegistry(basePath, preferences?.workspace);
 }

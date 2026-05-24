@@ -7,9 +7,9 @@ import assert from "node:assert/strict";
 import { classifyFailure } from "../recovery-classification.js";
 import { reconcileBeforeDispatch } from "../state-reconciliation.js";
 import { compileUnitToolContract } from "../tool-contract.js";
-import type { GSDState } from "../types.js";
+import type { WorkflowDbState } from "../types.js";
 
-function makeState(overrides: Partial<GSDState> = {}): GSDState {
+function makeState(overrides: Partial<WorkflowDbState> = {}): WorkflowDbState {
   return {
     activeMilestone: { id: "M001", title: "Milestone" },
     activeSlice: null,

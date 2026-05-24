@@ -14,7 +14,7 @@ import type {
   ReadonlyFooterDataProvider,
   Theme,
 } from "@gsd/pi-coding-agent";
-import type { GSDState } from "./types.js";
+import type { WorkflowDbState } from "./types.js";
 import { getActiveHook } from "./post-unit-hooks.js";
 import { getLedger } from "./metrics.js";
 import { getErrorMessage } from "./error-utils.js";
@@ -187,7 +187,7 @@ export function unitPhaseLabel(unitType: string): string {
   }
 }
 
-function peekNext(unitType: string, state: GSDState): string {
+function peekNext(unitType: string, state: WorkflowDbState): string {
   // Show active hook info in progress display
   const activeHookState = getActiveHook();
   if (activeHookState) {
@@ -217,7 +217,7 @@ function peekNext(unitType: string, state: GSDState): string {
 /**
  * Describe what the next unit will be, based on current state.
  */
-export function describeNextUnit(state: GSDState): { label: string; description: string } {
+export function describeNextUnit(state: WorkflowDbState): { label: string; description: string } {
   const sid = state.activeSlice?.id;
   const sTitle = state.activeSlice?.title;
   const tid = state.activeTask?.id;
@@ -651,7 +651,7 @@ export function updateProgressWidget(
   ctx: ExtensionContext,
   unitType: string,
   unitId: string,
-  state: GSDState,
+  state: WorkflowDbState,
   accessors: WidgetStateAccessors,
   tierBadge?: string,
 ): void {

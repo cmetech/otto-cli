@@ -12,7 +12,7 @@ import { runAutoLoopWithUok } from "../uok/kernel.ts";
 import type { AutoSession } from "../auto/session.ts";
 import type { LoopDeps } from "../auto/loop-deps.ts";
 import { gsdRoot } from "../paths.ts";
-import type { GSDPreferences } from "../preferences.ts";
+import type { WorkflowPreferences } from "../preferences.ts";
 import { getLegacyTelemetry, resetLegacyTelemetry } from "../legacy-telemetry.ts";
 
 function makeBasePath(): string {
@@ -21,7 +21,7 @@ function makeBasePath(): string {
 
 function makeArgs(
   basePath: string,
-  preferences: GSDPreferences | undefined,
+  preferences: WorkflowPreferences | undefined,
 ): {
   ctx: ExtensionContext;
   pi: ExtensionAPI;

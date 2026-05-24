@@ -8,8 +8,8 @@ import type { ExtensionAPI, ExtensionContext } from "@gsd/pi-coding-agent";
 
 import type { AutoSession } from "./session.js";
 import type { ErrorContext } from "./types.js";
-import type { GSDPreferences } from "../preferences.js";
-import type { GSDState } from "../types.js";
+import type { WorkflowPreferences } from "../preferences.js";
+import type { WorkflowDbState } from "../types.js";
 import type { SessionLockStatus } from "../session-lock.js";
 import type { CloseoutOptions } from "../auto-unit-closeout.js";
 import type { PostUnitContext, PreVerificationOpts } from "../auto-post-unit.js";
@@ -76,21 +76,21 @@ export interface LoopDeps {
     ctx: ExtensionContext,
     unitType: string,
     unitId: string,
-    state: GSDState,
+    state: WorkflowDbState,
   ) => void;
-  syncCmuxSidebar: (preferences: GSDPreferences | undefined, state: GSDState) => void;
+  syncCmuxSidebar: (preferences: WorkflowPreferences | undefined, state: WorkflowDbState) => void;
   logCmuxEvent: (
-    preferences: GSDPreferences | undefined,
+    preferences: WorkflowPreferences | undefined,
     message: string,
     level?: CmuxLogLevel,
   ) => void;
 
   // State and cache functions
   invalidateAllCaches: () => void;
-  deriveState: (basePath: string) => Promise<GSDState>;
+  deriveState: (basePath: string) => Promise<WorkflowDbState>;
   rebuildState: (basePath: string) => Promise<void>;
   loadEffectiveGSDPreferences: () =>
-    | { preferences?: GSDPreferences }
+    | { preferences?: WorkflowPreferences }
     | undefined;
 
   // Pre-dispatch health gate
@@ -229,7 +229,7 @@ export interface LoopDeps {
     unitType: string,
     unitId: string,
     basePath: string,
-    state: GSDState,
+    state: WorkflowDbState,
   ) => void;
   updateSliceProgressCache: (
     basePath: string,
@@ -244,7 +244,7 @@ export interface LoopDeps {
     unitType: string,
     unitId: string,
     basePath: string,
-    prefs: GSDPreferences | undefined,
+    prefs: WorkflowPreferences | undefined,
     verbose: boolean,
     startModel: { provider: string; id: string } | null,
     retryContext?: { isRetry: boolean; previousTier?: string },
@@ -266,7 +266,7 @@ export interface LoopDeps {
     pi: ExtensionAPI;
     unitType: string;
     unitId: string;
-    prefs: GSDPreferences | undefined;
+    prefs: WorkflowPreferences | undefined;
     buildSnapshotOpts: () => CloseoutOptions & Record<string, unknown>;
     buildRecoveryContext: () => unknown;
     pauseAuto: PauseAutoFn;

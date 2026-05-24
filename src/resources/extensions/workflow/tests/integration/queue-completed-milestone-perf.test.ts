@@ -16,7 +16,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 import { buildExistingMilestonesContext } from "../../guided-flow-queue.ts";
-import type { GSDState, MilestoneRegistryEntry } from "../../types.ts";
+import type { WorkflowDbState, MilestoneRegistryEntry } from "../../types.ts";
 import { createTestContext } from "../test-helpers.ts";
 
 const { assertTrue, assertEq, report } = createTestContext();
@@ -78,7 +78,7 @@ for (let i = 0; i < PENDING_COUNT; i++) {
   );
 }
 
-const state: GSDState = {
+const state: WorkflowDbState = {
   activeMilestone: { id: `M${String(COMPLETED_COUNT + 1).padStart(3, "0")}`, title: "Active milestone" },
   activeSlice: null,
   activeTask: null,

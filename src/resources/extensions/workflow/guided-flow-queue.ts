@@ -224,7 +224,7 @@ export async function showQueueAdd(
 export async function buildExistingMilestonesContext(
   basePath: string,
   milestoneIds: string[],
-  state: import("./types.js").GSDState,
+  state: import("./types.js").WorkflowDbState,
 ): Promise<string> {
   const sections: string[] = [];
 

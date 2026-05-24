@@ -1,7 +1,7 @@
 // Migration transformer test suite
-// Tests for transforming parsed PlanningProject into GSDProject structures.
+// Tests for transforming parsed PlanningProject into WorkflowProject structures.
 // Uses synthetic in-memory fixtures — no filesystem needed.
-// Transformer is pure: PlanningProject → GSDProject.
+// Transformer is pure: PlanningProject → WorkflowProject.
 
 import { transformToGSD } from '../migrate/transformer.ts';
 import type {
@@ -14,10 +14,10 @@ import type {
   PlanningRoadmapMilestone,
   PlanningRequirement,
   PlanningResearch,
-  GSDProject,
-  GSDMilestone,
-  GSDSlice,
-  GSDTask,
+  WorkflowProject,
+  WorkflowMilestone,
+  WorkflowSlice,
+  WorkflowTask,
 } from '../migrate/types.ts';
 import { describe, test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';

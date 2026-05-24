@@ -201,21 +201,21 @@ test('executeGsdExec: forwards custom exec_env_allowlist from preferences', asyn
     const result = await executeGsdExec(
       {
         runtime: 'bash',
-        script: 'printf "allowed=%s blocked=%s\\n" "$GSD_ALLOWED" "$GSD_BLOCKED"',
+        script: 'printf "allowed=%s blocked=%s\\n" "$ALLOWED" "$WORKFLOW_BLOCKED"',
       },
       {
         baseDir: base,
         preferences: {
           context_mode: {
             enabled: true,
-            exec_env_allowlist: ['GSD_ALLOWED'],
+            exec_env_allowlist: ['ALLOWED'],
           },
         },
         env: {
           PATH: '/usr/bin:/bin',
           HOME: '/tmp',
-          GSD_ALLOWED: 'yes',
-          GSD_BLOCKED: 'no',
+          ALLOWED: 'yes',
+          WORKFLOW_BLOCKED: 'no',
         },
       },
     );

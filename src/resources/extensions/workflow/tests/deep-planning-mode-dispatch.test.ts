@@ -18,8 +18,8 @@ import {
   setResearchProjectPromptBuilderForTest,
   type DispatchContext,
 } from "../auto-dispatch.ts";
-import type { GSDState } from "../types.ts";
-import type { GSDPreferences } from "../preferences.ts";
+import type { WorkflowDbState } from "../types.ts";
+import type { WorkflowPreferences } from "../preferences.ts";
 
 const WORKFLOW_PREFS_RULE_NAME = "deep: pre-planning (no workflow prefs) → workflow-preferences";
 const PROJECT_RULE_NAME = "deep: pre-planning (no PROJECT) → discuss-project";
@@ -256,10 +256,10 @@ function writeSkippedProjectResearchDecision(base: string): void {
 
 function makeCtx(
   basePath: string,
-  prefs: GSDPreferences | undefined,
-  phase: GSDState["phase"] = "pre-planning",
+  prefs: WorkflowPreferences | undefined,
+  phase: WorkflowDbState["phase"] = "pre-planning",
 ): DispatchContext {
-  const state: GSDState = {
+  const state: WorkflowDbState = {
     phase,
     activeMilestone: { id: "M001", title: "Test" },
     activeSlice: null,
@@ -297,7 +297,7 @@ test("Deep mode: workflow-preferences does NOT dispatch in light mode", async (t
 test("Deep mode: workflow-preferences captures defaults in-process when PREFERENCES.md missing", async (t) => {
   const base = makeIsolatedBaseWithCleanup(t);
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(WORKFLOW_PREFS_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "workflow prefs are written deterministically, not dispatched to an agent");
   const content = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
@@ -312,7 +312,7 @@ test("Deep mode: workflow-preferences self-heals PREFERENCES.md when capture mar
   // Partial PREFERENCES.md (e.g. only planning_depth set) must not falsely
   // suppress the defaults write — the explicit captured marker is required.
   writeFileSync(join(base, ".gsd", "PREFERENCES.md"), "---\nplanning_depth: deep\n---\n");
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(WORKFLOW_PREFS_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null);
   const content = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
@@ -324,7 +324,7 @@ test("Deep mode: workflow-preferences self-heals malformed frontmatter", async (
   const base = makeIsolatedBaseWithCleanup(t);
 
   writeFileSync(join(base, ".gsd", "PREFERENCES.md"), "---\nthis is not valid yaml: [\n---\n");
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(WORKFLOW_PREFS_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null);
   const content = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
@@ -339,7 +339,7 @@ test("Deep mode: workflow-preferences does NOT dispatch when PREFERENCES.md has 
     join(base, ".gsd", "PREFERENCES.md"),
     "---\nplanning_depth: deep\nworkflow_prefs_captured: true\ncommit_policy: per-task\n---\n",
   );
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(WORKFLOW_PREFS_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null);
 });
@@ -356,7 +356,7 @@ test("Deep mode: discuss-project does NOT dispatch when planning_depth is undefi
 test("Deep mode: discuss-project does NOT dispatch when planning_depth is 'light'", async (t) => {
   const base = makeIsolatedBaseWithCleanup(t);
 
-  const prefs = { planning_depth: "light" } as GSDPreferences;
+  const prefs = { planning_depth: "light" } as WorkflowPreferences;
   const result = await rule(PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "explicit light mode must not fire deep-mode rule");
 });
@@ -364,7 +364,7 @@ test("Deep mode: discuss-project does NOT dispatch when planning_depth is 'light
 test("Deep mode: discuss-project DOES dispatch when planning_depth is 'deep' and PROJECT.md missing", async (t) => {
   const base = makeIsolatedBaseWithCleanup(t);
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.ok(result && result.action === "dispatch", "deep mode + missing PROJECT.md must dispatch");
   if (result.action === "dispatch") {
@@ -378,7 +378,7 @@ test("Deep mode: discuss-project does NOT dispatch when PROJECT.md already exist
   const base = makeIsolatedBaseWithCleanup(t);
 
   writeValidProject(base);
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "valid PROJECT.md must fall through to next rule");
 });
@@ -387,7 +387,7 @@ test("Deep mode: discuss-project DOES dispatch when PROJECT.md exists but is inv
   const base = makeIsolatedBaseWithCleanup(t);
 
   writeFileSync(join(base, ".gsd", "PROJECT.md"), "# Project\n");
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.ok(result && result.action === "dispatch", "invalid PROJECT.md must re-fire discuss-project");
   if (result.action === "dispatch") {
@@ -399,7 +399,7 @@ test("Deep mode: discuss-project DOES dispatch when PROJECT.md exists but is inv
 test("Deep mode: discuss-project does NOT dispatch in non-pre-planning phases", async (t) => {
   const base = makeIsolatedBaseWithCleanup(t);
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(PROJECT_RULE_NAME).match(makeCtx(base, prefs, "executing"));
   assert.strictEqual(result, null, "execution phases must not fire project-level discussion");
 });
@@ -407,7 +407,7 @@ test("Deep mode: discuss-project does NOT dispatch in non-pre-planning phases", 
 test("Deep mode: discuss-project DOES dispatch in needs-discussion phase", async (t) => {
   const base = makeIsolatedBaseWithCleanup(t);
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(PROJECT_RULE_NAME).match(makeCtx(base, prefs, "needs-discussion"));
   assert.ok(result && result.action === "dispatch", "needs-discussion is a valid entry phase");
 });
@@ -424,7 +424,7 @@ test("Deep mode: discuss-requirements does NOT dispatch in light mode", async (t
 test("Deep mode: discuss-requirements does NOT dispatch when PROJECT.md missing (project rule must run first)", async (t) => {
   const base = makeIsolatedBaseWithCleanup(t);
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(REQUIREMENTS_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "PROJECT.md missing — earlier rule handles");
 });
@@ -433,7 +433,7 @@ test("Deep mode: discuss-requirements DOES dispatch when PROJECT.md exists and R
   const base = makeIsolatedBaseWithCleanup(t);
 
   writeValidProject(base);
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(REQUIREMENTS_RULE_NAME).match(makeCtx(base, prefs));
   assert.ok(result && result.action === "dispatch", "deep mode + PROJECT.md present + REQUIREMENTS.md missing must dispatch");
   if (result.action === "dispatch") {
@@ -448,7 +448,7 @@ test("Deep mode: discuss-requirements does NOT dispatch when REQUIREMENTS.md alr
   writeCapturedDeepPrefs(base);
   writeValidProject(base);
   writeValidRequirements(base);
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(REQUIREMENTS_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "valid REQUIREMENTS.md must fall through");
 });
@@ -458,7 +458,7 @@ test("Deep mode: discuss-requirements DOES dispatch when REQUIREMENTS.md exists 
 
   writeValidProject(base);
   writeFileSync(join(base, ".gsd", "REQUIREMENTS.md"), "# Requirements\n");
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(REQUIREMENTS_RULE_NAME).match(makeCtx(base, prefs));
   assert.ok(result && result.action === "dispatch", "invalid REQUIREMENTS.md must re-fire discuss-requirements");
   if (result.action === "dispatch") {
@@ -483,7 +483,7 @@ test("Deep mode: research-decision does NOT dispatch when REQUIREMENTS.md missin
 
   writeValidProject(base);
   // No REQUIREMENTS.md
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_DECISION_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "REQUIREMENTS.md must exist before research decision is asked");
 });
@@ -494,7 +494,7 @@ test("Deep mode: research-decision does NOT dispatch when marker is missing beca
   writeCapturedDeepPrefs(base);
   writeValidProject(base);
   writeValidRequirements(base);
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_DECISION_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null);
   const decision = JSON.parse(readFileSync(join(base, ".gsd", "runtime", "research-decision.json"), "utf-8"));
@@ -510,7 +510,7 @@ test("Deep mode: research-decision does NOT dispatch when decision marker exists
   writeValidRequirements(base);
   mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
   writeFileSync(join(base, ".gsd", "runtime", "research-decision.json"), JSON.stringify({ decision: "skip" }));
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_DECISION_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "decision already recorded — fall through");
 });
@@ -542,7 +542,7 @@ test("Deep mode: research-project does NOT dispatch when decision marker missing
   writeValidProject(base);
   writeValidRequirements(base);
   // No decision marker
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null);
 });
@@ -554,7 +554,7 @@ test("Deep mode: research-project does NOT dispatch when user chose 'skip'", asy
   writeValidRequirements(base);
   mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
   writeFileSync(join(base, ".gsd", "runtime", "research-decision.json"), JSON.stringify({ decision: "skip" }));
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "skip decision must short-circuit research-project");
 });
@@ -563,7 +563,7 @@ test("Deep mode: research-project DOES dispatch when decision is 'research' and 
   const base = makeIsolatedBaseWithCleanup(t);
 
   setupReadyForResearchProject(base);
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.ok(result && result.action === "dispatch");
   if (result.action === "dispatch") {
@@ -591,7 +591,7 @@ test("Deep mode: research-project normalizes legacy workflow-defaulted research 
     }),
   );
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
 
   assert.strictEqual(result, null, "tiny project should fall through after rewriting decision to skip");
@@ -628,7 +628,7 @@ test("Deep mode gate ignores stale blockers for legacy workflow-defaulted resear
     writeFileSync(join(base, ".gsd", "research", `${name}-BLOCKER.md`), "# blocked\n");
   }
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const gate = getDeepStageGate(prefs, base);
 
   assert.deepEqual(
@@ -654,7 +654,7 @@ test("Deep mode: research-project honors explicit research decisions for tiny st
     JSON.stringify({ decision: "research", source: "research-decision", decided_at: "2026-04-27T00:00:00Z" }),
   );
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
 
   assert.ok(result && result.action === "dispatch", "explicit user-sourced research should still run");
@@ -677,7 +677,7 @@ test("Deep mode: research-project does not dispatch non-trivial workflow-default
     }),
   );
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
 
   assert.equal(result, null);
@@ -696,7 +696,7 @@ test("Deep mode: research-project clears in-flight marker when prompt assembly f
   t.after(restorePromptBuilder);
 
   setupReadyForResearchProject(base);
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const markerPath = join(base, ".gsd", "runtime", "research-project-inflight");
 
   await assert.rejects(
@@ -711,7 +711,7 @@ test("Deep mode: research-project stops while in-flight marker exists", async (t
 
   setupReadyForResearchProject(base);
   writeFileSync(join(base, ".gsd", "runtime", "research-project-inflight"), "{}\n");
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.ok(result !== null, "in-flight marker must produce a result");
   assert.strictEqual(result?.action, "stop", "in-flight marker must block dispatch with a stop action");
@@ -729,7 +729,7 @@ test("Deep mode: research-project does NOT dispatch when all 4 research files ex
   for (const name of ["STACK.md", "FEATURES.md", "ARCHITECTURE.md", "PITFALLS.md"]) {
     writeFileSync(join(base, ".gsd", "research", name), "# done\n");
   }
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "all research files present — fall through");
 });
@@ -744,7 +744,7 @@ test("Deep mode: research-project treats a dimension BLOCKER as terminal", async
   }
   writeFileSync(join(base, ".gsd", "research", "PITFALLS-BLOCKER.md"), "# blocker\n");
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "dimension blocker files must satisfy project research");
 });
@@ -758,7 +758,7 @@ test("Deep mode: research-project stops when every dimension is only a BLOCKER",
     writeFileSync(join(base, ".gsd", "research", `${name}-BLOCKER.md`), "# blocked\n");
   }
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.equal(result?.action, "stop");
   assert.match(result?.action === "stop" ? result.reason : "", /only dimension blocker files/);
@@ -771,7 +771,7 @@ test("Deep mode: research-project stops on global PROJECT-RESEARCH-BLOCKER", asy
   mkdirSync(join(base, ".gsd", "research"), { recursive: true });
   writeFileSync(join(base, ".gsd", "research", "PROJECT-RESEARCH-BLOCKER.md"), "# blocked\n");
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.equal(result?.action, "stop");
   assert.match(result?.action === "stop" ? result.reason : "", /PROJECT-RESEARCH-BLOCKER/);
@@ -786,7 +786,7 @@ test("Deep mode: research-project DOES dispatch when only 3 of 4 research files 
     writeFileSync(join(base, ".gsd", "research", name), "# done\n");
   }
   // PITFALLS.md missing
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.ok(result && result.action === "dispatch", "any missing dimension must trigger re-run");
 });
@@ -799,7 +799,7 @@ test("Deep mode: queued milestone without CONTEXT.md routes to milestone researc
   writeValidRequirements(base);
   writeSkippedProjectResearchDecision(base);
 
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await resolveDispatch(makeCtx(base, prefs));
 
   assert.equal(result.action, "dispatch");
@@ -817,7 +817,7 @@ test("Deep mode: queued milestone without CONTEXT.md can route directly to miles
   writeValidRequirements(base);
   writeSkippedProjectResearchDecision(base);
 
-  const prefs = { planning_depth: "deep", phases: { skip_research: true } } as GSDPreferences;
+  const prefs = { planning_depth: "deep", phases: { skip_research: true } } as WorkflowPreferences;
   const result = await resolveDispatch(makeCtx(base, prefs));
 
   assert.equal(result.action, "dispatch");
@@ -831,7 +831,7 @@ test("Deep mode: queued milestone without CONTEXT.md can route directly to miles
 
 test("Deep mode gate reports the earliest missing section", (t) => {
   const base = makeIsolatedBaseWithCleanup(t);
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
 
   mkdirSync(join(base, ".gsd", "research"), { recursive: true });
   for (const name of ["STACK.md", "FEATURES.md", "ARCHITECTURE.md", "PITFALLS.md"]) {
@@ -849,7 +849,7 @@ test("Deep mode gate reports the earliest missing section", (t) => {
 
 test("Deep mode gate blocks blocker-only project research", (t) => {
   const base = makeIsolatedBaseWithCleanup(t);
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
 
   writeFileSync(
     join(base, ".gsd", "PREFERENCES.md"),
@@ -871,7 +871,7 @@ test("Deep mode gate blocks blocker-only project research", (t) => {
 
 test("Deep mode gate passes only after verified project research or explicit skip", (t) => {
   const researchBase = makeIsolatedBaseWithCleanup(t);
-  const prefs = { planning_depth: "deep" } as GSDPreferences;
+  const prefs = { planning_depth: "deep" } as WorkflowPreferences;
 
   writeFileSync(
     join(researchBase, ".gsd", "PREFERENCES.md"),

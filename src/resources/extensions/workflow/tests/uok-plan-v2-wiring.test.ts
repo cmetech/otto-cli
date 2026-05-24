@@ -11,7 +11,7 @@ import {
   insertTask,
   openDatabase,
 } from "../db.ts";
-import type { GSDState, Phase } from "../types.ts";
+import type { WorkflowDbState, Phase } from "../types.ts";
 import {
   ensurePlanV2Graph,
   hasFinalizedMilestoneContext,
@@ -69,7 +69,7 @@ function seedGraphRows(): void {
   });
 }
 
-function buildState(phase: Phase): GSDState {
+function buildState(phase: Phase): WorkflowDbState {
   return {
     phase,
     activeMilestone: { id: MILESTONE_ID, title: "Milestone" },

@@ -1,6 +1,6 @@
 import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@gsd/pi-coding-agent";
 import type { Model } from "@gsd/pi-ai";
-import type { GSDState } from "../../types.js";
+import type { WorkflowDbState } from "../../types.js";
 import { createRequire } from "node:module";
 
 import { computeProgressScore, formatProgressLine } from "../../progress-score.js";
@@ -184,9 +184,9 @@ export async function handleStatus(ctx: ExtensionCommandContext): Promise<void> 
     return;
   }
 
-  const { GSDDashboardOverlay } = await import("../../dashboard-overlay.js");
+  const { DashboardOverlay } = await import("../../dashboard-overlay.js");
   const result = await ctx.ui.custom<boolean>(
-    (tui, theme, _kb, done) => new GSDDashboardOverlay(tui, theme, () => done(true)),
+    (tui, theme, _kb, done) => new DashboardOverlay(tui, theme, () => done(true)),
     {
       overlay: true,
       overlayOptions: {
@@ -213,9 +213,9 @@ export async function handleVisualize(ctx: ExtensionCommandContext): Promise<voi
     return;
   }
 
-  const { GSDVisualizerOverlay } = await import("../../visualizer-overlay.js");
+  const { VisualizerOverlay } = await import("../../visualizer-overlay.js");
   const result = await ctx.ui.custom<boolean>(
-    (tui, theme, _kb, done) => new GSDVisualizerOverlay(tui, theme, () => done(true)),
+    (tui, theme, _kb, done) => new VisualizerOverlay(tui, theme, () => done(true)),
     {
       overlay: true,
       overlayOptions: {
@@ -529,9 +529,9 @@ export async function handleCoreCommand(
     return true;
   }
   if (trimmed === "show-config") {
-    const { GSDConfigOverlay, formatConfigText } = await import("../../config-overlay.js");
+    const { ConfigOverlay, formatConfigText } = await import("../../config-overlay.js");
     const result = await ctx.ui.custom<boolean>(
-      (tui, theme, _kb, done) => new GSDConfigOverlay(tui, theme, () => done(true)),
+      (tui, theme, _kb, done) => new ConfigOverlay(tui, theme, () => done(true)),
       {
         overlay: true,
         overlayOptions: {
@@ -559,7 +559,7 @@ export async function handleCoreCommand(
   return false;
 }
 
-export function formatTextStatus(state: GSDState): string {
+export function formatTextStatus(state: WorkflowDbState): string {
   const lines: string[] = [`${BRAND} Status\n`];
   lines.push(formatProgressLine(computeProgressScore()));
   lines.push("");

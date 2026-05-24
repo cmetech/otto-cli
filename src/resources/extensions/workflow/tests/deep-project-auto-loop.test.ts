@@ -29,8 +29,8 @@ import {
   insertMilestone,
   openDatabase,
 } from "../db.ts";
-import type { GSDPreferences } from "../preferences.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowPreferences } from "../preferences.ts";
+import type { WorkflowDbState } from "../types.ts";
 
 function makeBase(): string {
   const base = join(tmpdir(), `gsd-deep-project-loop-${randomUUID()}`);
@@ -66,7 +66,7 @@ function makeUnbornCommandRepo(): string {
   return base;
 }
 
-function makeEmptyState(): GSDState {
+function makeEmptyState(): WorkflowDbState {
   return {
     phase: "pre-planning",
     activeMilestone: null,
@@ -79,7 +79,7 @@ function makeEmptyState(): GSDState {
   };
 }
 
-function makeNeedsDiscussionState(): GSDState {
+function makeNeedsDiscussionState(): WorkflowDbState {
   return {
     ...makeEmptyState(),
     phase: "needs-discussion",
@@ -88,7 +88,7 @@ function makeNeedsDiscussionState(): GSDState {
   };
 }
 
-function makeExecutingState(): GSDState {
+function makeExecutingState(): WorkflowDbState {
   return {
     ...makeEmptyState(),
     phase: "executing",
@@ -99,7 +99,7 @@ function makeExecutingState(): GSDState {
   };
 }
 
-function makePlanningState(): GSDState {
+function makePlanningState(): WorkflowDbState {
   return {
     ...makeEmptyState(),
     phase: "planning",
@@ -344,7 +344,7 @@ test("deep project setup: pre-dispatch can run before the first milestone exists
         pi: {} as any,
         s,
         deps,
-        prefs: { planning_depth: "deep" } as GSDPreferences,
+        prefs: { planning_depth: "deep" } as WorkflowPreferences,
         iteration: 1,
         flowId: "test-flow",
         nextSeq: () => ++seq,
@@ -456,7 +456,7 @@ test("deep project setup: pre-dispatch takes precedence over an existing draft m
         pi: {} as any,
         s,
         deps,
-        prefs: { planning_depth: "deep" } as GSDPreferences,
+        prefs: { planning_depth: "deep" } as WorkflowPreferences,
         iteration: 1,
         flowId: "test-flow",
         nextSeq: () => ++seq,
@@ -503,7 +503,7 @@ test("deep project setup: pending setup does not rewrite executing state to PROJ
         pi: {} as any,
         s,
         deps,
-        prefs: { planning_depth: "deep", uok: { plan_v2: { enabled: false } } } as GSDPreferences,
+        prefs: { planning_depth: "deep", uok: { plan_v2: { enabled: false } } } as WorkflowPreferences,
         iteration: 1,
         flowId: "test-flow",
         nextSeq: () => ++seq,
@@ -557,7 +557,7 @@ test("deep project setup: pre-dispatch does not rewrite execution state to PROJE
         pi: {} as any,
         s,
         deps,
-        prefs: { planning_depth: "deep", uok: { plan_v2: { enabled: false } } } as GSDPreferences,
+        prefs: { planning_depth: "deep", uok: { plan_v2: { enabled: false } } } as WorkflowPreferences,
         iteration: 1,
         flowId: "test-flow",
         nextSeq: () => ++seq,
@@ -615,7 +615,7 @@ test("deep project setup: pending project research cannot dispatch PROJECT/S01",
         pi: {} as any,
         s,
         deps,
-        prefs: { planning_depth: "deep" } as GSDPreferences,
+        prefs: { planning_depth: "deep" } as WorkflowPreferences,
         iteration: 1,
         flowId: "test-flow",
         nextSeq: () => ++seq,
@@ -637,7 +637,7 @@ test("deep project setup: pending project research cannot dispatch PROJECT/S01",
       mid: result.data.mid,
       midTitle: result.data.midTitle,
       state: result.data.state,
-      prefs: { planning_depth: "deep" } as GSDPreferences,
+      prefs: { planning_depth: "deep" } as WorkflowPreferences,
       structuredQuestionsAvailable: "false",
     });
 

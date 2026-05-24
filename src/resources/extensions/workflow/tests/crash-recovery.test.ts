@@ -32,7 +32,7 @@ import { recordDispatchClaim } from "../db/unit-dispatches.ts";
 import { insertSlice, insertTask } from "../db.ts";
 import { setRuntimeKv } from "../db/runtime-kv.ts";
 import { normalizeRealPath } from "../paths.ts";
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 import { _synthesizePausedSessionRecoveryForTest } from "../auto.ts";
 
 function makeTmpBase(): string {
@@ -203,7 +203,7 @@ function writeActivityLog(base: string, entries: Record<string, unknown>[]): voi
   );
 }
 
-function makeState(phase: GSDState["phase"], activeMilestone = true): GSDState {
+function makeState(phase: WorkflowDbState["phase"], activeMilestone = true): WorkflowDbState {
   return {
     activeMilestone: activeMilestone ? { id: "M001", title: "Test" } : null,
     activeSlice: null,

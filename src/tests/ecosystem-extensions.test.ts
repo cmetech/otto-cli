@@ -8,13 +8,13 @@ import { test } from "node:test";
 import {
   _resetSnapshot,
   createWorkflowExtensionAPI,
-  type GSDEcosystemBeforeAgentStartHandler,
+  type EcosystemBeforeAgentStartHandler,
   getSnapshotActiveUnit,
   getSnapshotPhase,
   mapAutoLoopPhase,
   updateSnapshot,
 } from "../resources/extensions/workflow/ecosystem/extension-api.js";
-import type { GSDState } from "../resources/extensions/workflow/types.js";
+import type { WorkflowDbState } from "../resources/extensions/workflow/types.js";
 
 // ─── Test fixtures ──────────────────────────────────────────────────────
 
@@ -66,7 +66,7 @@ function buildPiStub(): {
   return { pi, onCalls };
 }
 
-function buildState(overrides: Partial<GSDState> = {}): GSDState {
+function buildState(overrides: Partial<WorkflowDbState> = {}): WorkflowDbState {
   return {
     activeMilestone: { id: "M001", title: "Milestone One" },
     activeSlice: { id: "S01", title: "Slice One" },
@@ -103,10 +103,10 @@ test("mapAutoLoopPhase returns null for unknown keys (does not default)", () => 
 
 test("createWorkflowExtensionAPI intercepts before_agent_start", () => {
   const { pi, onCalls } = buildPiStub();
-  const shared: GSDEcosystemBeforeAgentStartHandler[] = [];
+  const shared: EcosystemBeforeAgentStartHandler[] = [];
   const api = createWorkflowExtensionAPI(pi, shared);
 
-  const handler: GSDEcosystemBeforeAgentStartHandler = async () => undefined;
+  const handler: EcosystemBeforeAgentStartHandler = async () => undefined;
   api.on("before_agent_start", handler);
 
   assert.equal(shared.length, 1);
@@ -116,7 +116,7 @@ test("createWorkflowExtensionAPI intercepts before_agent_start", () => {
 
 test("createWorkflowExtensionAPI delegates non-intercepted events to pi.on", () => {
   const { pi, onCalls } = buildPiStub();
-  const shared: GSDEcosystemBeforeAgentStartHandler[] = [];
+  const shared: EcosystemBeforeAgentStartHandler[] = [];
   const api = createWorkflowExtensionAPI(pi, shared);
 
   const handler = (): void => {};
@@ -176,7 +176,7 @@ test("updateSnapshot(null) resets both snapshot fields", () => {
 
 test("wrapper key-drift guard: every ExtensionAPI method is delegated", () => {
   // If pi adds a new method to ExtensionAPI and the wrapper isn't updated,
-  // the `satisfies GSDExtensionAPI` check will fail at compile time. This
+  // the `satisfies WorkflowExtensionAPI` check will fail at compile time. This
   // runtime test catches a different failure: a method becoming a no-op
   // on the wrapper because the wrapper key doesn't exist.
   const { pi } = buildPiStub();

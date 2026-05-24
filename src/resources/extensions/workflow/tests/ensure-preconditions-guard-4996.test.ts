@@ -15,7 +15,7 @@ import {
   insertMilestone,
 } from "../db.ts";
 
-import type { GSDState } from "../types.ts";
+import type { WorkflowDbState } from "../types.ts";
 
 function makeBase(prefix = "gsd-precond-"): string {
   const base = mkdtempSync(join(tmpdir(), prefix));
@@ -23,7 +23,7 @@ function makeBase(prefix = "gsd-precond-"): string {
   return base;
 }
 
-function makeMinimalState(): GSDState {
+function makeMinimalState(): WorkflowDbState {
   return {
     activeMilestone: null,
     activeSlice: null,

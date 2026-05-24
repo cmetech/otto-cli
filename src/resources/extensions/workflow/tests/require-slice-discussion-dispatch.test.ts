@@ -16,8 +16,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { DISPATCH_RULES, type DispatchContext } from "../auto-dispatch.ts";
-import type { GSDState } from "../types.ts";
-import type { GSDPreferences } from "../preferences.ts";
+import type { WorkflowDbState } from "../types.ts";
+import type { WorkflowPreferences } from "../preferences.ts";
 
 // Use a stable token (the preference name) for rule lookup instead of the
 // full human-readable title — copy edits to the rule name will not break
@@ -32,7 +32,7 @@ function findRule() {
   return matches[0];
 }
 
-function buildState(overrides: Partial<GSDState> = {}): GSDState {
+function buildState(overrides: Partial<WorkflowDbState> = {}): WorkflowDbState {
   return {
     activeMilestone: { id: "M001", title: "Test milestone" },
     activeSlice: { id: "S01", title: "Test slice" },
@@ -54,8 +54,8 @@ function makeBasePath(prefix: string): string {
 
 function buildCtx(
   basePath: string,
-  prefs: GSDPreferences | undefined,
-  state: GSDState = buildState(),
+  prefs: WorkflowPreferences | undefined,
+  state: WorkflowDbState = buildState(),
 ): DispatchContext {
   return {
     basePath,
@@ -72,7 +72,7 @@ describe("require_slice_discussion dispatch rule (#3454)", () => {
   test("returns stop action when preference enabled and CONTEXT missing", async () => {
     const basePath = makeBasePath("fire");
     try {
-      const prefs = { phases: { require_slice_discussion: true } } as unknown as GSDPreferences;
+      const prefs = { phases: { require_slice_discussion: true } } as unknown as WorkflowPreferences;
       const action = await findRule().match(buildCtx(basePath, prefs));
       assert.ok(action, "rule must return a non-null action when pausing is required");
       assert.strictEqual(action!.action, "stop");
@@ -92,7 +92,7 @@ describe("require_slice_discussion dispatch rule (#3454)", () => {
   test("falls through (null) when preference is disabled", async () => {
     const basePath = makeBasePath("pref-disabled");
     try {
-      const prefs = { phases: { require_slice_discussion: false } } as unknown as GSDPreferences;
+      const prefs = { phases: { require_slice_discussion: false } } as unknown as WorkflowPreferences;
       const action = await findRule().match(buildCtx(basePath, prefs));
       assert.strictEqual(action, null);
     } finally {
@@ -113,7 +113,7 @@ describe("require_slice_discussion dispatch rule (#3454)", () => {
   test("falls through (null) when phase is not 'planning'", async () => {
     const basePath = makeBasePath("wrong-phase");
     try {
-      const prefs = { phases: { require_slice_discussion: true } } as unknown as GSDPreferences;
+      const prefs = { phases: { require_slice_discussion: true } } as unknown as WorkflowPreferences;
       const state = buildState({ phase: "executing" });
       const action = await findRule().match(buildCtx(basePath, prefs, state));
       assert.strictEqual(action, null);
@@ -125,7 +125,7 @@ describe("require_slice_discussion dispatch rule (#3454)", () => {
   test("falls through (null) when no active slice", async () => {
     const basePath = makeBasePath("no-slice");
     try {
-      const prefs = { phases: { require_slice_discussion: true } } as unknown as GSDPreferences;
+      const prefs = { phases: { require_slice_discussion: true } } as unknown as WorkflowPreferences;
       const state = buildState({ activeSlice: null });
       const action = await findRule().match(buildCtx(basePath, prefs, state));
       assert.strictEqual(action, null);
@@ -143,7 +143,7 @@ describe("require_slice_discussion dispatch rule (#3454)", () => {
       const sliceDir = join(basePath, ".gsd", "milestones", "M001", "slices", "S01");
       writeFileSync(join(sliceDir, "S01-CONTEXT.md"), "# Discussion notes\n", "utf-8");
 
-      const prefs = { phases: { require_slice_discussion: true } } as unknown as GSDPreferences;
+      const prefs = { phases: { require_slice_discussion: true } } as unknown as WorkflowPreferences;
       const action = await findRule().match(buildCtx(basePath, prefs));
       assert.strictEqual(
         action,

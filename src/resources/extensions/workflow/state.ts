@@ -5,7 +5,7 @@
 // Pure TypeScript, zero Pi dependencies.
 
 import type {
-  GSDState,
+  WorkflowDbState,
   ActiveRef,
   Roadmap,
   SlicePlan,
@@ -217,7 +217,7 @@ async function isTerminalMilestoneSummaryFile(
 
 interface StateCache {
   basePath: string;
-  result: GSDState;
+  result: WorkflowDbState;
   timestamp: number;
 }
 
@@ -356,7 +356,7 @@ export interface DeriveStateOptions {
 export async function deriveState(
   basePath: string,
   opts?: DeriveStateOptions,
-): Promise<GSDState> {
+): Promise<WorkflowDbState> {
   // Use the canonical project root (when provided) as the cache key so that
   // two calls with different basePath strings (e.g. worktree path vs project
   // root) but the same canonical .loop24/ share a single cache entry. The same
@@ -375,7 +375,7 @@ export async function deriveState(
   }
 
   const stopTimer = debugTime("derive-state-impl");
-  let result: GSDState;
+  let result: WorkflowDbState;
 
   // DB-backed derivation is authoritative whenever the DB is open. Runtime
   // degrade must not infer state from ROADMAP.md, PLAN.md, SUMMARY.md,
@@ -550,7 +550,7 @@ function handleNoActiveMilestone(
   registry: MilestoneRegistryEntry[],
   requirements: any,
   milestoneProgress: { done: number, total: number }
-): GSDState {
+): WorkflowDbState {
   const pendingEntries = registry.filter(e => e.status === 'pending');
   const parkedEntries = registry.filter(e => e.status === 'parked');
 
@@ -617,7 +617,7 @@ async function handleAllSlicesDone(
   requirements: any,
   milestoneProgress: { done: number, total: number },
   sliceProgress: { done: number, total: number }
-): Promise<GSDState> {
+): Promise<WorkflowDbState> {
   const validation = getLatestAssessmentByScope(activeMilestone.id, "milestone-validation");
   const verdict = typeof validation?.status === "string" ? validation.status : undefined;
   const validationTerminal = verdict != null && verdict !== "";
@@ -715,7 +715,7 @@ function checkReplanTrigger(_basePath: string, milestoneId: string, sliceId: str
 export async function deriveStateFromDb(
   basePath: string,
   artifactReadRoot: string = basePath,
-): Promise<GSDState> {
+): Promise<WorkflowDbState> {
   const requirements = getRequirementCounts();
 
   const allMilestones = getAllMilestones();
@@ -945,7 +945,7 @@ export async function deriveStateFromDb(
 export async function _deriveStateImpl(
   basePath: string,
   opts?: DeriveStateOptions,
-): Promise<GSDState> {
+): Promise<WorkflowDbState> {
   // When the caller supplies a canonical project root for reads (e.g.
   // s.canonicalProjectRoot from auto-mode), route all artifact reads through
   // it. This prevents the worktree-local empty `.loop24/` from being consulted

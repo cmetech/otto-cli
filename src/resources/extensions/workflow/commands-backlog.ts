@@ -11,7 +11,7 @@ import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-ag
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 
 interface BacklogItem {
   id: string;
@@ -21,7 +21,7 @@ interface BacklogItem {
 }
 
 function backlogPath(basePath: string): string {
-  return join(gsdRoot(basePath), "BACKLOG.md");
+  return join(workflowRoot(basePath), "BACKLOG.md");
 }
 
 function parseBacklog(basePath: string): BacklogItem[] {

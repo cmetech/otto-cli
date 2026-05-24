@@ -1,5 +1,5 @@
 /**
- * Tests for gsdHome() — GSD home directory resolution.
+ * Tests for workflowHome() — GSD home directory resolution.
  *
  * @see https://github.com/open-gsd/gsd-pi/issues/5015
  */
@@ -8,19 +8,19 @@ import assert from "node:assert/strict";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 
-describe("gsdHome", () => {
-  let savedGsdHome: string | undefined;
-  let gsdHome: () => string;
+describe("workflowHome", () => {
+  let savedWorkflowHome: string | undefined;
+  let workflowHome: () => string;
 
   beforeEach(async () => {
-    savedGsdHome = process.env.GSD_HOME;
+    savedWorkflowHome = process.env.GSD_HOME;
     const mod = await import("../home.js");
-    gsdHome = mod.gsdHome;
+    workflowHome = mod.workflowHome;
   });
 
   afterEach(() => {
-    if (savedGsdHome !== undefined) {
-      process.env.GSD_HOME = savedGsdHome;
+    if (savedWorkflowHome !== undefined) {
+      process.env.GSD_HOME = savedWorkflowHome;
     } else {
       delete process.env.GSD_HOME;
     }
@@ -28,16 +28,16 @@ describe("gsdHome", () => {
 
   it("returns ~/.gsd by default", () => {
     delete process.env.GSD_HOME;
-    assert.equal(gsdHome(), join(homedir(), ".gsd"));
+    assert.equal(workflowHome(), join(homedir(), ".gsd"));
   });
 
   it("uses GSD_HOME env var when set", () => {
     process.env.GSD_HOME = "/custom/gsd/home";
     // resolve() normalizes to platform absolute path on Windows
-    assert.equal(gsdHome(), resolve("/custom/gsd/home"));
+    assert.equal(workflowHome(), resolve("/custom/gsd/home"));
   });
 
   it("returns a non-empty string", () => {
-    assert.ok(gsdHome().length > 0);
+    assert.ok(workflowHome().length > 0);
   });
 });

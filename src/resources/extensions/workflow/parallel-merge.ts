@@ -8,7 +8,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { resolveGsdPathContract } from "./paths.js";
+import { resolveWorkflowPathContract } from "./paths.js";
 import { getAutoWorktreePath } from "./auto-worktree.js";
 import { buildWorktreeLifecycleDeps } from "./auto.js";
 import {
@@ -43,7 +43,7 @@ export type MergeOrder = "sequential" | "by-completion";
  */
 export function isMilestoneCompleteInProjectDb(basePath: string, mid: string): boolean {
   const workRoot = join(basePath, ".gsd", "worktrees", mid);
-  const dbPath = resolveGsdPathContract(workRoot, basePath).projectDb;
+  const dbPath = resolveWorkflowPathContract(workRoot, basePath).projectDb;
   if (!existsSync(dbPath)) return false;
 
   try {

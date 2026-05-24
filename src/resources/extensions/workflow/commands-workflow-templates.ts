@@ -22,7 +22,7 @@ import {
   type TemplateMatch,
 } from "./workflow-templates.js";
 import { loadPrompt } from "./prompt-loader.js";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { createGitService, runGit } from "./git-service.js";
 import { isAutoActive, isAutoPaused } from "./auto.js";
 import { getErrorMessage } from "./error-utils.js";
@@ -135,7 +135,7 @@ function writeWorkflowState(
  * Returns workflows that were started but not completed.
  */
 function findInProgressWorkflows(basePath: string): WorkflowState[] {
-  const workflowsRoot = join(gsdRoot(basePath), "workflows");
+  const workflowsRoot = join(workflowRoot(basePath), "workflows");
   if (!existsSync(workflowsRoot)) return [];
 
   const results: WorkflowState[] = [];
@@ -408,7 +408,7 @@ export async function handleStart(
   // ─── Route full-project to standard workflow ────────────────────────
 
   if (templateId === "full-project") {
-    const root = gsdRoot(basePath);
+    const root = workflowRoot(basePath);
     if (!existsSync(root)) {
       ctx.ui.notify(
         `Routing to ${slashCommand("init")} for full project setup...`,

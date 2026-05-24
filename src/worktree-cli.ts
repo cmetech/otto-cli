@@ -23,11 +23,11 @@ import { createJiti } from '@mariozechner/jiti'
 import { fileURLToPath } from 'node:url'
 import { generateWorktreeName } from './worktree-name-gen.js'
 import { existsSync } from 'node:fs'
-import { resolveBundledGsdExtensionModule } from './bundled-resource-path.js'
+import { resolveBundledWorkflowExtensionModule } from './bundled-resource-path.js'
 
 const jiti = createJiti(fileURLToPath(import.meta.url), { interopDefault: true, debug: false })
-const gsdExtensionPath = (...segments: string[]) =>
-  resolveBundledGsdExtensionModule(import.meta.url, segments.join('/'))
+const workflowExtensionPath = (...segments: string[]) =>
+  resolveBundledWorkflowExtensionModule(import.meta.url, segments.join('/'))
 
 // Lazily-loaded extension modules (loaded once on first use via jiti)
 let _ext: ExtensionModules | null = null
@@ -99,11 +99,11 @@ function logDebugFailure(scope: string, error: unknown): void {
 async function loadExtensionModules(): Promise<ExtensionModules> {
   if (_ext) return _ext
   const [wtMgr, autoWt, gitBridge, gitSvc, wt] = await Promise.all([
-    jiti.import(gsdExtensionPath('worktree-manager.ts'), {}) as Promise<WorktreeManagerModule>,
-    jiti.import(gsdExtensionPath('auto-worktree.ts'), {}) as Promise<AutoWorktreeModule>,
-    jiti.import(gsdExtensionPath('native-git-bridge.ts'), {}) as Promise<NativeGitBridgeModule>,
-    jiti.import(gsdExtensionPath('git-service.ts'), {}) as Promise<GitServiceModule>,
-    jiti.import(gsdExtensionPath('worktree.ts'), {}) as Promise<WorktreeModule>,
+    jiti.import(workflowExtensionPath('worktree-manager.ts'), {}) as Promise<WorktreeManagerModule>,
+    jiti.import(workflowExtensionPath('auto-worktree.ts'), {}) as Promise<AutoWorktreeModule>,
+    jiti.import(workflowExtensionPath('native-git-bridge.ts'), {}) as Promise<NativeGitBridgeModule>,
+    jiti.import(workflowExtensionPath('git-service.ts'), {}) as Promise<GitServiceModule>,
+    jiti.import(workflowExtensionPath('worktree.ts'), {}) as Promise<WorktreeModule>,
   ])
   _ext = {
     createWorktree: wtMgr.createWorktree,

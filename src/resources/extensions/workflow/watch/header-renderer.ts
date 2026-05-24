@@ -7,7 +7,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { visibleWidth, truncateToWidth } from "@loop24/pi-tui";
 import { loadEffectiveGSDPreferences } from "../preferences.js";
-import { gsdHome } from "../home.js";
+import { workflowHome } from "../home.js";
 import { splashPalette } from "./splash-palette.js";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -150,7 +150,7 @@ export function readMcpServerNames(projectRoot: string): string[] {
   const configPaths = [
     join(projectRoot, ".mcp.json"),
     join(projectRoot, ".gsd", "mcp.json"),
-    join(gsdHome(), "mcp.json"),
+    join(workflowHome(), "mcp.json"),
   ];
   const names: string[] = [];
   const seen = new Set<string>();

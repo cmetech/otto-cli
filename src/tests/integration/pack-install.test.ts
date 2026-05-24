@@ -173,7 +173,7 @@ test("tarball installs and gsd binary resolves", async (t) => {
   }
 
   // Verify bundled resources are present
-  const installedGsdExt = join(
+  const installedWorkflowExt = join(
     sandbox.installPrefix,
     "node_modules",
     "@ericsson", "loop24",
@@ -183,7 +183,7 @@ test("tarball installs and gsd binary resolves", async (t) => {
     "gsd",
     "index.ts",
   );
-  assert.ok(existsSync(installedGsdExt), "bundled gsd extension present in installed package");
+  assert.ok(existsSync(installedWorkflowExt), "bundled gsd extension present in installed package");
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -250,7 +250,7 @@ test("gsd exits early with a clear message when synced resources are newer than 
   mkdirSync(fakeAgentDir, { recursive: true });
   writeFileSync(
     join(fakeAgentDir, "managed-resources.json"),
-    JSON.stringify({ gsdVersion: "999.0.0", packageName: "@ericsson/loop24" }),
+    JSON.stringify({ workflowVersion: "999.0.0", packageName: "@ericsson/loop24" }),
   );
 
   t.after(() => { rmSync(fakeHome, { recursive: true, force: true }); });

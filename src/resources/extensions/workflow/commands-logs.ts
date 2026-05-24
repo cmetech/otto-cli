@@ -14,7 +14,7 @@ import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { CONFIG_DIR_NAME, slashCommand } from "./strings.js";
 import { existsSync, readdirSync, readFileSync, statSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { loadJsonFileOrNull } from "./json-persistence.js";
 import { currentDirectoryRoot } from "./commands/context.js";
 
@@ -38,11 +38,11 @@ interface DebugLogEntry {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function activityDir(basePath: string): string {
-  return join(gsdRoot(basePath), "activity");
+  return join(workflowRoot(basePath), "activity");
 }
 
 function debugDir(basePath: string): string {
-  return join(gsdRoot(basePath), "debug");
+  return join(workflowRoot(basePath), "debug");
 }
 
 function listActivityLogs(basePath: string): LogEntry[] {
@@ -333,7 +333,7 @@ async function handleLogsList(basePath: string, ctx: ExtensionCommandContext): P
   }
 
   // Metrics summary
-  const metricsPath = join(gsdRoot(basePath), "metrics.json");
+  const metricsPath = join(workflowRoot(basePath), "metrics.json");
   const isMetrics = (d: unknown): d is { units: Array<Record<string, unknown>> } =>
     d !== null && typeof d === "object" && "units" in d! && Array.isArray((d as Record<string, unknown>).units);
   const metrics = loadJsonFileOrNull(metricsPath, isMetrics);

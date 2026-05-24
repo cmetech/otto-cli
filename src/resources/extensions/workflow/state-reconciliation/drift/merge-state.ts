@@ -301,14 +301,14 @@ function reconcileMergeStateCore(
     }
   } else {
     // Still conflicted — try auto-resolving .loop24/ state file conflicts (#530)
-    const gsdConflicts = conflictedFiles.filter((f) => f.startsWith(".gsd/"));
+    const workflowConflicts = conflictedFiles.filter((f) => f.startsWith(".gsd/"));
     const codeConflicts = conflictedFiles.filter((f) => !f.startsWith(".gsd/"));
 
-    if (gsdConflicts.length > 0 && codeConflicts.length === 0) {
+    if (workflowConflicts.length > 0 && codeConflicts.length === 0) {
       let resolved = true;
       try {
-        nativeCheckoutTheirs(basePath, gsdConflicts);
-        nativeAddPaths(basePath, gsdConflicts);
+        nativeCheckoutTheirs(basePath, workflowConflicts);
+        nativeAddPaths(basePath, workflowConflicts);
       } catch (e) {
         logError(
           "recovery",
@@ -324,7 +324,7 @@ function reconcileMergeStateCore(
           );
           removeMergeStateFiles(basePath);
           notify(
-            `Auto-resolved ${gsdConflicts.length} .gsd/ state file conflict(s) from prior merge.`,
+            `Auto-resolved ${workflowConflicts.length} .gsd/ state file conflict(s) from prior merge.`,
             "info",
           );
         } catch (e) {

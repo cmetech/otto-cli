@@ -12,7 +12,7 @@ import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-ag
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 
 import { extractTrace, type ExecutionTrace } from "./session-forensics.js";
 import { nativeParseJsonlTail } from "./native-parser-bridge.js";
@@ -27,7 +27,7 @@ import { verifyExpectedArtifact } from "./auto-recovery.js";
 import { deriveState } from "./state.js";
 import { isAutoActive } from "./auto.js";
 import { loadPrompt } from "./prompt-loader.js";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { isDbAvailable, getAllMilestones, getMilestoneSlices, getSliceTasks } from "./db.js";
 import { isClosedStatus } from "./status-guards.js";
 import { formatDuration } from "../shared/format-utils.js";
@@ -99,7 +99,7 @@ interface DbCompletionCounts {
 }
 
 interface ForensicReport {
-  gsdVersion: string;
+  workflowVersion: string;
   timestamp: string;
   basePath: string;
   activeMilestone: string | null;
@@ -195,7 +195,7 @@ export async function handleForensics(
   }
 
   const basePath = process.cwd();
-  const root = gsdRoot(basePath);
+  const root = workflowRoot(basePath);
   if (!existsSync(root)) {
     ctx.ui.notify("No GSD state found. Run /gsd auto first.", "warning");
     return;
@@ -243,17 +243,17 @@ export async function handleForensics(
 
   // Derive workflow source dir for prompt — fall back to ~/.loop24/agent/extensions/workflow/
   // when import.meta.url resolves to the npm-global install path (Windows).
-  let gsdSourceDir = dirname(fileURLToPath(import.meta.url));
-  if (!existsSync(join(gsdSourceDir, "prompts"))) {
-    const fallback = join(gsdHome(), "agent", "extensions", "workflow");
-    if (existsSync(join(fallback, "prompts"))) gsdSourceDir = fallback;
+  let workflowSourceDir = dirname(fileURLToPath(import.meta.url));
+  if (!existsSync(join(workflowSourceDir, "prompts"))) {
+    const fallback = join(workflowHome(), "agent", "extensions", "workflow");
+    if (existsSync(join(fallback, "prompts"))) workflowSourceDir = fallback;
   }
 
   const forensicData = formatReportForPrompt(report);
   const content = loadPrompt("forensics", {
     problemDescription,
     forensicData,
-    gsdSourceDir,
+    workflowSourceDir,
     dedupSection,
   });
 
@@ -330,7 +330,7 @@ export async function buildForensicReport(basePath: string): Promise<ForensicRep
   // 8. version — use GSD_VERSION env var set by the loader at startup.
   // Extensions run from ~/.loop24/agent/extensions/workflow/ at runtime, so path-traversal
   // from import.meta.url would resolve to ~/package.json (wrong on every system).
-  const gsdVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || "unknown";
+  const workflowVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || "unknown";
 
   // 9. Scan journal for flow timeline and structured events
   const journalSummary = scanJournalForForensics(basePath);
@@ -359,7 +359,7 @@ export async function buildForensicReport(basePath: string): Promise<ForensicRep
   detectJournalAnomalies(journalSummary, anomalies);
 
   return {
-    gsdVersion,
+    workflowVersion,
     timestamp: new Date().toISOString(),
     basePath,
     activeMilestone,
@@ -446,7 +446,7 @@ function resolveActivityDirs(basePath: string, activeMilestone?: string | null):
   if (activeMilestone) {
     const wtPath = getAutoWorktreePath(basePath, activeMilestone);
     if (wtPath) {
-      const wtActivityDir = join(gsdRoot(wtPath), "activity");
+      const wtActivityDir = join(workflowRoot(wtPath), "activity");
       if (existsSync(wtActivityDir)) {
         dirs.push(wtActivityDir);
       }
@@ -454,7 +454,7 @@ function resolveActivityDirs(basePath: string, activeMilestone?: string | null):
   }
 
   // Always include root activity logs
-  const rootActivityDir = join(gsdRoot(basePath), "activity");
+  const rootActivityDir = join(workflowRoot(basePath), "activity");
   dirs.push(rootActivityDir);
 
   return dirs;
@@ -482,7 +482,7 @@ const MAX_JOURNAL_RECENT_EVENTS = 20;
  */
 function scanJournalForForensics(basePath: string): JournalSummary | null {
   try {
-    const journalDir = join(gsdRoot(basePath), "journal");
+    const journalDir = join(workflowRoot(basePath), "journal");
     if (!existsSync(journalDir)) return null;
 
     const files = readdirSync(journalDir).filter(f => f.endsWith(".jsonl")).sort();
@@ -635,7 +635,7 @@ export function splitCompletedKey(key: string): { unitType: string; unitId: stri
 }
 
 function loadCompletedKeys(basePath: string): string[] {
-  const file = join(gsdRoot(basePath), "completed-units.json");
+  const file = join(workflowRoot(basePath), "completed-units.json");
   try {
     if (existsSync(file)) {
       return JSON.parse(readFileSync(file, "utf-8"));
@@ -955,7 +955,7 @@ function detectJournalAnomalies(journal: JournalSummary | null, anomalies: Foren
 // ─── Report Persistence ───────────────────────────────────────────────────────
 
 function saveForensicReport(basePath: string, report: ForensicReport, problemDescription: string): string {
-  const dir = join(gsdRoot(basePath), "forensics");
+  const dir = join(workflowRoot(basePath), "forensics");
   mkdirSync(dir, { recursive: true });
 
   const ts = new Date().toISOString().replace(/[:.]/g, "-").replace("T", "-").slice(0, 19);
@@ -967,7 +967,7 @@ function saveForensicReport(basePath: string, report: ForensicReport, problemDes
     `# GSD Forensic Report`,
     ``,
     `**Generated:** ${report.timestamp}`,
-    `**GSD Version:** ${report.gsdVersion}`,
+    `**GSD Version:** ${report.workflowVersion}`,
     `**Active Milestone:** ${report.activeMilestone ?? "none"}`,
     `**Active Slice:** ${report.activeSlice ?? "none"}`,
     `**Active Worktree:** ${report.activeWorktree ?? "none"}`,
@@ -1118,7 +1118,7 @@ export interface ForensicsMarker {
  * the forensics prompt on follow-up turns.  (#2941)
  */
 export function writeForensicsMarker(basePath: string, reportPath: string, promptContent: string): void {
-  const dir = join(gsdRoot(basePath), "runtime");
+  const dir = join(workflowRoot(basePath), "runtime");
   mkdirSync(dir, { recursive: true });
   const marker: ForensicsMarker = {
     reportPath,
@@ -1132,7 +1132,7 @@ export function writeForensicsMarker(basePath: string, reportPath: string, promp
  * Read the active forensics marker, or null if none exists.
  */
 export function readForensicsMarker(basePath: string): ForensicsMarker | null {
-  const markerPath = join(gsdRoot(basePath), "runtime", "active-forensics.json");
+  const markerPath = join(workflowRoot(basePath), "runtime", "active-forensics.json");
   if (!existsSync(markerPath)) return null;
   try {
     return JSON.parse(readFileSync(markerPath, "utf-8")) as ForensicsMarker;
@@ -1287,7 +1287,7 @@ function formatReportForPrompt(report: ForensicReport): string {
   } else {
     sections.push(`### Completed Keys: ${report.completedKeys.length}`);
   }
-  sections.push(`### GSD Version: ${report.gsdVersion}`);
+  sections.push(`### GSD Version: ${report.workflowVersion}`);
   sections.push(`### Active Milestone: ${report.activeMilestone ?? "none"}`);
   sections.push(`### Active Slice: ${report.activeSlice ?? "none"}`);
   if (report.activeWorktree) {
@@ -1317,9 +1317,9 @@ function redactForGitHub(text: string, basePath: string): string {
   result = result.replace(pathRe(basePath), ".");
   // Redact GSD_HOME first (when it's outside ~), then OS home.
   // Order matters: longer path must be replaced before the shorter prefix.
-  const gsdHomePath = gsdHome();
-  if (!gsdHomePath.startsWith(homedir())) {
-    result = result.replace(pathRe(gsdHomePath), "~/.gsd");
+  const workflowHomePath = workflowHome();
+  if (!workflowHomePath.startsWith(homedir())) {
+    result = result.replace(pathRe(workflowHomePath), "~/.gsd");
   }
   result = result.replace(pathRe(homedir()), "~");
 

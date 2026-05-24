@@ -18,7 +18,7 @@ const {
   setCommandSurfacePending,
   surfaceOutcomeToOpenRequest,
 } = await import("../../../web/lib/command-surface-contract.ts")
-const gsdExtension = await import("../../resources/extensions/workflow/index.ts")
+const workflowExtension = await import("../../resources/extensions/workflow/index.ts")
 
 const EXPECTED_BUILTIN_OUTCOMES = new Map<string, "rpc" | "surface" | "reject">([
   ["settings", "surface"],
@@ -62,10 +62,10 @@ const DEFERRED_BROWSER_REJECTS = [
   "quit",
 ] as const
 
-async function collectRegisteredGsdCommandRoots(): Promise<string[]> {
+async function collectRegisteredWorkflowCommandRoots(): Promise<string[]> {
   const commands = new Map<string, unknown>()
 
-  await gsdExtension.default({
+  await workflowExtension.default({
     registerCommand(name: string, options: unknown) {
       commands.set(name, options)
     },
@@ -157,7 +157,7 @@ test("browser-local aliases and legacy helpers stay explicit", async (t) => {
 })
 
 test("registered GSD command roots stay on the prompt/extension path", async () => {
-  const registeredRoots = await collectRegisteredGsdCommandRoots()
+  const registeredRoots = await collectRegisteredWorkflowCommandRoots()
   assert.deepEqual(
     registeredRoots,
     ["exit", "gsd", "kill", "worktree", "wt"],
@@ -166,9 +166,9 @@ test("registered GSD command roots stay on the prompt/extension path", async () 
 
   // Non-gsd roots are extension commands that pass through to the bridge.
   // Derived dynamically so adding a new registration fails this assertion loudly.
-  const nonGsdRoots = registeredRoots.filter((r) => r !== "gsd")
-  assert.equal(nonGsdRoots.length, 4, "expected exactly 4 non-gsd passthrough roots; update this count when adding registrations")
-  for (const root of nonGsdRoots) {
+  const nonWorkflowRoots = registeredRoots.filter((r) => r !== "gsd")
+  assert.equal(nonWorkflowRoots.length, 4, "expected exactly 4 non-gsd passthrough roots; update this count when adding registrations")
+  for (const root of nonWorkflowRoots) {
     assertPromptPassthrough(`/${root}`)
   }
 
@@ -355,11 +355,11 @@ test("GSD dispatch edge cases", async (t) => {
 })
 
 test("every GSD surface dispatches through the contract wiring end-to-end", async (t) => {
-  const gsdSurfaces = [...EXPECTED_GSD_OUTCOMES.entries()].filter(([, kind]) => kind === "surface")
+  const workflowSurfaces = [...EXPECTED_GSD_OUTCOMES.entries()].filter(([, kind]) => kind === "surface")
 
-  assert.equal(gsdSurfaces.length, 19, "should have exactly 19 GSD surface subcommands")
+  assert.equal(workflowSurfaces.length, 19, "should have exactly 19 GSD surface subcommands")
 
-  for (const [subcommand] of gsdSurfaces) {
+  for (const [subcommand] of workflowSurfaces) {
     await t.test(`/gsd ${subcommand} -> dispatch -> open request -> surface state`, () => {
       const outcome = dispatchBrowserSlashCommand(`/gsd ${subcommand}`)
       assert.equal(outcome.kind, "surface")

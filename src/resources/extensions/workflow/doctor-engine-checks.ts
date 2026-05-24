@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import type { DoctorIssue } from "./doctor-types.js";
 import { isDbAvailable, _getAdapter } from "./db.js";
-import { resolveGsdPathContract, resolveMilestoneFile } from "./paths.js";
+import { resolveWorkflowPathContract, resolveMilestoneFile } from "./paths.js";
 import { deriveState } from "./state.js";
 import { readEvents } from "./workflow-events.js";
 import { renderAllProjections } from "./workflow-projections.js";
@@ -13,7 +13,7 @@ export async function checkEngineHealth(
   issues: DoctorIssue[],
   fixesApplied: string[],
 ): Promise<void> {
-  const dbPath = resolveGsdPathContract(basePath).projectDb;
+  const dbPath = resolveWorkflowPathContract(basePath).projectDb;
 
   if (!isDbAvailable() && existsSync(dbPath)) {
     issues.push({

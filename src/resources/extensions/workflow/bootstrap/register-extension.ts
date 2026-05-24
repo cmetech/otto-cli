@@ -84,7 +84,7 @@ export function installEpipeGuard(): void {
   }
 }
 
-export function registerGsdExtension(pi: ExtensionAPI): void {
+export function registerWorkflowExtension(pi: ExtensionAPI): void {
   // Note: registerWorkflowCommand is called by index.ts before this function,
   // so we intentionally skip it here to avoid double-registration.
   registerLazyWorktreeCommands(pi);

@@ -19,7 +19,7 @@
 import { createRequire } from "node:module";
 import { existsSync, readFileSync, readdirSync, mkdirSync, unlinkSync, rmSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { gsdRoot, normalizeRealPath } from "./paths.js";
+import { workflowRoot, normalizeRealPath } from "./paths.js";
 import { atomicWriteSync } from "./atomic-write.js";
 import { markWorkerStoppingByPid } from "./db/auto-workers.js";
 
@@ -82,12 +82,12 @@ let _lockCompromised: boolean = false;
 /** Whether we've already registered a process.on('exit') handler. */
 let _exitHandlerRegistered: boolean = false;
 
-/** Registry of all gsdDir paths where locks were created during this session.
- *  The exit handler cleans ALL of these, not just the current gsdRoot(). (#1578) */
+/** Registry of all workflowDir paths where locks were created during this session.
+ *  The exit handler cleans ALL of these, not just the current workflowRoot(). (#1578) */
 const _lockDirRegistry: Set<string> = new Set();
 
 /** Snapshotted lock file path — captured at acquireSessionLock time to avoid
- *  gsdRoot() resolving differently in worktree vs project root contexts (#1363). */
+ *  workflowRoot() resolving differently in worktree vs project root contexts (#1363). */
 let _snapshotLockPath: string | null = null;
 
 /** Timestamp when the session lock was acquired — used to detect false-positive
@@ -112,15 +112,15 @@ export function effectiveLockFile(): string {
  * In parallel worker mode, uses `.loop24/parallel/<milestoneId>/` instead of
  * `.loop24/` so workers don't contend on the same proper-lockfile directory (#2184).
  */
-export function effectiveLockTarget(gsdDir: string): string {
+export function effectiveLockTarget(workflowDir: string): string {
   const mid = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK) : null;
-  return mid ? join(gsdDir, "parallel", mid) : gsdDir;
+  return mid ? join(workflowDir, "parallel", mid) : workflowDir;
 }
 
 function lockPath(basePath: string): string {
   // If we have a snapshotted path from acquisition, use it for consistency
   if (_snapshotLockPath) return _snapshotLockPath;
-  return join(gsdRoot(basePath), effectiveLockFile());
+  return join(workflowRoot(basePath), effectiveLockFile());
 }
 
 // ─── Stray Lock Cleanup ─────────────────────────────────────────────────────
@@ -133,15 +133,15 @@ function lockPath(basePath: string): string {
  * Also removes stray proper-lockfile directories beyond the canonical `.gsd.lock/`.
  */
 export function cleanupStrayLockFiles(basePath: string): void {
-  const gsdDir = gsdRoot(basePath);
+  const workflowDir = workflowRoot(basePath);
 
   // Clean numbered auto lock files inside .loop24/
   try {
-    if (existsSync(gsdDir)) {
-      for (const entry of readdirSync(gsdDir)) {
+    if (existsSync(workflowDir)) {
+      for (const entry of readdirSync(workflowDir)) {
         // Match "auto <N>.lock" or "auto (<N>).lock" variants but NOT the canonical "auto.lock"
         if (entry !== LOCK_FILE && /^auto\s.+\.lock$/i.test(entry)) {
-          try { unlinkSync(join(gsdDir, entry)); } catch { /* best-effort */ }
+          try { unlinkSync(join(workflowDir, entry)); } catch { /* best-effort */ }
         }
       }
     }
@@ -150,12 +150,12 @@ export function cleanupStrayLockFiles(basePath: string): void {
   // Clean stray proper-lockfile directories (e.g. ".gsd 2.lock/")
   // The canonical one is ".gsd.lock/" — anything else is stray.
   try {
-    const parentDir = dirname(gsdDir);
-    const gsdDirName = gsdDir.split("/").pop() || ".gsd";
+    const parentDir = dirname(workflowDir);
+    const workflowDirName = workflowDir.split("/").pop() || ".gsd";
     if (existsSync(parentDir)) {
       for (const entry of readdirSync(parentDir)) {
         // Match ".gsd <N>.lock" or ".gsd (<N>).lock" directories but NOT ".gsd.lock"
-        if (entry !== `${gsdDirName}.lock` && entry.startsWith(gsdDirName) && entry.endsWith(".lock")) {
+        if (entry !== `${workflowDirName}.lock` && entry.startsWith(workflowDirName) && entry.endsWith(".lock")) {
           const fullPath = join(parentDir, entry);
           try {
             const stat = statSync(fullPath);
@@ -175,7 +175,7 @@ export function cleanupStrayLockFiles(basePath: string): void {
  * Only registers once — subsequent calls are no-ops.
  */
 function ensureExitHandler(_gsdDir: string): void {
-  // Register the gsdDir so exit cleanup covers it
+  // Register the workflowDir so exit cleanup covers it
   _lockDirRegistry.add(_gsdDir);
 
   if (_exitHandlerRegistered) return;
@@ -306,8 +306,8 @@ export function acquireSessionLock(basePath: string): SessionLockResult {
     return acquireFallbackLock(basePath, lp, lockData);
   }
 
-  const gsdDir = gsdRoot(basePath);
-  const lockTarget = effectiveLockTarget(gsdDir);
+  const workflowDir = workflowRoot(basePath);
+  const lockTarget = effectiveLockTarget(workflowDir);
 
   // #3218: Pre-flight stale lock cleanup — if the .lock/ directory exists but
   // no auto.lock metadata is present (or the PID is dead), remove the lock
@@ -553,8 +553,8 @@ export function releaseSessionLock(basePath: string): void {
 
   // Remove the proper-lockfile directory for the current lock target.
   // In parallel worker mode, this is .loop24/parallel/<MID>.lock/ (#2184).
-  const gsdDir = gsdRoot(basePath);
-  const lockTarget = effectiveLockTarget(gsdDir);
+  const workflowDir = workflowRoot(basePath);
+  const lockTarget = effectiveLockTarget(workflowDir);
   try {
     const lockDir = join(lockTarget + ".lock");
     if (ownsPrimaryLock && existsSync(lockDir)) rmSync(lockDir, { recursive: true, force: true });
@@ -562,7 +562,7 @@ export function releaseSessionLock(basePath: string): void {
     // Non-fatal
   }
   // Also clean the per-milestone parallel directory itself if it exists
-  if (ownsPrimaryLock && lockTarget !== gsdDir) {
+  if (ownsPrimaryLock && lockTarget !== workflowDir) {
     try {
       if (existsSync(lockTarget)) rmSync(lockTarget, { recursive: true, force: true });
     } catch {
@@ -621,8 +621,8 @@ export function isSessionLockProcessAlive(data: SessionLockData): boolean {
  */
 export function removeStaleSessionLock(basePath: string): boolean {
   const lp = lockPath(basePath);
-  const gsdDir = gsdRoot(basePath);
-  const lockTarget = effectiveLockTarget(gsdDir);
+  const workflowDir = workflowRoot(basePath);
+  const lockTarget = effectiveLockTarget(workflowDir);
   const lockDir = lockTarget + ".lock";
 
   const existingData = readExistingLockData(lp);

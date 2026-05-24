@@ -10,9 +10,9 @@ import { resolvePreferredModelConfig } from "../auto-model-selection.ts";
 
 function withRoutingPrefs<T>(fn: () => T): T {
   const originalCwd = process.cwd();
-  const originalGsdHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.GSD_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-interactive-routing-"));
-  const tempGsdHome = mkdtempSync(join(tmpdir(), "gsd-interactive-routing-home-"));
+  const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-interactive-routing-home-"));
 
   try {
     mkdirSync(join(tempProject, ".gsd"), { recursive: true });
@@ -30,15 +30,15 @@ function withRoutingPrefs<T>(fn: () => T): T {
       ].join("\n"),
       "utf-8",
     );
-    process.env.GSD_HOME = tempGsdHome;
+    process.env.GSD_HOME = tempWorkflowHome;
     process.chdir(tempProject);
     return fn();
   } finally {
     process.chdir(originalCwd);
-    if (originalGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalGsdHome;
+    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
-    rmSync(tempGsdHome, { recursive: true, force: true });
+    rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
 }
 

@@ -58,9 +58,9 @@ export function registerExecTools(pi: ExtensionAPI): void {
       ),
     }),
     async execute(_toolCallId, params, _signal, _onUpdate, _ctx) {
-      const { executeGsdExec } = await import("../tools/exec-tool.js");
+      const { executeWorkflowExec } = await import("../tools/exec-tool.js");
       const baseDir = resolveCtxCwd(_ctx);
-      return executeGsdExec(params as Parameters<typeof executeGsdExec>[0], {
+      return executeWorkflowExec(params as Parameters<typeof executeWorkflowExec>[0], {
         baseDir,
         preferences: await loadContextModePreferences(baseDir),
       });

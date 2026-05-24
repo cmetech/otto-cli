@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { EXEC_DEFAULTS, runExecSandbox, type ExecSandboxOptions } from '../exec-sandbox.ts';
-import { buildExecOptions, executeGsdExec } from '../tools/exec-tool.ts';
+import { buildExecOptions, executeWorkflowExec } from '../tools/exec-tool.ts';
 import { isContextModeEnabled } from '../preferences-types.ts';
 import { validatePreferences } from '../preferences-validation.ts';
 
@@ -137,10 +137,10 @@ test('runExecSandbox: rewrites NUL redirects for bash on Windows', async () => {
 
 // ── exec-tool executor ────────────────────────────────────────────────────
 
-test('executeGsdExec: runs by default when context_mode is unset', async () => {
+test('executeWorkflowExec: runs by default when context_mode is unset', async () => {
   const base = freshBase();
   try {
-    const result = await executeGsdExec(
+    const result = await executeWorkflowExec(
       { runtime: 'bash', script: 'echo default-on-run' },
       { baseDir: base, preferences: {} },
     );
@@ -153,10 +153,10 @@ test('executeGsdExec: runs by default when context_mode is unset', async () => {
   }
 });
 
-test('executeGsdExec: runs when preferences is null (fresh project)', async () => {
+test('executeWorkflowExec: runs when preferences is null (fresh project)', async () => {
   const base = freshBase();
   try {
-    const result = await executeGsdExec(
+    const result = await executeWorkflowExec(
       { runtime: 'bash', script: 'echo null-prefs-run' },
       { baseDir: base, preferences: null },
     );
@@ -167,10 +167,10 @@ test('executeGsdExec: runs when preferences is null (fresh project)', async () =
   }
 });
 
-test('executeGsdExec: blocked only when context_mode.enabled=false', async () => {
+test('executeWorkflowExec: blocked only when context_mode.enabled=false', async () => {
   const base = freshBase();
   try {
-    const result = await executeGsdExec(
+    const result = await executeWorkflowExec(
       { runtime: 'bash', script: 'echo should-not-run' },
       { baseDir: base, preferences: { context_mode: { enabled: false } } },
     );
@@ -181,10 +181,10 @@ test('executeGsdExec: blocked only when context_mode.enabled=false', async () =>
   }
 });
 
-test('executeGsdExec: runs when enabled explicitly set to true', async () => {
+test('executeWorkflowExec: runs when enabled explicitly set to true', async () => {
   const base = freshBase();
   try {
-    const result = await executeGsdExec(
+    const result = await executeWorkflowExec(
       { runtime: 'bash', script: 'echo explicit-on' },
       { baseDir: base, preferences: { context_mode: { enabled: true } } },
     );
@@ -195,10 +195,10 @@ test('executeGsdExec: runs when enabled explicitly set to true', async () => {
   }
 });
 
-test('executeGsdExec: forwards custom exec_env_allowlist from preferences', async () => {
+test('executeWorkflowExec: forwards custom exec_env_allowlist from preferences', async () => {
   const base = freshBase();
   try {
-    const result = await executeGsdExec(
+    const result = await executeWorkflowExec(
       {
         runtime: 'bash',
         script: 'printf "allowed=%s blocked=%s\\n" "$ALLOWED" "$WORKFLOW_BLOCKED"',
@@ -227,10 +227,10 @@ test('executeGsdExec: forwards custom exec_env_allowlist from preferences', asyn
   }
 });
 
-test('executeGsdExec: enforces per-call timeout override end-to-end', async () => {
+test('executeWorkflowExec: enforces per-call timeout override end-to-end', async () => {
   const base = freshBase();
   try {
-    const result = await executeGsdExec(
+    const result = await executeWorkflowExec(
       { runtime: 'bash', script: 'sleep 2', timeout_ms: 1 },
       { baseDir: base, preferences: { context_mode: { enabled: true, exec_timeout_ms: 10_000 } } },
     );
@@ -241,10 +241,10 @@ test('executeGsdExec: enforces per-call timeout override end-to-end', async () =
   }
 });
 
-test('executeGsdExec: rejects empty script', async () => {
+test('executeWorkflowExec: rejects empty script', async () => {
   const base = freshBase();
   try {
-    const result = await executeGsdExec(
+    const result = await executeWorkflowExec(
       { runtime: 'bash', script: '   ' },
       { baseDir: base, preferences: { context_mode: { enabled: true } } },
     );
@@ -255,14 +255,14 @@ test('executeGsdExec: rejects empty script', async () => {
   }
 });
 
-test('executeGsdExec: rejects original-root scripts from milestone worktrees', async () => {
+test('executeWorkflowExec: rejects original-root scripts from milestone worktrees', async () => {
   const base = freshBase();
   try {
     const originalRoot = join(base, 'project');
     const worktree = join(originalRoot, '.gsd', 'worktrees', 'M004');
     mkdirSync(worktree, { recursive: true });
 
-    const result = await executeGsdExec(
+    const result = await executeWorkflowExec(
       { runtime: 'bash', script: `cd ${originalRoot} && node todo.js --help` },
       { baseDir: worktree, preferences: { context_mode: { enabled: true } } },
     );
@@ -278,11 +278,11 @@ test('executeGsdExec: rejects original-root scripts from milestone worktrees', a
   }
 });
 
-test('executeGsdExec: rejects macOS /var alias of original root from milestone worktrees', async () => {
+test('executeWorkflowExec: rejects macOS /var alias of original root from milestone worktrees', async () => {
   const originalRoot = '/var/folders/example/project';
   const realpathedWorktree = '/private/var/folders/example/project/.gsd/worktrees/M004';
 
-  const result = await executeGsdExec(
+  const result = await executeWorkflowExec(
     { runtime: 'bash', script: `cd ${originalRoot} && node todo.js --help` },
     { baseDir: realpathedWorktree, preferences: { context_mode: { enabled: true } } },
   );
@@ -295,7 +295,7 @@ test('executeGsdExec: rejects macOS /var alias of original root from milestone w
   );
 });
 
-test('executeGsdExec: rejects original-root traversal after shell boolean operators', async () => {
+test('executeWorkflowExec: rejects original-root traversal after shell boolean operators', async () => {
   const base = freshBase();
   try {
     const originalRoot = join(base, 'project');
@@ -308,7 +308,7 @@ test('executeGsdExec: rejects original-root traversal after shell boolean operat
     ];
 
     for (const script of scripts) {
-      const result = await executeGsdExec(
+      const result = await executeWorkflowExec(
         { runtime: 'bash', script },
         { baseDir: worktree, preferences: { context_mode: { enabled: true } } },
       );
@@ -321,14 +321,14 @@ test('executeGsdExec: rejects original-root traversal after shell boolean operat
   }
 });
 
-test('executeGsdExec: allows active worktree paths from milestone worktrees', async () => {
+test('executeWorkflowExec: allows active worktree paths from milestone worktrees', async () => {
   const base = freshBase();
   try {
     const originalRoot = join(base, 'project');
     const worktree = join(originalRoot, '.gsd', 'worktrees', 'M004');
     mkdirSync(worktree, { recursive: true });
 
-    const result = await executeGsdExec(
+    const result = await executeWorkflowExec(
       { runtime: 'bash', script: `cd ${worktree} && pwd` },
       { baseDir: worktree, preferences: { context_mode: { enabled: true } } },
     );
@@ -340,7 +340,7 @@ test('executeGsdExec: allows active worktree paths from milestone worktrees', as
   }
 });
 
-test('executeGsdExec: rejects relative traversal to original root from milestone worktree', async () => {
+test('executeWorkflowExec: rejects relative traversal to original root from milestone worktree', async () => {
   const base = freshBase();
   try {
     const originalRoot = join(base, 'project');
@@ -354,7 +354,7 @@ test('executeGsdExec: rejects relative traversal to original root from milestone
     ];
 
     for (const script of scripts) {
-      const result = await executeGsdExec(
+      const result = await executeWorkflowExec(
         { runtime: 'bash', script },
         { baseDir: worktree, preferences: { context_mode: { enabled: true } } },
       );

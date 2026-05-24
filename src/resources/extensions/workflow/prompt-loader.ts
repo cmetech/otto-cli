@@ -21,7 +21,7 @@ import { WorkflowError, PARSE_ERROR } from "./errors.js";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { logWarning } from "./workflow-logger.js";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 
 type ExistsFn = (path: string) => boolean;
 
@@ -34,21 +34,21 @@ function hasRequiredExtensionAssets(rootDir: string, exists: ExistsFn = existsSy
 
 export function resolveExtensionDirFromCandidates(
   moduleDir: string,
-  agentGsdDir: string,
+  agentWorkflowDir: string,
   exists: ExistsFn = existsSync,
 ): string {
   const moduleUsable = hasRequiredExtensionAssets(moduleDir, exists);
-  const agentUsable = hasRequiredExtensionAssets(agentGsdDir, exists);
+  const agentUsable = hasRequiredExtensionAssets(agentWorkflowDir, exists);
 
   // Prefer the user-local extension tree when both are valid. This avoids
   // leaking npm/global-install paths into prompts on Windows.
-  if (agentUsable) return agentGsdDir;
+  if (agentUsable) return agentWorkflowDir;
   if (moduleUsable) return moduleDir;
 
   // Degraded fallback: if required template is missing in both locations,
   // keep previous behavior and prefer whichever still has prompts/.
   if (exists(join(moduleDir, "prompts"))) return moduleDir;
-  if (exists(join(agentGsdDir, "prompts"))) return agentGsdDir;
+  if (exists(join(agentWorkflowDir, "prompts"))) return agentWorkflowDir;
   return moduleDir;
 }
 
@@ -64,8 +64,8 @@ export function resolveExtensionDirFromCandidates(
  */
 function resolveExtensionDir(): string {
   const moduleDir = dirname(fileURLToPath(import.meta.url));
-  const agentGsdDir = join(gsdHome(), "agent", "extensions", "workflow");
-  return resolveExtensionDirFromCandidates(moduleDir, agentGsdDir);
+  const agentWorkflowDir = join(workflowHome(), "agent", "extensions", "workflow");
+  return resolveExtensionDirFromCandidates(moduleDir, agentWorkflowDir);
 }
 
 const __extensionDir = resolveExtensionDir();

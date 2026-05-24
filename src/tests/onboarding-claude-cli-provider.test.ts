@@ -8,8 +8,8 @@ import { join } from "node:path"
 const resolveTsPath = join(process.cwd(), "src", "resources", "extensions", "gsd", "tests", "resolve-ts.mjs")
 
 test("onboarding claude-cli path persists defaultProvider to settings.json", (t) => {
-  const gsdHome = mkdtempSync(join(tmpdir(), "gsd-onboarding-claude-cli-"))
-  t.after(() => rmSync(gsdHome, { recursive: true, force: true }))
+  const workflowHome = mkdtempSync(join(tmpdir(), "gsd-onboarding-claude-cli-"))
+  t.after(() => rmSync(workflowHome, { recursive: true, force: true }))
 
   execFileSync(
     process.execPath,
@@ -39,9 +39,9 @@ test("onboarding claude-cli path persists defaultProvider to settings.json", (t)
         if (!configured) throw new Error("claude-cli onboarding did not complete");
       `,
     ],
-    { env: { ...process.env, GSD_HOME: gsdHome }, stdio: "pipe" },
+    { env: { ...process.env, GSD_HOME: workflowHome }, stdio: "pipe" },
   )
 
-  const settings = JSON.parse(readFileSync(join(gsdHome, "agent", "settings.json"), "utf-8"))
+  const settings = JSON.parse(readFileSync(join(workflowHome, "agent", "settings.json"), "utf-8"))
   assert.equal(settings.defaultProvider, "claude-code")
 })

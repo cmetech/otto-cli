@@ -12,7 +12,7 @@ import { readForensicsMarker } from "../forensics.js";
 import { resolveAllSkillReferences, renderPreferencesForSystemPrompt, loadEffectiveGSDPreferences } from "../preferences.js";
 import { resolveModelWithFallbacksForUnit } from "../preferences-models.js";
 import { resolveSkillReference } from "../preferences-skills.js";
-import { resolveGsdRootFile, resolveSliceFile, resolveSlicePath, resolveTaskFile, resolveTaskFiles, resolveTasksDir, relSliceFile, relSlicePath, relTaskFile } from "../paths.js";
+import { resolveWorkflowRootFile, resolveSliceFile, resolveSlicePath, resolveTaskFile, resolveTaskFiles, resolveTasksDir, relSliceFile, relSlicePath, relTaskFile } from "../paths.js";
 import { extractIntroAndRules } from "../knowledge-parser.js";
 import { ensureCodebaseMapFresh, readCodebaseMap } from "../codebase-generator.js";
 import { hasSkillSnapshot, detectNewSkills, formatSkillsXml } from "../skill-discovery.js";
@@ -22,7 +22,7 @@ import { deriveState } from "../state.js";
 import { formatOverridesSection, formatShortcut, loadActiveOverrides, loadFile, parseContinue, parseSummary } from "../files.js";
 import { toPosixPath } from "../../shared/mod.js";
 import { autoEnableCmuxPreferences } from "../commands-cmux.js";
-import { gsdHome } from "../home.js";
+import { workflowHome } from "../home.js";
 
 const DEFAULT_CONTEXT_MESSAGE_MAX_CHARS = 4_000;
 const DEFAULT_KNOWLEDGE_MAX_CHARS = 12_000;
@@ -88,7 +88,7 @@ function buildBundledSkillsTable(): string {
 
 function warnDeprecatedAgentInstructions(): void {
   const paths = [
-    join(gsdHome(), "agent-instructions.md"),
+    join(workflowHome(), "agent-instructions.md"),
     join(process.cwd(), ".gsd", "agent-instructions.md"),
   ];
   for (const path of paths) {
@@ -193,7 +193,7 @@ export async function buildBeforeAgentStartResult(
     logWarning("bootstrap", `memory consolidation scan failed: ${(e as Error).message}`);
   }
 
-  const { block: knowledgeBlock, globalSizeKb } = loadKnowledgeBlock(gsdHome(), basePath);
+  const { block: knowledgeBlock, globalSizeKb } = loadKnowledgeBlock(workflowHome(), basePath);
   if (globalSizeKb > 4) {
     ctx.ui.notify(
       `GSD: ~/.gsd/agent/KNOWLEDGE.md is ${globalSizeKb.toFixed(1)}KB — consider trimming to keep system prompt lean.`,
@@ -223,7 +223,7 @@ export async function buildBeforeAgentStartResult(
     logWarning("bootstrap", `CODEBASE refresh failed: ${(e as Error).message}`);
   }
 
-  const codebasePath = resolveGsdRootFile(process.cwd(), "CODEBASE");
+  const codebasePath = resolveWorkflowRootFile(process.cwd(), "CODEBASE");
   const rawCodebase = readCodebaseMap(process.cwd());
   if (existsSync(codebasePath) && rawCodebase) {
     try {
@@ -405,13 +405,13 @@ export async function loadMemoryBlock(
   }
 }
 
-export function loadKnowledgeBlock(gsdHomeDir: string, cwd: string): { block: string; globalSizeKb: number } {
+export function loadKnowledgeBlock(workflowHomeDir: string, cwd: string): { block: string; globalSizeKb: number } {
   // 1. Global knowledge (~/.loop24/agent/KNOWLEDGE.md) — cross-project,
   //    user-maintained. NOT migrated to memories (which are project-scoped),
   //    so the full file is injected unchanged.
   let globalKnowledge = "";
   let globalSizeKb = 0;
-  const globalKnowledgePath = join(gsdHomeDir, "agent", "KNOWLEDGE.md");
+  const globalKnowledgePath = join(workflowHomeDir, "agent", "KNOWLEDGE.md");
   if (existsSync(globalKnowledgePath)) {
     try {
       const content = readFileSync(globalKnowledgePath, "utf-8").trim();
@@ -431,7 +431,7 @@ export function loadKnowledgeBlock(gsdHomeDir: string, cwd: string): { block: st
   //    Patterns/Lessons content in the prompt. Rules stay manual per
   //    ADR-013 line 39 and have no memory equivalent.
   let projectKnowledge = "";
-  const knowledgePath = resolveGsdRootFile(cwd, "KNOWLEDGE");
+  const knowledgePath = resolveWorkflowRootFile(cwd, "KNOWLEDGE");
   if (existsSync(knowledgePath)) {
     try {
       const raw = readFileSync(knowledgePath, "utf-8").trim();

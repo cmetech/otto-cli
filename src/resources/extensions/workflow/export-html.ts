@@ -35,7 +35,7 @@ import type { UnitMetrics } from './metrics.js';
 export interface HtmlReportOptions {
   projectName: string;
   projectPath: string;
-  gsdVersion: string;
+  workflowVersion: string;
   milestoneId?: string;
   indexRelPath?: string;
 }
@@ -72,7 +72,7 @@ export function generateHtmlReport(
     documentTitle: `GSD Report — ${opts.projectName}${opts.milestoneId ? ` — ${opts.milestoneId}` : ''}`,
     subtitle: opts.projectPath,
     kind: 'Report',
-    version: opts.gsdVersion,
+    version: opts.workflowVersion,
     generatedAt: generated,
     headerActionsHtml: backLink,
     footerNote: opts.milestoneId ? `${opts.projectName} / ${opts.milestoneId}` : opts.projectName,

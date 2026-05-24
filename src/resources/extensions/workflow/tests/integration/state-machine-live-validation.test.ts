@@ -85,8 +85,8 @@ function makeTempDir(): string {
  */
 function createFullFixture(): string {
   const base = makeTempDir();
-  const gsdDir = join(base, ".gsd");
-  const m001Dir = join(gsdDir, "milestones", "M001");
+  const workflowDir = join(base, ".gsd");
+  const m001Dir = join(workflowDir, "milestones", "M001");
   const s01Dir = join(m001Dir, "slices", "S01");
   const s01Tasks = join(s01Dir, "tasks");
   const s02Dir = join(m001Dir, "slices", "S02");
@@ -180,7 +180,7 @@ function createFullFixture(): string {
 
   // REQUIREMENTS.md
   writeFileSync(
-    join(gsdDir, "REQUIREMENTS.md"),
+    join(workflowDir, "REQUIREMENTS.md"),
     [
       "# Requirements",
       "",
@@ -194,7 +194,7 @@ function createFullFixture(): string {
 
   // DECISIONS.md
   writeFileSync(
-    join(gsdDir, "DECISIONS.md"),
+    join(workflowDir, "DECISIONS.md"),
     [
       "# Decisions",
       "",

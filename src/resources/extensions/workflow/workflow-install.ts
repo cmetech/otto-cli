@@ -27,7 +27,7 @@ import { createHash } from "node:crypto";
 import { parse as parseYaml } from "yaml";
 
 import { validateDefinition } from "./definition-loader.js";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -73,7 +73,7 @@ export interface InstallTarget {
 }
 
 export function globalInstallDir(): string {
-  return join(gsdHome(), "workflows");
+  return join(workflowHome(), "workflows");
 }
 
 export function projectInstallDir(basePath: string): string {

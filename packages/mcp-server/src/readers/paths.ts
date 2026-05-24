@@ -10,20 +10,20 @@ import { execFileSync } from 'node:child_process';
 //
 // Read-only MCP tools (gsd_progress, gsd_roadmap, gsd_doctor, …) hammer the
 // filesystem on every call: gsd_roadmap alone resolves milestone directories
-// 5–6× per milestone, and resolveGsdRoot can spawn `git rev-parse` for
+// 5–6× per milestone, and resolveWorkflowRoot can spawn `git rev-parse` for
 // non-direct .loop24/ layouts. Without caching, an MCP host pipelining several
 // tool calls blocks the event loop on dozens of redundant readdir/stat
 // syscalls per request.
 //
 // Two layers:
-//   * resolveGsdRoot — short TTL (the result depends on a possibly-expensive
+//   * resolveWorkflowRoot — short TTL (the result depends on a possibly-expensive
 //     git subprocess; projectDir is stable for the life of an MCP session).
 //   * readdir-backed lookups — keyed on the directory's mtime, so any add/
 //     remove/rename invalidates the cache automatically.
 
 const ROOT_TTL_MS = 30_000;
 const MAX_CACHE_ENTRIES = 256;
-const gsdRootCache = new Map<string, { value: string; expiresAt: number }>();
+const workflowRootCache = new Map<string, { value: string; expiresAt: number }>();
 
 function setBoundedCache<K, V>(cache: Map<K, V>, key: K, value: V): void {
   if (cache.has(key)) cache.delete(key);
@@ -35,19 +35,19 @@ function setBoundedCache<K, V>(cache: Map<K, V>, key: K, value: V): void {
   }
 }
 
-function cachedGsdRoot(projectDir: string): string | null {
-  const hit = gsdRootCache.get(projectDir);
+function cachedWorkflowRoot(projectDir: string): string | null {
+  const hit = workflowRootCache.get(projectDir);
   if (!hit) return null;
   if (hit.expiresAt < Date.now()) {
-    gsdRootCache.delete(projectDir);
+    workflowRootCache.delete(projectDir);
     return null;
   }
-  setBoundedCache(gsdRootCache, projectDir, hit);
+  setBoundedCache(workflowRootCache, projectDir, hit);
   return hit.value;
 }
 
-function rememberGsdRoot(projectDir: string, value: string): void {
-  setBoundedCache(gsdRootCache, projectDir, { value, expiresAt: Date.now() + ROOT_TTL_MS });
+function rememberWorkflowRoot(projectDir: string, value: string): void {
+  setBoundedCache(workflowRootCache, projectDir, { value, expiresAt: Date.now() + ROOT_TTL_MS });
 }
 
 interface MtimeEntry<V> { mtimeMs: number; value: V }
@@ -102,7 +102,7 @@ function cloneTaskFiles(
 
 /** @internal — exported for testing only */
 export function _resetReaderCaches(): void {
-  gsdRootCache.clear();
+  workflowRootCache.clear();
   milestoneIdsCache.clear();
   milestoneDirCache.clear();
   sliceIdsCache.clear();
@@ -119,16 +119,16 @@ export function _resetReaderCaches(): void {
  *   3. Walk up from projectDir
  *   4. Fallback: projectDir/.gsd (even if missing — for init)
  */
-export function resolveGsdRoot(projectDir: string): string {
+export function resolveWorkflowRoot(projectDir: string): string {
   const resolved = resolve(projectDir);
 
-  const cached = cachedGsdRoot(resolved);
+  const cached = cachedWorkflowRoot(resolved);
   if (cached) return cached;
 
   // Fast path: .loop24/ in the given directory
   const direct = join(resolved, '.gsd');
   if (existsSync(direct) && statSync(direct).isDirectory()) {
-    rememberGsdRoot(resolved, direct);
+    rememberWorkflowRoot(resolved, direct);
     return direct;
   }
 
@@ -141,7 +141,7 @@ export function resolveGsdRoot(projectDir: string): string {
     }).trim();
     const gitGsd = join(gitRoot, '.gsd');
     if (existsSync(gitGsd) && statSync(gitGsd).isDirectory()) {
-      rememberGsdRoot(resolved, gitGsd);
+      rememberWorkflowRoot(resolved, gitGsd);
       return gitGsd;
     }
   } catch {
@@ -153,7 +153,7 @@ export function resolveGsdRoot(projectDir: string): string {
   while (dir !== dirname(dir)) {
     const candidate = join(dir, '.gsd');
     if (existsSync(candidate) && statSync(candidate).isDirectory()) {
-      rememberGsdRoot(resolved, candidate);
+      rememberWorkflowRoot(resolved, candidate);
       return candidate;
     }
     dir = dirname(dir);
@@ -164,21 +164,21 @@ export function resolveGsdRoot(projectDir: string): string {
 }
 
 /** Resolve path to a .gsd/ root file (STATE.md, KNOWLEDGE.md, etc.) */
-export function resolveRootFile(gsdRoot: string, name: string): string {
-  return join(gsdRoot, name);
+export function resolveRootFile(workflowRoot: string, name: string): string {
+  return join(workflowRoot, name);
 }
 
 /** Resolve path to milestones directory */
-export function milestonesDir(gsdRoot: string): string {
-  return join(gsdRoot, 'milestones');
+export function milestonesDir(workflowRoot: string): string {
+  return join(workflowRoot, 'milestones');
 }
 
 /**
  * Find all milestone directory IDs (M001, M002, etc.).
  * Handles both bare (M001/) and descriptor (M001-FLIGHT-SIM/) naming.
  */
-export function findMilestoneIds(gsdRoot: string): string[] {
-  const dir = milestonesDir(gsdRoot);
+export function findMilestoneIds(workflowRoot: string): string[] {
+  const dir = milestonesDir(workflowRoot);
   if (!existsSync(dir)) return [];
 
   return readWithMtimeCache(milestoneIdsCache, dir, dir, () => {
@@ -197,8 +197,8 @@ export function findMilestoneIds(gsdRoot: string): string[] {
  * Resolve the actual directory name for a milestone ID.
  * M001 might live in M001/ or M001-SOME-DESCRIPTOR/.
  */
-export function resolveMilestoneDir(gsdRoot: string, milestoneId: string): string | null {
-  const dir = milestonesDir(gsdRoot);
+export function resolveMilestoneDir(workflowRoot: string, milestoneId: string): string | null {
+  const dir = milestonesDir(workflowRoot);
   if (!existsSync(dir)) return null;
 
   return readWithMtimeCache(milestoneDirCache, `${dir} ${milestoneId}`, dir, () => {
@@ -222,8 +222,8 @@ export function resolveMilestoneDir(gsdRoot: string, milestoneId: string): strin
  * Resolve a milestone-level file (M001-ROADMAP.md, M001-CONTEXT.md, etc.).
  * Handles various naming conventions.
  */
-export function resolveMilestoneFile(gsdRoot: string, milestoneId: string, suffix: string): string | null {
-  const mDir = resolveMilestoneDir(gsdRoot, milestoneId);
+export function resolveMilestoneFile(workflowRoot: string, milestoneId: string, suffix: string): string | null {
+  const mDir = resolveMilestoneDir(workflowRoot, milestoneId);
   if (!mDir) return null;
 
   const dirName = basename(mDir);
@@ -242,8 +242,8 @@ export function resolveMilestoneFile(gsdRoot: string, milestoneId: string, suffi
 }
 
 /** Find all slice IDs within a milestone (S01, S02, etc.) */
-export function findSliceIds(gsdRoot: string, milestoneId: string): string[] {
-  const mDir = resolveMilestoneDir(gsdRoot, milestoneId);
+export function findSliceIds(workflowRoot: string, milestoneId: string): string[] {
+  const mDir = resolveMilestoneDir(workflowRoot, milestoneId);
   if (!mDir) return [];
 
   const slicesDir = join(mDir, 'slices');
@@ -262,8 +262,8 @@ export function findSliceIds(gsdRoot: string, milestoneId: string): string[] {
 }
 
 /** Resolve the actual directory for a slice */
-export function resolveSliceDir(gsdRoot: string, milestoneId: string, sliceId: string): string | null {
-  const mDir = resolveMilestoneDir(gsdRoot, milestoneId);
+export function resolveSliceDir(workflowRoot: string, milestoneId: string, sliceId: string): string | null {
+  const mDir = resolveMilestoneDir(workflowRoot, milestoneId);
   if (!mDir) return null;
 
   const slicesDir = join(mDir, 'slices');
@@ -285,9 +285,9 @@ export function resolveSliceDir(gsdRoot: string, milestoneId: string, sliceId: s
 
 /** Resolve a slice-level file (S01-PLAN.md, etc.) */
 export function resolveSliceFile(
-  gsdRoot: string, milestoneId: string, sliceId: string, suffix: string,
+  workflowRoot: string, milestoneId: string, sliceId: string, suffix: string,
 ): string | null {
-  const sDir = resolveSliceDir(gsdRoot, milestoneId, sliceId);
+  const sDir = resolveSliceDir(workflowRoot, milestoneId, sliceId);
   if (!sDir) return null;
 
   const dirName = basename(sDir);
@@ -305,9 +305,9 @@ export function resolveSliceFile(
 
 /** Find all task files in a slice's tasks/ directory */
 export function findTaskFiles(
-  gsdRoot: string, milestoneId: string, sliceId: string,
+  workflowRoot: string, milestoneId: string, sliceId: string,
 ): Array<{ id: string; hasPlan: boolean; hasSummary: boolean }> {
-  const sDir = resolveSliceDir(gsdRoot, milestoneId, sliceId);
+  const sDir = resolveSliceDir(workflowRoot, milestoneId, sliceId);
   if (!sDir) return [];
 
   const tasksDir = join(sDir, 'tasks');

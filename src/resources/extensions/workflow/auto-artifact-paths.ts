@@ -7,8 +7,8 @@
 // function was removed entirely — callers now query WorkflowEngine directly.
 
 import {
-  gsdRoot,
-  gsdProjectionRoot,
+  workflowRoot,
+  workflowProjectionRoot,
   resolveDir,
   resolveFile,
   resolveMilestoneFile,
@@ -48,7 +48,7 @@ function resolveSliceArtifactPath(
 }
 
 function resolveProjectedMilestonePath(base: string, mid: string): string | null {
-  const milestonesDir = join(gsdProjectionRoot(base), "milestones");
+  const milestonesDir = join(workflowProjectionRoot(base), "milestones");
   const dir = resolveDir(milestonesDir, mid);
   return dir ? join(milestonesDir, dir) : null;
 }
@@ -86,15 +86,15 @@ export function resolveExpectedArtifactPath(
   const { milestone: mid, slice: sid, task: tid } = parseUnitId(unitId);
   switch (unitType) {
     case "workflow-preferences":
-      return join(gsdRoot(base), "PREFERENCES.md");
+      return join(workflowRoot(base), "PREFERENCES.md");
     case "discuss-project":
-      return join(gsdRoot(base), "PROJECT.md");
+      return join(workflowRoot(base), "PROJECT.md");
     case "discuss-requirements":
-      return join(gsdRoot(base), "REQUIREMENTS.md");
+      return join(workflowRoot(base), "REQUIREMENTS.md");
     case "research-decision":
-      return join(gsdRoot(base), "runtime", "research-decision.json");
+      return join(workflowRoot(base), "runtime", "research-decision.json");
     case "research-project":
-      return join(gsdRoot(base), "research", "PROJECT-RESEARCH-BLOCKER.md");
+      return join(workflowRoot(base), "research", "PROJECT-RESEARCH-BLOCKER.md");
     case "discuss-milestone": {
       return resolveMilestoneArtifactPath(base, mid, "CONTEXT");
     }

@@ -31,7 +31,7 @@ import {
   buildSliceFileName,
   resolveMilestoneFile,
   clearPathCache,
-  resolveGsdRootFile,
+  resolveWorkflowRootFile,
 } from "./paths.js";
 import {
   existsSync,
@@ -437,7 +437,7 @@ function getChangedFilesFromMilestoneTaggedCommits(
 ): { ok: boolean; matched: boolean; files: string[] } {
   // Primary: path-scoped log against .loop24/milestones/<id>. Fast and unbounded
   // by depth when .loop24/ is tracked in git.
-  const scoped = scanGsdTaggedCommits(basePath, milestoneId, [
+  const scoped = scanWorkflowTaggedCommits(basePath, milestoneId, [
     "log", "--format=%H%x1f%B%x1e", "HEAD", "--", `.gsd/milestones/${milestoneId}`,
   ]);
   if (!scoped.ok) return scoped;
@@ -452,7 +452,7 @@ function getChangedFilesFromMilestoneTaggedCommits(
   // Intentionally unbounded — symmetric with the primary scan, and avoids
   // reintroducing the rolling-depth failure class removed in #4699 where
   // milestone evidence aged out behind unrelated activity.
-  const unscoped = scanGsdTaggedCommits(basePath, milestoneId, [
+  const unscoped = scanWorkflowTaggedCommits(basePath, milestoneId, [
     "log", "--format=%H%x1f%B%x1e", "HEAD",
   ]);
   if (!unscoped.ok) return scoped.matched ? scoped : unscoped;
@@ -537,7 +537,7 @@ function backfillChangedFilesFromUntaggedMilestoneCommits(
       if (!isFullCommitSha(record.hash)) continue;
       if (Date.parse(record.committedAt) < milestoneStartedAt) continue;
       if (record.parents.trim().split(/\s+/).filter(Boolean).length > 1) continue;
-      if (commitMessageHasGsdTrailer(record.message)) continue;
+      if (commitMessageHasWorkflowTrailer(record.message)) continue;
 
       const commitFiles = getChangedFilesForCommit(basePath, record.hash);
       const implementationFiles = commitFiles.map(normalizeRepoPath).filter(isImplementationPath);
@@ -585,7 +585,7 @@ function isFullCommitSha(value: string): boolean {
   return /^[0-9a-f]{40}$/i.test(value);
 }
 
-function scanGsdTaggedCommits(
+function scanWorkflowTaggedCommits(
   basePath: string,
   milestoneId: string,
   gitArgs: readonly string[],
@@ -611,7 +611,7 @@ function scanGsdTaggedCommits(
     const files = new Set<string>();
     let matched = false;
     for (const { hash, message } of records) {
-      if (!commitMessageHasGsdTrailer(message)) continue;
+      if (!commitMessageHasWorkflowTrailer(message)) continue;
 
       const commitFiles = getChangedFilesForCommit(basePath, hash);
       if (!commitMatchesMilestone(basePath, message, milestoneId, commitFiles)) continue;
@@ -638,7 +638,7 @@ function getChangedFilesForCommit(basePath: string, hash: string): string[] {
   return fileOutput.split("\n").map((f) => f.trim()).filter(Boolean);
 }
 
-function commitMessageHasGsdTrailer(message: string): boolean {
+function commitMessageHasWorkflowTrailer(message: string): boolean {
   return /^GSD-(?:Task|Unit):\s*\S+/m.test(message);
 }
 
@@ -748,7 +748,7 @@ export function verifyExpectedArtifact(
   clearParseCache();
 
   if (unitType === "rewrite-docs") {
-    const overridesPath = resolveGsdRootFile(base, "OVERRIDES");
+    const overridesPath = resolveWorkflowRootFile(base, "OVERRIDES");
     if (!existsSync(overridesPath)) return true;
     const content = readFileSync(overridesPath, "utf-8");
     return !content.includes("**Scope:** active");

@@ -19,7 +19,7 @@ export interface SectionResult {
   found: boolean;
 }
 
-export interface ParsedGsdFile {
+export interface ParsedWorkflowFile {
   /** Relative path from the base directory. */
   path: string;
   /** Parsed frontmatter as JSON string. */
@@ -32,7 +32,7 @@ export interface ParsedGsdFile {
 
 export interface BatchParseResult {
   /** All parsed files. */
-  files: ParsedGsdFile[];
+  files: ParsedWorkflowFile[];
   /** Number of files processed. */
   count: number;
 }

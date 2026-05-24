@@ -20,10 +20,10 @@ test("milestone transition archives completed units and rebuilds state", async (
   const tempDir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-cu-reset-")));
   const calls: string[] = [];
   try {
-    const gsdDir = join(tempDir, ".gsd");
-    mkdirSync(gsdDir, { recursive: true });
+    const workflowDir = join(tempDir, ".gsd");
+    mkdirSync(workflowDir, { recursive: true });
 
-    const completedKeysPath = join(gsdDir, "completed-units.json");
+    const completedKeysPath = join(workflowDir, "completed-units.json");
     const staleEntries = [
       "context-gather/M001",
       "roadmap-plan/M001",
@@ -109,7 +109,7 @@ test("milestone transition archives completed units and rebuilds state", async (
     assert.equal(s.unitDispatchCount.size, 0);
     assert.equal(s.unitRecoveryCount.size, 0);
     assert.equal(s.unitLifetimeDispatches.size, 0);
-    assert.ok(existsSync(join(gsdDir, "completed-units-M001.json")));
+    assert.ok(existsSync(join(workflowDir, "completed-units-M001.json")));
     const after = JSON.parse(readFileSync(completedKeysPath, "utf-8"));
     assert.deepEqual(after, []);
     assert.ok(

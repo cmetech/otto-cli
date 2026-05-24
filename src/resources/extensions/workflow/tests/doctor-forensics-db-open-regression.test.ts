@@ -27,9 +27,9 @@ test("#5194 doctor command does not emit false db_unavailable when gsd.db exists
   const base = mkdtempSync(join(tmpdir(), "gsd-doctor-db-open-"));
   t.after(() => rmSync(base, { recursive: true, force: true }));
 
-  const gsdDir = join(base, ".gsd");
-  mkdirSync(gsdDir, { recursive: true });
-  writeFileSync(join(gsdDir, "gsd.db"), "");
+  const workflowDir = join(base, ".gsd");
+  mkdirSync(workflowDir, { recursive: true });
+  writeFileSync(join(workflowDir, "gsd.db"), "");
   closeDatabase();
 
   const notifications: string[] = [];

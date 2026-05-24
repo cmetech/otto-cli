@@ -5,8 +5,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  clearFreshGsdRunSurfaces,
-  isFreshGsdWorkCommand,
+  clearFreshWorkflowRunSurfaces,
+  isFreshWorkflowWorkCommand,
 } from "../fresh-run-ui.ts";
 
 test("fresh run cleanup applies only to work-entry commands", () => {
@@ -34,10 +34,10 @@ test("fresh run cleanup applies only to work-entry commands", () => {
   ];
 
   for (const command of workCommands) {
-    assert.equal(isFreshGsdWorkCommand(command), true, command);
+    assert.equal(isFreshWorkflowWorkCommand(command), true, command);
   }
   for (const command of inspectionCommands) {
-    assert.equal(isFreshGsdWorkCommand(command), false, command);
+    assert.equal(isFreshWorkflowWorkCommand(command), false, command);
   }
 });
 
@@ -51,7 +51,7 @@ test("fresh run cleanup clears stale GSD widgets and statuses", () => {
     },
   } as any;
 
-  clearFreshGsdRunSurfaces(ctx);
+  clearFreshWorkflowRunSurfaces(ctx);
 
   assert.deepEqual(widgets, [
     ["gsd-outcome", undefined],

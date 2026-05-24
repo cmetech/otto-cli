@@ -46,9 +46,9 @@ type WelcomeScreenModule = {
 
 async function loadWelcomeScreenModule(): Promise<WelcomeScreenModule | undefined> {
   const candidates: string[] = [];
-  const gsdBinPath = (process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH);
-  if (gsdBinPath) {
-    candidates.push(join(dirname(gsdBinPath), "welcome-screen.js"));
+  const workflowBinPath = (process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH);
+  if (workflowBinPath) {
+    candidates.push(join(dirname(workflowBinPath), "welcome-screen.js"));
   }
 
   const packageRoot = (process.env.LOOP24_PKG_ROOT ?? process.env.GSD_PKG_ROOT);
@@ -228,13 +228,13 @@ function resolveScopedToolNames(
   return [...resolved];
 }
 
-export function buildMinimalGsdToolSet(activeToolNames: readonly string[]): string[] {
+export function buildMinimalWorkflowToolSet(activeToolNames: readonly string[]): string[] {
   const preserved = activeToolNames.filter((name) => !isManagedTool(name));
   const minimal = resolveScopedToolNames(activeToolNames, MINIMAL_GSD_TOOL_NAMES);
   return [...new Set([...preserved, ...minimal])];
 }
 
-export function buildMinimalAutoGsdToolSet(
+export function buildMinimalAutoWorkflowToolSet(
   activeToolNames: readonly string[],
   unitType: string | undefined,
 ): string[] {
@@ -245,14 +245,14 @@ export function buildMinimalAutoGsdToolSet(
   return [...new Set([...preserved, ...scoped])];
 }
 
-export function buildMinimalGsdWorkflowToolSet(activeToolNames: readonly string[]): string[] {
+export function buildMinimalWorkflowWorkflowToolSet(activeToolNames: readonly string[]): string[] {
   const autoBaseTools = new Set<string>(MINIMAL_AUTO_BASE_TOOL_NAMES);
   const preserved = activeToolNames.filter((name) => autoBaseTools.has(name));
   const scoped = resolveScopedToolNames(activeToolNames, WORKFLOW_GSD_TOOL_NAMES);
   return [...new Set([...preserved, ...scoped])];
 }
 
-export function buildRequestScopedGsdToolSet(
+export function buildRequestScopedWorkflowToolSet(
   activeToolNames: readonly string[],
   requestCustomMessages: readonly { customType?: string }[] | undefined,
 ): string[] | undefined {
@@ -264,48 +264,48 @@ export function buildRequestScopedGsdToolSet(
       currentCustomType === "gsd-doctor-heal" ||
       currentCustomType === "gsd-triage"
     ) {
-      return buildMinimalGsdWorkflowToolSet(activeToolNames);
+      return buildMinimalWorkflowWorkflowToolSet(activeToolNames);
     }
   }
   return undefined;
 }
 
-export function isFullGsdToolSurfaceRequested(): boolean {
+export function isFullWorkflowToolSurfaceRequested(): boolean {
   return process.env.PI_GSD_FULL_TOOLS === "1";
 }
 
-function isGeneralGsdToolScopingRequested(): boolean {
+function isGeneralWorkflowToolScopingRequested(): boolean {
   return process.env.PI_GSD_MINIMAL_TOOLS === "1";
 }
 
-export interface ScopedGsdWorkflowState {
+export interface ScopedWorkflowWorkflowState {
   tools: string[] | null;
   visibleSkills: string[] | undefined;
   restoreVisibleSkills: boolean;
 }
 
-type GsdWorkflowScopeApi = Pick<ExtensionAPI, "getActiveTools" | "setActiveTools"> & Partial<Pick<ExtensionAPI, "getVisibleSkills" | "setVisibleSkills">>;
+type WorkflowWorkflowScopeApi = Pick<ExtensionAPI, "getActiveTools" | "setActiveTools"> & Partial<Pick<ExtensionAPI, "getVisibleSkills" | "setVisibleSkills">>;
 
-function applyMinimalGsdToolSurface(pi: ExtensionAPI): void {
-  if (isFullGsdToolSurfaceRequested()) return;
+function applyMinimalWorkflowToolSurface(pi: ExtensionAPI): void {
+  if (isFullWorkflowToolSurfaceRequested()) return;
   const dash = getAutoRuntimeSnapshot();
   if (dash.active && dash.currentUnit) {
-    pi.setActiveTools(buildMinimalAutoGsdToolSet(pi.getActiveTools(), dash.currentUnit.type));
+    pi.setActiveTools(buildMinimalAutoWorkflowToolSet(pi.getActiveTools(), dash.currentUnit.type));
     return;
   }
-  if (!isGeneralGsdToolScopingRequested()) return;
-  pi.setActiveTools(buildMinimalGsdToolSet(pi.getActiveTools()));
+  if (!isGeneralWorkflowToolScopingRequested()) return;
+  pi.setActiveTools(buildMinimalWorkflowToolSet(pi.getActiveTools()));
 }
 
-export function scopeGsdWorkflowToolsForDispatch(
-  pi: GsdWorkflowScopeApi,
+export function scopeWorkflowWorkflowToolsForDispatch(
+  pi: WorkflowWorkflowScopeApi,
   unitType?: string,
-): ScopedGsdWorkflowState | null {
-  if (isFullGsdToolSurfaceRequested()) return null;
+): ScopedWorkflowWorkflowState | null {
+  if (isFullWorkflowToolSurfaceRequested()) return null;
   const current = pi.getActiveTools();
   const scoped = unitType
-    ? buildMinimalAutoGsdToolSet(current, unitType)
-    : buildMinimalGsdWorkflowToolSet(current);
+    ? buildMinimalAutoWorkflowToolSet(current, unitType)
+    : buildMinimalWorkflowWorkflowToolSet(current);
   const toolsChanged = !(scoped.length === current.length && scoped.every((name, index) => name === current[index]));
   const skillManifest = resolveSkillManifest(unitType);
   const canScopeSkills = skillManifest !== null && pi.getVisibleSkills && pi.setVisibleSkills;
@@ -326,9 +326,9 @@ export function scopeGsdWorkflowToolsForDispatch(
   };
 }
 
-export function restoreGsdWorkflowTools(
+export function restoreWorkflowWorkflowTools(
   pi: Pick<ExtensionAPI, "setActiveTools"> & Partial<Pick<ExtensionAPI, "setVisibleSkills">>,
-  savedState: ScopedGsdWorkflowState | null,
+  savedState: ScopedWorkflowWorkflowState | null,
 ): void {
   if (!savedState) return;
   if (savedState.tools) pi.setActiveTools(savedState.tools);
@@ -337,7 +337,7 @@ export function restoreGsdWorkflowTools(
   }
 }
 
-async function deriveGsdState(basePath: string) {
+async function deriveWorkflowState(basePath: string) {
   const { deriveState } = await import("../state.js");
   return deriveState(basePath);
 }
@@ -459,7 +459,7 @@ async function writeContextModeCompactionSnapshot(basePath: string): Promise<voi
 
     let activeContext: string | null = null;
     try {
-      const state = await deriveGsdState(basePath);
+      const state = await deriveWorkflowState(basePath);
       if (state.activeMilestone && state.activeSlice && state.activeTask) {
         activeContext =
           `Active: ${state.activeMilestone.id} / ${state.activeSlice.id} / ${state.activeTask.id}` +
@@ -553,7 +553,7 @@ export function registerHooks(
   });
 
   pi.on("before_agent_start", async (event, ctx: ExtensionContext) => {
-    applyMinimalGsdToolSurface(pi);
+    applyMinimalWorkflowToolSurface(pi);
 
     // Wait for ecosystem loader to finish (no-op after first turn).
     const { getEcosystemReadyPromise } = await import("../ecosystem/loader.js");
@@ -578,12 +578,12 @@ export function registerHooks(
 
     // the agent's own context injection (existing behavior — unchanged).
     const { buildBeforeAgentStartResult } = await import("./system-context.js");
-    const gsdResult = await buildBeforeAgentStartResult(event, ctx);
+    const workflowResult = await buildBeforeAgentStartResult(event, ctx);
 
     // Refresh the snapshot used by ecosystem getPhase()/getActiveUnit().
     // deriveState has its own ~100ms cache so this is cheap on repeat calls.
     try {
-      const state = await deriveGsdState(beforeAgentBasePath);
+      const state = await deriveWorkflowState(beforeAgentBasePath);
       updateSnapshot(state);
     } catch {
       updateSnapshot(null);
@@ -591,10 +591,10 @@ export function registerHooks(
 
     // Chain ecosystem handlers using pi's runner.ts chaining protocol:
     // each handler sees the systemPrompt mutated by prior handlers.
-    let currentSystemPrompt = gsdResult?.systemPrompt ?? event.systemPrompt;
+    let currentSystemPrompt = workflowResult?.systemPrompt ?? event.systemPrompt;
     // `any` because pi's BeforeAgentStartEventResult.message uses an internal
     // CustomMessage type that's not re-exported (see ecosystem/gsd-extension-api.ts).
-    let lastMessage: any = gsdResult?.message;
+    let lastMessage: any = workflowResult?.message;
 
     for (const handler of ecosystemHandlers) {
       try {
@@ -663,7 +663,7 @@ export function registerHooks(
     }
     const { ensureDbOpen } = await import("./dynamic-tools.js");
     await ensureDbOpen(basePath);
-    const state = await deriveGsdState(basePath);
+    const state = await deriveWorkflowState(basePath);
     if (!state.activeMilestone || !state.activeSlice) return;
     // Write checkpoint for ALL phases, not just "executing" — discuss, research,
     // and planning also carry in-memory state (user answers, gate verification)
@@ -1187,19 +1187,19 @@ export function registerHooks(
   // Extensions can override tool set after model selection by returning { toolNames: [...] }
   // Return undefined to let the built-in provider compatibility filtering proceed.
   pi.on("adjust_tool_set", async (event) => {
-    if (isFullGsdToolSurfaceRequested()) return undefined;
+    if (isFullWorkflowToolSurfaceRequested()) return undefined;
     const removed = new Set(event.filteredTools);
     const providerCompatible = event.activeToolNames.filter((name) => !removed.has(name));
-    const requestScoped = buildRequestScopedGsdToolSet(providerCompatible, event.requestCustomMessages);
+    const requestScoped = buildRequestScopedWorkflowToolSet(providerCompatible, event.requestCustomMessages);
     if (requestScoped) {
       return { toolNames: requestScoped };
     }
     const dash = getAutoRuntimeSnapshot();
     if (dash.active && dash.currentUnit) {
-      return { toolNames: buildMinimalAutoGsdToolSet(providerCompatible, dash.currentUnit.type) };
+      return { toolNames: buildMinimalAutoWorkflowToolSet(providerCompatible, dash.currentUnit.type) };
     }
-    if (isGeneralGsdToolScopingRequested()) {
-      return { toolNames: buildMinimalGsdToolSet(providerCompatible) };
+    if (isGeneralWorkflowToolScopingRequested()) {
+      return { toolNames: buildMinimalWorkflowToolSet(providerCompatible) };
     }
     return undefined;
   });

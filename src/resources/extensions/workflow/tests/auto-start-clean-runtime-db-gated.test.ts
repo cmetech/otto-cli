@@ -33,8 +33,8 @@ describe("auto-start cleanStaleRuntimeUnits DB gating (#4663)", () => {
 
   test("cleanStaleRuntimeUnits removes legacy pseudo deep-setup runtime files", () => {
     const base = makeBase();
-    const gsdRoot = join(base, ".gsd");
-    const unitsDir = join(gsdRoot, "runtime", "units");
+    const workflowRoot = join(base, ".gsd");
+    const unitsDir = join(workflowRoot, "runtime", "units");
     try {
       mkdirSync(unitsDir, { recursive: true });
       const staleFiles = [
@@ -49,7 +49,7 @@ describe("auto-start cleanStaleRuntimeUnits DB gating (#4663)", () => {
       for (const file of staleFiles) writeFileSync(join(unitsDir, file), "{}\n", "utf-8");
       writeFileSync(valid, "{}\n", "utf-8");
 
-      const cleaned = cleanStaleRuntimeUnits(gsdRoot, () => false);
+      const cleaned = cleanStaleRuntimeUnits(workflowRoot, () => false);
 
       assert.equal(cleaned, staleFiles.length);
       for (const file of staleFiles) assert.equal(existsSync(join(unitsDir, file)), false);

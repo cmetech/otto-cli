@@ -2,8 +2,8 @@ import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, rmSync,
 import { basename, dirname, join } from "node:path";
 
 import type { DoctorIssue, DoctorIssueCode } from "./doctor-types.js";
-import { cleanNumberedGsdVariants } from "./repo-identity.js";
-import { milestonesDir, gsdRoot, resolveGsdRootFile } from "./paths.js";
+import { cleanNumberedWorkflowVariants } from "./repo-identity.js";
+import { milestonesDir, workflowRoot, resolveWorkflowRootFile } from "./paths.js";
 import { deriveState, isGhostMilestone, isReusableGhostMilestone } from "./state.js";
 import { saveFile } from "./files.js";
 import { nativeIsRepo, nativeForEachRef, nativeUpdateRef } from "./native-git-bridge.js";
@@ -19,11 +19,11 @@ import { loadEffectiveGSDPreferences } from "./preferences.js";
 
 const MAX_UAT_ATTEMPTS = 3;
 
-function isCurrentGsdStateIntactForMigratingCleanup(basePath: string): boolean {
+function isCurrentWorkflowStateIntactForMigratingCleanup(basePath: string): boolean {
   try {
-    const stateFile = resolveGsdRootFile(basePath, "STATE");
+    const stateFile = resolveWorkflowRootFile(basePath, "STATE");
     const milestonesPath = milestonesDir(basePath);
-    const dbPath = join(gsdRoot(basePath), "gsd.db");
+    const dbPath = join(workflowRoot(basePath), "gsd.db");
     const hasDbFile = existsSync(dbPath);
     const hasNonEmptyDb = hasDbFile && statSync(dbPath).size > 0;
     return existsSync(stateFile) && existsSync(milestonesPath) && hasNonEmptyDb;
@@ -33,7 +33,7 @@ function isCurrentGsdStateIntactForMigratingCleanup(basePath: string): boolean {
 }
 
 function hasAssessmentVerdict(basePath: string, mid: string, sid: string): boolean {
-  const assessmentPath = join(gsdRoot(basePath), "milestones", mid, "slices", sid, `${sid}-ASSESSMENT.md`);
+  const assessmentPath = join(workflowRoot(basePath), "milestones", mid, "slices", sid, `${sid}-ASSESSMENT.md`);
   if (!existsSync(assessmentPath)) return false;
   try {
     return /^\s*verdict\s*:\s*(PASS|FAIL|PARTIAL)\b/im.test(readFileSync(assessmentPath, "utf-8"));
@@ -48,7 +48,7 @@ export async function checkRuntimeHealth(
   fixesApplied: string[],
   shouldFix: (code: DoctorIssueCode) => boolean,
 ): Promise<void> {
-  const root = gsdRoot(basePath);
+  const root = workflowRoot(basePath);
   const gitPrefs = loadEffectiveGSDPreferences(basePath)?.preferences?.git;
   const manageGitignore = gitPrefs?.manage_gitignore;
 
@@ -332,7 +332,7 @@ export async function checkRuntimeHealth(
 
   // ── STATE.md health ───────────────────────────────────────────────────
   try {
-    const stateFilePath = resolveGsdRootFile(basePath, "STATE");
+    const stateFilePath = resolveWorkflowRootFile(basePath, "STATE");
     const milestonesPath = milestonesDir(basePath);
 
     if (existsSync(milestonesPath)) {
@@ -462,7 +462,7 @@ export async function checkRuntimeHealth(
         if (shouldFix("failed_migration")) {
           if (recoverFailedMigration(basePath)) {
             fixesApplied.push("recovered failed migration (.gsd.migrating → .gsd)");
-          } else if (isCurrentGsdStateIntactForMigratingCleanup(basePath)) {
+          } else if (isCurrentWorkflowStateIntactForMigratingCleanup(basePath)) {
             try {
               rmSync(migratingPath, { recursive: true, force: true });
               fixesApplied.push("removed stale .gsd.migrating orphan after validating current .gsd state");
@@ -536,7 +536,7 @@ export async function checkRuntimeHealth(
       }
 
       if (shouldFix("numbered_gsd_variant")) {
-        const removed = cleanNumberedGsdVariants(basePath);
+        const removed = cleanNumberedWorkflowVariants(basePath);
         for (const name of removed) {
           fixesApplied.push(`removed numbered .gsd variant: ${name}`);
         }

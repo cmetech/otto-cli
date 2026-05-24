@@ -7,7 +7,7 @@
 import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { logWarning } from "./workflow-logger.js";
 import { getErrorMessage } from "./error-utils.js";
 import { BRAND, slashCommand } from "./strings.js";
@@ -52,9 +52,9 @@ export async function handleInspect(ctx: ExtensionCommandContext): Promise<void>
     const { isDbAvailable, _getAdapter, openDatabase } = await import("./db.js");
 
     if (!isDbAvailable()) {
-      const gsdDir = gsdRoot(process.cwd());
-      const dbPath = join(gsdDir, "gsd.db");
-      if (!existsSync(gsdDir) || !existsSync(dbPath) || !openDatabase(dbPath)) {
+      const workflowDir = workflowRoot(process.cwd());
+      const dbPath = join(workflowDir, "gsd.db");
+      if (!existsSync(workflowDir) || !existsSync(dbPath) || !openDatabase(dbPath)) {
         ctx.ui.notify(`No ${BRAND} database available. Run ${slashCommand("auto")} to create one.`, "info");
         return;
       }

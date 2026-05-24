@@ -275,7 +275,7 @@ function extractCostFromNdjson(mid) {
 // ─── Self-Healing ────────────────────────────────────────────────────────────
 
 // Auto-detect the loader path — works across npm global, homebrew, and local installs
-function findGsdLoader() {
+function findWorkflowLoader() {
   // 1. Check if we're running from inside the gsd-2 repo itself
   const repoLoader = path.resolve(import.meta.dirname, '..', 'dist', 'loader.js');
   if (fs.existsSync(repoLoader)) return repoLoader;
@@ -308,7 +308,7 @@ function findGsdLoader() {
   return null;
 }
 
-const GSD_LOADER = findGsdLoader();
+const GSD_LOADER = findWorkflowLoader();
 
 /**
  * Respawn a dead worker. Returns the new PID or null on failure.

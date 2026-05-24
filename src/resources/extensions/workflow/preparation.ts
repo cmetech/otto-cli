@@ -875,22 +875,22 @@ const MAX_PRIOR_CONTEXT_CHARS = 6000;
  * @returns PriorContextBrief with aggregated context
  */
 export async function aggregatePriorContext(basePath: string): Promise<PriorContextBrief> {
-  const gsdPath = join(basePath, ".gsd");
+  const workflowPath = join(basePath, ".gsd");
 
   // Load decisions
-  const decisionsContent = await loadFile(join(gsdPath, "DECISIONS.md"));
+  const decisionsContent = await loadFile(join(workflowPath, "DECISIONS.md"));
   const decisions = parseDecisions(decisionsContent);
 
   // Load requirements
-  const requirementsContent = await loadFile(join(gsdPath, "REQUIREMENTS.md"));
+  const requirementsContent = await loadFile(join(workflowPath, "REQUIREMENTS.md"));
   const requirements = parseRequirements(requirementsContent);
 
   // Load knowledge
-  const knowledgeContent = await loadFile(join(gsdPath, "KNOWLEDGE.md"));
+  const knowledgeContent = await loadFile(join(workflowPath, "KNOWLEDGE.md"));
   const knowledge = truncateSection(knowledgeContent || "", MAX_SECTION_CHARS);
 
   // Load milestone summaries
-  const summaries = await loadMilestoneSummaries(gsdPath);
+  const summaries = await loadMilestoneSummaries(workflowPath);
 
   return {
     decisions,
@@ -1006,8 +1006,8 @@ function parseRequirements(content: string | null): PriorContextBrief["requireme
  *
  * Returns combined content, truncated to MAX_SECTION_CHARS.
  */
-async function loadMilestoneSummaries(gsdPath: string): Promise<string> {
-  const milestonesPath = join(gsdPath, "milestones");
+async function loadMilestoneSummaries(workflowPath: string): Promise<string> {
+  const milestonesPath = join(workflowPath, "milestones");
   const summaries: string[] = [];
 
   try {

@@ -32,10 +32,10 @@ import {
 } from "./interrupted-session.js";
 import { listUnitRuntimeRecords, clearUnitRuntimeRecord, isInFlightRuntimePhase } from "./unit-runtime.js";
 import { resolveExpectedArtifactPath } from "./auto.js";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 import {
-  gsdRoot, milestonesDir, resolveMilestoneFile, resolveMilestonePath,
-  resolveSliceFile, resolveSlicePath, resolveGsdRootFile, relGsdRootFile,
+  workflowRoot, milestonesDir, resolveMilestoneFile, resolveMilestonePath,
+  resolveSliceFile, resolveSlicePath, resolveWorkflowRootFile, relWorkflowRootFile,
   relMilestoneFile, relSliceFile, clearPathCache,
 } from "./paths.js";
 import { join } from "node:path";
@@ -109,7 +109,7 @@ import { readManifest } from "./workflow-manifest.js";
 import { deleteRuntimeKv } from "./db/runtime-kv.js";
 import { PAUSED_SESSION_KV_KEY } from "./interrupted-session.js";
 import { buildWorkflowDispatchContent } from "./workflow-protocol.js";
-import { isFullGsdToolSurfaceRequested, restoreGsdWorkflowTools, scopeGsdWorkflowToolsForDispatch } from "./bootstrap/register-hooks.js";
+import { isFullWorkflowToolSurfaceRequested, restoreWorkflowWorkflowTools, scopeWorkflowWorkflowToolsForDispatch } from "./bootstrap/register-hooks.js";
 import {
   resolveActiveTaskChoiceRoute,
   type ActiveTaskChoice,
@@ -614,7 +614,7 @@ export function checkAutoStartAfterDiscuss(lookupBasePath?: string): boolean {
   // Gate 3: Multi-milestone completeness warning
   // Parse PROJECT.md for milestone sequence, warn if any are missing context.
   // Don't block — milestones can be intentionally queued without context.
-  const projectFile = resolveGsdRootFile(basePath, "PROJECT");
+  const projectFile = resolveWorkflowRootFile(basePath, "PROJECT");
   let projectIds: string[] = [];
   if (projectFile) {
     try {
@@ -624,7 +624,7 @@ export function checkAutoStartAfterDiscuss(lookupBasePath?: string): boolean {
         const missing = projectIds.filter(id => {
           const hasContext = !!resolveMilestoneFile(basePath, id, "CONTEXT");
           const hasDraft = !!resolveMilestoneFile(basePath, id, "CONTEXT-DRAFT");
-          const hasDir = existsSync(join(gsdRoot(basePath), "milestones", id));
+          const hasDir = existsSync(join(workflowRoot(basePath), "milestones", id));
           return !hasContext && !hasDraft && !hasDir;
         });
         if (missing.length > 0) {
@@ -1082,7 +1082,7 @@ async function dispatchWorkflow(
   // Guided workflow turns only need the active unit's tool surface; strip
   // unrelated workflow tools and broad non-workflow tools for this queued turn, then
   // restore so the narrowed surface does not leak into future dispatches.
-  let savedTools: ReturnType<typeof scopeGsdWorkflowToolsForDispatch> = null;
+  let savedTools: ReturnType<typeof scopeWorkflowWorkflowToolsForDispatch> = null;
 
   try {
     const currentTools = pi.getActiveTools();
@@ -1091,14 +1091,14 @@ async function dispatchWorkflow(
       visibleSkills: typeof pi.getVisibleSkills === "function" ? pi.getVisibleSkills() : undefined,
       restoreVisibleSkills: typeof pi.setVisibleSkills === "function",
     };
-    if (unitType?.startsWith("discuss-") && !isFullGsdToolSurfaceRequested()) {
+    if (unitType?.startsWith("discuss-") && !isFullWorkflowToolSurfaceRequested()) {
       // Keep all non-workflow tools (builtins, other extensions) and only the
       // workflow tools on the discuss allowlist.
       const scopedTools = currentTools.filter(
         (t) => !t.startsWith("gsd_") || DISCUSS_TOOLS_ALLOWLIST.includes(t),
       );
       pi.setActiveTools(scopedTools);
-      const scopedState = scopeGsdWorkflowToolsForDispatch(pi, unitType);
+      const scopedState = scopeWorkflowWorkflowToolsForDispatch(pi, unitType);
       savedTools = {
         tools: currentTools,
         visibleSkills: scopedState?.visibleSkills ?? savedTools.visibleSkills,
@@ -1111,10 +1111,10 @@ async function dispatchWorkflow(
         removed: currentTools.length - pi.getActiveTools().length,
       });
     } else {
-      savedTools = scopeGsdWorkflowToolsForDispatch(pi, unitType) ?? savedTools;
+      savedTools = scopeWorkflowWorkflowToolsForDispatch(pi, unitType) ?? savedTools;
     }
 
-    const workflowPath = process.env.LOOP24_WORKFLOW_PATH ?? process.env.GSD_WORKFLOW_PATH ?? join(gsdHome(), "agent", "WORKFLOW.md");
+    const workflowPath = process.env.LOOP24_WORKFLOW_PATH ?? process.env.GSD_WORKFLOW_PATH ?? join(workflowHome(), "agent", "WORKFLOW.md");
     const workflow = readFileSync(workflowPath, "utf-8");
 
     if (unitType) setGuidedUnitContext(projectRoot, unitType);
@@ -1136,7 +1136,7 @@ async function dispatchWorkflow(
     // already captured the scoped set — restoring prevents the narrowed
     // tools from leaking into subsequent dispatches (#3628). The finally
     // block ensures restoration even if sendMessage throws.
-    restoreGsdWorkflowTools(pi, savedTools);
+    restoreWorkflowWorkflowTools(pi, savedTools);
   }
 }
 
@@ -1312,13 +1312,13 @@ async function prepareAndBuildDiscussPrompt(
  * Bootstrap a .loop24/ project from scratch for headless use.
  * Ensures git repo, .loop24/ structure, gitignore, and preferences all exist.
  */
-function bootstrapGsdProject(basePath: string): void {
+function bootstrapWorkflowProject(basePath: string): void {
   if (!nativeIsRepo(basePath) || isInheritedRepo(basePath)) {
     const mainBranch = loadEffectiveGSDPreferences()?.preferences?.git?.main_branch || "main";
     nativeInit(basePath, mainBranch);
   }
 
-  const root = gsdRoot(basePath);
+  const root = workflowRoot(basePath);
   mkdirSync(join(root, "milestones"), { recursive: true });
   mkdirSync(join(root, "runtime"), { recursive: true });
 
@@ -1345,7 +1345,7 @@ export async function showHeadlessMilestoneCreation(
   clearReservedMilestoneIds();
 
   // Ensure .loop24/ is bootstrapped
-  bootstrapGsdProject(basePath);
+  bootstrapWorkflowProject(basePath);
 
   const { ensureDbOpen } = await import("./bootstrap/dynamic-tools.js");
   await ensureDbOpen(basePath);
@@ -1426,11 +1426,11 @@ async function buildDiscussSlicePrompt(
   }
 
   // Decisions — architectural context that constrains this slice
-  const decisionsPath = resolveGsdRootFile(base, "DECISIONS");
+  const decisionsPath = resolveWorkflowRootFile(base, "DECISIONS");
   if (existsSync(decisionsPath)) {
     const decisionsContent = await loadFile(decisionsPath);
     if (decisionsContent) {
-      inlined.push(`### Decisions Register\nSource: \`${relGsdRootFile("DECISIONS")}\`\n\n${decisionsContent.trim()}`);
+      inlined.push(`### Decisions Register\nSource: \`${relWorkflowRootFile("DECISIONS")}\`\n\n${decisionsContent.trim()}`);
     }
   }
 
@@ -1494,7 +1494,7 @@ export async function showDiscuss(
   options?: { target?: string },
 ): Promise<void> {
   // Guard: no .loop24/ project
-  if (!existsSync(gsdRoot(basePath))) {
+  if (!existsSync(workflowRoot(basePath))) {
     ctx.ui.notify("No GSD project found. Run /gsd to start one first.", "warning");
     return;
   }
@@ -1517,7 +1517,7 @@ export async function showDiscuss(
   // agent bootstraps from the wrong milestone.
   try {
     const { buildStateMarkdown } = await import("./doctor.js");
-    await saveFile(resolveGsdRootFile(basePath, "STATE"), buildStateMarkdown(state));
+    await saveFile(resolveWorkflowRootFile(basePath, "STATE"), buildStateMarkdown(state));
   } catch (err) {
     logWarning("guided", `STATE.md rebuild failed: ${(err as Error).message}`);
   }
@@ -2083,8 +2083,8 @@ export async function showSmartEntry(
   // Check bootstrap completeness, not just .loop24/ directory existence.
   // A zombie .loop24/ state (symlink exists but missing PREFERENCES.md and
   // milestones/) must trigger the init wizard, not skip it (#2942).
-  const gsdPath = gsdRoot(basePath);
-  const hasBootstrapArtifacts = hasWorkflowBootstrapArtifacts(gsdPath);
+  const workflowPath = workflowRoot(basePath);
+  const hasBootstrapArtifacts = hasWorkflowBootstrapArtifacts(workflowPath);
   let skipGitBootstrap = false;
 
   if (!hasBootstrapArtifacts) {
@@ -2213,7 +2213,7 @@ export async function showSmartEntry(
   // Rebuild STATE.md from derived state before any dispatch (#3475).
   try {
     const { buildStateMarkdown } = await import("./doctor.js");
-    await saveFile(resolveGsdRootFile(basePath, "STATE"), buildStateMarkdown(state));
+    await saveFile(resolveWorkflowRootFile(basePath, "STATE"), buildStateMarkdown(state));
   } catch (err) {
     logWarning("guided", `STATE.md rebuild failed: ${(err as Error).message}`);
   }
@@ -2249,7 +2249,7 @@ export async function showSmartEntry(
       // 30s (avoids race between .set() and LLM writing first artifact).
       const entry = _getPendingAutoStart(basePath)!;
       const ageMs = Date.now() - (entry.createdAt || 0);
-      const manifestExists = existsSync(join(gsdRoot(basePath), "DISCUSSION-MANIFEST.json"));
+      const manifestExists = existsSync(join(workflowRoot(basePath), "DISCUSSION-MANIFEST.json"));
       const milestoneHasContext = !!resolveMilestoneFile(basePath, entry.milestoneId, "CONTEXT");
       const milestoneHasRoadmap = !!resolveMilestoneFile(basePath, entry.milestoneId, "ROADMAP");
       const milestoneRow = isDbAvailable() ? getMilestone(entry.milestoneId) : null;

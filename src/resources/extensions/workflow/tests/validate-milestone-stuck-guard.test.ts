@@ -16,7 +16,7 @@ import {
   insertSlice,
 } from "../db.ts";
 import { invalidateAllCaches } from "../cache.ts";
-import { _clearGsdRootCache } from "../paths.ts";
+import { _clearWorkflowRootCache } from "../paths.ts";
 
 let tempDir: string;
 let dbPath: string;
@@ -59,7 +59,7 @@ function setupTestEnvironment(): void {
   mkdirSync(milestoneDir, { recursive: true });
 
   process.chdir(tempDir);
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
 
   dbPath = join(tempDir, ".gsd", "gsd.db");
   openDatabase(dbPath);

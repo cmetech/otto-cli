@@ -40,9 +40,9 @@ test("#2684: syncWorktreeStateBack does not overwrite project PREFERENCES.md", (
 
 // Phase C: copyPlanningArtifacts was deleted. Worktrees no longer
 // maintain a parallel .gsd/ projection; preference seeding is now
-// handled exclusively by syncGsdStateToWorktree() (covered below).
+// handled exclusively by syncWorkflowStateToWorktree() (covered below).
 
-test("syncGsdStateToWorktree copies canonical PREFERENCES.md", async () => {
+test("syncWorkflowStateToWorktree copies canonical PREFERENCES.md", async () => {
   // Functional test: create a mock source and destination, call the sync
   const srcBase = mkdtempSync(join(tmpdir(), "gsd-wt-prefs-src-"));
   const dstBase = mkdtempSync(join(tmpdir(), "gsd-wt-prefs-dst-"));
@@ -58,9 +58,9 @@ test("syncGsdStateToWorktree copies canonical PREFERENCES.md", async () => {
       "---\nversion: 1\n---\n\npost_unit_hooks:\n  - name: notify\n    command: echo done\n",
     );
 
-    // Import and call syncGsdStateToWorktree
-    const { syncGsdStateToWorktree } = await import("../auto-worktree.ts");
-    syncGsdStateToWorktree(srcBase, dstBase);
+    // Import and call syncWorkflowStateToWorktree
+    const { syncWorkflowStateToWorktree } = await import("../auto-worktree.ts");
+    syncWorkflowStateToWorktree(srcBase, dstBase);
 
     // Verify PREFERENCES.md was copied
     assert.ok(
@@ -79,7 +79,7 @@ test("syncGsdStateToWorktree copies canonical PREFERENCES.md", async () => {
   }
 });
 
-test("syncGsdStateToWorktree falls back to legacy lowercase preferences.md", async () => {
+test("syncWorkflowStateToWorktree falls back to legacy lowercase preferences.md", async () => {
   const srcBase = mkdtempSync(join(tmpdir(), "gsd-wt-prefs-legacy-src-"));
   const dstBase = mkdtempSync(join(tmpdir(), "gsd-wt-prefs-legacy-dst-"));
   const srcGsd = join(srcBase, ".gsd");
@@ -93,8 +93,8 @@ test("syncGsdStateToWorktree falls back to legacy lowercase preferences.md", asy
       "---\nversion: 1\n---\n\ngit:\n  auto_push: true\n",
     );
 
-    const { syncGsdStateToWorktree } = await import("../auto-worktree.ts");
-    const result = syncGsdStateToWorktree(srcBase, dstBase);
+    const { syncWorkflowStateToWorktree } = await import("../auto-worktree.ts");
+    const result = syncWorkflowStateToWorktree(srcBase, dstBase);
 
     const copiedEntries = readdirSync(dstGsd)
       .filter((name) => name === "PREFERENCES.md" || name === "preferences.md");

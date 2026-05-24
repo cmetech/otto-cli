@@ -150,19 +150,19 @@ function writeGateSnapshotPath(basePath: string): string {
 }
 
 function ensureWriteGateSnapshotDirectory(basePath: string): void {
-  const gsdPath = join(basePath, ".gsd");
-  if (!existsSync(gsdPath)) {
+  const workflowPath = join(basePath, ".gsd");
+  if (!existsSync(workflowPath)) {
     try {
-      const stat = lstatSync(gsdPath);
+      const stat = lstatSync(workflowPath);
       if (stat.isSymbolicLink()) {
-        const target = readlinkSync(gsdPath);
+        const target = readlinkSync(workflowPath);
         mkdirSync(isAbsolute(target) ? target : resolve(basePath, target), { recursive: true });
       }
     } catch {
       // If .gsd truly does not exist, the runtime mkdir below will create it.
     }
   }
-  mkdirSync(join(gsdPath, "runtime"), { recursive: true });
+  mkdirSync(join(workflowPath, "runtime"), { recursive: true });
 }
 
 function currentWriteGateSnapshot(basePath: string = process.cwd()): WriteGateSnapshot {
@@ -732,15 +732,15 @@ const PLANNING_SAFE_TOOLS = new Set([
 ]);
 
 function isPathUnderGsd(absPath: string, basePath: string): boolean {
-  const localGsdRoot = resolve(basePath, ".gsd");
-  const localRel = relative(localGsdRoot, absPath);
+  const localWorkflowRoot = resolve(basePath, ".gsd");
+  const localRel = relative(localWorkflowRoot, absPath);
   if (localRel === "" || (!localRel.startsWith("..") && !isAbsolute(localRel))) return true;
 
   const projectRoot = resolveWorktreeProjectRoot(basePath);
   if (projectRoot === basePath) return false;
 
-  const canonicalGsdRoot = resolve(projectRoot, ".gsd");
-  const canonicalRel = relative(canonicalGsdRoot, absPath);
+  const canonicalWorkflowRoot = resolve(projectRoot, ".gsd");
+  const canonicalRel = relative(canonicalWorkflowRoot, absPath);
   return canonicalRel === "" || (!canonicalRel.startsWith("..") && !isAbsolute(canonicalRel));
 }
 

@@ -413,7 +413,7 @@ interface PausedSessionMeta {
   pausedAt?: string;
 }
 
-function gsdRootPath(basePath: string): string {
+function workflowRootPath(basePath: string): string {
   // Inline resolution: .gsd lives directly under basePath.
   // Avoids importing paths.ts to keep this module's dependency surface small.
   return join(basePath, ".gsd");
@@ -421,7 +421,7 @@ function gsdRootPath(basePath: string): string {
 
 function readPausedSession(basePath: string): PausedSessionMeta | null {
   try {
-    const p = join(gsdRootPath(basePath), "runtime", "paused-session.json");
+    const p = join(workflowRootPath(basePath), "runtime", "paused-session.json");
     if (!existsSync(p)) return null;
     return JSON.parse(readFileSync(p, "utf-8")) as PausedSessionMeta;
   } catch {
@@ -431,7 +431,7 @@ function readPausedSession(basePath: string): PausedSessionMeta | null {
 
 function readMetricsFromDisk(basePath: string): ProjectTotalsSnapshot | null {
   try {
-    const p = join(gsdRootPath(basePath), "metrics.json");
+    const p = join(workflowRootPath(basePath), "metrics.json");
     if (!existsSync(p)) return null;
     const raw = JSON.parse(readFileSync(p, "utf-8")) as {
       units?: Array<{ cost?: number; tokens?: TokenCountsSnapshot }>;
@@ -462,7 +462,7 @@ function readMetricsFromDisk(basePath: string): ProjectTotalsSnapshot | null {
 }
 
 function resolveActivityDir(basePath: string): string {
-  return join(gsdRootPath(basePath), "activity");
+  return join(workflowRootPath(basePath), "activity");
 }
 
 // ─── Formatting helpers ───────────────────────────────────────────────────────

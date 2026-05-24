@@ -26,7 +26,7 @@ import { readHistory } from './readers/metrics.js';
 import { readCaptures } from './readers/captures.js';
 import { readKnowledge } from './readers/knowledge.js';
 import { buildGraph, writeGraph, writeSnapshot, graphStatus, graphQuery, graphDiff } from './readers/graph.js';
-import { resolveGsdRoot, resolveMilestoneFile } from './readers/paths.js';
+import { resolveWorkflowRoot, resolveMilestoneFile } from './readers/paths.js';
 import { runDoctorLite } from './readers/doctor-lite.js';
 import { registerWorkflowTools, validateProjectDir } from './workflow-tools.js';
 import { applySecrets, checkExistingEnvKeys, detectDestination, resolveProjectEnvFilePath } from './env-writer.js';
@@ -195,7 +195,7 @@ function normalizeQuery(query: string | undefined): QueryCategory {
 }
 
 async function readProjectState(projectDir: string, query: string | undefined): Promise<Record<string, unknown>> {
-  const gsdDir = join(resolve(projectDir), '.gsd');
+  const workflowDir = join(resolve(projectDir), '.gsd');
   const category = normalizeQuery(query);
   const wanted = new Set<ProjectStateField>(QUERY_FIELDS[category]);
 
@@ -206,7 +206,7 @@ async function readProjectState(projectDir: string, query: string | undefined): 
 
   if (wanted.has('state')) {
     try {
-      result.state = await readFile(join(gsdDir, 'STATE.md'), 'utf-8');
+      result.state = await readFile(join(workflowDir, 'STATE.md'), 'utf-8');
     } catch {
       result.state = null;
     }
@@ -214,7 +214,7 @@ async function readProjectState(projectDir: string, query: string | undefined): 
 
   if (wanted.has('project')) {
     try {
-      result.project = await readFile(join(gsdDir, 'PROJECT.md'), 'utf-8');
+      result.project = await readFile(join(workflowDir, 'PROJECT.md'), 'utf-8');
     } catch {
       result.project = null;
     }
@@ -222,21 +222,21 @@ async function readProjectState(projectDir: string, query: string | undefined): 
 
   if (wanted.has('requirements')) {
     try {
-      result.requirements = await readFile(join(gsdDir, 'REQUIREMENTS.md'), 'utf-8');
+      result.requirements = await readFile(join(workflowDir, 'REQUIREMENTS.md'), 'utf-8');
     } catch {
       result.requirements = null;
     }
   }
 
   if (wanted.has('milestones')) {
-    const milestonesDir = join(gsdDir, 'milestones');
+    const milestonesDir = join(workflowDir, 'milestones');
     try {
       const entries = await readdir(milestonesDir, { withFileTypes: true });
       const milestones: Array<{ id: string; hasRoadmap: boolean; hasSummary: boolean }> = [];
       for (const entry of entries) {
         if (!entry.isDirectory()) continue;
-        const hasRoadmap = !!resolveMilestoneFile(gsdDir, entry.name, 'ROADMAP');
-        const hasSummary = !!resolveMilestoneFile(gsdDir, entry.name, 'SUMMARY');
+        const hasRoadmap = !!resolveMilestoneFile(workflowDir, entry.name, 'ROADMAP');
+        const hasSummary = !!resolveMilestoneFile(workflowDir, entry.name, 'SUMMARY');
         milestones.push({ id: entry.name, hasRoadmap, hasSummary });
       }
       result.milestones = milestones;
@@ -1298,15 +1298,15 @@ export async function createMcpServer(
 
       try {
         const projectDir = validateProjectDir(rawProjectDir);
-        const gsdRoot = resolveGsdRoot(projectDir);
+        const workflowRoot = resolveWorkflowRoot(projectDir);
 
         switch (mode) {
           case 'build': {
             if (snapshot) {
-              await writeSnapshot(gsdRoot).catch(() => { /* best-effort */ });
+              await writeSnapshot(workflowRoot).catch(() => { /* best-effort */ });
             }
             const graph = await buildGraph(projectDir);
-            await writeGraph(gsdRoot, graph);
+            await writeGraph(workflowRoot, graph);
             return jsonContent({
               built: true,
               nodeCount: graph.nodes.length,

@@ -7,7 +7,7 @@ import { parse as parseYaml } from "yaml";
 import { handleQuick } from "../../quick.js";
 import { showDiscuss, showHeadlessMilestoneCreation, showQueue } from "../../guided-flow.js";
 import { handleStart, handleTemplates, dispatchMarkdownPhasePlugin } from "../../commands-workflow-templates.js";
-import { gsdRoot } from "../../paths.js";
+import { workflowRoot } from "../../paths.js";
 import { deriveState } from "../../state.js";
 import { isParked, parkMilestone, unparkMilestone } from "../../milestone-actions.js";
 import { loadEffectiveGSDPreferences } from "../../preferences.js";
@@ -594,7 +594,7 @@ export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionComma
       ctx.ui.notify("Deep planning mode enabled (.gsd/PREFERENCES.md updated).", "info");
     }
     const headlessChainAuto = args.split(/\s+/).includes(HEADLESS_CHAIN_AUTO_FLAG);
-    const headlessContextPath = join(gsdRoot(basePath), "runtime", "headless-context.md");
+    const headlessContextPath = join(workflowRoot(basePath), "runtime", "headless-context.md");
     if (existsSync(headlessContextPath)) {
       const seedContext = readFileSync(headlessContextPath, "utf-8");
       try { unlinkSync(headlessContextPath); } catch { /* non-fatal */ }

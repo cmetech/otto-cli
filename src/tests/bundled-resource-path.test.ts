@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 
 import {
-  resolveBundledGsdExtensionModule,
+  resolveBundledWorkflowExtensionModule,
   resolveBundledResourcesDirFromPackageRoot,
 } from "../bundled-resource-path.ts";
 
@@ -38,7 +38,7 @@ test("GSD extension module resolution falls back to source when dist module is m
     join(pkg, "dist", "resources", "extensions"),
   ]);
 
-  const result = resolveBundledGsdExtensionModule(
+  const result = resolveBundledWorkflowExtensionModule(
     fakeImportUrl,
     "worktree-root.ts",
     (p) => existing.has(p),
@@ -56,7 +56,7 @@ test("GSD extension module resolution uses compiled dist module when available",
     join(pkg, "dist", "resources", "extensions", "gsd", "worktree-manager.js"),
   ]);
 
-  const result = resolveBundledGsdExtensionModule(
+  const result = resolveBundledWorkflowExtensionModule(
     fakeImportUrl,
     "worktree-manager.ts",
     (p) => existing.has(p),

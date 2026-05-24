@@ -20,7 +20,7 @@ describe("AdaptiveLayoutComponent", () => {
 		const component = new AdaptiveLayoutComponent(() => ({
 			override: "workflow",
 			activeToolCount: 2,
-			gsdPhase: "executing milestone M001",
+			workflowPhase: "executing milestone M001",
 			sessionName: "demo",
 			cwd: "/tmp/demo",
 		}));
@@ -40,7 +40,7 @@ describe("AdaptiveLayoutComponent", () => {
 		const component = new AdaptiveLayoutComponent(() => ({
 			override: "workflow",
 			activeToolCount: 1,
-			gsdPhase: "executing milestone M001",
+			workflowPhase: "executing milestone M001",
 			cwd: "/tmp/demo",
 		}));
 

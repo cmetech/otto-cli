@@ -41,7 +41,7 @@ import {
 
 function makeTempProject(): { dir: string; cleanup: () => void; restoreEnv: () => void } {
   const originalCwd = process.cwd();
-  const originalGsdHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.GSD_HOME;
   const dir = mkdtempSync(join(tmpdir(), "gsd-policy-poison-"));
   const home = mkdtempSync(join(tmpdir(), "gsd-policy-home-"));
   mkdirSync(join(dir, ".gsd"), { recursive: true });
@@ -57,8 +57,8 @@ function makeTempProject(): { dir: string; cleanup: () => void; restoreEnv: () =
     },
     restoreEnv: () => {
       process.chdir(originalCwd);
-      if (originalGsdHome === undefined) delete process.env.GSD_HOME;
-      else process.env.GSD_HOME = originalGsdHome;
+      if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
+      else process.env.GSD_HOME = originalWorkflowHome;
     },
   };
 }

@@ -8,21 +8,21 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 test("forensics prompt renders compact investigation and issue routing guidance", async (t) => {
-  const previousGsdHome = process.env.GSD_HOME;
-  const providedGsdHome = process.env.GSD_TEST_HOME;
-  const isolatedHome = providedGsdHome ?? mkdtempSync(join(tmpdir(), "gsd-forensics-render-"));
+  const previousWorkflowHome = process.env.GSD_HOME;
+  const providedWorkflowHome = process.env.GSD_TEST_HOME;
+  const isolatedHome = providedWorkflowHome ?? mkdtempSync(join(tmpdir(), "gsd-forensics-render-"));
   process.env.GSD_HOME = isolatedHome;
   t.after(() => {
-    if (previousGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousGsdHome;
-    if (!providedGsdHome) rmSync(isolatedHome, { recursive: true, force: true });
+    if (previousWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = previousWorkflowHome;
+    if (!providedWorkflowHome) rmSync(isolatedHome, { recursive: true, force: true });
   });
 
   const { loadPrompt } = await import(`../prompt-loader.ts?test=${Date.now()}`);
   const prompt = loadPrompt("forensics", {
     problemDescription: "Auto-mode repeats the same unit.",
     forensicData: "stuck-detected event for execute-task/M001/S01/T01",
-    gsdSourceDir: process.env.GSD_TEST_WORKSPACE_ROOT ?? process.cwd(),
+    workflowSourceDir: process.env.GSD_TEST_WORKSPACE_ROOT ?? process.cwd(),
     dedupSection: "No duplicate issue found.",
   });
 

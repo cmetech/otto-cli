@@ -188,7 +188,7 @@ function makePi(messages: unknown[]) {
 
 async function runNewProjectCommand(base: string, command: string): Promise<unknown[]> {
   const previousCwd = process.cwd();
-  const previousGsdHome = process.env.GSD_HOME;
+  const previousWorkflowHome = process.env.GSD_HOME;
   const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
   const previousProjectRoot = process.env.GSD_PROJECT_ROOT;
   const workflowPath = join(base, "WORKFLOW.md");
@@ -206,8 +206,8 @@ async function runNewProjectCommand(base: string, command: string): Promise<unkn
     return messages;
   } finally {
     process.chdir(previousCwd);
-    if (previousGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousGsdHome;
+    if (previousWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = previousWorkflowHome;
     if (previousWorkflowPath === undefined) delete process.env.GSD_WORKFLOW_PATH;
     else process.env.GSD_WORKFLOW_PATH = previousWorkflowPath;
     if (previousProjectRoot === undefined) delete process.env.GSD_PROJECT_ROOT;
@@ -220,9 +220,9 @@ async function runNewProjectCommand(base: string, command: string): Promise<unkn
   }
 }
 
-async function runBareGsdCommand(base: string): Promise<unknown[]> {
+async function runBareWorkflowCommand(base: string): Promise<unknown[]> {
   const previousCwd = process.cwd();
-  const previousGsdHome = process.env.GSD_HOME;
+  const previousWorkflowHome = process.env.GSD_HOME;
   const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
   const previousProjectRoot = process.env.GSD_PROJECT_ROOT;
   const workflowPath = join(base, "WORKFLOW.md");
@@ -245,8 +245,8 @@ async function runBareGsdCommand(base: string): Promise<unknown[]> {
     return [...messages, ...notifications];
   } finally {
     process.chdir(previousCwd);
-    if (previousGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousGsdHome;
+    if (previousWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = previousWorkflowHome;
     if (previousWorkflowPath === undefined) delete process.env.GSD_WORKFLOW_PATH;
     else process.env.GSD_WORKFLOW_PATH = previousWorkflowPath;
     if (previousProjectRoot === undefined) delete process.env.GSD_PROJECT_ROOT;
@@ -691,7 +691,7 @@ test("deep project setup: bare /gsd ignores global planning_depth without projec
   try {
     writeCommandGlobalDeepPrefs(base);
 
-    const messages = await runBareGsdCommand(base);
+    const messages = await runBareWorkflowCommand(base);
     const prefsPath = join(base, ".gsd", "PREFERENCES.md");
 
     if (existsSync(prefsPath)) {
@@ -744,7 +744,7 @@ test("deep project setup: new-project --deep uses cwd when nested inside a paren
   const parent = join(tmpdir(), `gsd-deep-project-parent-${randomUUID()}`);
   const child = join(parent, "nested-app");
   const previousCwd = process.cwd();
-  const previousGsdHome = process.env.GSD_HOME;
+  const previousWorkflowHome = process.env.GSD_HOME;
   const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
   const previousProjectRoot = process.env.GSD_PROJECT_ROOT;
 
@@ -793,8 +793,8 @@ test("deep project setup: new-project --deep uses cwd when nested inside a paren
     assert.match(String((messages[1] as any).content), /REQUIREMENTS\.md/);
   } finally {
     process.chdir(previousCwd);
-    if (previousGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousGsdHome;
+    if (previousWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = previousWorkflowHome;
     if (previousWorkflowPath === undefined) delete process.env.GSD_WORKFLOW_PATH;
     else process.env.GSD_WORKFLOW_PATH = previousWorkflowPath;
     if (previousProjectRoot === undefined) delete process.env.GSD_PROJECT_ROOT;

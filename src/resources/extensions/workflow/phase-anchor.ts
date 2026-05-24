@@ -6,7 +6,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 
 export interface PhaseAnchor {
   phase: string;
@@ -19,7 +19,7 @@ export interface PhaseAnchor {
 }
 
 function anchorsDir(basePath: string, milestoneId: string): string {
-  return join(gsdRoot(basePath), "milestones", milestoneId, "anchors");
+  return join(workflowRoot(basePath), "milestones", milestoneId, "anchors");
 }
 
 function anchorPath(basePath: string, milestoneId: string, phase: string): string {

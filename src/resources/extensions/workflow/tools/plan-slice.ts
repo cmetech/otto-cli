@@ -27,7 +27,7 @@ import { logWarning } from "../workflow-logger.js";
 import { validatePlanningPathScope } from "../planning-path-scope.js";
 import { checkFilePathConsistency, checkTaskOrdering } from "../pre-execution-checks.js";
 import type { TaskRow } from "../db-task-slice-rows.js";
-import { buildTaskFileName, gsdProjectionRoot } from "../paths.js";
+import { buildTaskFileName, workflowProjectionRoot } from "../paths.js";
 import { loadEffectiveGSDPreferences } from "../preferences.js";
 import { createRepositoryRegistryFromPreferences, defaultRepositoryTargets, type RepositoryRegistry } from "../repository-registry.js";
 
@@ -400,11 +400,11 @@ export async function handlePlanSlice(
   }
 
   try {
-    const tasksDir = join(gsdProjectionRoot(basePath), "milestones", params.milestoneId, "slices", params.sliceId, "tasks");
+    const tasksDir = join(workflowProjectionRoot(basePath), "milestones", params.milestoneId, "slices", params.sliceId, "tasks");
     for (const taskId of omittedTaskIds) {
       const taskPlanPath = join(tasksDir, buildTaskFileName(taskId, "PLAN"));
       if (existsSync(taskPlanPath)) rmSync(taskPlanPath, { force: true });
-      const artifactPath = relative(gsdProjectionRoot(basePath), taskPlanPath).replace(/\\/g, "/");
+      const artifactPath = relative(workflowProjectionRoot(basePath), taskPlanPath).replace(/\\/g, "/");
       deleteArtifactByPath(artifactPath);
     }
 

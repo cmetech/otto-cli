@@ -14,10 +14,10 @@ import {
 
 test("web MCP management service lists, saves, disables, and deletes local servers", async () => {
   const projectDir = mkdtempSync(join(tmpdir(), "web-mcp-project-"));
-  const gsdHomeDir = mkdtempSync(join(tmpdir(), "web-mcp-home-"));
-  const previousGsdHome = process.env.GSD_HOME;
+  const workflowHomeDir = mkdtempSync(join(tmpdir(), "web-mcp-home-"));
+  const previousWorkflowHome = process.env.GSD_HOME;
   try {
-    process.env.GSD_HOME = gsdHomeDir;
+    process.env.GSD_HOME = workflowHomeDir;
     mkdirSync(join(projectDir, ".gsd"), { recursive: true });
     writeFileSync(
       join(projectDir, ".mcp.json"),
@@ -49,9 +49,9 @@ test("web MCP management service lists, saves, disables, and deletes local serve
       assert.equal(deleted.data.servers.some((server) => server.name === "local"), false);
     }
   } finally {
-    if (previousGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousGsdHome;
+    if (previousWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = previousWorkflowHome;
     rmSync(projectDir, { recursive: true, force: true });
-    rmSync(gsdHomeDir, { recursive: true, force: true });
+    rmSync(workflowHomeDir, { recursive: true, force: true });
   }
 });

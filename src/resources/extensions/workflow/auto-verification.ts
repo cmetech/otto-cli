@@ -15,7 +15,7 @@
 
 import type { ExtensionContext, ExtensionAPI } from "@loop24/pi-coding-agent";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { gsdProjectionRoot, resolveSlicePath, resolveMilestoneFile } from "./paths.js";
+import { workflowProjectionRoot, resolveSlicePath, resolveMilestoneFile } from "./paths.js";
 import { resolveCanonicalMilestoneRoot } from "./worktree-manager.js";
 import { parseUnitId } from "./unit-id.js";
 import { isDbAvailable, getTask, getSliceTasks, getMilestoneSlices } from "./db.js";
@@ -265,7 +265,7 @@ async function runValidateMilestonePostCheck(
 
   const validationBasePath = resolveCanonicalMilestoneRoot(s.basePath, mid);
   const validationFile = join(
-    gsdProjectionRoot(validationBasePath),
+    workflowProjectionRoot(validationBasePath),
     "milestones",
     mid,
     `${mid}-VALIDATION.md`,

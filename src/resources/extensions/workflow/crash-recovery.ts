@@ -38,7 +38,7 @@ import { forceReleaseLeasesForWorker } from "./db/milestone-leases.js";
 import { markLatestActiveForWorkerCanceled, type DispatchStatus } from "./db/unit-dispatches.js";
 import { getRuntimeKv, setRuntimeKv, deleteRuntimeKv } from "./db/runtime-kv.js";
 import { _getAdapter, isDbAvailable } from "./db.js";
-import { gsdRoot, normalizeRealPath } from "./paths.js";
+import { workflowRoot, normalizeRealPath } from "./paths.js";
 import { atomicWriteSync } from "./atomic-write.js";
 import { effectiveLockFile } from "./session-lock.js";
 import { isInFlightRuntimePhase, listUnitRuntimeRecords, type AutoUnitRuntimeRecord } from "./unit-runtime.js";
@@ -56,7 +56,7 @@ export interface LockData {
 const SESSION_FILE_KV_KEY = "session_file";
 
 function lockPath(basePath: string): string {
-  return join(gsdRoot(basePath), effectiveLockFile());
+  return join(workflowRoot(basePath), effectiveLockFile());
 }
 
 function clearLegacyLockFile(basePath: string): void {

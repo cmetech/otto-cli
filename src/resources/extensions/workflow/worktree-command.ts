@@ -15,7 +15,7 @@ import { loadPrompt } from "./prompt-loader.js";
 import { autoCommitCurrentBranch, getMainBranch, resolveGitHeadPath, nudgeGitBranchCache } from "./worktree.js";
 import { runWorktreePostCreateHook } from "./auto-worktree.js";
 import { showConfirm } from "../shared/tui.js";
-import { gsdRoot, milestonesDir, resolveGsdPathContract } from "./paths.js";
+import { workflowRoot, milestonesDir, resolveWorkflowPathContract } from "./paths.js";
 import {
   createWorktree,
   listWorktrees,
@@ -284,7 +284,7 @@ function clearGSDPlans(wtPath: string): void {
 
   // Remove root planning files — PROJECT.md, DECISIONS.md, QUEUE.md, REQUIREMENTS.md
   // Keep STATE.md (gitignored, will be rebuilt) and other runtime files
-  const root = gsdRoot(wtPath);
+  const root = workflowRoot(wtPath);
   const planningFiles = ["PROJECT.md", "DECISIONS.md", "QUEUE.md", "REQUIREMENTS.md"];
   for (const file of planningFiles) {
     const filePath = join(root, file);
@@ -572,7 +572,7 @@ async function handleMerge(
     // Gather merge context — full repo diff, not just .loop24/
     const diffSummary = diffWorktreeAll(basePath, name);
     const numstat = diffWorktreeNumstat(basePath, name);
-    const gsdDiff = getWorktreeGSDDiff(basePath, name);
+    const workflowDiff = getWorktreeGSDDiff(basePath, name);
     const codeDiff = getWorktreeCodeDiff(basePath, name);
     const commitLog = getWorktreeLog(basePath, name);
 
@@ -596,7 +596,7 @@ async function handleMerge(
     const codeChanges = diffSummary.added.filter(f => !isAgent(f)).length
       + diffSummary.modified.filter(f => !isAgent(f)).length
       + diffSummary.removed.filter(f => !isAgent(f)).length;
-    const gsdChanges = diffSummary.added.filter(isAgent).length
+    const workflowChanges = diffSummary.added.filter(isAgent).length
       + diffSummary.modified.filter(isAgent).length
       + diffSummary.removed.filter(isAgent).length;
 
@@ -611,7 +611,7 @@ async function handleMerge(
     const previewLines = [
       `Merge ${CLR.name(name)} → ${CLR.branch(mainBranch)}`,
       "",
-      `  ${totalChanges} file${totalChanges === 1 ? "" : "s"} changed, ${CLR.ok(`+${totalAdded}`)} ${RED}-${totalRemoved}${RESET} lines ${CLR.muted(`(${codeChanges} code, ${gsdChanges} GSD)`)}`,
+      `  ${totalChanges} file${totalChanges === 1 ? "" : "s"} changed, ${CLR.ok(`+${totalAdded}`)} ${RED}-${totalRemoved}${RESET} lines ${CLR.muted(`(${codeChanges} code, ${workflowChanges} GSD)`)}`,
     ];
 
     const appendFileList = (label: string, files: string[], prefix: string, limit = 10) => {
@@ -651,7 +651,7 @@ async function handleMerge(
     const commitMessage = `${commitType}: merge worktree ${name}\n\nGSD-Worktree: ${name}`;
 
     // Reconcile worktree DB into main DB before squash merge
-    const contract = resolveGsdPathContract(worktreePath(basePath, name), basePath);
+    const contract = resolveWorkflowPathContract(worktreePath(basePath, name), basePath);
     const wtDbPath = join(contract.worktreeGsd ?? join(contract.workRoot, ".gsd"), "gsd.db");
     const mainDbPath = contract.projectDb;
     if (existsSync(wtDbPath) && existsSync(mainDbPath)) {
@@ -712,7 +712,7 @@ async function handleMerge(
       addedFiles: formatFiles(diffSummary.added),
       modifiedFiles: formatFiles(diffSummary.modified),
       removedFiles: formatFiles(diffSummary.removed),
-      gsdDiff: gsdDiff || "(no GSD artifact changes)",
+      workflowDiff: workflowDiff || "(no GSD artifact changes)",
       codeDiff: codeDiff || "(no code changes)",
     });
 
@@ -727,7 +727,7 @@ async function handleMerge(
     );
 
     ctx.ui.notify(
-      `${CLR.ok("✓")} Merge helper started for ${CLR.name(name)} ${CLR.muted(`(${codeChanges} code + ${gsdChanges} GSD artifact change${totalChanges === 1 ? "" : "s"})`)}`,
+      `${CLR.ok("✓")} Merge helper started for ${CLR.name(name)} ${CLR.muted(`(${codeChanges} code + ${workflowChanges} GSD artifact change${totalChanges === 1 ? "" : "s"})`)}`,
       "info",
     );
   } catch (error) {

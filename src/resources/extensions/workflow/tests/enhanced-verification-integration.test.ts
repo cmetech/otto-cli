@@ -459,14 +459,14 @@ import { runPostExecutionChecks } from "./post-execution-checks.ts";
 
     test("handles large number of files without timeout", () => {
       // Use all available GSD source files to stress test
-      const allGsdFiles = REAL_GSD_FILES.map((f) => join(GSD_SRC_DIR, f));
+      const allWorkflowFiles = REAL_GSD_FILES.map((f) => join(GSD_SRC_DIR, f));
 
       const task = createTask({
         id: "T01",
         title: "Large refactor touching many files",
         status: "complete",
-        key_files: allGsdFiles,
-        files: allGsdFiles,
+        key_files: allWorkflowFiles,
+        files: allWorkflowFiles,
       });
 
       const start = performance.now();

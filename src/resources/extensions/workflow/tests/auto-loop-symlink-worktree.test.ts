@@ -64,7 +64,7 @@ function makeSymlinkedFixture(prefix: string): SymlinkedFixture {
   symlinkSync(externalState, join(projectRoot, ".gsd"), "junction");
 
   // Worktree path lives under the external state's worktrees/ dir, mirroring
-  // the canonicalProjectRoot resolution that resolveGsdPathContract performs
+  // the canonicalProjectRoot resolution that resolveWorkflowPathContract performs
   // for the external-state layout.
   const worktreePath = join(externalState, "worktrees", "M001");
   mkdirSync(worktreePath, { recursive: true });

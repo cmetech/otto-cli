@@ -51,7 +51,7 @@ import {
   formatForNotification,
   hasAnyIssues,
 } from "../workflow-logger.js";
-import { gsdRoot, normalizeRealPath } from "../paths.js";
+import { workflowRoot, normalizeRealPath } from "../paths.js";
 import { atomicWriteSync } from "../atomic-write.js";
 import { verifyExpectedArtifact, diagnoseExpectedArtifact, buildLoopRemediationSteps, refreshRecoveryDbForArtifact } from "../auto-recovery.js";
 import { writeUnitRuntimeRecord } from "../unit-runtime.js";
@@ -436,7 +436,7 @@ async function generateMilestoneReport(
     (m: { id: string }) => m.id === milestoneId,
   );
   const msTitle = completedMs?.title ?? milestoneId;
-  const gsdVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) ?? "0.0.0";
+  const workflowVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) ?? "0.0.0";
   const projName = basename(reportBasePath);
   const doneSlices = snapData.milestones.reduce(
     (acc: number, m: { slices: { done: boolean }[] }) =>
@@ -452,7 +452,7 @@ async function generateMilestoneReport(
     html: generateHtmlReport(snapData, {
       projectName: projName,
       projectPath: reportBasePath,
-      gsdVersion,
+      workflowVersion,
       milestoneId,
       indexRelPath: "index.html",
     }),
@@ -461,7 +461,7 @@ async function generateMilestoneReport(
     kind: "milestone",
     projectName: projName,
     projectPath: reportBasePath,
-    gsdVersion,
+    workflowVersion,
     totalCost: snapData.totals?.cost ?? 0,
     totalTokens: snapData.totals?.tokens.total ?? 0,
     totalDuration: snapData.totals?.duration ?? 0,
@@ -1153,10 +1153,10 @@ export async function runPreDispatch(
 
     // Archive the old completed-units.json instead of wiping it (#2313).
     try {
-      const completedKeysPath = join(gsdRoot(s.basePath), "completed-units.json");
+      const completedKeysPath = join(workflowRoot(s.basePath), "completed-units.json");
       if (existsSync(completedKeysPath) && s.currentMilestoneId) {
         const archivePath = join(
-          gsdRoot(s.basePath),
+          workflowRoot(s.basePath),
           `completed-units-${s.currentMilestoneId}.json`,
         );
         cpSync(completedKeysPath, archivePath);
@@ -2090,12 +2090,12 @@ export async function runUnitPhase(
   s.lastBaselineCharCount = undefined;
   if (deps.isDbAvailable()) {
     try {
-      const { inlineGsdRootFile } = await importExtensionModule<typeof import("../auto-prompts.js")>(import.meta.url, "../auto-prompts.js");
+      const { inlineWorkflowRootFile } = await importExtensionModule<typeof import("../auto-prompts.js")>(import.meta.url, "../auto-prompts.js");
       const [decisionsContent, requirementsContent, projectContent] =
         await Promise.all([
-          inlineGsdRootFile(s.basePath, "decisions.md", "Decisions"),
-          inlineGsdRootFile(s.basePath, "requirements.md", "Requirements"),
-          inlineGsdRootFile(s.basePath, "project.md", "Project"),
+          inlineWorkflowRootFile(s.basePath, "decisions.md", "Decisions"),
+          inlineWorkflowRootFile(s.basePath, "requirements.md", "Requirements"),
+          inlineWorkflowRootFile(s.basePath, "project.md", "Project"),
         ]);
       s.lastBaselineCharCount =
         (decisionsContent?.length ?? 0) +

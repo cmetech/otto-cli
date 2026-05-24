@@ -17,7 +17,7 @@ import { execFileSync } from "node:child_process";
 import { mergeMilestoneToMain } from "../auto-worktree.ts";
 import { closeDatabase, openDatabase } from "../db.ts";
 import { GIT_NO_PROMPT_ENV } from "../git-constants.js";
-import { _clearGsdRootCache } from "../paths.ts";
+import { _clearWorkflowRootCache } from "../paths.ts";
 import { _resetServiceCache } from "../worktree.ts";
 import { worktreePath } from "../worktree-manager.ts";
 
@@ -124,7 +124,7 @@ test("mergeMilestoneToMain keeps the Windows DB cycle closed through squash merg
   const gitEnv = GIT_NO_PROMPT_ENV as NodeJS.ProcessEnv;
   const originalGitEnvPath = gitEnv.PATH;
   const originalHome = process.env.HOME;
-  const originalGsdHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.GSD_HOME;
 
   const root = realpathSync(mkdtempSync(join(tmpdir(), "gsd-db-cycle-")));
   const fakeHome = join(root, "home");
@@ -137,7 +137,7 @@ test("mergeMilestoneToMain keeps the Windows DB cycle closed through squash merg
   try {
     process.env.HOME = fakeHome;
     process.env.GSD_HOME = join(fakeHome, ".gsd");
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
     _resetServiceCache();
 
     const { repo, worktree } = createRepo(root);
@@ -167,12 +167,12 @@ test("mergeMilestoneToMain keeps the Windows DB cycle closed through squash merg
     } else {
       process.env.HOME = originalHome;
     }
-    if (originalGsdHome === undefined) {
+    if (originalWorkflowHome === undefined) {
       delete process.env.GSD_HOME;
     } else {
-      process.env.GSD_HOME = originalGsdHome;
+      process.env.GSD_HOME = originalWorkflowHome;
     }
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
     _resetServiceCache();
     if (existsSync(root)) rmSync(root, { recursive: true, force: true });
   }

@@ -265,7 +265,7 @@ test("pruneRemovedBundledExtensions removes stale subdirectory extensions not in
     );
 
     // Bump the manifest version to force a re-sync (simulates upgrading GSD).
-    manifest.gsdVersion = "0.0.0-force-resync";
+    manifest.workflowVersion = "0.0.0-force-resync";
     manifest.contentHash = "0000000000000000";
     writeFileSync(manifestPath, JSON.stringify(manifest));
 

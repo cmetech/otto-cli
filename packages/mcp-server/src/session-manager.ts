@@ -329,9 +329,9 @@ export class SessionManager {
     const envPath = process.env['GSD_CLI_PATH'];
     if (envPath) return resolve(envPath);
 
-    const gsdBin = findExecutableOnPath('gsd');
-    if (gsdBin) {
-      return resolve(gsdBin);
+    const workflowBin = findExecutableOnPath('gsd');
+    if (workflowBin) {
+      return resolve(workflowBin);
     }
 
     throw new Error(

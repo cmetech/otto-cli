@@ -247,15 +247,15 @@ if (shouldBypassManagedResourceMismatchGate(cliFlags.messages[0])) {
 // ---------------------------------------------------------------------------
 if (cliFlags.messages[0] === 'graph') {
   const sub = cliFlags.messages[1]
-  const { buildGraph, writeGraph, graphStatus, graphQuery, graphDiff, resolveGsdRoot } = await import('@loop24-build/mcp-server')
+  const { buildGraph, writeGraph, graphStatus, graphQuery, graphDiff, resolveWorkflowRoot } = await import('@loop24-build/mcp-server')
 
   const projectDir = process.cwd()
-  const gsdRoot = resolveGsdRoot(projectDir)
+  const workflowRoot = resolveWorkflowRoot(projectDir)
 
   if (!sub || sub === 'build') {
     try {
       const graph = await buildGraph(projectDir)
-      await writeGraph(gsdRoot, graph)
+      await writeGraph(workflowRoot, graph)
       process.stdout.write(`Graph built: ${graph.nodes.length} nodes, ${graph.edges.length} edges\n`)
     } catch (err) {
       process.stderr.write(`[gsd] graph build failed: ${err instanceof Error ? err.message : String(err)}\n`)

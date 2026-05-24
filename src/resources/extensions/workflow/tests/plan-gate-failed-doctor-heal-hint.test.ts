@@ -12,10 +12,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const gsdDir = join(__dirname, "..");
+const workflowDir = join(__dirname, "..");
 
 function readSrc(file: string): string {
-  return readFileSync(join(gsdDir, file), "utf-8");
+  return readFileSync(join(workflowDir, file), "utf-8");
 }
 
 test("#4620: auto/phases plan gate failed message includes doctor heal hint", () => {

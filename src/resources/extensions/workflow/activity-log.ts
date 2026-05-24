@@ -15,7 +15,7 @@ import { WorkflowError, IO_ERROR } from "./errors.js";
 
 const SEQ_PREFIX_RE = /^(\d+)-/;
 import type { ExtensionContext } from "@loop24/pi-coding-agent";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { buildAuditEnvelope, emitUokAuditEvent } from "./uok/audit.js";
 import { isUnifiedAuditEnabled } from "./uok/audit-toggle.js";
 
@@ -111,7 +111,7 @@ export function saveActivityLog(
     const entries = ctx.sessionManager.getEntries();
     if (!entries || entries.length === 0) return null;
 
-    const activityDir = join(gsdRoot(basePath), "activity");
+    const activityDir = join(workflowRoot(basePath), "activity");
     mkdirSync(activityDir, { recursive: true });
 
     const safeUnitId = unitId.replace(/\//g, "-");

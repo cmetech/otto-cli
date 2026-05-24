@@ -8,7 +8,7 @@ import { handleStatus } from "./handlers/core.js";
 import { homedir } from "node:os";
 import { BRAND, CMD, slashCommand } from "../strings.js";
 
-export interface GsdDispatchContext {
+export interface WorkflowDispatchContext {
   ctx: ExtensionCommandContext;
   pi: ExtensionAPI;
   trimmed: string;

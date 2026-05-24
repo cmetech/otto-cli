@@ -12,7 +12,7 @@ import { dirname, join, resolve } from "node:path";
 import { homedir, tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 
 const _require = createRequire(import.meta.url);
 const { lockSync, unlockSync } = _require("proper-lockfile") as {
@@ -108,11 +108,11 @@ interface ExtensionRegistry {
 // ─── Registry I/O ───────────────────────────────────────────────────────────
 
 function getRegistryPath(): string {
-  return join(gsdHome(), "extensions", "registry.json");
+  return join(workflowHome(), "extensions", "registry.json");
 }
 
 function getAgentExtensionsDir(): string {
-  return join(gsdHome(), "agent", "extensions");
+  return join(workflowHome(), "agent", "extensions");
 }
 
 function loadRegistry(): ExtensionRegistry {
@@ -210,8 +210,8 @@ export function validateExtensionPackage(packageDir: string): ValidationResult {
   }
 
   // (a) gsd.extension: true marker (D-12a)
-  const gsdField = pkg.gsd as Record<string, unknown> | undefined;
-  if (gsdField?.extension !== true) {
+  const workflowField = pkg.gsd as Record<string, unknown> | undefined;
+  if (workflowField?.extension !== true) {
     errors.push('package.json missing "gsd": { "extension": true }');
   }
 
@@ -263,7 +263,7 @@ function discoverManifests(): Map<string, ExtensionManifest> {
 }
 
 function getInstalledExtDir(): string {
-  return join(gsdHome(), "extensions");
+  return join(workflowHome(), "extensions");
 }
 
 // Source: derived from npm/git URL conventions (from RESEARCH.md)
@@ -302,7 +302,7 @@ interface ManifestValidationResult {
   errors: ManifestValidationError[];
 }
 
-function validateExtensionManifest(pkg: unknown, opts: { extensionId?: string; allowGsdNamespace?: boolean } = {}): ManifestValidationResult {
+function validateExtensionManifest(pkg: unknown, opts: { extensionId?: string; allowWorkflowNamespace?: boolean } = {}): ManifestValidationResult {
   const errors: ManifestValidationError[] = [];
 
   // Check gsd.extension === true (strict)
@@ -317,7 +317,7 @@ function validateExtensionManifest(pkg: unknown, opts: { extensionId?: string; a
   }
 
   // Check namespace reservation
-  if (opts.extensionId && opts.extensionId.startsWith("gsd.") && opts.allowGsdNamespace !== true) {
+  if (opts.extensionId && opts.extensionId.startsWith("gsd.") && opts.allowWorkflowNamespace !== true) {
     errors.push({ code: "RESERVED_NAMESPACE", message: `Extension ID "${opts.extensionId}" is reserved for GSD core extensions. Use a different namespace for community extensions.`, field: "extensionId" });
   }
 

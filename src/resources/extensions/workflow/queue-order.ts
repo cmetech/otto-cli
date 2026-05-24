@@ -10,7 +10,7 @@
  */
 
 import { join } from "node:path";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { milestoneIdSort } from "./milestone-ids.js";
 import { loadJsonFileOrNull, saveJsonFile } from "./json-persistence.js";
 import { isDbAvailable, setMilestoneQueueOrder } from "./db.js";
@@ -43,7 +43,7 @@ export interface DependencyValidation {
 // ─── Path ────────────────────────────────────────────────────────────────────
 
 function queueOrderPath(basePath: string): string {
-  return join(gsdRoot(basePath), "QUEUE-ORDER.json");
+  return join(workflowRoot(basePath), "QUEUE-ORDER.json");
 }
 
 // ─── Type Guards ─────────────────────────────────────────────────────────────

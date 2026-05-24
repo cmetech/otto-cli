@@ -1,7 +1,7 @@
 /**
  * Home directory resolution.
  *
- * Exports gsdHome() which returns the agent configuration directory,
+ * Exports workflowHome() which returns the agent configuration directory,
  * defaulting to ~/.gsd with a GSD_HOME env var override.
  *
  * For the user's home directory, use os.homedir() directly — it handles
@@ -23,7 +23,7 @@ import { join, resolve } from "node:path";
  * any relative or non-canonical `GSD_HOME` value so downstream comparison
  * and redaction sites don't have to.
  */
-export function gsdHome(): string {
+export function workflowHome(): string {
   const envHome = process.env.LOOP24_HOME ?? process.env.GSD_HOME;
   return envHome ? resolve(envHome) : join(homedir(), ".gsd");
 }

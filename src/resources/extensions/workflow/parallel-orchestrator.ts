@@ -19,9 +19,9 @@ import {
 } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { createWorktree, worktreePath } from "./worktree-manager.js";
-import { autoWorktreeBranch, fastForwardReusedMilestoneBranchIfSafe, runWorktreePostCreateHook, syncGsdStateToWorktree } from "./auto-worktree.js";
+import { autoWorktreeBranch, fastForwardReusedMilestoneBranchIfSafe, runWorktreePostCreateHook, syncWorkflowStateToWorktree } from "./auto-worktree.js";
 import { nativeBranchExists } from "./native-git-bridge.js";
 import { readIntegrationBranch } from "./git-service.js";
 import { resolveParallelConfig } from "./preferences.js";
@@ -97,7 +97,7 @@ export interface PersistedState {
 }
 
 function stateFilePath(basePath: string): string {
-  return join(gsdRoot(basePath), ORCHESTRATOR_STATE_FILE);
+  return join(workflowRoot(basePath), ORCHESTRATOR_STATE_FILE);
 }
 
 /**
@@ -107,7 +107,7 @@ function stateFilePath(basePath: string): string {
 export function persistState(basePath: string): void {
   if (!state) return;
   try {
-    const dir = gsdRoot(basePath);
+    const dir = workflowRoot(basePath);
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 
     const persisted: PersistedState = {
@@ -191,12 +191,12 @@ export function restoreState(basePath: string): PersistedState | null {
 }
 
 function workerLogPath(basePath: string, milestoneId: string): string {
-  return join(gsdRoot(basePath), "parallel", `${milestoneId}.stderr.log`);
+  return join(workflowRoot(basePath), "parallel", `${milestoneId}.stderr.log`);
 }
 
 function appendWorkerLog(basePath: string, milestoneId: string, chunk: string): void {
   try {
-    const dir = join(gsdRoot(basePath), "parallel");
+    const dir = join(workflowRoot(basePath), "parallel");
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
     appendFileSync(workerLogPath(basePath, milestoneId), chunk, "utf-8");
   } catch (e) {
@@ -561,7 +561,7 @@ export function _createMilestoneWorktree(basePath: string, milestoneId: string):
   // Copy .loop24/ planning artifacts (milestones, CONTEXT, ROADMAP, etc.) from the
   // project root into the worktree. Without this, workers for newly-planned
   // milestones can't find their roadmap and exit immediately (#2184 Bug 4).
-  syncGsdStateToWorktree(basePath, info.path);
+  syncWorkflowStateToWorktree(basePath, info.path);
 
   return info.path;
 }
@@ -594,7 +594,7 @@ export function spawnWorker(
   if (worker.process) return true; // already spawned
 
   // Resolve the CLI binary path
-  const binPath = resolveGsdBin();
+  const binPath = resolveWorkflowBin();
   if (!binPath) return false;
 
   let child: ChildProcess;
@@ -745,7 +745,7 @@ export function spawnWorker(
  * Uses GSD_BIN_PATH env var (set by loader.ts) or falls back to
  * finding the binary relative to the current module.
  */
-function resolveGsdBin(): string | null {
+function resolveWorkflowBin(): string | null {
   // LOOP24_BIN_PATH (or legacy GSD_BIN_PATH) is set by loader.ts to the absolute path of dist/loader.js
   const envBinPath = process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH;
   if (envBinPath && existsSync(envBinPath)) {

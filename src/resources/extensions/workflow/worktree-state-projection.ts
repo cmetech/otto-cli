@@ -32,7 +32,7 @@ import {
 import { join } from "node:path";
 
 import { reconcileWorktreeDb } from "./db.js";
-import { resolveGsdPathContract } from "./paths.js";
+import { resolveWorkflowPathContract } from "./paths.js";
 import { safeCopy, safeCopyRecursive } from "./safe-fs.js";
 import type { MilestoneScope } from "./workspace.js";
 import { logError, logWarning } from "./workflow-logger.js";
@@ -195,7 +195,7 @@ export function _projectRootToWorktreeImpl(
   if (!worktreePath_ || !projectRoot || worktreePath_ === projectRoot) return;
   if (!milestoneId) return;
 
-  const contract = resolveGsdPathContract(worktreePath_, projectRoot);
+  const contract = resolveWorkflowPathContract(worktreePath_, projectRoot);
   const prGsd = contract.projectGsd;
   const wtGsd = contract.worktreeGsd ?? join(worktreePath_, ".gsd");
 
@@ -293,7 +293,7 @@ export function _projectWorktreeToRootImpl(
   if (!worktreePath_ || !projectRoot || worktreePath_ === projectRoot) return;
   if (!milestoneId) return;
 
-  const contract = resolveGsdPathContract(worktreePath_, projectRoot);
+  const contract = resolveWorkflowPathContract(worktreePath_, projectRoot);
   const wtGsd = contract.worktreeGsd ?? join(worktreePath_, ".gsd");
   const prGsd = contract.projectGsd;
 
@@ -339,7 +339,7 @@ export function _finalizeProjectionForMergeImpl(
   worktreePath: string,
   milestoneId: string,
 ): { synced: string[] } {
-  const contract = resolveGsdPathContract(worktreePath, mainBasePath);
+  const contract = resolveWorkflowPathContract(worktreePath, mainBasePath);
   const mainGsd = contract.projectGsd;
   const wtGsd = contract.worktreeGsd ?? join(worktreePath, ".gsd");
   const synced: string[] = [];

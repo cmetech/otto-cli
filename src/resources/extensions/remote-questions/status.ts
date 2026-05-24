@@ -5,7 +5,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { readPromptRecord } from "./store.js";
-import { gsdHome } from "../workflow/home.js";
+import { workflowHome } from "../workflow/home.js";
 
 export interface LatestPromptSummary {
   id: string;
@@ -14,7 +14,7 @@ export interface LatestPromptSummary {
 }
 
 export function getLatestPromptSummary(): LatestPromptSummary | null {
-  const runtimeDir = join(gsdHome(), "runtime", "remote-questions");
+  const runtimeDir = join(workflowHome(), "runtime", "remote-questions");
   if (!existsSync(runtimeDir)) return null;
   const files = readdirSync(runtimeDir).filter((f) => f.endsWith(".json"));
   if (files.length === 0) return null;

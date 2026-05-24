@@ -29,9 +29,9 @@ test("checkEngineHealth reports db_unavailable when gsd.db exists but the DB is 
   const base = mkdtempSync(join(tmpdir(), "gsd-doctor-db-unavailable-"));
   t.after(() => rmSync(base, { recursive: true, force: true }));
 
-  const gsdDir = join(base, ".gsd");
-  mkdirSync(gsdDir, { recursive: true });
-  writeFileSync(join(gsdDir, "gsd.db"), "");
+  const workflowDir = join(base, ".gsd");
+  mkdirSync(workflowDir, { recursive: true });
+  writeFileSync(join(workflowDir, "gsd.db"), "");
 
   const issues: any[] = [];
   await checkEngineHealth(base, issues, []);

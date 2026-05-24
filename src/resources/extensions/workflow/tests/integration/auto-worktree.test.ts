@@ -20,7 +20,7 @@ import {
   enterAutoWorktree,
   getAutoWorktreeOriginalBase,
   getActiveAutoWorktreeContext,
-  syncGsdStateToWorktree,
+  syncWorkflowStateToWorktree,
   _resetAutoWorktreeOriginalBaseForTests,
 } from "../../auto-worktree.ts";
 
@@ -146,7 +146,7 @@ describe("auto-worktree lifecycle", () => {
 
   test("symlink-resolved auto worktree is detected after module state reset", () => {
     tempDir = createTempRepo();
-    const savedGsdHome = process.env.GSD_HOME;
+    const savedWorkflowHome = process.env.GSD_HOME;
     const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "auto-wt-home-")));
     const storage = join(fakeHome, ".gsd", "projects", "abc123def456");
     mkdirSync(join(storage, "milestones", "M001"), { recursive: true });
@@ -186,8 +186,8 @@ describe("auto-worktree lifecycle", () => {
       } catch {
         // Best-effort cleanup for partially-created temp worktrees.
       }
-      if (savedGsdHome === undefined) delete process.env.GSD_HOME;
-      else process.env.GSD_HOME = savedGsdHome;
+      if (savedWorkflowHome === undefined) delete process.env.GSD_HOME;
+      else process.env.GSD_HOME = savedWorkflowHome;
       rmSync(fakeHome, { recursive: true, force: true });
     }
   });
@@ -375,7 +375,7 @@ describe("auto-worktree lifecycle", () => {
     }
   });
 
-  test("#2791: mcp.json synced via syncGsdStateToWorktree (ROOT_STATE_FILES)", () => {
+  test("#2791: mcp.json synced via syncWorkflowStateToWorktree (ROOT_STATE_FILES)", () => {
     tempDir = createTempRepo();
     const msDir = join(tempDir, ".gsd", "milestones", "M003");
     mkdirSync(msDir, { recursive: true });
@@ -394,7 +394,7 @@ describe("auto-worktree lifecycle", () => {
       );
 
       // Sync should pick up the new mcp.json
-      const { synced } = syncGsdStateToWorktree(tempDir, wtPath);
+      const { synced } = syncWorkflowStateToWorktree(tempDir, wtPath);
 
       assert.ok(synced.includes("mcp.json"), "mcp.json should be in the synced list");
       assert.ok(

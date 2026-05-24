@@ -47,9 +47,9 @@ function writeAutoModule(dir: string, payload: Record<string, unknown>): string 
 }
 
 function writeSessionLock(projectCwd: string, data: Record<string, unknown>): void {
-  const gsdDir = join(projectCwd, ".gsd");
-  mkdirSync(gsdDir, { recursive: true });
-  writeFileSync(join(gsdDir, "auto.lock"), JSON.stringify(data));
+  const workflowDir = join(projectCwd, ".gsd");
+  mkdirSync(workflowDir, { recursive: true });
+  writeFileSync(join(workflowDir, "auto.lock"), JSON.stringify(data));
 }
 
 function writePausedSession(projectCwd: string, data: Record<string, unknown>): void {

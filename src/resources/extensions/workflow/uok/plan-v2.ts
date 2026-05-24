@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { WorkflowDbState, Phase } from "../types.js";
-import { gsdRoot, resolveMilestoneFile, resolveSliceFile } from "../paths.js";
+import { workflowRoot, resolveMilestoneFile, resolveSliceFile } from "../paths.js";
 import { isDbAvailable, getMilestoneSlices, getSliceTasks } from "../db.js";
 import type { SliceRow } from "../db-task-slice-rows.js";
 import type { UokGraphNode } from "./contracts.js";
@@ -36,7 +36,7 @@ export interface PlanV2CompileResult {
 }
 
 function graphOutputPath(basePath: string): string {
-  return join(gsdRoot(basePath), "runtime", "uok-plan-v2-graph.json");
+  return join(workflowRoot(basePath), "runtime", "uok-plan-v2-graph.json");
 }
 
 function hasFileContent(path: string | null): boolean {
@@ -173,7 +173,7 @@ export function compileUnitGraphFromState(basePath: string, state: WorkflowDbSta
   };
 
   const outPath = graphOutputPath(basePath);
-  mkdirSync(join(gsdRoot(basePath), "runtime"), { recursive: true });
+  mkdirSync(join(workflowRoot(basePath), "runtime"), { recursive: true });
   writeFileSync(outPath, JSON.stringify(output, null, 2) + "\n", "utf-8");
 
   return {

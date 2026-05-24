@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 
 import { deriveState, invalidateStateCache } from "../state.ts";
 import { buildStateMarkdown, rebuildState } from "../doctor.ts";
-import { resolveGsdRootFile } from "../paths.ts";
+import { resolveWorkflowRootFile } from "../paths.ts";
 import {
   openDatabase,
   closeDatabase,
@@ -82,7 +82,7 @@ describe("guided-flow STATE.md rebuild (#3475)", () => {
     await rebuildState(base);
 
     // Read the rebuilt STATE.md
-    const statePath = resolveGsdRootFile(base, "STATE");
+    const statePath = resolveWorkflowRootFile(base, "STATE");
     const rebuilt = readFileSync(statePath, "utf-8");
 
     // Should contain M010, NOT M008

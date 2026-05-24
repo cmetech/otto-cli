@@ -16,18 +16,18 @@ import { join } from "node:path";
 import { getServerConfig } from "../index.js";
 
 let cwdDir: string;
-let gsdHomeDir: string;
+let workflowHomeDir: string;
 let originalCwd: string;
-let originalGsdHome: string | undefined;
+let originalWorkflowHome: string | undefined;
 
 before(() => {
 	originalCwd = process.cwd();
-	originalGsdHome = process.env.GSD_HOME;
+	originalWorkflowHome = process.env.GSD_HOME;
 
 	// realpathSync resolves any symlink in tmpdir() — on macOS /var → /private/var
 	// so process.cwd() after chdir matches what mkdtempSync returned.
 	cwdDir = realpathSync(mkdtempSync(join(tmpdir(), "mcp-cwd-")));
-	gsdHomeDir = realpathSync(mkdtempSync(join(tmpdir(), "mcp-gsdhome-")));
+	workflowHomeDir = realpathSync(mkdtempSync(join(tmpdir(), "mcp-gsdhome-")));
 
 	// Project-local fixture (also defines `shared-server` for the precedence test)
 	writeFileSync(
@@ -44,7 +44,7 @@ before(() => {
 	// Global fixture rooted at $GSD_HOME (also defines `shared-server` to test
 	// that project-local takes precedence on name collision)
 	writeFileSync(
-		join(gsdHomeDir, "mcp.json"),
+		join(workflowHomeDir, "mcp.json"),
 		JSON.stringify({
 			mcpServers: {
 				"global-server": { command: "echo", args: ["glob"] },
@@ -55,22 +55,22 @@ before(() => {
 	);
 
 	process.chdir(cwdDir);
-	process.env.GSD_HOME = gsdHomeDir;
+	process.env.GSD_HOME = workflowHomeDir;
 });
 
 after(() => {
 	process.chdir(originalCwd);
-	if (originalGsdHome === undefined) delete process.env.GSD_HOME;
-	else process.env.GSD_HOME = originalGsdHome;
+	if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
+	else process.env.GSD_HOME = originalWorkflowHome;
 	try { rmSync(cwdDir, { recursive: true, force: true }); } catch { /* best-effort */ }
-	try { rmSync(gsdHomeDir, { recursive: true, force: true }); } catch { /* best-effort */ }
+	try { rmSync(workflowHomeDir, { recursive: true, force: true }); } catch { /* best-effort */ }
 });
 
 test("#4757: getServerConfig resolves servers declared in $GSD_HOME/mcp.json", () => {
 	const cfg = getServerConfig("global-server");
 	assert.ok(cfg, "server defined in $GSD_HOME/mcp.json must resolve");
 	assert.equal(cfg?.name, "global-server");
-	assert.equal(cfg?.sourcePath, join(gsdHomeDir, "mcp.json"));
+	assert.equal(cfg?.sourcePath, join(workflowHomeDir, "mcp.json"));
 });
 
 test("#4757: project-local servers still resolve when global config exists", () => {

@@ -737,7 +737,7 @@ describe('Daemon orchestrator wiring', () => {
 
 describe('/gsd-start and /gsd-stop logic', () => {
   // These test the observable logic paths exercised by the handlers.
-  // Since handleGsdStart/handleGsdStop are private, we test the data layer
+  // Since handleWorkflowStart/handleWorkflowStop are private, we test the data layer
   // they depend on — project scanning, session listing, and edge cases.
 
   it('/gsd-start: scanForProjects returning 0 projects', async () => {
@@ -761,7 +761,7 @@ describe('/gsd-start and /gsd-stop logic', () => {
   });
 
   it('/gsd-stop: filters to active sessions only', () => {
-    // Simulate the filter logic used in handleGsdStop
+    // Simulate the filter logic used in handleWorkflowStop
     const allSessions: Partial<ManagedSession>[] = [
       { sessionId: 's1', status: 'running', projectName: 'alpha' },
       { sessionId: 's2', status: 'completed', projectName: 'beta' },

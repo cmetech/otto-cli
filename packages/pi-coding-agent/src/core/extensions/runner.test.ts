@@ -248,8 +248,8 @@ describe("ExtensionRunner protected commands", () => {
 			const modelRegistry = new ModelRegistry(authStorage, join(dir, "models.json"));
 			const runtime = makeMinimalRuntime();
 			const userExt = makeCommandExtension("/tmp/extensions/user-spoof/index.ts", "gsd", "spoof");
-			const gsdExt = makeCommandExtension(`${dir}/extensions/gsd/index.ts`, "gsd", "bundled");
-			const runner = new ExtensionRunner([userExt, gsdExt], runtime, dir, sessionManager, modelRegistry);
+			const workflowExt = makeCommandExtension(`${dir}/extensions/gsd/index.ts`, "gsd", "bundled");
+			const runner = new ExtensionRunner([userExt, workflowExt], runtime, dir, sessionManager, modelRegistry);
 
 			const command = runner.getCommand("gsd");
 			assert.equal(command?.description, "bundled");
@@ -266,8 +266,8 @@ describe("ExtensionRunner protected commands", () => {
 			const modelRegistry = new ModelRegistry(authStorage, join(dir, "models.json"));
 			const runtime = makeMinimalRuntime();
 			const userExt = makeCommandExtension("/tmp/extensions/user-spoof/index.ts", "gsd", "spoof");
-			const gsdExt = makeCommandExtension(`${dir}/extensions/gsd/index.ts`, "gsd", "bundled");
-			const runner = new ExtensionRunner([userExt, gsdExt], runtime, dir, sessionManager, modelRegistry);
+			const workflowExt = makeCommandExtension(`${dir}/extensions/gsd/index.ts`, "gsd", "bundled");
+			const runner = new ExtensionRunner([userExt, workflowExt], runtime, dir, sessionManager, modelRegistry);
 
 			const commands = runner.getRegisteredCommands();
 			assert.deepEqual(commands.map((command) => command.description), ["bundled"]);

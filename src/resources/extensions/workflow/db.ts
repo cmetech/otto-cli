@@ -28,7 +28,7 @@ import { existsSync, copyFileSync, mkdirSync, realpathSync } from "node:fs";
 import { dirname } from "node:path";
 import type { Decision, Requirement, GateRow, GateId, GateScope, GateStatus, GateVerdict } from "./types.js";
 import { WorkflowError, STALE_STATE } from "./errors.js";
-import type { GsdWorkspace, MilestoneScope } from "./workspace.js";
+import type { WorkflowWorkspace, MilestoneScope } from "./workspace.js";
 import { getGateIdsForTurn, type OwnerTurn } from "./gate-registry.js";
 import { logError, logWarning } from "./workflow-logger.js";
 import { createDbAdapter, type DbAdapter } from "./db-adapter.js";
@@ -388,7 +388,7 @@ let _currentIdentityKey: string | null = null;
 
 /**
  * Workspace-scoped connection cache.
- * Key: GsdWorkspace.identityKey (realpath-normalized project root).
+ * Key: WorkflowWorkspace.identityKey (realpath-normalized project root).
  * Value: the DB path and open adapter for that workspace.
  *
  * Sibling worktrees of the same project share the same identityKey (set by
@@ -451,10 +451,10 @@ export function closeAllDatabases(): void {
  * is preserved in the cache (not closed), so callers can switch back to it
  * cheaply via a subsequent openDatabaseByWorkspace() call.
  *
- * @param workspace A GsdWorkspace created by createWorkspace().
+ * @param workspace A WorkflowWorkspace created by createWorkspace().
  * @returns true if the connection is open and ready, false otherwise.
  */
-export function openDatabaseByWorkspace(workspace: GsdWorkspace): boolean {
+export function openDatabaseByWorkspace(workspace: WorkflowWorkspace): boolean {
   const key = workspace.identityKey;
   const dbPath = workspace.contract.projectDb;
 
@@ -544,7 +544,7 @@ export function openDatabaseByScope(scope: MilestoneScope): boolean {
  * performs a full closeDatabase() including WAL checkpoint. Otherwise only
  * removes the cache entry (the adapter was already replaced by a later open).
  */
-export function closeDatabaseByWorkspace(workspace: GsdWorkspace): void {
+export function closeDatabaseByWorkspace(workspace: WorkflowWorkspace): void {
   const key = workspace.identityKey;
   const cached = _dbCache.get(key);
   if (!cached) return;

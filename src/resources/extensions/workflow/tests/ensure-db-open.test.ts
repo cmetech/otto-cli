@@ -290,8 +290,8 @@ function createLegacyV15Db(dbPath: string): void {
 describe('ensure-db-open', () => {
   test('ensureDbOpen: creates empty DB without importing Markdown', async () => {
     const tmpDir = makeTmpDir();
-    const gsdDir = path.join(tmpDir, '.gsd');
-    fs.mkdirSync(gsdDir, { recursive: true });
+    const workflowDir = path.join(tmpDir, '.gsd');
+    fs.mkdirSync(workflowDir, { recursive: true });
 
     // Write a minimal DECISIONS.md so migration has content
     const decisionsContent = `# Decisions
@@ -300,10 +300,10 @@ describe('ensure-db-open', () => {
   |---|------|-------|----------|--------|-----------|-----------|
   | D001 | M001 | architecture | Use SQLite | SQLite | Sync API | Yes |
   `;
-    fs.writeFileSync(path.join(gsdDir, 'DECISIONS.md'), decisionsContent);
+    fs.writeFileSync(path.join(workflowDir, 'DECISIONS.md'), decisionsContent);
 
     // Verify no DB file exists yet
-    const dbPath = path.join(gsdDir, 'gsd.db');
+    const dbPath = path.join(workflowDir, 'gsd.db');
     assert.ok(!fs.existsSync(dbPath), 'DB file should not exist before ensureDbOpen');
 
     // Close any previously open DB
@@ -334,9 +334,9 @@ describe('ensure-db-open', () => {
 
   test('ensureDbOpen: explicit basePath opens target project without cwd override', async () => {
     const tmpDir = makeTmpDir();
-    const gsdDir = path.join(tmpDir, '.gsd');
-    fs.mkdirSync(gsdDir, { recursive: true });
-    fs.writeFileSync(path.join(gsdDir, 'DECISIONS.md'), `# Decisions
+    const workflowDir = path.join(tmpDir, '.gsd');
+    fs.mkdirSync(workflowDir, { recursive: true });
+    fs.writeFileSync(path.join(workflowDir, 'DECISIONS.md'), `# Decisions
 
 | # | When | Scope | Decision | Choice | Rationale | Revisable |
 |---|------|-------|----------|--------|-----------|-----------|
@@ -364,9 +364,9 @@ describe('ensure-db-open', () => {
 
   test('ensureDbOpen: migrates legacy v15 DB before bootstrap indexes touch new columns', async () => {
     const tmpDir = makeTmpDir();
-    const gsdDir = path.join(tmpDir, '.gsd');
-    fs.mkdirSync(gsdDir, { recursive: true });
-    const dbPath = path.join(gsdDir, 'gsd.db');
+    const workflowDir = path.join(tmpDir, '.gsd');
+    fs.mkdirSync(workflowDir, { recursive: true });
+    const dbPath = path.join(workflowDir, 'gsd.db');
     createLegacyV15Db(dbPath);
 
     try {
@@ -436,11 +436,11 @@ describe('ensure-db-open', () => {
 
   test('ensureDbOpen: opens existing DB', async () => {
     const tmpDir = makeTmpDir();
-    const gsdDir = path.join(tmpDir, '.gsd');
-    fs.mkdirSync(gsdDir, { recursive: true });
+    const workflowDir = path.join(tmpDir, '.gsd');
+    fs.mkdirSync(workflowDir, { recursive: true });
 
     // Create a DB file first
-    const dbPath = path.join(gsdDir, 'gsd.db');
+    const dbPath = path.join(workflowDir, 'gsd.db');
     const { openDatabase } = await import('../db.ts');
     openDatabase(dbPath);
     closeDatabase();
@@ -468,8 +468,8 @@ describe('ensure-db-open', () => {
 
   test('ensureDbOpen: empty .gsd/ creates empty DB (#2510)', async () => {
     const tmpDir = makeTmpDir();
-    const gsdDir = path.join(tmpDir, '.gsd');
-    fs.mkdirSync(gsdDir, { recursive: true });
+    const workflowDir = path.join(tmpDir, '.gsd');
+    fs.mkdirSync(workflowDir, { recursive: true });
     // .gsd/ exists but no DECISIONS.md, REQUIREMENTS.md, or milestones/
 
     try { closeDatabase(); } catch { /* ok */ }
@@ -480,7 +480,7 @@ describe('ensure-db-open', () => {
       const { ensureDbOpen } = await import('../bootstrap/dynamic-tools.ts');
       const result = await ensureDbOpen();
       assert.ok(result === true, 'ensureDbOpen should create empty DB for fresh .gsd/');
-      assert.ok(fs.existsSync(path.join(gsdDir, 'gsd.db')), 'DB file should be created');
+      assert.ok(fs.existsSync(path.join(workflowDir, 'gsd.db')), 'DB file should be created');
       assert.ok(isDbAvailable(), 'DB should be available');
     } finally {
       process.cwd = origCwd;

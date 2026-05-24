@@ -156,7 +156,7 @@ describe('toRoundResultResponse', () => {
 
 describe('isRemoteConfigured', () => {
   let tmpDir: string;
-  const origGsdHome = process.env['GSD_HOME'];
+  const origWorkflowHome = process.env['GSD_HOME'];
   const origToken = process.env['DISCORD_BOT_TOKEN'];
 
   before(() => {
@@ -165,8 +165,8 @@ describe('isRemoteConfigured', () => {
 
   after(() => {
     rmSync(tmpDir, { recursive: true, force: true });
-    if (origGsdHome !== undefined) {
-      process.env['GSD_HOME'] = origGsdHome;
+    if (origWorkflowHome !== undefined) {
+      process.env['GSD_HOME'] = origWorkflowHome;
     } else {
       delete process.env['GSD_HOME'];
     }
@@ -242,7 +242,7 @@ describe('isRemoteConfigured', () => {
 
 describe('tryRemoteQuestions returns null when remote is not configured', () => {
   let tmpDir: string;
-  const origGsdHome = process.env['GSD_HOME'];
+  const origWorkflowHome = process.env['GSD_HOME'];
 
   before(() => {
     tmpDir = mkdtempSync(join(tmpdir(), 'gsd-rq-null-test-'));
@@ -255,8 +255,8 @@ describe('tryRemoteQuestions returns null when remote is not configured', () => 
 
   after(() => {
     rmSync(tmpDir, { recursive: true, force: true });
-    if (origGsdHome !== undefined) {
-      process.env['GSD_HOME'] = origGsdHome;
+    if (origWorkflowHome !== undefined) {
+      process.env['GSD_HOME'] = origWorkflowHome;
     } else {
       delete process.env['GSD_HOME'];
     }
@@ -274,7 +274,7 @@ describe('tryRemoteQuestions returns null when remote is not configured', () => 
 
 describe('tryRemoteQuestions returns error result on auth failure', () => {
   let tmpDir: string;
-  const origGsdHome = process.env['GSD_HOME'];
+  const origWorkflowHome = process.env['GSD_HOME'];
   const origToken = process.env['DISCORD_BOT_TOKEN'];
 
   before(() => {
@@ -291,8 +291,8 @@ describe('tryRemoteQuestions returns error result on auth failure', () => {
 
   after(() => {
     rmSync(tmpDir, { recursive: true, force: true });
-    if (origGsdHome !== undefined) {
-      process.env['GSD_HOME'] = origGsdHome;
+    if (origWorkflowHome !== undefined) {
+      process.env['GSD_HOME'] = origWorkflowHome;
     } else {
       delete process.env['GSD_HOME'];
     }
@@ -328,7 +328,7 @@ describe('tryRemoteQuestions returns error result on auth failure', () => {
 
 describe('remote-questions YAML frontmatter parsing (via isRemoteConfigured)', () => {
   let tmpDir: string;
-  const origGsdHome = process.env['GSD_HOME'];
+  const origWorkflowHome = process.env['GSD_HOME'];
 
   before(() => {
     tmpDir = mkdtempSync(join(tmpdir(), 'gsd-rq-yaml-test-'));
@@ -336,8 +336,8 @@ describe('remote-questions YAML frontmatter parsing (via isRemoteConfigured)', (
 
   after(() => {
     rmSync(tmpDir, { recursive: true, force: true });
-    if (origGsdHome !== undefined) {
-      process.env['GSD_HOME'] = origGsdHome;
+    if (origWorkflowHome !== undefined) {
+      process.env['GSD_HOME'] = origWorkflowHome;
     } else {
       delete process.env['GSD_HOME'];
     }

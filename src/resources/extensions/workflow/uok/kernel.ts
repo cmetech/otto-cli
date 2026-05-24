@@ -6,7 +6,7 @@ import { join } from "node:path";
 
 import type { AutoSession } from "../auto/session.js";
 import type { LoopDeps } from "../auto/loop-deps.js";
-import { gsdRoot } from "../paths.js";
+import { workflowRoot } from "../paths.js";
 import { buildAuditEnvelope, emitUokAuditEvent } from "./audit.js";
 import { setUnifiedAuditEnabled } from "./audit-toggle.js";
 import { resolveUokFlags } from "./flags.js";
@@ -33,12 +33,12 @@ interface RunAutoLoopWithUokArgs {
 }
 
 function parityLogPath(basePath: string): string {
-  return join(gsdRoot(basePath), "runtime", "uok-parity.jsonl");
+  return join(workflowRoot(basePath), "runtime", "uok-parity.jsonl");
 }
 
 function writeParityEvent(basePath: string, event: Record<string, unknown>): void {
   try {
-    mkdirSync(join(gsdRoot(basePath), "runtime"), { recursive: true });
+    mkdirSync(join(workflowRoot(basePath), "runtime"), { recursive: true });
     appendFileSync(parityLogPath(basePath), `${JSON.stringify(event)}\n`, "utf-8");
   } catch {
     // parity telemetry must never block orchestration

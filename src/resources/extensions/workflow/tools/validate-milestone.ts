@@ -21,7 +21,7 @@ import {
   getMilestone,
   getArtifact,
 } from "../db.js";
-import { gsdProjectionRoot, clearPathCache, resolveSliceFile } from "../paths.js";
+import { workflowProjectionRoot, clearPathCache, resolveSliceFile } from "../paths.js";
 import { resolveCanonicalMilestoneRoot } from "../worktree-manager.js";
 import { saveFile, clearParseCache, loadFile } from "../files.js";
 import { invalidateStateCache } from "../state.js";
@@ -205,7 +205,7 @@ export async function handleValidateMilestone(
   // worktree's artifacts instead of stale project-root state.
   const validationMd = renderValidationMarkdown(effectiveParams);
   const validationPath = join(
-    gsdProjectionRoot(artifactBasePath),
+    workflowProjectionRoot(artifactBasePath),
     "milestones",
     effectiveParams.milestoneId,
     `${effectiveParams.milestoneId}-VALIDATION.md`,

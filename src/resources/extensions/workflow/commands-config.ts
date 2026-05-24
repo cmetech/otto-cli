@@ -8,7 +8,7 @@ import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { AuthStorage } from "@loop24/pi-coding-agent";
 import { existsSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 
 /**
  * Tool API key configurations.
@@ -35,7 +35,7 @@ export function getStoredToolKey(auth: AuthStorage, providerId: string): string 
  */
 export function loadToolApiKeys(): void {
   try {
-    const authPath = join(gsdHome(), "agent", "auth.json");
+    const authPath = join(workflowHome(), "agent", "auth.json");
     if (!existsSync(authPath)) return;
 
     const auth = AuthStorage.create(authPath);
@@ -51,7 +51,7 @@ export function loadToolApiKeys(): void {
 }
 
 export function getConfigAuthStorage(): AuthStorage {
-  const authPath = join(gsdHome(), "agent", "auth.json");
+  const authPath = join(workflowHome(), "agent", "auth.json");
   mkdirSync(dirname(authPath), { recursive: true });
   return AuthStorage.create(authPath);
 }

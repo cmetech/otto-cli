@@ -14,9 +14,9 @@ import { readdirSync, existsSync, realpathSync, Dirent } from "node:fs";
 import { join, dirname, normalize, resolve } from "node:path";
 import { homedir } from "node:os";
 import { spawnSync } from "node:child_process";
-import { nativeScanGsdTree, type GsdTreeEntry } from "./native-parser-bridge.js";
+import { nativeScanWorkflowTree, type WorkflowTreeEntry } from "./native-parser-bridge.js";
 import { DIR_CACHE_MAX } from "./constants.js";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 import { isWorktreePath, resolveWorktreeProjectRoot } from "./worktree-root.js";
 
 // ─── Directory Listing Cache ──────────────────────────────────────────────────
@@ -28,17 +28,17 @@ const dirListCache = new Map<string, string[]>();
 // When the native module is available, scan the entire .loop24/ tree in one call
 // and serve directory listings from memory instead of individual readdirSync calls.
 
-let nativeTreeCache: Map<string, GsdTreeEntry[]> | null = null;
+let nativeTreeCache: Map<string, WorkflowTreeEntry[]> | null = null;
 let nativeTreeBase: string | null = null;
 
-function getNativeTree(gsdDir: string): Map<string, GsdTreeEntry[]> | null {
-  if (nativeTreeCache && nativeTreeBase === gsdDir) return nativeTreeCache;
+function getNativeTree(workflowDir: string): Map<string, WorkflowTreeEntry[]> | null {
+  if (nativeTreeCache && nativeTreeBase === workflowDir) return nativeTreeCache;
 
-  const entries = nativeScanGsdTree(gsdDir);
+  const entries = nativeScanWorkflowTree(workflowDir);
   if (!entries) return null;
 
   // Build a map of parent directory -> entries
-  const tree = new Map<string, GsdTreeEntry[]>();
+  const tree = new Map<string, WorkflowTreeEntry[]>();
   for (const entry of entries) {
     const parts = entry.path.split('/');
     const parentPath = parts.slice(0, -1).join('/');
@@ -48,17 +48,17 @@ function getNativeTree(gsdDir: string): Map<string, GsdTreeEntry[]> | null {
   }
 
   nativeTreeCache = tree;
-  nativeTreeBase = gsdDir;
+  nativeTreeBase = workflowDir;
   return tree;
 }
 
 /**
  * Convert a native tree lookup into a relative key for the tree map.
- * Returns the relative path from the gsdDir, or null if the path isn't under gsdDir.
+ * Returns the relative path from the workflowDir, or null if the path isn't under workflowDir.
  */
-function nativeTreeKey(dirPath: string, gsdDir: string): string | null {
-  if (!dirPath.startsWith(gsdDir)) return null;
-  const rel = dirPath.slice(gsdDir.length).replace(/^\//, '');
+function nativeTreeKey(dirPath: string, workflowDir: string): string | null {
+  if (!dirPath.startsWith(workflowDir)) return null;
+  const rel = dirPath.slice(workflowDir.length).replace(/^\//, '');
   return rel || '.';
 }
 
@@ -133,10 +133,10 @@ function cachedReaddir(dirPath: string): string[] {
  * Call after milestone transitions, file creation in planning directories,
  * or at the start/end of a dispatch cycle.
  *
- * NOTE: This does NOT clear gsdRootCache. The project root is stable for
+ * NOTE: This does NOT clear workflowRootCache. The project root is stable for
  * the lifetime of a process; clearing it on every agent turn-end caused a
  * 250–2500 ms regression per session (git rev-parse + dir walk per turn).
- * Use _clearGsdRootCache() at session-reset boundaries (workspace switch,
+ * Use _clearWorkflowRootCache() at session-reset boundaries (workspace switch,
  * process exit) when the project root may genuinely change.
  */
 export function clearPathCache(): void {
@@ -297,17 +297,17 @@ const LEGACY_GSD_ROOT_FILES: Record<RootFileKey, string> = {
 
 // ─── Root Discovery ───────────────────────────────────────────────────────
 
-// Process-lifetime cache for gsdRoot() results.
+// Process-lifetime cache for workflowRoot() results.
 // Keys are realpath-normalized (via normCacheKey) so /foo and /foo/ share the
 // same entry and so do case-variant paths on case-insensitive volumes. This
 // normalization is the safety net that prevents cache poisoning from the
 // ~/.gsd walk-up bug (fixed in c46cf4786 + b35e070eb), making it safe to
 // hold this cache for the entire process lifetime.
-// Use _clearGsdRootCache() only at session-reset boundaries (workspace switch,
+// Use _clearWorkflowRootCache() only at session-reset boundaries (workspace switch,
 // process exit) — NOT inside clearPathCache(), which runs on every agent turn.
-const gsdRootCache = new Map<string, string>();
+const workflowRootCache = new Map<string, string>();
 
-export interface GsdPathContract {
+export interface WorkflowPathContract {
   /** Canonical repo/project root where authoritative state lives. */
   projectRoot: string;
   /** Current execution root, which may be an auto-worktree. */
@@ -322,10 +322,10 @@ export interface GsdPathContract {
   isWorktree: boolean;
 }
 
-export function resolveGsdPathContract(
+export function resolveWorkflowPathContract(
   workRoot: string,
   originalProjectRoot?: string | null,
-): GsdPathContract {
+): WorkflowPathContract {
   const resolvedWorkRoot = resolve(workRoot || process.cwd());
   const isWorktree = isWorktreePath(resolvedWorkRoot);
   if (isWorktree && !originalProjectRoot?.trim()) {
@@ -357,20 +357,20 @@ export function resolveGsdPathContract(
   };
 }
 
-export function gsdProjectionRoot(basePath: string): string {
-  const contract = resolveGsdPathContract(basePath);
+export function workflowProjectionRoot(basePath: string): string {
+  const contract = resolveWorkflowPathContract(basePath);
   return normalizeRealPath(contract.worktreeGsd ?? contract.projectGsd);
 }
 
 /**
- * Invalidate the gsdRoot cache.
+ * Invalidate the workflowRoot cache.
  * Use ONLY at session-reset boundaries: workspace switch, process exit, or
  * any context where the project root itself may genuinely change.
  * Do NOT call this on every agent turn — use clearPathCache() for volatile
  * directory listing invalidation instead.
  */
-export function _clearGsdRootCache(): void {
-  gsdRootCache.clear();
+export function _clearWorkflowRootCache(): void {
+  workflowRootCache.clear();
 }
 
 /**
@@ -386,7 +386,7 @@ export function normalizeRealPath(p: string): string {
   try { return realpathSync.native(p); } catch { return resolve(p); }
 }
 
-/** Normalize a path for use as a gsdRootCache key (realpath + trailing-slash strip). */
+/** Normalize a path for use as a workflowRootCache key (realpath + trailing-slash strip). */
 function normCacheKey(p: string): string {
   const r = normalizeRealPath(p);
   const s = r.replaceAll("\\", "/").replace(/\/+$/, "");
@@ -405,28 +405,28 @@ function normCacheKey(p: string): string {
  * Result is cached per normalized basePath for the process lifetime.
  * Keys are realpath-normalized so /foo and /foo/ share the same cache entry.
  */
-export function gsdRoot(basePath: string): string {
+export function workflowRoot(basePath: string): string {
   const cacheKey = normCacheKey(basePath);
-  const cached = gsdRootCache.get(cacheKey);
+  const cached = workflowRootCache.get(cacheKey);
   if (cached) return cached;
 
   // Canonicalize result via realpath before asserting and caching so that
-  // callers always receive a canonical path regardless of whether probeGsdRoot
+  // callers always receive a canonical path regardless of whether probeWorkflowRoot
   // returned a path through a symlink. Without this, the cached value can
   // diverge from other realpath-normalized paths (e.g. workspace.identityKey).
-  const result = normalizeRealPath(probeGsdRoot(basePath));
+  const result = normalizeRealPath(probeWorkflowRoot(basePath));
 
   // Defense-in-depth: if basePath resolves to the user's home directory and
-  // the result equals gsdHome(), refuse — project-scoped writes must never
+  // the result equals workflowHome(), refuse — project-scoped writes must never
   // land in the global ~/.gsd. Paths under ~/.loop24/projects/<hash>/ are still
   // valid (their basePath does not equal homedir).
-  assertNotGlobalGsdHome(basePath, result);
+  assertNotGlobalWorkflowHome(basePath, result);
 
-  gsdRootCache.set(cacheKey, result);
+  workflowRootCache.set(cacheKey, result);
   return result;
 }
 
-function assertNotGlobalGsdHome(basePath: string, result: string): void {
+function assertNotGlobalWorkflowHome(basePath: string, result: string): void {
   const norm = (p: string): string => {
     let r: string;
     try { r = realpathSync.native(p); } catch { r = p; }
@@ -436,16 +436,16 @@ function assertNotGlobalGsdHome(basePath: string, result: string): void {
   let baseNorm: string;
   let homeNorm: string;
   let resultNorm: string;
-  let gsdHomeNorm: string;
+  let workflowHomeNorm: string;
   try {
     baseNorm = norm(basePath);
     homeNorm = norm(homedir());
     resultNorm = norm(result);
-    gsdHomeNorm = norm(gsdHome());
+    workflowHomeNorm = norm(workflowHome());
   } catch {
     return;
   }
-  if (baseNorm === homeNorm && resultNorm === gsdHomeNorm) {
+  if (baseNorm === homeNorm && resultNorm === workflowHomeNorm) {
     throw new Error(
       `Refusing to use ${result} as a project .gsd directory — that is the global GSD home. ` +
       `Run GSD from inside a project directory.`,
@@ -457,13 +457,13 @@ function assertNotGlobalGsdHome(basePath: string, result: string): void {
  * Detect if a path is inside a .loop24/worktrees/<name>/ structure.
  *
  * Auto-worktrees live at <project>/.loop24/worktrees/<milestoneId>/.
- * When gsdRoot() is called with such a path, we must NOT walk up to the
+ * When workflowRoot() is called with such a path, we must NOT walk up to the
  * project root's .gsd — each worktree manages its own .gsd state (#2594).
  *
  * Matches both forward-slash and platform-native separators to handle
  * Windows paths (path.sep = '\\') and normalized Unix paths.
  */
-function isInsideGsdWorktree(p: string): boolean {
+function isInsideWorkflowWorktree(p: string): boolean {
   // Match /.loop24/worktrees/<name> where <name> is the final segment or
   // followed by a separator. The <name> segment must be non-empty.
   const sepFwd = "/";
@@ -485,8 +485,8 @@ function isInsideGsdWorktree(p: string): boolean {
   return false;
 }
 
-function probeGsdRoot(rawBasePath: string): string {
-  const contract = resolveGsdPathContract(rawBasePath);
+function probeWorkflowRoot(rawBasePath: string): string {
+  const contract = resolveWorkflowPathContract(rawBasePath);
   if (contract.isWorktree) return contract.projectGsd;
 
   // 1. Fast path — check the input path directly
@@ -498,7 +498,7 @@ function probeGsdRoot(rawBasePath: string): string {
   //     the git-root probe (step 2) or walk-up (step 3) escapes to the project
   //     root's .gsd, causing ensurePreconditions() and deriveState() to read/write
   //     state in the wrong location.
-  if (isInsideGsdWorktree(rawBasePath)) return local;
+  if (isInsideWorkflowWorktree(rawBasePath)) return local;
 
   // Resolve symlinks so path comparisons work correctly across platforms
   // (e.g. macOS /var → /private/var). Use rawBasePath as fallback if not resolvable.
@@ -506,7 +506,7 @@ function probeGsdRoot(rawBasePath: string): string {
   try { basePath = realpathSync.native(rawBasePath); } catch { basePath = rawBasePath; }
 
   // Also check the resolved path for the worktree pattern (macOS /tmp → /private/tmp)
-  if (basePath !== rawBasePath && isInsideGsdWorktree(basePath)) return local;
+  if (basePath !== rawBasePath && isInsideWorkflowWorktree(basePath)) return local;
 
   // 2. Git root anchor — used as both probe target and walk-up boundary
   //    Only walk if we're inside a git project — prevents escaping into
@@ -523,21 +523,21 @@ function probeGsdRoot(rawBasePath: string): string {
     }
   } catch { /* git not available */ }
 
-  // Compute gsdHome once for the skip-check used in steps 2 and 3.
+  // Compute workflowHome once for the skip-check used in steps 2 and 3.
   const normPath = (p: string): string => {
     let r: string;
     try { r = realpathSync.native(p); } catch { r = p; }
     const s = r.replaceAll("\\", "/").replace(/\/+$/, "");
     return process.platform === "win32" ? s.toLowerCase() : s;
   };
-  let gsdHomeNorm: string;
-  try { gsdHomeNorm = normPath(gsdHome()); } catch { gsdHomeNorm = ""; }
+  let workflowHomeNorm: string;
+  try { workflowHomeNorm = normPath(workflowHome()); } catch { workflowHomeNorm = ""; }
 
   if (gitRoot) {
     const candidate = join(gitRoot, ".gsd");
     // Skip if the candidate resolves to the global agent home — a subdir basePath
     // must not be anchored to ~/.gsd just because $HOME is a git repo.
-    if (existsSync(candidate) && normPath(candidate) !== gsdHomeNorm) return candidate;
+    if (existsSync(candidate) && normPath(candidate) !== workflowHomeNorm) return candidate;
   }
 
   // 3. Walk up from basePath to the git root (only if we are in a subdirectory)
@@ -545,7 +545,7 @@ function probeGsdRoot(rawBasePath: string): string {
     let cur = dirname(basePath);
     while (cur !== basePath) {
       const candidate = join(cur, ".gsd");
-      if (existsSync(candidate) && normPath(candidate) !== gsdHomeNorm) return candidate;
+      if (existsSync(candidate) && normPath(candidate) !== workflowHomeNorm) return candidate;
       if (cur === gitRoot) break;
       basePath = cur;
       cur = dirname(cur);
@@ -556,15 +556,15 @@ function probeGsdRoot(rawBasePath: string): string {
   return local;
 }
 export function milestonesDir(basePath: string): string {
-  return join(gsdRoot(basePath), "milestones");
+  return join(workflowRoot(basePath), "milestones");
 }
 
 export function resolveRuntimeFile(basePath: string): string {
-  return join(gsdRoot(basePath), "RUNTIME.md");
+  return join(workflowRoot(basePath), "RUNTIME.md");
 }
 
-export function resolveGsdRootFile(basePath: string, key: RootFileKey): string {
-  const root = gsdRoot(basePath);
+export function resolveWorkflowRootFile(basePath: string, key: RootFileKey): string {
+  const root = workflowRoot(basePath);
   const canonical = join(root, ROOT_FILES[key]);
   if (existsSync(canonical)) return canonical;
   const legacy = join(root, LEGACY_GSD_ROOT_FILES[key]);
@@ -572,7 +572,7 @@ export function resolveGsdRootFile(basePath: string, key: RootFileKey): string {
   return canonical;
 }
 
-export function relGsdRootFile(key: RootFileKey): string {
+export function relWorkflowRootFile(key: RootFileKey): string {
   return `.gsd/${ROOT_FILES[key]}`;
 }
 

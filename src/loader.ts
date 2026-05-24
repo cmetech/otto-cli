@@ -8,25 +8,25 @@ import { ANSI_BRAND_YELLOW, ANSI_BRAND_GREEN, ANSI_DIM, ANSI_RESET } from './bra
 // Fast-path: handle --version/-v and --help/-h before importing any heavy
 // dependencies. This avoids loading the entire pi-coding-agent barrel import
 // (~1s) just to print a version string.
-const gsdRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+const workflowRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const args = process.argv.slice(2)
 const firstArg = args[0]
 
 // Read package.json once — reused for version, banner, and GSD_VERSION below
-let gsdVersion = '0.0.0'
+let workflowVersion = '0.0.0'
 try {
-  const pkg = JSON.parse(readFileSync(join(gsdRoot, 'package.json'), 'utf-8'))
-  gsdVersion = pkg.version || '0.0.0'
+  const pkg = JSON.parse(readFileSync(join(workflowRoot, 'package.json'), 'utf-8'))
+  workflowVersion = pkg.version || '0.0.0'
 } catch { /* ignore */ }
 
 if (firstArg === '--version' || firstArg === '-v') {
-  process.stdout.write(gsdVersion + '\n')
+  process.stdout.write(workflowVersion + '\n')
   process.exit(0)
 }
 
 if (firstArg === '--help' || firstArg === '-h') {
   const { printHelp } = await import('./help-text.js')
-  printHelp(gsdVersion)
+  printHelp(workflowVersion)
   process.exit(0)
 }
 
@@ -118,13 +118,13 @@ if (!existsSync(appRoot)) {
 
   let banner = ''
   try {
-    const bannerPath = join(gsdRoot, 'src/resources/extensions/loop24/branding/banner.txt')
+    const bannerPath = join(workflowRoot, 'src/resources/extensions/loop24/branding/banner.txt')
     banner = readFileSync(bannerPath, 'utf-8')
   } catch { /* fall back to text-only */ }
 
   process.stderr.write(
     `${yellow}${banner}${reset}\n` +
-    `  compliant agent for developers ${dim}v${gsdVersion}${reset}\n` +
+    `  compliant agent for developers ${dim}v${workflowVersion}${reset}\n` +
     `  ${green}Welcome.${reset} Setting up your environment...\n\n`
   )
   process.env.LOOP24_FIRST_RUN_BANNER = process.env.GSD_FIRST_RUN_BANNER = '1'
@@ -136,7 +136,7 @@ process.env.LOOP24_CODING_AGENT_DIR = process.env.GSD_CODING_AGENT_DIR = agentDi
 // GSD_PKG_ROOT — absolute path to @ericsson/loop24 package root. Used by deployed extensions
 // (e.g. auto.ts resume path) to import modules like resource-loader.js that live
 // in the package tree, not in the deployed ~/.loop24/agent/ tree.
-process.env.LOOP24_PKG_ROOT = process.env.GSD_PKG_ROOT = gsdRoot
+process.env.LOOP24_PKG_ROOT = process.env.GSD_PKG_ROOT = workflowRoot
 
 // RTK environment — make ~/.loop24/agent/bin visible to all child-process paths,
 // not just the bash tool, and force-disable RTK telemetry for managed use.
@@ -146,8 +146,8 @@ applyRtkProcessEnv(process.env)
 // Without this, extensions (e.g. browser-tools) can't resolve dependencies like
 // `playwright` because jiti resolves modules from pi-coding-agent's location.
 // Prepending the agent's node_modules to NODE_PATH fixes this for all extensions.
-const gsdNodeModules = join(gsdRoot, 'node_modules')
-process.env.NODE_PATH = [gsdNodeModules, process.env.NODE_PATH]
+const workflowNodeModules = join(workflowRoot, 'node_modules')
+process.env.NODE_PATH = [workflowNodeModules, process.env.NODE_PATH]
   .filter(Boolean)
   .join(delimiter)
 // Force Node to re-evaluate module search paths with the updated NODE_PATH.
@@ -157,19 +157,19 @@ const { Module } = await import('module');
 (Module as any)._initPaths?.()
 
 // GSD_VERSION — expose package version so extensions can display it (env var name kept for compatibility)
-process.env.LOOP24_VERSION = process.env.GSD_VERSION = gsdVersion
+process.env.LOOP24_VERSION = process.env.GSD_VERSION = workflowVersion
 
 // GSD_BIN_PATH — absolute path to the CLI entrypoint, used by patched
 // subagent/parallel workers to spawn loop24 instead of pi when dispatching
 // workflow tasks. In source-dev mode this must remain scripts/dev-cli.js, not
 // src/loader.ts, because child processes need the --import resolve-ts wrapper.
-applyLoaderCliEntrypointEnv(process.env, { gsdRoot, invokedBinPath: process.argv[1] })
+applyLoaderCliEntrypointEnv(process.env, { workflowRoot, invokedBinPath: process.argv[1] })
 
 // LOOP24_WORKFLOW_PATH — absolute path to bundled WORKFLOW.md, used by patched workflow extension
 // when dispatching workflow prompts. Prefers dist/resources/ (stable, set at build time)
 // over src/resources/ (live working tree) — see resource-loader.ts for rationale.
 // GSD_WORKFLOW_PATH kept as fallback during identifier-erasure transition.
-const resourcesDir = resolveBundledResourcesDirFromPackageRoot(gsdRoot)
+const resourcesDir = resolveBundledResourcesDirFromPackageRoot(workflowRoot)
 const workflowPath = join(resourcesDir, 'WORKFLOW.md')
 process.env.LOOP24_WORKFLOW_PATH = workflowPath
 process.env.GSD_WORKFLOW_PATH = workflowPath
@@ -211,7 +211,7 @@ if (process.env.HTTP_PROXY || process.env.HTTPS_PROXY || process.env.http_proxy 
 // read by scripts/link-workspace-packages.cjs and scripts/validate-pack.js.
 // Adding a new linkable package requires only setting `gsd.linkable` in its
 // package.json; there is no enumeration to keep in sync here.
-const packagesDir = join(gsdRoot, 'packages')
+const packagesDir = join(workflowRoot, 'packages')
 type WsPkg = { dir: string; scope: string; name: string }
 const wsPackages: WsPkg[] = []
 try {
@@ -233,7 +233,7 @@ try {
 
 try {
   for (const pkg of wsPackages) {
-    const scopeDir = join(gsdNodeModules, pkg.scope)
+    const scopeDir = join(workflowNodeModules, pkg.scope)
     if (!existsSync(scopeDir)) mkdirSync(scopeDir, { recursive: true })
     const target = join(scopeDir, pkg.name)
     const source = join(packagesDir, pkg.dir)
@@ -248,13 +248,13 @@ try {
   }
 } catch { /* non-fatal */ }
 
-const gsdScopeDir = join(gsdNodeModules, '@gsd')
+const workflowScopeDir = join(workflowNodeModules, '@gsd')
 
 // Validate critical workspace packages are resolvable. If still missing after the
 // symlink+copy attempts, emit a clear diagnostic instead of a cryptic
 // ERR_MODULE_NOT_FOUND from deep inside cli.js.
 const criticalPackages = ['pi-coding-agent']
-const missingPackages = criticalPackages.filter(pkg => !existsSync(join(gsdScopeDir, pkg)))
+const missingPackages = criticalPackages.filter(pkg => !existsSync(join(workflowScopeDir, pkg)))
 if (missingPackages.length > 0) {
   const missing = missingPackages.map(p => `@loop24/${p}`).join(', ')
   process.stderr.write(

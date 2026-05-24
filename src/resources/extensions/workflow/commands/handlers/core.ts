@@ -245,13 +245,13 @@ export async function handleBrief(args: string, ctx: ExtensionCommandContext, pi
   }
 
   const outputDir = getVisualBriefOutputDir();
-  const version = resolveGsdVersion();
+  const version = resolveWorkflowVersion();
   pi.sendUserMessage(buildVisualBriefPrompt(request, { outputDir, version }));
 }
 
 const briefRequire = createRequire(import.meta.url);
 
-function resolveGsdVersion(): string | undefined {
+function resolveWorkflowVersion(): string | undefined {
   const envVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION)?.trim();
   if (envVersion) return envVersion;
   try {

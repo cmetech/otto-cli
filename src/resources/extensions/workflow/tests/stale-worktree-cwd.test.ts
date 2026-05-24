@@ -18,7 +18,7 @@ import {
   mergeMilestoneToMain,
 } from "../auto-worktree.ts";
 import { _resetServiceCache } from "../worktree.ts";
-import { _clearGsdRootCache } from "../paths.ts";
+import { _clearWorkflowRootCache } from "../paths.ts";
 
 function run(command: string, cwd: string): string {
   return execSync(command, { cwd, stdio: ["ignore", "pipe", "pipe"], encoding: "utf-8" }).trim();
@@ -68,7 +68,7 @@ test("mergeMilestoneToMain restores cwd to project root", () => {
   const originalHome = process.env.HOME;
   const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "gsd-fake-home-")));
   process.env.HOME = fakeHome;
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
   _resetServiceCache();
 
   try {
@@ -107,7 +107,7 @@ test("mergeMilestoneToMain restores cwd to project root", () => {
   } finally {
     process.chdir(savedCwd);
     process.env.HOME = originalHome;
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
     _resetServiceCache();
     if (tempDir && existsSync(tempDir)) {
       rmSync(tempDir, { recursive: true, force: true });

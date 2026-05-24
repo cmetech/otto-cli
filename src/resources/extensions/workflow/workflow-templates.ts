@@ -11,18 +11,18 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 import { formatRecommendedProcessPaths } from "./process-task-path.js";
 
-const __extensionDir = resolveGsdExtensionDir();
+const __extensionDir = resolveWorkflowExtensionDir();
 const registryPath = join(__extensionDir, "workflow-templates", "registry.json");
 
 /** Resolve the workflow extension dir with fallback to ~/.loop24/agent/extensions/workflow/. */
-function resolveGsdExtensionDir(): string {
+function resolveWorkflowExtensionDir(): string {
   const moduleDir = dirname(fileURLToPath(import.meta.url));
   if (existsSync(join(moduleDir, "workflow-templates"))) return moduleDir;
-  const agentGsdDir = join(gsdHome(), "agent", "extensions", "workflow");
-  if (existsSync(join(agentGsdDir, "workflow-templates"))) return agentGsdDir;
+  const agentWorkflowDir = join(workflowHome(), "agent", "extensions", "workflow");
+  if (existsSync(join(agentWorkflowDir, "workflow-templates"))) return agentWorkflowDir;
   return moduleDir;
 }
 

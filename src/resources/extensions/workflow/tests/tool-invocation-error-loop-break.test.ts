@@ -103,7 +103,7 @@ describe("#2883: isToolInvocationError classification", () => {
 
   test("detects ESM export-link errors", () => {
     assert.equal(
-      isToolInvocationError("The requested module '../paths.js' does not provide an export named 'gsdProjectionRoot'"),
+      isToolInvocationError("The requested module '../paths.js' does not provide an export named 'workflowProjectionRoot'"),
       true,
     );
   });

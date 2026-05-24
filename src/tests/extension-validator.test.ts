@@ -69,8 +69,8 @@ describe('checkNamespaceReservation', () => {
     assert.ok(result.message.includes('gsd.my-tool'), 'error message should name the conflicting ID')
   })
 
-  test('returns null when allowGsdNamespace is true', () => {
-    const result = checkNamespaceReservation('gsd.my-tool', { allowGsdNamespace: true })
+  test('returns null when allowWorkflowNamespace is true', () => {
+    const result = checkNamespaceReservation('gsd.my-tool', { allowWorkflowNamespace: true })
     assert.equal(result, null)
   })
 

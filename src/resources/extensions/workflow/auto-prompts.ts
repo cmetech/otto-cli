@@ -17,7 +17,7 @@ import {
   resolveMilestoneFile, resolveSliceFile, resolveSlicePath,
   resolveTasksDir, resolveTaskFiles, resolveTaskFile,
   relMilestoneFile, relSliceFile, relSlicePath, relMilestonePath,
-  resolveGsdRootFile, relGsdRootFile, resolveRuntimeFile,
+  resolveWorkflowRootFile, relWorkflowRootFile, resolveRuntimeFile,
 } from "./paths.js";
 import { resolveSkillDiscoveryMode, resolveInlineLevel, loadEffectiveGSDPreferences, resolveAllSkillReferences } from "./preferences.js";
 import { isContextModeEnabled } from "./preferences-types.js";
@@ -350,24 +350,24 @@ export function buildSourceFilePaths(
 ): string {
   const paths: string[] = [];
 
-  const projectPath = resolveGsdRootFile(base, "PROJECT");
+  const projectPath = resolveWorkflowRootFile(base, "PROJECT");
   if (existsSync(projectPath)) {
-    paths.push(`- **Project**: \`${relGsdRootFile("PROJECT")}\``);
+    paths.push(`- **Project**: \`${relWorkflowRootFile("PROJECT")}\``);
   }
 
-  const requirementsPath = resolveGsdRootFile(base, "REQUIREMENTS");
+  const requirementsPath = resolveWorkflowRootFile(base, "REQUIREMENTS");
   if (existsSync(requirementsPath)) {
-    paths.push(`- **Requirements**: \`${relGsdRootFile("REQUIREMENTS")}\``);
+    paths.push(`- **Requirements**: \`${relWorkflowRootFile("REQUIREMENTS")}\``);
   }
 
-  const decisionsPath = resolveGsdRootFile(base, "DECISIONS");
+  const decisionsPath = resolveWorkflowRootFile(base, "DECISIONS");
   if (existsSync(decisionsPath)) {
-    paths.push(`- **Decisions**: \`${relGsdRootFile("DECISIONS")}\``);
+    paths.push(`- **Decisions**: \`${relWorkflowRootFile("DECISIONS")}\``);
   }
 
-  const queuePath = resolveGsdRootFile(base, "QUEUE");
+  const queuePath = resolveWorkflowRootFile(base, "QUEUE");
   if (existsSync(queuePath)) {
-    paths.push(`- **Queue**: \`${relGsdRootFile("QUEUE")}\``);
+    paths.push(`- **Queue**: \`${relWorkflowRootFile("QUEUE")}\``);
   }
 
   const contextPath = resolveMilestoneFile(base, mid, "CONTEXT");
@@ -870,20 +870,20 @@ export async function inlineDependencySummaries(
  * Load a well-known .loop24/ root file for optional inlining.
  * Handles the existsSync check internally.
  */
-export async function inlineGsdRootFile(
+export async function inlineWorkflowRootFile(
   base: string, filename: string, label: string,
 ): Promise<string | null> {
   const key = filename.replace(/\.md$/i, "").toUpperCase() as "PROJECT" | "DECISIONS" | "QUEUE" | "STATE" | "REQUIREMENTS" | "KNOWLEDGE";
-  const absPath = resolveGsdRootFile(base, key);
+  const absPath = resolveWorkflowRootFile(base, key);
   if (!existsSync(absPath)) return null;
-  return inlineFileOptional(absPath, relGsdRootFile(key), label);
+  return inlineFileOptional(absPath, relWorkflowRootFile(key), label);
 }
 
 // ─── DB-Aware Inline Helpers ──────────────────────────────────────────────
 
 /**
  * Inline decisions with optional milestone scoping from the DB.
- * Falls back to filesystem via inlineGsdRootFile only when DB is unavailable.
+ * Falls back to filesystem via inlineWorkflowRootFile only when DB is unavailable.
  *
  * Cascade logic (R005):
  * 1. Query with { milestoneId, scope } if scope provided
@@ -929,12 +929,12 @@ export async function inlineDecisionsFromDb(
     logWarning("prompt", `inlineDecisionsFromDb failed: ${err instanceof Error ? err.message : String(err)}`);
   }
   // DB unavailable — fall back to filesystem
-  return inlineGsdRootFile(base, "decisions.md", "Decisions");
+  return inlineWorkflowRootFile(base, "decisions.md", "Decisions");
 }
 
 /**
  * Inline requirements with optional milestone and slice scoping from the DB.
- * Falls back to filesystem via inlineGsdRootFile when DB unavailable or empty.
+ * Falls back to filesystem via inlineWorkflowRootFile when DB unavailable or empty.
  */
 export async function inlineRequirementsFromDb(
   base: string, milestoneId?: string, sliceId?: string, level?: InlineLevel,
@@ -956,12 +956,12 @@ export async function inlineRequirementsFromDb(
   } catch (err) {
     logWarning("prompt", `inlineRequirementsFromDb failed: ${err instanceof Error ? err.message : String(err)}`);
   }
-  return inlineGsdRootFile(base, "requirements.md", "Requirements");
+  return inlineWorkflowRootFile(base, "requirements.md", "Requirements");
 }
 
 /**
  * Inline project context from the DB.
- * Falls back to filesystem via inlineGsdRootFile when DB unavailable or empty.
+ * Falls back to filesystem via inlineWorkflowRootFile when DB unavailable or empty.
  */
 export async function inlineProjectFromDb(
   base: string,
@@ -978,14 +978,14 @@ export async function inlineProjectFromDb(
   } catch (err) {
     logWarning("prompt", `inlineProjectFromDb failed: ${err instanceof Error ? err.message : String(err)}`);
   }
-  return inlineGsdRootFile(base, "project.md", "Project");
+  return inlineWorkflowRootFile(base, "project.md", "Project");
 }
 
 function onDemandProjectBlock(reason: string): string {
   return [
     "### On-demand Project Context",
     "",
-    `Project context is available at \`${relGsdRootFile("PROJECT")}\`. Read it only if ${reason}.`,
+    `Project context is available at \`${relWorkflowRootFile("PROJECT")}\`. Read it only if ${reason}.`,
   ].join("\n");
 }
 
@@ -993,7 +993,7 @@ function onDemandDecisionsBlock(reason: string): string {
   return [
     "### On-demand Decisions",
     "",
-    `Decision records are available at \`${relGsdRootFile("DECISIONS")}\`. Read them only if ${reason}.`,
+    `Decision records are available at \`${relWorkflowRootFile("DECISIONS")}\`. Read them only if ${reason}.`,
   ].join("\n");
 }
 
@@ -1087,7 +1087,7 @@ export async function inlineKnowledgeScoped(
   base: string,
   keywords: string[],
 ): Promise<string | null> {
-  const knowledgePath = resolveGsdRootFile(base, "KNOWLEDGE");
+  const knowledgePath = resolveWorkflowRootFile(base, "KNOWLEDGE");
   if (!existsSync(knowledgePath)) return null;
 
   const content = await loadFile(knowledgePath);
@@ -1100,7 +1100,7 @@ export async function inlineKnowledgeScoped(
   // Return null if no sections matched (empty string from queryKnowledge)
   if (!scoped) return null;
 
-  return `### Project Knowledge (scoped)\nSource: \`${relGsdRootFile("KNOWLEDGE")}\`\n\n${scoped.trim()}`;
+  return `### Project Knowledge (scoped)\nSource: \`${relWorkflowRootFile("KNOWLEDGE")}\`\n\n${scoped.trim()}`;
 }
 
 /**
@@ -1126,7 +1126,7 @@ export async function inlineKnowledgeBudgeted(
     ? Math.max(0, Math.min(Math.floor(raw), HARD_MAX_CHARS))
     : DEFAULT_MAX_CHARS;
 
-  const knowledgePath = resolveGsdRootFile(base, "KNOWLEDGE");
+  const knowledgePath = resolveWorkflowRootFile(base, "KNOWLEDGE");
   if (!existsSync(knowledgePath)) return null;
 
   const content = await loadFile(knowledgePath);
@@ -1142,7 +1142,7 @@ export async function inlineKnowledgeBudgeted(
       ? `${trimmed.slice(0, maxChars)}\n\n[...truncated ${trimmed.length - maxChars} chars; rerun with narrower scope if needed]`
       : trimmed;
 
-  return `### Project Knowledge (scoped)\nSource: \`${relGsdRootFile("KNOWLEDGE")}\`\n\n${truncated}`;
+  return `### Project Knowledge (scoped)\nSource: \`${relWorkflowRootFile("KNOWLEDGE")}\`\n\n${truncated}`;
 }
 
 /**
@@ -1962,9 +1962,9 @@ export async function buildResearchMilestonePrompt(mid: string, midTitle: string
     "",
     "Broader project context is available if the research needs it. Read only the specific source that answers the question:",
     "",
-    `- \`${relGsdRootFile("PROJECT")}\` — product/project narrative`,
-    `- \`${relGsdRootFile("REQUIREMENTS")}\` — requirement status and acceptance criteria`,
-    `- \`${relGsdRootFile("DECISIONS")}\` — active architecture/product decisions`,
+    `- \`${relWorkflowRootFile("PROJECT")}\` — product/project narrative`,
+    `- \`${relWorkflowRootFile("REQUIREMENTS")}\` — requirement status and acceptance criteria`,
+    `- \`${relWorkflowRootFile("DECISIONS")}\` — active architecture/product decisions`,
   ].join("\n");
   parts.push(onDemandDocs);
   trackPromptContext(contextTelemetry, "project,requirements,decisions", "on-demand", onDemandDocs);
@@ -2082,17 +2082,17 @@ export async function buildPlanMilestonePrompt(mid: string, midTitle: string, ba
       "",
       "Broader project context is available if roadmap planning needs it. Read only the source that answers the planning question:",
       "",
-      `- \`${relGsdRootFile("PROJECT")}\` - product/project narrative`,
-      `- \`${relGsdRootFile("DECISIONS")}\` - active architecture/product decisions`,
+      `- \`${relWorkflowRootFile("PROJECT")}\` - product/project narrative`,
+      `- \`${relWorkflowRootFile("DECISIONS")}\` - active architecture/product decisions`,
     ].join("\n");
     inlined.push(onDemandDocs);
     trackPromptContext(contextTelemetry, "project,decisions", "on-demand", onDemandDocs);
   }
-  const queuePath = resolveGsdRootFile(base, "QUEUE");
+  const queuePath = resolveWorkflowRootFile(base, "QUEUE");
   if (existsSync(queuePath)) {
     const queueInline = await inlineFileSmart(
       queuePath,
-      relGsdRootFile("QUEUE"),
+      relWorkflowRootFile("QUEUE"),
       "Project Queue",
       `${mid} ${midTitle}`,
     );
@@ -2225,7 +2225,7 @@ export async function buildResearchSlicePrompt(
     const onDemandDecisions = [
       "### On-demand Decisions",
       "",
-      `No specific decision scope was derived from "${sTitle}". Read \`${relGsdRootFile("DECISIONS")}\` only if research needs prior architecture/product decisions.`,
+      `No specific decision scope was derived from "${sTitle}". Read \`${relWorkflowRootFile("DECISIONS")}\` only if research needs prior architecture/product decisions.`,
     ].join("\n");
     inlined.push(onDemandDecisions);
     trackPromptContext(contextTelemetry, "decisions", "on-demand", onDemandDecisions, "no derived scope");
@@ -2404,7 +2404,7 @@ async function renderSlicePrompt(options: {
       const onDemandDecisions = [
         "### On-demand Decisions",
         "",
-        `No specific decision scope was derived from "${sTitle}". Read \`${relGsdRootFile("DECISIONS")}\` only if planning needs prior architecture/product decisions.`,
+        `No specific decision scope was derived from "${sTitle}". Read \`${relWorkflowRootFile("DECISIONS")}\` only if planning needs prior architecture/product decisions.`,
       ].join("\n");
       inlined.push(onDemandDecisions);
       trackPromptContext(contextTelemetry, "decisions", "on-demand", onDemandDecisions, "no derived scope");
@@ -2681,11 +2681,11 @@ export async function buildExecuteTaskPrompt(
   const carryForwardSection = await buildCarryForwardSection(effectivePriorSummaries, base);
 
   // Inline project knowledge if available (smart-chunked for relevance)
-  const knowledgeAbsPath = resolveGsdRootFile(base, "KNOWLEDGE");
+  const knowledgeAbsPath = resolveWorkflowRootFile(base, "KNOWLEDGE");
   const knowledgeInlineET = existsSync(knowledgeAbsPath)
     ? await inlineFileSmart(
         knowledgeAbsPath,
-        relGsdRootFile("KNOWLEDGE"),
+        relWorkflowRootFile("KNOWLEDGE"),
         "Project Knowledge",
         `${tTitle} ${sTitle}`,  // use task + slice title as relevance query
       )
@@ -3554,7 +3554,7 @@ export async function buildRunUatPrompt(
   const projectOnDemand = [
     "### On-demand Project Context",
     "",
-    `Project context is available at \`${relGsdRootFile("PROJECT")}\`. Read it only if the UAT spec or slice summary lacks enough product/domain context to assess the scenario.`,
+    `Project context is available at \`${relWorkflowRootFile("PROJECT")}\`. Read it only if the UAT spec or slice summary lacks enough product/domain context to assess the scenario.`,
   ].join("\n");
   parts.push(projectOnDemand);
   trackPromptContext(contextTelemetry, "project", "on-demand", projectOnDemand);
@@ -3660,9 +3660,9 @@ export async function buildReassessRoadmapPrompt(
     "",
     "Broader project context is available if the roadmap update needs it. Read only the specific source that answers the reassessment question:",
     "",
-    `- \`${relGsdRootFile("PROJECT")}\` — product/project narrative`,
-    `- \`${relGsdRootFile("REQUIREMENTS")}\` — requirement status and acceptance criteria`,
-    `- \`${relGsdRootFile("DECISIONS")}\` — active architecture/product decisions`,
+    `- \`${relWorkflowRootFile("PROJECT")}\` — product/project narrative`,
+    `- \`${relWorkflowRootFile("REQUIREMENTS")}\` — requirement status and acceptance criteria`,
+    `- \`${relWorkflowRootFile("DECISIONS")}\` — active architecture/product decisions`,
   ].join("\n");
   parts.push(onDemandDocs);
   trackPromptContext(contextTelemetry, "project,requirements,decisions", "on-demand", onDemandDocs);
@@ -4073,12 +4073,12 @@ export async function buildRewriteDocsPrompt(
     }
   }
 
-  const decisionsPath = resolveGsdRootFile(base, "DECISIONS");
-  if (existsSync(decisionsPath)) docList.push(`- Decisions: \`${relGsdRootFile("DECISIONS")}\``);
-  const requirementsPath = resolveGsdRootFile(base, "REQUIREMENTS");
-  if (existsSync(requirementsPath)) docList.push(`- Requirements: \`${relGsdRootFile("REQUIREMENTS")}\``);
-  const projectPath = resolveGsdRootFile(base, "PROJECT");
-  if (existsSync(projectPath)) docList.push(`- Project: \`${relGsdRootFile("PROJECT")}\``);
+  const decisionsPath = resolveWorkflowRootFile(base, "DECISIONS");
+  if (existsSync(decisionsPath)) docList.push(`- Decisions: \`${relWorkflowRootFile("DECISIONS")}\``);
+  const requirementsPath = resolveWorkflowRootFile(base, "REQUIREMENTS");
+  if (existsSync(requirementsPath)) docList.push(`- Requirements: \`${relWorkflowRootFile("REQUIREMENTS")}\``);
+  const projectPath = resolveWorkflowRootFile(base, "PROJECT");
+  if (existsSync(projectPath)) docList.push(`- Project: \`${relWorkflowRootFile("PROJECT")}\``);
   const contextPath = resolveMilestoneFile(base, mid, "CONTEXT");
   const contextRel = relMilestoneFile(base, mid, "CONTEXT");
   if (contextPath) docList.push(`- Milestone context (reference only): \`${contextRel}\``);
@@ -4103,6 +4103,6 @@ export async function buildRewriteDocsPrompt(
     sliceTitle: sTitle,
     overrideContent,
     documentList,
-    overridesPath: relGsdRootFile("OVERRIDES"),
+    overridesPath: relWorkflowRootFile("OVERRIDES"),
   }));
 }

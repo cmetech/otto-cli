@@ -22,7 +22,7 @@ import {
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { ensureGitignore, hasGitTrackedGsdFiles } from "../../gitignore.ts";
+import { ensureGitignore, hasGitTrackedWorkflowFiles } from "../../gitignore.ts";
 import { migrateToExternalState } from "../../migrate-external.ts";
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -51,16 +51,16 @@ function cleanup(dir: string): void {
   }
 }
 
-// ─── hasGitTrackedGsdFiles ───────────────────────────────────────────
+// ─── hasGitTrackedWorkflowFiles ───────────────────────────────────────────
 
-test("hasGitTrackedGsdFiles returns false when .gsd/ does not exist", (t) => {
+test("hasGitTrackedWorkflowFiles returns false when .gsd/ does not exist", (t) => {
   const dir = makeTempRepo();
   t.after(() => { cleanup(dir); });
 
-  assert.equal(hasGitTrackedGsdFiles(dir), false);
+  assert.equal(hasGitTrackedWorkflowFiles(dir), false);
 });
 
-test("hasGitTrackedGsdFiles returns true when .gsd/ has tracked files", (t) => {
+test("hasGitTrackedWorkflowFiles returns true when .gsd/ has tracked files", (t) => {
   const dir = makeTempRepo();
   t.after(() => { cleanup(dir); });
 
@@ -68,17 +68,17 @@ test("hasGitTrackedGsdFiles returns true when .gsd/ has tracked files", (t) => {
   writeFileSync(join(dir, ".gsd", "PROJECT.md"), "# Test Project\n");
   git(dir, "add", ".gsd/PROJECT.md");
   git(dir, "commit", "-m", "add gsd");
-  assert.equal(hasGitTrackedGsdFiles(dir), true);
+  assert.equal(hasGitTrackedWorkflowFiles(dir), true);
 });
 
-test("hasGitTrackedGsdFiles returns false when .gsd/ exists but is untracked", (t) => {
+test("hasGitTrackedWorkflowFiles returns false when .gsd/ exists but is untracked", (t) => {
   const dir = makeTempRepo();
   t.after(() => { cleanup(dir); });
 
   mkdirSync(join(dir, ".gsd"), { recursive: true });
   writeFileSync(join(dir, ".gsd", "STATE.md"), "state\n");
   // Not git-added — should return false
-  assert.equal(hasGitTrackedGsdFiles(dir), false);
+  assert.equal(hasGitTrackedWorkflowFiles(dir), false);
 });
 
 // ─── ensureGitignore — tracked .gsd/ protection ─────────────────────
@@ -176,7 +176,7 @@ test("ensureGitignore with tracked .gsd/ does not cause git to see files as dele
   }
 });
 
-test("hasGitTrackedGsdFiles returns true (fail-safe) when git is not available", (t) => {
+test("hasGitTrackedWorkflowFiles returns true (fail-safe) when git is not available", (t) => {
   const dir = makeTempRepo();
   try {
     // Create and track .gsd/ files
@@ -191,7 +191,7 @@ test("hasGitTrackedGsdFiles returns true (fail-safe) when git is not available",
 
     // Should fail safe — assume tracked rather than silently returning false
     // (The index lock causes git ls-files to fail; rev-parse also fails → true)
-    const result = hasGitTrackedGsdFiles(dir);
+    const result = hasGitTrackedWorkflowFiles(dir);
     assert.equal(result, true, "Should return true (fail-safe) when git is unavailable");
   } finally {
     cleanup(dir);

@@ -19,7 +19,7 @@
  *   - syncWorktreeStateBack does not import root-level .gsd/ state projections
  *   - syncWorktreeStateBack does not copy worktree milestone projections back
  *   - syncWorktreeStateBack leaves next-milestone projections DB/project-root authoritative
- *   - syncGsdStateToWorktree syncs non-standard milestone dir names (#1547)
+ *   - syncWorkflowStateToWorktree syncs non-standard milestone dir names (#1547)
  *   - syncWorktreeStateBack skips non-standard milestone projection dir names
  */
 
@@ -28,7 +28,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 import { syncProjectRootToWorktree } from '../auto-worktree.ts';
-import { syncGsdStateToWorktree, syncWorktreeStateBack } from '../auto-worktree.ts';
+import { syncWorkflowStateToWorktree, syncWorktreeStateBack } from '../auto-worktree.ts';
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -200,7 +200,7 @@ describe('worktree-sync-milestones', async () => {
 
       assert.ok(!existsSync(join(wtBase, '.gsd', 'milestones')), 'milestones/ missing before sync');
 
-      const result = syncGsdStateToWorktree(mainBase, wtBase);
+      const result = syncWorkflowStateToWorktree(mainBase, wtBase);
 
       assert.ok(existsSync(join(wtBase, '.gsd', 'milestones')), 'milestones/ created in worktree');
       assert.ok(existsSync(join(wtBase, '.gsd', 'milestones', 'M001')), 'M001 synced to worktree');
@@ -536,8 +536,8 @@ describe('worktree-sync-milestones', async () => {
     }
   }
 
-  // ─── 14. syncGsdStateToWorktree syncs non-standard milestone dir names (#1547) ──
-  console.log('\n=== 14. syncGsdStateToWorktree syncs non-standard milestone dir names (#1547) ===');
+  // ─── 14. syncWorkflowStateToWorktree syncs non-standard milestone dir names (#1547) ──
+  console.log('\n=== 14. syncWorkflowStateToWorktree syncs non-standard milestone dir names (#1547) ===');
   {
     const mainBase = createBase('main');
     const wtBase = createBase('wt');
@@ -555,7 +555,7 @@ describe('worktree-sync-milestones', async () => {
       assert.ok(!existsSync(join(wtBase, '.gsd', 'milestones', 'sprint-alpha')), 'sprint-alpha missing before sync');
       assert.ok(!existsSync(join(wtBase, '.gsd', 'milestones', 'M001-abc123')), 'M001-abc123 missing before sync');
 
-      const result = syncGsdStateToWorktree(mainBase, wtBase);
+      const result = syncWorkflowStateToWorktree(mainBase, wtBase);
 
       assert.ok(
         existsSync(join(wtBase, '.gsd', 'milestones', 'sprint-alpha', 'CONTEXT.md')),

@@ -17,7 +17,7 @@
 import { readFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import { atomicWriteSync } from './atomic-write.js';
-import { gsdRoot } from './paths.js';
+import { workflowRoot } from './paths.js';
 import { formatCost, formatTokenCount } from './metrics.js';
 import { formatDateShort, formatDuration } from '../shared/format-utils.js';
 
@@ -51,14 +51,14 @@ export interface ReportsIndex {
   version: 1;
   projectName: string;
   projectPath: string;
-  gsdVersion: string;
+  workflowVersion: string;
   entries: ReportEntry[];
 }
 
 // ─── Paths ────────────────────────────────────────────────────────────────────
 
 export function reportsDir(basePath: string): string {
-  return join(gsdRoot(basePath), 'reports');
+  return join(workflowRoot(basePath), 'reports');
 }
 
 function reportsIndexPath(basePath: string): string {
@@ -97,7 +97,7 @@ export interface WriteReportSnapshotArgs {
   kind: 'milestone' | 'manual' | 'final';
   projectName: string;
   projectPath: string;
-  gsdVersion: string;
+  workflowVersion: string;
   // metrics
   totalCost: number;
   totalTokens: number;
@@ -130,14 +130,14 @@ export function writeReportSnapshot(args: WriteReportSnapshotArgs): string {
     version: 1,
     projectName: args.projectName,
     projectPath: args.projectPath,
-    gsdVersion: args.gsdVersion,
+    workflowVersion: args.workflowVersion,
     entries: [],
   };
 
   // Keep metadata fresh
   index.projectName = args.projectName;
   index.projectPath = args.projectPath;
-  index.gsdVersion = args.gsdVersion;
+  index.workflowVersion = args.workflowVersion;
 
   const label = args.milestoneId === 'final'
     ? 'Final Report'
@@ -175,7 +175,7 @@ export function regenerateHtmlIndex(basePath: string, index: ReportsIndex): void
 }
 
 function buildIndexHtml(index: ReportsIndex): string {
-  const { projectName, projectPath, gsdVersion, entries } = index;
+  const { projectName, projectPath, workflowVersion, entries } = index;
   const generated = new Date().toISOString();
 
   // Sort oldest → newest for the progression timeline
@@ -286,7 +286,7 @@ function buildIndexHtml(index: ReportsIndex): string {
   <div class="hdr-inner">
     <div class="branding">
       <span class="logo">GSD</span>
-      <span class="ver">v${esc(gsdVersion)}</span>
+      <span class="ver">v${esc(workflowVersion)}</span>
     </div>
     <div class="hdr-meta">
       <h1>${esc(projectName)} <span class="hdr-subtitle">Reports</span></h1>
@@ -325,7 +325,7 @@ function buildIndexHtml(index: ReportsIndex): string {
 
 <footer>
   <div class="ftr-inner">
-    <span class="ftr-brand">GSD v${esc(gsdVersion)}</span>
+    <span class="ftr-brand">GSD v${esc(workflowVersion)}</span>
     <span class="ftr-sep">—</span>
     <span>${esc(projectName)}</span>
     <span class="ftr-sep">—</span>

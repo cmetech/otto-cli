@@ -13,7 +13,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname, extname } from "node:path";
 
 import { execSync } from "node:child_process";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -414,7 +414,7 @@ export function updateCodebaseMap(
   fingerprint: string;
   generatedAt: string;
 } {
-  const codebasePath = join(gsdRoot(basePath), "CODEBASE.md");
+  const codebasePath = join(workflowRoot(basePath), "CODEBASE.md");
   const resolved = resolveGeneratorOptions(options);
 
   // Load existing descriptions
@@ -561,7 +561,7 @@ export function ensureCodebaseMapFresh(
  * Write CODEBASE.md to .loop24/ directory.
  */
 export function writeCodebaseMap(basePath: string, content: string): string {
-  const root = gsdRoot(basePath);
+  const root = workflowRoot(basePath);
   mkdirSync(root, { recursive: true });
   const outPath = join(root, "CODEBASE.md");
   writeFileSync(outPath, content, "utf-8");
@@ -573,7 +573,7 @@ export function writeCodebaseMap(basePath: string, content: string): string {
  * Read existing CODEBASE.md, or return null if it doesn't exist.
  */
 export function readCodebaseMap(basePath: string): string | null {
-  const codebasePath = join(gsdRoot(basePath), "CODEBASE.md");
+  const codebasePath = join(workflowRoot(basePath), "CODEBASE.md");
   if (!existsSync(codebasePath)) return null;
   try {
     return readFileSync(codebasePath, "utf-8");

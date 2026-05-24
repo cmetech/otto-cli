@@ -5,7 +5,7 @@ import { execFileSync } from "node:child_process";
 import { isAbsolute, relative, resolve } from "node:path";
 import type { WorkflowPreferences, WorkspacePreferences, WorkspaceRepositoryPreference } from "./preferences-types.js";
 import { GIT_NO_PROMPT_ENV } from "./git-constants.js";
-import { resolveGsdPathContract } from "./paths.js";
+import { resolveWorkflowPathContract } from "./paths.js";
 
 export interface RegisteredRepository {
   id: string;
@@ -76,7 +76,7 @@ export function createRepositoryRegistry(
   basePath: string,
   workspacePrefs?: WorkspacePreferences,
 ): RepositoryRegistry {
-  const contract = resolveGsdPathContract(basePath);
+  const contract = resolveWorkflowPathContract(basePath);
   const projectRoot = resolveGitWorkingTreeRoot(contract.workRoot) ?? contract.projectRoot;
   const mode = workspacePrefs?.mode ?? "project";
   const repoMap = new Map<string, RegisteredRepository>();

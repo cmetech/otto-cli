@@ -132,8 +132,8 @@ test("pnpm layout: merged node_modules contains entries from both hoisted and in
   );
 
   // @gsd points to internal, not hoisted (internal overlay precedence)
-  const gsdTarget = readlinkSync(join(agentNodeModules, "@gsd"));
-  assert.equal(gsdTarget, join(internal, "@gsd"), "@gsd should point to internal node_modules");
+  const workflowTarget = readlinkSync(join(agentNodeModules, "@gsd"));
+  assert.equal(workflowTarget, join(internal, "@gsd"), "@gsd should point to internal node_modules");
 });
 
 test("pnpm layout: non-@gsd internal deps (e.g. @anthropic-ai) are included in merged dir", (t) => {

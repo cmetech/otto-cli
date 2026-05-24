@@ -32,8 +32,8 @@ import {
   resolveMilestoneFile,
   resolveSliceFile,
   resolveSlicePath,
-  gsdProjectionRoot,
-  gsdRoot,
+  workflowProjectionRoot,
+  workflowRoot,
   buildTaskFileName,
   buildSliceFileName,
 } from "./paths.js";
@@ -48,11 +48,11 @@ import { clearPathCache } from "./paths.js";
  * E.g. "/project/.loop24/milestones/M001/M001-ROADMAP.md" → "milestones/M001/M001-ROADMAP.md"
  */
 function toArtifactPath(absPath: string, basePath: string): string {
-  const projectionRoot = gsdProjectionRoot(basePath);
+  const projectionRoot = workflowProjectionRoot(basePath);
   const projectionRel = relative(projectionRoot, absPath);
   const root = projectionRel && !projectionRel.startsWith("..") && !projectionRel.startsWith("/")
     ? projectionRoot
-    : gsdRoot(basePath);
+    : workflowRoot(basePath);
   const rel = relative(root, absPath);
   // Normalize to forward slashes for consistent DB keys
   return rel.replace(/\\/g, "/");
@@ -378,7 +378,7 @@ export async function renderPlanFromDb(
     throw new Error(`no tasks found for ${milestoneId}/${sliceId}`);
   }
 
-  const slicePath = join(gsdProjectionRoot(basePath), "milestones", milestoneId, "slices", sliceId);
+  const slicePath = join(workflowProjectionRoot(basePath), "milestones", milestoneId, "slices", sliceId);
   mkdirSync(slicePath, { recursive: true });
   const absPath = join(slicePath, `${sliceId}-PLAN.md`);
   const artifactPath = toArtifactPath(absPath, basePath);
@@ -411,7 +411,7 @@ export async function renderTaskPlanFromDb(
     throw new Error(`task ${milestoneId}/${sliceId}/${taskId} not found`);
   }
 
-  const tasksDir = join(gsdProjectionRoot(basePath), "milestones", milestoneId, "slices", sliceId, "tasks");
+  const tasksDir = join(workflowProjectionRoot(basePath), "milestones", milestoneId, "slices", sliceId, "tasks");
   mkdirSync(tasksDir, { recursive: true });
   const absPath = join(tasksDir, buildTaskFileName(taskId, "PLAN"));
   const artifactPath = toArtifactPath(absPath, basePath);
@@ -439,7 +439,7 @@ export async function renderRoadmapFromDb(
 
   const slices = getMilestoneSlices(milestoneId);
   const absPath = resolveMilestoneFile(basePath, milestoneId, "ROADMAP") ??
-    join(gsdRoot(basePath), "milestones", milestoneId, `${milestoneId}-ROADMAP.md`);
+    join(workflowRoot(basePath), "milestones", milestoneId, `${milestoneId}-ROADMAP.md`);
   const artifactPath = toArtifactPath(absPath, basePath);
   const content = renderRoadmapMarkdown(milestone, slices);
 
@@ -911,7 +911,7 @@ export async function renderReplanFromDb(
   replanData: ReplanData,
 ): Promise<{ replanPath: string; content: string }> {
   const slicePath = resolveSlicePath(basePath, milestoneId, sliceId)
-    ?? join(gsdRoot(basePath), "milestones", milestoneId, "slices", sliceId);
+    ?? join(workflowRoot(basePath), "milestones", milestoneId, "slices", sliceId);
   const absPath = join(slicePath, `${sliceId}-REPLAN.md`);
   const artifactPath = toArtifactPath(absPath, basePath);
 
@@ -950,7 +950,7 @@ export async function renderAssessmentFromDb(
   assessmentData: AssessmentData,
 ): Promise<{ assessmentPath: string; content: string }> {
   const slicePath = resolveSlicePath(basePath, milestoneId, sliceId)
-    ?? join(gsdRoot(basePath), "milestones", milestoneId, "slices", sliceId);
+    ?? join(workflowRoot(basePath), "milestones", milestoneId, "slices", sliceId);
   const absPath = join(slicePath, `${sliceId}-ASSESSMENT.md`);
   const artifactPath = toArtifactPath(absPath, basePath);
 

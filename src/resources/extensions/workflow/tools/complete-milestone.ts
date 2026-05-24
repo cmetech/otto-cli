@@ -21,7 +21,7 @@ import {
   getLatestAssessmentByScope,
   updateMilestoneStatus,
 } from "../db.js";
-import { gsdProjectionRoot, clearPathCache } from "../paths.js";
+import { workflowProjectionRoot, clearPathCache } from "../paths.js";
 import { resolveCanonicalMilestoneRoot } from "../worktree-manager.js";
 import { isClosedStatus } from "../status-guards.js";
 import { saveFile, clearParseCache } from "../files.js";
@@ -209,7 +209,7 @@ export async function handleCompleteMilestone(
   const summaryMd = renderMilestoneSummaryMarkdown(params, completedAt);
 
   const summaryPath = join(
-    gsdProjectionRoot(artifactBasePath),
+    workflowProjectionRoot(artifactBasePath),
     "milestones",
     params.milestoneId,
     `${params.milestoneId}-SUMMARY.md`,

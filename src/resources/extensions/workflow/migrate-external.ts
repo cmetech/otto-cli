@@ -9,9 +9,9 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, lstatSync, mkdirSync, readdirSync, realpathSync, renameSync, cpSync, rmSync, symlinkSync } from "node:fs";
 import { join } from "node:path";
-import { externalGsdRoot, isInsideWorktree } from "./repo-identity.js";
+import { externalWorkflowRoot, isInsideWorktree } from "./repo-identity.js";
 import { getErrorMessage } from "./error-utils.js";
-import { hasGitTrackedGsdFiles } from "./gitignore.js";
+import { hasGitTrackedWorkflowFiles } from "./gitignore.js";
 import { GIT_NO_PROMPT_ENV } from "./git-constants.js";
 
 export interface MigrationResult {
@@ -34,9 +34,9 @@ export interface MigrationResult {
  * 3. On failure: rename `.gsd.migrating` back to `.gsd` (rollback)
  */
 export function migrateToExternalState(basePath: string): MigrationResult {
-  // Worktrees get their .gsd via syncGsdStateToWorktree(), not migration.
+  // Worktrees get their .gsd via syncWorkflowStateToWorktree(), not migration.
   // Migration inside a worktree would compute the same external hash as the
-  // main repo (externalGsdRoot hashes remoteUrl + gitRoot), creating a broken
+  // main repo (externalWorkflowRoot hashes remoteUrl + gitRoot), creating a broken
   // junction and orphaning .gsd.migrating (#2970).
   if (isInsideWorktree(basePath)) {
     return { migrated: false };
@@ -64,7 +64,7 @@ export function migrateToExternalState(basePath: string): MigrationResult {
 
   // Skip if .loop24/ contains git-tracked files — the project intentionally
   // keeps .loop24/ in version control and migration would destroy that.
-  if (hasGitTrackedGsdFiles(basePath)) {
+  if (hasGitTrackedWorkflowFiles(basePath)) {
     return { migrated: false };
   }
 
@@ -84,7 +84,7 @@ export function migrateToExternalState(basePath: string): MigrationResult {
     }
   }
 
-  const externalPath = externalGsdRoot(basePath);
+  const externalPath = externalWorkflowRoot(basePath);
   const migratingPath = join(basePath, ".gsd.migrating");
 
   try {

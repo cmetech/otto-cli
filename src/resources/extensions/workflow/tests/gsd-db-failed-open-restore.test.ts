@@ -15,7 +15,7 @@ import {
   _getDbCache,
 } from "../db.ts";
 import { createWorkspace } from "../workspace.ts";
-import type { GsdWorkspace } from "../workspace.ts";
+import type { WorkflowWorkspace } from "../workspace.ts";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -69,7 +69,7 @@ describe("openDatabaseByWorkspace: restores previous connection on failure", () 
         isWorktree: false,
       },
       lockRoot: "/does-not-exist-gsd-test-ws-restore",
-    } satisfies GsdWorkspace;
+    } satisfies WorkflowWorkspace;
 
     // This should throw because the path is invalid
     assert.throws(
@@ -101,7 +101,7 @@ describe("openDatabaseByWorkspace: restores previous connection on failure", () 
         isWorktree: false,
       },
       lockRoot: "/does-not-exist-gsd-cache-test",
-    } satisfies GsdWorkspace;
+    } satisfies WorkflowWorkspace;
 
     assert.throws(() => openDatabaseByWorkspace(fakeWs));
 

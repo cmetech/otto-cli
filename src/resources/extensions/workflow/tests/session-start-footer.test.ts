@@ -76,19 +76,19 @@ test("session_switch toggles gsd-health from runtime auto state without touching
     `gsd-session-switch-widget-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   );
   mkdirSync(join(dir, ".gsd"), { recursive: true });
-  const tempGsdHome = join(dir, "home");
-  mkdirSync(tempGsdHome, { recursive: true });
+  const tempWorkflowHome = join(dir, "home");
+  mkdirSync(tempWorkflowHome, { recursive: true });
 
   const originalCwd = process.cwd();
-  const originalGsdHome = process.env.GSD_HOME;
-  process.env.GSD_HOME = tempGsdHome;
+  const originalWorkflowHome = process.env.GSD_HOME;
+  process.env.GSD_HOME = tempWorkflowHome;
   process.chdir(dir);
   autoSession.reset();
   t.after(() => {
     autoSession.reset();
     process.chdir(originalCwd);
-    if (originalGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalGsdHome;
+    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = originalWorkflowHome;
     try { rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort */ }
   });
 
@@ -240,9 +240,9 @@ test("session_start installs the welcome screen as the TUI header", async (t) =>
   );
 
   const originalCwd = process.cwd();
-  const originalGsdPkgRoot = process.env.GSD_PKG_ROOT;
-  const originalGsdBinPath = process.env.GSD_BIN_PATH;
-  const originalGsdVersion = process.env.GSD_VERSION;
+  const originalWorkflowPkgRoot = process.env.GSD_PKG_ROOT;
+  const originalWorkflowBinPath = process.env.GSD_BIN_PATH;
+  const originalWorkflowVersion = process.env.GSD_VERSION;
   const originalFirstRunBanner = process.env.GSD_FIRST_RUN_BANNER;
   process.chdir(dir);
   process.env.GSD_PKG_ROOT = dir;
@@ -251,12 +251,12 @@ test("session_start installs the welcome screen as the TUI header", async (t) =>
   delete process.env.GSD_FIRST_RUN_BANNER;
   t.after(() => {
     process.chdir(originalCwd);
-    if (originalGsdPkgRoot === undefined) delete process.env.GSD_PKG_ROOT;
-    else process.env.GSD_PKG_ROOT = originalGsdPkgRoot;
-    if (originalGsdBinPath === undefined) delete process.env.GSD_BIN_PATH;
-    else process.env.GSD_BIN_PATH = originalGsdBinPath;
-    if (originalGsdVersion === undefined) delete process.env.GSD_VERSION;
-    else process.env.GSD_VERSION = originalGsdVersion;
+    if (originalWorkflowPkgRoot === undefined) delete process.env.GSD_PKG_ROOT;
+    else process.env.GSD_PKG_ROOT = originalWorkflowPkgRoot;
+    if (originalWorkflowBinPath === undefined) delete process.env.GSD_BIN_PATH;
+    else process.env.GSD_BIN_PATH = originalWorkflowBinPath;
+    if (originalWorkflowVersion === undefined) delete process.env.GSD_VERSION;
+    else process.env.GSD_VERSION = originalWorkflowVersion;
     if (originalFirstRunBanner === undefined) delete process.env.GSD_FIRST_RUN_BANNER;
     else process.env.GSD_FIRST_RUN_BANNER = originalFirstRunBanner;
     try { rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort */ }
@@ -304,17 +304,17 @@ test("session_start and session_switch apply disabled model provider policy from
     `gsd-disabled-provider-policy-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   );
   mkdirSync(join(dir, ".gsd"), { recursive: true });
-  const tempGsdHome = join(dir, "home");
-  mkdirSync(tempGsdHome, { recursive: true });
+  const tempWorkflowHome = join(dir, "home");
+  mkdirSync(tempWorkflowHome, { recursive: true });
 
   const originalCwd = process.cwd();
-  const originalGsdHome = process.env.GSD_HOME;
-  process.env.GSD_HOME = tempGsdHome;
+  const originalWorkflowHome = process.env.GSD_HOME;
+  process.env.GSD_HOME = tempWorkflowHome;
   process.chdir(dir);
   t.after(() => {
     process.chdir(originalCwd);
-    if (originalGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalGsdHome;
+    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = originalWorkflowHome;
     try { rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort */ }
   });
 

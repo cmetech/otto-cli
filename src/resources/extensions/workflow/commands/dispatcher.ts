@@ -18,7 +18,7 @@ import {
   getUnmergedMilestoneBlockMessageForBase,
   isUnmergedMilestoneAllowedCommand,
 } from "../unmerged-milestone-guard.js";
-import { clearFreshGsdRunSurfaces, isFreshGsdWorkCommand } from "../fresh-run-ui.js";
+import { clearFreshWorkflowRunSurfaces, isFreshWorkflowWorkCommand } from "../fresh-run-ui.js";
 
 function emitVisibleCommandBlock(
   ctx: ExtensionCommandContext,
@@ -54,8 +54,8 @@ export async function dispatchWorkflowCommand(
   let handled = false;
   try {
     handled = await withCommandCwd(ctx.cwd, async () => {
-      if (isFreshGsdWorkCommand(trimmed)) {
-        clearFreshGsdRunSurfaces(ctx);
+      if (isFreshWorkflowWorkCommand(trimmed)) {
+        clearFreshWorkflowRunSurfaces(ctx);
       }
       const base = projectRoot();
       if (!isUnmergedMilestoneAllowedCommand(trimmed)) {

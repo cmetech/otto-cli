@@ -57,11 +57,11 @@ describe("teardownAutoWorktree cleanup parity", () => {
     // Phase C pt 2: auto.lock no longer exists as a file — it migrated
     // to the workers + unit_dispatches tables. clearProjectRootStateFiles
     // still removes STATE.md and {MID}-META.json on teardown.
-    const gsdDir = join(repoDir, ".gsd");
-    const milestonesDir = join(gsdDir, "milestones", "M001");
+    const workflowDir = join(repoDir, ".gsd");
+    const milestonesDir = join(workflowDir, "milestones", "M001");
     mkdirSync(milestonesDir, { recursive: true });
 
-    const stateMd = join(gsdDir, "STATE.md");
+    const stateMd = join(workflowDir, "STATE.md");
     const metaJson = join(milestonesDir, "M001-META.json");
 
     writeFileSync(stateMd, "# State\nactive\n");

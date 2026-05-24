@@ -16,7 +16,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { gsdRoot, resolveGsdRootFile } from "./paths.js";
+import { workflowRoot, resolveWorkflowRootFile } from "./paths.js";
 import { readCrashLock, isLockProcessAlive, clearLock } from "./crash-recovery.js";
 import { abortAndReset } from "./git-self-heal.js";
 import { rebuildState } from "./doctor.js";
@@ -232,7 +232,7 @@ export async function preDispatchHealthGate(basePath: string): Promise<PreDispat
   // If a stale lock exists, the crash recovery path should handle it,
   // not a new dispatch. This prevents double-dispatch after crashes.
   try {
-    if (existsSync(join(gsdRoot(basePath), "gsd.db"))) {
+    if (existsSync(join(workflowRoot(basePath), "gsd.db"))) {
       await ensureDbOpen(basePath);
     }
     const lock = readCrashLock(basePath);
@@ -275,8 +275,8 @@ export async function preDispatchHealthGate(basePath: string): Promise<PreDispat
   // If STATE.md is missing, attempt to rebuild it for the next unit's context.
   // Non-blocking — fresh worktrees won't have it until the first unit completes (#889).
   try {
-    const stateFile = resolveGsdRootFile(basePath, "STATE");
-    const milestonesDir = join(gsdRoot(basePath), "milestones");
+    const stateFile = resolveWorkflowRootFile(basePath, "STATE");
+    const milestonesDir = join(workflowRoot(basePath), "milestones");
     if (existsSync(milestonesDir) && !existsSync(stateFile)) {
       try {
         await rebuildState(basePath);

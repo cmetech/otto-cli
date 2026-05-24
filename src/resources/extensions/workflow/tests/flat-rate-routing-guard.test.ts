@@ -37,9 +37,9 @@ describe("flat-rate provider routing guard (#3453)", () => {
 
   test("resolvePreferredModelConfig returns undefined for copilot start model", () => {
     const originalCwd = process.cwd();
-    const originalGsdHome = process.env.GSD_HOME;
+    const originalWorkflowHome = process.env.GSD_HOME;
     const tempProject = mkdtempSync(join(tmpdir(), "gsd-flat-rate-project-"));
-    const tempGsdHome = mkdtempSync(join(tmpdir(), "gsd-flat-rate-home-"));
+    const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-flat-rate-home-"));
 
     // When the user's start model is on a flat-rate provider,
     // resolvePreferredModelConfig should not synthesize a routing
@@ -61,7 +61,7 @@ describe("flat-rate provider routing guard (#3453)", () => {
         ].join("\n"),
         "utf-8",
       );
-      process.env.GSD_HOME = tempGsdHome;
+      process.env.GSD_HOME = tempWorkflowHome;
       process.chdir(tempProject);
 
       const result = resolvePreferredModelConfig("execute-task", {
@@ -75,10 +75,10 @@ describe("flat-rate provider routing guard (#3453)", () => {
       assert.equal(result, undefined, "Should not create routing config for copilot");
     } finally {
       process.chdir(originalCwd);
-      if (originalGsdHome === undefined) delete process.env.GSD_HOME;
-      else process.env.GSD_HOME = originalGsdHome;
+      if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
+      else process.env.GSD_HOME = originalWorkflowHome;
       rmSync(tempProject, { recursive: true, force: true });
-      rmSync(tempGsdHome, { recursive: true, force: true });
+      rmSync(tempWorkflowHome, { recursive: true, force: true });
     }
   });
 });
@@ -224,9 +224,9 @@ describe("buildFlatRateContext()", () => {
 describe("flat-rate routing opt-in (#4386)", () => {
   function withPrefs(prefsYaml: string, fn: () => void): void {
     const originalCwd = process.cwd();
-    const originalGsdHome = process.env.GSD_HOME;
+    const originalWorkflowHome = process.env.GSD_HOME;
     const tempProject = mkdtempSync(join(tmpdir(), "gsd-4386-project-"));
-    const tempGsdHome = mkdtempSync(join(tmpdir(), "gsd-4386-home-"));
+    const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-4386-home-"));
     try {
       mkdirSync(join(tempProject, ".gsd"), { recursive: true });
       writeFileSync(
@@ -234,15 +234,15 @@ describe("flat-rate routing opt-in (#4386)", () => {
         ["---", "version: 1", prefsYaml, "---"].join("\n"),
         "utf-8",
       );
-      process.env.GSD_HOME = tempGsdHome;
+      process.env.GSD_HOME = tempWorkflowHome;
       process.chdir(tempProject);
       fn();
     } finally {
       process.chdir(originalCwd);
-      if (originalGsdHome === undefined) delete process.env.GSD_HOME;
-      else process.env.GSD_HOME = originalGsdHome;
+      if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
+      else process.env.GSD_HOME = originalWorkflowHome;
       rmSync(tempProject, { recursive: true, force: true });
-      rmSync(tempGsdHome, { recursive: true, force: true });
+      rmSync(tempWorkflowHome, { recursive: true, force: true });
     }
   }
 

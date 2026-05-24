@@ -15,9 +15,9 @@ function makeTempDir(prefix: string): string {
 
 test("resolvePreferredModelConfig synthesizes heavy routing ceiling when models section is absent", () => {
   const originalCwd = process.cwd();
-  const originalGsdHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.GSD_HOME;
   const tempProject = makeTempDir("gsd-routing-project-");
-  const tempGsdHome = makeTempDir("gsd-routing-home-");
+  const tempWorkflowHome = makeTempDir("gsd-routing-home-");
 
   try {
     mkdirSync(join(tempProject, ".gsd"), { recursive: true });
@@ -35,7 +35,7 @@ test("resolvePreferredModelConfig synthesizes heavy routing ceiling when models 
       ].join("\n"),
       "utf-8",
     );
-    process.env.GSD_HOME = tempGsdHome;
+    process.env.GSD_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const config = resolvePreferredModelConfig("plan-slice", {
@@ -50,18 +50,18 @@ test("resolvePreferredModelConfig synthesizes heavy routing ceiling when models 
     });
   } finally {
     process.chdir(originalCwd);
-    if (originalGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalGsdHome;
+    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
-    rmSync(tempGsdHome, { recursive: true, force: true });
+    rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
 });
 
 test("resolvePreferredModelConfig falls back to auto start model when heavy tier is absent", () => {
   const originalCwd = process.cwd();
-  const originalGsdHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.GSD_HOME;
   const tempProject = makeTempDir("gsd-routing-project-");
-  const tempGsdHome = makeTempDir("gsd-routing-home-");
+  const tempWorkflowHome = makeTempDir("gsd-routing-home-");
 
   try {
     mkdirSync(join(tempProject, ".gsd"), { recursive: true });
@@ -78,7 +78,7 @@ test("resolvePreferredModelConfig falls back to auto start model when heavy tier
       ].join("\n"),
       "utf-8",
     );
-    process.env.GSD_HOME = tempGsdHome;
+    process.env.GSD_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const config = resolvePreferredModelConfig("execute-task", {
@@ -93,18 +93,18 @@ test("resolvePreferredModelConfig falls back to auto start model when heavy tier
     });
   } finally {
     process.chdir(originalCwd);
-    if (originalGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalGsdHome;
+    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
-    rmSync(tempGsdHome, { recursive: true, force: true });
+    rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
 });
 
 test("resolvePreferredModelConfig keeps explicit phase models as the ceiling", () => {
   const originalCwd = process.cwd();
-  const originalGsdHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.GSD_HOME;
   const tempProject = makeTempDir("gsd-routing-project-");
-  const tempGsdHome = makeTempDir("gsd-routing-home-");
+  const tempWorkflowHome = makeTempDir("gsd-routing-home-");
 
   try {
     mkdirSync(join(tempProject, ".gsd"), { recursive: true });
@@ -122,7 +122,7 @@ test("resolvePreferredModelConfig keeps explicit phase models as the ceiling", (
       ].join("\n"),
       "utf-8",
     );
-    process.env.GSD_HOME = tempGsdHome;
+    process.env.GSD_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const config = resolvePreferredModelConfig("plan-slice", {
@@ -137,18 +137,18 @@ test("resolvePreferredModelConfig keeps explicit phase models as the ceiling", (
     });
   } finally {
     process.chdir(originalCwd);
-    if (originalGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalGsdHome;
+    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
-    rmSync(tempGsdHome, { recursive: true, force: true });
+    rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
 });
 
 test("selectAndApplyModel honors explicit phase models without downgrading (#3617)", async () => {
   const originalCwd = process.cwd();
-  const originalGsdHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.GSD_HOME;
   const tempProject = makeTempDir("gsd-routing-project-");
-  const tempGsdHome = makeTempDir("gsd-routing-home-");
+  const tempWorkflowHome = makeTempDir("gsd-routing-home-");
   const setModelCalls: string[] = [];
   let beforeModelSelectCalled = false;
 
@@ -170,7 +170,7 @@ test("selectAndApplyModel honors explicit phase models without downgrading (#361
       ].join("\n"),
       "utf-8",
     );
-    process.env.GSD_HOME = tempGsdHome;
+    process.env.GSD_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const availableModels = [
@@ -216,27 +216,27 @@ test("selectAndApplyModel honors explicit phase models without downgrading (#361
     assert.equal(result.appliedModel?.id, "claude-opus-4-6");
   } finally {
     process.chdir(originalCwd);
-    if (originalGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalGsdHome;
+    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
-    rmSync(tempGsdHome, { recursive: true, force: true });
+    rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
 });
 
 test("selectAndApplyModel escalates dynamic routing tier when retry metadata is provided", async (t) => {
   const originalCwd = process.cwd();
-  const originalGsdHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.GSD_HOME;
   const tempProject = makeTempDir("gsd-routing-retry-project-");
-  const tempGsdHome = makeTempDir("gsd-routing-retry-home-");
+  const tempWorkflowHome = makeTempDir("gsd-routing-retry-home-");
   const setModelCalls: string[] = [];
   const notifications: Array<{ message: string; level: string }> = [];
 
   t.after(() => {
     process.chdir(originalCwd);
-    if (originalGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalGsdHome;
+    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
-    rmSync(tempGsdHome, { recursive: true, force: true });
+    rmSync(tempWorkflowHome, { recursive: true, force: true });
   });
 
   mkdirSync(join(tempProject, ".gsd"), { recursive: true });
@@ -256,7 +256,7 @@ test("selectAndApplyModel escalates dynamic routing tier when retry metadata is 
     ].join("\n"),
     "utf-8",
   );
-  process.env.GSD_HOME = tempGsdHome;
+  process.env.GSD_HOME = tempWorkflowHome;
   process.chdir(tempProject);
 
   const availableModels = [

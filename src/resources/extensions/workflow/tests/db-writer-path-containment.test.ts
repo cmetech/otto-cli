@@ -46,7 +46,7 @@ describe("saveArtifactToDbForWorkspace: path.relative containment guard", () => 
 
     const ws = createWorkspace(projectDir);
     // Craft an opts.path that traverses out of .gsd into .gsd-other
-    // resolve(gsdDir, "../.gsd-other/evil.md") === projectDir + "/.gsd-other/evil.md"
+    // resolve(workflowDir, "../.gsd-other/evil.md") === projectDir + "/.gsd-other/evil.md"
     // which startsWith(projectDir + "/.gsd") because ".gsd-other" starts with ".gsd"
     const traversalPath = "../.gsd-other/evil.md";
 

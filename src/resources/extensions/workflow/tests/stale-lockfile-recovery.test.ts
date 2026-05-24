@@ -23,10 +23,10 @@ afterEach(() => {
 describe("stale lockfile auto-recovery (#3668)", () => {
   test("acquireSessionLock removes an orphan proper-lockfile directory before acquiring", () => {
     tempBase = mkdtempSync(join(tmpdir(), "gsd-stale-lock-"));
-    const gsdDir = join(tempBase, ".gsd");
-    mkdirSync(join(gsdDir, "auto.lock.lock"), { recursive: true });
+    const workflowDir = join(tempBase, ".gsd");
+    mkdirSync(join(workflowDir, "auto.lock.lock"), { recursive: true });
     writeFileSync(
-      join(gsdDir, "auto.lock"),
+      join(workflowDir, "auto.lock"),
       JSON.stringify({
         pid: 999_999_999,
         startedAt: new Date().toISOString(),
@@ -40,6 +40,6 @@ describe("stale lockfile auto-recovery (#3668)", () => {
     const result = acquireSessionLock(tempBase);
 
     assert.equal(result.acquired, true);
-    assert.equal(existsSync(join(gsdDir, "auto.lock.lock")), true, "new active lock directory is present");
+    assert.equal(existsSync(join(workflowDir, "auto.lock.lock")), true, "new active lock directory is present");
   });
 });

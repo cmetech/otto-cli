@@ -4,7 +4,7 @@
 import { readFileSync, mkdirSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { atomicWriteSync } from "../atomic-write.js";
-import { gsdRoot } from "../paths.js";
+import { workflowRoot } from "../paths.js";
 import type { AutoSession } from "./session.js";
 
 type RetrySession = Pick<AutoSession, "activeRunDir" | "basePath" | "verificationRetryCount">;
@@ -14,7 +14,7 @@ interface RetryStoreLogDeps {
 }
 
 export function customVerifyRetryStateDir(s: Pick<AutoSession, "activeRunDir" | "basePath">): string {
-  return s.activeRunDir ? join(s.activeRunDir, "runtime") : join(gsdRoot(s.basePath), "runtime");
+  return s.activeRunDir ? join(s.activeRunDir, "runtime") : join(workflowRoot(s.basePath), "runtime");
 }
 
 export function customVerifyRetryStatePath(s: Pick<AutoSession, "activeRunDir" | "basePath">): string {

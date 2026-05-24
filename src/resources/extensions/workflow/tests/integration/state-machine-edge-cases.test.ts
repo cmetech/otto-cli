@@ -100,8 +100,8 @@ function makeTempDir(): string {
  */
 function createFullFixture(): string {
   const base = makeTempDir();
-  const gsdDir = join(base, ".gsd");
-  const m001Dir = join(gsdDir, "milestones", "M001");
+  const workflowDir = join(base, ".gsd");
+  const m001Dir = join(workflowDir, "milestones", "M001");
   const s01Dir = join(m001Dir, "slices", "S01");
   const s01Tasks = join(s01Dir, "tasks");
   const s02Dir = join(m001Dir, "slices", "S02");
@@ -195,10 +195,10 @@ function createFullFixture(): string {
  */
 function createMultiMilestoneFixture(): string {
   const base = makeTempDir();
-  const gsdDir = join(base, ".gsd");
+  const workflowDir = join(base, ".gsd");
 
   for (const mid of ["M001", "M002", "M003"]) {
-    const mDir = join(gsdDir, "milestones", mid);
+    const mDir = join(workflowDir, "milestones", mid);
     const sDir = join(mDir, "slices", "S01", "tasks");
     mkdirSync(sDir, { recursive: true });
 

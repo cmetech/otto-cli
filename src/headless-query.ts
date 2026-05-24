@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { homedir } from 'node:os'
 import type { WorkflowDbState } from './resources/extensions/workflow/types.js'
-import { resolveBundledGsdExtensionModule } from './bundled-resource-path.js'
+import { resolveBundledWorkflowExtensionModule } from './bundled-resource-path.js'
 
 const jiti = createJiti(fileURLToPath(import.meta.url), { interopDefault: true, debug: false })
 const { existsSync } = await import('node:fs')
@@ -33,7 +33,7 @@ const { existsSync } = await import('node:fs')
  * Pure on the given inputs (env + fs probe + bundled resolver) so the
  * #3471 contract can be exercised in tests without spawning a subprocess.
  */
-export function resolveGsdAgentExtensionsDir(env: NodeJS.ProcessEnv = process.env): string {
+export function resolveWorkflowAgentExtensionsDir(env: NodeJS.ProcessEnv = process.env): string {
   const agentRoot = env.GSD_AGENT_DIR || join((env.LOOP24_HOME ?? env.GSD_HOME) || join(homedir(), '.gsd'), 'agent')
   return join(agentRoot, 'extensions', 'gsd')
 }
@@ -49,19 +49,19 @@ export function shouldUseAgentExtensionsDir(opts: {
 }): { agentDir: string; useAgentDir: boolean } {
   const env = opts.env ?? process.env
   const fileExists = opts.fileExists ?? existsSync
-  const agentDir = resolveGsdAgentExtensionsDir(env)
+  const agentDir = resolveWorkflowAgentExtensionsDir(env)
   return {
     agentDir,
     useAgentDir: fileExists(join(agentDir, 'state.ts')) || fileExists(join(agentDir, 'state.js')),
   }
 }
 
-const agentExtensionsDir = resolveGsdAgentExtensionsDir()
+const agentExtensionsDir = resolveWorkflowAgentExtensionsDir()
 const { useAgentDir } = shouldUseAgentExtensionsDir({ env: process.env })
-const gsdExtensionPath = (...segments: string[]) =>
+const workflowExtensionPath = (...segments: string[]) =>
   useAgentDir
     ? resolveAgentExtensionModule(agentExtensionsDir, segments)
-    : resolveBundledGsdExtensionModule(import.meta.url, segments.join('/'))
+    : resolveBundledWorkflowExtensionModule(import.meta.url, segments.join('/'))
 
 function resolveAgentExtensionModule(agentDir: string, segments: string[]): string {
   const requested = join(agentDir, ...segments)
@@ -74,11 +74,11 @@ function resolveAgentExtensionModule(agentDir: string, segments: string[]): stri
 }
 
 async function loadExtensionModules() {
-  const stateModule = await jiti.import(gsdExtensionPath('state.ts'), {}) as any
-  const dispatchModule = await jiti.import(gsdExtensionPath('auto-dispatch.ts'), {}) as any
-  const sessionModule = await jiti.import(gsdExtensionPath('session-status-io.ts'), {}) as any
-  const prefsModule = await jiti.import(gsdExtensionPath('preferences.ts'), {}) as any
-  const autoStartModule = await jiti.import(gsdExtensionPath('auto-start.ts'), {}) as any
+  const stateModule = await jiti.import(workflowExtensionPath('state.ts'), {}) as any
+  const dispatchModule = await jiti.import(workflowExtensionPath('auto-dispatch.ts'), {}) as any
+  const sessionModule = await jiti.import(workflowExtensionPath('session-status-io.ts'), {}) as any
+  const prefsModule = await jiti.import(workflowExtensionPath('preferences.ts'), {}) as any
+  const autoStartModule = await jiti.import(workflowExtensionPath('auto-start.ts'), {}) as any
   return {
     openProjectDbIfPresent: autoStartModule.openProjectDbIfPresent as (basePath: string) => Promise<void>,
     deriveState: stateModule.deriveState as (basePath: string) => Promise<WorkflowDbState>,

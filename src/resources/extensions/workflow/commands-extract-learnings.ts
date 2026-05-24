@@ -25,7 +25,7 @@ import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-ag
 import { existsSync, readFileSync } from "node:fs";
 import { join, basename, relative } from "node:path";
 
-import { gsdRoot, resolveMilestonePath } from "./paths.js";
+import { workflowRoot, resolveMilestonePath } from "./paths.js";
 import { projectRoot } from "./commands/context.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -393,7 +393,7 @@ missing_artifacts:${missingValue}
  * string.
  */
 export function extractProjectName(basePath: string): string {
-  const projectMdPath = join(gsdRoot(basePath), "PROJECT.md");
+  const projectMdPath = join(workflowRoot(basePath), "PROJECT.md");
 
   if (existsSync(projectMdPath)) {
     try {

@@ -2,22 +2,22 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { loadRegistry } from "../workflow-templates.js";
-import { gsdHome } from "../home.js";
+import { workflowHome } from "../home.js";
 import { VISUAL_BRIEF_MODES } from "../../visual-brief/prompts.js";
 import { BRAND, slashCommand } from "../strings.js";
 
 
-export interface GsdCommandDefinition {
+export interface WorkflowCommandDefinition {
   cmd: string;
   desc: string;
 }
 
-type CompletionMap = Record<string, readonly GsdCommandDefinition[]>;
+type CompletionMap = Record<string, readonly WorkflowCommandDefinition[]>;
 
 export const WORKFLOW_COMMAND_DESCRIPTION =
   `${BRAND} workflow: ${slashCommand("help")}|${slashCommand("start")}|${slashCommand("templates")}|${slashCommand("next")}|${slashCommand("auto")}|${slashCommand("stop")}|${slashCommand("pause")}|${slashCommand("status")}|${slashCommand("widget")}|${slashCommand("visualize")}|${slashCommand("brief")}|${slashCommand("report")}|${slashCommand("queue")}|${slashCommand("quick")}|${slashCommand("discuss")}|${slashCommand("capture")}|${slashCommand("triage")}|${slashCommand("dispatch")}|${slashCommand("verdict")}|${slashCommand("history")}|${slashCommand("undo")}|${slashCommand("undo-task")}|${slashCommand("reset-slice")}|${slashCommand("rate")}|${slashCommand("skip")}|${slashCommand("export")}|${slashCommand("cleanup")}|${slashCommand("closeout")}|${slashCommand("model")}|${slashCommand("mode")}|${slashCommand("prefs")}|${slashCommand("config")}|${slashCommand("keys")}|${slashCommand("hooks")}|${slashCommand("run-hook")}|${slashCommand("skill-health")}|${slashCommand("doctor")}|${slashCommand("debug")}|${slashCommand("logs")}|${slashCommand("forensics")}|${slashCommand("changelog")}|${slashCommand("migrate")}|${slashCommand("remote")}|${slashCommand("steer")}|${slashCommand("knowledge")}|${slashCommand("new-milestone")}|${slashCommand("new-project")}|${slashCommand("parallel")}|${slashCommand("cmux")}|${slashCommand("park")}|${slashCommand("unpark")}|${slashCommand("init")}|${slashCommand("setup")}|${slashCommand("onboarding")}|${slashCommand("inspect")}|${slashCommand("extensions")}|${slashCommand("update")}|${slashCommand("upgrade")}|${slashCommand("fast")}|${slashCommand("mcp")}|${slashCommand("rethink")}|${slashCommand("workflow")}|${slashCommand("codebase")}|${slashCommand("notifications")}|${slashCommand("ship")}|${slashCommand("do")}|${slashCommand("session-report")}|${slashCommand("backlog")}|${slashCommand("pr-branch")}|${slashCommand("add-tests")}|${slashCommand("scan")}|${slashCommand("language")}|${slashCommand("worktree")}|${slashCommand("eval-review")}`;
 
-export const TOP_LEVEL_SUBCOMMANDS: readonly GsdCommandDefinition[] = [
+export const TOP_LEVEL_SUBCOMMANDS: readonly WorkflowCommandDefinition[] = [
   { cmd: "help", desc: "Categorized command reference with descriptions" },
   { cmd: "next", desc: "Explicit step mode — run one unit, then pause" },
   { cmd: "auto", desc: "Autonomous mode — research, plan, execute, commit, repeat" },
@@ -340,7 +340,7 @@ const NESTED_COMPLETIONS: CompletionMap = {
 
 function filterOptions(
   partial: string,
-  options: readonly GsdCommandDefinition[],
+  options: readonly WorkflowCommandDefinition[],
   prefix = "",
 ) {
   const normalizedPrefix = prefix ? `${prefix} ` : "";
@@ -355,7 +355,7 @@ function filterOptions(
 
 function getExtensionCompletions(prefix: string, action: string) {
   try {
-    const extDir = join(gsdHome(), "agent", "extensions");
+    const extDir = join(workflowHome(), "agent", "extensions");
     const ids: Array<{ id: string; name: string }> = [];
     for (const entry of readdirSync(extDir, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
@@ -386,16 +386,16 @@ function normalizePathForCompare(path: string): string {
   return path.replaceAll("\\", "/").replace(/\/+$/, "");
 }
 
-function findWorktreeSegment(normalizedPath: string): { gsdIdx: number; afterWorktrees: number } | null {
+function findWorktreeSegment(normalizedPath: string): { workflowIdx: number; afterWorktrees: number } | null {
   const directMarker = "/.gsd/worktrees/";
   const directIdx = normalizedPath.indexOf(directMarker);
   if (directIdx !== -1) {
-    return { gsdIdx: directIdx, afterWorktrees: directIdx + directMarker.length };
+    return { workflowIdx: directIdx, afterWorktrees: directIdx + directMarker.length };
   }
 
   const symlinkMatch = normalizedPath.match(/\/\.gsd\/projects\/[a-f0-9]+\/worktrees\//);
   if (symlinkMatch?.index !== undefined) {
-    return { gsdIdx: symlinkMatch.index, afterWorktrees: symlinkMatch.index + symlinkMatch[0].length };
+    return { workflowIdx: symlinkMatch.index, afterWorktrees: symlinkMatch.index + symlinkMatch[0].length };
   }
 
   return null;
@@ -441,13 +441,13 @@ function resolveProjectRootForCompletion(basePath: string): string {
   if (!segment) return basePath;
 
   const separator = basePath.includes("\\") ? "\\" : "/";
-  const gsdMarker = `${separator}.gsd${separator}`;
-  const gsdIdx = basePath.indexOf(gsdMarker);
-  const candidate = gsdIdx !== -1 ? basePath.slice(0, gsdIdx) : basePath.slice(0, segment.gsdIdx);
+  const workflowMarker = `${separator}.gsd${separator}`;
+  const workflowIdx = basePath.indexOf(workflowMarker);
+  const candidate = workflowIdx !== -1 ? basePath.slice(0, workflowIdx) : basePath.slice(0, segment.workflowIdx);
 
-  const normalizedGsdHome = normalizePathForCompare(gsdHome());
-  const candidateGsdPath = normalizePathForCompare(join(candidate, ".gsd"));
-  if (candidateGsdPath === normalizedGsdHome || candidateGsdPath.startsWith(`${normalizedGsdHome}/`)) {
+  const normalizedWorkflowHome = normalizePathForCompare(workflowHome());
+  const candidateWorkflowPath = normalizePathForCompare(join(candidate, ".gsd"));
+  if (candidateWorkflowPath === normalizedWorkflowHome || candidateWorkflowPath.startsWith(`${normalizedWorkflowHome}/`)) {
     return resolveProjectRootFromGitFile(basePath) ?? basePath;
   }
 
@@ -535,7 +535,7 @@ export function getWorkflowArgumentCompletions(prefix: string) {
 
   // Completion for `/loop24 workflow info <name>` — list all discoverable plugins (project + global).
   if (command === "workflow" && subcommand === "info" && parts.length <= 3) {
-    const results: GsdCommandDefinition[] = [];
+    const results: WorkflowCommandDefinition[] = [];
     const seen = new Set<string>();
     const scanDir = (dir: string, source: string) => {
       if (!existsSync(dir)) return;
@@ -554,7 +554,7 @@ export function getWorkflowArgumentCompletions(prefix: string) {
       const base = resolveProjectRootForCompletion(process.cwd());
       scanDir(join(base, ".gsd", "workflows"), "project");
       scanDir(join(base, ".gsd", "workflow-defs"), "project-legacy");
-      scanDir(join(gsdHome(), "workflows"), "global");
+      scanDir(join(workflowHome(), "workflows"), "global");
     } catch { /* ignore */ }
     // Also include bundled template names.
     try {

@@ -32,7 +32,7 @@ const resourceVersionManifestName = 'managed-resources.json'
 const resourceFingerprintFileName = '.managed-resources-content-hash'
 
 interface ManagedResourceManifest {
-  gsdVersion: string
+  workflowVersion: string
   packageName?: string
   syncedAt?: number
   /** Content fingerprint of bundled resources — detects same-version content changes. */
@@ -67,7 +67,7 @@ function getManagedResourceManifestPath(agentDir: string): string {
   return join(agentDir, resourceVersionManifestName)
 }
 
-function getBundledGsdVersion(): string {
+function getBundledWorkflowVersion(): string {
   // Prefer LOOP24_VERSION env var (set once by loader.ts) to avoid re-reading package.json
   const envVersion = process.env.LOOP24_VERSION ?? process.env.GSD_VERSION
   if (envVersion && envVersion !== '0.0.0') {
@@ -118,7 +118,7 @@ function writeManagedResourceManifest(agentDir: string): void {
   } catch { /* non-fatal */ }
 
   const manifest: ManagedResourceManifest = {
-    gsdVersion: getBundledGsdVersion(),
+    workflowVersion: getBundledWorkflowVersion(),
     packageName: getBundledPackageName(),
     syncedAt: Date.now(),
     contentHash: getCurrentResourceFingerprint(),
@@ -132,7 +132,7 @@ export function readManagedResourceVersion(agentDir: string): string | null {
   try {
     const manifest = JSON.parse(readFileSync(getManagedResourceManifestPath(agentDir), 'utf-8')) as ManagedResourceManifest
     if (!isCurrentPackageManifest(manifest)) return null
-    return typeof manifest?.gsdVersion === 'string' ? manifest.gsdVersion : null
+    return typeof manifest?.workflowVersion === 'string' ? manifest.workflowVersion : null
   } catch {
     return null
   }
@@ -217,7 +217,7 @@ export function getNewerManagedResourceVersion(agentDir: string, currentVersion:
   if (!isCurrentPackageManifest(manifest)) {
     return null
   }
-  const managedVersion = typeof manifest?.gsdVersion === 'string' ? manifest.gsdVersion : null
+  const managedVersion = typeof manifest?.workflowVersion === 'string' ? manifest.workflowVersion : null
   if (!managedVersion) {
     return null
   }
@@ -589,7 +589,7 @@ function pruneRemovedBundledExtensions(
 export function initResources(agentDir: string, skillsDir: string = join(homedir(), '.agents', 'skills')): void {
   mkdirSync(agentDir, { recursive: true })
 
-  const currentVersion = getBundledGsdVersion()
+  const currentVersion = getBundledWorkflowVersion()
   const manifest = readManagedResourceManifest(agentDir)
   const extensionsDir = join(agentDir, 'extensions')
 
@@ -612,7 +612,7 @@ export function initResources(agentDir: string, skillsDir: string = join(homedir
   // Skip the full copy when both version AND content fingerprint match.
   // Version-only checks miss same-version content changes (npm link dev workflow,
   // hotfixes within a release). The content hash catches those at ~1ms cost.
-  if (manifest && isCurrentPackageManifest(manifest) && manifest.gsdVersion === currentVersion) {
+  if (manifest && isCurrentPackageManifest(manifest) && manifest.workflowVersion === currentVersion) {
     // Version matches — check content fingerprint for same-version staleness.
     const currentHash = getCurrentResourceFingerprint()
     const hasStaleExtensionFiles = hasStaleCompiledExtensionSiblings(extensionsDir, bundledExtensionsDir)

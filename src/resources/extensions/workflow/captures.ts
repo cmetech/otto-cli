@@ -11,7 +11,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
 import { randomUUID } from "node:crypto";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -76,7 +76,7 @@ export function resolveCapturesPath(basePath: string): string {
     const projectRoot = resolved.slice(0, idx);
     return join(projectRoot, ".gsd", CAPTURES_FILENAME);
   }
-  return join(gsdRoot(basePath), CAPTURES_FILENAME);
+  return join(workflowRoot(basePath), CAPTURES_FILENAME);
 }
 
 // ─── File I/O ─────────────────────────────────────────────────────────────────

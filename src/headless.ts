@@ -58,7 +58,7 @@ import type { ExtensionUIRequest, ProgressContext } from './headless-ui.js'
 
 import {
   loadContext,
-  bootstrapGsdProject,
+  bootstrapWorkflowProject,
 } from './headless-context.js'
 
 // ---------------------------------------------------------------------------
@@ -340,23 +340,23 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
     }
 
     // Bootstrap .loop24/ if needed
-    const gsdDir = join(process.cwd(), '.gsd')
-    if (!existsSync(gsdDir)) {
+    const workflowDir = join(process.cwd(), '.gsd')
+    if (!existsSync(workflowDir)) {
       if (!options.json) {
         process.stderr.write('[headless] Bootstrapping .loop24/ project structure...\n')
       }
-      bootstrapGsdProject(process.cwd())
+      bootstrapWorkflowProject(process.cwd())
     }
 
     // Write context to temp file for the RPC child to read
-    const runtimeDir = join(gsdDir, 'runtime')
+    const runtimeDir = join(workflowDir, 'runtime')
     mkdirSync(runtimeDir, { recursive: true })
     writeFileSync(join(runtimeDir, 'headless-context.md'), contextContent, 'utf-8')
   }
 
   // Validate .loop24/ directory (skip for new-milestone since we just bootstrapped it)
-  const gsdDir = join(process.cwd(), '.gsd')
-  if (!isNewMilestone && !existsSync(gsdDir)) {
+  const workflowDir = join(process.cwd(), '.gsd')
+  if (!isNewMilestone && !existsSync(workflowDir)) {
     process.stderr.write('[headless] Error: No .loop24/ directory found in current directory.\n')
     process.stderr.write("[headless] Run 'gsd' interactively first to initialize a project.\n")
     process.exit(1)

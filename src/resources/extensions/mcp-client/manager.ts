@@ -12,7 +12,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import { buildHttpTransportOpts, type McpHttpAuthConfig } from "./auth.js";
-import { gsdHome } from "../workflow/home.js";
+import { workflowHome } from "../workflow/home.js";
 
 export type ManagedMcpTransport = "stdio" | "http" | "unsupported";
 export type ManagedMcpSourceKind = "project-shared" | "project-local" | "global";
@@ -117,24 +117,24 @@ export function getProjectLocalMcpConfigPath(projectDir = process.cwd()): string
 
 export function getMcpConfigSources(
 	projectDir = process.cwd(),
-	gsdHomeDir = gsdHome(),
+	workflowHomeDir = workflowHome(),
 ): ManagedMcpConfigSource[] {
 	return [
 		{ path: join(projectDir, ".mcp.json"), kind: "project-shared", label: "Project shared" },
 		{ path: getProjectLocalMcpConfigPath(projectDir), kind: "project-local", label: "Project local" },
-		{ path: join(gsdHomeDir, "mcp.json"), kind: "global", label: "Global" },
+		{ path: join(workflowHomeDir, "mcp.json"), kind: "global", label: "Global" },
 	];
 }
 
 export function readMcpManagementStatus(options: {
 	projectDir?: string;
-	gsdHomeDir?: string;
+	workflowHomeDir?: string;
 	refresh?: boolean;
 	includeDisabled?: boolean;
 } = {}): ManagedMcpStatus {
 	const projectDir = options.projectDir ?? process.cwd();
-	const gsdHomeDir = options.gsdHomeDir ?? gsdHome();
-	const cacheKey = JSON.stringify({ projectDir, gsdHomeDir, includeDisabled: !!options.includeDisabled });
+	const workflowHomeDir = options.workflowHomeDir ?? workflowHome();
+	const cacheKey = JSON.stringify({ projectDir, workflowHomeDir, includeDisabled: !!options.includeDisabled });
 	if (!options.refresh && cachedStatus && cachedStatusKey === cacheKey) {
 		return cachedStatus;
 	}
@@ -144,7 +144,7 @@ export function readMcpManagementStatus(options: {
 	const duplicates: ManagedMcpStatus["duplicates"] = [];
 	const warnings: string[] = [];
 
-	for (const source of getMcpConfigSources(projectDir, gsdHomeDir)) {
+	for (const source of getMcpConfigSources(projectDir, workflowHomeDir)) {
 		const loaded = readRawConfigFile(source.path);
 		if (!loaded.exists) continue;
 		if (loaded.error) {
@@ -186,7 +186,7 @@ export function readMcpManagementStatus(options: {
 
 export function readMcpServerConfigs(options: {
 	projectDir?: string;
-	gsdHomeDir?: string;
+	workflowHomeDir?: string;
 	refresh?: boolean;
 	includeDisabled?: boolean;
 } = {}): ManagedMcpServerConfig[] {
@@ -195,7 +195,7 @@ export function readMcpServerConfigs(options: {
 
 export function getMcpServerConfig(
 	name: string,
-	options: { projectDir?: string; gsdHomeDir?: string; includeDisabled?: boolean } = {},
+	options: { projectDir?: string; workflowHomeDir?: string; includeDisabled?: boolean } = {},
 ): ManagedMcpServerConfig | undefined {
 	const trimmed = name.trim();
 	return readMcpServerConfigs(options).find((server) =>

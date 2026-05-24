@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 
 import { readFileSync, existsSync } from 'node:fs';
-import { resolveGsdRoot, resolveRootFile } from './paths.js';
+import { resolveWorkflowRoot, resolveRootFile } from './paths.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -90,7 +90,7 @@ function parseKnowledgeMarkdown(content: string): KnowledgeEntry[] {
 // ---------------------------------------------------------------------------
 
 export function readKnowledge(projectDir: string): KnowledgeResult {
-  const gsd = resolveGsdRoot(projectDir);
+  const gsd = resolveWorkflowRoot(projectDir);
   const knowledgePath = resolveRootFile(gsd, 'KNOWLEDGE.md');
 
   if (!existsSync(knowledgePath)) {

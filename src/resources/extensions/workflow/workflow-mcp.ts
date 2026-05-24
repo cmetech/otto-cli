@@ -186,7 +186,7 @@ function mergeNodeOptions(existing: string | undefined, additions: string[]): st
 
 function buildWorkflowLaunchEnv(
   projectRoot: string,
-  gsdCliPath: string | undefined,
+  agentCliPath: string | undefined,
   explicitEnv?: Record<string, string>,
   workflowCliPath?: string,
 ): Record<string, string> {
@@ -196,7 +196,7 @@ function buildWorkflowLaunchEnv(
   const wantsSourceTs =
     Boolean(resolveTsHookPath) &&
     (
-      (workflowCliPath?.endsWith(".ts") ?? false) ||
+      (agentCliPath?.endsWith(".ts") ?? false) ||
       (executorModulePath?.endsWith(".ts") ?? false) ||
       (writeGateModulePath?.endsWith(".ts") ?? false)
     );
@@ -209,7 +209,7 @@ function buildWorkflowLaunchEnv(
 
   return {
     ...(explicitEnv ?? {}),
-    ...(gsdCliPath ? { GSD_CLI_PATH: gsdCliPath, GSD_BIN_PATH: gsdCliPath } : {}),
+    ...(agentCliPath ? { GSD_CLI_PATH: agentCliPath, GSD_BIN_PATH: agentCliPath } : {}),
     ...(executorModulePath ? { LOOP24_WORKFLOW_EXECUTORS_MODULE: executorModulePath, GSD_WORKFLOW_EXECUTORS_MODULE: executorModulePath } : {}),
     ...(writeGateModulePath ? { LOOP24_WORKFLOW_WRITE_GATE_MODULE: writeGateModulePath, GSD_WORKFLOW_WRITE_GATE_MODULE: writeGateModulePath } : {}),
     ...(nodeOptions ? { NODE_OPTIONS: nodeOptions } : {}),
@@ -229,7 +229,7 @@ export function detectWorkflowMcpLaunchConfig(
   const explicitArgs = parseJsonEnv<unknown>(env, "GSD_WORKFLOW_MCP_ARGS");
   const explicitEnv = parseJsonEnv<Record<string, string>>(env, "GSD_WORKFLOW_MCP_ENV");
   const explicitCwd = env.GSD_WORKFLOW_MCP_CWD?.trim();
-  const gsdCliPath =
+  const workflowCliPath =
     explicitEnv?.GSD_CLI_PATH?.trim()
     || explicitEnv?.GSD_BIN_PATH?.trim()
     || env.GSD_CLI_PATH?.trim()
@@ -243,7 +243,7 @@ export function detectWorkflowMcpLaunchConfig(
   const resolvedWorkflowProjectRoot = resolve(workflowProjectRoot);
 
   if (explicitCommand) {
-    const launchEnv = buildWorkflowLaunchEnv(resolve(workflowProjectRoot), gsdCliPath, explicitEnv);
+    const launchEnv = buildWorkflowLaunchEnv(resolve(workflowProjectRoot), workflowCliPath, explicitEnv);
     return {
       name,
       command: explicitCommand,
@@ -260,7 +260,7 @@ export function detectWorkflowMcpLaunchConfig(
       command: process.execPath,
       args: [distCli],
       cwd: resolvedWorkflowProjectRoot,
-      env: buildWorkflowLaunchEnv(resolvedWorkflowProjectRoot, gsdCliPath, undefined, distCli),
+      env: buildWorkflowLaunchEnv(resolvedWorkflowProjectRoot, workflowCliPath, undefined, distCli),
     };
   }
 
@@ -271,7 +271,7 @@ export function detectWorkflowMcpLaunchConfig(
       command: process.execPath,
       args: [bundledCli],
       cwd: resolvedWorkflowProjectRoot,
-      env: buildWorkflowLaunchEnv(resolvedWorkflowProjectRoot, gsdCliPath, undefined, bundledCli),
+      env: buildWorkflowLaunchEnv(resolvedWorkflowProjectRoot, workflowCliPath, undefined, bundledCli),
     };
   }
 
@@ -280,7 +280,7 @@ export function detectWorkflowMcpLaunchConfig(
     return {
       name,
       command: binPath,
-      env: buildWorkflowLaunchEnv(resolvedWorkflowProjectRoot, gsdCliPath),
+      env: buildWorkflowLaunchEnv(resolvedWorkflowProjectRoot, workflowCliPath),
     };
   }
 

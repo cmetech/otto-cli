@@ -46,7 +46,7 @@ describe("_createMilestoneWorktree fast-forwards reused milestone branches (#554
     writeFileSync(join(repo, "seed.txt"), "seed\n");
     git(repo, "add", "seed.txt");
     git(repo, "commit", "-q", "-m", "initial");
-    // Minimal .gsd/ structure so syncGsdStateToWorktree doesn't crash on a
+    // Minimal .gsd/ structure so syncWorkflowStateToWorktree doesn't crash on a
     // bare repo. We don't care if it copies anything — only that the FF ran.
     mkdirSync(join(repo, ".gsd"), { recursive: true });
   });
@@ -69,7 +69,7 @@ describe("_createMilestoneWorktree fast-forwards reused milestone branches (#554
 
     assert.notEqual(m002Initial, mainTip, "main must be ahead before the test");
 
-    // _createMilestoneWorktree may throw inside createWorktree/syncGsdStateToWorktree
+    // _createMilestoneWorktree may throw inside createWorktree/syncWorkflowStateToWorktree
     // (e.g. if the worktree-manager has stricter requirements than this minimal
     // repo provides). The fast-forward runs BEFORE those calls, so the branch
     // ref should have moved regardless. Catch and assert on observable state.

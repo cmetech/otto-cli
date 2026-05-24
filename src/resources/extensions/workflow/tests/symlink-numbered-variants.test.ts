@@ -2,7 +2,7 @@
  * Tests for macOS numbered symlink variant cleanup (#2205).
  *
  * macOS can rename `.gsd` to `.gsd 2`, `.gsd 3`, etc. when a directory
- * already exists at the target path. ensureGsdSymlink() must detect and
+ * already exists at the target path. ensureWorkflowSymlink() must detect and
  * remove these numbered variants so the real `.gsd` symlink is always
  * the one in use.
  */
@@ -22,7 +22,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execSync } from "node:child_process";
 
-import { ensureGsdSymlink, externalGsdRoot } from "../repo-identity.ts";
+import { ensureWorkflowSymlink, externalWorkflowRoot } from "../repo-identity.ts";
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -47,19 +47,19 @@ describe('symlink-numbered-variants', async () => {
     run("git add README.md", base);
     run('git commit -m "chore: init"', base);
 
-    const externalPath = externalGsdRoot(base);
+    const externalPath = externalWorkflowRoot(base);
 
     // ── Test: numbered variant directories are cleaned up ──────────────
-    console.log("\n=== ensureGsdSymlink removes numbered .gsd variants (#2205) ===");
+    console.log("\n=== ensureWorkflowSymlink removes numbered .gsd variants (#2205) ===");
     {
       // Simulate macOS creating numbered variants: ".gsd 2", ".gsd 3"
       mkdirSync(join(base, ".gsd 2"), { recursive: true });
       mkdirSync(join(base, ".gsd 3"), { recursive: true });
       mkdirSync(join(base, ".gsd 4"), { recursive: true });
 
-      const result = ensureGsdSymlink(base);
-      assert.deepStrictEqual(result, externalPath, "ensureGsdSymlink returns external path");
-      assert.ok(existsSync(join(base, ".gsd")), ".gsd exists after ensureGsdSymlink");
+      const result = ensureWorkflowSymlink(base);
+      assert.deepStrictEqual(result, externalPath, "ensureWorkflowSymlink returns external path");
+      assert.ok(existsSync(join(base, ".gsd")), ".gsd exists after ensureWorkflowSymlink");
       assert.ok(lstatSync(join(base, ".gsd")).isSymbolicLink(), ".gsd is a symlink");
 
       // The numbered variants must have been removed
@@ -69,7 +69,7 @@ describe('symlink-numbered-variants', async () => {
     }
 
     // ── Test: numbered variant symlinks are cleaned up ─────────────────
-    console.log("\n=== ensureGsdSymlink removes numbered symlink variants ===");
+    console.log("\n=== ensureWorkflowSymlink removes numbered symlink variants ===");
     {
       // Clean slate
       rmSync(join(base, ".gsd"), { recursive: true, force: true });
@@ -81,8 +81,8 @@ describe('symlink-numbered-variants', async () => {
       symlinkSync(externalPath, join(base, ".gsd 2"), "junction");
       symlinkSync(staleTarget, join(base, ".gsd 3"), "junction");
 
-      const result = ensureGsdSymlink(base);
-      assert.deepStrictEqual(result, externalPath, "ensureGsdSymlink returns external path when variants exist");
+      const result = ensureWorkflowSymlink(base);
+      assert.deepStrictEqual(result, externalPath, "ensureWorkflowSymlink returns external path when variants exist");
       assert.ok(existsSync(join(base, ".gsd")), ".gsd exists");
       assert.ok(lstatSync(join(base, ".gsd")).isSymbolicLink(), ".gsd is a symlink");
 
@@ -91,7 +91,7 @@ describe('symlink-numbered-variants', async () => {
     }
 
     // ── Test: real .gsd directory blocks symlink, but variants still cleaned ──
-    console.log("\n=== ensureGsdSymlink cleans variants even when .gsd is a real directory ===");
+    console.log("\n=== ensureWorkflowSymlink cleans variants even when .gsd is a real directory ===");
     {
       // Clean slate
       rmSync(join(base, ".gsd"), { recursive: true, force: true });
@@ -102,8 +102,8 @@ describe('symlink-numbered-variants', async () => {
       mkdirSync(join(base, ".gsd 2"), { recursive: true });
       mkdirSync(join(base, ".gsd 3"), { recursive: true });
 
-      const result = ensureGsdSymlink(base);
-      // When .gsd is a real directory, ensureGsdSymlink preserves it
+      const result = ensureWorkflowSymlink(base);
+      // When .gsd is a real directory, ensureWorkflowSymlink preserves it
       assert.deepStrictEqual(result, join(base, ".gsd"), "real .gsd directory preserved");
       assert.ok(lstatSync(join(base, ".gsd")).isDirectory(), ".gsd remains a directory");
 
@@ -113,7 +113,7 @@ describe('symlink-numbered-variants', async () => {
     }
 
     // ── Test: only numeric-suffixed variants are removed ───────────────
-    console.log("\n=== ensureGsdSymlink only removes .gsd + space + digit variants ===");
+    console.log("\n=== ensureWorkflowSymlink only removes .gsd + space + digit variants ===");
     {
       rmSync(join(base, ".gsd"), { recursive: true, force: true });
 
@@ -125,7 +125,7 @@ describe('symlink-numbered-variants', async () => {
       mkdirSync(join(base, ".gsd 2"), { recursive: true });
       mkdirSync(join(base, ".gsd 10"), { recursive: true });
 
-      ensureGsdSymlink(base);
+      ensureWorkflowSymlink(base);
 
       assert.ok(existsSync(join(base, ".gsd-backup")), ".gsd-backup is NOT removed");
       assert.ok(existsSync(join(base, ".gsd_old")), ".gsd_old is NOT removed");

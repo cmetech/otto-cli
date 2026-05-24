@@ -2080,12 +2080,12 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
     async (args: Record<string, unknown>) => {
       const { projectDir, ...params } = parseWorkflowArgs(execSchema, args);
       await enforceWorkflowWriteGate("gsd_exec", projectDir);
-      const { executeGsdExec } = await importLocalModule<any>(
+      const { executeWorkflowExec } = await importLocalModule<any>(
         "../../../src/resources/extensions/workflow/tools/exec-tool.js",
       );
       return adaptExecutorResult(
         await runSerializedWorkflowOperation(async () =>
-          executeGsdExec(params, {
+          executeWorkflowExec(params, {
             baseDir: projectDir,
             preferences: await loadProjectPreferences(projectDir),
           }),
@@ -2247,10 +2247,10 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
     async (args: Record<string, unknown>) => {
       const { projectDir, ...params } = parseWorkflowArgs(memoryGraphSchema, args);
       return runSerializedWorkflowDbOperation(projectDir, async () => {
-        const { executeGsdGraph } = await importLocalModule<any>(
+        const { executeWorkflowGraph } = await importLocalModule<any>(
           "../../../src/resources/extensions/workflow/tools/memory-tools.js",
         );
-        return executeGsdGraph(params);
+        return executeWorkflowGraph(params);
       });
     },
   );

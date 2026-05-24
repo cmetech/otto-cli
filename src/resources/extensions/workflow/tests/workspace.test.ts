@@ -72,7 +72,7 @@ describe("createWorkspace", () => {
   });
 });
 
-describe("GsdWorkspace and MilestoneScope are frozen", () => {
+describe("WorkflowWorkspace and MilestoneScope are frozen", () => {
   let projectDir: string;
 
   beforeEach(() => {

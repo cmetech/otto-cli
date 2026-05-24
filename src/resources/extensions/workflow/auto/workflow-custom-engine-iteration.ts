@@ -28,13 +28,13 @@ export interface BuildCustomEngineIterationDataInput {
 export async function buildCustomEngineIterationData(
   input: BuildCustomEngineIterationDataInput,
 ): Promise<IterationData> {
-  const gsdState = await input.deriveState(input.canonicalProjectRoot);
+  const workflowState = await input.deriveState(input.canonicalProjectRoot);
   input.logPostDerive({
     site: "custom-engine-gsd-state",
     basePath: input.basePath,
     canonicalProjectRoot: input.canonicalProjectRoot,
-    derivedPhase: gsdState.phase,
-    activeUnit: gsdState.activeTask?.id ?? gsdState.activeSlice?.id ?? gsdState.activeMilestone?.id,
+    derivedPhase: workflowState.phase,
+    activeUnit: workflowState.activeTask?.id ?? workflowState.activeSlice?.id ?? workflowState.activeMilestone?.id,
   });
 
   return {
@@ -43,7 +43,7 @@ export async function buildCustomEngineIterationData(
     prompt: input.step.prompt,
     finalPrompt: input.step.prompt,
     pauseAfterUatDispatch: false,
-    state: gsdState,
+    state: workflowState,
     mid: input.currentMilestoneId ?? "workflow",
     midTitle: "Workflow",
     isRetry: false,

@@ -11,7 +11,7 @@ import { getGlobalGSDPreferencesPath, loadEffectiveGSDPreferences } from "../wor
 import { getRemoteConfigStatus, isValidChannelId, resolveRemoteConfig } from "./config.js";
 import { maskEditorLine, sanitizeError } from "../shared/mod.js";
 import { getLatestPromptSummary } from "./status.js";
-import { gsdHome } from "../workflow/home.js";
+import { workflowHome } from "../workflow/home.js";
 
 export async function handleRemote(
   subcommand: string,
@@ -301,7 +301,7 @@ async function promptSlackChannelId(ctx: ExtensionCommandContext): Promise<strin
 }
 
 function getAuthStorage(): AuthStorage {
-  const authPath = join(gsdHome(), "agent", "auth.json");
+  const authPath = join(workflowHome(), "agent", "auth.json");
   mkdirSync(dirname(authPath), { recursive: true });
   return AuthStorage.create(authPath);
 }

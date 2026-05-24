@@ -29,7 +29,7 @@ import {
   type EvalReviewState,
 } from "../commands-eval-review.js";
 import { WORKFLOW_COMMAND_DESCRIPTION, TOP_LEVEL_SUBCOMMANDS } from "../commands/catalog.js";
-import { _clearGsdRootCache } from "../paths.js";
+import { _clearWorkflowRootCache } from "../paths.js";
 
 // ─── parseEvalReviewArgs ──────────────────────────────────────────────────────
 
@@ -135,7 +135,7 @@ describe("detectEvalReviewState", () => {
   });
 
   afterEach(() => {
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
     rmSync(basePath, { recursive: true, force: true });
   });
 
@@ -230,7 +230,7 @@ describe("buildEvalReviewContext", () => {
   });
 
   afterEach(() => {
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
     process.chdir(tmpdir());
     rmSync(basePath, { recursive: true, force: true });
   });
@@ -450,7 +450,7 @@ describe("findEvalReviewFile", () => {
   });
 
   afterEach(() => {
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
     rmSync(basePath, { recursive: true, force: true });
   });
 

@@ -30,14 +30,14 @@ import {
   resolveSliceFile,
   resolveTaskFile,
   resolveTasksDir,
-  resolveGsdRootFile,
-  gsdRoot,
+  resolveWorkflowRootFile,
+  workflowRoot,
 } from './paths.js';
 
 import { findMilestoneIds } from './milestone-ids.js';
 import { loadQueueOrder, sortByQueueOrder } from './queue-order.js';
 import { isClosedStatus, isDeferredStatus } from './status-guards.js';
-import { nativeBatchParseGsdFiles } from './native-parser-bridge.js';
+import { nativeBatchParseWorkflowFiles } from './native-parser-bridge.js';
 import { autoHealSketchFlags } from './state-reconciliation/drift/sketch-flag.js';
 
 import { join, resolve } from 'path';
@@ -120,7 +120,7 @@ export function isGhostMilestone(basePath: string, mid: string): boolean {
   }
 
   // If a worktree exists for this milestone, it was legitimately created.
-  const root = gsdRoot(basePath);
+  const root = workflowRoot(basePath);
   const wtPath = join(root, 'worktrees', mid);
   if (existsSync(wtPath)) return false;
 
@@ -142,7 +142,7 @@ export function isGhostMilestone(basePath: string, mid: string): boolean {
  *      means the milestone was intentionally registered by
  *      `gsd_milestone_generate_id` and may have an in-flight discuss flow.
  *      Reusing it would collide with that flow. (#4996 race window)
- *   2. No worktree directory exists at `gsdRoot/worktrees/{mid}` — a worktree
+ *   2. No worktree directory exists at `workflowRoot/worktrees/{mid}` — a worktree
  *      means the milestone is legitimately in-flight.
  *   3. No content files exist (CONTEXT, CONTEXT-DRAFT, ROADMAP, SUMMARY) —
  *      any content means the discuss flow already ran.
@@ -162,7 +162,7 @@ export function isReusableGhostMilestone(basePath: string, mid: string): boolean
   if (dbRow != null) return false;
 
   // Condition 2: no worktree.
-  const root = gsdRoot(basePath);
+  const root = workflowRoot(basePath);
   const wtPath = join(root, 'worktrees', mid);
   if (existsSync(wtPath)) return false;
 
@@ -230,7 +230,7 @@ export function getDeriveTelemetry() { return { ..._telemetry }; }
 export function resetDeriveTelemetry() { _telemetry = { dbDeriveCount: 0 }; }
 
 async function loadRecentDecisions(basePath: string): Promise<string[]> {
-  const decisionsPath = resolveGsdRootFile(basePath, "DECISIONS");
+  const decisionsPath = resolveWorkflowRootFile(basePath, "DECISIONS");
   const content = await loadFile(decisionsPath);
   if (!content) return [];
 
@@ -976,15 +976,15 @@ export async function _deriveStateImpl(
   // in one call and build an in-memory content map keyed by absolute path.
   // This eliminates O(N) individual fs.readFile calls during traversal.
   const fileContentCache = new Map<string, string>();
-  const gsdDir = gsdRoot(basePath);
+  const workflowDir = workflowRoot(basePath);
 
   // Filesystem fallback: used when deriveStateFromDb() is not available
   // (pre-migration projects). The DB-backed path is preferred when available
   // — see deriveStateFromDb() above.
-  const batchFiles = nativeBatchParseGsdFiles(gsdDir);
+  const batchFiles = nativeBatchParseWorkflowFiles(workflowDir);
   if (batchFiles) {
     for (const f of batchFiles) {
-      const absPath = resolve(gsdDir, f.path);
+      const absPath = resolve(workflowDir, f.path);
       fileContentCache.set(absPath, f.rawContent);
     }
   }
@@ -1000,7 +1000,7 @@ export async function _deriveStateImpl(
     return loadFile(path);
   }
 
-  const requirements = parseRequirementCounts(await cachedLoadFile(resolveGsdRootFile(basePath, "REQUIREMENTS")));
+  const requirements = parseRequirementCounts(await cachedLoadFile(resolveWorkflowRootFile(basePath, "REQUIREMENTS")));
 
   if (milestoneIds.length === 0) {
     return {

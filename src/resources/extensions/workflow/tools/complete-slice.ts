@@ -29,7 +29,7 @@ import {
   getPendingGatesForTurn,
 } from "../db.js";
 import { getGatesForTurn } from "../gate-registry.js";
-import { gsdProjectionRoot, clearPathCache, resolveMilestoneFile } from "../paths.js";
+import { workflowProjectionRoot, clearPathCache, resolveMilestoneFile } from "../paths.js";
 import { resolveCanonicalMilestoneRoot } from "../worktree-manager.js";
 import { checkOwnership, sliceUnitKey } from "../unit-ownership.js";
 import { saveFile, clearParseCache } from "../files.js";
@@ -75,7 +75,7 @@ function sliceGateFieldForId(
 
 function sliceSummaryPath(basePath: string, milestoneId: string, sliceId: string): string {
   return join(
-    gsdProjectionRoot(basePath),
+    workflowProjectionRoot(basePath),
     "milestones",
     milestoneId,
     "slices",
@@ -94,7 +94,7 @@ function hasCompleteSliceArtifactContract(basePath: string, milestoneId: string,
   if (!existsSync(uatPath)) return false;
 
   const roadmapPath = resolveMilestoneFile(basePath, milestoneId, "ROADMAP") ??
-    join(gsdProjectionRoot(basePath), "milestones", milestoneId, `${milestoneId}-ROADMAP.md`);
+    join(workflowProjectionRoot(basePath), "milestones", milestoneId, `${milestoneId}-ROADMAP.md`);
   if (!existsSync(roadmapPath)) return false;
 
   try {
@@ -539,18 +539,18 @@ export async function handleCompleteSlice(
     try {
       const graphMod = await import("@loop24-build/mcp-server") as unknown as Partial<{
         buildGraph: (dir: string) => Promise<{ nodes: unknown[]; edges: unknown[]; builtAt: string }>;
-        writeGraph: (gsdRoot: string, graph: unknown) => Promise<void>;
-        resolveGsdRoot: (basePath: string) => string;
+        writeGraph: (workflowRoot: string, graph: unknown) => Promise<void>;
+        resolveWorkflowRoot: (basePath: string) => string;
       }>;
       if (
         typeof graphMod.buildGraph !== "function"
         || typeof graphMod.writeGraph !== "function"
-        || typeof graphMod.resolveGsdRoot !== "function"
+        || typeof graphMod.resolveWorkflowRoot !== "function"
       ) {
         throw new Error("graph helpers unavailable from @loop24-build/mcp-server");
       }
       const g = await graphMod.buildGraph(artifactBasePath);
-      await graphMod.writeGraph(graphMod.resolveGsdRoot(artifactBasePath), g);
+      await graphMod.writeGraph(graphMod.resolveWorkflowRoot(artifactBasePath), g);
     } catch (graphErr) {
       // Graph rebuild is best-effort — log at warning level but never propagate
       logWarning("tool", `complete-slice graph rebuild failed (non-fatal): ${(graphErr as Error).message ?? String(graphErr)}`);

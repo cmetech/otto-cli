@@ -35,7 +35,7 @@ import {
   parseTaskPlanFile,
   clearParseCache,
 } from '../files.ts';
-import { clearPathCache, _clearGsdRootCache } from '../paths.ts';
+import { clearPathCache, _clearWorkflowRootCache } from '../paths.ts';
 import { invalidateStateCache } from '../state.ts';
 import { describe, test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -59,7 +59,7 @@ function cleanupDir(dir: string): void {
 function clearAllCaches(): void {
   clearParseCache();
   clearPathCache();
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
   invalidateStateCache();
 }
 

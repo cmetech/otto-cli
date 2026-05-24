@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 import { regenerateIfMissing, renderPlanContent, renderStateProjection } from '../workflow-projections.ts';
 import type { SliceRow, TaskRow } from '../db.ts';
 import { closeDatabase, insertMilestone, insertSlice, insertTask, openDatabase } from '../db.ts';
-import { clearPathCache, _clearGsdRootCache } from '../paths.ts';
+import { clearPathCache, _clearWorkflowRootCache } from '../paths.ts';
 import { invalidateStateCache } from '../state.ts';
 import { clearParseCache } from '../files.ts';
 
@@ -196,7 +196,7 @@ test('workflow-projections: regenerateIfMissing PLAN restores slice plan and tas
   openDatabase(dbPath);
   clearParseCache();
   clearPathCache();
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
   invalidateStateCache();
 
   try {
@@ -246,13 +246,13 @@ test('workflow-projections: regenerateIfMissing PLAN restores slice plan and tas
 
 test('workflow-projections: renderStateProjection does not clobber non-empty STATE.md when manifest has milestones', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projection-stale-'));
-  const gsdDir = join(base, '.gsd');
-  const statePath = join(gsdDir, 'STATE.md');
+  const workflowDir = join(base, '.gsd');
+  const statePath = join(workflowDir, 'STATE.md');
   openDatabase(':memory:');
   try {
-    mkdirSync(gsdDir, { recursive: true });
+    mkdirSync(workflowDir, { recursive: true });
     writeFileSync(statePath, '# GSD State\n\n**Active Milestone:** M001: Existing\n');
-    writeFileSync(join(gsdDir, 'state-manifest.json'), JSON.stringify({
+    writeFileSync(join(workflowDir, 'state-manifest.json'), JSON.stringify({
       version: 1,
       exported_at: new Date().toISOString(),
       milestones: [{ id: 'M001', title: 'Existing' }],
@@ -275,13 +275,13 @@ test('workflow-projections: renderStateProjection does not clobber non-empty STA
 
 test('workflow-projections: renderStateProjection rewrites empty STATE.md when manifest has milestones', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projection-empty-state-'));
-  const gsdDir = join(base, '.gsd');
-  const statePath = join(gsdDir, 'STATE.md');
+  const workflowDir = join(base, '.gsd');
+  const statePath = join(workflowDir, 'STATE.md');
   openDatabase(':memory:');
   try {
-    mkdirSync(gsdDir, { recursive: true });
+    mkdirSync(workflowDir, { recursive: true });
     writeFileSync(statePath, '');
-    writeFileSync(join(gsdDir, 'state-manifest.json'), JSON.stringify({
+    writeFileSync(join(workflowDir, 'state-manifest.json'), JSON.stringify({
       version: 1,
       exported_at: new Date().toISOString(),
       milestones: [{ id: 'M001', title: 'Existing' }],
@@ -304,11 +304,11 @@ test('workflow-projections: renderStateProjection rewrites empty STATE.md when m
 
 test('workflow-projections: renderStateProjection rewrites non-empty STATE.md when manifest is missing', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projection-missing-manifest-'));
-  const gsdDir = join(base, '.gsd');
-  const statePath = join(gsdDir, 'STATE.md');
+  const workflowDir = join(base, '.gsd');
+  const statePath = join(workflowDir, 'STATE.md');
   openDatabase(':memory:');
   try {
-    mkdirSync(gsdDir, { recursive: true });
+    mkdirSync(workflowDir, { recursive: true });
     writeFileSync(statePath, '# GSD State\n\n**Active Milestone:** M001: Existing\n');
 
     await renderStateProjection(base);
@@ -325,13 +325,13 @@ test('workflow-projections: renderStateProjection rewrites non-empty STATE.md wh
 
 test('workflow-projections: renderStateProjection rewrites non-empty STATE.md when manifest is malformed', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projection-malformed-manifest-'));
-  const gsdDir = join(base, '.gsd');
-  const statePath = join(gsdDir, 'STATE.md');
+  const workflowDir = join(base, '.gsd');
+  const statePath = join(workflowDir, 'STATE.md');
   openDatabase(':memory:');
   try {
-    mkdirSync(gsdDir, { recursive: true });
+    mkdirSync(workflowDir, { recursive: true });
     writeFileSync(statePath, '# GSD State\n\n**Active Milestone:** M001: Existing\n');
-    writeFileSync(join(gsdDir, 'state-manifest.json'), '{not json');
+    writeFileSync(join(workflowDir, 'state-manifest.json'), '{not json');
 
     await renderStateProjection(base);
 
@@ -347,13 +347,13 @@ test('workflow-projections: renderStateProjection rewrites non-empty STATE.md wh
 
 test('workflow-projections: renderStateProjection rewrites non-empty STATE.md when manifest milestones is not an array', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projection-non-array-milestones-'));
-  const gsdDir = join(base, '.gsd');
-  const statePath = join(gsdDir, 'STATE.md');
+  const workflowDir = join(base, '.gsd');
+  const statePath = join(workflowDir, 'STATE.md');
   openDatabase(':memory:');
   try {
-    mkdirSync(gsdDir, { recursive: true });
+    mkdirSync(workflowDir, { recursive: true });
     writeFileSync(statePath, '# GSD State\n\n**Active Milestone:** M001: Existing\n');
-    writeFileSync(join(gsdDir, 'state-manifest.json'), JSON.stringify({
+    writeFileSync(join(workflowDir, 'state-manifest.json'), JSON.stringify({
       version: 1,
       exported_at: new Date().toISOString(),
       milestones: 'M001',
@@ -377,12 +377,12 @@ test('workflow-projections: renderStateProjection rewrites non-empty STATE.md wh
 
 test('workflow-projections: renderStateProjection writes active milestone from DB when manifest matches', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projection-db-milestone-'));
-  const gsdDir = join(base, '.gsd');
-  const statePath = join(gsdDir, 'STATE.md');
+  const workflowDir = join(base, '.gsd');
+  const statePath = join(workflowDir, 'STATE.md');
   openDatabase(':memory:');
   try {
-    mkdirSync(gsdDir, { recursive: true });
-    writeFileSync(join(gsdDir, 'state-manifest.json'), JSON.stringify({
+    mkdirSync(workflowDir, { recursive: true });
+    writeFileSync(join(workflowDir, 'state-manifest.json'), JSON.stringify({
       version: 1,
       exported_at: new Date().toISOString(),
       milestones: [{ id: 'M001', title: 'DB Milestone' }],

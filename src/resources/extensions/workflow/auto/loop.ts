@@ -85,7 +85,7 @@ import { createWorkflowTurnReporter } from "./workflow-turn-reporter.js";
 import { validateWorkflowSessionLock } from "./workflow-session-lock.js";
 import { dequeueSidecarItem } from "./workflow-sidecar-queue.js";
 import { maintainWorkerHeartbeat } from "./workflow-worker-heartbeat.js";
-import { gsdRoot } from "../paths.js";
+import { workflowRoot } from "../paths.js";
 import {
   measureMemoryPressure,
   shouldCheckMemoryPressure,
@@ -285,7 +285,7 @@ function persistCrashNote(
   observedUnitId?: string,
 ): string | null {
   try {
-    const activityDir = join(gsdRoot(s.basePath), "activity");
+    const activityDir = join(workflowRoot(s.basePath), "activity");
     mkdirSync(activityDir, { recursive: true });
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `${timestamp}-auto-crash-note.json`;

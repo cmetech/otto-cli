@@ -18,7 +18,7 @@ import { runPostUnitVerification, type VerificationContext } from "../auto-verif
 import { AutoSession } from "../auto/session.ts";
 import { openDatabase, closeDatabase, insertMilestone, insertSlice, insertTask, _getAdapter } from "../db.ts";
 import { invalidateAllCaches } from "../cache.ts";
-import { _clearGsdRootCache } from "../paths.ts";
+import { _clearWorkflowRootCache } from "../paths.ts";
 import { initMetrics, resetMetrics } from "../metrics.ts";
 
 // ─── Test Fixtures ───────────────────────────────────────────────────────────
@@ -67,17 +67,17 @@ function setupTestEnvironment(): void {
   tempDir = join(tmpdir(), `post-exec-retry-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(tempDir, { recursive: true });
 
-  const gsdDir = join(tempDir, ".gsd");
-  mkdirSync(gsdDir, { recursive: true });
+  const workflowDir = join(tempDir, ".gsd");
+  mkdirSync(workflowDir, { recursive: true });
 
-  const milestonesDir = join(gsdDir, "milestones", "M001", "slices", "S01", "tasks");
+  const milestonesDir = join(workflowDir, "milestones", "M001", "slices", "S01", "tasks");
   mkdirSync(milestonesDir, { recursive: true });
 
   process.chdir(tempDir);
   invalidateAllCaches();
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
 
-  dbPath = join(gsdDir, "gsd.db");
+  dbPath = join(workflowDir, "gsd.db");
   openDatabase(dbPath);
 }
 
@@ -110,7 +110,7 @@ ${yamlLines.join("\n")}
 `;
   writeFileSync(join(tempDir, ".gsd", "PREFERENCES.md"), prefsContent);
   invalidateAllCaches();
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
 }
 
 /**

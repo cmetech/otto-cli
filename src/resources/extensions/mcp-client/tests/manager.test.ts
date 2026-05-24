@@ -24,16 +24,16 @@ import {
 	type ManagedMcpServerConfig,
 } from "../manager.js";
 
-function makeProject(): { projectDir: string; gsdHomeDir: string; cleanup: () => void } {
+function makeProject(): { projectDir: string; workflowHomeDir: string; cleanup: () => void } {
 	const projectDir = mkdtempSync(join(tmpdir(), "gsd-mcp-manager-project-"));
-	const gsdHomeDir = mkdtempSync(join(tmpdir(), "gsd-mcp-manager-home-"));
+	const workflowHomeDir = mkdtempSync(join(tmpdir(), "gsd-mcp-manager-home-"));
 	mkdirSync(join(projectDir, ".gsd"), { recursive: true });
 	return {
 		projectDir,
-		gsdHomeDir,
+		workflowHomeDir,
 		cleanup: () => {
 			rmSync(projectDir, { recursive: true, force: true });
-			rmSync(gsdHomeDir, { recursive: true, force: true });
+			rmSync(workflowHomeDir, { recursive: true, force: true });
 			clearMcpConfigCache();
 		},
 	};
@@ -42,7 +42,7 @@ function makeProject(): { projectDir: string; gsdHomeDir: string; cleanup: () =>
 test("MCP manager reads sources with precedence, disabled state, duplicates, and env warnings", () => {
 	const previousToken = process.env.MISSING_MANAGER_TOKEN;
 	delete process.env.MISSING_MANAGER_TOKEN;
-	const { projectDir, gsdHomeDir, cleanup } = makeProject();
+	const { projectDir, workflowHomeDir, cleanup } = makeProject();
 	try {
 		writeFileSync(
 			join(projectDir, ".mcp.json"),
@@ -64,7 +64,7 @@ test("MCP manager reads sources with precedence, disabled state, duplicates, and
 			"utf-8",
 		);
 		writeFileSync(
-			join(gsdHomeDir, "mcp.json"),
+			join(workflowHomeDir, "mcp.json"),
 			JSON.stringify({
 				mcpServers: {
 					shared: { command: "node", args: ["global.js"] },
@@ -73,13 +73,13 @@ test("MCP manager reads sources with precedence, disabled state, duplicates, and
 			"utf-8",
 		);
 
-		const status = readMcpManagementStatus({ projectDir, gsdHomeDir, includeDisabled: true, refresh: true });
+		const status = readMcpManagementStatus({ projectDir, workflowHomeDir, includeDisabled: true, refresh: true });
 		assert.deepEqual(status.servers.map((server) => server.name), ["shared", "warned", "local"]);
 		assert.equal(status.servers.find((server) => server.name === "local")?.disabled, true);
 		assert.equal(status.duplicates[0]?.name, "shared");
 		assert.match(status.servers.find((server) => server.name === "warned")?.envWarnings[0] ?? "", /MISSING_MANAGER_TOKEN/);
 
-		const runtimeServers = readMcpServerConfigs({ projectDir, gsdHomeDir, refresh: true });
+		const runtimeServers = readMcpServerConfigs({ projectDir, workflowHomeDir, refresh: true });
 		assert.deepEqual(runtimeServers.map((server) => server.name), ["shared", "warned"]);
 	} finally {
 		if (previousToken === undefined) delete process.env.MISSING_MANAGER_TOKEN;

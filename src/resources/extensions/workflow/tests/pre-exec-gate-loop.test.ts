@@ -30,7 +30,7 @@ import {
   insertTask,
 } from "../db.ts";
 import { deriveStateFromDb } from "../state.ts";
-import { _clearGsdRootCache } from "../paths.ts";
+import { _clearWorkflowRootCache } from "../paths.ts";
 import { invalidateAllCaches } from "../cache.ts";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -94,7 +94,7 @@ test("#4551: buildPlanSlicePrompt injects fix section when priorPreExecFailure p
 
   seedPlanningState(base);
   process.chdir(base);
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
   invalidateAllCaches();
 
   const prompt = await buildPlanSlicePrompt(
@@ -139,7 +139,7 @@ test("#4551: buildPlanSlicePrompt with no priorPreExecFailure does NOT include f
 
   seedPlanningState(base);
   process.chdir(base);
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
   invalidateAllCaches();
 
   const prompt = await buildPlanSlicePrompt(
@@ -167,7 +167,7 @@ test("#4551: dispatch rule injects failure context and clears session field", as
     "# Research\n",
   );
   process.chdir(base);
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
   invalidateAllCaches();
 
   const state = await deriveStateFromDb(base);
@@ -228,7 +228,7 @@ test("#4551: dispatch rule does NOT inject stale failure for a different slice",
     "# Research\n",
   );
   process.chdir(base);
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
   invalidateAllCaches();
 
   const state = await deriveStateFromDb(base);

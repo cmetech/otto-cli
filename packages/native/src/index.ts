@@ -113,7 +113,7 @@ export {
   parseFrontmatter,
   extractSection as nativeExtractSection,
   extractAllSections,
-  batchParseGsdFiles,
+  batchParseWorkflowFiles,
   parseRoadmapFile,
 } from "./parser/index.js";
 export type {
@@ -122,7 +122,7 @@ export type {
   NativeBoundaryMapEntry,
   NativeRoadmap,
   NativeRoadmapSlice,
-  ParsedGsdFile,
+  ParsedWorkflowFile,
   SectionResult,
 } from "./parser/index.js";
 

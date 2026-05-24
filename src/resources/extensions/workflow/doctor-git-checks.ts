@@ -31,8 +31,8 @@ function isDoctorArtifactOnly(dirPath: string): boolean {
     if (entries.length === 0) return false;
     // Only a .gsd subdirectory
     if (entries.length === 1 && entries[0] === ".gsd") {
-      const gsdEntries = readdirSync(join(dirPath, ".gsd"));
-      return gsdEntries.length <= 1 && gsdEntries.every(e => e === "doctor-history.jsonl");
+      const workflowEntries = readdirSync(join(dirPath, ".gsd"));
+      return workflowEntries.length <= 1 && workflowEntries.every(e => e === "doctor-history.jsonl");
     }
     return false;
   } catch {

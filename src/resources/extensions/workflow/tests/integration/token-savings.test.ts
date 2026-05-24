@@ -163,7 +163,7 @@ console.log('\n=== token-savings: plan-slice prompt ≥30% character savings ===
   const dbDecisionsContent = formatDecisionsForPrompt(scopedDecisions);
   const dbRequirementsContent = formatRequirementsForPrompt(scopedRequirements);
 
-  // ── Full-markdown equivalents (what inlineGsdRootFile would return) ──
+  // ── Full-markdown equivalents (what inlineWorkflowRootFile would return) ──
   const fullDecisionsContent = readFileSync(join(base, '.gsd', 'DECISIONS.md'), 'utf-8');
   const fullRequirementsContent = readFileSync(join(base, '.gsd', 'REQUIREMENTS.md'), 'utf-8');
 

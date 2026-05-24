@@ -12,7 +12,7 @@ import { join } from "node:path";
 
 import { getLedger, getProjectTotals, aggregateByModel, formatCost, formatTokenCount, loadLedgerFromDisk } from "./metrics.js";
 import type { UnitMetrics } from "./metrics.js";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { formatDuration } from "../shared/format-utils.js";
 
 function formatSessionReport(units: UnitMetrics[]): string {
@@ -87,7 +87,7 @@ export async function handleSessionReport(
   // Save to file
   if (args.includes("--save")) {
     const report = formatSessionReport(units);
-    const reportsDir = join(gsdRoot(basePath), "reports");
+    const reportsDir = join(workflowRoot(basePath), "reports");
     mkdirSync(reportsDir, { recursive: true });
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
     const outPath = join(reportsDir, `session-${timestamp}.md`);

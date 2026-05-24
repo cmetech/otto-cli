@@ -291,8 +291,8 @@ export class SessionManager extends EventEmitter {
     if (envPath) return resolve(envPath);
 
     try {
-      const gsdBin = execSync('which gsd', { encoding: 'utf-8' }).trim();
-      if (gsdBin) return resolve(gsdBin);
+      const workflowBin = execSync('which gsd', { encoding: 'utf-8' }).trim();
+      if (workflowBin) return resolve(workflowBin);
     } catch {
       // which failed
     }

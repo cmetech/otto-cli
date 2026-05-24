@@ -27,7 +27,7 @@ import {
 // ─── Test setup ──────────────────────────────────────────────────────────
 
 const tmpDirs: string[] = [];
-let savedGsdHome: string | undefined;
+let savedWorkflowHome: string | undefined;
 
 function makeTmpBase(): string {
   const dir = mkdtempSync(join(tmpdir(), "wf-plugins-test-"));
@@ -36,16 +36,16 @@ function makeTmpBase(): string {
 }
 
 beforeEach(() => {
-  savedGsdHome = process.env.GSD_HOME;
+  savedWorkflowHome = process.env.GSD_HOME;
   const fakeHome = makeTmpBase();
   process.env.GSD_HOME = fakeHome;
 });
 
 afterEach(() => {
-  if (savedGsdHome === undefined) {
+  if (savedWorkflowHome === undefined) {
     delete process.env.GSD_HOME;
   } else {
-    process.env.GSD_HOME = savedGsdHome;
+    process.env.GSD_HOME = savedWorkflowHome;
   }
   for (const d of tmpDirs) {
     try { rmSync(d, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }); } catch { /* non-fatal */ }

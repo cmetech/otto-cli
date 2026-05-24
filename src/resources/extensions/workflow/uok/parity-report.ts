@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { gsdRoot } from "../paths.js";
+import { workflowRoot } from "../paths.js";
 
 export interface UokParityEvent {
   ts?: string;
@@ -23,11 +23,11 @@ export interface UokParityReport {
 }
 
 function parityLogPath(basePath: string): string {
-  return join(gsdRoot(basePath), "runtime", "uok-parity.jsonl");
+  return join(workflowRoot(basePath), "runtime", "uok-parity.jsonl");
 }
 
 function reportPath(basePath: string): string {
-  return join(gsdRoot(basePath), "runtime", "uok-parity-report.json");
+  return join(workflowRoot(basePath), "runtime", "uok-parity-report.json");
 }
 
 function increment(bucket: Record<string, number>, key: string | undefined): void {
@@ -78,7 +78,7 @@ export function writeParityReport(basePath: string): UokParityReport {
   const sourcePath = parityLogPath(basePath);
   const raw = existsSync(sourcePath) ? readFileSync(sourcePath, "utf-8") : "";
   const report = buildParityReport(parseParityEvents(raw), sourcePath);
-  mkdirSync(join(gsdRoot(basePath), "runtime"), { recursive: true });
+  mkdirSync(join(workflowRoot(basePath), "runtime"), { recursive: true });
   writeFileSync(reportPath(basePath), JSON.stringify(report, null, 2) + "\n", "utf-8");
   return report;
 }

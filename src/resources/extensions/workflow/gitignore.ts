@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { execFileSync } from "node:child_process";
 import { existsSync, lstatSync, readFileSync, writeFileSync } from "node:fs";
 import { nativeRmCached, nativeLsFiles } from "./native-git-bridge.js";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { GIT_NO_PROMPT_ENV } from "./git-constants.js";
 
 /**
@@ -151,7 +151,7 @@ export function isGitignored(basePath: string): boolean {
  *   - `.loop24/` doesn't exist
  *   - No tracked files found under `.loop24/`
  */
-export function hasGitTrackedGsdFiles(basePath: string): boolean {
+export function hasGitTrackedWorkflowFiles(basePath: string): boolean {
   const localGsd = join(basePath, ".gsd");
 
   // If .gsd doesn't exist or is already a symlink, no tracked files concern
@@ -218,8 +218,8 @@ export function ensureGitignore(
 
   // Determine which patterns to apply. If .loop24/ has tracked files,
   // exclude the ".gsd" pattern to prevent deleting tracked state.
-  const gsdIsTracked = hasGitTrackedGsdFiles(basePath);
-  const patternsToApply = gsdIsTracked
+  const workflowIsTracked = hasGitTrackedWorkflowFiles(basePath);
+  const patternsToApply = workflowIsTracked
     ? BASELINE_PATTERNS.filter((p) => p !== ".gsd")
     : BASELINE_PATTERNS;
 
@@ -279,8 +279,8 @@ export function untrackRuntimeFiles(basePath: string): void {
  * creating a duplicate when a lowercase file already exists.
  */
 export function ensurePreferences(basePath: string): boolean {
-  const preferencesPath = join(gsdRoot(basePath), "PREFERENCES.md");
-  const legacyPath = join(gsdRoot(basePath), "preferences.md");
+  const preferencesPath = join(workflowRoot(basePath), "PREFERENCES.md");
+  const legacyPath = join(workflowRoot(basePath), "preferences.md");
 
   if (existsSync(preferencesPath) || existsSync(legacyPath)) {
     return false;

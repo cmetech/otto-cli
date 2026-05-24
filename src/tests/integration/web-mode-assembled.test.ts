@@ -1024,16 +1024,16 @@ test("assembled slash-command behavior keeps built-ins safe while preserving GSD
   assert.equal(builtInReject.status, null);
 
   // /gsd status is a browser-local visualizer navigation, verify that
-  const gsdSurface = await submitBrowserInput("/gsd status");
-  assert.equal(gsdSurface.outcome.kind, "view-navigate");
-  assert.equal(gsdSurface.outcome.view, "visualize");
-  assert.equal(gsdSurface.status, null);
+  const workflowSurface = await submitBrowserInput("/gsd status");
+  assert.equal(workflowSurface.outcome.kind, "view-navigate");
+  assert.equal(workflowSurface.outcome.view, "visualize");
+  assert.equal(workflowSurface.status, null);
 
   // /gsd auto is a passthrough subcommand — reaches the bridge as a prompt
-  const gsdPrompt = await submitBrowserInput("/gsd auto");
-  assert.equal(gsdPrompt.outcome.kind, "prompt");
-  assert.equal(gsdPrompt.status, 200);
-  assert.equal(gsdPrompt.body.command, "prompt");
+  const workflowPrompt = await submitBrowserInput("/gsd auto");
+  assert.equal(workflowPrompt.outcome.kind, "prompt");
+  assert.equal(workflowPrompt.status, 200);
+  assert.equal(workflowPrompt.body.command, "prompt");
 
   const sentTypes = bridgeCommands.map((command) => command.type);
   assert.deepEqual(

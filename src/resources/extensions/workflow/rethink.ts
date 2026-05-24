@@ -12,7 +12,7 @@ import { existsSync } from "node:fs";
 
 import { isAutoActive } from "./auto.js";
 import { deriveState } from "./state.js";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { findMilestoneIds } from "./milestone-ids.js";
 import { loadQueueOrder, validateQueueOrder } from "./queue-order.js";
 import { isParked, getParkedReason } from "./milestone-actions.js";
@@ -35,7 +35,7 @@ export async function handleRethink(
   }
 
   const basePath = currentDirectoryRoot();
-  const root = gsdRoot(basePath);
+  const root = workflowRoot(basePath);
   if (!existsSync(root)) {
     ctx.ui.notify("No GSD project found. Run /gsd init first.", "warning");
     return;

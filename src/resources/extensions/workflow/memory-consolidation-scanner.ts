@@ -17,7 +17,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { _getAdapter, isDbAvailable } from "./db.js";
 import { appendNotification } from "./notification-store.js";
-import { resolveGsdRootFile } from "./paths.js";
+import { resolveWorkflowRootFile } from "./paths.js";
 import { logWarning } from "./workflow-logger.js";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -104,7 +104,7 @@ export function parseKnowledgeRows(content: string): KnowledgeRow[] {
 }
 
 function knowledgeMdContent(basePath: string): string {
-  const path = resolveGsdRootFile(basePath, "KNOWLEDGE");
+  const path = resolveWorkflowRootFile(basePath, "KNOWLEDGE");
   if (!existsSync(path)) return "";
   try {
     return readFileSync(path, "utf-8");

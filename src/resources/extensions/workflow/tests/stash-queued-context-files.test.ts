@@ -30,7 +30,7 @@ import { execSync } from "node:child_process";
 
 import { createAutoWorktree, mergeMilestoneToMain } from "../auto-worktree.ts";
 import { _resetServiceCache } from "../worktree.ts";
-import { _clearGsdRootCache } from "../paths.ts";
+import { _clearWorkflowRootCache } from "../paths.ts";
 
 // Isolate from user's global preferences (which may have git.main_branch set)
 let originalHome: string | undefined;
@@ -41,13 +41,13 @@ test.before(() => {
   originalHome = process.env.HOME;
   fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "gsd-fake-home-")));
   process.env.HOME = fakeHome;
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
   _resetServiceCache();
 });
 
 test.after(() => {
   process.env.HOME = originalHome;
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
   _resetServiceCache();
   rmSync(fakeHome, { recursive: true, force: true });
 });
@@ -75,7 +75,7 @@ function createTempRepo(): string {
   writeFileSync(join(dir, "README.md"), "# test\n");
   mkdirSync(join(dir, ".gsd"), { recursive: true });
   writeFileSync(join(dir, ".gsd", "STATE.md"), "version: 1\n");
-  // In projects with tracked .gsd/ files (hasGitTrackedGsdFiles=true),
+  // In projects with tracked .gsd/ files (hasGitTrackedWorkflowFiles=true),
   // .gsd is NOT added to .gitignore. This means untracked files under
   // .gsd/ are visible to --include-untracked and get swept into the
   // stash, destroying queued milestone CONTEXT files (#2505).

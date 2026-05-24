@@ -11,14 +11,14 @@
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import type { Decision, Requirement } from './types.js';
-import { resolveGsdRootFile } from './paths.js';
+import { resolveWorkflowRootFile } from './paths.js';
 import { saveFile } from './files.js';
 import { WorkflowError, STALE_STATE, IO_ERROR } from './errors.js';
 import { logWarning, logError } from './workflow-logger.js';
 import { invalidateStateCache } from './state.js';
 import { clearPathCache } from './paths.js';
 import { clearParseCache } from './files.js';
-import type { MilestoneScope, GsdWorkspace } from './workspace.js';
+import type { MilestoneScope, WorkflowWorkspace } from './workspace.js';
 import { createWorkspace, scopeMilestone } from './workspace.js';
 
 // ─── Freeform Detection ───────────────────────────────────────────────────
@@ -422,7 +422,7 @@ export async function saveRequirementToDb(
 
     const nonSuperseded = allRequirements.filter(r => r.superseded_by == null);
     const md = generateRequirementsMd(nonSuperseded);
-    const filePath = resolveGsdRootFile(basePath, 'REQUIREMENTS');
+    const filePath = resolveWorkflowRootFile(basePath, 'REQUIREMENTS');
     try {
       await saveFile(filePath, md);
     } catch (diskErr) {
@@ -559,7 +559,7 @@ export async function saveDecisionToDb(
       allDecisions = [...allDecisions, fallback];
     }
 
-    const filePath = resolveGsdRootFile(basePath, 'DECISIONS');
+    const filePath = resolveWorkflowRootFile(basePath, 'DECISIONS');
 
     // Check if existing DECISIONS.md has freeform (non-table) content.
     // If so, preserve that content and append/update the decisions table
@@ -771,7 +771,7 @@ export async function updateRequirementInDb(
     const nonSuperseded = allRequirements.filter(r => r.superseded_by == null);
 
     const md = generateRequirementsMd(nonSuperseded);
-    const filePath = resolveGsdRootFile(basePath, 'REQUIREMENTS');
+    const filePath = resolveWorkflowRootFile(basePath, 'REQUIREMENTS');
     try {
       await saveFile(filePath, md);
     } catch (diskErr) {
@@ -805,16 +805,16 @@ export interface SaveArtifactOpts {
  * Use this instead of saveArtifactToDbByScope when milestone_id is absent.
  */
 export async function saveArtifactToDbForWorkspace(
-  workspace: GsdWorkspace,
+  workspace: WorkflowWorkspace,
   opts: SaveArtifactOpts,
 ): Promise<void> {
   try {
     const db = await import('./db.js');
 
-    const gsdDir = workspace.contract.projectGsd;
-    const fullPath = resolve(gsdDir, opts.path);
+    const workflowDir = workspace.contract.projectGsd;
+    const fullPath = resolve(workflowDir, opts.path);
 
-    const rel0 = relative(gsdDir, fullPath);
+    const rel0 = relative(workflowDir, fullPath);
     if (rel0.startsWith('..') || isAbsolute(rel0)) {
       throw new WorkflowError(IO_ERROR, `saveArtifactToDbForWorkspace: path escapes .gsd/ directory: ${opts.path}`);
     }
@@ -884,11 +884,11 @@ export async function saveArtifactToDbByScope(
     const db = await import('./db.js');
 
     // Use contract.projectGsd as the canonical .gsd directory — never a hand-rolled basePath join.
-    const gsdDir = scope.workspace.contract.projectGsd;
-    const fullPath = resolve(gsdDir, opts.path);
+    const workflowDir = scope.workspace.contract.projectGsd;
+    const fullPath = resolve(workflowDir, opts.path);
 
     // Guard against path traversal before any reads/writes
-    const rel1 = relative(gsdDir, fullPath);
+    const rel1 = relative(workflowDir, fullPath);
     if (rel1.startsWith('..') || isAbsolute(rel1)) {
       throw new WorkflowError(IO_ERROR, `saveArtifactToDbByScope: path escapes .gsd/ directory: ${opts.path}`);
     }

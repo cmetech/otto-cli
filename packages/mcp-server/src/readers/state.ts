@@ -3,7 +3,7 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import {
-  resolveGsdRoot,
+  resolveWorkflowRoot,
   resolveRootFile,
   findMilestoneIds,
   resolveMilestoneDir,
@@ -114,7 +114,7 @@ function parseMilestoneRegistry(content: string): RegistryEntry[] {
 // Count slices/tasks by walking filesystem
 // ---------------------------------------------------------------------------
 
-function countSlicesAndTasks(gsdRoot: string, milestoneIds: string[]): {
+function countSlicesAndTasks(workflowRoot: string, milestoneIds: string[]): {
   slices: ProgressResult['slices'];
   tasks: ProgressResult['tasks'];
 } {
@@ -122,11 +122,11 @@ function countSlicesAndTasks(gsdRoot: string, milestoneIds: string[]): {
   let taskTotal = 0, taskDone = 0;
 
   for (const mid of milestoneIds) {
-    const sliceIds = findSliceIds(gsdRoot, mid);
+    const sliceIds = findSliceIds(workflowRoot, mid);
     sliceTotal += sliceIds.length;
 
     for (const sid of sliceIds) {
-      const tasks = findTaskFiles(gsdRoot, mid, sid);
+      const tasks = findTaskFiles(workflowRoot, mid, sid);
       taskTotal += tasks.length;
 
       const allDone = tasks.length > 0 && tasks.every((t) => t.hasSummary);
@@ -158,7 +158,7 @@ function countSlicesAndTasks(gsdRoot: string, milestoneIds: string[]): {
 // ---------------------------------------------------------------------------
 
 export function readProgress(projectDir: string): ProgressResult {
-  const gsd = resolveGsdRoot(projectDir);
+  const gsd = resolveWorkflowRoot(projectDir);
   const statePath = resolveRootFile(gsd, 'STATE.md');
 
   // Defaults

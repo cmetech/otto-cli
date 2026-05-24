@@ -11,7 +11,7 @@ import { atomicWriteSync } from "./atomic-write.js";
 import { parseUnitId } from "./unit-id.js";
 import { deriveState } from "./state.js";
 import { invalidateAllCaches } from "./cache.js";
-import { gsdRoot, resolveTasksDir, resolveSlicePath, resolveTaskFile, buildTaskFileName, buildSliceFileName } from "./paths.js";
+import { workflowRoot, resolveTasksDir, resolveSlicePath, resolveTaskFile, buildTaskFileName, buildSliceFileName } from "./paths.js";
 import { sendDesktopNotification } from "./notifications.js";
 import { getTask, getSlice, getSliceTasks, updateTaskStatus, updateSliceStatus } from "./db.js";
 import { renderPlanCheckboxes, renderRoadmapCheckboxes } from "./markdown-renderer.js";
@@ -26,7 +26,7 @@ export async function handleUndo(args: string, ctx: ExtensionCommandContext, _pi
   const force = args.includes("--force");
 
   // Find the last workflow-related commit from git activity logs
-  const activityDir = join(gsdRoot(basePath), "activity");
+  const activityDir = join(workflowRoot(basePath), "activity");
   if (!existsSync(activityDir)) {
     ctx.ui.notify("Nothing to undo — no activity logs found.", "info");
     return;

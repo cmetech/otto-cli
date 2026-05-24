@@ -28,9 +28,9 @@ import {
 } from "node:fs";
 import { isAbsolute, join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { createWorktree, worktreePath, removeWorktree } from "./worktree-manager.js";
-import { autoWorktreeBranch, runWorktreePostCreateHook, syncGsdStateToWorktree } from "./auto-worktree.js";
+import { autoWorktreeBranch, runWorktreePostCreateHook, syncWorkflowStateToWorktree } from "./auto-worktree.js";
 import {
   writeSessionStatus,
   removeSessionStatus,
@@ -167,7 +167,7 @@ function createSliceWorktree(basePath: string, milestoneId: string, sliceId: str
   if (hookError) {
     throw new Error(`slice worktree post-create hook failed (${wtName}): ${hookError}`);
   }
-  syncGsdStateToWorktree(basePath, wtPath);
+  syncWorkflowStateToWorktree(basePath, wtPath);
 
   if (!existsSync(join(wtPath, ".gsd"))) {
     throw new Error(`slice worktree preflight failed (${wtName}): missing .gsd in worktree`);
@@ -199,7 +199,7 @@ interface PersistedSliceState {
 }
 
 function sliceStateFilePath(basePath: string): string {
-  return join(gsdRoot(basePath), SLICE_ORCHESTRATOR_STATE_FILE);
+  return join(workflowRoot(basePath), SLICE_ORCHESTRATOR_STATE_FILE);
 }
 
 function isPidAlive(pid: number): boolean {
@@ -288,7 +288,7 @@ function isRecoveredSliceWorkerAlive(worker: {
 function persistSliceState(): void {
   if (!sliceState) return;
   try {
-    const dir = gsdRoot(sliceState.basePath);
+    const dir = workflowRoot(sliceState.basePath);
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 
     const persisted: PersistedSliceState = {
@@ -694,9 +694,9 @@ function filterConflictingSlices(
 
 /**
  * Resolve the CLI binary path.
- * Same logic as parallel-orchestrator.ts resolveGsdBin().
+ * Same logic as parallel-orchestrator.ts resolveWorkflowBin().
  */
-function resolveGsdBin(): string | null {
+function resolveWorkflowBin(): string | null {
   const envBinPath = process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH;
   if (envBinPath && existsSync(envBinPath)) {
     return envBinPath;
@@ -739,7 +739,7 @@ function spawnSliceWorker(
   if (!worker) return false;
   if (worker.process) return true;
 
-  const binPath = resolveGsdBin();
+  const binPath = resolveWorkflowBin();
   if (!binPath) return false;
 
   let child: ChildProcess;
@@ -903,7 +903,7 @@ function processSliceWorkerLine(
 // ─── Logging ────────────────────────────────────────────────────────────────
 
 function sliceLogDir(basePath: string): string {
-  return join(gsdRoot(basePath), "parallel", "slice-logs");
+  return join(workflowRoot(basePath), "parallel", "slice-logs");
 }
 
 function appendSliceWorkerLog(

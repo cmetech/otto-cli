@@ -7,7 +7,7 @@ import {
   type ScopeClassificationResult,
 } from "./milestone-scope-classifier.js";
 import { clearParseCache } from "./files.js";
-import { gsdRoot, clearPathCache } from "./paths.js";
+import { workflowRoot, clearPathCache } from "./paths.js";
 import { parseProject, parseRequirements } from "./schemas/parsers.js";
 
 export const PROJECT_RESEARCH_DIMENSIONS = ["STACK", "FEATURES", "ARCHITECTURE", "PITFALLS"] as const;
@@ -49,11 +49,11 @@ export type ProjectResearchFinalizeOutcome =
     };
 
 function researchDir(basePath: string): string {
-  return join(gsdRoot(basePath), "research");
+  return join(workflowRoot(basePath), "research");
 }
 
 function runtimeDir(basePath: string): string {
-  return join(gsdRoot(basePath), "runtime");
+  return join(workflowRoot(basePath), "runtime");
 }
 
 function researchDecisionPath(basePath: string): string {

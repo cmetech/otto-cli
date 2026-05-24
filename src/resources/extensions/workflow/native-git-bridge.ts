@@ -766,7 +766,7 @@ export function nativeIsIgnored(basePath: string, path: string): boolean {
   }
 }
 
-function isDotGsdIgnored(basePath: string): boolean {
+function isDotWorkflowIgnored(basePath: string): boolean {
   return [".gsd", ".gsd/"].some(path => nativeIsIgnored(basePath, path));
 }
 
@@ -802,7 +802,7 @@ function isGitignoreManagementDisabled(basePath: string): boolean {
  * (either pre-existing or newly appended). Returns false when the opt-out
  * is set or the write fails.
  */
-function trySelfHealGsdGitignore(basePath: string): boolean {
+function trySelfHealWorkflowGitignore(basePath: string): boolean {
   if (isGitignoreManagementDisabled(basePath)) return false;
 
   const gitignorePath = join(basePath, ".gitignore");
@@ -870,11 +870,11 @@ function stageUntrackedExcludingDotGsd(basePath: string): void {
  * falls back to explicit per-file staging so user work is never dropped.
  */
 function fallbackStageWithSymlinkedDotGsd(basePath: string): void {
-  if (isDotGsdIgnored(basePath)) {
+  if (isDotWorkflowIgnored(basePath)) {
     gitFileExec(basePath, ["add", "-A"]);
     return;
   }
-  if (trySelfHealGsdGitignore(basePath)) {
+  if (trySelfHealWorkflowGitignore(basePath)) {
     gitFileExec(basePath, ["add", "-A"]);
     return;
   }

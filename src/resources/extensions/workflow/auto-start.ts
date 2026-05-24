@@ -23,10 +23,10 @@ import {
   resolveSkillDiscoveryMode,
   getIsolationMode,
 } from "./preferences.js";
-import { ensureGsdSymlink, isInheritedRepo, validateProjectId } from "./repo-identity.js";
+import { ensureWorkflowSymlink, isInheritedRepo, validateProjectId } from "./repo-identity.js";
 import { migrateToExternalState, recoverFailedMigration } from "./migrate-external.js";
 import { collectSecretsFromManifest } from "../get-secrets-from-user.js";
-import { gsdRoot, resolveMilestoneFile } from "./paths.js";
+import { workflowRoot, resolveMilestoneFile } from "./paths.js";
 import { invalidateAllCaches } from "./cache.js";
 import { writeLock, clearLock, readCrashLock, isLockProcessAlive } from "./crash-recovery.js";
 import {
@@ -136,19 +136,19 @@ export function hasGitIndexLockForTest(basePath: string): boolean {
 }
 
 export function _shouldAbortBootstrapForUnavailableDbForTest(
-  gsdDbPath: string,
+  workflowDbPath: string,
   dbAvailable: boolean,
   pathExists: (path: string) => boolean = existsSync,
 ): boolean {
-  return pathExists(gsdDbPath) && !dbAvailable;
+  return pathExists(workflowDbPath) && !dbAvailable;
 }
 
 export async function openProjectDbIfPresent(basePath: string): Promise<void> {
-  const gsdDbPath = resolveProjectRootDbPath(basePath);
-  if (!existsSync(gsdDbPath) || isDbAvailable()) return;
+  const workflowDbPath = resolveProjectRootDbPath(basePath);
+  if (!existsSync(workflowDbPath) || isDbAvailable()) return;
 
   try {
-    openDatabase(gsdDbPath);
+    openDatabase(workflowDbPath);
   } catch (err) {
     logWarning("engine", `gsd-db: failed to open existing database: ${err instanceof Error ? err.message : String(err)}`);
   }
@@ -795,7 +795,7 @@ export async function bootstrapAutoSession(
       ctx.ui.notify(`External state migration warning: ${migration.error}`, "warning");
     }
     // Ensure symlink exists (handles fresh projects and post-migration)
-    ensureGsdSymlink(base);
+    ensureWorkflowSymlink(base);
 
     // Ensure .gitignore has baseline patterns.
     // ensureGitignore checks for git-tracked .loop24/ files and skips the
@@ -806,10 +806,10 @@ export async function bootstrapAutoSession(
     if (manageGitignore !== false) untrackRuntimeFiles(base);
 
     // Bootstrap milestones/ if it doesn't exist.
-    // Check milestones/ directly — ensureGsdSymlink above already created .loop24/,
+    // Check milestones/ directly — ensureWorkflowSymlink above already created .loop24/,
     // so checking .loop24/ existence would be dead code (#2942).
-    const gsdDir = join(base, ".gsd");
-    const milestonesPath = join(gsdDir, "milestones");
+    const workflowDir = join(base, ".gsd");
+    const milestonesPath = join(workflowDir, "milestones");
     if (!existsSync(milestonesPath)) {
       mkdirSync(milestonesPath, { recursive: true });
       try {
@@ -873,7 +873,7 @@ export async function bootstrapAutoSession(
     // trusted as proof of completion (#4663). Fall back to SUMMARY-file
     // presence only when DB is unavailable (legacy/pre-migration).
     cleanStaleRuntimeUnits(
-      gsdRoot(base),
+      workflowRoot(base),
       (mid) => {
         if (isDbAvailable()) {
           const row = getMilestone(mid);
@@ -1267,7 +1267,7 @@ export async function bootstrapAutoSession(
     // (ADR-016 phase 2 / B2, #5620). The redundant assignment that used to
     // live here is gone.
 
-    const isUnderGsdWorktrees = (p: string): boolean => {
+    const isUnderWorkflowWorktrees = (p: string): boolean => {
       // Direct layout: /.loop24/worktrees/
       const marker = `${pathSep}.gsd${pathSep}worktrees${pathSep}`;
       if (p.includes(marker)) return true;
@@ -1284,7 +1284,7 @@ export async function bootstrapAutoSession(
       s.currentMilestoneId &&
       getIsolationMode(base) !== "none" &&
       !detectWorktreeName(base) &&
-      !isUnderGsdWorktrees(base)
+      !isUnderWorkflowWorktrees(base)
     ) {
       const enterResult = buildLifecycle().enterMilestone(s.currentMilestoneId, {
         notify: ctx.ui.notify.bind(ctx.ui),
@@ -1326,20 +1326,20 @@ export async function bootstrapAutoSession(
     }
 
     // ── DB lifecycle ──
-    const gsdDbPath = resolveProjectRootDbPath(s.basePath);
-    const gsdDirPath = join(s.basePath, ".gsd");
-    if (existsSync(gsdDirPath) && !existsSync(gsdDbPath)) {
+    const workflowDbPath = resolveProjectRootDbPath(s.basePath);
+    const workflowDirPath = join(s.basePath, ".gsd");
+    if (existsSync(workflowDirPath) && !existsSync(workflowDbPath)) {
       try {
         const { openDatabase: openDb } = await import("./db.js");
-        openDb(gsdDbPath);
+        openDb(workflowDbPath);
       } catch (err) {
         logError("engine", `failed to initialize project database: ${(err as Error).message}`);
       }
     }
-    if (_shouldAbortBootstrapForUnavailableDbForTest(gsdDbPath, isDbAvailable())) {
+    if (_shouldAbortBootstrapForUnavailableDbForTest(workflowDbPath, isDbAvailable())) {
       try {
         const { openDatabase: openDb } = await import("./db.js");
-        openDb(gsdDbPath);
+        openDb(workflowDbPath);
       } catch (err) {
         logError("engine", `failed to open existing database: ${(err as Error).message}`);
       }
@@ -1350,7 +1350,7 @@ export async function bootstrapAutoSession(
     // auto-mode starts but every gsd_task_complete / gsd_slice_complete
     // call returns "db_unavailable", triggering artifact-retry which
     // re-dispatches the same task — producing an infinite loop (#2419).
-    if (existsSync(gsdDbPath) && !isDbAvailable()) {
+    if (existsSync(workflowDbPath) && !isDbAvailable()) {
       const dbStatus = getDbStatus();
       const phaseHint = dbStatus.lastPhase === "open"
         ? "The database file could not be opened"
@@ -1366,7 +1366,7 @@ export async function bootstrapAutoSession(
         ? ` Provider: ${dbStatus.provider}.`
         : " No SQLite provider available — check Node >= 22 or install better-sqlite3.";
       ctx.ui.notify(
-        `SQLite database exists but failed to open: ${gsdDbPath}. ${phaseHint}${errorDetail}.${providerHint}`,
+        `SQLite database exists but failed to open: ${workflowDbPath}. ${phaseHint}${errorDetail}.${providerHint}`,
         "error",
       );
       return releaseLockAndReturn();

@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { _getAdapter, isDbAvailable } from "../db.js";
-import { gsdRoot } from "../paths.js";
+import { workflowRoot } from "../paths.js";
 
 export interface TurnTimelineFilter {
   traceId?: string;
@@ -120,7 +120,7 @@ function readDbTimeline(filter: TurnTimelineFilter): TurnTimelineEntry[] {
 }
 
 function readJsonlTimeline(basePath: string, filter: TurnTimelineFilter): TurnTimelineEntry[] {
-  const path = join(gsdRoot(basePath), "audit", "events.jsonl");
+  const path = join(workflowRoot(basePath), "audit", "events.jsonl");
   if (!existsSync(path)) return [];
   return readFileSync(path, "utf-8")
     .split("\n")

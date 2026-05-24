@@ -20,13 +20,13 @@ import {
   _getAdapter,
 } from './db.js';
 import {
-  resolveGsdRootFile,
+  resolveWorkflowRootFile,
   resolveMilestoneFile,
   resolveSliceFile,
   resolveSlicePath,
   resolveTasksDir,
   milestonesDir,
-  gsdRoot,
+  workflowRoot,
   resolveTaskFiles,
 } from './paths.js';
 import { findMilestoneIds } from './guided-flow.js';
@@ -272,8 +272,8 @@ export function parseRequirementsSections(content: string): Requirement[] {
  * Import decisions from DECISIONS.md into the database.
  * Handles supersession chains.
  */
-function importDecisions(gsdDir: string): number {
-  const filePath = resolveGsdRootFile(gsdDir, 'DECISIONS');
+function importDecisions(workflowDir: string): number {
+  const filePath = resolveWorkflowRootFile(workflowDir, 'DECISIONS');
   if (!existsSync(filePath)) return 0;
 
   const content = readFileSync(filePath, 'utf-8');
@@ -289,8 +289,8 @@ function importDecisions(gsdDir: string): number {
 /**
  * Import requirements from REQUIREMENTS.md into the database.
  */
-function importRequirements(gsdDir: string): number {
-  const filePath = resolveGsdRootFile(gsdDir, 'REQUIREMENTS');
+function importRequirements(workflowDir: string): number {
+  const filePath = resolveWorkflowRootFile(workflowDir, 'REQUIREMENTS');
   if (!existsSync(filePath)) return 0;
 
   const content = readFileSync(filePath, 'utf-8');
@@ -314,14 +314,14 @@ const TASK_SUFFIXES = ['PLAN', 'SUMMARY', 'CONTINUE', 'CONTEXT', 'RESEARCH'];
  * Import hierarchy artifacts (roadmaps, plans, summaries, etc.) from the .loop24/ tree.
  * Walks milestones → slices → tasks directories.
  */
-function importHierarchyArtifacts(gsdDir: string): number {
+function importHierarchyArtifacts(workflowDir: string): number {
   let count = 0;
-  const gsdPath = gsdRoot(gsdDir);
+  const workflowPath = workflowRoot(workflowDir);
 
   // Root-level artifacts: PROJECT.md, QUEUE.md
   const rootFiles = ['PROJECT.md', 'QUEUE.md', 'SECRETS-MANIFEST.md'];
   for (const fileName of rootFiles) {
-    const filePath = join(gsdPath, fileName);
+    const filePath = join(workflowPath, fileName);
     if (existsSync(filePath)) {
       const content = readFileSync(filePath, 'utf-8');
       const artifactType = fileName.replace('.md', '').replace('-', '_');
@@ -338,8 +338,8 @@ function importHierarchyArtifacts(gsdDir: string): number {
   }
 
   // Walk milestones
-  const milestoneIds = findMilestoneIds(gsdDir);
-  const msDir = milestonesDir(gsdDir);
+  const milestoneIds = findMilestoneIds(workflowDir);
+  const msDir = milestonesDir(workflowDir);
 
   for (const milestoneId of milestoneIds) {
     // Find the actual milestone directory name (handles legacy naming)
@@ -696,13 +696,13 @@ export function migrateHierarchyToDb(basePath: string): {
  *
  * Missing files are skipped gracefully — no errors produced.
  */
-export function migrateFromMarkdown(gsdDir: string): {
+export function migrateFromMarkdown(workflowDir: string): {
   decisions: number;
   requirements: number;
   artifacts: number;
   hierarchy: { milestones: number; slices: number; tasks: number };
 } {
-  const dbPath = join(gsdRoot(gsdDir), 'gsd.db');
+  const dbPath = join(workflowRoot(workflowDir), 'gsd.db');
 
   // Open DB if not already open
   if (!_getAdapter()) {
@@ -716,25 +716,25 @@ export function migrateFromMarkdown(gsdDir: string): {
 
   transaction(() => {
     try {
-      decisions = importDecisions(gsdDir);
+      decisions = importDecisions(workflowDir);
     } catch (err) {
       logWarning("migration", `skipping decisions import: ${(err as Error).message}`);
     }
 
     try {
-      requirements = importRequirements(gsdDir);
+      requirements = importRequirements(workflowDir);
     } catch (err) {
       logWarning("migration", `skipping requirements import: ${(err as Error).message}`);
     }
 
     try {
-      artifacts = importHierarchyArtifacts(gsdDir);
+      artifacts = importHierarchyArtifacts(workflowDir);
     } catch (err) {
       logWarning("migration", `skipping artifacts import: ${(err as Error).message}`);
     }
 
     try {
-      hierarchy = migrateHierarchyToDb(gsdDir);
+      hierarchy = migrateHierarchyToDb(workflowDir);
     } catch (err) {
       logWarning("migration", `skipping hierarchy migration: ${(err as Error).message}`);
     }

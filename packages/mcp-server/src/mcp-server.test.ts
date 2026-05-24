@@ -564,13 +564,13 @@ describe('SessionManager', () => {
 // ---------------------------------------------------------------------------
 
 describe('SessionManager.resolveCLIPath', () => {
-  const originalGsdPath = process.env['GSD_CLI_PATH'];
+  const originalWorkflowPath = process.env['GSD_CLI_PATH'];
   const originalPath = process.env['PATH'];
   const originalPathTitle = process.env['Path'];
 
   afterEach(() => {
-    if (originalGsdPath !== undefined) {
-      process.env['GSD_CLI_PATH'] = originalGsdPath;
+    if (originalWorkflowPath !== undefined) {
+      process.env['GSD_CLI_PATH'] = originalWorkflowPath;
     } else {
       delete process.env['GSD_CLI_PATH'];
     }

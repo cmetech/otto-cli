@@ -11,7 +11,7 @@ import {
   traverseGraph,
   VALID_RELATIONS,
 } from '../memory-relations.ts';
-import { executeGsdGraph } from '../tools/memory-tools.ts';
+import { executeWorkflowGraph } from '../tools/memory-tools.ts';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Validation
@@ -157,14 +157,14 @@ test('memory-tools: gsd_graph returns LINK edges and filters by rel', () => {
   createMemoryRelation('MEM001', 'MEM002', 'related_to');
   createMemoryRelation('MEM001', 'MEM003', 'contradicts');
 
-  const all = executeGsdGraph({ mode: 'query', memoryId: 'MEM001', depth: 1 });
+  const all = executeWorkflowGraph({ mode: 'query', memoryId: 'MEM001', depth: 1 });
   assert.ok(!all.isError);
   const allEdges = all.details.edges as Array<{ rel: string }>;
   const relTypes = new Set(allEdges.map((e) => e.rel));
   assert.ok(relTypes.has('related_to'));
   assert.ok(relTypes.has('contradicts'));
 
-  const filtered = executeGsdGraph({ mode: 'query', memoryId: 'MEM001', depth: 1, rel: 'related_to' });
+  const filtered = executeWorkflowGraph({ mode: 'query', memoryId: 'MEM001', depth: 1, rel: 'related_to' });
   assert.ok(!filtered.isError);
   const fEdges = filtered.details.edges as Array<{ rel: string; to: string }>;
   assert.equal(fEdges.length, 1);

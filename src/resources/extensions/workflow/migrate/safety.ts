@@ -9,7 +9,7 @@ import { ensureDbOpen } from "../bootstrap/dynamic-tools.js";
 import { readCrashLock, isLockProcessAlive } from "../crash-recovery.js";
 import { closeDatabase } from "../db.js";
 import { readPausedSessionMetadata } from "../interrupted-session.js";
-import { gsdRoot } from "../paths.js";
+import { workflowRoot } from "../paths.js";
 import type { MigrationPreview } from "./writer.js";
 
 export interface MigrationPaths {
@@ -20,7 +20,7 @@ export interface MigrationPaths {
 export interface MigrationBackup {
   hadExistingGsd: boolean;
   backupPath: string | null;
-  targetGsdPath: string;
+  targetWorkflowPath: string;
 }
 
 export class MigrationBlockedError extends Error {
@@ -78,23 +78,23 @@ function nextBackupPath(targetRoot: string, now: Date): string {
 }
 
 export function prepareMigrationTarget(targetRoot: string, now: Date = new Date()): MigrationBackup {
-  const targetGsdPath = gsdRoot(targetRoot);
-  if (!existsSync(targetGsdPath)) {
-    return { hadExistingGsd: false, backupPath: null, targetGsdPath };
+  const targetWorkflowPath = workflowRoot(targetRoot);
+  if (!existsSync(targetWorkflowPath)) {
+    return { hadExistingGsd: false, backupPath: null, targetWorkflowPath };
   }
 
   const backupPath = nextBackupPath(targetRoot, now);
   mkdirSync(dirname(backupPath), { recursive: true });
-  cpSync(targetGsdPath, backupPath, { recursive: true });
-  rmSync(targetGsdPath, { recursive: true, force: true });
+  cpSync(targetWorkflowPath, backupPath, { recursive: true });
+  rmSync(targetWorkflowPath, { recursive: true, force: true });
 
-  return { hadExistingGsd: true, backupPath, targetGsdPath };
+  return { hadExistingGsd: true, backupPath, targetWorkflowPath };
 }
 
 export function restoreMigrationTarget(backup: MigrationBackup): void {
-  rmSync(backup.targetGsdPath, { recursive: true, force: true });
+  rmSync(backup.targetWorkflowPath, { recursive: true, force: true });
   if (backup.backupPath && existsSync(backup.backupPath)) {
-    cpSync(backup.backupPath, backup.targetGsdPath, { recursive: true });
+    cpSync(backup.backupPath, backup.targetWorkflowPath, { recursive: true });
   }
 }
 
@@ -106,7 +106,7 @@ export function assertMigrationHasSlices(preview: MigrationPreview): void {
 }
 
 function hasWorktreeState(targetRoot: string): boolean {
-  const worktreesDir = join(gsdRoot(targetRoot), "worktrees");
+  const worktreesDir = join(workflowRoot(targetRoot), "worktrees");
   if (!existsSync(worktreesDir)) return false;
   try {
     return readdirSync(worktreesDir, { withFileTypes: true })
@@ -117,8 +117,8 @@ function hasWorktreeState(targetRoot: string): boolean {
 }
 
 export async function assertMigrationTargetAvailable(targetRoot: string): Promise<void> {
-  const targetGsdPath = gsdRoot(targetRoot);
-  if (!existsSync(targetGsdPath)) return;
+  const targetWorkflowPath = workflowRoot(targetRoot);
+  if (!existsSync(targetWorkflowPath)) return;
 
   if (hasWorktreeState(targetRoot)) {
     throw new MigrationBlockedError(

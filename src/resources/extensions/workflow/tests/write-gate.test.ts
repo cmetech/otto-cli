@@ -395,8 +395,8 @@ test('write-gate: shouldBlockPendingGate blocks write/edit during pending gate',
   assert.strictEqual(editResult.block, true, 'edit should be blocked');
 
   // gsd tools should be blocked
-  const gsdResult = shouldBlockPendingGate('gsd_plan_milestone', 'M001', false);
-  assert.strictEqual(gsdResult.block, true, 'gsd tools should be blocked');
+  const workflowResult = shouldBlockPendingGate('gsd_plan_milestone', 'M001', false);
+  assert.strictEqual(workflowResult.block, true, 'gsd tools should be blocked');
 });
 
 // ─── Scenario 22: shouldBlockPendingGate allows only re-asking when gate is pending ──

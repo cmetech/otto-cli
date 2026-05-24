@@ -204,7 +204,7 @@ function stripAnsiStyling(message: string): string {
 	return message.replace(/\x1b\[[0-9;]*m/g, "");
 }
 
-function styleGsdStatusCardMessage(message: string): string | null {
+function styleWorkflowStatusCardMessage(message: string): string | null {
 	const plain = stripAnsiStyling(message);
 	if (!/(Verification Gate|Commit|Snapshot|GSD .*Complete|Next step)/.test(plain)) return null;
 
@@ -268,7 +268,7 @@ export function renderExtensionNotifyInChat(
 		return { rendered: true };
 	}
 
-	const styledStatusCard = styleGsdStatusCardMessage(message);
+	const styledStatusCard = styleWorkflowStatusCardMessage(message);
 	const statusText = new Text(
 		styledStatusCard ?? (hasAnsiStyling(message) ? message : theme.fg("dim", message)),
 		1,
@@ -444,7 +444,7 @@ export class InteractiveMode {
 		this.adaptiveLayout = new AdaptiveLayoutComponent(() => ({
 			override: this.settingsManager.getAdaptiveMode(),
 			activeToolCount: this.pendingTools.size,
-			gsdPhase: this.pendingWorkingMessage ?? undefined,
+			workflowPhase: this.pendingWorkingMessage ?? undefined,
 			lastError: this.lastBlockingError,
 			sessionName: this.sessionManager.getSessionName(),
 			cwd: process.cwd(),

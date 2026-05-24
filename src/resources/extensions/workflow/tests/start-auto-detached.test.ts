@@ -9,10 +9,10 @@ import {
   resolveGuidedExecuteLaunchMode,
 } from "../guided-flow.ts";
 
-const gsdDir = resolve(import.meta.dirname, "..");
+const workflowDir = resolve(import.meta.dirname, "..");
 
 function readAgentFile(relativePath: string): string {
-  return readFileSync(resolve(gsdDir, relativePath), "utf-8");
+  return readFileSync(resolve(workflowDir, relativePath), "utf-8");
 }
 
 test("command entrypoints use startAutoDetached instead of awaiting startAuto (#3733)", () => {
@@ -58,7 +58,7 @@ test("bare /gsd stays in the foreground home flow (#5125 regression)", () => {
     "bare /gsd should load the state-aware home flow",
   );
   assert.ok(
-    bareCommandBranch.includes("await showGsdHome(ctx, pi, projectRoot())"),
+    bareCommandBranch.includes("await showWorkflowHome(ctx, pi, projectRoot())"),
     "bare /gsd should await the foreground home menu instead of detaching auto-mode",
   );
   assert.ok(

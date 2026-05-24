@@ -13,7 +13,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 import { homedir } from "node:os";
 
 // ─── In-memory state ──────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ const activelyLoadedSkills = new Set<string>();
 export function captureAvailableSkills(): void {
   const skillsDir = join(homedir(), ".agents", "skills");
   const claudeSkillsDir = join(homedir(), ".claude", "skills");
-  const legacyDir = join(gsdHome(), "agent", "skills");
+  const legacyDir = join(workflowHome(), "agent", "skills");
   const names = listSkillNames(skillsDir);
   const claudeNames = listSkillNames(claudeSkillsDir);
   // Include skills still in the legacy directory only if migration hasn't completed
@@ -110,7 +110,7 @@ export function detectStaleSkills(
   // Check all installed skills, not just those with usage data
   const skillsDir = join(homedir(), ".agents", "skills");
   const claudeSkillsDir = join(homedir(), ".claude", "skills");
-  const legacyDir = join(gsdHome(), "agent", "skills");
+  const legacyDir = join(workflowHome(), "agent", "skills");
   const legacyMigrated = existsSync(join(legacyDir, ".migrated-to-agents"));
   const legacyNames = legacyMigrated ? [] : listSkillNames(legacyDir);
   const installedSet = new Set([...listSkillNames(skillsDir), ...listSkillNames(claudeSkillsDir), ...legacyNames]);

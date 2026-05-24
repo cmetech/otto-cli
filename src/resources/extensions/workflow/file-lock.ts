@@ -14,10 +14,10 @@ function _require(name: string): any {
     return localRequire(name);
   } catch {
     try {
-      const gsdPiRequire = createRequire(
+      const workflowPiRequire = createRequire(
         join(process.cwd(), "node_modules", "@ericsson", "loop24", "index.js"),
       );
-      return gsdPiRequire(name);
+      return workflowPiRequire(name);
     } catch {
       return null;
     }

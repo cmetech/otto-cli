@@ -13,7 +13,7 @@ import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-ag
 import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, relative } from "node:path";
 import { loadPrompt } from "./prompt-loader.js";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { GitServiceImpl, runGit } from "./git-service.js";
 import { loadEffectiveGSDPreferences } from "./preferences.js";
 import { nativeHasStagedChanges } from "./native-git-bridge.js";
@@ -71,7 +71,7 @@ function getNextTaskNum(quickDir: string): number {
  * Returns the task directory path.
  */
 function ensureQuickDir(basePath: string, taskNum: number, slug: string): string {
-  const quickDir = join(gsdRoot(basePath), "quick");
+  const quickDir = join(workflowRoot(basePath), "quick");
   const taskDir = join(quickDir, `${taskNum}-${slug}`);
   mkdirSync(taskDir, { recursive: true });
   return taskDir;
@@ -82,7 +82,7 @@ function isPathInside(parent: string, child: string): boolean {
   return rel === "" || (!!rel && !rel.startsWith("..") && !isAbsolute(rel));
 }
 
-function isExternalGsdRoot(basePath: string, root: string): boolean {
+function isExternalWorkflowRoot(basePath: string, root: string): boolean {
   try {
     return !isPathInside(realpathSync(basePath), realpathSync(root));
   } catch {
@@ -91,7 +91,7 @@ function isExternalGsdRoot(basePath: string, root: string): boolean {
 }
 
 export function buildQuickCommitInstruction(basePath: string, root: string): string {
-  const externalState = isExternalGsdRoot(basePath, root);
+  const externalState = isExternalWorkflowRoot(basePath, root);
   if (externalState) {
     return [
       "Commit repo changes atomically, but do not stage or commit `.gsd/quick/...`:",
@@ -112,12 +112,12 @@ export function buildQuickCommitInstruction(basePath: string, root: string): str
 }
 
 function quickReturnStatePath(basePath: string): string {
-  return join(gsdRoot(basePath), "runtime", "quick-return.json");
+  return join(workflowRoot(basePath), "runtime", "quick-return.json");
 }
 
 function persistPendingReturn(state: QuickReturnState): void {
   pendingQuickReturn = state;
-  mkdirSync(join(gsdRoot(state.basePath), "runtime"), { recursive: true });
+  mkdirSync(join(workflowRoot(state.basePath), "runtime"), { recursive: true });
   writeFileSync(quickReturnStatePath(state.basePath), JSON.stringify(state) + "\n", "utf-8");
 }
 
@@ -197,7 +197,7 @@ export async function handleQuick(
   pi: ExtensionAPI,
 ): Promise<void> {
   const basePath = process.cwd();
-  const root = gsdRoot(basePath);
+  const root = workflowRoot(basePath);
 
   // Validate: .loop24/ must exist
   if (!existsSync(root)) {

@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { _resetServiceCache } from "../../worktree.ts";
-import { _clearGsdRootCache } from "../../paths.ts";
+import { _clearWorkflowRootCache } from "../../paths.ts";
 
 let originalHome: string | undefined;
 let fakeHome: string | null = null;
@@ -29,7 +29,7 @@ export function isolateFromGlobalPreferences(): void {
   originalHome = process.env.HOME;
   fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "gsd-test-home-")));
   process.env.HOME = fakeHome;
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
   _resetServiceCache();
 }
 
@@ -44,7 +44,7 @@ export function restoreGlobalPreferences(): void {
   } else {
     delete process.env.HOME;
   }
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
   _resetServiceCache();
   if (fakeHome) {
     rmSync(fakeHome, { recursive: true, force: true });

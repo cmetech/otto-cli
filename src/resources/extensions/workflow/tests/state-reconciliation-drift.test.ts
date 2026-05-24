@@ -550,9 +550,9 @@ test("ADR-017 (#5702): stale-render detector reason strings match repair contrac
 const DEAD_PID = 999_999_999; // far above any realistic system PID; process.kill(pid, 0) → ESRCH
 
 function writeFakeSessionLock(base: string, pid: number): string {
-  const gsdDir = join(base, ".gsd");
-  mkdirSync(gsdDir, { recursive: true });
-  const lockFile = join(gsdDir, "auto.lock");
+  const workflowDir = join(base, ".gsd");
+  mkdirSync(workflowDir, { recursive: true });
+  const lockFile = join(workflowDir, "auto.lock");
   // Mirror SessionLockData minimum shape
   writeFileSync(
     lockFile,
@@ -563,8 +563,8 @@ function writeFakeSessionLock(base: string, pid: number): string {
       unitId: "bootstrap",
     }),
   );
-  // Also create the proper-lockfile directory artifact at <gsdDir>.lock
-  mkdirSync(`${gsdDir}.lock`, { recursive: true });
+  // Also create the proper-lockfile directory artifact at <workflowDir>.lock
+  mkdirSync(`${workflowDir}.lock`, { recursive: true });
   return lockFile;
 }
 

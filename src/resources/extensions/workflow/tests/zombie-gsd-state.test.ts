@@ -20,7 +20,7 @@ import { tmpdir } from "node:os";
 
 import { hasWorkflowBootstrapArtifacts } from "../detection.ts";
 
-function makeGsdDir(t: { after: (fn: () => void) => void }): string {
+function makeWorkflowDir(t: { after: (fn: () => void) => void }): string {
   const dir = mkdtempSync(join(tmpdir(), "gsd-zombie-state-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   return dir;
@@ -34,7 +34,7 @@ test("#2942: missing .gsd/ directory entirely → treated as un-bootstrapped", (
 });
 
 test("#2942: zombie .gsd/ (empty directory) must NOT count as bootstrapped", (t) => {
-  const gsd = makeGsdDir(t);
+  const gsd = makeWorkflowDir(t);
   // Only the directory exists — neither PREFERENCES.md nor milestones/
   assert.equal(
     hasWorkflowBootstrapArtifacts(gsd),
@@ -44,19 +44,19 @@ test("#2942: zombie .gsd/ (empty directory) must NOT count as bootstrapped", (t)
 });
 
 test("#2942: .gsd/ with PREFERENCES.md counts as bootstrapped", (t) => {
-  const gsd = makeGsdDir(t);
+  const gsd = makeWorkflowDir(t);
   writeFileSync(join(gsd, "PREFERENCES.md"), "# prefs\n");
   assert.equal(hasWorkflowBootstrapArtifacts(gsd), true);
 });
 
 test("#2942: .gsd/ with milestones/ directory counts as bootstrapped", (t) => {
-  const gsd = makeGsdDir(t);
+  const gsd = makeWorkflowDir(t);
   mkdirSync(join(gsd, "milestones"));
   assert.equal(hasWorkflowBootstrapArtifacts(gsd), true);
 });
 
 test("#2942: both artifacts present → bootstrapped", (t) => {
-  const gsd = makeGsdDir(t);
+  const gsd = makeWorkflowDir(t);
   writeFileSync(join(gsd, "PREFERENCES.md"), "# prefs\n");
   mkdirSync(join(gsd, "milestones"));
   assert.equal(hasWorkflowBootstrapArtifacts(gsd), true);

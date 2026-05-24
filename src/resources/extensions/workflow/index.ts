@@ -25,8 +25,8 @@ export default async function registerExtension(pi: ExtensionAPI) {
   // Full setup (shortcuts, tools, hooks) in a separate try/catch so that
   // any platform-specific load failure doesn't take out the core command.
   try {
-    const { registerGsdExtension } = await import("./bootstrap/register-extension.js");
-    registerGsdExtension(pi);
+    const { registerWorkflowExtension } = await import("./bootstrap/register-extension.js");
+    registerWorkflowExtension(pi);
   } catch (err) {
     const { logWarning } = await import("./workflow-logger.js");
     logWarning(

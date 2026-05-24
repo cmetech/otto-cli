@@ -1,12 +1,12 @@
 /**
  * GSD2 — regression tests for #5187 and git-root anchor guard:
  *
- * #5187: gsdRoot() must refuse to use the global GSD home (~/.gsd) as a
+ * #5187: workflowRoot() must refuse to use the global GSD home (~/.gsd) as a
  * project .gsd directory when basePath resolves to $HOME. Paths under
  * ~/.gsd/projects/<hash>/ remain valid.
  *
  * git-root anchor guard: when $HOME is itself a git repo and ~/.gsd exists,
- * gsdRoot() must NOT return ~/.gsd for a subdir basePath like ~/projects/foo.
+ * workflowRoot() must NOT return ~/.gsd for a subdir basePath like ~/projects/foo.
  * It should fall through to step 4 (creation fallback) instead.
  */
 
@@ -17,13 +17,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-import { gsdRoot, _clearGsdRootCache } from '../paths.ts';
+import { workflowRoot, _clearWorkflowRootCache } from '../paths.ts';
 
-describe('gsdRoot() refuses ~/.gsd as project state when basePath is $HOME (#5187)', () => {
+describe('workflowRoot() refuses ~/.gsd as project state when basePath is $HOME (#5187)', () => {
   let fakeHome: string;
   let savedHome: string | undefined;
   let savedUserProfile: string | undefined;
-  let savedGsdHome: string | undefined;
+  let savedWorkflowHome: string | undefined;
 
   beforeEach(() => {
     fakeHome = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-home-guard-')));
@@ -31,13 +31,13 @@ describe('gsdRoot() refuses ~/.gsd as project state when basePath is $HOME (#518
 
     savedHome = process.env.HOME;
     savedUserProfile = process.env.USERPROFILE;
-    savedGsdHome = process.env.GSD_HOME;
+    savedWorkflowHome = process.env.GSD_HOME;
 
     process.env.HOME = fakeHome;
     process.env.USERPROFILE = fakeHome;
     delete process.env.GSD_HOME;
 
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
   });
 
   afterEach(() => {
@@ -45,16 +45,16 @@ describe('gsdRoot() refuses ~/.gsd as project state when basePath is $HOME (#518
     else process.env.HOME = savedHome;
     if (savedUserProfile === undefined) delete process.env.USERPROFILE;
     else process.env.USERPROFILE = savedUserProfile;
-    if (savedGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = savedGsdHome;
+    if (savedWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = savedWorkflowHome;
 
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
     rmSync(fakeHome, { recursive: true, force: true });
   });
 
-  test('throws when basePath is the home directory and result equals gsdHome()', () => {
+  test('throws when basePath is the home directory and result equals workflowHome()', () => {
     assert.throws(
-      () => gsdRoot(fakeHome),
+      () => workflowRoot(fakeHome),
       (err: unknown) => {
         assert.ok(err instanceof Error, 'should throw an Error');
         assert.match(
@@ -70,18 +70,18 @@ describe('gsdRoot() refuses ~/.gsd as project state when basePath is $HOME (#518
   test('does NOT throw for paths under ~/.gsd/projects/<hash>/', () => {
     const projectStateDir = join(fakeHome, '.gsd', 'projects', 'abcdef123456');
     mkdirSync(join(projectStateDir, '.gsd'), { recursive: true });
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
 
-    const resolved = gsdRoot(projectStateDir);
+    const resolved = workflowRoot(projectStateDir);
     assert.equal(resolved, join(projectStateDir, '.gsd'));
   });
 
   test('does NOT throw for an unrelated project directory that has its own .gsd', () => {
     const projectDir = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-home-guard-proj-')));
     mkdirSync(join(projectDir, '.gsd'), { recursive: true });
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
     try {
-      const resolved = gsdRoot(projectDir);
+      const resolved = workflowRoot(projectDir);
       assert.equal(resolved, join(projectDir, '.gsd'));
     } finally {
       rmSync(projectDir, { recursive: true, force: true });
@@ -94,7 +94,7 @@ describe('git-root anchor guard: subdir basePath must not resolve to ~/.gsd', ()
   let subDir: string;
   let savedHome: string | undefined;
   let savedUserProfile: string | undefined;
-  let savedGsdHome: string | undefined;
+  let savedWorkflowHome: string | undefined;
 
   beforeEach(() => {
     // Create a tmpdir that will act as both $HOME and a git repo root.
@@ -109,13 +109,13 @@ describe('git-root anchor guard: subdir basePath must not resolve to ~/.gsd', ()
 
     savedHome = process.env.HOME;
     savedUserProfile = process.env.USERPROFILE;
-    savedGsdHome = process.env.GSD_HOME;
+    savedWorkflowHome = process.env.GSD_HOME;
 
     process.env.HOME = fakeHome;
     process.env.USERPROFILE = fakeHome;
     delete process.env.GSD_HOME;
 
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
   });
 
   afterEach(() => {
@@ -123,10 +123,10 @@ describe('git-root anchor guard: subdir basePath must not resolve to ~/.gsd', ()
     else process.env.HOME = savedHome;
     if (savedUserProfile === undefined) delete process.env.USERPROFILE;
     else process.env.USERPROFILE = savedUserProfile;
-    if (savedGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = savedGsdHome;
+    if (savedWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = savedWorkflowHome;
 
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
     rmSync(fakeHome, { recursive: true, force: true });
   });
 
@@ -134,16 +134,16 @@ describe('git-root anchor guard: subdir basePath must not resolve to ~/.gsd', ()
     // fakeHome IS the git root AND $HOME, so git rev-parse returns fakeHome,
     // and ~/.gsd (fakeHome/.gsd) exists. The guard must skip that candidate
     // and fall through to the creation fallback: subDir/.gsd.
-    const result = gsdRoot(subDir);
+    const result = workflowRoot(subDir);
     assert.notEqual(
       result,
       join(fakeHome, '.gsd'),
-      'gsdRoot must not return ~/.gsd for a subdir basePath',
+      'workflowRoot must not return ~/.gsd for a subdir basePath',
     );
     assert.equal(
       result,
       join(subDir, '.gsd'),
-      'gsdRoot should fall through to the creation fallback for a subdir',
+      'workflowRoot should fall through to the creation fallback for a subdir',
     );
   });
 });

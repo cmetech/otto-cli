@@ -297,14 +297,14 @@ export class DiscordBot {
         break;
       }
       case 'gsd-start':
-        this.handleGsdStart(interaction).catch((err) => {
+        this.handleWorkflowStart(interaction).catch((err) => {
           this.logger.warn('gsd-start handler error', {
             error: err instanceof Error ? err.message : String(err),
           });
         });
         break;
       case 'gsd-stop':
-        this.handleGsdStop(interaction).catch((err) => {
+        this.handleWorkflowStop(interaction).catch((err) => {
           this.logger.warn('gsd-stop handler error', {
             error: err instanceof Error ? err.message : String(err),
           });
@@ -343,7 +343,7 @@ export class DiscordBot {
   // Private: /gsd-start handler
   // ---------------------------------------------------------------------------
 
-  private async handleGsdStart(interaction: import('discord.js').ChatInputCommandInteraction): Promise<void> {
+  private async handleWorkflowStart(interaction: import('discord.js').ChatInputCommandInteraction): Promise<void> {
     await interaction.deferReply({ ephemeral: true });
     this.logger.info('gsd-start: scanning projects');
 
@@ -426,7 +426,7 @@ export class DiscordBot {
   // Private: /gsd-stop handler
   // ---------------------------------------------------------------------------
 
-  private async handleGsdStop(interaction: import('discord.js').ChatInputCommandInteraction): Promise<void> {
+  private async handleWorkflowStop(interaction: import('discord.js').ChatInputCommandInteraction): Promise<void> {
     await interaction.deferReply({ ephemeral: true });
     this.logger.info('gsd-stop: listing sessions');
 

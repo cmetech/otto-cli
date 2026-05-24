@@ -10,7 +10,7 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 
 
 // ─── Repo Metadata ───────────────────────────────────────────────────────────
@@ -154,23 +154,23 @@ export function isInheritedRepo(basePath: string): boolean {
  * Treating it as a project `.gsd` would cause isInheritedRepo() to wrongly
  * conclude that subdirectories are part of the home "project" (#2393).
  */
-function isProjectGsd(gsdPath: string): boolean {
-  if (!existsSync(gsdPath)) return false;
+function isProjectGsd(workflowPath: string): boolean {
+  if (!existsSync(workflowPath)) return false;
 
   try {
-    const stat = lstatSync(gsdPath);
+    const stat = lstatSync(workflowPath);
 
-    // Symlinks are always project .gsd (created by ensureGsdSymlink).
+    // Symlinks are always project .gsd (created by ensureWorkflowSymlink).
     if (stat.isSymbolicLink()) return true;
 
     // For real directories, check that this isn't the global agent home.
-    // Recompute gsdHome dynamically so env overrides (GSD_HOME) are
+    // Recompute workflowHome dynamically so env overrides (GSD_HOME) are
     // picked up at call time, not just at module load time.
     if (stat.isDirectory()) {
-      const currentGsdHome = gsdHome();
-      const normalizedGsdPath = canonicalizeExistingPath(gsdPath);
-      const normalizedGsdHome = canonicalizeExistingPath(currentGsdHome);
-      if (normalizedGsdPath === normalizedGsdHome) return false;
+      const currentWorkflowHome = workflowHome();
+      const normalizedWorkflowPath = canonicalizeExistingPath(workflowPath);
+      const normalizedWorkflowHome = canonicalizeExistingPath(currentWorkflowHome);
+      if (normalizedWorkflowPath === normalizedWorkflowHome) return false;
       return true;
     }
   } catch {
@@ -309,8 +309,8 @@ export function repoIdentity(basePath: string): string {
  * Returns `$GSD_STATE_DIR/projects/<hash>` if `GSD_STATE_DIR` is set,
  * otherwise `~/.loop24/projects/<hash>`.
  */
-export function externalGsdRoot(basePath: string): string {
-  const base = process.env.GSD_STATE_DIR || gsdHome();
+export function externalWorkflowRoot(basePath: string): string {
+  const base = process.env.GSD_STATE_DIR || workflowHome();
   return join(base, "projects", repoIdentity(basePath));
 }
 
@@ -319,7 +319,7 @@ export function externalGsdRoot(basePath: string): string {
  * Honors GSD_STATE_DIR override before falling back to GSD_HOME.
  */
 export function externalProjectsRoot(): string {
-  const base = process.env.GSD_STATE_DIR || gsdHome();
+  const base = process.env.GSD_STATE_DIR || workflowHome();
   return join(base, "projects");
 }
 
@@ -335,12 +335,12 @@ export function externalProjectsRoot(): string {
  * directory, making tracked planning files appear deleted.
  *
  * This helper scans the project root for entries matching `.gsd <digits>` and
- * removes them. It is called early in `ensureGsdSymlink()` so that the
+ * removes them. It is called early in `ensureWorkflowSymlink()` so that the
  * canonical `.gsd` path is always the one in use.
  */
 const NUMBERED_VARIANT_RE = /^\.gsd \d+$/;
 
-export function cleanNumberedGsdVariants(projectPath: string): string[] {
+export function cleanNumberedWorkflowVariants(projectPath: string): string[] {
   const removed: string[] = [];
   try {
     const entries = readdirSync(projectPath);
@@ -428,7 +428,7 @@ function hasProjectState(externalPath: string): boolean {
  * Returns the resolved external path (may differ from the computed identity).
  */
 function resolveExternalPathWithRecovery(projectPath: string): { path: string; identity: string } {
-  const base = process.env.GSD_STATE_DIR || gsdHome();
+  const base = process.env.GSD_STATE_DIR || workflowHome();
   const computedId = repoIdentity(projectPath);
   const computedPath = join(base, "projects", computedId);
   const computedHasState = hasProjectState(computedPath);
@@ -504,8 +504,8 @@ function resolveExternalPathWithRecovery(projectPath: string): { path: string; i
  *
  * Returns the resolved external path.
  */
-export function ensureGsdSymlink(projectPath: string): string {
-  const { path: result, identity } = ensureGsdSymlinkCore(projectPath);
+export function ensureWorkflowSymlink(projectPath: string): string {
+  const { path: result, identity } = ensureWorkflowSymlinkCore(projectPath);
 
   // Write .gsd-id marker so future relocations can recover this state (#2750).
   // Only write for the project root (not subdirectories or worktrees that
@@ -517,7 +517,7 @@ export function ensureGsdSymlink(projectPath: string): string {
   return result;
 }
 
-function ensureGsdSymlinkCore(projectPath: string): { path: string; identity: string } {
+function ensureWorkflowSymlinkCore(projectPath: string): { path: string; identity: string } {
   const resolved = resolveExternalPathWithRecovery(projectPath);
   const externalPath = resolved.path;
   const localGsd = join(projectPath, ".gsd");
@@ -533,9 +533,9 @@ function ensureGsdSymlinkCore(projectPath: string): { path: string; identity: st
     const s = resolved.replaceAll("\\", "/").replace(/\/+$/, "");
     return process.platform === "win32" ? s.toLowerCase() : s;
   };
-  const localGsdNormalized = normalizeForGuard(localGsd);
-  const gsdHomeNorm = normalizeForGuard(gsdHome());
-  if (localGsdNormalized === gsdHomeNorm) {
+  const localWorkflowNormalized = normalizeForGuard(localGsd);
+  const workflowHomeNorm = normalizeForGuard(workflowHome());
+  if (localWorkflowNormalized === workflowHomeNorm) {
     return { path: localGsd, identity: resolved.identity };
   }
 
@@ -572,7 +572,7 @@ function ensureGsdSymlinkCore(projectPath: string): { path: string; identity: st
 
   // Clean up macOS numbered collision variants (.gsd 2, .gsd 3, etc.) before
   // any existence checks — otherwise they accumulate and confuse state (#2205).
-  cleanNumberedGsdVariants(projectPath);
+  cleanNumberedWorkflowVariants(projectPath);
 
   // Ensure external directory exists
   mkdirSync(externalPath, { recursive: true });
@@ -649,7 +649,7 @@ function ensureGsdSymlinkCore(projectPath: string): { path: string; identity: st
 
     if (stat.isDirectory()) {
       // Real directory in the main repo — migration will handle this later.
-      // In worktrees, keep the directory in place and let syncGsdStateToWorktree
+      // In worktrees, keep the directory in place and let syncWorkflowStateToWorktree
       // refresh its contents. Replacing a git-tracked .gsd directory with a
       // symlink makes git think tracked planning files were deleted.
       return { path: localGsd, identity: resolved.identity };

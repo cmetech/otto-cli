@@ -16,9 +16,9 @@ import { execFileSync } from "node:child_process";
 
 import { createWorkspace, scopeMilestone } from "../../workspace.ts";
 import {
-  gsdRoot,
+  workflowRoot,
   clearPathCache,
-  _clearGsdRootCache,
+  _clearWorkflowRootCache,
 } from "../../paths.ts";
 import {
   loadWriteGateSnapshot,
@@ -69,14 +69,14 @@ describe("workspace-collapse integration: Test 1 — cwd-drift path agreement", 
   beforeEach(() => {
     projectDir = makeProjectDir();
     otherDir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-cwd-drift-other-")));
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
   });
 
   afterEach(() => {
     process.chdir(savedCwd);
     rmSync(projectDir, { recursive: true, force: true });
     rmSync(otherDir, { recursive: true, force: true });
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
   });
 
   test("contextFile() returns same absolute path before and after cwd change", () => {
@@ -144,11 +144,11 @@ describe("workspace-collapse integration: Test 2 — abort teardown clears stale
   test("STATE.md and M001-META.json are removed by teardownAutoWorktree", () => {
     // Phase C pt 2: auto.lock no longer exists as a file — it migrated
     // to the workers + unit_dispatches tables.
-    const gsdDir = join(repoDir, ".gsd");
-    const milestonesDir = join(gsdDir, "milestones", "M001");
+    const workflowDir = join(repoDir, ".gsd");
+    const milestonesDir = join(workflowDir, "milestones", "M001");
     mkdirSync(milestonesDir, { recursive: true });
 
-    const stateMd = join(gsdDir, "STATE.md");
+    const stateMd = join(workflowDir, "STATE.md");
     const metaJson = join(milestonesDir, "M001-META.json");
 
     writeFileSync(stateMd, "# State\nactive\n");
@@ -295,14 +295,14 @@ describe("workspace-collapse integration: Test 4 — sibling worktrees share DB 
   });
 });
 
-// ─── Test 5: gsdRootCache normalization survives trailing-slash inputs ────────
+// ─── Test 5: workflowRootCache normalization survives trailing-slash inputs ────────
 
-describe("workspace-collapse integration: Test 5 — gsdRootCache normalization deduplicates trailing-slash inputs", () => {
+describe("workspace-collapse integration: Test 5 — workflowRootCache normalization deduplicates trailing-slash inputs", () => {
   let projectDir: string;
   let fakeHome: string;
   let savedHome: string | undefined;
   let savedUserProfile: string | undefined;
-  let savedGsdHome: string | undefined;
+  let savedWorkflowHome: string | undefined;
 
   beforeEach(() => {
     projectDir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-cache-int-")));
@@ -312,7 +312,7 @@ describe("workspace-collapse integration: Test 5 — gsdRootCache normalization 
 
     savedHome = process.env.HOME;
     savedUserProfile = process.env.USERPROFILE;
-    savedGsdHome = process.env.GSD_HOME;
+    savedWorkflowHome = process.env.GSD_HOME;
 
     // Prevent ~/.gsd interference
     process.env.HOME = fakeHome;
@@ -327,22 +327,22 @@ describe("workspace-collapse integration: Test 5 — gsdRootCache normalization 
     else process.env.HOME = savedHome;
     if (savedUserProfile === undefined) delete process.env.USERPROFILE;
     else process.env.USERPROFILE = savedUserProfile;
-    if (savedGsdHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = savedGsdHome;
+    if (savedWorkflowHome === undefined) delete process.env.GSD_HOME;
+    else process.env.GSD_HOME = savedWorkflowHome;
 
     clearPathCache();
     rmSync(projectDir, { recursive: true, force: true });
     rmSync(fakeHome, { recursive: true, force: true });
   });
 
-  test("gsdRoot('/path/to/project') and gsdRoot('/path/to/project/') return identical paths", () => {
-    const withoutSlash = gsdRoot(projectDir);
-    const withSlash = gsdRoot(projectDir + "/");
+  test("workflowRoot('/path/to/project') and workflowRoot('/path/to/project/') return identical paths", () => {
+    const withoutSlash = workflowRoot(projectDir);
+    const withSlash = workflowRoot(projectDir + "/");
 
     assert.equal(
       withoutSlash,
       withSlash,
-      "gsdRoot must return identical paths for inputs with and without trailing slash",
+      "workflowRoot must return identical paths for inputs with and without trailing slash",
     );
     assert.equal(
       withoutSlash,
@@ -355,15 +355,15 @@ describe("workspace-collapse integration: Test 5 — gsdRootCache normalization 
     // Start clean
     clearPathCache();
 
-    const r1 = gsdRoot(projectDir);
-    const r2 = gsdRoot(projectDir + "/");
+    const r1 = workflowRoot(projectDir);
+    const r2 = workflowRoot(projectDir + "/");
 
     assert.equal(r1, r2, "r1 and r2 must be the same string after normalization");
     // The cache normalizes both inputs to the same key — no duplicate entries.
     // We can't inspect the cache size directly, but the behavioral proof is
     // that a second call after clearPathCache re-probes and still matches.
     clearPathCache();
-    const r3 = gsdRoot(projectDir + "/");
+    const r3 = workflowRoot(projectDir + "/");
     assert.equal(r3, r1, "re-probe after clearPathCache must produce the same result");
   });
 });

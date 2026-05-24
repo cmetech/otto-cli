@@ -13,7 +13,7 @@ import * as path from "node:path";
 import { promisify } from "node:util";
 
 const execFile = promisify(execFileCb);
-import { gsdHome } from "../workflow/home.js";
+import { workflowHome } from "../workflow/home.js";
 
 // ============================================================================
 // Types
@@ -62,7 +62,7 @@ export function encodeCwd(cwd: string): string {
 
 
 function getIsolationBaseDir(cwd: string, taskId: string): string {
-	return path.join(gsdHome(), "wt", encodeCwd(cwd), taskId);
+	return path.join(workflowHome(), "wt", encodeCwd(cwd), taskId);
 }
 
 // Track active isolation dirs for cleanup on exit

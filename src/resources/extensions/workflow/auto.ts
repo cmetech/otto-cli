@@ -37,7 +37,7 @@ import { extractSection, getManifestStatus, splitFrontmatter, parseFrontmatterMa
 export { inlinePriorMilestoneSummary } from "./files.js";
 import { collectSecretsFromManifest } from "../get-secrets-from-user.js";
 import {
-  gsdRoot,
+  workflowRoot,
   resolveMilestoneFile,
   resolveMilestonePath,
   resolveDir,
@@ -276,7 +276,7 @@ export type {
   StartModel,
 } from "./auto/session.js";
 import { autoSession as s } from "./auto-runtime-state.js";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 import { createWorkspace, scopeMilestone } from "./workspace.js";
 import {
   registerAutoWorker,
@@ -453,7 +453,7 @@ function synthesizePausedSessionRecovery(
   unitId: string,
   sessionFile: string,
 ): ReturnType<typeof synthesizeCrashRecovery> {
-  const activityDir = join(gsdRoot(basePath), "activity");
+  const activityDir = join(workflowRoot(basePath), "activity");
   return synthesizeCrashRecovery(basePath, unitType, unitId, sessionFile, activityDir);
 }
 
@@ -783,7 +783,7 @@ export async function refreshResumeResourcesAndDb(
 ): Promise<void> {
   const env = deps.env ?? process.env;
   const importModule = deps.importModule ?? ((specifier: string) => import(specifier));
-  const agentDir = env.GSD_CODING_AGENT_DIR || join(gsdHome(), "agent");
+  const agentDir = env.GSD_CODING_AGENT_DIR || join(workflowHome(), "agent");
   const pkgRoot = env.GSD_PKG_ROOT;
   const resourceLoaderPath = pkgRoot
     ? pathToFileURL(join(pkgRoot, "dist", "resource-loader.js")).href
@@ -1064,7 +1064,7 @@ function handleLostSessionLock(
   restoreMilestoneLockEnv();
   deregisterSigtermHandler();
   const base = lockBase();
-  const lockFilePath = base ? join(gsdRoot(base), "auto.lock") : "unknown";
+  const lockFilePath = base ? join(workflowRoot(base), "auto.lock") : "unknown";
   const recoverySuggestion = "\nTo recover, run: gsd doctor --fix";
   const message =
     lockStatus?.failureReason === "pid-mismatch"

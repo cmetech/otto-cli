@@ -5,10 +5,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { DISCUSS_TOOLS_ALLOWLIST } from "../constants.ts";
-import { buildMinimalAutoGsdToolSet, buildMinimalGsdToolSet, buildMinimalGsdWorkflowToolSet, buildRequestScopedGsdToolSet, MINIMAL_AUTO_BASE_TOOL_NAMES, MINIMAL_GSD_TOOL_NAMES, restoreGsdWorkflowTools, scopeGsdWorkflowToolsForDispatch } from "../bootstrap/register-hooks.ts";
+import { buildMinimalAutoWorkflowToolSet, buildMinimalWorkflowToolSet, buildMinimalWorkflowWorkflowToolSet, buildRequestScopedWorkflowToolSet, MINIMAL_AUTO_BASE_TOOL_NAMES, MINIMAL_GSD_TOOL_NAMES, restoreWorkflowWorkflowTools, scopeWorkflowWorkflowToolsForDispatch } from "../bootstrap/register-hooks.ts";
 
-test("buildMinimalGsdToolSet preserves non-GSD tools and replaces broad GSD surface", () => {
-  const result = buildMinimalGsdToolSet([
+test("buildMinimalWorkflowToolSet preserves non-GSD tools and replaces broad GSD surface", () => {
+  const result = buildMinimalWorkflowToolSet([
     "bash",
     "read",
     "browser_open",
@@ -35,22 +35,22 @@ test("buildMinimalGsdToolSet preserves non-GSD tools and replaces broad GSD surf
   assert.ok(!result.includes("gsd_graph"));
 });
 
-test("buildMinimalGsdToolSet deduplicates preserved and minimal tools", () => {
-  const result = buildMinimalGsdToolSet(["bash", "bash", "memory_query"]);
+test("buildMinimalWorkflowToolSet deduplicates preserved and minimal tools", () => {
+  const result = buildMinimalWorkflowToolSet(["bash", "bash", "memory_query"]);
 
   assert.deepEqual(result.filter((toolName) => toolName === "bash"), ["bash"]);
   assert.deepEqual(result.filter((toolName) => toolName === "memory_query"), ["memory_query"]);
 });
 
-test("buildMinimalGsdToolSet does not reintroduce provider-filtered GSD tools", () => {
-  const result = buildMinimalGsdToolSet(["bash", "read", "memory_query"]);
+test("buildMinimalWorkflowToolSet does not reintroduce provider-filtered GSD tools", () => {
+  const result = buildMinimalWorkflowToolSet(["bash", "read", "memory_query"]);
 
   assert.deepEqual(result, ["bash", "read", "memory_query"]);
   assert.ok(!result.includes("gsd_exec"));
 });
 
-test("buildMinimalAutoGsdToolSet keeps unit-specific completion tools without aliases", () => {
-  const result = buildMinimalAutoGsdToolSet([
+test("buildMinimalAutoWorkflowToolSet keeps unit-specific completion tools without aliases", () => {
+  const result = buildMinimalAutoWorkflowToolSet([
     "ask_user_questions",
     "bash",
     "read",
@@ -81,8 +81,8 @@ test("buildMinimalAutoGsdToolSet keeps unit-specific completion tools without al
   assert.ok(!result.includes("gsd_complete_slice"));
 });
 
-test("buildMinimalAutoGsdToolSet keeps only the auto base non-GSD tools", () => {
-  const result = buildMinimalAutoGsdToolSet([
+test("buildMinimalAutoWorkflowToolSet keeps only the auto base non-GSD tools", () => {
+  const result = buildMinimalAutoWorkflowToolSet([
     "ask_user_questions",
     "bash",
     "bg_shell",
@@ -114,8 +114,8 @@ test("buildMinimalAutoGsdToolSet keeps only the auto base non-GSD tools", () => 
   assert.ok(!result.includes("subagent"));
 });
 
-test("buildMinimalAutoGsdToolSet preserves browser tools for run-uat", () => {
-  const result = buildMinimalAutoGsdToolSet([
+test("buildMinimalAutoWorkflowToolSet preserves browser tools for run-uat", () => {
+  const result = buildMinimalAutoWorkflowToolSet([
     "bash",
     "read",
     "browser_navigate",
@@ -140,8 +140,8 @@ test("buildMinimalAutoGsdToolSet preserves browser tools for run-uat", () => {
   assert.ok(!result.includes("gsd_task_complete"));
 });
 
-test("buildMinimalAutoGsdToolSet includes closeout tool for complete-slice", () => {
-  const result = buildMinimalAutoGsdToolSet([
+test("buildMinimalAutoWorkflowToolSet includes closeout tool for complete-slice", () => {
+  const result = buildMinimalAutoWorkflowToolSet([
     "bash",
     "read",
     "subagent",
@@ -168,8 +168,8 @@ test("buildMinimalAutoGsdToolSet includes closeout tool for complete-slice", () 
   assert.ok(!result.includes("gsd_complete_slice"));
 });
 
-test("buildMinimalAutoGsdToolSet preserves workflow MCP-namespaced closeout tools", () => {
-  const result = buildMinimalAutoGsdToolSet([
+test("buildMinimalAutoWorkflowToolSet preserves workflow MCP-namespaced closeout tools", () => {
+  const result = buildMinimalAutoWorkflowToolSet([
     "bash",
     "read",
     "mcp__gsd-workflow__gsd_task_reopen",
@@ -190,8 +190,8 @@ test("buildMinimalAutoGsdToolSet preserves workflow MCP-namespaced closeout tool
   assert.ok(result.includes("mcp__gsd-workflow__capture_thought"));
 });
 
-test("buildMinimalAutoGsdToolSet covers execute-task-simple", () => {
-  const result = buildMinimalAutoGsdToolSet([
+test("buildMinimalAutoWorkflowToolSet covers execute-task-simple", () => {
+  const result = buildMinimalAutoWorkflowToolSet([
     "bash",
     "read",
     "gsd_task_complete",
@@ -206,8 +206,8 @@ test("buildMinimalAutoGsdToolSet covers execute-task-simple", () => {
   assert.ok(!result.includes("gsd_plan_task"));
 });
 
-test("buildMinimalGsdWorkflowToolSet keeps workflow GSD tools but drops broad non-GSD tools", () => {
-  const result = buildMinimalGsdWorkflowToolSet([
+test("buildMinimalWorkflowWorkflowToolSet keeps workflow GSD tools but drops broad non-GSD tools", () => {
+  const result = buildMinimalWorkflowWorkflowToolSet([
     "ask_user_questions",
     "bash",
     "bg_shell",
@@ -248,8 +248,8 @@ test("buildMinimalGsdWorkflowToolSet keeps workflow GSD tools but drops broad no
   assert.ok(!result.includes("gsd_graph"));
 });
 
-test("buildRequestScopedGsdToolSet scopes queued workflow custom-message requests", () => {
-  const result = buildRequestScopedGsdToolSet([
+test("buildRequestScopedWorkflowToolSet scopes queued workflow custom-message requests", () => {
+  const result = buildRequestScopedWorkflowToolSet([
     "ask_user_questions",
     "bash",
     "browser_wait_for",
@@ -276,8 +276,8 @@ test("buildRequestScopedGsdToolSet scopes queued workflow custom-message request
   assert.ok(!result.includes("gsd_graph"));
 });
 
-test("buildRequestScopedGsdToolSet ignores stale workflow messages outside the current request tail", () => {
-  assert.equal(buildRequestScopedGsdToolSet(["bash", "gsd_plan_milestone"], []), undefined);
+test("buildRequestScopedWorkflowToolSet ignores stale workflow messages outside the current request tail", () => {
+  assert.equal(buildRequestScopedWorkflowToolSet(["bash", "gsd_plan_milestone"], []), undefined);
 });
 
 test("discuss-milestone dispatch keeps required headless milestone tools after two-stage scoping", () => {
@@ -301,7 +301,7 @@ test("discuss-milestone dispatch keeps required headless milestone tools after t
     DISCUSS_TOOLS_ALLOWLIST.includes(toolName)
   );
 
-  scopeGsdWorkflowToolsForDispatch({
+  scopeWorkflowWorkflowToolsForDispatch({
     getActiveTools: () => activeTools,
     setActiveTools: (tools) => {
       activeTools = tools;
@@ -318,7 +318,7 @@ test("discuss-milestone dispatch keeps required headless milestone tools after t
   assert.ok(!activeTools.includes("gsd_complete_milestone"));
 });
 
-test("scopeGsdWorkflowToolsForDispatch applies and restores per-unit skill visibility", () => {
+test("scopeWorkflowWorkflowToolsForDispatch applies and restores per-unit skill visibility", () => {
   const calls: Array<{ kind: "tools" | "skills"; value: string[] | undefined }> = [];
   let activeTools = [
     "bash",
@@ -331,7 +331,7 @@ test("scopeGsdWorkflowToolsForDispatch applies and restores per-unit skill visib
   ];
   let visibleSkills: string[] | undefined = ["previous-skill"];
 
-  const state = scopeGsdWorkflowToolsForDispatch({
+  const state = scopeWorkflowWorkflowToolsForDispatch({
     getActiveTools: () => activeTools,
     setActiveTools: (names) => {
       activeTools = names;
@@ -357,7 +357,7 @@ test("scopeGsdWorkflowToolsForDispatch applies and restores per-unit skill visib
   ]);
   assert.ok(!activeTools.includes("lsp"));
 
-  restoreGsdWorkflowTools({
+  restoreWorkflowWorkflowTools({
     setActiveTools: (names) => {
       activeTools = names;
       calls.push({ kind: "tools", value: names });

@@ -213,15 +213,15 @@ test("init — Step 9b shape: 'not_yet' option is recognized as defer (#4457 rev
 
 test("init — preferences path is basePath-derived, not cwd-derived (#4457 review)", async () => {
   // If basePath !== process.cwd(), preferences must still write to
-  // join(gsdRoot(basePath), "PREFERENCES.md"), not the cwd-derived path.
-  // Static check: the post-#4457-review code constructs the path from gsdRoot(basePath).
+  // join(workflowRoot(basePath), "PREFERENCES.md"), not the cwd-derived path.
+  // Static check: the post-#4457-review code constructs the path from workflowRoot(basePath).
   const src = readFileSync(
     new URL("../init-wizard.ts", import.meta.url),
     "utf-8",
   );
   assert.match(
     src,
-    /projectPrefsPath\s*=\s*join\(gsdRoot\(basePath\),\s*"PREFERENCES\.md"\)/,
+    /projectPrefsPath\s*=\s*join\(workflowRoot\(basePath\),\s*"PREFERENCES\.md"\)/,
     "init must derive the project preferences path from basePath",
   );
   // And neither write site should call getProjectGSDPreferencesPath() (which

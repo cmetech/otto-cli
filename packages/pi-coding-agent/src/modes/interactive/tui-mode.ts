@@ -6,7 +6,7 @@ export type TuiAdaptiveMode = "auto" | TuiMode;
 export interface TuiModeContext {
 	terminalWidth: number;
 	override?: TuiAdaptiveMode;
-	gsdPhase?: string;
+	workflowPhase?: string;
 	activeToolCount?: number;
 	hasBlockingError?: boolean;
 }
@@ -16,7 +16,7 @@ export function resolveTuiMode(context: TuiModeContext): TuiMode {
 	if (context.terminalWidth < 72) return "compact";
 	if (context.hasBlockingError) return "debug";
 
-	const phase = context.gsdPhase?.toLowerCase() ?? "";
+	const phase = context.workflowPhase?.toLowerCase() ?? "";
 	if (phase.includes("validat") || phase.includes("complete") || phase.includes("review")) {
 		return "validation";
 	}

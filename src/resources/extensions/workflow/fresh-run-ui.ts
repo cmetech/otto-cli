@@ -23,7 +23,7 @@ const STATUS_KEYS = [
   "gsd-auto",
 ];
 
-export function isFreshGsdWorkCommand(trimmed: string): boolean {
+export function isFreshWorkflowWorkCommand(trimmed: string): boolean {
   const command = trimmed.trim();
   if (!command) return true;
 
@@ -32,7 +32,7 @@ export function isFreshGsdWorkCommand(trimmed: string): boolean {
   return name === "do";
 }
 
-export function clearFreshGsdRunSurfaces(ctx: ExtensionCommandContext): void {
+export function clearFreshWorkflowRunSurfaces(ctx: ExtensionCommandContext): void {
   const ui = ctx.ui;
   for (const key of WIDGET_KEYS) {
     ui.setWidget?.(key, undefined);

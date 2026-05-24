@@ -22,7 +22,7 @@ import { postUnitPostVerification, type PostUnitContext } from "../auto-post-uni
 import { AutoSession } from "../auto/session.ts";
 import { openDatabase, closeDatabase, insertMilestone, insertSlice, insertTask, _getAdapter } from "../db.ts";
 import { invalidateAllCaches } from "../cache.ts";
-import { _clearGsdRootCache } from "../paths.ts";
+import { _clearWorkflowRootCache } from "../paths.ts";
 
 // ─── Test Fixtures ───────────────────────────────────────────────────────────
 
@@ -32,7 +32,7 @@ let originalCwd: string;
 
 function resetAllCaches(): void {
   invalidateAllCaches();
-  _clearGsdRootCache();
+  _clearWorkflowRootCache();
 }
 
 /**
@@ -110,11 +110,11 @@ function setupTestEnvironment(): void {
   mkdirSync(tempDir, { recursive: true });
   
   // Create .gsd directory structure
-  const gsdDir = join(tempDir, ".gsd");
-  mkdirSync(gsdDir, { recursive: true });
+  const workflowDir = join(tempDir, ".gsd");
+  mkdirSync(workflowDir, { recursive: true });
   
   // Create milestones directory structure
-  const milestonesDir = join(gsdDir, "milestones", "M001", "slices", "S01", "tasks");
+  const milestonesDir = join(workflowDir, "milestones", "M001", "slices", "S01", "tasks");
   mkdirSync(milestonesDir, { recursive: true });
   
   // Change cwd so loadEffectiveGSDPreferences finds our PREFERENCES.md
@@ -124,7 +124,7 @@ function setupTestEnvironment(): void {
   resetAllCaches();
   
   // Initialize DB
-  dbPath = join(gsdDir, "gsd.db");
+  dbPath = join(workflowDir, "gsd.db");
   openDatabase(dbPath);
 }
 

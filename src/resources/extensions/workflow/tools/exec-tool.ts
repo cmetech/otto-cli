@@ -195,7 +195,7 @@ function scriptReferencesOriginalRootFromWorktree(script: string, baseDir: strin
   });
 }
 
-export async function executeGsdExec(
+export async function executeWorkflowExec(
   params: ExecToolParams,
   deps: ExecToolDeps,
 ): Promise<ToolExecutionResult> {

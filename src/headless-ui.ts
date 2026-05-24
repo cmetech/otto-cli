@@ -147,7 +147,7 @@ export function summarizeToolArgs(toolName: unknown, toolInput: unknown): string
     default: {
       // workflow tools: show milestone/slice/task IDs when present
       if (name.startsWith('gsd_')) {
-        return summarizeGsdTool(name, input)
+        return summarizeWorkflowTool(name, input)
       }
       // Fallback: show first string-valued key up to 60 chars
       for (const v of Object.values(input)) {
@@ -161,7 +161,7 @@ export function summarizeToolArgs(toolName: unknown, toolInput: unknown): string
 }
 
 /** Summarize workflow extension tool args into a compact identifier string. */
-function summarizeGsdTool(name: string, input: Record<string, unknown>): string {
+function summarizeWorkflowTool(name: string, input: Record<string, unknown>): string {
   const parts: string[] = []
   if (input.milestoneId) parts.push(String(input.milestoneId))
   if (input.sliceId) parts.push(String(input.sliceId))

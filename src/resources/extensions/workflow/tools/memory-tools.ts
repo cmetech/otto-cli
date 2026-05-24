@@ -318,7 +318,7 @@ function includeSupersededMemories(rankedActive: Memory[]): Memory[] {
 
 // ─── gsd_graph ──────────────────────────────────────────────────────────────
 
-export interface GsdGraphParams {
+export interface WorkflowGraphParams {
   mode: "build" | "query";
   memoryId?: string;
   depth?: number;
@@ -339,7 +339,7 @@ export interface GraphEdge {
   confidence: number;
 }
 
-export function executeGsdGraph(params: GsdGraphParams): ToolExecutionResult {
+export function executeWorkflowGraph(params: WorkflowGraphParams): ToolExecutionResult {
   if (!isDbAvailable()) return dbUnavailable("gsd_graph");
 
   if (params.mode === "build") {

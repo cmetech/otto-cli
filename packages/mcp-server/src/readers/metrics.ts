@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 
 import { readFileSync, existsSync } from 'node:fs';
-import { resolveGsdRoot, resolveRootFile } from './paths.js';
+import { resolveWorkflowRoot, resolveRootFile } from './paths.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -72,7 +72,7 @@ function parseMetricsJson(content: string): MetricsUnit[] {
 // ---------------------------------------------------------------------------
 
 export function readHistory(projectDir: string, limit?: number): HistoryResult {
-  const gsd = resolveGsdRoot(projectDir);
+  const gsd = resolveWorkflowRoot(projectDir);
 
   // metrics.json (primary)
   const metricsPath = resolveRootFile(gsd, 'metrics.json');

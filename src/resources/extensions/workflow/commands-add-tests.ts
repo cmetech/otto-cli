@@ -11,12 +11,12 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 import { deriveState } from "./state.js";
-import { gsdRoot, resolveSliceFile } from "./paths.js";
+import { workflowRoot, resolveSliceFile } from "./paths.js";
 import { loadPrompt } from "./prompt-loader.js";
 
 function findLastCompletedSlice(basePath: string, milestoneId: string): string | null {
   // Scan disk for slices that have a SUMMARY.md (indicating completion)
-  const slicesDir = join(gsdRoot(basePath), "milestones", milestoneId, "slices");
+  const slicesDir = join(workflowRoot(basePath), "milestones", milestoneId, "slices");
   if (!existsSync(slicesDir)) return null;
 
   try {

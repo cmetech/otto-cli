@@ -11,7 +11,7 @@ import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
 import { runAutoLoopWithUok } from "../uok/kernel.ts";
 import type { AutoSession } from "../auto/session.ts";
 import type { LoopDeps } from "../auto/loop-deps.ts";
-import { gsdRoot } from "../paths.ts";
+import { workflowRoot } from "../paths.ts";
 import type { WorkflowPreferences } from "../preferences.ts";
 import { getLegacyTelemetry, resetLegacyTelemetry } from "../legacy-telemetry.ts";
 
@@ -80,7 +80,7 @@ function makeArgs(
 }
 
 function readParityEvents(basePath: string): Array<Record<string, unknown>> {
-  const file = join(gsdRoot(basePath), "runtime", "uok-parity.jsonl");
+  const file = join(workflowRoot(basePath), "runtime", "uok-parity.jsonl");
   const raw = readFileSync(file, "utf-8").trim();
   if (raw.length === 0) return [];
   return raw.split("\n").map(line => JSON.parse(line) as Record<string, unknown>);

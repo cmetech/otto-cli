@@ -11,7 +11,7 @@ import { rightAlign, breakpoint, keyValue, roundedPanel } from "./transcript-des
 export interface AdaptiveLayoutState {
 	override: TuiAdaptiveMode;
 	activeToolCount: number;
-	gsdPhase?: string;
+	workflowPhase?: string;
 	lastError?: string;
 	sessionName?: string;
 	cwd: string;
@@ -28,11 +28,11 @@ export class AdaptiveLayoutComponent implements Component {
 			terminalWidth: width,
 			override: state.override,
 			activeToolCount: state.activeToolCount,
-			gsdPhase: state.gsdPhase,
+			workflowPhase: state.workflowPhase,
 			hasBlockingError: !!state.lastError,
 		});
 
-		if (state.override === "auto" && mode === "chat" && !state.gsdPhase && !state.lastError && state.activeToolCount === 0) {
+		if (state.override === "auto" && mode === "chat" && !state.workflowPhase && !state.lastError && state.activeToolCount === 0) {
 			return [];
 		}
 
@@ -46,7 +46,7 @@ export class AdaptiveLayoutComponent implements Component {
 	private renderWorkflow(width: number, state: AdaptiveLayoutState): string[] {
 		if (width < 72) return this.renderCompact(width, "workflow", state);
 
-		const phase = state.gsdPhase ?? "Ready";
+		const phase = state.workflowPhase ?? "Ready";
 		const tools = state.activeToolCount > 0 ? `${state.activeToolCount} running` : "idle";
 		const next = state.activeToolCount > 0 ? "watch tool output" : "continue from prompt";
 		const modeLabel = state.override === "auto" ? "workflow" : state.override;
@@ -85,7 +85,7 @@ export class AdaptiveLayoutComponent implements Component {
 	}
 
 	private renderValidation(width: number, state: AdaptiveLayoutState): string[] {
-		const phase = state.gsdPhase ?? "Validation pending";
+		const phase = state.workflowPhase ?? "Validation pending";
 		return this.frame(
 			[
 				this.metric("Focus", phase, "modeValidation"),
@@ -128,7 +128,7 @@ export class AdaptiveLayoutComponent implements Component {
 	}
 
 	private renderCompact(width: number, mode: TuiMode, state: AdaptiveLayoutState): string[] {
-		const phase = state.lastError ?? state.gsdPhase ?? (state.activeToolCount > 0 ? `${state.activeToolCount} tools` : "ready");
+		const phase = state.lastError ?? state.workflowPhase ?? (state.activeToolCount > 0 ? `${state.activeToolCount} tools` : "ready");
 		const line = `${theme.fg("modeCompact", `${BRAND_NAME} compact`)} ${theme.fg("surfaceMuted", `${mode} · ${phase}`)}`;
 		return style()
 			.border("minimal")

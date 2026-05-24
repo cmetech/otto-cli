@@ -10,8 +10,8 @@ import { execFileSync } from "node:child_process";
 import { existsSync, openSync, readSync, closeSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, parse as parsePath } from "node:path";
 import { homedir } from "node:os";
-import { gsdRoot } from "./paths.js";
-import { gsdHome } from "./home.js";
+import { workflowRoot } from "./paths.js";
+import { workflowHome } from "./home.js";
 
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -380,18 +380,18 @@ export function detectV1Planning(basePath: string): V1Detection | null {
 // ─── V2 Detection ──────────────────────────────────────────────────────────
 
 function detectV2Gsd(basePath: string): V2Detection | null {
-  const gsdPath = gsdRoot(basePath);
+  const workflowPath = workflowRoot(basePath);
 
-  if (!existsSync(gsdPath)) return null;
+  if (!existsSync(workflowPath)) return null;
 
   const hasPreferences =
-    existsSync(join(gsdPath, "PREFERENCES.md")) ||
-    existsSync(join(gsdPath, "preferences.md"));
+    existsSync(join(workflowPath, "PREFERENCES.md")) ||
+    existsSync(join(workflowPath, "preferences.md"));
 
-  const hasContext = existsSync(join(gsdPath, "CONTEXT.md"));
+  const hasContext = existsSync(join(workflowPath, "CONTEXT.md"));
 
   let milestoneCount = 0;
-  const milestonesPath = join(gsdPath, "milestones");
+  const milestonesPath = join(workflowPath, "milestones");
   if (existsSync(milestonesPath)) {
     try {
       const entries = readdirSync(milestonesPath, { withFileTypes: true });
@@ -848,8 +848,8 @@ function detectVerificationCommands(
  */
 export function hasGlobalSetup(): boolean {
   return (
-    existsSync(join(gsdHome(), "PREFERENCES.md")) ||
-    existsSync(join(gsdHome(), "preferences.md"))
+    existsSync(join(workflowHome(), "PREFERENCES.md")) ||
+    existsSync(join(workflowHome(), "preferences.md"))
   );
 }
 
@@ -858,18 +858,18 @@ export function hasGlobalSetup(): boolean {
  * Returns true if ~/.loop24/ doesn't exist or has no preferences or auth.
  */
 export function isFirstEverLaunch(): boolean {
-  if (!existsSync(gsdHome())) return true;
+  if (!existsSync(workflowHome())) return true;
 
   // If we have preferences, not first launch
   if (
-    existsSync(join(gsdHome(), "PREFERENCES.md")) ||
-    existsSync(join(gsdHome(), "preferences.md"))
+    existsSync(join(workflowHome(), "PREFERENCES.md")) ||
+    existsSync(join(workflowHome(), "preferences.md"))
   ) {
     return false;
   }
 
   // If we have auth.json, not first launch (onboarding.ts already ran)
-  if (existsSync(join(gsdHome(), "agent", "auth.json"))) return false;
+  if (existsSync(join(workflowHome(), "agent", "auth.json"))) return false;
 
   // Check legacy path too
   const legacyPath = join(homedir(), ".pi", "agent", "gsd-preferences.md");
@@ -1287,21 +1287,21 @@ export function hasProjectFileInAncestor(
  *
  * A zombie `.loop24/` state — symlink exists but neither artifact is present —
  * must be treated as "needs init wizard". The previous guard checked only
- * `existsSync(gsdRoot(basePath))`, which accepted zombie states and skipped
+ * `existsSync(workflowRoot(basePath))`, which accepted zombie states and skipped
  * the wizard (#2942).
  *
  * `existsFn` is injectable so tests can run deterministically; defaults to
  * `fs.existsSync`.
  */
 export function hasWorkflowBootstrapArtifacts(
-  gsdPath: string,
+  workflowPath: string,
   existsFn: (p: string) => boolean = existsSync,
 ): boolean {
   return (
-    existsFn(gsdPath) &&
-    (existsFn(join(gsdPath, "PREFERENCES.md")) ||
-      existsFn(join(gsdPath, "preferences.md")) ||
-      existsFn(join(gsdPath, "milestones")))
+    existsFn(workflowPath) &&
+    (existsFn(join(workflowPath, "PREFERENCES.md")) ||
+      existsFn(join(workflowPath, "preferences.md")) ||
+      existsFn(join(workflowPath, "milestones")))
   );
 }
 

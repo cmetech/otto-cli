@@ -13,7 +13,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, normalize, relative, resolve, sep } from "node:path";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { GIT_NO_PROMPT_ENV } from "./git-constants.js";
 import { loadEffectiveGSDPreferences } from "./preferences.js";
 import { logWarning } from "./workflow-logger.js";
@@ -383,7 +383,7 @@ export const RUNTIME_EXCLUSION_PATHS: readonly string[] = [
  * Format: .loop24/milestones/<MID>/<MID>-META.json
  */
 function milestoneMetaPath(basePath: string, milestoneId: string): string {
-  return join(gsdRoot(basePath), "milestones", milestoneId, `${milestoneId}-META.json`);
+  return join(workflowRoot(basePath), "milestones", milestoneId, `${milestoneId}-META.json`);
 }
 
 /**
@@ -445,7 +445,7 @@ export function writeIntegrationBranch(
   if (existingBranch === branch) return;
 
   const metaFile = milestoneMetaPath(basePath, milestoneId);
-  mkdirSync(join(gsdRoot(basePath), "milestones", milestoneId), { recursive: true });
+  mkdirSync(join(workflowRoot(basePath), "milestones", milestoneId), { recursive: true });
 
   // Merge with existing metadata if present
   let existing: Record<string, unknown> = {};
@@ -787,7 +787,7 @@ export class GitServiceImpl {
     // (e.g., an M033 worker fabricating M032 artifacts in the same commit).
     const milestoneLock = (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK);
     if (milestoneLock) {
-      const msDir = join(gsdRoot(this.basePath), "milestones");
+      const msDir = join(workflowRoot(this.basePath), "milestones");
       if (existsSync(msDir)) {
         try {
           const entries = readdirSync(msDir, { withFileTypes: true });

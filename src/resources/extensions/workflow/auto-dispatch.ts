@@ -22,8 +22,8 @@ import { isClosedStatus } from "./status-guards.js";
 import { extractVerdict, isAcceptableUatVerdict } from "./verdict-parser.js";
 
 import {
-  gsdRoot,
-  resolveGsdPathContract,
+  workflowRoot,
+  resolveWorkflowPathContract,
   resolveMilestoneFile,
   resolveMilestonePath,
   resolveSliceFile,
@@ -34,7 +34,7 @@ import {
   buildMilestoneFileName,
   buildSliceFileName,
   buildTaskFileName,
-  gsdProjectionRoot,
+  workflowProjectionRoot,
 } from "./paths.js";
 import { parseRoadmap } from "./parsers-legacy.js";
 import { validateArtifact } from "./schemas/validate.js";
@@ -440,7 +440,7 @@ const MAX_REWRITE_ATTEMPTS = 3;
 // step-mode). Storing it on the in-memory session object caused the circuit
 // breaker to never trip — see upstream #2203
 function rewriteCountPath(basePath: string): string {
-  return join(gsdRoot(basePath), "runtime", "rewrite-count.json");
+  return join(workflowRoot(basePath), "runtime", "rewrite-count.json");
 }
 
 export function getRewriteCount(basePath: string): number {
@@ -454,7 +454,7 @@ export function getRewriteCount(basePath: string): number {
 
 export function setRewriteCount(basePath: string, count: number): void {
   const filePath = rewriteCountPath(basePath);
-  mkdirSync(join(gsdRoot(basePath), "runtime"), { recursive: true });
+  mkdirSync(join(workflowRoot(basePath), "runtime"), { recursive: true });
   writeFileSync(filePath, JSON.stringify({ count, updatedAt: new Date().toISOString() }) + "\n");
 }
 
@@ -464,7 +464,7 @@ export function setRewriteCount(basePath: string, count: number): void {
 const MAX_UAT_ATTEMPTS = 3;
 
 function uatCountPath(basePath: string, mid: string, sid: string): string {
-  return join(resolveGsdPathContract(basePath).projectGsd, "runtime", `uat-count-${mid}-${sid}.json`);
+  return join(resolveWorkflowPathContract(basePath).projectGsd, "runtime", `uat-count-${mid}-${sid}.json`);
 }
 
 export function getUatCount(basePath: string, mid: string, sid: string): number {
@@ -479,7 +479,7 @@ export function getUatCount(basePath: string, mid: string, sid: string): number 
 export function incrementUatCount(basePath: string, mid: string, sid: string): number {
   const count = getUatCount(basePath, mid, sid) + 1;
   const filePath = uatCountPath(basePath, mid, sid);
-  mkdirSync(join(resolveGsdPathContract(basePath).projectGsd, "runtime"), { recursive: true });
+  mkdirSync(join(resolveWorkflowPathContract(basePath).projectGsd, "runtime"), { recursive: true });
   writeFileSync(filePath, JSON.stringify({ count, updatedAt: new Date().toISOString() }) + "\n");
   return count;
 }
@@ -765,7 +765,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
     match: async ({ state, basePath, prefs, structuredQuestionsAvailable }) => {
       if (prefs?.planning_depth !== "deep") return null;
       if (state.phase !== "pre-planning" && state.phase !== "needs-discussion") return null;
-      const projectPath = join(gsdRoot(basePath), "PROJECT.md");
+      const projectPath = join(workflowRoot(basePath), "PROJECT.md");
       if (existsSync(projectPath) && validateArtifact(projectPath, "project").ok) return null; // PROJECT.md valid — fall through
       return {
         action: "dispatch",
@@ -784,9 +784,9 @@ export const DISPATCH_RULES: DispatchRule[] = [
     match: async ({ state, basePath, prefs, structuredQuestionsAvailable }) => {
       if (prefs?.planning_depth !== "deep") return null;
       if (state.phase !== "pre-planning" && state.phase !== "needs-discussion") return null;
-      const projectPath = join(gsdRoot(basePath), "PROJECT.md");
+      const projectPath = join(workflowRoot(basePath), "PROJECT.md");
       if (!existsSync(projectPath) || !validateArtifact(projectPath, "project").ok) return null; // PROJECT.md missing/invalid — earlier rule handles
-      const requirementsPath = join(gsdRoot(basePath), "REQUIREMENTS.md");
+      const requirementsPath = join(workflowRoot(basePath), "REQUIREMENTS.md");
       if (existsSync(requirementsPath) && validateArtifact(requirementsPath, "requirements").ok) return null; // REQUIREMENTS.md valid — fall through
       return {
         action: "dispatch",
@@ -839,7 +839,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
       if (gate.status !== "pending" || gate.stage !== "project-research") return null;
       // Idempotency guard: one orchestrator owns the project research fan-out
       // until guided-research-project.md deletes this marker during closeout.
-      const runtimeDir = join(gsdRoot(basePath), "runtime");
+      const runtimeDir = join(workflowRoot(basePath), "runtime");
       const inflightMarkerPath = join(runtimeDir, PROJECT_RESEARCH_INFLIGHT_MARKER);
       const researchInFlightStop = {
         action: "stop" as const,
@@ -1355,7 +1355,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
       // issue #909.
       const taskPlanPath = resolveTaskFile(artifactBasePath, mid, sid, tid, "PLAN");
       const projectionTaskPlanPath = join(
-        gsdProjectionRoot(artifactBasePath),
+        workflowProjectionRoot(artifactBasePath),
         "milestones",
         mid,
         "slices",

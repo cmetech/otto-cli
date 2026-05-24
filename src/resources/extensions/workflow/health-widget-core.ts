@@ -7,7 +7,7 @@
 
 import { existsSync } from "node:fs";
 import { detectProjectState } from "./detection.js";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { BRAND } from "./strings.js";
 
 export type HealthWidgetProjectState = "none" | "initialized" | "active";
@@ -27,7 +27,7 @@ export interface HealthWidgetData {
 }
 
 export function detectHealthWidgetProjectState(basePath: string): HealthWidgetProjectState {
-  if (!existsSync(gsdRoot(basePath))) return "none";
+  if (!existsSync(workflowRoot(basePath))) return "none";
 
   const { state } = detectProjectState(basePath);
   return state === "v2-gsd" ? "active" : "initialized";

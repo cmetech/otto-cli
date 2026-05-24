@@ -3,7 +3,7 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import {
-  resolveGsdRoot,
+  resolveWorkflowRoot,
   findMilestoneIds,
   resolveMilestoneFile,
   findSliceIds,
@@ -150,15 +150,15 @@ function parseSlicePlanTasks(content: string): Array<{ id: string; title: string
 // Milestone title from CONTEXT.md or ROADMAP.md H1
 // ---------------------------------------------------------------------------
 
-function readMilestoneTitle(gsdRoot: string, mid: string): string {
-  const ctxPath = resolveMilestoneFile(gsdRoot, mid, 'CONTEXT');
+function readMilestoneTitle(workflowRoot: string, mid: string): string {
+  const ctxPath = resolveMilestoneFile(workflowRoot, mid, 'CONTEXT');
   if (ctxPath && existsSync(ctxPath)) {
     const content = readFileSync(ctxPath, 'utf-8');
     const h1 = content.match(/^#\s+(?:M\d+:?\s*)?(.+)/m);
     if (h1) return h1[1].trim();
   }
 
-  const roadmapPath = resolveMilestoneFile(gsdRoot, mid, 'ROADMAP');
+  const roadmapPath = resolveMilestoneFile(workflowRoot, mid, 'ROADMAP');
   if (roadmapPath && existsSync(roadmapPath)) {
     const content = readFileSync(roadmapPath, 'utf-8');
     const h1 = content.match(/^#\s+(?:M\d+:?\s*)?(.+)/m);
@@ -168,8 +168,8 @@ function readMilestoneTitle(gsdRoot: string, mid: string): string {
   return mid;
 }
 
-function readVision(gsdRoot: string, mid: string): string {
-  const roadmapPath = resolveMilestoneFile(gsdRoot, mid, 'ROADMAP');
+function readVision(workflowRoot: string, mid: string): string {
+  const roadmapPath = resolveMilestoneFile(workflowRoot, mid, 'ROADMAP');
   if (!roadmapPath || !existsSync(roadmapPath)) return '';
 
   const content = readFileSync(roadmapPath, 'utf-8');
@@ -182,7 +182,7 @@ function readVision(gsdRoot: string, mid: string): string {
 // ---------------------------------------------------------------------------
 
 export function readRoadmap(projectDir: string, filterMilestoneId?: string): RoadmapResult {
-  const gsd = resolveGsdRoot(projectDir);
+  const gsd = resolveWorkflowRoot(projectDir);
   let milestoneIds = findMilestoneIds(gsd);
 
   if (filterMilestoneId) {

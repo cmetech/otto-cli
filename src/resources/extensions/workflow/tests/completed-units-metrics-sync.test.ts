@@ -36,19 +36,19 @@ test("#2313: syncStateToProjectRoot copies metrics and completed-units to the pr
 
 test("#2313: functional — completed-units archive creates milestone-specific file", () => {
   const tmpBase = mkdtempSync(join(tmpdir(), "gsd-completed-units-"));
-  const gsdDir = join(tmpBase, ".gsd");
-  mkdirSync(gsdDir, { recursive: true });
+  const workflowDir = join(tmpBase, ".gsd");
+  mkdirSync(workflowDir, { recursive: true });
 
   try {
     const existing = [
       { type: "task", id: "T01" },
       { type: "slice", id: "S01" },
     ];
-    const completedKeysPath = join(gsdDir, "completed-units.json");
+    const completedKeysPath = join(workflowDir, "completed-units.json");
     writeFileSync(completedKeysPath, JSON.stringify(existing, null, 2));
 
     const milestoneId = "M001";
-    const archivePath = join(gsdDir, `completed-units-${milestoneId}.json`);
+    const archivePath = join(workflowDir, `completed-units-${milestoneId}.json`);
     cpSync(completedKeysPath, archivePath);
     writeFileSync(completedKeysPath, JSON.stringify([], null, 2));
 

@@ -7,7 +7,7 @@ import { join, relative } from "node:path";
 import { saveFile } from "../files.js";
 import { insertArtifact } from "../db.js";
 import { renderAllFromDb } from "../markdown-renderer.js";
-import { gsdRoot } from "../paths.js";
+import { workflowRoot } from "../paths.js";
 import { countDbHierarchy, countMarkdownHierarchy, type HierarchyCounts } from "../migration-auto-check.js";
 import type { MigrationPreview, WrittenFiles } from "./writer.js";
 
@@ -57,7 +57,7 @@ export interface MigrationAuditInput {
 }
 
 function relToGsd(targetRoot: string, path: string): string {
-  return relative(gsdRoot(targetRoot), path).replaceAll("\\", "/");
+  return relative(workflowRoot(targetRoot), path).replaceAll("\\", "/");
 }
 
 function sameCounts(a: HierarchyCounts, b: HierarchyCounts): boolean {
@@ -76,7 +76,7 @@ export async function archiveLegacyPlanningDirectory(
   sourcePath: string,
   targetRoot: string,
 ): Promise<LegacyArchiveResult> {
-  const archiveRoot = join(gsdRoot(targetRoot), "migration", "legacy");
+  const archiveRoot = join(workflowRoot(targetRoot), "migration", "legacy");
   const archivePath = join(archiveRoot, "planning");
   const manifestPath = join(archiveRoot, "manifest.json");
 
@@ -169,7 +169,7 @@ function formatMigrationMarkdown(input: MigrationAuditInput): string {
 }
 
 export async function writeMigrationAudit(input: MigrationAuditInput): Promise<MigrationAuditResult> {
-  const migrationDir = join(gsdRoot(input.targetRoot), "migration");
+  const migrationDir = join(workflowRoot(input.targetRoot), "migration");
   const migrationPath = join(migrationDir, "MIGRATION.md");
   const manifestPath = join(migrationDir, "manifest.json");
 
@@ -203,9 +203,9 @@ export async function writeMigrationAudit(input: MigrationAuditInput): Promise<M
 
 export function importMigrationAuditArtifacts(targetRoot: string): number {
   const candidates = [
-    { path: join(gsdRoot(targetRoot), "migration", "MIGRATION.md"), type: "MIGRATION_AUDIT" },
-    { path: join(gsdRoot(targetRoot), "migration", "manifest.json"), type: "MIGRATION_MANIFEST" },
-    { path: join(gsdRoot(targetRoot), "migration", "legacy", "manifest.json"), type: "MIGRATION_LEGACY_MANIFEST" },
+    { path: join(workflowRoot(targetRoot), "migration", "MIGRATION.md"), type: "MIGRATION_AUDIT" },
+    { path: join(workflowRoot(targetRoot), "migration", "manifest.json"), type: "MIGRATION_MANIFEST" },
+    { path: join(workflowRoot(targetRoot), "migration", "legacy", "manifest.json"), type: "MIGRATION_LEGACY_MANIFEST" },
   ];
 
   let imported = 0;

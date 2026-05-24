@@ -410,23 +410,23 @@ describe('writeGraph', () => {
   after(() => rmSync(projectDir, { recursive: true, force: true }));
 
   it('creates graph.json in .gsd/graphs/ after writeGraph()', async () => {
-    const gsdRoot = join(projectDir, '.gsd');
-    await writeGraph(gsdRoot, graph);
-    const graphPath = join(gsdRoot, 'graphs', 'graph.json');
+    const workflowRoot = join(projectDir, '.gsd');
+    await writeGraph(workflowRoot, graph);
+    const graphPath = join(workflowRoot, 'graphs', 'graph.json');
     assert.ok(existsSync(graphPath), `Expected ${graphPath} to exist`);
   });
 
   it('write is atomic — no temp file remains after writeGraph()', async () => {
-    const gsdRoot = join(projectDir, '.gsd');
-    await writeGraph(gsdRoot, graph);
-    const tmpPath = join(gsdRoot, 'graphs', 'graph.tmp.json');
+    const workflowRoot = join(projectDir, '.gsd');
+    await writeGraph(workflowRoot, graph);
+    const tmpPath = join(workflowRoot, 'graphs', 'graph.tmp.json');
     assert.ok(!existsSync(tmpPath), 'Temp file should not exist after successful write');
   });
 
   it('written graph.json is valid JSON with nodes and edges', async () => {
-    const gsdRoot = join(projectDir, '.gsd');
-    await writeGraph(gsdRoot, graph);
-    const raw = readFileSync(join(gsdRoot, 'graphs', 'graph.json'), 'utf-8');
+    const workflowRoot = join(projectDir, '.gsd');
+    await writeGraph(workflowRoot, graph);
+    const raw = readFileSync(join(workflowRoot, 'graphs', 'graph.json'), 'utf-8');
     const parsed = JSON.parse(raw) as KnowledgeGraph;
     assert.ok(Array.isArray(parsed.nodes));
     assert.ok(Array.isArray(parsed.edges));
@@ -454,9 +454,9 @@ describe('graphStatus', () => {
 
   it('returns { exists: true, nodeCount, edgeCount, ageHours } when graph exists', async () => {
     makeProjectWithArtifacts(projectDir);
-    const gsdRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.gsd');
     const graph = await buildGraph(projectDir);
-    await writeGraph(gsdRoot, graph);
+    await writeGraph(workflowRoot, graph);
 
     const status = await graphStatus(projectDir);
     assert.equal(status.exists, true);
@@ -468,9 +468,9 @@ describe('graphStatus', () => {
 
   it('stale = false for a freshly built graph', async () => {
     makeProjectWithArtifacts(projectDir);
-    const gsdRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.gsd');
     const graph = await buildGraph(projectDir);
-    await writeGraph(gsdRoot, graph);
+    await writeGraph(workflowRoot, graph);
 
     const status = await graphStatus(projectDir);
     assert.equal(status.stale, false);
@@ -478,8 +478,8 @@ describe('graphStatus', () => {
 
   it('stale = true for a graph older than 24h (builtAt backdated)', async () => {
     makeProjectWithArtifacts(projectDir);
-    const gsdRoot = join(projectDir, '.gsd');
-    mkdirSync(join(gsdRoot, 'graphs'), { recursive: true });
+    const workflowRoot = join(projectDir, '.gsd');
+    mkdirSync(join(workflowRoot, 'graphs'), { recursive: true });
 
     // Write a graph with a builtAt 25 hours ago
     const oldGraph: KnowledgeGraph = {
@@ -488,7 +488,7 @@ describe('graphStatus', () => {
       builtAt: new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString(),
     };
     writeFileSync(
-      join(gsdRoot, 'graphs', 'graph.json'),
+      join(workflowRoot, 'graphs', 'graph.json'),
       JSON.stringify(oldGraph),
       'utf-8',
     );
@@ -509,9 +509,9 @@ describe('graphQuery', () => {
   before(async () => {
     projectDir = tmpProject();
     makeProjectWithArtifacts(projectDir);
-    const gsdRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.gsd');
     const graph = await buildGraph(projectDir);
-    await writeGraph(gsdRoot, graph);
+    await writeGraph(workflowRoot, graph);
   });
 
   after(() => rmSync(projectDir, { recursive: true, force: true }));
@@ -546,7 +546,7 @@ describe('graphQuery', () => {
     // (nodes × 20 + edges × 10). With 3 nodes (60) + 2 edges (20) = 80,
     // a budget of 70 forces exactly the AMBIGUOUS-edge drop and stops
     // (70 > 70 is false), leaving the INFERRED edge intact.
-    const gsdRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.gsd');
     const mixedGraph: KnowledgeGraph = {
       builtAt: new Date().toISOString(),
       nodes: [
@@ -559,7 +559,7 @@ describe('graphQuery', () => {
         { from: 'n1', to: 'n3', type: 'contains', confidence: 'INFERRED' },
       ],
     };
-    await writeGraph(gsdRoot, mixedGraph);
+    await writeGraph(workflowRoot, mixedGraph);
 
     const result = await graphQuery(projectDir, 'seed node budget', 70);
     assert.ok(result.nodes.some((n) => n.id === 'n1'), "seed must remain");
@@ -584,7 +584,7 @@ describe('graphQuery', () => {
 
     // Restore the original graph
     const originalGraph = await buildGraph(projectDir);
-    await writeGraph(gsdRoot, originalGraph);
+    await writeGraph(workflowRoot, originalGraph);
   });
 });
 
@@ -598,16 +598,16 @@ describe('graphDiff', () => {
   beforeEach(async () => {
     projectDir = tmpProject();
     makeProjectWithArtifacts(projectDir);
-    const gsdRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.gsd');
     const graph = await buildGraph(projectDir);
-    await writeGraph(gsdRoot, graph);
+    await writeGraph(workflowRoot, graph);
   });
 
   afterEach(() => rmSync(projectDir, { recursive: true, force: true }));
 
   it('returns empty diff when comparing graph to itself (snapshot = current)', async () => {
-    const gsdRoot = join(projectDir, '.gsd');
-    await writeSnapshot(gsdRoot);
+    const workflowRoot = join(projectDir, '.gsd');
+    await writeSnapshot(workflowRoot);
     const diff = await graphDiff(projectDir);
     assert.ok(Array.isArray(diff.nodes.added));
     assert.ok(Array.isArray(diff.nodes.removed));
@@ -617,9 +617,9 @@ describe('graphDiff', () => {
   });
 
   it('returns added nodes when a new node appears after snapshot', async () => {
-    const gsdRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.gsd');
     // Take snapshot of the original graph
-    await writeSnapshot(gsdRoot);
+    await writeSnapshot(workflowRoot);
 
     // Now write a graph with an extra node
     const extraGraph: KnowledgeGraph = {
@@ -629,14 +629,14 @@ describe('graphDiff', () => {
       ],
       edges: [],
     };
-    await writeGraph(gsdRoot, extraGraph);
+    await writeGraph(workflowRoot, extraGraph);
 
     const diff = await graphDiff(projectDir);
     assert.ok(diff.nodes.added.includes('brand-new-node'), 'new node should be in added');
   });
 
   it('returns removed nodes when a node disappears after snapshot', async () => {
-    const gsdRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.gsd');
     // Create snapshot with a node that won't exist in current graph
     const snapshotGraph: KnowledgeGraph = {
       builtAt: new Date().toISOString(),
@@ -646,7 +646,7 @@ describe('graphDiff', () => {
       edges: [],
     };
     writeFileSync(
-      join(gsdRoot, 'graphs', '.last-build-snapshot.json'),
+      join(workflowRoot, 'graphs', '.last-build-snapshot.json'),
       JSON.stringify({ ...snapshotGraph, snapshotAt: new Date().toISOString() }),
       'utf-8',
     );
@@ -667,9 +667,9 @@ describe('graphDiff', () => {
   });
 
   it('writeSnapshot creates .last-build-snapshot.json with snapshotAt', async () => {
-    const gsdRoot = join(projectDir, '.gsd');
-    await writeSnapshot(gsdRoot);
-    const snapshotPath = join(gsdRoot, 'graphs', '.last-build-snapshot.json');
+    const workflowRoot = join(projectDir, '.gsd');
+    await writeSnapshot(workflowRoot);
+    const snapshotPath = join(workflowRoot, 'graphs', '.last-build-snapshot.json');
     assert.ok(existsSync(snapshotPath));
     const raw = readFileSync(snapshotPath, 'utf-8');
     const parsed = JSON.parse(raw) as KnowledgeGraph & { snapshotAt: string };

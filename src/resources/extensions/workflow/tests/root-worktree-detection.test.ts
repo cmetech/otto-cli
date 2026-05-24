@@ -1,13 +1,13 @@
 /**
  * gsdroot-worktree-detection.test.ts — Regression test for #2594.
  *
- * gsdRoot() must return the canonical project .gsd directory when basePath
+ * workflowRoot() must return the canonical project .gsd directory when basePath
  * is inside a .gsd/worktrees/<name>/ structure. Worktree-local .gsd folders
  * are projection roots; runtime/control state stays DB-authoritative at the
  * project .gsd.
  *
  * The bug: when a git worktree lives at /project/.gsd/worktrees/M008/,
- * probeGsdRoot() runs `git rev-parse --show-toplevel` which can return the
+ * probeWorkflowRoot() runs `git rev-parse --show-toplevel` which can return the
  * main project root (not the worktree root) depending on git version and
  * worktree setup. The walk-up then finds /project/.gsd and returns that
  * instead of the worktree's own .gsd path.
@@ -21,14 +21,14 @@ import { mkdtempSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 
-import { gsdProjectionRoot, gsdRoot, resolveGsdPathContract, _clearGsdRootCache } from "../paths.ts";
+import { workflowProjectionRoot, workflowRoot, resolveWorkflowPathContract, _clearWorkflowRootCache } from "../paths.ts";
 
-describe("gsdRoot() worktree detection (#2594)", () => {
+describe("workflowRoot() worktree detection (#2594)", () => {
   let projectRoot: string;
   let projectGsd: string;
 
   beforeEach(() => {
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
     // Create a temporary project with a git repo to simulate real conditions.
     // realpathSync handles macOS /tmp -> /private/tmp.
     projectRoot = realpathSync(mkdtempSync(join(tmpdir(), "gsdroot-wt-")));
@@ -58,7 +58,7 @@ describe("gsdRoot() worktree detection (#2594)", () => {
   });
 
   afterEach(() => {
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
     rmSync(projectRoot, { recursive: true, force: true });
   });
 
@@ -69,14 +69,14 @@ describe("gsdRoot() worktree detection (#2594)", () => {
     const worktreeGsd = join(worktreeBase, ".gsd");
     mkdirSync(worktreeGsd, { recursive: true });
 
-    const result = gsdRoot(worktreeBase);
+    const result = workflowRoot(worktreeBase);
     assert.equal(
       result,
       projectGsd,
       `Expected canonical project .gsd (${projectGsd}), got ${result}.`,
     );
-    assert.equal(resolveGsdPathContract(worktreeBase).worktreeGsd, worktreeGsd);
-    assert.equal(gsdProjectionRoot(worktreeBase), worktreeGsd);
+    assert.equal(resolveWorkflowPathContract(worktreeBase).worktreeGsd, worktreeGsd);
+    assert.equal(workflowProjectionRoot(worktreeBase), worktreeGsd);
   });
 
   test("returns project .gsd when worktree .gsd does not exist yet", () => {
@@ -84,13 +84,13 @@ describe("gsdRoot() worktree detection (#2594)", () => {
     mkdirSync(worktreeBase, { recursive: true });
     // NOTE: no .gsd/ inside worktreeBase
 
-    const result = gsdRoot(worktreeBase);
+    const result = workflowRoot(worktreeBase);
     assert.equal(
       result,
       projectGsd,
       `Expected canonical project .gsd (${projectGsd}), got ${result}.`,
     );
-    assert.equal(gsdProjectionRoot(worktreeBase), join(worktreeBase, ".gsd"));
+    assert.equal(workflowProjectionRoot(worktreeBase), join(worktreeBase, ".gsd"));
   });
 
   test("returns project .gsd when basePath is a real git worktree inside .gsd/worktrees/", () => {
@@ -112,13 +112,13 @@ describe("gsdRoot() worktree detection (#2594)", () => {
     }
 
     // The real git worktree exists at worktreeBase but has NO .gsd/ subdir yet
-    const gsdResult = gsdRoot(worktreeBase);
+    const workflowResult = workflowRoot(worktreeBase);
     assert.equal(
-      gsdResult,
+      workflowResult,
       projectGsd,
-      `Expected canonical project .gsd (${projectGsd}), got ${gsdResult}`,
+      `Expected canonical project .gsd (${projectGsd}), got ${workflowResult}`,
     );
-    assert.equal(gsdProjectionRoot(worktreeBase), join(worktreeBase, ".gsd"));
+    assert.equal(workflowProjectionRoot(worktreeBase), join(worktreeBase, ".gsd"));
 
     // Cleanup worktree
     spawnSync("git", ["worktree", "remove", "--force", worktreeBase], {
@@ -128,7 +128,7 @@ describe("gsdRoot() worktree detection (#2594)", () => {
   });
 
   test("still returns project .gsd for normal (non-worktree) basePath", () => {
-    const result = gsdRoot(projectRoot);
+    const result = workflowRoot(projectRoot);
     assert.equal(result, projectGsd);
   });
 
@@ -136,7 +136,7 @@ describe("gsdRoot() worktree detection (#2594)", () => {
     const subdir = join(projectRoot, "src", "lib");
     mkdirSync(subdir, { recursive: true });
 
-    const result = gsdRoot(subdir);
+    const result = workflowRoot(subdir);
     assert.equal(
       result,
       projectGsd,

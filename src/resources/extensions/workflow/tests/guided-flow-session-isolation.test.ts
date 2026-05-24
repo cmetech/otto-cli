@@ -110,15 +110,15 @@ describe("#2985 Bug 4 — getDiscussionMilestoneId must be keyed by basePath", (
 test("checkAutoStartAfterDiscuss ignores missing manifest for single-milestone discuss on established project", () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-auto-start-manifest-"));
   try {
-    const gsdDir = join(base, ".gsd");
-    const milestoneDir = join(gsdDir, "milestones", "M001");
+    const workflowDir = join(base, ".gsd");
+    const milestoneDir = join(workflowDir, "milestones", "M001");
     mkdirSync(milestoneDir, { recursive: true });
-    mkdirSync(join(gsdDir, "milestones", "M002"), { recursive: true });
+    mkdirSync(join(workflowDir, "milestones", "M002"), { recursive: true });
     writeFileSync(
-      join(gsdDir, "PROJECT.md"),
+      join(workflowDir, "PROJECT.md"),
       `# Project\n\n| M001 | First milestone | active |\n| M002 | Second milestone | queued |\n`,
     );
-    writeFileSync(join(gsdDir, "STATE.md"), "# State\n");
+    writeFileSync(join(workflowDir, "STATE.md"), "# State\n");
     writeFileSync(join(milestoneDir, "M001-CONTEXT.md"), "# M001 Context\n");
 
     clearPendingAutoStart();
@@ -142,11 +142,11 @@ test("checkAutoStartAfterDiscuss(basePath) selects the matching pending entry wh
   const projectB = mkdtempSync(join(tmpdir(), "gsd-auto-start-project-b-"));
 
   function writeReadyArtifacts(base: string, milestoneId: string): void {
-    const gsdDir = join(base, ".gsd");
-    const milestoneDir = join(gsdDir, "milestones", milestoneId);
+    const workflowDir = join(base, ".gsd");
+    const milestoneDir = join(workflowDir, "milestones", milestoneId);
     mkdirSync(milestoneDir, { recursive: true });
-    writeFileSync(join(gsdDir, "PROJECT.md"), `# Project\n\n| ${milestoneId} | Milestone | active |\n`);
-    writeFileSync(join(gsdDir, "STATE.md"), "# State\n");
+    writeFileSync(join(workflowDir, "PROJECT.md"), `# Project\n\n| ${milestoneId} | Milestone | active |\n`);
+    writeFileSync(join(workflowDir, "STATE.md"), "# State\n");
     writeFileSync(join(milestoneDir, `${milestoneId}-CONTEXT.md`), "# Context\n");
   }
 
@@ -183,11 +183,11 @@ test("checkAutoStartAfterDiscuss can emit ready without scheduling auto-start", 
   let waitForIdleCalls = 0;
   const notifications: string[] = [];
   try {
-    const gsdDir = join(base, ".gsd");
-    const milestoneDir = join(gsdDir, "milestones", "M001");
+    const workflowDir = join(base, ".gsd");
+    const milestoneDir = join(workflowDir, "milestones", "M001");
     mkdirSync(milestoneDir, { recursive: true });
-    writeFileSync(join(gsdDir, "PROJECT.md"), "# Project\n\n| M001 | First milestone | active |\n");
-    writeFileSync(join(gsdDir, "STATE.md"), "# State\n");
+    writeFileSync(join(workflowDir, "PROJECT.md"), "# Project\n\n| M001 | First milestone | active |\n");
+    writeFileSync(join(workflowDir, "STATE.md"), "# State\n");
     writeFileSync(join(milestoneDir, "M001-CONTEXT.md"), "# M001 Context\n");
 
     clearPendingAutoStart();

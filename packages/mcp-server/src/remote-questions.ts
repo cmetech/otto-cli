@@ -182,8 +182,8 @@ function loadPreferencesFromFile(path: string): Record<string, unknown> | null {
 }
 
 function resolveRemoteConfig(): ResolvedConfig | null {
-  const gsdHome = process.env['GSD_HOME'] ?? join(homedir(), '.gsd');
-  const globalPath = join(gsdHome, 'PREFERENCES.md');
+  const workflowHome = process.env['GSD_HOME'] ?? join(homedir(), '.gsd');
+  const globalPath = join(workflowHome, 'PREFERENCES.md');
 
   const prefs = loadPreferencesFromFile(globalPath);
   if (!prefs) return null;

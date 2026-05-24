@@ -9,15 +9,15 @@ import { startAutoDetached } from "./auto.js";
 import { deriveState } from "./state.js";
 import type { WorkflowDbState } from "./types.js";
 
-export type GsdHomeActionId =
+export type WorkflowHomeActionId =
   | "continue_step"
   | "run_auto"
   | "review_status"
   | "fix_recover"
   | "start_configure";
 
-export interface GsdHomeAction {
-  id: GsdHomeActionId;
+export interface WorkflowHomeAction {
+  id: WorkflowHomeActionId;
   label: string;
   description: string;
   enabled: boolean;
@@ -25,10 +25,10 @@ export interface GsdHomeAction {
   disabledReason?: string;
 }
 
-export interface GsdHomeModel {
+export interface WorkflowHomeModel {
   title: string;
   summary: string[];
-  actions: GsdHomeAction[];
+  actions: WorkflowHomeAction[];
 }
 
 function activeWorkLabel(state: WorkflowDbState): string {
@@ -46,7 +46,7 @@ function disabled(description: string, reason: string): string {
   return `Unavailable: ${reason}. ${description}`;
 }
 
-export function buildHomeModel(state: WorkflowDbState): GsdHomeModel {
+export function buildHomeModel(state: WorkflowDbState): WorkflowHomeModel {
   const blocked = isBlocked(state);
   const complete = state.phase === "complete";
   const hasActiveWork = Boolean(state.activeMilestone);
@@ -59,7 +59,7 @@ export function buildHomeModel(state: WorkflowDbState): GsdHomeModel {
         ? "there is no active milestone"
         : "";
 
-  const recommended: GsdHomeActionId = blocked
+  const recommended: WorkflowHomeActionId = blocked
     ? "fix_recover"
     : complete || !hasActiveWork
       ? "start_configure"
@@ -127,7 +127,7 @@ export function buildHomeModel(state: WorkflowDbState): GsdHomeModel {
   };
 }
 
-function toNextAction(action: GsdHomeAction): NextAction {
+function toNextAction(action: WorkflowHomeAction): NextAction {
   return {
     id: action.id,
     label: action.label,
@@ -136,7 +136,7 @@ function toNextAction(action: GsdHomeAction): NextAction {
   };
 }
 
-function formatHomeText(model: GsdHomeModel): string {
+function formatHomeText(model: WorkflowHomeModel): string {
   const lines = [model.title, ""];
   for (const line of model.summary) lines.push(line);
   lines.push("");
@@ -162,7 +162,7 @@ async function runDetailedEntry(
   await showSmartEntry(ctx, pi, basePath, { step: true });
 }
 
-export async function showGsdHome(
+export async function showWorkflowHome(
   ctx: ExtensionCommandContext,
   pi: ExtensionAPI,
   basePath: string,

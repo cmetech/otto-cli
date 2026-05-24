@@ -10,8 +10,8 @@ import { existsSync, readFileSync, mkdirSync } from "node:fs";
 import { join, resolve as resolvePath, sep } from "node:path";
 import { homedir } from "node:os";
 import { deriveState } from "./state.js";
-import { gsdRoot } from "./paths.js";
-import { gsdHome } from "./home.js";
+import { workflowRoot } from "./paths.js";
+import { workflowHome } from "./home.js";
 import { appendCapture, hasPendingCaptures, loadPendingCaptures } from "./captures.js";
 import { appendOverride, appendKnowledge } from "./files.js";
 import {
@@ -32,8 +32,8 @@ import {
   buildWorkflowDispatchContent,
 } from "./workflow-protocol.js";
 import {
-  restoreGsdWorkflowTools,
-  scopeGsdWorkflowToolsForDispatch,
+  restoreWorkflowWorkflowTools,
+  scopeWorkflowWorkflowToolsForDispatch,
 } from "./bootstrap/register-hooks.js";
 import { BRAND, CONFIG_DIR_NAME, slashCommand } from "./strings.js";
 
@@ -79,7 +79,7 @@ async function fetchLatestVersionForCommand(): Promise<string | null> {
 }
 
 export function dispatchDoctorHeal(pi: ExtensionAPI, scope: string | undefined, reportText: string, structuredIssues: string): void {
-  const workflowPath = process.env.LOOP24_WORKFLOW_PATH ?? process.env.GSD_WORKFLOW_PATH ?? join(gsdHome(), "agent", "WORKFLOW.md");
+  const workflowPath = process.env.LOOP24_WORKFLOW_PATH ?? process.env.GSD_WORKFLOW_PATH ?? join(workflowHome(), "agent", "WORKFLOW.md");
   const workflow = readFileSync(workflowPath, "utf-8");
   const prompt = loadPrompt("doctor-heal", {
     doctorSummary: buildDoctorHealSummary(reportText),
@@ -89,7 +89,7 @@ export function dispatchDoctorHeal(pi: ExtensionAPI, scope: string | undefined, 
   });
 
   const content = buildWorkflowDispatchContent({ workflow, workflowPath, task: prompt });
-  const savedTools = scopeGsdWorkflowToolsForDispatch(pi);
+  const savedTools = scopeWorkflowWorkflowToolsForDispatch(pi);
 
   try {
     pi.sendMessage(
@@ -97,7 +97,7 @@ export function dispatchDoctorHeal(pi: ExtensionAPI, scope: string | undefined, 
       { triggerTurn: true },
     );
   } finally {
-    restoreGsdWorkflowTools(pi, savedTools);
+    restoreWorkflowWorkflowTools(pi, savedTools);
   }
 }
 
@@ -223,9 +223,9 @@ export async function handleCapture(args: string, ctx: ExtensionCommandContext):
   const basePath = currentDirectoryRoot();
 
   // Ensure .loop24/ exists — capture should work even without a milestone
-  const gsdDir = gsdRoot(basePath);
-  if (!existsSync(gsdDir)) {
-    mkdirSync(gsdDir, { recursive: true });
+  const workflowDir = workflowRoot(basePath);
+  if (!existsSync(workflowDir)) {
+    mkdirSync(workflowDir, { recursive: true });
   }
 
   const id = appendCapture(basePath, text);
@@ -273,9 +273,9 @@ export async function handleTriage(ctx: ExtensionCommandContext, pi: ExtensionAP
     roadmapContext: roadmapContext || "(no active roadmap)",
   });
 
-  const workflowPath = process.env.LOOP24_WORKFLOW_PATH ?? process.env.GSD_WORKFLOW_PATH ?? join(gsdHome(), "agent", "WORKFLOW.md");
+  const workflowPath = process.env.LOOP24_WORKFLOW_PATH ?? process.env.GSD_WORKFLOW_PATH ?? join(workflowHome(), "agent", "WORKFLOW.md");
   const workflow = readFileSync(workflowPath, "utf-8");
-  const savedTools = scopeGsdWorkflowToolsForDispatch(pi);
+  const savedTools = scopeWorkflowWorkflowToolsForDispatch(pi);
 
   try {
     pi.sendMessage(
@@ -287,7 +287,7 @@ export async function handleTriage(ctx: ExtensionCommandContext, pi: ExtensionAP
       { triggerTurn: true },
     );
   } finally {
-    restoreGsdWorkflowTools(pi, savedTools);
+    restoreWorkflowWorkflowTools(pi, savedTools);
   }
 }
 

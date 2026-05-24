@@ -45,7 +45,7 @@ describe("migrate-external worktree guard (#2970)", () => {
     worktreePath = join(base, ".gsd", "worktrees", "M001");
     run(`git worktree add -b milestone/M001 ${worktreePath}`, base);
 
-    // Populate worktree with a .gsd directory (simulating syncGsdStateToWorktree)
+    // Populate worktree with a .gsd directory (simulating syncWorkflowStateToWorktree)
     const worktreeGsd = join(worktreePath, ".gsd");
     mkdirSync(worktreeGsd, { recursive: true });
     writeFileSync(join(worktreeGsd, "PREFERENCES.md"), "# prefs\n", "utf-8");

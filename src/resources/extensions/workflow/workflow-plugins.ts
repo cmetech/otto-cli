@@ -24,7 +24,7 @@ import { fileURLToPath } from "node:url";
 import { parse as parseYaml } from "yaml";
 
 import { loadRegistry, type WorkflowMode } from "./workflow-templates.js";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 
 export type { WorkflowMode } from "./workflow-templates.js";
 
@@ -58,14 +58,14 @@ function resolveBundledDir(): string {
   const moduleDir = dirname(fileURLToPath(import.meta.url));
   const local = join(moduleDir, "workflow-templates");
   if (existsSync(local)) return local;
-  const agentGsdDir = join(gsdHome(), "agent", "extensions", "workflow", "workflow-templates");
-  if (existsSync(agentGsdDir)) return agentGsdDir;
+  const agentWorkflowDir = join(workflowHome(), "agent", "extensions", "workflow", "workflow-templates");
+  if (existsSync(agentWorkflowDir)) return agentWorkflowDir;
   return local;
 }
 
 function globalPluginsDir(): string {
   
-  return join(gsdHome(), "workflows");
+  return join(workflowHome(), "workflows");
 }
 
 function projectPluginsDir(basePath: string): string {

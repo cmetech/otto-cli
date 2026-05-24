@@ -37,8 +37,8 @@ function run(cmd: string, args: string[], cwd: string): string {
 describe("isInheritedRepo when git root is HOME (#2393)", () => {
   let fakeHome: string;
   let stateDir: string;
-  let origGsdHome: string | undefined;
-  let origGsdStateDir: string | undefined;
+  let origWorkflowHome: string | undefined;
+  let origWorkflowStateDir: string | undefined;
 
   beforeEach(() => {
     // Create a fake HOME that is itself a git repo (dotfile manager scenario).
@@ -56,17 +56,17 @@ describe("isInheritedRepo when git root is HOME (#2393)", () => {
 
     // Save and override env. Point GSD_HOME at fakeHome/.gsd so the
     // function recognizes it as the global state directory.
-    origGsdHome = process.env.GSD_HOME;
-    origGsdStateDir = process.env.GSD_STATE_DIR;
+    origWorkflowHome = process.env.GSD_HOME;
+    origWorkflowStateDir = process.env.GSD_STATE_DIR;
     process.env.GSD_HOME = join(fakeHome, ".gsd");
     stateDir = mkdtempSync(join(tmpdir(), "gsd-state-"));
     process.env.GSD_STATE_DIR = stateDir;
   });
 
   afterEach(() => {
-    if (origGsdHome !== undefined) process.env.GSD_HOME = origGsdHome;
+    if (origWorkflowHome !== undefined) process.env.GSD_HOME = origWorkflowHome;
     else delete process.env.GSD_HOME;
-    if (origGsdStateDir !== undefined) process.env.GSD_STATE_DIR = origGsdStateDir;
+    if (origWorkflowStateDir !== undefined) process.env.GSD_STATE_DIR = origWorkflowStateDir;
     else delete process.env.GSD_STATE_DIR;
 
     rmSync(fakeHome, { recursive: true, force: true });
@@ -94,11 +94,11 @@ describe("isInheritedRepo when git root is HOME (#2393)", () => {
     // .gsd is a symlink to an external state directory.
     const externalState = join(stateDir, "projects", "home-project");
     mkdirSync(externalState, { recursive: true });
-    const gsdDir = join(fakeHome, ".gsd");
+    const workflowDir = join(fakeHome, ".gsd");
 
     // Remove the plain directory and replace with a symlink (real project .gsd)
-    rmSync(gsdDir, { recursive: true, force: true });
-    symlinkSync(externalState, gsdDir);
+    rmSync(workflowDir, { recursive: true, force: true });
+    symlinkSync(externalState, workflowDir);
 
     const projectDir = join(fakeHome, "projects", "my-app");
     mkdirSync(projectDir, { recursive: true });

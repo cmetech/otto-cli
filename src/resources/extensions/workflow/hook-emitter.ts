@@ -4,7 +4,7 @@
 // (auto-loop, git-service callers, verification, budget) can emit Layer 2
 // events without having to thread `pi` through every function signature.
 //
-// Set once from `registerGsdExtension`. All emitters are best-effort — a
+// Set once from `registerWorkflowExtension`. All emitters are best-effort — a
 // missing `pi` (e.g. in standalone unit tests) silently becomes a no-op.
 
 import type { ExtensionAPI } from "@loop24/pi-coding-agent";

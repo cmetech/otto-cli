@@ -5,7 +5,7 @@
  * silent data loss. When a repo has a remote URL, the identity hash
  * should be based solely on the remote — making moves transparent.
  *
- * For local-only repos (no remote), ensureGsdSymlink should detect
+ * For local-only repos (no remote), ensureWorkflowSymlink should detect
  * orphaned state directories with a matching .gsd-id marker and
  * recover them automatically.
  */
@@ -29,8 +29,8 @@ import { execFileSync } from "node:child_process";
 
 import {
   repoIdentity,
-  externalGsdRoot,
-  ensureGsdSymlink,
+  externalWorkflowRoot,
+  ensureWorkflowSymlink,
   readRepoMeta,
   externalProjectsRoot,
 } from "../repo-identity.ts";
@@ -106,12 +106,12 @@ describe("project-relocation-recovery (#2750)", () => {
     rmSync(repoB, { recursive: true, force: true });
   });
 
-  test("ensureGsdSymlink reuses the same external dir after repo move (remote repo)", () => {
+  test("ensureWorkflowSymlink reuses the same external dir after repo move (remote repo)", () => {
     const repoA = realpathSync(mkdtempSync(join(tmpdir(), "gsd-reloc-reuse-a-")));
     initRepo(repoA, "https://github.com/example/reloc-reuse.git");
 
     // Initialize GSD state with some planning data
-    const externalA = ensureGsdSymlink(repoA);
+    const externalA = ensureWorkflowSymlink(repoA);
     const milestonesPath = join(externalA, "milestones");
     mkdirSync(milestonesPath, { recursive: true });
     writeFileSync(
@@ -127,8 +127,8 @@ describe("project-relocation-recovery (#2750)", () => {
     );
     renameSync(repoA, repoB);
 
-    // ensureGsdSymlink at the new location should find the same external dir
-    const externalB = ensureGsdSymlink(repoB);
+    // ensureWorkflowSymlink at the new location should find the same external dir
+    const externalB = ensureWorkflowSymlink(repoB);
 
     assert.strictEqual(
       normalizePath(externalB),
@@ -158,7 +158,7 @@ describe("project-relocation-recovery (#2750)", () => {
     const repoA = realpathSync(mkdtempSync(join(tmpdir(), "gsd-reloc-meta-a-")));
     initRepo(repoA, "https://github.com/example/reloc-meta.git");
 
-    const externalA = ensureGsdSymlink(repoA);
+    const externalA = ensureWorkflowSymlink(repoA);
     const metaBefore = readRepoMeta(externalA);
     assert.ok(metaBefore !== null, "metadata should exist before move");
 
@@ -169,7 +169,7 @@ describe("project-relocation-recovery (#2750)", () => {
     );
     renameSync(repoA, repoB);
 
-    const externalB = ensureGsdSymlink(repoB);
+    const externalB = ensureWorkflowSymlink(repoB);
     const metaAfter = readRepoMeta(externalB);
     assert.ok(metaAfter !== null, "metadata should exist after move");
     assert.strictEqual(
@@ -188,14 +188,14 @@ describe("project-relocation-recovery (#2750)", () => {
 
   // ── Local-only repos: .gsd-id marker provides recovery ────────────────
 
-  test("ensureGsdSymlink writes a .gsd-id marker in the project root", () => {
+  test("ensureWorkflowSymlink writes a .gsd-id marker in the project root", () => {
     const repo = realpathSync(mkdtempSync(join(tmpdir(), "gsd-reloc-marker-")));
     initRepo(repo);
 
-    ensureGsdSymlink(repo);
+    ensureWorkflowSymlink(repo);
 
     const markerPath = join(repo, ".gsd-id");
-    assert.ok(existsSync(markerPath), ".gsd-id marker must be written by ensureGsdSymlink");
+    assert.ok(existsSync(markerPath), ".gsd-id marker must be written by ensureWorkflowSymlink");
 
     const markerId = readFileSync(markerPath, "utf-8").trim();
     const computedId = repoIdentity(repo);
@@ -210,7 +210,7 @@ describe("project-relocation-recovery (#2750)", () => {
     // No remote — identity includes gitRoot
 
     // Initialize GSD state
-    const externalA = ensureGsdSymlink(repoA);
+    const externalA = ensureWorkflowSymlink(repoA);
     mkdirSync(join(externalA, "milestones"), { recursive: true });
     writeFileSync(
       join(externalA, "milestones", "M001.md"),
@@ -235,8 +235,8 @@ describe("project-relocation-recovery (#2750)", () => {
       "local-only repo identity changes with move (expected)",
     );
 
-    // But ensureGsdSymlink should detect .gsd-id marker and recover
-    const externalB = ensureGsdSymlink(repoB);
+    // But ensureWorkflowSymlink should detect .gsd-id marker and recover
+    const externalB = ensureWorkflowSymlink(repoB);
     assert.ok(
       existsSync(join(externalB, "milestones", "M001.md")),
       "local-only repo must recover state via .gsd-id marker after move",
@@ -268,7 +268,7 @@ describe("project-relocation-recovery (#2750)", () => {
     const repoA = realpathSync(mkdtempSync(join(tmpdir(), "gsd-reloc-orphan-a-")));
     initRepo(repoA, "https://github.com/example/no-orphan.git");
 
-    ensureGsdSymlink(repoA);
+    ensureWorkflowSymlink(repoA);
 
     // Count project dirs before move
     const projectsDir = externalProjectsRoot();
@@ -283,7 +283,7 @@ describe("project-relocation-recovery (#2750)", () => {
     );
     renameSync(repoA, repoB);
 
-    ensureGsdSymlink(repoB);
+    ensureWorkflowSymlink(repoB);
 
     const countAfter = readdirSync(projectsDir).length;
     assert.strictEqual(

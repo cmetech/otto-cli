@@ -27,7 +27,7 @@ interface McpConfigFile {
   [key: string]: unknown;
 }
 
-export function resolveBundledGsdCliPath(env: NodeJS.ProcessEnv = process.env): string | null {
+export function resolveBundledWorkflowCliPath(env: NodeJS.ProcessEnv = process.env): string | null {
   const explicit = env.GSD_CLI_PATH?.trim() || env.GSD_BIN_PATH?.trim();
   if (explicit) return explicit;
 
@@ -49,10 +49,10 @@ export function buildProjectWorkflowMcpServerConfig(
   env: NodeJS.ProcessEnv = process.env,
 ): ProjectMcpServerConfig {
   const resolvedProjectRoot = resolve(projectRoot);
-  const gsdCliPath = resolveBundledGsdCliPath(env);
+  const workflowCliPath = resolveBundledWorkflowCliPath(env);
   const launch = detectWorkflowMcpLaunchConfig(resolvedProjectRoot, {
     ...env,
-    ...(gsdCliPath ? { GSD_CLI_PATH: gsdCliPath, GSD_BIN_PATH: gsdCliPath } : {}),
+    ...(workflowCliPath ? { GSD_CLI_PATH: workflowCliPath, GSD_BIN_PATH: workflowCliPath } : {}),
   });
 
   if (!launch) {

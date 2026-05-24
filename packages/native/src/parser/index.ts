@@ -20,7 +20,7 @@ export type {
   NativeBoundaryMapEntry,
   NativeRoadmap,
   NativeRoadmapSlice,
-  ParsedGsdFile,
+  ParsedWorkflowFile,
   SectionResult,
 } from "./types.js";
 
@@ -77,10 +77,10 @@ export function extractAllSections(
  * Reads and parses all markdown files under the given directory.
  * Each file gets frontmatter parsing and section extraction.
  */
-export function batchParseGsdFiles(
+export function batchParseWorkflowFiles(
   directory: string,
 ): BatchParseResult {
-  return (native as Record<string, Function>).batchParseGsdFiles(
+  return (native as Record<string, Function>).batchParseWorkflowFiles(
     directory,
   ) as BatchParseResult;
 }

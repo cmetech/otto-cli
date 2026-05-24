@@ -20,7 +20,7 @@
 
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { basename, join } from "node:path";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { truncateWithEllipsis } from "../shared/format-utils.js";
 import { nativeParseJsonlTail } from "./native-parser-bridge.js";
 import { MAX_JSONL_BYTES, parseJSONL } from "./jsonl-utils.js";
@@ -334,14 +334,14 @@ export function getDeepDiagnostic(basePath: string, worktreePath?: string): stri
   let trace: ExecutionTrace | null = null;
   try {
     if (worktreePath) {
-      const wtActivityDir = join(gsdRoot(worktreePath), "activity");
+      const wtActivityDir = join(workflowRoot(worktreePath), "activity");
       trace = readLastActivityLog(wtActivityDir);
     }
   } catch { /* non-fatal — fall through to root */ }
 
   // Fall back to root activity logs
   if (!trace || trace.toolCallCount === 0) {
-    const activityDir = join(gsdRoot(basePath), "activity");
+    const activityDir = join(workflowRoot(basePath), "activity");
     trace = readLastActivityLog(activityDir);
   }
 
@@ -355,7 +355,7 @@ export function getDeepDiagnostic(basePath: string, worktreePath?: string): stri
  */
 export function readActiveMilestoneId(basePath: string): string | null {
   try {
-    const statePath = join(gsdRoot(basePath), "STATE.md");
+    const statePath = join(workflowRoot(basePath), "STATE.md");
     if (!existsSync(statePath)) return null;
     const content = readFileSync(statePath, "utf-8");
     const match = /\*\*Active Milestone:\*\*\s*(\S+)/i.exec(content);

@@ -10,7 +10,7 @@ import { join, basename } from "node:path";
 
 import type { Rule } from "./ttsr-manager.js";
 import { splitFrontmatter, parseFrontmatterMap } from "../shared/frontmatter.js";
-import { gsdHome } from "../workflow/home.js";
+import { workflowHome } from "../workflow/home.js";
 
 function parseRuleFile(filePath: string): Rule | null {
 	let content: string;
@@ -60,7 +60,7 @@ function scanDir(dir: string): Rule[] {
  * Project rules override global rules with the same name.
  */
 export function loadRules(cwd: string): Rule[] {
-	const globalDir = join(gsdHome(), "agent", "rules");
+	const globalDir = join(workflowHome(), "agent", "rules");
 	const projectDir = join(cwd, ".gsd", "rules");
 
 	const globalRules = scanDir(globalDir);

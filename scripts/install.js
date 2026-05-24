@@ -45,10 +45,10 @@ const c = supportsColor
 
 // ── Version ────────────────────────────────────────────────────────────────
 
-let gsdVersion = '0.0.0'
+let workflowVersion = '0.0.0'
 try {
   const pkg = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf-8'))
-  gsdVersion = pkg.version || '0.0.0'
+  workflowVersion = pkg.version || '0.0.0'
 } catch { /* ignore */ }
 
 // ── Brand strings (templated from package.json so the published @ericsson/loop24
@@ -64,13 +64,13 @@ try {
 } catch { /* ignore — defaults are reasonable */ }
 
 if (HAS_VERSION) {
-  process.stdout.write(gsdVersion + '\n')
+  process.stdout.write(workflowVersion + '\n')
   process.exit(0)
 }
 
 if (HAS_HELP) {
   process.stdout.write(`
-  ${c.bold}${BRAND} Installer${c.reset} ${c.dim}v${gsdVersion}${c.reset}
+  ${c.bold}${BRAND} Installer${c.reset} ${c.dim}v${workflowVersion}${c.reset}
 
   ${c.yellow}Usage:${c.reset}
     npx ${PKG_NAME}@latest          Install ${BRAND} globally (recommended)
@@ -124,7 +124,7 @@ function stopSpinner() {
 // ── Output helpers ─────────────────────────────────────────────────────────
 
 function printBanner() {
-  process.stdout.write(`\n  ${c.bold}${BRAND}${c.reset} ${c.dim}v${gsdVersion}${c.reset}\n  ${c.dim}compliant agent for developers${c.reset}\n\n`)
+  process.stdout.write(`\n  ${c.bold}${BRAND}${c.reset} ${c.dim}v${workflowVersion}${c.reset}\n  ${c.dim}compliant agent for developers${c.reset}\n\n`)
 }
 
 function printStep(label, detail) {
@@ -173,7 +173,7 @@ async function installGlobally() {
   try {
     const result = await new Promise((res) => {
       execCb(
-        `npm install -g ${PKG_NAME}@${gsdVersion}`,
+        `npm install -g ${PKG_NAME}@${workflowVersion}`,
         { timeout: 300_000 },
         (error, stdout, stderr) => {
           res({ ok: !error, stdout: stdout || '', stderr: stderr || '', error })
@@ -206,7 +206,7 @@ async function installLocally() {
   try {
     const result = await new Promise((res) => {
       execCb(
-        `npm install ${PKG_NAME}@${gsdVersion}`,
+        `npm install ${PKG_NAME}@${workflowVersion}`,
         { cwd: process.cwd(), timeout: 300_000 },
         (error, stdout, stderr) => {
           res({ ok: !error, stdout: stdout || '', stderr: stderr || '', error })

@@ -34,7 +34,7 @@ import {
 } from "./db.js";
 import { atomicWriteSync } from "./atomic-write.js";
 import { execFileSync } from "node:child_process";
-import { gsdRoot, resolveGsdPathContract } from "./paths.js";
+import { workflowRoot, resolveWorkflowPathContract } from "./paths.js";
 import {
   createWorktree,
   removeWorktree,
@@ -80,8 +80,8 @@ import {
   nativeWorktreeList,
   nativeLsFiles,
 } from "./native-git-bridge.js";
-import { gsdHome } from "./home.js";
-import { type MilestoneScope, type GsdWorkspace, createWorkspace } from "./workspace.js";
+import { workflowHome } from "./home.js";
+import { type MilestoneScope, type WorkflowWorkspace, createWorkspace } from "./workspace.js";
 import {
   _finalizeProjectionForMergeImpl,
   _projectRootToWorktreeImpl,
@@ -115,7 +115,7 @@ const ROOT_STATE_FILES = [
   "metrics.json",
   "mcp.json",
   // NOTE: project preferences are intentionally NOT in ROOT_STATE_FILES.
-  // Forward-sync (main → worktree) is handled explicitly in syncGsdStateToWorktree().
+  // Forward-sync (main → worktree) is handled explicitly in syncWorkflowStateToWorktree().
   // Back-sync (worktree → main) must NEVER overwrite the project root's copy
   // because the project root is authoritative for preferences (#2684).
 ] as const;
@@ -266,7 +266,7 @@ export function _isExpectedWorktreeUnlinkError(
   return code === "ENOENT" || code === "EISDIR";
 }
 
-function stripGsdDisplayPrefix(value: string | undefined | null, id: string): string | undefined {
+function stripWorkflowDisplayPrefix(value: string | undefined | null, id: string): string | undefined {
   const raw = String(value ?? "").trim();
   if (!raw) return undefined;
   const lower = raw.toLowerCase();
@@ -278,13 +278,13 @@ function stripGsdDisplayPrefix(value: string | undefined | null, id: string): st
 // ─── Module State ──────────────────────────────────────────────────────────
 
 /** Active workspace registry — replaces the legacy `originalBase` singleton. */
-let activeWorkspace: GsdWorkspace | null = null;
+let activeWorkspace: WorkflowWorkspace | null = null;
 
-function setActiveWorkspace(ws: GsdWorkspace | null): void {
+function setActiveWorkspace(ws: WorkflowWorkspace | null): void {
   activeWorkspace = ws;
 }
 
-function getActiveWorkspace(): GsdWorkspace | null {
+function getActiveWorkspace(): WorkflowWorkspace | null {
   return activeWorkspace;
 }
 
@@ -381,14 +381,14 @@ function findRegularMergeChangedPaths(basePath: string, milestoneBranch: string,
 }
 
 function clearProjectRootStateFiles(basePath: string, milestoneId: string): void {
-  const gsdDir = gsdRoot(basePath);
+  const workflowDir = workflowRoot(basePath);
   // Phase C pt 2: auto.lock removed from this list — the file is gone
   // (migrated to the workers + unit_dispatches + runtime_kv tables). The
   // remaining transient files (STATE.md, {MID}-META.json) are still
   // worth removing on teardown.
   const transientFiles = [
-    join(gsdDir, "STATE.md"),
-    join(gsdDir, "milestones", milestoneId, `${milestoneId}-META.json`),
+    join(workflowDir, "STATE.md"),
+    join(workflowDir, "milestones", milestoneId, `${milestoneId}-META.json`),
   ];
 
   for (const file of transientFiles) {
@@ -408,8 +408,8 @@ function clearProjectRootStateFiles(basePath: string, milestoneId: string): void
   // `git merge --squash`, git rejects the merge with "local changes would
   // be overwritten", causing silent data loss (#1738).
   const syncedDirs = [
-    join(gsdDir, "milestones", milestoneId),
-    join(gsdDir, "runtime", "units"),
+    join(workflowDir, "milestones", milestoneId),
+    join(workflowDir, "runtime", "units"),
   ];
 
   for (const dir of syncedDirs) {
@@ -547,17 +547,17 @@ export function syncStateToProjectRoot(
 
 /**
  * Read the resource version (semver) from the managed-resources manifest.
- * Uses gsdVersion instead of syncedAt so that launching a second session
+ * Uses workflowVersion instead of syncedAt so that launching a second session
  * doesn't falsely trigger staleness (#804).
  */
 export function readResourceVersion(): string | null {
   const agentDir =
-    (process.env.LOOP24_CODING_AGENT_DIR ?? process.env.GSD_CODING_AGENT_DIR) || join(gsdHome(), "agent");
+    (process.env.LOOP24_CODING_AGENT_DIR ?? process.env.GSD_CODING_AGENT_DIR) || join(workflowHome(), "agent");
   const manifestPath = join(agentDir, "managed-resources.json");
   try {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
-    return typeof manifest?.gsdVersion === "string"
-      ? manifest.gsdVersion
+    return typeof manifest?.workflowVersion === "string"
+      ? manifest.workflowVersion
       : null;
   } catch (e) {
     logWarning("worktree", `readResourceVersion failed: ${(e as Error).message}`);
@@ -616,8 +616,8 @@ export function escapeStaleWorktree(base: string): string {
   // when .gsd is a symlink into ~/.loop24/projects/<hash> and process.cwd()
   // resolved through the symlink. Returning ~ would be catastrophic (#1676).
   const candidateGsd = normalizeWorktreePathForCompare(join(projectRoot, ".gsd"));
-  const gsdHomeNorm = normalizeWorktreePathForCompare(gsdHome());
-  if (candidateGsd === gsdHomeNorm || candidateGsd.startsWith(gsdHomeNorm + "/")) {
+  const workflowHomeNorm = normalizeWorktreePathForCompare(workflowHome());
+  if (candidateGsd === workflowHomeNorm || candidateGsd.startsWith(workflowHomeNorm + "/")) {
     // Don't chdir to home — return base unchanged.
     // resolveProjectRoot() in worktree.ts has the full git-file-based recovery
     // and will be called by the caller (startAuto → projectRoot()).
@@ -642,10 +642,10 @@ export function escapeStaleWorktree(base: string): string {
  * for milestones that have a SUMMARY (fully complete).
  */
 export function cleanStaleRuntimeUnits(
-  gsdRootPath: string,
+  workflowRootPath: string,
   hasMilestoneSummary: (mid: string) => boolean,
 ): number {
-  const runtimeUnitsDir = join(gsdRootPath, "runtime", "units");
+  const runtimeUnitsDir = join(workflowRootPath, "runtime", "units");
   if (!existsSync(runtimeUnitsDir)) return 0;
 
   let cleaned = 0;
@@ -695,27 +695,27 @@ export function cleanStaleRuntimeUnits(
 // ─── Worktree ↔ Main Repo Sync (#1311) ──────────────────────────────────────
 
 /**
- * Scope-typed variant of syncGsdStateToWorktree.
+ * Scope-typed variant of syncWorkflowStateToWorktree.
  *
  * Takes an explicit (rootScope, worktreeScope) pair. Note: milestoneId is not
- * used by syncGsdStateToWorktree — this variant only requires workspace
+ * used by syncWorkflowStateToWorktree — this variant only requires workspace
  * identity. Asserts both scopes belong to the same workspace identity to
  * prevent silent mismatch bugs.
  */
-export function syncGsdStateToWorktreeByScope(
+export function syncWorkflowStateToWorktreeByScope(
   rootScope: MilestoneScope,
   worktreeScope: MilestoneScope,
 ): { synced: string[] } {
   if (rootScope.workspace.identityKey !== worktreeScope.workspace.identityKey) {
     throw new Error(
-      `syncGsdStateToWorktreeByScope: scope identity mismatch — ` +
+      `syncWorkflowStateToWorktreeByScope: scope identity mismatch — ` +
       `rootScope.identityKey="${rootScope.workspace.identityKey}" ` +
       `worktreeScope.identityKey="${worktreeScope.workspace.identityKey}"`,
     );
   }
   const mainBasePath = rootScope.workspace.projectRoot;
   const worktreePath_ = worktreeScope.workspace.worktreeRoot ?? worktreeScope.workspace.projectRoot;
-  return syncGsdStateToWorktree(mainBasePath, worktreePath_);
+  return syncWorkflowStateToWorktree(mainBasePath, worktreePath_);
 }
 
 /**
@@ -732,14 +732,14 @@ export function syncGsdStateToWorktreeByScope(
  * Only adds missing content — never overwrites existing files in the worktree.
  * Worktree files are compatibility projections; DB/project root remains
  * authoritative for runtime state.
- * @deprecated Use syncGsdStateToWorktreeByScope instead.
+ * @deprecated Use syncWorkflowStateToWorktreeByScope instead.
  * TODO(C-future): remove once all callers migrated.
  */
-export function syncGsdStateToWorktree(
+export function syncWorkflowStateToWorktree(
   mainBasePath: string,
   worktreePath_: string,
 ): { synced: string[] } {
-  const contract = resolveGsdPathContract(worktreePath_, mainBasePath);
+  const contract = resolveWorkflowPathContract(worktreePath_, mainBasePath);
   const mainGsd = contract.projectGsd;
   const wtGsd = contract.worktreeGsd ?? join(worktreePath_, ".gsd");
   const synced: string[] = [];
@@ -1406,7 +1406,7 @@ export function teardownAutoWorktree(
     //    Non-fatal — handles legacy worktrees that have a local copy.
     if (isDbAvailable()) {
       try {
-        const contract = resolveGsdPathContract(previousCwd, originalBasePath);
+        const contract = resolveWorkflowPathContract(previousCwd, originalBasePath);
         const worktreeDbPath = join(contract.worktreeGsd ?? join(previousCwd, ".gsd"), "gsd.db");
         const mainDbPath = contract.projectDb;
         if (_shouldReconcileWorktreeDb(worktreeDbPath, mainDbPath)) {
@@ -1725,7 +1725,7 @@ export function mergeMilestoneToMain(
   // database (#2823).
   if (isDbAvailable()) {
     try {
-      const contract = resolveGsdPathContract(worktreeCwd, originalBasePath_);
+      const contract = resolveWorkflowPathContract(worktreeCwd, originalBasePath_);
       const worktreeDbPath = join(contract.worktreeGsd ?? join(worktreeCwd, ".gsd"), "gsd.db");
       const mainDbPath = contract.projectDb;
       if (_shouldReconcileWorktreeDb(worktreeDbPath, mainDbPath)) {
@@ -1744,12 +1744,12 @@ export function mergeMilestoneToMain(
       .filter(s => s.status === "complete")
       .map(s => ({
         id: s.id,
-        title: stripGsdDisplayPrefix(s.title, s.id) ?? s.id,
+        title: stripWorkflowDisplayPrefix(s.title, s.id) ?? s.id,
         tasks: getSliceTasks(milestoneId, s.id)
           .filter((task) => task.status === "complete")
           .map((task) => ({
             id: task.id,
-            title: stripGsdDisplayPrefix(task.title, task.id) ?? task.id,
+            title: stripWorkflowDisplayPrefix(task.title, task.id) ?? task.id,
           })),
       }));
   }
@@ -1819,7 +1819,7 @@ export function mergeMilestoneToMain(
 
   // 6. Build rich commit message
   const dbMilestone = getMilestone(milestoneId);
-  let milestoneTitle = stripGsdDisplayPrefix(dbMilestone?.title, milestoneId) ?? "";
+  let milestoneTitle = stripWorkflowDisplayPrefix(dbMilestone?.title, milestoneId) ?? "";
   // Fallback: parse title from roadmap content header (e.g. "# M020: Backend foundation")
   if (!milestoneTitle && roadmapContent) {
     const titleMatch = roadmapContent.match(new RegExp(`^#\\s+${milestoneId}:\\s*(.+)`, "m"));
@@ -1970,8 +1970,8 @@ export function mergeMilestoneToMain(
   // MUST run BEFORE the pre-merge stash (step 7a) so `--include-untracked`
   // does not sweep queued CONTEXT files into the stash. If stash pop later
   // fails, files trapped inside the stash are permanently lost (#2505).
-  const milestonesDir = join(gsdRoot(originalBasePath_), "milestones");
-  const shelterDir = join(gsdRoot(originalBasePath_), ".milestone-shelter");
+  const milestonesDir = join(workflowRoot(originalBasePath_), "milestones");
+  const shelterDir = join(workflowRoot(originalBasePath_), ".milestone-shelter");
   const shelteredDirs: string[] = [];
   let shelterRestored = false;
 
@@ -2235,28 +2235,28 @@ export function mergeMilestoneToMain(
       // .loop24/ conflicts during the merge itself: accept HEAD (the just-committed
       // version) and drop the now-applied stash.
       const uu = nativeConflictFiles(originalBasePath_);
-      const gsdUU = uu.filter((f) => f.startsWith(".gsd/"));
-      const nonGsdUU = uu.filter((f) => !f.startsWith(".gsd/"));
+      const workflowUU = uu.filter((f) => f.startsWith(".gsd/"));
+      const nonWorkflowUU = uu.filter((f) => !f.startsWith(".gsd/"));
       const stashPopMessage = e instanceof Error ? e.message : String(e);
       const isUntrackedRestoreFailure = stashPopMessage.includes("could not restore untracked files from stash");
-      const gsdContentConflicts: string[] = [];
+      const workflowContentConflicts: string[] = [];
       const alreadyExists = stashAlreadyExistsFilesFromError(e);
-      const gsdAlreadyExists = alreadyExists.filter((f) => f.startsWith(".gsd/"));
-      const nonGsdAlreadyExists = alreadyExists.filter((f) => !f.startsWith(".gsd/"));
+      const workflowAlreadyExists = alreadyExists.filter((f) => f.startsWith(".gsd/"));
+      const nonWorkflowAlreadyExists = alreadyExists.filter((f) => !f.startsWith(".gsd/"));
 
       // Untracked-file restore failures can leave marker conflicts in tracked
       // .gsd JSONL files without producing `U` status entries.
       if (isUntrackedRestoreFailure) {
         for (const f of nativeLsFiles(originalBasePath_, ".gsd/*.jsonl")) {
           if (hasConflictMarkers(join(originalBasePath_, f))) {
-            gsdContentConflicts.push(f);
+            workflowContentConflicts.push(f);
           }
         }
       }
-      const gsdConflictFiles = [...new Set([...gsdUU, ...gsdContentConflicts])];
+      const workflowConflictFiles = [...new Set([...workflowUU, ...workflowContentConflicts])];
 
-      if (gsdConflictFiles.length > 0) {
-        for (const f of gsdConflictFiles) {
+      if (workflowConflictFiles.length > 0) {
+        for (const f of workflowConflictFiles) {
           try {
             // Accept the committed (HEAD) version of the state file
             execFileSync("git", ["checkout", "HEAD", "--", f], {
@@ -2273,28 +2273,28 @@ export function mergeMilestoneToMain(
         }
       }
 
-      if (gsdConflictFiles.length > 0 && nonGsdUU.length === 0) {
+      if (workflowConflictFiles.length > 0 && nonWorkflowUU.length === 0) {
         // All detected conflicts were .loop24/ files. Before dropping, verify no
         // unresolved non-.gsd conflict markers or unmerged entries remain.
         const remainingUnmerged = nativeConflictFiles(originalBasePath_);
-        const nonGsdUnmerged = remainingUnmerged.filter((f) => !f.startsWith(".gsd/"));
+        const nonWorkflowUnmerged = remainingUnmerged.filter((f) => !f.startsWith(".gsd/"));
         const markerCandidates = Array.from(new Set([
-          ...nonGsdUnmerged,
+          ...nonWorkflowUnmerged,
           ...nativeLsFiles(originalBasePath_, "."),
         ])).filter((f) => !f.startsWith(".gsd/"));
-        const nonGsdMarkerConflicts = markerCandidates.filter((f) =>
+        const nonWorkflowMarkerConflicts = markerCandidates.filter((f) =>
           hasConflictMarkers(join(originalBasePath_, f)),
         );
-        const hasRemainingNonGsdConflicts = nonGsdUnmerged.length > 0 || nonGsdMarkerConflicts.length > 0;
-        if (hasRemainingNonGsdConflicts) {
-          const files = Array.from(new Set([...nonGsdUnmerged, ...nonGsdMarkerConflicts]));
+        const hasRemainingNonWorkflowConflicts = nonWorkflowUnmerged.length > 0 || nonWorkflowMarkerConflicts.length > 0;
+        if (hasRemainingNonWorkflowConflicts) {
+          const files = Array.from(new Set([...nonWorkflowUnmerged, ...nonWorkflowMarkerConflicts]));
           logWarning("reconcile", "Leaving stash because non-.gsd conflicts remain after auto-resolution", {
             files: files.join(", "),
           });
         }
 
         // No non-.gsd conflicts remain — safe to drop the stash.
-        if (!hasRemainingNonGsdConflicts && stashRefForDrop) {
+        if (!hasRemainingNonWorkflowConflicts && stashRefForDrop) {
           try {
             execFileSync("git", ["stash", "drop", stashRefForDrop], {
               cwd: originalBasePath_,
@@ -2304,14 +2304,14 @@ export function mergeMilestoneToMain(
           } catch (err) { /* stash may already be consumed */
             logWarning("worktree", `git stash drop failed: ${err instanceof Error ? err.message : String(err)}`);
           }
-        } else if (!hasRemainingNonGsdConflicts) {
+        } else if (!hasRemainingNonWorkflowConflicts) {
           logWarning("worktree", "recorded stash entry could not be resolved; skipping automatic drop");
         }
       } else if (
-        gsdUU.length === 0 &&
-        nonGsdUU.length === 0 &&
-        gsdAlreadyExists.length > 0 &&
-        nonGsdAlreadyExists.length === 0
+        workflowUU.length === 0 &&
+        nonWorkflowUU.length === 0 &&
+        workflowAlreadyExists.length > 0 &&
+        nonWorkflowAlreadyExists.length === 0
       ) {
         // Untracked-file restore failure from stash pop where all collided
         // paths are .loop24/ artifacts that already exist after merge.
@@ -2328,14 +2328,14 @@ export function mergeMilestoneToMain(
         } else {
           logWarning("worktree", "recorded stash entry could not be resolved; skipping automatic drop");
         }
-      } else if (nonGsdUU.length > 0) {
+      } else if (nonWorkflowUU.length > 0) {
         // Non-.gsd conflicts remain — leave stash for manual resolution
         logWarning("reconcile", "Stash pop conflict on non-.gsd files after merge", {
-          files: nonGsdUU.join(", "),
+          files: nonWorkflowUU.join(", "),
         });
-      } else if (nonGsdAlreadyExists.length > 0) {
+      } else if (nonWorkflowAlreadyExists.length > 0) {
         logWarning("reconcile", "Stash pop restore collision on non-.gsd files after merge", {
-          files: nonGsdAlreadyExists.join(", "),
+          files: nonWorkflowAlreadyExists.join(", "),
         });
       } else {
         logWarning(

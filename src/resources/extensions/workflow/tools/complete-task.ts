@@ -29,7 +29,7 @@ import {
   getPendingGatesForTurn,
 } from "../db.js";
 import { getGatesForTurn } from "../gate-registry.js";
-import { gsdProjectionRoot, clearPathCache } from "../paths.js";
+import { workflowProjectionRoot, clearPathCache } from "../paths.js";
 import { resolveCanonicalMilestoneRoot } from "../worktree-manager.js";
 import { checkOwnership, taskUnitKey } from "../unit-ownership.js";
 import { saveFile, clearParseCache } from "../files.js";
@@ -67,7 +67,7 @@ function taskSummaryPath(
   taskId: string,
 ): string {
   return join(
-    gsdProjectionRoot(basePath),
+    workflowProjectionRoot(basePath),
     "milestones",
     milestoneId,
     "slices",

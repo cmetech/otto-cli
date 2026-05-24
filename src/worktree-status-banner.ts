@@ -10,7 +10,7 @@ interface WorktreeEntry {
   isBare: boolean
 }
 
-interface GsdWorktree {
+interface WorkflowWorktree {
   name: string
   branch: string
 }
@@ -66,9 +66,9 @@ function existingPathVariants(path: string): string[] {
   return [...new Set(variants.map(normalizePath))]
 }
 
-function findGsdWorktrees(basePath: string, entries: WorktreeEntry[]): GsdWorktree[] {
+function findWorkflowWorktrees(basePath: string, entries: WorktreeEntry[]): WorkflowWorktree[] {
   const roots = existingPathVariants(join(basePath, '.gsd', 'worktrees'))
-  const worktrees: GsdWorktree[] = []
+  const worktrees: WorkflowWorktree[] = []
 
   for (const entry of entries) {
     if (entry.isBare || !entry.branch) continue
@@ -130,7 +130,7 @@ export function showWorktreeStatusBanner(basePath: string): void {
   if (!existsSync(worktreesDir)) return
 
   const entries = parseWorktreeList(gitExec(basePath, ['worktree', 'list', '--porcelain']))
-  const worktrees = findGsdWorktrees(basePath, entries)
+  const worktrees = findWorkflowWorktrees(basePath, entries)
   if (worktrees.length === 0) return
 
   const mainBranch = detectMainBranch(basePath)

@@ -26,17 +26,17 @@ const LOOP24_LOGO: readonly string[] = [
   '╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚══════╝     ╚═╝',
 ]
 
-interface GsdState {
+interface WorkflowState {
   milestone?: string
   phase?: string
   slice?: string
   nextAction?: string
 }
 
-function readAgentState(): GsdState | undefined {
+function readAgentState(): WorkflowState | undefined {
   try {
     const raw = readFileSync(join(process.cwd(), CONFIG_DIR_NAME, 'STATE.md'), 'utf-8')
-    const state: GsdState = {}
+    const state: WorkflowState = {}
     const milestone = raw.match(/^\*\*Active Milestone:\*\*\s*(.+)$/m)
     if (milestone) state.milestone = milestone[1].trim()
     const slice = raw.match(/^\*\*Active Slice:\*\*\s*(.+)$/m)

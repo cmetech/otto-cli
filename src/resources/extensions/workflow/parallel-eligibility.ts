@@ -7,7 +7,7 @@
 
 import { existsSync } from "node:fs";
 import { deriveState } from "./state.js";
-import { resolveGsdPathContract, resolveMilestoneFile, resolveSliceFile } from "./paths.js";
+import { resolveWorkflowPathContract, resolveMilestoneFile, resolveSliceFile } from "./paths.js";
 import { findMilestoneIds } from "./guided-flow.js";
 import { isDbAvailable, getMilestoneSlices, getSliceTasks, openDatabase } from "./db.js";
 import type { MilestoneRegistryEntry } from "./types.js";
@@ -98,7 +98,7 @@ export async function analyzeParallelEligibility(
   basePath: string,
 ): Promise<ParallelCandidates> {
   if (!isDbAvailable()) {
-    const { projectDb } = resolveGsdPathContract(basePath);
+    const { projectDb } = resolveWorkflowPathContract(basePath);
     if (existsSync(projectDb)) openDatabase(projectDb);
   }
 

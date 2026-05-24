@@ -8,7 +8,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { withFileLockSync } from "./file-lock.js";
 
 export interface BlockedModelEntry {
@@ -24,7 +24,7 @@ interface BlockedModelsFile {
 }
 
 function blockedModelsPath(basePath: string): string {
-  return join(gsdRoot(basePath), "runtime", "blocked-models.json");
+  return join(workflowRoot(basePath), "runtime", "blocked-models.json");
 }
 
 function modelKey(provider: string, id: string): string {

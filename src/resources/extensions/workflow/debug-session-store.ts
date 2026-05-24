@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { atomicWriteSync, type AtomicWriteSyncOps } from "./atomic-write.js";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 
 export type DebugSessionStatus = "active" | "paused" | "resolved" | "failed";
 
@@ -93,7 +93,7 @@ const MAX_SLUG_LENGTH = 64;
 const MAX_COLLISION_ATTEMPTS = 10_000;
 
 function debugRoot(basePath: string): string {
-  return join(gsdRoot(basePath), "debug");
+  return join(workflowRoot(basePath), "debug");
 }
 
 export function debugSessionsDir(basePath: string): string {

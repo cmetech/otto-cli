@@ -28,7 +28,7 @@ import {
   effectiveLockFile,
   effectiveLockTarget,
 } from "../session-lock.ts";
-import { gsdRoot } from "../paths.ts";
+import { workflowRoot } from "../paths.ts";
 import {
   syncProjectRootToWorktree,
   syncStateToProjectRoot,
@@ -75,17 +75,17 @@ describe("parallel-worker-lock-contention (#2184)", () => {
   });
 
   // ─── Bug 1b: effectiveLockTarget returns per-milestone directory ─────────
-  test("Bug 1b: effectiveLockTarget returns gsdDir without parallel env", () => {
+  test("Bug 1b: effectiveLockTarget returns workflowDir without parallel env", () => {
     delete process.env.GSD_PARALLEL_WORKER;
-    const gsdDir = "/tmp/test/.gsd";
-    assert.equal(effectiveLockTarget(gsdDir), gsdDir);
+    const workflowDir = "/tmp/test/.gsd";
+    assert.equal(effectiveLockTarget(workflowDir), workflowDir);
   });
 
   test("Bug 1b: effectiveLockTarget returns parallel/<MID> in parallel mode", () => {
     process.env.GSD_PARALLEL_WORKER = "1";
     process.env.GSD_MILESTONE_LOCK = "M003";
-    const gsdDir = "/tmp/test/.gsd";
-    assert.equal(effectiveLockTarget(gsdDir), join(gsdDir, "parallel", "M003"));
+    const workflowDir = "/tmp/test/.gsd";
+    assert.equal(effectiveLockTarget(workflowDir), join(workflowDir, "parallel", "M003"));
   });
 
   // ─── Bug 1c: Two parallel workers acquire independent locks ──────────────
@@ -102,16 +102,16 @@ describe("parallel-worker-lock-contention (#2184)", () => {
       assert.ok(r1.acquired, "M001 worker acquires lock");
 
       // Verify the lock file is per-milestone
-      const gsdDir = gsdRoot(base);
-      const m001LockFile = join(gsdDir, "auto-M001.lock");
+      const workflowDir = workflowRoot(base);
+      const m001LockFile = join(workflowDir, "auto-M001.lock");
       assert.ok(existsSync(m001LockFile), "auto-M001.lock exists");
 
       // The shared auto.lock should NOT exist
-      const sharedLockFile = join(gsdDir, "auto.lock");
+      const sharedLockFile = join(workflowDir, "auto.lock");
       assert.ok(!existsSync(sharedLockFile), "shared auto.lock does NOT exist");
 
       // The per-milestone lock target directory should exist
-      const m001LockTarget = join(gsdDir, "parallel", "M001");
+      const m001LockTarget = join(workflowDir, "parallel", "M001");
       assert.ok(existsSync(m001LockTarget), "parallel/M001 directory exists");
 
       releaseSessionLock(base);
@@ -136,8 +136,8 @@ describe("parallel-worker-lock-contention (#2184)", () => {
 
       writeLock(base, "execute-task", "M002/S01/T01");
 
-      const gsdDir = gsdRoot(base);
-      const lockFile = join(gsdDir, "auto-M002.lock");
+      const workflowDir = workflowRoot(base);
+      const lockFile = join(workflowDir, "auto-M002.lock");
       assert.ok(existsSync(lockFile), "crash-recovery writes auto-M002.lock");
 
       const data = readCrashLock(base);

@@ -10,7 +10,7 @@ import {
   aggregateByModel, formatCost, formatTokenCount, loadLedgerFromDisk,
 } from "./metrics.js";
 import type { UnitMetrics } from "./metrics.js";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { formatDuration, fileLink } from "../shared/format-utils.js";
 import { getErrorMessage } from "./error-utils.js";
 
@@ -53,7 +53,7 @@ export function writeExportFile(
   }
 
   const projectName = basename(basePath);
-  const exportDir = gsdRoot(basePath);
+  const exportDir = workflowRoot(basePath);
   mkdirSync(exportDir, { recursive: true });
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
 
@@ -123,13 +123,13 @@ export async function handleExport(args: string, ctx: ExtensionCommandContext, b
       const { basename: bn } = await import("node:path");
       const data = await loadVisualizerData(basePath);
       const projName = basename(basePath);
-      const gsdVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) ?? "0.0.0";
+      const workflowVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) ?? "0.0.0";
       const doneMilestones = data.milestones.filter(m => m.status === "complete").length;
 
       const htmlOpts = {
         projectName: projName,
         projectPath: basePath,
-        gsdVersion,
+        workflowVersion,
         indexRelPath: "index.html",
       };
 
@@ -139,7 +139,7 @@ export async function handleExport(args: string, ctx: ExtensionCommandContext, b
         const existingIds = new Set(existing?.entries.map(e => e.milestoneId) ?? []);
 
         const targets = data.milestones.filter(m => !existingIds.has(m.id));
-        const indexPath = join(gsdRoot(basePath), "reports", "index.html");
+        const indexPath = join(workflowRoot(basePath), "reports", "index.html");
         if (targets.length === 0) {
           if (existing && existing.entries.length > 0) {
             ctx.ui.notify(
@@ -180,7 +180,7 @@ export async function handleExport(args: string, ctx: ExtensionCommandContext, b
             kind: ms.status === "complete" ? "milestone" : "manual",
             projectName: projName,
             projectPath: basePath,
-            gsdVersion,
+            workflowVersion,
             totalCost: data.totals?.cost ?? 0,
             totalTokens: data.totals?.tokens.total ?? 0,
             totalDuration: data.totals?.duration ?? 0,
@@ -210,7 +210,7 @@ export async function handleExport(args: string, ctx: ExtensionCommandContext, b
           kind: "manual",
           projectName: projName,
           projectPath: basePath,
-          gsdVersion,
+          workflowVersion,
           totalCost: data.totals?.cost ?? 0,
           totalTokens: data.totals?.tokens.total ?? 0,
           totalDuration: data.totals?.duration ?? 0,
@@ -253,7 +253,7 @@ export async function handleExport(args: string, ctx: ExtensionCommandContext, b
   }
 
   const projectName = basename(basePath);
-  const exportDir = gsdRoot(basePath);
+  const exportDir = workflowRoot(basePath);
   mkdirSync(exportDir, { recursive: true });
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
 

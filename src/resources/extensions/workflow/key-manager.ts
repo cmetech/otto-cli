@@ -16,7 +16,7 @@ import { existsSync, statSync, chmodSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { mkdirSync } from "node:fs";
 import { getErrorMessage } from "./error-utils.js";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 import { BRAND, slashCommand } from "./strings.js";
 
 // ─── Provider Registry ─────────────────────────────────────────────────────────
@@ -123,7 +123,7 @@ export function describeCredential(cred: AuthCredential): string {
  * Get the auth.json path.
  */
 export function getAuthPath(): string {
-  return join(gsdHome(), "agent", "auth.json");
+  return join(workflowHome(), "agent", "auth.json");
 }
 
 /**

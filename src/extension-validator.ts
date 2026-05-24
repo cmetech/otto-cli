@@ -27,7 +27,7 @@ export interface ValidationResult {
 }
 
 export interface ValidationOptions {
-  allowGsdNamespace?: boolean;  // Per D-05: --allow-gsd-namespace flag pass-through
+  allowWorkflowNamespace?: boolean;  // Per D-05: --allow-gsd-namespace flag pass-through
   extensionId?: string;         // The manifest ID to check against gsd.* namespace (per D-04)
 }
 
@@ -57,8 +57,8 @@ export function checkInstallDiscriminator(pkg: unknown): ValidationError | null 
     }
   }
 
-  const gsdObj = gsd as Record<string, unknown>
-  if (gsdObj.extension !== true) {
+  const workflowObj = gsd as Record<string, unknown>
+  if (workflowObj.extension !== true) {
     return {
       code: 'MISSING_WORKFLOW_MARKER',
       message: 'package.json must declare "gsd": { "extension": true } to be recognized as a GSD extension.',
@@ -71,11 +71,11 @@ export function checkInstallDiscriminator(pkg: unknown): ValidationError | null 
 
 /**
  * Per D-04/D-05: Check that the extension ID does not use the reserved gsd.* namespace,
- * unless allowGsdNamespace is explicitly set to true.
+ * unless allowWorkflowNamespace is explicitly set to true.
  * Per D-06: Only checks extension manifest ID — not pkg.name.
  */
 export function checkNamespaceReservation(extensionId: string, opts: ValidationOptions): ValidationError | null {
-  if (opts.allowGsdNamespace === true) {
+  if (opts.allowWorkflowNamespace === true) {
     return null
   }
 

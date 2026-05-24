@@ -17,7 +17,7 @@
 import { join } from "node:path";
 import { openSync, closeSync, unlinkSync, statSync, writeFileSync } from "node:fs";
 import type { ExtensionContext } from "@loop24/pi-coding-agent";
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { getAndClearSkills } from "./skill-telemetry.js";
 import { loadJsonFile, loadJsonFileOrNull, saveJsonFile } from "./json-persistence.js";
 import { parseUnitId } from "./unit-id.js";
@@ -825,7 +825,7 @@ export function formatCostProjection(
 // ─── Disk I/O ─────────────────────────────────────────────────────────────────
 
 function metricsPath(base: string): string {
-  return join(gsdRoot(base), "metrics.json");
+  return join(workflowRoot(base), "metrics.json");
 }
 
 function isMetricsLedger(data: unknown): data is MetricsLedger {

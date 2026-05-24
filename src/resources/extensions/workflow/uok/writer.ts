@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 
 import { atomicWriteSync } from "../atomic-write.js";
-import { gsdRoot } from "../paths.js";
+import { workflowRoot } from "../paths.js";
 import type { WriteRecord, WriterToken } from "./contracts.js";
 
 interface SequenceState {
@@ -18,7 +18,7 @@ function tokenKey(basePath: string, turnId: string): string {
 }
 
 function sequencePath(basePath: string): string {
-  return join(gsdRoot(basePath), "runtime", "uok-writer-sequence.json");
+  return join(workflowRoot(basePath), "runtime", "uok-writer-sequence.json");
 }
 
 function readSequenceState(basePath: string): SequenceState {

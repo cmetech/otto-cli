@@ -4,11 +4,11 @@ import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-const gsdHome = mkdtempSync(join(tmpdir(), "gsd-onboarding-reentry-"))
-process.env.GSD_HOME = gsdHome
+const workflowHome = mkdtempSync(join(tmpdir(), "gsd-onboarding-reentry-"))
+process.env.GSD_HOME = workflowHome
 const { handleOnboarding } = await import("../resources/extensions/workflow/commands/handlers/onboarding.ts")
 
-after(() => rmSync(gsdHome, { recursive: true, force: true }))
+after(() => rmSync(workflowHome, { recursive: true, force: true }))
 
 // Regression for #4470: /gsd onboarding re-entry must route through the
 // TUI-owned setup hub instead of replaying the first-run clack wizard.

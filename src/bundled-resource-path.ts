@@ -42,7 +42,7 @@ export function resolveBundledResource(
   return join(resolveBundledResourcesDir(importUrl), ...segments);
 }
 
-export function resolveBundledGsdExtensionModule(
+export function resolveBundledWorkflowExtensionModule(
   importUrl: string,
   moduleFile: string,
   fileExists: FileExists = existsSync,

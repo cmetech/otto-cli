@@ -69,8 +69,8 @@ function freshTimestamp(): string {
  */
 function makeProjectDir(fixture: GraphFixture): string {
   const projectDir = mkdtempSync(join(tmpdir(), "graph-ctx-test-"));
-  const gsdDir = join(projectDir, ".gsd");
-  const graphsDir = join(gsdDir, "graphs");
+  const workflowDir = join(projectDir, ".gsd");
+  const graphsDir = join(workflowDir, "graphs");
   mkdirSync(graphsDir, { recursive: true });
 
   const graph = {
@@ -237,8 +237,8 @@ describe("inlineGraphSubgraph — correct output", () => {
     // Write a graph.json with an invalid builtAt — graphStatus will catch and return {exists: false}
     // inlineGraphSubgraph should still return the node block without stale annotation
     const projectDir = mkdtempSync(join(tmpdir(), "graph-ctx-corrupt-"));
-    const gsdDir = join(projectDir, ".gsd");
-    const graphsDir = join(gsdDir, "graphs");
+    const workflowDir = join(projectDir, ".gsd");
+    const graphsDir = join(workflowDir, "graphs");
     mkdirSync(graphsDir, { recursive: true });
 
     const graph = {

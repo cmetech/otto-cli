@@ -1,7 +1,7 @@
 // MCP Server — readers barrel export
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 
-export { resolveGsdRoot, resolveRootFile } from './paths.js';
+export { resolveWorkflowRoot, resolveRootFile } from './paths.js';
 export { readProgress } from './state.js';
 export type { ProgressResult } from './state.js';
 export { readRoadmap } from './roadmap.js';

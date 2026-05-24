@@ -15,7 +15,7 @@
 import { readFileSync, writeFileSync, renameSync, existsSync, mkdirSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import {
-  resolveGsdRoot,
+  resolveWorkflowRoot,
   findMilestoneIds,
   resolveMilestoneDir,
   resolveMilestoneFile,
@@ -99,20 +99,20 @@ export interface GraphDiffResult {
 // Graph file paths
 // ---------------------------------------------------------------------------
 
-function graphsDir(gsdRoot: string): string {
-  return join(gsdRoot, 'graphs');
+function graphsDir(workflowRoot: string): string {
+  return join(workflowRoot, 'graphs');
 }
 
-function graphJsonPath(gsdRoot: string): string {
-  return join(graphsDir(gsdRoot), 'graph.json');
+function graphJsonPath(workflowRoot: string): string {
+  return join(graphsDir(workflowRoot), 'graph.json');
 }
 
-function graphTmpPath(gsdRoot: string): string {
-  return join(graphsDir(gsdRoot), 'graph.tmp.json');
+function graphTmpPath(workflowRoot: string): string {
+  return join(graphsDir(workflowRoot), 'graph.tmp.json');
 }
 
-function snapshotPath(gsdRoot: string): string {
-  return join(graphsDir(gsdRoot), '.last-build-snapshot.json');
+function snapshotPath(workflowRoot: string): string {
+  return join(graphsDir(workflowRoot), '.last-build-snapshot.json');
 }
 
 // ---------------------------------------------------------------------------
@@ -122,8 +122,8 @@ function snapshotPath(gsdRoot: string): string {
 /**
  * Parse STATE.md for active milestone and phase concepts.
  */
-function parseStateFile(gsdRoot: string, nodes: GraphNode[], _edges: GraphEdge[]): void {
-  const statePath = join(gsdRoot, 'STATE.md');
+function parseStateFile(workflowRoot: string, nodes: GraphNode[], _edges: GraphEdge[]): void {
+  const statePath = join(workflowRoot, 'STATE.md');
   if (!existsSync(statePath)) return;
 
   let content: string;
@@ -167,8 +167,8 @@ function parseStateFile(gsdRoot: string, nodes: GraphNode[], _edges: GraphEdge[]
 /**
  * Parse KNOWLEDGE.md for rules, patterns, and lessons.
  */
-function parseKnowledgeFile(gsdRoot: string, nodes: GraphNode[], _edges: GraphEdge[]): void {
-  const knowledgePath = join(gsdRoot, 'KNOWLEDGE.md');
+function parseKnowledgeFile(workflowRoot: string, nodes: GraphNode[], _edges: GraphEdge[]): void {
+  const knowledgePath = join(workflowRoot, 'KNOWLEDGE.md');
   if (!existsSync(knowledgePath)) return;
 
   let content: string;
@@ -246,15 +246,15 @@ function parseKnowledgeFile(gsdRoot: string, nodes: GraphNode[], _edges: GraphEd
  * Parse milestone ROADMAP.md files for milestones and slices.
  */
 function parseMilestoneFiles(
-  gsdRoot: string,
+  workflowRoot: string,
   nodes: GraphNode[],
   edges: GraphEdge[],
 ): void {
-  const milestoneIds = findMilestoneIds(gsdRoot);
+  const milestoneIds = findMilestoneIds(workflowRoot);
 
   for (const milestoneId of milestoneIds) {
     try {
-      parseSingleMilestone(gsdRoot, milestoneId, nodes, edges);
+      parseSingleMilestone(workflowRoot, milestoneId, nodes, edges);
     } catch {
       // Skip this milestone on any error
     }
@@ -262,19 +262,19 @@ function parseMilestoneFiles(
 }
 
 function parseSingleMilestone(
-  gsdRoot: string,
+  workflowRoot: string,
   milestoneId: string,
   nodes: GraphNode[],
   edges: GraphEdge[],
 ): void {
-  const mDir = resolveMilestoneDir(gsdRoot, milestoneId);
+  const mDir = resolveMilestoneDir(workflowRoot, milestoneId);
   if (!mDir) return;
 
   const milestoneNodeId = `milestone:${milestoneId}`;
 
   // Try to read the roadmap file. Accept both canonical M###-ROADMAP.md and
   // legacy ROADMAP.md via the shared resolver.
-  const roadmapPath = resolveMilestoneFile(gsdRoot, milestoneId, 'ROADMAP');
+  const roadmapPath = resolveMilestoneFile(workflowRoot, milestoneId, 'ROADMAP');
   let roadmapContent: string | null = null;
   if (roadmapPath && existsSync(roadmapPath)) {
     try {
@@ -303,10 +303,10 @@ function parseSingleMilestone(
   }
 
   // Parse slices from roadmap table or filesystem
-  const sliceIds = findSliceIds(gsdRoot, milestoneId);
+  const sliceIds = findSliceIds(workflowRoot, milestoneId);
   for (const sliceId of sliceIds) {
     try {
-      parseSingleSlice(gsdRoot, milestoneId, sliceId, milestoneNodeId, nodes, edges);
+      parseSingleSlice(workflowRoot, milestoneId, sliceId, milestoneNodeId, nodes, edges);
     } catch {
       // Skip this slice on any error
     }
@@ -314,14 +314,14 @@ function parseSingleMilestone(
 }
 
 function parseSingleSlice(
-  gsdRoot: string,
+  workflowRoot: string,
   milestoneId: string,
   sliceId: string,
   milestoneNodeId: string,
   nodes: GraphNode[],
   edges: GraphEdge[],
 ): void {
-  const sDir = resolveSliceDir(gsdRoot, milestoneId, sliceId);
+  const sDir = resolveSliceDir(workflowRoot, milestoneId, sliceId);
   if (!sDir) return;
 
   const sliceNodeId = `slice:${milestoneId}:${sliceId}`;
@@ -405,12 +405,12 @@ function parseTasksFromPlan(
  * Surprises are mapped to the 'lesson' NodeType (no distinct type exists).
  * Parse errors per file are caught — the file is skipped, never rethrows.
  */
-function parseLearningsFiles(gsdRoot: string, nodes: GraphNode[], edges: GraphEdge[]): void {
-  const milestoneIds = findMilestoneIds(gsdRoot);
+function parseLearningsFiles(workflowRoot: string, nodes: GraphNode[], edges: GraphEdge[]): void {
+  const milestoneIds = findMilestoneIds(workflowRoot);
 
   for (const milestoneId of milestoneIds) {
     try {
-      parseSingleLearningsFile(gsdRoot, milestoneId, nodes, edges);
+      parseSingleLearningsFile(workflowRoot, milestoneId, nodes, edges);
     } catch {
       // Skip this milestone's LEARNINGS.md on any error
     }
@@ -418,12 +418,12 @@ function parseLearningsFiles(gsdRoot: string, nodes: GraphNode[], edges: GraphEd
 }
 
 function parseSingleLearningsFile(
-  gsdRoot: string,
+  workflowRoot: string,
   milestoneId: string,
   nodes: GraphNode[],
   edges: GraphEdge[],
 ): void {
-  const mDir = resolveMilestoneDir(gsdRoot, milestoneId);
+  const mDir = resolveMilestoneDir(workflowRoot, milestoneId);
   if (!mDir) return;
 
   const learningsPath = join(mDir, `${milestoneId}-LEARNINGS.md`);
@@ -551,7 +551,7 @@ function parseLearningsSection(
  * and never causes buildGraph() to throw.
  */
 export async function buildGraph(projectDir: string): Promise<KnowledgeGraph> {
-  const gsdRoot = resolveGsdRoot(resolve(projectDir));
+  const workflowRoot = resolveWorkflowRoot(resolve(projectDir));
 
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
@@ -566,7 +566,7 @@ export async function buildGraph(projectDir: string): Promise<KnowledgeGraph> {
 
   for (const parser of parsers) {
     try {
-      parser(gsdRoot, nodes, edges);
+      parser(workflowRoot, nodes, edges);
     } catch {
       // Parsing error — skip this artifact, mark as ambiguous
       nodes.push({
@@ -603,12 +603,12 @@ export async function buildGraph(projectDir: string): Promise<KnowledgeGraph> {
  * Writes to graph.tmp.json first, then renames to graph.json.
  * Creates the graphs/ directory if it does not exist.
  */
-export async function writeGraph(gsdRoot: string, graph: KnowledgeGraph): Promise<void> {
-  const dir = graphsDir(gsdRoot);
+export async function writeGraph(workflowRoot: string, graph: KnowledgeGraph): Promise<void> {
+  const dir = graphsDir(workflowRoot);
   mkdirSync(dir, { recursive: true });
 
-  const tmp = graphTmpPath(gsdRoot);
-  const final = graphJsonPath(gsdRoot);
+  const tmp = graphTmpPath(workflowRoot);
+  const final = graphJsonPath(workflowRoot);
 
   writeFileSync(tmp, JSON.stringify(graph, null, 2), 'utf-8');
   renameSync(tmp, final);
@@ -622,11 +622,11 @@ export async function writeGraph(gsdRoot: string, graph: KnowledgeGraph): Promis
  * Copy the current graph.json to .last-build-snapshot.json.
  * Adds a snapshotAt timestamp to the copy.
  */
-export async function writeSnapshot(gsdRoot: string): Promise<void> {
-  const src = graphJsonPath(gsdRoot);
+export async function writeSnapshot(workflowRoot: string): Promise<void> {
+  const src = graphJsonPath(workflowRoot);
   if (!existsSync(src)) return;
 
-  const dir = graphsDir(gsdRoot);
+  const dir = graphsDir(workflowRoot);
   mkdirSync(dir, { recursive: true });
 
   const raw = readFileSync(src, 'utf-8');
@@ -638,7 +638,7 @@ export async function writeSnapshot(gsdRoot: string): Promise<void> {
   }
   const snapshot = { ...graph, snapshotAt: new Date().toISOString() };
 
-  writeFileSync(snapshotPath(gsdRoot), JSON.stringify(snapshot, null, 2), 'utf-8');
+  writeFileSync(snapshotPath(workflowRoot), JSON.stringify(snapshot, null, 2), 'utf-8');
 }
 
 // ---------------------------------------------------------------------------
@@ -650,8 +650,8 @@ export async function writeSnapshot(gsdRoot: string): Promise<void> {
  * Stale means builtAt is older than 24 hours.
  */
 export async function graphStatus(projectDir: string): Promise<GraphStatusResult> {
-  const gsdRoot = resolveGsdRoot(resolve(projectDir));
-  const graphPath = graphJsonPath(gsdRoot);
+  const workflowRoot = resolveWorkflowRoot(resolve(projectDir));
+  const graphPath = graphJsonPath(workflowRoot);
 
   if (!existsSync(graphPath)) {
     return { exists: false };
@@ -753,8 +753,8 @@ export async function graphQuery(
   term: string,
   budget = 4000,
 ): Promise<GraphQueryResult> {
-  const gsdRoot = resolveGsdRoot(resolve(projectDir));
-  const graphPath = graphJsonPath(gsdRoot);
+  const workflowRoot = resolveWorkflowRoot(resolve(projectDir));
+  const graphPath = graphJsonPath(workflowRoot);
 
   if (!existsSync(graphPath)) {
     return { nodes: [], edges: [], term, budget };
@@ -805,14 +805,14 @@ export async function graphQuery(
  * If no snapshot exists, returns empty diff arrays.
  */
 export async function graphDiff(projectDir: string): Promise<GraphDiffResult> {
-  const gsdRoot = resolveGsdRoot(resolve(projectDir));
+  const workflowRoot = resolveWorkflowRoot(resolve(projectDir));
   const empty: GraphDiffResult = {
     nodes: { added: [], removed: [], changed: [] },
     edges: { added: [], removed: [] },
   };
 
-  const graphPath = graphJsonPath(gsdRoot);
-  const snap = snapshotPath(gsdRoot);
+  const graphPath = graphJsonPath(workflowRoot);
+  const snap = snapshotPath(workflowRoot);
 
   if (!existsSync(graphPath)) return empty;
   if (!existsSync(snap)) return empty;

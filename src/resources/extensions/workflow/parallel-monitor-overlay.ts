@@ -10,7 +10,7 @@ import { matchesKey, Key } from "@loop24/pi-tui";
 
 import { formatDuration } from "../shared/mod.js";
 import { formattedShortcutPair } from "./shortcut-defs.js";
-import { resolveGsdPathContract } from "./paths.js";
+import { resolveWorkflowPathContract } from "./paths.js";
 import {
   renderBar,
   renderKeyHints,
@@ -128,7 +128,7 @@ function discoverWorkers(basePath: string): string[] {
 
 function querySliceProgress(basePath: string, mid: string): SliceProgress[] {
   const workRoot = join(basePath, ".gsd", "worktrees", mid);
-  const dbPath = resolveGsdPathContract(workRoot, basePath).projectDb;
+  const dbPath = resolveWorkflowPathContract(workRoot, basePath).projectDb;
   if (!existsSync(dbPath)) return [];
 
   try {
@@ -169,7 +169,7 @@ function extractCostFromNdjson(basePath: string, mid: string): number {
 
 function queryRecentCompletions(basePath: string, mid: string): string[] {
   const workRoot = join(basePath, ".gsd", "worktrees", mid);
-  const dbPath = resolveGsdPathContract(workRoot, basePath).projectDb;
+  const dbPath = resolveWorkflowPathContract(workRoot, basePath).projectDb;
   if (!existsSync(dbPath)) return [];
   try {
     const sql = `SELECT id, slice_id, one_liner FROM tasks WHERE milestone_id='${mid}' AND status='complete' AND completed_at IS NOT NULL ORDER BY completed_at DESC LIMIT 5`;

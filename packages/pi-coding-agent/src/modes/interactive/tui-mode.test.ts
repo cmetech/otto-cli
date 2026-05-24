@@ -14,14 +14,14 @@ initTheme("dark", false);
 describe("resolveTuiMode", () => {
 	test("explicit overrides beat auto selection", () => {
 		assert.equal(
-			resolveTuiMode({ terminalWidth: 60, override: "debug", gsdPhase: "validating-milestone" }),
+			resolveTuiMode({ terminalWidth: 60, override: "debug", workflowPhase: "validating-milestone" }),
 			"debug",
 		);
 	});
 
 	test("prioritizes compact layouts on narrow terminals", () => {
 		assert.equal(
-			resolveTuiMode({ terminalWidth: 60, override: "auto", hasBlockingError: true, gsdPhase: "validating-milestone" }),
+			resolveTuiMode({ terminalWidth: 60, override: "auto", hasBlockingError: true, workflowPhase: "validating-milestone" }),
 			"compact",
 		);
 	});
@@ -31,13 +31,13 @@ describe("resolveTuiMode", () => {
 	});
 
 	test("uses validation mode for validation and completion phases", () => {
-		assert.equal(resolveTuiMode({ terminalWidth: 100, gsdPhase: "validating-milestone" }), "validation");
-		assert.equal(resolveTuiMode({ terminalWidth: 100, gsdPhase: "complete-milestone" }), "validation");
+		assert.equal(resolveTuiMode({ terminalWidth: 100, workflowPhase: "validating-milestone" }), "validation");
+		assert.equal(resolveTuiMode({ terminalWidth: 100, workflowPhase: "complete-milestone" }), "validation");
 	});
 
 	test("uses workflow mode when tools or non-validation phases are active", () => {
 		assert.equal(resolveTuiMode({ terminalWidth: 100, activeToolCount: 1 }), "workflow");
-		assert.equal(resolveTuiMode({ terminalWidth: 100, gsdPhase: "execute-phase" }), "workflow");
+		assert.equal(resolveTuiMode({ terminalWidth: 100, workflowPhase: "execute-phase" }), "workflow");
 	});
 
 	test("falls back to chat mode for plain conversation", () => {
@@ -50,7 +50,7 @@ describe("AdaptiveLayoutComponent", () => {
 		const layout = new AdaptiveLayoutComponent(() => ({
 			override: "workflow",
 			activeToolCount: 2,
-			gsdPhase: "execute-task",
+			workflowPhase: "execute-task",
 			sessionName: "main",
 			cwd: "/Users/example/project",
 		}));

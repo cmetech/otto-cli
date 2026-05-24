@@ -12,7 +12,7 @@
 import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { existsSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { gsdRoot } from "../paths.js";
+import { workflowRoot } from "../paths.js";
 import { fileURLToPath } from "node:url";
 import { showNextAction } from "../../shared/tui.js";
 import {
@@ -176,7 +176,7 @@ function formatPreviewStats(preview: MigrationPreview): string {
 /** Load and interpolate the review-migration prompt template. */
 function buildReviewPrompt(
   sourcePath: string,
-  gsdPath: string,
+  workflowPath: string,
   preview: MigrationPreview,
 ): string {
   const promptsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "prompts");
@@ -184,7 +184,7 @@ function buildReviewPrompt(
   let content = readFileSync(templatePath, "utf-8");
 
   content = content.replaceAll("{{sourcePath}}", sourcePath);
-  content = content.replaceAll("{{gsdPath}}", gsdPath);
+  content = content.replaceAll("{{workflowPath}}", workflowPath);
   content = content.replaceAll("{{previewStats}}", formatPreviewStats(preview));
 
   return content.trim();
@@ -194,10 +194,10 @@ function buildReviewPrompt(
 function dispatchReview(
   pi: ExtensionAPI,
   sourcePath: string,
-  gsdPath: string,
+  workflowPath: string,
   preview: MigrationPreview,
 ): void {
-  const prompt = buildReviewPrompt(sourcePath, gsdPath, preview);
+  const prompt = buildReviewPrompt(sourcePath, workflowPath, preview);
 
   pi.sendMessage(
     {
@@ -278,10 +278,10 @@ export async function handleMigrate(
     lines.push(`Legacy inputs: ${preview.migrationInputs.milestonePhaseDirs} milestone phase dir(s), ${preview.migrationInputs.decisions} decision file(s), ${preview.migrationInputs.seeds} seed file(s)`);
   }
 
-  const targetGsdExists = existsSync(gsdRoot(targetRoot));
-  if (targetGsdExists) {
+  const targetWorkflowExists = existsSync(workflowRoot(targetRoot));
+  if (targetWorkflowExists) {
     lines.push("");
-    lines.push(`⚠ A .gsd directory already exists at ${gsdRoot(targetRoot)}.`);
+    lines.push(`⚠ A .gsd directory already exists at ${workflowRoot(targetRoot)}.`);
     lines.push("It will be backed up, deleted, and rewritten fresh before DB import.");
   }
 
@@ -293,7 +293,7 @@ export async function handleMigrate(
       {
         id: "confirm",
         label: "Write .gsd directory",
-        description: `Migrate ${preview.milestoneCount} milestone(s) to ${gsdRoot(targetRoot)}`,
+        description: `Migrate ${preview.milestoneCount} milestone(s) to ${workflowRoot(targetRoot)}`,
         recommended: true,
       },
       {
@@ -324,7 +324,7 @@ export async function handleMigrate(
     return;
   }
 
-  const gsdPath = gsdRoot(targetRoot);
+  const workflowPath = workflowRoot(targetRoot);
   const { written, imported } = execution;
 
   ctx.ui.notify(
@@ -362,6 +362,6 @@ export async function handleMigrate(
   });
 
   if (reviewChoice === "review") {
-    dispatchReview(pi, sourcePath, gsdPath, preview);
+    dispatchReview(pi, sourcePath, workflowPath, preview);
   }
 }

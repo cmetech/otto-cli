@@ -4,8 +4,8 @@
  * Verifies that canonical PREFERENCES.md is seeded into auto-mode worktrees,
  * while legacy lowercase preferences.md remains supported:
  *
- *   1. syncGsdStateToWorktree() forward-syncs PREFERENCES.md (additive only)
- *   2. syncGsdStateToWorktree() still accepts legacy lowercase preferences.md
+ *   1. syncWorkflowStateToWorktree() forward-syncs PREFERENCES.md (additive only)
+ *   2. syncWorkflowStateToWorktree() still accepts legacy lowercase preferences.md
  *   3. syncWorktreeStateBack() does NOT overwrite project root PREFERENCES.md
  */
 
@@ -24,7 +24,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 import {
-  syncGsdStateToWorktree,
+  syncWorkflowStateToWorktree,
   syncWorktreeStateBack,
 } from "../auto-worktree.ts";
 
@@ -58,7 +58,7 @@ const PREFS_CONTENT = [
   '  - use: "frontend-design"',
 ].join("\n");
 
-test("#2684: syncGsdStateToWorktree forward-syncs PREFERENCES.md when missing from worktree", (t) => {
+test("#2684: syncWorkflowStateToWorktree forward-syncs PREFERENCES.md when missing from worktree", (t) => {
   const mainBase = makeTempDir("main");
   const wtBase = makeTempDir("wt");
   t.after(() => cleanup(mainBase, wtBase));
@@ -69,7 +69,7 @@ test("#2684: syncGsdStateToWorktree forward-syncs PREFERENCES.md when missing fr
   // Worktree has .gsd/ but no preferences file
   mkdirSync(join(wtBase, ".gsd"), { recursive: true });
 
-  const result = syncGsdStateToWorktree(mainBase, wtBase);
+  const result = syncWorkflowStateToWorktree(mainBase, wtBase);
 
   assert.ok(
     existsSync(join(wtBase, ".gsd", "PREFERENCES.md")),
@@ -86,7 +86,7 @@ test("#2684: syncGsdStateToWorktree forward-syncs PREFERENCES.md when missing fr
   );
 });
 
-test("syncGsdStateToWorktree creates missing worktree .gsd and projects DECISIONS.md", (t) => {
+test("syncWorkflowStateToWorktree creates missing worktree .gsd and projects DECISIONS.md", (t) => {
   const mainBase = makeTempDir("main");
   const wtBase = makeTempDir("wt");
   t.after(() => cleanup(mainBase, wtBase));
@@ -94,7 +94,7 @@ test("syncGsdStateToWorktree creates missing worktree .gsd and projects DECISION
   const decisions = "# Decisions\n\n- D001: Test decision\n";
   writeFile(mainBase, ".gsd/DECISIONS.md", decisions);
 
-  const result = syncGsdStateToWorktree(mainBase, wtBase);
+  const result = syncWorkflowStateToWorktree(mainBase, wtBase);
 
   assert.ok(
     existsSync(join(wtBase, ".gsd", "DECISIONS.md")),
@@ -111,7 +111,7 @@ test("syncGsdStateToWorktree creates missing worktree .gsd and projects DECISION
   );
 });
 
-test("syncGsdStateToWorktree still accepts legacy lowercase preferences.md", (t) => {
+test("syncWorkflowStateToWorktree still accepts legacy lowercase preferences.md", (t) => {
   const mainBase = makeTempDir("main");
   const wtBase = makeTempDir("wt");
   t.after(() => cleanup(mainBase, wtBase));
@@ -119,7 +119,7 @@ test("syncGsdStateToWorktree still accepts legacy lowercase preferences.md", (t)
   writeFile(mainBase, ".gsd/preferences.md", PREFS_CONTENT);
   mkdirSync(join(wtBase, ".gsd"), { recursive: true });
 
-  const result = syncGsdStateToWorktree(mainBase, wtBase);
+  const result = syncWorkflowStateToWorktree(mainBase, wtBase);
 
   const copiedEntries = readdirSync(join(wtBase, ".gsd"))
     .filter((name) => name === "PREFERENCES.md" || name === "preferences.md");
@@ -134,7 +134,7 @@ test("syncGsdStateToWorktree still accepts legacy lowercase preferences.md", (t)
   );
 });
 
-test("#2684: syncGsdStateToWorktree does NOT overwrite existing worktree preferences file", (t) => {
+test("#2684: syncWorkflowStateToWorktree does NOT overwrite existing worktree preferences file", (t) => {
   const mainBase = makeTempDir("main");
   const wtBase = makeTempDir("wt");
   t.after(() => cleanup(mainBase, wtBase));
@@ -145,7 +145,7 @@ test("#2684: syncGsdStateToWorktree does NOT overwrite existing worktree prefere
   writeFile(mainBase, ".gsd/PREFERENCES.md", rootPrefs);
   writeFile(wtBase, ".gsd/PREFERENCES.md", wtPrefs);
 
-  syncGsdStateToWorktree(mainBase, wtBase);
+  syncWorkflowStateToWorktree(mainBase, wtBase);
 
   assert.equal(
     readFileSync(join(wtBase, ".gsd", "PREFERENCES.md"), "utf-8"),

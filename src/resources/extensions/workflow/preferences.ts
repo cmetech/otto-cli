@@ -14,7 +14,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { gsdRoot } from "./paths.js";
+import { workflowRoot } from "./paths.js";
 import { parse as parseYaml } from "yaml";
 import type { PostUnitHookConfig, PreDispatchHookConfig, TokenProfile } from "./types.js";
 import type { DynamicRoutingConfig } from "./model-router.js";
@@ -34,7 +34,7 @@ import {
   formatSkillRef,
 } from "./preferences-types.js";
 import { validatePreferences } from "./preferences-validation.js";
-import { gsdHome } from "./home.js";
+import { workflowHome } from "./home.js";
 
 // ─── Re-exports: types ──────────────────────────────────────────────────────
 // Every type/interface that was previously exported from this file is
@@ -107,7 +107,7 @@ export { resolveModelMcpConfig } from "./preferences-mcp.js";
 // ─── Path Constants & Getters ───────────────────────────────────────────────
 
 function globalPreferencesPath(): string {
-  return join(gsdHome(), "PREFERENCES.md");
+  return join(workflowHome(), "PREFERENCES.md");
 }
 
 function legacyGlobalPreferencesPath(): string {
@@ -115,15 +115,15 @@ function legacyGlobalPreferencesPath(): string {
 }
 
 function projectPreferencesPath(basePath: string = process.cwd()): string {
-  return join(gsdRoot(basePath), "PREFERENCES.md");
+  return join(workflowRoot(basePath), "PREFERENCES.md");
 }
 // Legacy lowercase files can still exist in older projects. Keep them as a
 // compatibility-only fallback, but route new reads/writes through PREFERENCES.md.
 function legacyGlobalPreferencesPathLowercase(): string {
-  return join(gsdHome(), "preferences.md");
+  return join(workflowHome(), "preferences.md");
 }
 function legacyProjectPreferencesPathLowercase(basePath: string = process.cwd()): string {
-  return join(gsdRoot(basePath), "preferences.md");
+  return join(workflowRoot(basePath), "preferences.md");
 }
 
 export function getGlobalGSDPreferencesPath(): string {

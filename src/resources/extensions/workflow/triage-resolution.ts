@@ -14,7 +14,7 @@ import { existsSync, mkdirSync, readFileSync, unlinkSync } from "node:fs";
 import { atomicWriteSync } from "./atomic-write.js";
 import { join } from "node:path";
 import { createRequire } from "node:module";
-import { gsdRoot, milestonesDir } from "./paths.js";
+import { workflowRoot, milestonesDir } from "./paths.js";
 import { MILESTONE_ID_RE } from "./milestone-ids.js";
 import type { Classification, CaptureEntry } from "./captures.js";
 import {
@@ -41,7 +41,7 @@ export function executeInject(
 ): string | null {
   try {
     // Resolve the plan file path
-    const planPath = join(gsdRoot(basePath), "milestones", mid, "slices", sid, `${sid}-PLAN.md`);
+    const planPath = join(workflowRoot(basePath), "milestones", mid, "slices", sid, `${sid}-PLAN.md`);
     if (!existsSync(planPath)) return null;
 
     const content = readFileSync(planPath, "utf-8");
@@ -157,7 +157,7 @@ export function executeBacktrack(
     const targetMilestoneId = uniqueTargets.length === 1 ? uniqueTargets[0] : null;
 
     const ts = new Date().toISOString();
-    const triggerPath = join(gsdRoot(basePath), "BACKTRACK-TRIGGER.md");
+    const triggerPath = join(workflowRoot(basePath), "BACKTRACK-TRIGGER.md");
     const content = [
       `# Backtrack Trigger`,
       ``,
@@ -223,7 +223,7 @@ export function readBacktrackTrigger(basePath: string): {
   capture: string;
   triggeredAt: string;
 } | null {
-  const triggerPath = join(gsdRoot(basePath), "BACKTRACK-TRIGGER.md");
+  const triggerPath = join(workflowRoot(basePath), "BACKTRACK-TRIGGER.md");
   if (!existsSync(triggerPath)) return null;
 
   try {
@@ -247,7 +247,7 @@ export function readBacktrackTrigger(basePath: string): {
  * Remove the backtrack trigger after it has been processed.
  */
 export function clearBacktrackTrigger(basePath: string): void {
-  const triggerPath = join(gsdRoot(basePath), "BACKTRACK-TRIGGER.md");
+  const triggerPath = join(workflowRoot(basePath), "BACKTRACK-TRIGGER.md");
   try {
     if (existsSync(triggerPath)) {
       unlinkSync(triggerPath);

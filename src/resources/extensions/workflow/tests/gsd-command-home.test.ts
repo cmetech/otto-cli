@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { buildHomeModel, showGsdHome } from "../command-home.ts";
+import { buildHomeModel, showWorkflowHome } from "../command-home.ts";
 import type { WorkflowDbState } from "../types.ts";
 
 function baseState(overrides: Partial<WorkflowDbState> = {}): WorkflowDbState {
@@ -92,7 +92,7 @@ test("/gsd home recommends start/configure after all milestones complete", () =>
   assert.match(model.summary.join("\n"), /All milestones complete/);
 });
 
-test("showGsdHome renders the five-slot home text without an interactive TUI", async () => {
+test("showWorkflowHome renders the five-slot home text without an interactive TUI", async () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-home-"));
   const notifications: Array<{ message: string; level: string }> = [];
   try {
@@ -110,7 +110,7 @@ test("showGsdHome renders the five-slot home text without an interactive TUI", a
     );
     writeFileSync(join(milestoneDir, "M001-SUMMARY.md"), "# M001 Summary\n\nComplete.");
 
-    await showGsdHome(
+    await showWorkflowHome(
       {
         hasUI: false,
         ui: {

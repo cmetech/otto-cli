@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execSync } from "node:child_process";
 
-import { repoIdentity, externalGsdRoot, ensureGsdSymlink, validateProjectId, readRepoMeta, isInheritedRepo } from "../repo-identity.ts";
+import { repoIdentity, externalWorkflowRoot, ensureWorkflowSymlink, validateProjectId, readRepoMeta, isInheritedRepo } from "../repo-identity.ts";
 /**
  * Normalize a path for reliable comparison on Windows CI runners.
  * `os.tmpdir()` may return the 8.3 short-path form (e.g. `C:\Users\RUNNER~1`)
@@ -43,7 +43,7 @@ describe('repo-identity-worktree', () => {
     worktreePath = join(base, ".gsd", "worktrees", "M001");
     run(`git worktree add -b milestone/M001 ${worktreePath}`, base);
 
-    expectedExternalState = externalGsdRoot(base);
+    expectedExternalState = externalWorkflowRoot(base);
   });
 
   after(() => {
@@ -53,31 +53,31 @@ describe('repo-identity-worktree', () => {
     rmSync(stateDir, { recursive: true, force: true });
   });
 
-test('ensureGsdSymlink points worktree at main repo external state dir', () => {
-    const mainState = ensureGsdSymlink(base);
-    assert.deepStrictEqual(mainState, realpathSync(join(base, ".gsd")), "ensureGsdSymlink(base) returns the current main repo .gsd target");
-    const worktreeState = ensureGsdSymlink(worktreePath);
+test('ensureWorkflowSymlink points worktree at main repo external state dir', () => {
+    const mainState = ensureWorkflowSymlink(base);
+    assert.deepStrictEqual(mainState, realpathSync(join(base, ".gsd")), "ensureWorkflowSymlink(base) returns the current main repo .gsd target");
+    const worktreeState = ensureWorkflowSymlink(worktreePath);
     assert.deepStrictEqual(worktreeState, expectedExternalState, "worktree symlink target matches main repo external state dir");
     assert.ok(existsSync(join(worktreePath, ".gsd")), "worktree .gsd exists");
     assert.ok(lstatSync(join(worktreePath, ".gsd")).isSymbolicLink(), "worktree .gsd is a symlink");
     assert.deepStrictEqual(realpathSync(join(worktreePath, ".gsd")), realpathSync(expectedExternalState), "worktree .gsd symlink resolves to main repo external state dir");
 });
 
-test('ensureGsdSymlink heals stale worktree symlinks', () => {
+test('ensureWorkflowSymlink heals stale worktree symlinks', () => {
     const staleState = join(stateDir, "projects", "stale-worktree-state");
     mkdirSync(staleState, { recursive: true });
     rmSync(join(worktreePath, ".gsd"), { recursive: true, force: true });
     symlinkSync(staleState, join(worktreePath, ".gsd"), "junction");
-    const healedState = ensureGsdSymlink(worktreePath);
+    const healedState = ensureWorkflowSymlink(worktreePath);
     assert.deepStrictEqual(healedState, expectedExternalState, "stale worktree symlink is repaired to canonical external state dir");
     assert.deepStrictEqual(realpathSync(join(worktreePath, ".gsd")), realpathSync(expectedExternalState), "healed worktree symlink resolves to canonical external state dir");
 });
 
-test('ensureGsdSymlink preserves worktree .gsd directories', () => {
+test('ensureWorkflowSymlink preserves worktree .gsd directories', () => {
     rmSync(join(worktreePath, ".gsd"), { recursive: true, force: true });
     mkdirSync(join(worktreePath, ".gsd", "milestones"), { recursive: true });
     writeFileSync(join(worktreePath, ".gsd", "milestones", "stale.txt"), "stale\n", "utf-8");
-    const preservedDirState = ensureGsdSymlink(worktreePath);
+    const preservedDirState = ensureWorkflowSymlink(worktreePath);
     assert.deepStrictEqual(preservedDirState, join(worktreePath, ".gsd"), "worktree .gsd directory is left in place for sync-based refresh");
     assert.ok(lstatSync(join(worktreePath, ".gsd")).isDirectory(), "worktree .gsd directory remains a directory");
     assert.ok(existsSync(join(worktreePath, ".gsd", "milestones", "stale.txt")), "existing worktree .gsd directory contents remain available for sync logic");
@@ -86,7 +86,7 @@ test('ensureGsdSymlink preserves worktree .gsd directories', () => {
 test('GSD_PROJECT_ID overrides computed repo hash', () => {
     process.env.GSD_PROJECT_ID = "my-project";
     assert.deepStrictEqual(repoIdentity(base), "my-project", "repoIdentity returns GSD_PROJECT_ID when set");
-    assert.deepStrictEqual(externalGsdRoot(base), join(stateDir, "projects", "my-project"), "externalGsdRoot uses GSD_PROJECT_ID");
+    assert.deepStrictEqual(externalWorkflowRoot(base), join(stateDir, "projects", "my-project"), "externalWorkflowRoot uses GSD_PROJECT_ID");
     delete process.env.GSD_PROJECT_ID;
 });
 
@@ -102,7 +102,7 @@ test('readRepoMeta returns null for malformed metadata', () => {
       assert.deepStrictEqual(readRepoMeta(malformedPath), null, "malformed repo-meta.json is treated as unknown metadata");
 });
 
-test('ensureGsdSymlink refreshes repo-meta gitRoot after repo move with fixed project id', () => {
+test('ensureWorkflowSymlink refreshes repo-meta gitRoot after repo move with fixed project id', () => {
       const moveRepo = realpathSync(mkdtempSync(join(tmpdir(), "gsd-repo-identity-move-")));
       run("git init -b main", moveRepo);
       run('git config user.name "Pi Test"', moveRepo);
@@ -112,7 +112,7 @@ test('ensureGsdSymlink refreshes repo-meta gitRoot after repo move with fixed pr
       run('git commit -m "chore: init move repo"', moveRepo);
 
       process.env.GSD_PROJECT_ID = "fixed-project";
-      const fixedExternal = ensureGsdSymlink(moveRepo);
+      const fixedExternal = ensureWorkflowSymlink(moveRepo);
       const before = readRepoMeta(fixedExternal);
       assert.ok(before !== null, "repo metadata exists before repo move");
       assert.deepStrictEqual(normalizePath(before!.gitRoot), normalizePath(moveRepo), "repo metadata tracks current git root before move");
@@ -120,7 +120,7 @@ test('ensureGsdSymlink refreshes repo-meta gitRoot after repo move with fixed pr
       const movedBaseRaw = join(tmpdir(), `gsd-repo-identity-moved-${Date.now()}-${Math.random().toString(36).slice(2)}`);
       renameSync(moveRepo, movedBaseRaw);
       const movedBase = realpathSync(movedBaseRaw);
-      const movedExternal = ensureGsdSymlink(movedBase);
+      const movedExternal = ensureWorkflowSymlink(movedBase);
       assert.deepStrictEqual(realpathSync(movedExternal), realpathSync(fixedExternal), "fixed project id keeps the same external state dir");
 
       const after = readRepoMeta(movedExternal);
@@ -184,7 +184,7 @@ test('subdirectory of parent repo gets unique identity after git init (#1639)', 
       rmSync(parentRepo, { recursive: true, force: true });
 });
 
-test('ensureGsdSymlink from subdirectory does not create .gsd in subdir when git-root .gsd exists (#2380)', () => {
+test('ensureWorkflowSymlink from subdirectory does not create .gsd in subdir when git-root .gsd exists (#2380)', () => {
     const repo = realpathSync(mkdtempSync(join(tmpdir(), "gsd-subdir-symlink-")));
     run("git init -b main", repo);
     run('git config user.name "Pi Test"', repo);
@@ -195,16 +195,16 @@ test('ensureGsdSymlink from subdirectory does not create .gsd in subdir when git
     run('git commit -m "init"', repo);
 
     // Set up .gsd symlink at the git root (normal project initialisation)
-    ensureGsdSymlink(repo);
-    assert.ok(existsSync(join(repo, ".gsd")), "root .gsd exists after ensureGsdSymlink");
+    ensureWorkflowSymlink(repo);
+    assert.ok(existsSync(join(repo, ".gsd")), "root .gsd exists after ensureWorkflowSymlink");
     assert.ok(lstatSync(join(repo, ".gsd")).isSymbolicLink(), "root .gsd is a symlink");
 
-    // Create a subdirectory and call ensureGsdSymlink from there
+    // Create a subdirectory and call ensureWorkflowSymlink from there
     const subdir = join(repo, "src", "lib");
     mkdirSync(subdir, { recursive: true });
-    ensureGsdSymlink(subdir);
+    ensureWorkflowSymlink(subdir);
 
-    // ensureGsdSymlink should NOT create a .gsd in the subdirectory
+    // ensureWorkflowSymlink should NOT create a .gsd in the subdirectory
     // because the git root already has a valid .gsd symlink.
     assert.ok(!existsSync(join(subdir, ".gsd")), "no .gsd created in subdirectory when git-root .gsd exists (#2380)");
     assert.ok(!existsSync(join(repo, "src", ".gsd")), "no .gsd created in intermediate directory");
@@ -228,7 +228,7 @@ test('validateProjectId accepts valid values', () => {
     }
 });
 
-test('ensureGsdSymlink prefers marker directory when marker/computed identities diverge and both have state (#5685)', () => {
+test('ensureWorkflowSymlink prefers marker directory when marker/computed identities diverge and both have state (#5685)', () => {
     const repo = realpathSync(mkdtempSync(join(tmpdir(), "gsd-split-brain-")));
     run("git init -b main", repo);
     run('git config user.name "Pi Test"', repo);
@@ -237,7 +237,7 @@ test('ensureGsdSymlink prefers marker directory when marker/computed identities 
     run("git add README.md", repo);
     run('git commit -m "init"', repo);
 
-    const computedPath = externalGsdRoot(repo);
+    const computedPath = externalWorkflowRoot(repo);
     mkdirSync(computedPath, { recursive: true });
     writeFileSync(join(computedPath, "computed-state.txt"), "computed\n", "utf-8");
 
@@ -247,7 +247,7 @@ test('ensureGsdSymlink prefers marker directory when marker/computed identities 
     writeFileSync(join(markerPath, "marker-state.txt"), "marker\n", "utf-8");
     writeFileSync(join(repo, ".gsd-id"), `${markerId}\n`, "utf-8");
 
-    const resolved = ensureGsdSymlink(repo);
+    const resolved = ensureWorkflowSymlink(repo);
     assert.deepStrictEqual(resolved, markerPath, "marker-backed state directory is preferred in split-brain condition");
     assert.deepStrictEqual(realpathSync(join(repo, ".gsd")), realpathSync(markerPath), ".gsd symlink resolves to marker-backed state directory");
     assert.deepStrictEqual(readFileSync(join(repo, ".gsd-id"), "utf-8").trim(), markerId, ".gsd-id marker persists the marker-backed identity");

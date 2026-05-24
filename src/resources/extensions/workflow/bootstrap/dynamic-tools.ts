@@ -9,7 +9,7 @@ import { createBashTool, createEditTool, createReadTool, createWriteTool } from 
 
 import { DEFAULT_BASH_TIMEOUT_SECS } from "../constants.js";
 import { setLogBasePath, logWarning } from "../workflow-logger.js";
-import { resolveGsdPathContract } from "../paths.js";
+import { resolveWorkflowPathContract } from "../paths.js";
 
 export function safeWorkspaceCwd(): string {
   try {
@@ -36,15 +36,15 @@ export function resolveCtxCwd(ctx?: unknown): string {
  * returns `<basePath>/.loop24/gsd.db`.
  */
 export function resolveProjectRootDbPath(basePath: string): string {
-  return resolveGsdPathContract(basePath).projectDb;
+  return resolveWorkflowPathContract(basePath).projectDb;
 }
 
 export async function ensureDbOpen(basePath: string = safeWorkspaceCwd()): Promise<boolean> {
   try {
     const db = await import("../db.js");
-    const contract = resolveGsdPathContract(basePath);
+    const contract = resolveWorkflowPathContract(basePath);
     const dbPath = contract.projectDb;
-    const gsdDir = contract.projectGsd;
+    const workflowDir = contract.projectGsd;
     const projectRoot = dirname(dirname(dbPath));
 
     // Open existing DB file (may be at project root for worktrees)
@@ -56,7 +56,7 @@ export async function ensureDbOpen(basePath: string = safeWorkspaceCwd()): Promi
 
     // No DB file — create an empty authoritative DB. Markdown migration is
     // explicit-only; runtime startup must not import projections into state.
-    if (existsSync(gsdDir)) {
+    if (existsSync(workflowDir)) {
       const opened = db.openDatabase(dbPath);
       if (opened) setLogBasePath(projectRoot);
       return opened;

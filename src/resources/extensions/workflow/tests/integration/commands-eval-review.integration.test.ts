@@ -24,7 +24,7 @@ import {
   MAX_CONTEXT_BYTES,
   parseEvalReviewArgs,
 } from "../../commands-eval-review.js";
-import { _clearGsdRootCache } from "../../paths.js";
+import { _clearWorkflowRootCache } from "../../paths.js";
 import {
   computeOverallScore,
   deriveCounts,
@@ -103,7 +103,7 @@ describe("integration: /gsd eval-review helper chain on a real on-disk slice", (
   });
 
   afterEach(() => {
-    _clearGsdRootCache();
+    _clearWorkflowRootCache();
     process.chdir(cwd);
     rmSync(layout.basePath, { recursive: true, force: true });
   });

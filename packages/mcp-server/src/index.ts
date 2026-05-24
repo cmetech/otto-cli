@@ -14,7 +14,7 @@ export type {
 export { MAX_EVENTS, INIT_TIMEOUT_MS } from './types.js';
 
 // Path resolution utilities
-export { resolveGsdRoot } from './readers/paths.js';
+export { resolveWorkflowRoot } from './readers/paths.js';
 
 // Read-only state readers (usable without a running session)
 export { readProgress } from './readers/state.js';

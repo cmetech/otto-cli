@@ -11,7 +11,7 @@ import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 
 import { ensureDbOpen, resolveCtxCwd } from "./dynamic-tools.js";
 import {
-  executeGsdGraph,
+  executeWorkflowGraph,
   executeMemoryCapture,
   executeMemoryQuery,
 } from "../tools/memory-tools.js";
@@ -160,7 +160,7 @@ export function registerMemoryTools(pi: ExtensionAPI): void {
           isError: true,
         };
       }
-      return executeGsdGraph(params as Parameters<typeof executeGsdGraph>[0]);
+      return executeWorkflowGraph(params as Parameters<typeof executeWorkflowGraph>[0]);
     },
   });
 }

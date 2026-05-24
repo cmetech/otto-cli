@@ -32,7 +32,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 
-import { resolveGsdRootFile } from "./paths.js";
+import { resolveWorkflowRootFile } from "./paths.js";
 
 export type KnowledgeTable = "rules" | "patterns" | "lessons";
 
@@ -57,7 +57,7 @@ export const KNOWLEDGE_SECTIONS: ReadonlyArray<{
 
 /** Read `.gsd/KNOWLEDGE.md` content if present. Returns "" when absent or unreadable. */
 export function readKnowledgeMd(basePath: string): string {
-  const path = resolveGsdRootFile(basePath, "KNOWLEDGE");
+  const path = resolveWorkflowRootFile(basePath, "KNOWLEDGE");
   if (!existsSync(path)) return "";
   try {
     return readFileSync(path, "utf-8");
@@ -68,7 +68,7 @@ export function readKnowledgeMd(basePath: string): string {
 
 /** Resolve the canonical `.gsd/KNOWLEDGE.md` path. */
 export function knowledgeMdPath(basePath: string): string {
-  return resolveGsdRootFile(basePath, "KNOWLEDGE");
+  return resolveWorkflowRootFile(basePath, "KNOWLEDGE");
 }
 
 /**

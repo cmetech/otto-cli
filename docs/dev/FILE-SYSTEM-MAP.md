@@ -662,7 +662,7 @@
 | react-best-practices/ | Skills | React development patterns (62 files) |
 | userinterface-wiki/ | Skills | UI/UX guidelines and component reference (155 files) |
 | create-skill/ | Skills | Skill creation scaffolding and templates (25 files) |
-| create-gsd-extension/ | Skills, Extensions | GSD extension scaffolding (22 files) |
+| create-extension/ | Skills, Extensions | GSD extension scaffolding (22 files) |
 | code-optimizer/ | Skills | Performance optimization techniques (16 files) |
 | agent-browser/ | Skills, Browser Tools | Browser automation guidance (11 files) |
 | github-workflows/ | Skills | GitHub Actions workflow patterns (10 files) |

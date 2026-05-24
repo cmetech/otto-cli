@@ -40,7 +40,7 @@ const PR_5060_BUNDLED_SKILLS = [
   'web-design-guidelines',
   'userinterface-wiki',
   'create-skill',
-  'create-gsd-extension',
+  'create-extension',
   'create-workflow',
   'code-optimizer',
 ] as const;

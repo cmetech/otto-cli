@@ -73,7 +73,7 @@ describe("extension templates use @gsd/* imports", () => {
 
 	for (const template of templates) {
 		it(`${template} renders as a compilable extension module`, () => {
-			const dir = mkdtempSync(join(tmpdir(), "create-gsd-extension-template-"));
+			const dir = mkdtempSync(join(tmpdir(), "create-extension-template-"));
 			try {
 				const stubsPath = join(dir, "extension-api-stubs.d.ts");
 				const renderedPath = join(dir, template);

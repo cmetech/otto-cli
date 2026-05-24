@@ -67,7 +67,7 @@ export const BUNDLED_SKILL_TRIGGERS: Array<{ trigger: string; skill: string }> =
   { trigger: "Review UI code for Web Interface Guidelines compliance — UX, design, and accessibility patterns", skill: "web-design-guidelines" },
   { trigger: "UI/UX patterns reference — animations, CSS, typography, prefetching, icons (file:line findings)", skill: "userinterface-wiki" },
   { trigger: "Author or refine a GSD skill — SKILL.md structure, frontmatter, and best practices", skill: "create-skill" },
-  { trigger: "Create or debug a GSD extension — tools, commands, event hooks, custom TUI, providers", skill: "create-gsd-extension" },
+  { trigger: "Create or debug a GSD extension — tools, commands, event hooks, custom TUI, providers", skill: "create-extension" },
   { trigger: "Author a YAML workflow definition — steps, triggers, and templates", skill: "create-workflow" },
   { trigger: "Deep code optimization audit — perf anti-patterns, memory leaks, algorithmic complexity, bundle size, I/O, caching, dead code (parallel pattern-based hunt)", skill: "code-optimizer" },
 ];

@@ -1,5 +1,5 @@
 /**
- * Validates that the create-gsd-extension skill documentation uses the correct
+ * Validates that the create-extension skill documentation uses the correct
  * community extension install path (~/.pi/agent/extensions/) instead of the
  * bundled-only path (~/.gsd/agent/extensions/).
  *
@@ -16,7 +16,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const skillDir = join(__dirname, "..", "resources", "skills", "create-gsd-extension");
+const skillDir = join(__dirname, "..", "resources", "skills", "create-extension");
 
 function readSkillFile(relativePath: string): string {
   return readFileSync(join(skillDir, relativePath), "utf-8");
@@ -31,7 +31,7 @@ const docsToCheck: { file: string; label: string }[] = [
   { file: "workflows/debug-extension.md", label: "debug-extension.md" },
 ];
 
-test("create-gsd-extension docs use ~/.pi/agent/extensions/ for community extensions", async (t) => {
+test("create-extension docs use ~/.pi/agent/extensions/ for community extensions", async (t) => {
   for (const { file, label } of docsToCheck) {
     await t.test(`${label} references ~/.pi/agent/extensions/ for global extensions`, () => {
       const content = readSkillFile(file);
@@ -45,7 +45,7 @@ test("create-gsd-extension docs use ~/.pi/agent/extensions/ for community extens
   }
 });
 
-test("create-gsd-extension docs do NOT direct users to install in ~/.gsd/agent/extensions/", async (t) => {
+test("create-extension docs do NOT direct users to install in ~/.gsd/agent/extensions/", async (t) => {
   for (const { file, label } of docsToCheck) {
     await t.test(`${label} does not tell users to place extensions in ~/.gsd/agent/extensions/`, () => {
       const content = readSkillFile(file);

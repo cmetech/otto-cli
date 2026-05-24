@@ -610,6 +610,14 @@ export class InteractiveMode {
 		// rg is needed for grep tool and bash commands
 		await ensureTool("rg");
 
+		// Initialize available provider count BEFORE any addChild calls so the
+		// footer's first render sees the correct multi-provider state.
+		// Previously this ran at the END of init() (after addChild's), which
+		// caused the footer to render twice with different content (count=N then
+		// count=N+1 once the async getAvailable() resolved). pi-tui's
+		// differential rendering left both rows visible during startup.
+		await this.updateAvailableProviderCount();
+
 		// Add header container as first child
 		this.ui.addChild(this.headerContainer);
 
@@ -727,8 +735,9 @@ export class InteractiveMode {
 			this.ui.requestRender();
 		});
 
-		// Initialize available provider count for footer display
-		await this.updateAvailableProviderCount();
+		// Provider count was initialized at the top of init() (before any
+		// addChild call) so the footer's first render has the correct state —
+		// see comment there. No additional refresh needed at this point.
 	}
 
 	/**

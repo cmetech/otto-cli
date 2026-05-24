@@ -97,6 +97,14 @@ if (process.env.LOOP24_CLEAR_ON_START && process.env.LOOP24_CLEAR_ON_START !== '
   process.stdout.write('\x1b[2J\x1b[H')  // Clear screen + home cursor
 }
 
+// PI_CLEAR_ON_SHRINK=1 — when content shrinks below the previous max-rendered
+// height, force a full redraw so stale rows (e.g. a previous footer line) are
+// cleared. pi-tui defaults this off for perf reasons, but without it the
+// startup sequence can leave a duplicate footer row visible until the next
+// resize. Defaulting to 1 here; users who want pi-tui's vanilla behavior can
+// override with PI_CLEAR_ON_SHRINK=0 in their shell.
+process.env.PI_CLEAR_ON_SHRINK ??= '1'
+
 // Print LOOP24 banner on first launch (before ~/.loop24/ exists).
 // Set LOOP24_FIRST_RUN_BANNER (and legacy GSD_FIRST_RUN_BANNER) so cli.ts and
 // tests skip the duplicate welcome screen.

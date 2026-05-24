@@ -222,7 +222,7 @@ export async function handleCapture(args: string, ctx: ExtensionCommandContext):
 
   const basePath = currentDirectoryRoot();
 
-  // Ensure .loop24/ exists — capture should work even without a milestone
+  // Ensure .gsd/ exists — capture should work even without a milestone
   const workflowDir = workflowRoot(basePath);
   if (!existsSync(workflowDir)) {
     mkdirSync(workflowDir, { recursive: true });

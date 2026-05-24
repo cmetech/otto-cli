@@ -2,7 +2,7 @@
  * Repo Identity — external state directory primitives.
  *
  * Computes a stable per-repo identity hash, resolves the external
- * `~/.loop24/projects/<hash>/` state directory, and manages the
+ * `~/.otto/projects/<hash>/` state directory, and manages the
  * `<project>/.gsd → external` symlink.
  */
 
@@ -307,7 +307,7 @@ export function repoIdentity(basePath: string): string {
  * Compute the external workflow state directory for a repository.
  *
  * Returns `$GSD_STATE_DIR/projects/<hash>` if `GSD_STATE_DIR` is set,
- * otherwise `~/.loop24/projects/<hash>`.
+ * otherwise `~/.otto/projects/<hash>`.
  */
 export function externalWorkflowRoot(basePath: string): string {
   const base = (process.env.LOOP24_STATE_DIR ?? process.env.GSD_STATE_DIR) || workflowHome();

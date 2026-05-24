@@ -871,7 +871,7 @@ const MAX_PRIOR_CONTEXT_CHARS = 6000;
  * Reads DECISIONS.md, REQUIREMENTS.md, KNOWLEDGE.md from the .gsd directory
  * and milestone summaries from each milestone's MILESTONE-SUMMARY.md file.
  *
- * @param basePath - Root directory of the project (contains .loop24/)
+ * @param basePath - Root directory of the project (contains .gsd/)
  * @returns PriorContextBrief with aggregated context
  */
 export async function aggregatePriorContext(basePath: string): Promise<PriorContextBrief> {

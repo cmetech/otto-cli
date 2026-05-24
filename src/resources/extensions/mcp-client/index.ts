@@ -2,7 +2,7 @@
  * MCP Client Extension — Native MCP server integration for pi
  *
  * Provides on-demand access to MCP servers configured in project files
- * (.mcp.json, .loop24/mcp.json) and the global ~/.loop24/mcp.json (or
+ * (.mcp.json, .gsd/mcp.json) and the global ~/.otto/mcp.json (or
  * $GSD_HOME/mcp.json) using the @modelcontextprotocol/sdk Client
  * directly — no external CLI dependency required.
  *

@@ -91,7 +91,7 @@ function parseDiscussArgs(args: string): { target: string | null; error: string 
 export const _parseDiscussArgsForTest = parseDiscussArgs;
 
 /**
- * Refuses interactive commands that mutate durable .loop24/ planning state while
+ * Refuses interactive commands that mutate durable .gsd/ planning state while
  * auto-mode holds the worktree. Returns true if the command was blocked and
  * the caller should return immediately; false if it is safe to proceed.
  *

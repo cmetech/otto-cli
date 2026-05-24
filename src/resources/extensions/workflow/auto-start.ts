@@ -369,7 +369,7 @@ export function auditOrphanedMilestoneBranches(
 
         // If the directory still exists after git worktree remove (either it
         // wasn't registered or the remove was a noop), fall back to direct
-        // filesystem removal — but only inside .loop24/worktrees/ for safety (#2365).
+        // filesystem removal — but only inside .gsd/worktrees/ for safety (#2365).
         if (existsSync(wtDir)) {
           if (isInsideWorktreesDir(basePath, wtDir)) {
             try {
@@ -413,7 +413,7 @@ export function auditOrphanedMilestoneBranches(
   // reached.
   //
   // Keyed on milestones whose DB status is `complete`. We do not iterate
-  // over arbitrary directories under .loop24/worktrees/ to avoid touching
+  // over arbitrary directories under .gsd/worktrees/ to avoid touching
   // dirs that belong to an in-progress milestone whose branch was deleted
   // separately — those are handled by the in-progress orphan path above
   // when the branch is present, and by `/loop24 doctor` when it is not.
@@ -709,7 +709,7 @@ export async function bootstrapAutoSession(
   // selection for subsequent /loop24 runs in the same session.
   //
   // Exception (#4122): when the session provider is a custom provider declared
-  // in ~/.loop24/agent/models.json (Ollama, vLLM, OpenAI-compatible proxy, etc.),
+  // in ~/.otto/agent/models.json (Ollama, vLLM, OpenAI-compatible proxy, etc.),
   // PREFERENCES.md is skipped entirely. PREFERENCES.md cannot reference custom
   // providers, so honoring it would silently reroute auto-mode to a built-in
   // provider the user is not logged into and surface as "Not logged in · Please
@@ -786,9 +786,9 @@ export async function bootstrapAutoSession(
       nativeInit(base, mainBranch);
     }
 
-    // Migrate legacy in-project .loop24/ to external state directory.
+    // Migrate legacy in-project .gsd/ to external state directory.
     // Migration MUST run before ensureGitignore to avoid adding ".gsd" to
-    // .gitignore when .loop24/ is git-tracked (data-loss bug #1364).
+    // .gitignore when .gsd/ is git-tracked (data-loss bug #1364).
     recoverFailedMigration(base);
     const migration = migrateToExternalState(base);
     if (migration.error) {
@@ -798,16 +798,16 @@ export async function bootstrapAutoSession(
     ensureWorkflowSymlink(base);
 
     // Ensure .gitignore has baseline patterns.
-    // ensureGitignore checks for git-tracked .loop24/ files and skips the
-    // ".gsd" pattern if the project intentionally tracks .loop24/ in git.
+    // ensureGitignore checks for git-tracked .gsd/ files and skips the
+    // ".gsd" pattern if the project intentionally tracks .gsd/ in git.
     const gitPrefs = loadEffectiveGSDPreferences(base)?.preferences?.git;
     const manageGitignore = gitPrefs?.manage_gitignore;
     ensureGitignore(base, { manageGitignore });
     if (manageGitignore !== false) untrackRuntimeFiles(base);
 
     // Bootstrap milestones/ if it doesn't exist.
-    // Check milestones/ directly — ensureWorkflowSymlink above already created .loop24/,
-    // so checking .loop24/ existence would be dead code (#2942).
+    // Check milestones/ directly — ensureWorkflowSymlink above already created .gsd/,
+    // so checking .gsd/ existence would be dead code (#2942).
     const workflowDir = join(base, ".gsd");
     const milestonesPath = join(workflowDir, "milestones");
     if (!existsSync(milestonesPath)) {
@@ -1268,12 +1268,12 @@ export async function bootstrapAutoSession(
     // live here is gone.
 
     const isUnderWorkflowWorktrees = (p: string): boolean => {
-      // Direct layout: /.loop24/worktrees/
+      // Direct layout: /.gsd/worktrees/
       const marker = `${pathSep}.gsd${pathSep}worktrees${pathSep}`;
       if (p.includes(marker)) return true;
       const worktreesSuffix = `${pathSep}.gsd${pathSep}worktrees`;
       if (p.endsWith(worktreesSuffix)) return true;
-      // Symlink-resolved layout: /.loop24/projects/<hash>/worktrees/
+      // Symlink-resolved layout: /.gsd/projects/<hash>/worktrees/
       const symlinkRe = new RegExp(
         `\\${pathSep}\\.gsd\\${pathSep}projects\\${pathSep}[a-f0-9]+\\${pathSep}worktrees(?:\\${pathSep}|$)`,
       );

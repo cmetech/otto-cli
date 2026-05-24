@@ -1309,8 +1309,8 @@ async function prepareAndBuildDiscussPrompt(
 }
 
 /**
- * Bootstrap a .loop24/ project from scratch for headless use.
- * Ensures git repo, .loop24/ structure, gitignore, and preferences all exist.
+ * Bootstrap a .gsd/ project from scratch for headless use.
+ * Ensures git repo, .gsd/ structure, gitignore, and preferences all exist.
  */
 function bootstrapWorkflowProject(basePath: string): void {
   if (!nativeIsRepo(basePath) || isInheritedRepo(basePath)) {
@@ -1344,7 +1344,7 @@ export async function showHeadlessMilestoneCreation(
   // Clear stale reservations from previous cancelled sessions (#2488)
   clearReservedMilestoneIds();
 
-  // Ensure .loop24/ is bootstrapped
+  // Ensure .gsd/ is bootstrapped
   bootstrapWorkflowProject(basePath);
 
   const { ensureDbOpen } = await import("./bootstrap/dynamic-tools.js");
@@ -1493,7 +1493,7 @@ export async function showDiscuss(
   basePath: string,
   options?: { target?: string },
 ): Promise<void> {
-  // Guard: no .loop24/ project
+  // Guard: no .gsd/ project
   if (!existsSync(workflowRoot(basePath))) {
     ctx.ui.notify("No GSD project found. Run /gsd to start one first.", "warning");
     return;
@@ -2080,8 +2080,8 @@ export async function showSmartEntry(
   }
 
   // ── Detection preamble — run before any bootstrap ────────────────────
-  // Check bootstrap completeness, not just .loop24/ directory existence.
-  // A zombie .loop24/ state (symlink exists but missing PREFERENCES.md and
+  // Check bootstrap completeness, not just .gsd/ directory existence.
+  // A zombie .gsd/ state (symlink exists but missing PREFERENCES.md and
   // milestones/) must trigger the init wizard, not skip it (#2942).
   const workflowPath = workflowRoot(basePath);
   const hasBootstrapArtifacts = hasWorkflowBootstrapArtifacts(workflowPath);
@@ -2102,12 +2102,12 @@ export async function showSmartEntry(
       // "fresh" — fall through to init wizard
     }
 
-    // No .loop24/ or zombie .loop24/ — run the project init wizard
+    // No .gsd/ or zombie .gsd/ — run the project init wizard
     const result = await showProjectInit(ctx, pi, basePath, detection);
     if (!result.completed) return; // User cancelled
     skipGitBootstrap = shouldSkipGitBootstrapAfterInit(result);
 
-    // Init wizard bootstrapped .loop24/ — fall through to the normal flow below
+    // Init wizard bootstrapped .gsd/ — fall through to the normal flow below
     // which will detect "no milestones" and start the discuss prompt
   }
 
@@ -2128,7 +2128,7 @@ export async function showSmartEntry(
     if (manageGitignore !== false) untrackRuntimeFiles(basePath);
   }
 
-  // Deep setup can pre-create .loop24/PREFERENCES.md before the normal init
+  // Deep setup can pre-create .gsd/PREFERENCES.md before the normal init
   // wizard path runs. If that path also initialized git, make HEAD reachable
   // now so later worktree/git-log operations do not run on an unborn branch.
   if (!skipGitBootstrap && nativeIsRepo(basePath) && !nativeHasCommittedHead(basePath)) {

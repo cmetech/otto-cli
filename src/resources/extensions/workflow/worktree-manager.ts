@@ -4,17 +4,17 @@
 /**
  * Worktree Manager
  *
- * Creates and manages git worktrees under .loop24/worktrees/<name>/.
+ * Creates and manages git worktrees under .gsd/worktrees/<name>/.
  * Each worktree gets its own branch (worktree/<name>) and a full
  * working copy of the project, enabling parallel work streams.
  *
- * The merge helper compares .loop24/ artifacts between a worktree and
+ * The merge helper compares .gsd/ artifacts between a worktree and
  * the main branch, then dispatches an LLM-guided merge flow.
  *
  * Flow:
- *   1. create()  — git worktree add .loop24/worktrees/<name> -b worktree/<name>
+ *   1. create()  — git worktree add .gsd/worktrees/<name> -b worktree/<name>
  *   2. user works in the worktree (new plans, milestones, etc.)
- *   3. merge()   — LLM-guided reconciliation of .loop24/ artifacts back to main
+ *   3. merge()   — LLM-guided reconciliation of .gsd/ artifacts back to main
  *   4. remove()  — git worktree remove + branch cleanup
  */
 
@@ -151,7 +151,7 @@ export function worktreeBranchName(name: string): string {
 }
 
 /**
- * Validate that a path is inside the .loop24/worktrees/ directory.
+ * Validate that a path is inside the .gsd/worktrees/ directory.
  * Resolves symlinks and normalizes ".." traversals before comparison
  * so that a symlink-resolved or crafted path cannot escape containment.
  *
@@ -163,14 +163,14 @@ export function isInsideWorktreesDir(basePath: string, targetPath: string): bool
   const wtDir = existsSync(wtDirPath) ? realpathSync(wtDirPath) : resolve(wtDirPath);
   const resolved = existsSync(targetPath) ? realpathSync(targetPath) : resolve(targetPath);
   // The resolved path must start with the worktrees dir followed by a separator,
-  // not merely be a prefix match (e.g. ".loop24/worktrees-extra" must not match).
+  // not merely be a prefix match (e.g. ".gsd/worktrees-extra" must not match).
   return resolved === wtDir || resolved.startsWith(wtDir + sep);
 }
 
 /**
  * Return the canonical path from which a milestone's artifacts should be read.
  *
- * If a live git worktree exists for this milestone at `.loop24/worktrees/<MID>/`
+ * If a live git worktree exists for this milestone at `.gsd/worktrees/<MID>/`
  * (directory present AND a `.git` file indicating a registered worktree),
  * returns that worktree path. Otherwise returns `basePath` unchanged.
  *
@@ -223,7 +223,7 @@ export function resolveCanonicalMilestoneRoot(
 // ─── Core Operations ───────────────────────────────────────────────────────
 
 /**
- * Create a new git worktree under .loop24/worktrees/<name>/ with branch worktree/<name>.
+ * Create a new git worktree under .gsd/worktrees/<name>/ with branch worktree/<name>.
  * The branch is created from the current HEAD of the main branch.
  *
  * @param opts.branch — override the default `worktree/<name>` branch name
@@ -265,7 +265,7 @@ export function createWorktree(basePath: string, name: string, opts: { branch?: 
     }
   }
 
-  // Ensure the .loop24/worktrees/ directory exists
+  // Ensure the .gsd/worktrees/ directory exists
   const wtDir = worktreesDir(basePath);
   mkdirSync(wtDir, { recursive: true });
 
@@ -349,7 +349,7 @@ export function createWorktree(basePath: string, name: string, opts: { branch?: 
 
 /**
  * List all managed worktrees.
- * Uses native worktree list and filters to those under .loop24/worktrees/.
+ * Uses native worktree list and filters to those under .gsd/worktrees/.
  */
 export function listWorktrees(basePath: string): WorktreeInfo[] {
   basePath = normalizeBasePathForWorktreeOps(basePath);
@@ -402,7 +402,7 @@ export function listWorktrees(basePath: string): WorktreeInfo[] {
       ? normalizedEntryVariants.some(entryVariant => entryVariant.split("/").pop() === branchWorktreeName)
       : false;
 
-    // Only include worktrees under .loop24/worktrees/
+    // Only include worktrees under .gsd/worktrees/
     if (!matchedRoot && !matchesBranchLeaf) continue;
 
     const matchedEntryPath = normalizedEntryVariants.find(entryVariant =>
@@ -545,10 +545,10 @@ export function removeWorktree(
   const { deleteBranch = true, force = true } = opts;
 
   // Resolve the ACTUAL worktree path from git's worktree list.
-  // The computed path may differ when .loop24/ is (or was) a symlink to an
+  // The computed path may differ when .gsd/ is (or was) a symlink to an
   // external state directory — git resolves symlinks at worktree creation
   // time, so its registered path points to the resolved external location.
-  // If syncStateToProjectRoot later creates a real .loop24/ directory that
+  // If syncStateToProjectRoot later creates a real .gsd/ directory that
   // shadows the symlink, the computed path diverges from git's record.
   let gitReportedPath: string | null = null;
   try {
@@ -560,7 +560,7 @@ export function removeWorktree(
   } catch (e) { logWarning("worktree", `nativeWorktreeList parse failed: ${(e as Error).message}`); }
 
   // Safety gate (#2365): only use the git-reported path if it is actually
-  // inside .loop24/worktrees/.  When .loop24/ was a symlink, git may have resolved
+  // inside .gsd/worktrees/.  When .gsd/ was a symlink, git may have resolved
   // it to an external directory (e.g. a project data folder).  Using that
   // path for removal would destroy user data.
   if (gitReportedPath && isInsideWorktreesDir(basePath, gitReportedPath)) {
@@ -578,7 +578,7 @@ export function removeWorktree(
   const resolvedWtPath = existsSync(wtPath) ? realpathSync(wtPath) : wtPath;
 
   // Double-check: the resolved path (after symlink resolution) must also be
-  // inside .loop24/worktrees/ — a symlink inside the directory could point out.
+  // inside .gsd/worktrees/ — a symlink inside the directory could point out.
   const resolvedPathSafe = isInsideWorktreesDir(basePath, resolvedWtPath);
 
   // If we're inside the worktree, move out first — git can't remove an in-use directory
@@ -791,7 +791,7 @@ function parseDiffNameStatus(entries: { status: string; path: string }[]): Workt
 }
 
 /**
- * Diff the .loop24/ directory between the worktree branch and main branch.
+ * Diff the .gsd/ directory between the worktree branch and main branch.
  * Returns a summary of added, modified, and removed workflow artifacts.
  */
 export function diffWorktreeGSD(basePath: string, name: string): WorktreeDiffSummary {
@@ -843,7 +843,7 @@ export function diffWorktreeNumstat(basePath: string, name: string, branchOverri
 }
 
 /**
- * Get the full diff content for .loop24/ between the worktree branch and main.
+ * Get the full diff content for .gsd/ between the worktree branch and main.
  * Returns the raw unified diff for LLM consumption.
  */
 export function getWorktreeGSDDiff(basePath: string, name: string): string {
@@ -856,7 +856,7 @@ export function getWorktreeGSDDiff(basePath: string, name: string): string {
 }
 
 /**
- * Get the full diff content for non-.loop24/ files between the worktree branch and main.
+ * Get the full diff content for non-.gsd/ files between the worktree branch and main.
  * Returns the raw unified diff for LLM consumption.
  */
 export function getWorktreeCodeDiff(basePath: string, name: string): string {

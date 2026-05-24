@@ -101,7 +101,7 @@ const LEGACY_DEEP_SETUP_RUNTIME_UNIT_FILES = new Set([
 // ─── Shared Constants & Helpers ─────────────────────────────────────────────
 
 /**
- * Root-level .loop24/ projections copied from project root into worktrees for
+ * Root-level .gsd/ projections copied from project root into worktrees for
  * compatibility. Project root remains the canonical state/projection root.
  */
 const ROOT_STATE_FILES = [
@@ -460,7 +460,7 @@ export const SAFE_AUTO_RESOLVE_PATTERNS: RegExp[] = [
 ];
 
 /** Returns true if the file path is safe to auto-resolve during merge.
- * Covers `.loop24/` state files and common build artifacts. */
+ * Covers `.gsd/` state files and common build artifacts. */
 export const isSafeToAutoResolve = (filePath: string): boolean =>
   filePath.startsWith(".gsd/") ||
   SAFE_AUTO_RESOLVE_PATTERNS.some((re) => re.test(filePath));
@@ -587,7 +587,7 @@ export function checkResourcesStale(
  * Detect and escape a stale worktree cwd (#608).
  *
  * After milestone completion + merge, the worktree directory is removed but
- * the process cwd may still point inside `.loop24/worktrees/<MID>/`.
+ * the process cwd may still point inside `.gsd/worktrees/<MID>/`.
  * When a new session starts, `process.cwd()` is passed as `base` to startAuto
  * and all subsequent writes land in the wrong directory. This function detects
  * that scenario and chdir back to the project root.
@@ -595,11 +595,11 @@ export function checkResourcesStale(
  * Returns the corrected base path.
  */
 export function escapeStaleWorktree(base: string): string {
-  // Direct layout: /.loop24/worktrees/
+  // Direct layout: /.gsd/worktrees/
   const directMarker = `${pathSep}.gsd${pathSep}worktrees${pathSep}`;
   let idx = base.indexOf(directMarker);
   if (idx === -1) {
-    // Symlink-resolved layout: /.loop24/projects/<hash>/worktrees/
+    // Symlink-resolved layout: /.gsd/projects/<hash>/worktrees/
     const symlinkRe = new RegExp(
       `\\${pathSep}\\.gsd\\${pathSep}projects\\${pathSep}[a-f0-9]+\\${pathSep}worktrees\\${pathSep}`,
     );
@@ -608,12 +608,12 @@ export function escapeStaleWorktree(base: string): string {
     idx = match.index;
   }
 
-  // base is inside .loop24/worktrees/<something> — extract the project root
+  // base is inside .gsd/worktrees/<something> — extract the project root
   const projectRoot = base.slice(0, idx);
 
   // Guard: If the candidate project root's .gsd IS the user-level ~/.gsd,
-  // the string-slice heuristic matched the wrong /.loop24/ boundary. This happens
-  // when .gsd is a symlink into ~/.loop24/projects/<hash> and process.cwd()
+  // the string-slice heuristic matched the wrong /.gsd/ boundary. This happens
+  // when .gsd is a symlink into ~/.otto/projects/<hash> and process.cwd()
   // resolved through the symlink. Returning ~ would be catastrophic (#1676).
   const candidateGsd = normalizeWorktreePathForCompare(join(projectRoot, ".gsd"));
   const workflowHomeNorm = normalizeWorktreePathForCompare(workflowHome());
@@ -719,15 +719,15 @@ export function syncWorkflowStateToWorktreeByScope(
 }
 
 /**
- * Sync .loop24/ state from the main repo into the worktree.
+ * Sync .gsd/ state from the main repo into the worktree.
  *
- * When .loop24/ is a symlink to the external state directory, both the main
+ * When .gsd/ is a symlink to the external state directory, both the main
  * repo and worktree share the same directory — no sync needed.
  *
- * When .loop24/ is a real directory (e.g., git-tracked or manage_gitignore:false),
+ * When .gsd/ is a real directory (e.g., git-tracked or manage_gitignore:false),
  * the worktree has its own copy that may be stale. This function copies
  * missing milestones, CONTEXT, ROADMAP, DECISIONS, REQUIREMENTS, and
- * PROJECT files from the main repo's .loop24/ into the worktree's .loop24/.
+ * PROJECT files from the main repo's .gsd/ into the worktree's .gsd/.
  *
  * Only adds missing content — never overwrites existing files in the worktree.
  * Worktree files are compatibility projections; DB/project root remains
@@ -750,7 +750,7 @@ export function syncWorkflowStateToWorktree(
   if (!existsSync(mainGsd)) return { synced };
   mkdirSync(wtGsd, { recursive: true });
 
-  // Sync root-level .loop24/ files (DECISIONS, REQUIREMENTS, PROJECT, KNOWLEDGE, etc.)
+  // Sync root-level .gsd/ files (DECISIONS, REQUIREMENTS, PROJECT, KNOWLEDGE, etc.)
   for (const f of ROOT_STATE_FILES) {
     const src = join(mainGsd, f);
     const dst = join(wtGsd, f);
@@ -1140,7 +1140,7 @@ export function checkoutBranchWithStashGuard(
  * Phase C: deleted. Writers in workflow-projections.ts, triage-resolution.ts,
  * rule-registry.ts, and auto-post-unit.ts now route through
  * s.canonicalProjectRoot, so non-symlinked worktrees no longer need a local
- * .loop24/ projection — the project-root .loop24/ is the only authoritative source
+ * .gsd/ projection — the project-root .gsd/ is the only authoritative source
  * for both reads and writes. copyPlanningArtifacts and reconcilePlanCheckboxes
  * (both formerly here) became dead.
  */
@@ -1321,12 +1321,12 @@ export function createAutoWorktree(
   }
 
   // Phase C: copyPlanningArtifacts and reconcilePlanCheckboxes were
-  // deleted. Both addressed the same problem (worktree-local .loop24/
+  // deleted. Both addressed the same problem (worktree-local .gsd/
   // projection lagging behind project-root state) by maintaining a stale
   // copy. Now that auto-mode writers in workflow-projections.ts,
   // triage-resolution.ts, rule-registry.ts, and auto-post-unit.ts route
   // through s.canonicalProjectRoot, the worktree never needs a local
-  // .loop24/ — both reads and writes converge on the project-root .loop24/.
+  // .gsd/ — both reads and writes converge on the project-root .gsd/.
   // The original concerns (#759, #778) no longer apply because there is
   // no second copy to drift.
 
@@ -1356,11 +1356,11 @@ export function createAutoWorktree(
 }
 
 // Phase C: copyPlanningArtifacts removed. Planning artifacts now live
-// only at the project root .loop24/; auto-mode writers (workflow-projections,
+// only at the project root .gsd/; auto-mode writers (workflow-projections,
 // triage-resolution, rule-registry, regenerateIfMissing,
 // resolveHookArtifactPath) all route through s.canonicalProjectRoot.
 // Worktrees are pure git checkouts — they no longer maintain a parallel
-// .loop24/ projection. The gsd.db has always lived at the project root via
+// .gsd/ projection. The gsd.db has always lived at the project root via
 // the shared-WAL R012 contract; that is unchanged.
 
 /**
@@ -1443,7 +1443,7 @@ export function teardownAutoWorktree(
         { worktree: milestoneId },
       );
       // Attempt a direct filesystem removal as a fallback — but ONLY if the
-      // path is safely inside .loop24/worktrees/ to prevent #2365 data loss.
+      // path is safely inside .gsd/worktrees/ to prevent #2365 data loss.
       if (isInsideWorktreesDir(originalBasePath, wtDir)) {
         try {
           rmSync(wtDir, { recursive: true, force: true });
@@ -2052,7 +2052,7 @@ export function mergeMilestoneToMain(
   //     branch. Passing NO pathspec lets git skip gitignored paths silently;
   //     adding an explicit pathspec trips a `git add`-style fatal on ignored
   //     entries (e.g. a gitignored `.gsd` symlink under ADR-002) (#4573).
-  //     Queued CONTEXT files under `.loop24/milestones/*` are already sheltered
+  //     Queued CONTEXT files under `.gsd/milestones/*` are already sheltered
   //     in step 7 above, so they won't be swept into the stash.
   // On Windows, SQLite holds mandatory file locks on the gsd.db WAL/SHM
   // sidecars while the connection is open. `git stash --include-untracked`
@@ -2103,7 +2103,7 @@ export function mergeMilestoneToMain(
   // Defensively remove merge artifacts before starting.
   removeMergeStateFiles(originalBasePath_, "pre-merge");
 
-  // 8. Squash merge — auto-resolve .loop24/ state file conflicts (#530)
+  // 8. Squash merge — auto-resolve .gsd/ state file conflicts (#530)
   const mergeResult = nativeMergeSquash(originalBasePath_, milestoneBranch);
   if (needsDbCycle && dbPathToReopen) {
     try {
@@ -2115,7 +2115,7 @@ export function mergeMilestoneToMain(
 
   if (!mergeResult.success) {
     // Dirty working tree — the merge was rejected before it started (e.g.
-    // untracked .loop24/ files left by syncStateToProjectRoot).  Preserve the
+    // untracked .gsd/ files left by syncStateToProjectRoot).  Preserve the
     // milestone branch so commits are not lost.
     if (mergeResult.conflicts.includes("__dirty_working_tree__")) {
       // Defensively clean merge state — the native path may leave MERGE_HEAD
@@ -2134,7 +2134,7 @@ export function mergeMilestoneToMain(
       // Restore cwd so the caller is not stranded on the integration branch
       process.chdir(previousCwd);
       // Surface the actual dirty filenames from git stderr instead of
-      // generically blaming .loop24/ (#2151).
+      // generically blaming .gsd/ (#2151).
       const fileList = mergeResult.dirtyFiles?.length
         ? `Dirty files:\n${mergeResult.dirtyFiles.map((f) => `  ${f}`).join("\n")}`
         : `Check \`git status\` in the project root for details.`;
@@ -2229,10 +2229,10 @@ export function mergeMilestoneToMain(
     } catch (e) {
       stashRefForDrop = stashRefFromError(e);
       logWarning("worktree", `git stash pop failed, attempting conflict resolution: ${(e as Error).message}`);
-      // Stash pop after squash merge can conflict on .loop24/ state files that
+      // Stash pop after squash merge can conflict on .gsd/ state files that
       // diverged between branches.  Left unresolved, these UU entries block
       // every subsequent merge.  Auto-resolve them the same way we handle
-      // .loop24/ conflicts during the merge itself: accept HEAD (the just-committed
+      // .gsd/ conflicts during the merge itself: accept HEAD (the just-committed
       // version) and drop the now-applied stash.
       const uu = nativeConflictFiles(originalBasePath_);
       const workflowUU = uu.filter((f) => f.startsWith(".gsd/"));
@@ -2274,7 +2274,7 @@ export function mergeMilestoneToMain(
       }
 
       if (workflowConflictFiles.length > 0 && nonWorkflowUU.length === 0) {
-        // All detected conflicts were .loop24/ files. Before dropping, verify no
+        // All detected conflicts were .gsd/ files. Before dropping, verify no
         // unresolved non-.gsd conflict markers or unmerged entries remain.
         const remainingUnmerged = nativeConflictFiles(originalBasePath_);
         const nonWorkflowUnmerged = remainingUnmerged.filter((f) => !f.startsWith(".gsd/"));
@@ -2314,7 +2314,7 @@ export function mergeMilestoneToMain(
         nonWorkflowAlreadyExists.length === 0
       ) {
         // Untracked-file restore failure from stash pop where all collided
-        // paths are .loop24/ artifacts that already exist after merge.
+        // paths are .gsd/ artifacts that already exist after merge.
         if (stashRefForDrop) {
           try {
             execFileSync("git", ["stash", "drop", stashRefForDrop], {
@@ -2351,7 +2351,7 @@ export function mergeMilestoneToMain(
 
   // 9b. Safety check (#1792): if nothing was committed, verify the milestone
   // work is already on the integration branch before allowing teardown.
-  // Compare only non-.loop24/ paths — .loop24/ state files diverge normally and
+  // Compare only non-.gsd/ paths — .gsd/ state files diverge normally and
   // are auto-resolved during the squash merge.
   if (nothingToCommit) {
     const numstat = nativeDiffNumstat(
@@ -2374,8 +2374,8 @@ export function mergeMilestoneToMain(
     }
   }
 
-  // 9c. Detect whether any non-.loop24/ code files were actually merged (#1906).
-  // When a milestone only produced .loop24/ metadata (summaries, roadmaps) but no
+  // 9c. Detect whether any non-.gsd/ code files were actually merged (#1906).
+  // When a milestone only produced .gsd/ metadata (summaries, roadmaps) but no
   // real code, the user sees "milestone complete" but nothing changed in their
   // codebase. Surface this so the caller can warn the user.
   //

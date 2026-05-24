@@ -478,7 +478,7 @@ async function syncMilestoneComplete(
 // ─── Bootstrap ──────────────────────────────────────────────────────────────
 
 /**
- * Walk the `.loop24/milestones/` tree and create GitHub entities for any
+ * Walk the `.gsd/milestones/` tree and create GitHub entities for any
  * that are missing from the sync mapping. Safe to run multiple times.
  */
 export async function bootstrapSync(basePath: string): Promise<{

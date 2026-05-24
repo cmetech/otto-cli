@@ -867,7 +867,7 @@ export async function saveArtifactToDbForWorkspace(
  * Save an artifact to DB and write the corresponding markdown file to disk,
  * routing all path construction through the workspace contract.
  *
- * The path is relative to .loop24/ (e.g. "milestones/M001/slices/S06/tasks/T01-SUMMARY.md").
+ * The path is relative to .gsd/ (e.g. "milestones/M001/slices/S06/tasks/T01-SUMMARY.md").
  * The full file path is computed as scope.workspace.contract.projectGsd + '/' + path.
  */
 export async function saveArtifactToDbByScope(
@@ -946,8 +946,8 @@ export async function saveArtifactToDbByScope(
 
 /**
  * Save an artifact to DB and write the corresponding markdown file to disk.
- * The path is relative to .loop24/ (e.g. "milestones/M001/slices/S06/tasks/T01-SUMMARY.md").
- * The full file path is computed as basePath + '.loop24/' + path.
+ * The path is relative to .gsd/ (e.g. "milestones/M001/slices/S06/tasks/T01-SUMMARY.md").
+ * The full file path is computed as basePath + '.gsd/' + path.
  *
  * @deprecated Use saveArtifactToDbByScope instead, which routes through the
  * workspace contract for canonical path resolution.

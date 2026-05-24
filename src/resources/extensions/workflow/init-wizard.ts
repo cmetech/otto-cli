@@ -1,9 +1,9 @@
 /**
  * Init Wizard — Per-project onboarding.
  *
- * Guides users through project setup when entering a directory without .loop24/.
+ * Guides users through project setup when entering a directory without .gsd/.
  * Detects project ecosystem, offers v1 migration, configures project preferences,
- * bootstraps .loop24/ structure, and transitions to the first milestone discussion.
+ * bootstraps .gsd/ structure, and transitions to the first milestone discussion.
  */
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
@@ -64,7 +64,7 @@ const DEFAULT_PREFS: ProjectPreferences = {
 
 /**
  * Run the project init wizard.
- * Called when entering a directory without .loop24/ (or via /loop24 init).
+ * Called when entering a directory without .gsd/ (or via /loop24 init).
  */
 export async function showProjectInit(
   ctx: ExtensionCommandContext,
@@ -267,12 +267,12 @@ export async function showProjectInit(
   });
 
   if (reviewChoice === "not_yet") {
-    // User deferred — don't create .loop24/ or persist preferences. Pre-step state
+    // User deferred — don't create .gsd/ or persist preferences. Pre-step state
     // (e.g. git init from Step 2) remains as-is, matching prior step semantics.
     return { completed: false, bootstrapped: false };
   }
 
-  // ── Step 10: Bootstrap .loop24/ + write preferences ───────────────────────────
+  // ── Step 10: Bootstrap .gsd/ + write preferences ───────────────────────────
   bootstrapWorkflowDirectoryStructure(basePath, signals);
   const prefillPrefs = mapInitPrefsToWizardShape(prefs);
   // Always derive the preferences path from basePath so init writing the
@@ -405,7 +405,7 @@ export async function offerMigration(
 // ─── Re-init Handler ────────────────────────────────────────────────────────────
 
 /**
- * Handle /loop24 init when .loop24/ already exists.
+ * Handle /loop24 init when .gsd/ already exists.
  * Offers preference reset without destructive milestone deletion.
  */
 export async function handleReinit(
@@ -544,7 +544,7 @@ async function customizeAdvancedPrefs(
 // ─── Bootstrap ──────────────────────────────────────────────────────────────────
 
 /**
- * Create .loop24/ directory structure and seed CONTEXT.md.
+ * Create .gsd/ directory structure and seed CONTEXT.md.
  *
  * Preferences are written separately by the caller via the unified
  * writePreferencesFile helper so init and the prefs wizard share one path.

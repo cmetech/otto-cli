@@ -21,7 +21,7 @@ export function normalizeWorktreePathForCompare(path: string): string {
 
 /**
  * Find the workflow worktree segment in both direct project layout and the
- * symlink-resolved external-state layout used by ~/.loop24/projects/<hash>.
+ * symlink-resolved external-state layout used by ~/.otto/projects/<hash>.
  */
 export function findWorktreeSegment(normalizedPath: string): WorktreeSegment | null {
   const directMarker = "/.gsd/worktrees/";
@@ -51,8 +51,8 @@ export function isWorktreePath(path: string): boolean {
  *
  * `originalBasePath` wins when available because session state already knows the
  * root. `GSD_PROJECT_ROOT` is the next strongest signal for worker processes.
- * Otherwise, derive the root from direct `.loop24/worktrees` paths, or recover it
- * from the worktree `.git` file for symlink-resolved ~/.loop24/project paths.
+ * Otherwise, derive the root from direct `.gsd/worktrees` paths, or recover it
+ * from the worktree `.git` file for symlink-resolved ~/.otto/project paths.
  */
 export function resolveWorktreeProjectRoot(
   basePath: string,

@@ -34,7 +34,7 @@ export interface WorkflowEvent {
 // ─── appendEvent ─────────────────────────────────────────────────────────
 
 /**
- * Append one event to .loop24/event-log.jsonl.
+ * Append one event to .gsd/event-log.jsonl.
  * Computes a content hash from cmd+params (deterministic, independent of ts/actor/session).
  * Creates .gsd directory if needed.
  */
@@ -117,7 +117,7 @@ export function findForkPoint(
  * Active log retains only events from other milestones.
  * Archived file is kept on disk for forensics.
  *
- * @param basePath - Project root (parent of .loop24/)
+ * @param basePath - Project root (parent of .gsd/)
  * @param milestoneId - The milestone whose events should be archived
  * @returns { archived: number } — count of events moved to archive
  */

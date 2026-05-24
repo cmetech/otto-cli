@@ -1,7 +1,7 @@
 //  Persistent per-project blocklist of provider/model pairs that the
 // provider has rejected at request time for account entitlement reasons.
 //
-// Lives at `.loop24/runtime/blocked-models.json` so the block survives /otto auto
+// Lives at `.gsd/runtime/blocked-models.json` so the block survives /otto auto
 // restarts.  Auto-mode model selection skips blocked entries; agent-end
 // recovery adds entries when a runtime rejection is classified as
 // `unsupported-model`.  See issue #4513.

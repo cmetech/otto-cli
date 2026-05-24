@@ -800,7 +800,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
     // Deep mode research gate: capture user's research decision.
     // Fires after discuss-requirements (REQUIREMENTS.md exists) when no decision
     // marker has been written yet. Asks one yes/no question via ask_user_questions
-    // and writes .loop24/runtime/research-decision.json. Downstream research-project
+    // and writes .gsd/runtime/research-decision.json. Downstream research-project
     // rule reads the marker to decide whether to fan out 4 parallel research subagents.
     // Light mode skips entirely.
     name: "deep: pre-planning (no research decision) → research-decision",
@@ -1655,7 +1655,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
         };
       }
 
-      // Safety signal (#1703, #5097): detect milestones with only .loop24/
+      // Safety signal (#1703, #5097): detect milestones with only .gsd/
       // artifacts. This no longer hard-blocks completion because some
       // milestones are intentionally planning/documentation-only.
       const artifactCheck = hasImplementationArtifacts(basePath, mid);

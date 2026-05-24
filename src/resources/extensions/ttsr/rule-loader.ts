@@ -1,7 +1,7 @@
 /**
  * TTSR Rule Loader
  *
- * Scans global (~/.loop24/agent/rules/*.md) and project-local (.loop24/rules/*.md)
+ * Scans global (~/.otto/agent/rules/*.md) and project-local (.gsd/rules/*.md)
  * rule files. Parses YAML frontmatter for condition, scope, globs.
  * Project rules override global rules with the same name.
  */

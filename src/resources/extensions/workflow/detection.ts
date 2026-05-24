@@ -844,7 +844,7 @@ function detectVerificationCommands(
 // ─── Global Setup Detection ─────────────────────────────────────────────────────
 
 /**
- * Check if global agent setup exists (has ~/.loop24/ with preferences).
+ * Check if global agent setup exists (has ~/.otto/ with preferences).
  */
 export function hasGlobalSetup(): boolean {
   return (
@@ -855,7 +855,7 @@ export function hasGlobalSetup(): boolean {
 
 /**
  * Check if this is the very first time the agent has been used on this machine.
- * Returns true if ~/.loop24/ doesn't exist or has no preferences or auth.
+ * Returns true if ~/.otto/ doesn't exist or has no preferences or auth.
  */
 export function isFirstEverLaunch(): boolean {
   if (!existsSync(workflowHome())) return true;
@@ -1282,10 +1282,10 @@ export function hasProjectFileInAncestor(
 }
 
 /**
- * Check whether a project's `.loop24/` directory contains the bootstrap artifacts
+ * Check whether a project's `.gsd/` directory contains the bootstrap artifacts
  * (`PREFERENCES.md` or `milestones/`) that indicate a completed init run.
  *
- * A zombie `.loop24/` state — symlink exists but neither artifact is present —
+ * A zombie `.gsd/` state — symlink exists but neither artifact is present —
  * must be treated as "needs init wizard". The previous guard checked only
  * `existsSync(workflowRoot(basePath))`, which accepted zombie states and skipped
  * the wizard (#2942).

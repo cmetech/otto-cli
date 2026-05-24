@@ -7,7 +7,7 @@
  *
  * Tool takes no arguments — the script reads LANGFLOW_SERVER_URL and
  * LANGFLOW_API_KEY from the environment, which loop24-config.ts has
- * already populated from ~/.loop24/config.json.
+ * already populated from ~/.otto/config.json.
  */
 
 import { dirname, join } from "node:path";

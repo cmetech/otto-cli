@@ -1,7 +1,7 @@
 /**
  * Worktree Command — /worktree
  *
- * Create, list, merge, and remove git worktrees under .loop24/worktrees/.
+ * Create, list, merge, and remove git worktrees under .gsd/worktrees/.
  *
  * Usage:
  *   /worktree <name>        — create a new worktree
@@ -274,7 +274,7 @@ function hasExistingMilestones(wtPath: string): boolean {
 
 /**
  * Clear planning artifacts so auto-mode starts fresh with the discuss flow.
- * Keeps the .loop24/ directory structure intact but removes milestones and root planning files.
+ * Keeps the .gsd/ directory structure intact but removes milestones and root planning files.
  */
 function clearGSDPlans(wtPath: string): void {
   const mDir = milestonesDir(wtPath);
@@ -569,7 +569,7 @@ async function handleMerge(
       return;
     }
 
-    // Gather merge context — full repo diff, not just .loop24/
+    // Gather merge context — full repo diff, not just .gsd/
     const diffSummary = diffWorktreeAll(basePath, name);
     const numstat = diffWorktreeNumstat(basePath, name);
     const workflowDiff = getWorktreeGSDDiff(basePath, name);

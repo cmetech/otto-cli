@@ -202,7 +202,7 @@ export function snapshotState(): StateManifest {
 // ─── writeManifest ───────────────────────────────────────────────────────
 
 /**
- * Write current DB state to .loop24/state-manifest.json via atomicWriteSync.
+ * Write current DB state to .gsd/state-manifest.json via atomicWriteSync.
  * Uses JSON.stringify with 2-space indent for git three-way merge friendliness.
  */
 export function writeManifest(basePath: string): void {

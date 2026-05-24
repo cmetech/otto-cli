@@ -210,7 +210,7 @@ export function resolveDefaultSessionModel(
 
 /**
  * Returns true if `provider` is defined as a custom provider in the user's
- * `~/.loop24/agent/models.json` (Ollama, vLLM, LM Studio, OpenAI-compatible
+ * `~/.otto/agent/models.json` (Ollama, vLLM, LM Studio, OpenAI-compatible
  * proxies, etc.).
  *
  * Used by auto-mode bootstrap to decide whether the session model

@@ -1,7 +1,7 @@
 /**
  * Persistence layer for the GitHub sync mapping.
  *
- * The mapping lives at `.loop24/github-sync.json` and tracks which workflow units
+ * The mapping lives at `.gsd/github-sync.json` and tracks which workflow units
  * entities have been synced to which GitHub entities (issues, PRs,
  * milestones) along with their numbers and sync timestamps.
  */

@@ -213,7 +213,7 @@ async function isTerminalMilestoneSummaryFile(
 // ── deriveState memoization ─────────────────────────────────────────────────
 // Cache the most recent deriveState() result keyed by basePath. Within a single
 // dispatch cycle (~100ms window), repeated calls return the cached value instead
-// of re-reading the entire .loop24/ tree from disk.
+// of re-reading the entire .gsd/ tree from disk.
 
 interface StateCache {
   basePath: string;
@@ -359,7 +359,7 @@ export async function deriveState(
 ): Promise<WorkflowDbState> {
   // Use the canonical project root (when provided) as the cache key so that
   // two calls with different basePath strings (e.g. worktree path vs project
-  // root) but the same canonical .loop24/ share a single cache entry. The same
+  // root) but the same canonical .gsd/ share a single cache entry. The same
   // key is used for both the lookup AND the write below — keying lookup on
   // canonical-root while writing on basePath would silently return stale
   // results across path-form alternation.
@@ -948,7 +948,7 @@ export async function _deriveStateImpl(
 ): Promise<WorkflowDbState> {
   // When the caller supplies a canonical project root for reads (e.g.
   // s.canonicalProjectRoot from auto-mode), route all artifact reads through
-  // it. This prevents the worktree-local empty `.loop24/` from being consulted
+  // it. This prevents the worktree-local empty `.gsd/` from being consulted
   // when the canonical state lives at the project root (or via a `.gsd`
   // symlink into the external state dir).
   if (opts?.projectRootForReads) {
@@ -972,7 +972,7 @@ export async function _deriveStateImpl(
   }
 
   // ── Batch-parse file cache ──────────────────────────────────────────────
-  // When the native Rust parser is available, read every .md file under .loop24/
+  // When the native Rust parser is available, read every .md file under .gsd/
   // in one call and build an in-memory content map keyed by absolute path.
   // This eliminates O(N) individual fs.readFile calls during traversal.
   const fileContentCache = new Map<string, string>();

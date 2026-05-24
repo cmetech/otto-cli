@@ -1,6 +1,6 @@
 // LOOP24 — KNOWLEDGE.md hybrid projection renderer (ADR-013 Stage 2b).
 //
-// Renders `.loop24/KNOWLEDGE.md` as a hybrid file:
+// Renders `.gsd/KNOWLEDGE.md` as a hybrid file:
 //   - Rules section: read directly from the existing KNOWLEDGE.md (manual,
 //     per ADR-013 line 39 — Rules are not migrated to memories).
 //   - Patterns section: read from `memories` where `category = "pattern"`

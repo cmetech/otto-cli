@@ -1,7 +1,7 @@
 /**
  * Command — /loop24 codebase
  *
- * Generate and manage the codebase map (.loop24/CODEBASE.md).
+ * Generate and manage the codebase map (.gsd/CODEBASE.md).
  * Subcommands: generate, update, stats, help
  */
 

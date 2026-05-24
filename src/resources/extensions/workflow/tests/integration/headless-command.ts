@@ -2,13 +2,13 @@
  * Integration test for `gsd headless` CLI subcommand
  *
  * Validates that the headless CLI entry point works end-to-end:
- *   1. Creates a temp dir with a complete .loop24/ project fixture
+ *   1. Creates a temp dir with a complete .gsd/ project fixture
  *   2. Initializes a git repo in the temp dir
  *   3. Spawns `node dist/loader.js headless --json next` as a child process
  *   4. Waits for the process to exit (with a 5-minute timeout)
  *   5. Validates exit code, JSONL stdout, stderr progress, and task artifact
  *
- * Auth: Uses OAuth credentials from ~/.loop24/agent/auth.json (Claude Code Max).
+ * Auth: Uses OAuth credentials from ~/.otto/agent/auth.json (Claude Code Max).
  * Falls back to ANTHROPIC_API_KEY env var if OAuth is not configured (D013).
  *
  * Usage:
@@ -29,7 +29,7 @@ const TIMEOUT_MS = parseInt(process.env.HEADLESS_TIMEOUT_MS ?? "300000", 10); //
 const DRY_RUN = process.argv.includes("--dry-run");
 
 // ── Fixture Data ─────────────────────────────────────────────────────────────
-// A complete .loop24/ project state that deriveState() can parse.
+// A complete .gsd/ project state that deriveState() can parse.
 // The trivial task asks the agent to create a single file — zero questions needed.
 
 const FIXTURE_PROJECT_MD = `# Project
@@ -247,7 +247,7 @@ function createFixture(): string {
   execSync('git config user.email "test@test.com"', { cwd: tmpDir, stdio: "pipe" });
   execSync('git config user.name "Test"', { cwd: tmpDir, stdio: "pipe" });
 
-  // Create .loop24/ structure
+  // Create .gsd/ structure
   const workflowDir = join(tmpDir, ".gsd");
   const milestonesDir = join(workflowDir, "milestones");
   const m001Dir = join(milestonesDir, "M001");
@@ -351,7 +351,7 @@ async function main(): Promise<void> {
   // ── Step 2: Validate environment ────────────────────────────────────────
   console.log("\n[2/6] Validating environment...");
 
-  // Auth: prefer OAuth credentials from ~/.loop24/agent/auth.json (D013).
+  // Auth: prefer OAuth credentials from ~/.otto/agent/auth.json (D013).
   // Fall back to ANTHROPIC_API_KEY env var if present.
   const authJsonPath = join(homedir(), ".gsd", "agent", "auth.json");
   let hasOAuth = false;

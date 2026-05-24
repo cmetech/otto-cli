@@ -45,7 +45,7 @@ import { clearPathCache } from "./paths.js";
 
 /**
  * Convert an absolute file path to a .gsd-relative artifact path.
- * E.g. "/project/.loop24/milestones/M001/M001-ROADMAP.md" → "milestones/M001/M001-ROADMAP.md"
+ * E.g. "/project/.gsd/milestones/M001/M001-ROADMAP.md" → "milestones/M001/M001-ROADMAP.md"
  */
 function toArtifactPath(absPath: string, basePath: string): string {
   const projectionRoot = workflowProjectionRoot(basePath);

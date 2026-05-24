@@ -2,7 +2,7 @@
 // Centralized warning/error accumulator for the workflow engine pipeline.
 // Captures structured entries that the auto-loop can drain after each unit
 // to surface root causes for stuck loops, silent degradation, and blocked writes.
-// Error-severity entries are persisted to .loop24/audit-log.jsonl (sanitized) for
+// Error-severity entries are persisted to .gsd/audit-log.jsonl (sanitized) for
 // post-mortem analysis. Warnings persist to notifications and remain available
 // in the in-memory buffer, but are not printed to stderr.
 //
@@ -320,7 +320,7 @@ function _push(
     }
   }
 
-  // Persist errors to .loop24/audit-log.jsonl so they survive context resets.
+  // Persist errors to .gsd/audit-log.jsonl so they survive context resets.
   // Warnings are already persisted to notifications and buffered for the
   // current auto-loop unit.
   if (_auditBasePath && severity === "error") {

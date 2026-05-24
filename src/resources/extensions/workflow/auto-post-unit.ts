@@ -1556,7 +1556,7 @@ export async function postUnitPreVerification(pctx: PostUnitContext, opts?: PreV
           if (mid && sid) {
             // Phase C: write to the canonical project root (#5236 scope)
             // so non-symlinked worktrees no longer maintain a separate
-            // local .loop24/ projection. copyPlanningArtifacts has been
+            // local .gsd/ projection. copyPlanningArtifacts has been
             // deleted; reads + writes converge at projectRoot.
             const regenerated = await regenerateIfMissing(s.canonicalProjectRoot, mid, sid, "PLAN");
             if (regenerated) {

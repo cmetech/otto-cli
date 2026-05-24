@@ -1,4 +1,4 @@
-// gsd-2 / Deep planning mode — Helper to set planning_depth in .loop24/PREFERENCES.md.
+// gsd-2 / Deep planning mode — Helper to set planning_depth in .gsd/PREFERENCES.md.
 //
 // Persists the user's deep-mode opt-in across sessions. Reads the existing
 // preferences file (if any), parses its YAML frontmatter, sets/updates
@@ -18,7 +18,7 @@ import {
 const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/;
 
 /**
- * Set planning_depth in the project's .loop24/PREFERENCES.md.
+ * Set planning_depth in the project's .gsd/PREFERENCES.md.
  * Creates the file if it does not exist. Preserves existing frontmatter
  * keys and body content. Intended to be called when the user opts into
  * (or out of) deep mode via `/loop24 new-project --deep` or similar.

@@ -4,7 +4,7 @@
  *
  * Accumulates per-unit usage data across auto-mode sessions.
  * Data is extracted from session entries before each context wipe,
- * written to .loop24/metrics.json, and surfaced in the dashboard.
+ * written to .gsd/metrics.json, and surfaced in the dashboard.
  *
  * Data flow:
  *   1. Before newSession() wipes context, snapshotUnitMetrics() scans

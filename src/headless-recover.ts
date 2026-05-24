@@ -16,7 +16,7 @@
  *
  * Exit codes:
  *   0 — recovery succeeded
- *   1 — `.loop24/` missing, DB could not be opened, or migration threw
+ *   1 — `.gsd/` missing, DB could not be opened, or migration threw
  */
 
 import { createJiti } from '@mariozechner/jiti'

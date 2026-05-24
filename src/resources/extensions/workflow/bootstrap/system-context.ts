@@ -230,7 +230,7 @@ export async function buildBeforeAgentStartResult(
       const rawContent = rawCodebase.trim();
       if (rawContent) {
         // Cap injection size to ~2 000 tokens to avoid bloating every request.
-        // Full map is always available at .loop24/CODEBASE.md.
+        // Full map is always available at .gsd/CODEBASE.md.
         const generatedMatch = rawContent.match(/Generated: (\S+)/);
         const generatedAt = generatedMatch?.[1] ?? "unknown";
         const content = rawContent.length > DEFAULT_CODEBASE_MAX_CHARS
@@ -406,7 +406,7 @@ export async function loadMemoryBlock(
 }
 
 export function loadKnowledgeBlock(workflowHomeDir: string, cwd: string): { block: string; globalSizeKb: number } {
-  // 1. Global knowledge (~/.loop24/agent/KNOWLEDGE.md) — cross-project,
+  // 1. Global knowledge (~/.otto/agent/KNOWLEDGE.md) — cross-project,
   //    user-maintained. NOT migrated to memories (which are project-scoped),
   //    so the full file is injected unchanged.
   let globalKnowledge = "";
@@ -424,7 +424,7 @@ export function loadKnowledgeBlock(workflowHomeDir: string, cwd: string): { bloc
     }
   }
 
-  // 2. Project knowledge (.loop24/KNOWLEDGE.md) — project-specific.
+  // 2. Project knowledge (.gsd/KNOWLEDGE.md) — project-specific.
   //    ADR-013 Stage 2b: Patterns and Lessons are projected from the
   //    memories table and already reach the LLM via loadMemoryBlock. Inject
   //    only the intro prose + `## Rules` section here to avoid duplicating

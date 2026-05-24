@@ -822,7 +822,7 @@ export function registerHooks(
 
     // ── Queue-mode execution guard (#2545): block source-code mutations ──
     // When /loop24 queue is active, the agent should only create milestones,
-    // not execute work. Block write/edit to non-.loop24/ paths and bash commands
+    // not execute work. Block write/edit to non-.gsd/ paths and bash commands
     // that would modify files.
     if (isQueuePhaseActive(discussionBasePath)) {
       let queueInput = "";
@@ -839,7 +839,7 @@ export function registerHooks(
 
     // ── Planning-unit tools-policy enforcement (#4934): runtime half ─────
     // The active auto-mode unit's manifest declares a ToolsPolicy. For
-    // planning/docs/read-only modes, deny writes outside .loop24/ (or the
+    // planning/docs/read-only modes, deny writes outside .gsd/ (or the
     // manifest's allowedPathGlobs), bash that isn't read-only, and
     // subagent dispatch. Closes the b23 bug class where a discuss-milestone
     // turn used the host Edit tool to modify user source files.

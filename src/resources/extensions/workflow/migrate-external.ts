@@ -1,8 +1,8 @@
 /**
  * External State Migration
  *
- * Migrates legacy in-project `.loop24/` directories to the external
- * `~/.loop24/projects/<hash>/` state directory. After migration, a
+ * Migrates legacy in-project `.gsd/` directories to the external
+ * `~/.otto/projects/<hash>/` state directory. After migration, a
  * symlink replaces the original directory so all paths remain valid.
  */
 
@@ -20,7 +20,7 @@ export interface MigrationResult {
 }
 
 /**
- * Migrate a legacy in-project `.loop24/` directory to external storage.
+ * Migrate a legacy in-project `.gsd/` directory to external storage.
  *
  * Algorithm:
  * 1. If `<project>/.gsd` is a symlink or doesn't exist -> skip
@@ -62,13 +62,13 @@ export function migrateToExternalState(basePath: string): MigrationResult {
     return { migrated: false, error: `Cannot stat .gsd: ${getErrorMessage(err)}` };
   }
 
-  // Skip if .loop24/ contains git-tracked files — the project intentionally
-  // keeps .loop24/ in version control and migration would destroy that.
+  // Skip if .gsd/ contains git-tracked files — the project intentionally
+  // keeps .gsd/ in version control and migration would destroy that.
   if (hasGitTrackedWorkflowFiles(basePath)) {
     return { migrated: false };
   }
 
-  // Skip if .loop24/worktrees/ has active worktree directories (#1337).
+  // Skip if .gsd/worktrees/ has active worktree directories (#1337).
   // On Windows, active git worktrees hold OS-level directory handles that
   // prevent rename/delete. Attempting migration causes EBUSY and data loss.
   const worktreesDir = join(localGsd, "worktrees");
@@ -159,10 +159,10 @@ export function migrateToExternalState(basePath: string): MigrationResult {
       return { migrated: false, error: `Migration verification failed: ${getErrorMessage(verifyErr)}` };
     }
 
-    // Clean the git index — any .loop24/* files tracked before migration now
+    // Clean the git index — any .gsd/* files tracked before migration now
     // sit behind the symlink and git can't follow it, causing them to show
     // as deleted. Remove them from the index so the working tree stays clean.
-    // --ignore-unmatch makes this a no-op on fresh projects with no tracked .loop24/.
+    // --ignore-unmatch makes this a no-op on fresh projects with no tracked .gsd/.
     try {
       execFileSync("git", ["rm", "-r", "--cached", "--ignore-unmatch", ".gsd"], {
         cwd: basePath,

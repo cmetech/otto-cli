@@ -261,13 +261,13 @@ function hasCheckedTaskCompletionOnDisk(base: string, mid: string, sid: string, 
 }
 
 /**
- * Check whether a milestone produced implementation artifacts (non-`.loop24/`
+ * Check whether a milestone produced implementation artifacts (non-`.gsd/`
  * files) in git history. The primary signal is the branch diff against the
  * integration branch. When a retry is already on the integration branch, that
  * diff is a self-diff; if a milestone ID is available, fall back to recent
  * workflow-tagged commits for that milestone.
  *
- * Returns "present" if implementation files found, "absent" if only .loop24/ files,
+ * Returns "present" if implementation files found, "absent" if only .gsd/ files,
  * "unknown" if git is unavailable or check failed (callers decide how to handle).
  */
 export function hasImplementationArtifacts(basePath: string, milestoneId?: string): "present" | "absent" | "unknown" {
@@ -319,7 +319,7 @@ export function hasImplementationArtifacts(basePath: string, milestoneId?: strin
     if (branchClassification === "present") return "present";
 
     // A completing milestone branch can have a non-empty diff containing only
-    // .loop24/ closeout files after implementation commits already landed on the
+    // .gsd/ closeout files after implementation commits already landed on the
     // recorded integration branch. In that topology, the branch diff alone is
     // insufficient; use the same milestone-tagged evidence fallback as the
     // self-diff retry path before declaring the milestone implementation-free.
@@ -435,15 +435,15 @@ function getChangedFilesFromMilestoneTaggedCommits(
   basePath: string,
   milestoneId: string,
 ): { ok: boolean; matched: boolean; files: string[] } {
-  // Primary: path-scoped log against .loop24/milestones/<id>. Fast and unbounded
-  // by depth when .loop24/ is tracked in git.
+  // Primary: path-scoped log against .gsd/milestones/<id>. Fast and unbounded
+  // by depth when .gsd/ is tracked in git.
   const scoped = scanWorkflowTaggedCommits(basePath, milestoneId, [
     "log", "--format=%H%x1f%B%x1e", "HEAD", "--", `.gsd/milestones/${milestoneId}`,
   ]);
   if (!scoped.ok) return scoped;
   if (scoped.matched && classifyImplementationFiles(scoped.files) === "present") return scoped;
 
-  // Fallback (#5033): when .loop24/ is gitignored / external / untracked, the
+  // Fallback (#5033): when .gsd/ is gitignored / external / untracked, the
   // path-scoped scan matches no commits even though workflow-tagged commits
   // referencing the milestone exist on the integration branch. Re-scan all
   // of HEAD's history and rely on commitMatchesMilestone to bind by
@@ -648,7 +648,7 @@ function commitMatchesMilestone(basePath: string, message: string, milestoneId: 
   // Meaningful execute-task commits currently store task scope as Sxx/Tyy
   // rather than Mxx/Sxx/Tyy. Bind those commits back to the milestone when
   // either the commit touched this milestone's artifacts, or — for projects
-  // where .loop24/ is gitignored/external (#5033) — the message explicitly
+  // where .gsd/ is gitignored/external (#5033) — the message explicitly
   // names the milestone, local workflow state proves the task belongs here, or the
   // commit is implementation-bearing evidence itself (#5100).
   if (/^GSD-Task:\s*S[^/\s]+\/T\S+/m.test(message)) {
@@ -1049,7 +1049,7 @@ export function verifyExpectedArtifact(
   }
 
   // complete-milestone must have produced implementation artifacts (#1703).
-  // A milestone with only .loop24/ plan files and zero implementation code is
+  // A milestone with only .gsd/ plan files and zero implementation code is
   // not genuinely complete — the LLM wrote plan files but skipped actual work.
   if (unitType === "complete-milestone") {
     const summaryOutcome = classifyMilestoneSummaryContent(readFileSync(absPath, "utf-8"));

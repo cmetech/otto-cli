@@ -142,8 +142,8 @@ export function readGitBranch(projectRoot: string): string {
 }
 
 /**
- * Read MCP server names from .mcp.json, .loop24/mcp.json, and the global
- * ~/.loop24/mcp.json (or $GSD_HOME/mcp.json).
+ * Read MCP server names from .mcp.json, .gsd/mcp.json, and the global
+ * ~/.otto/mcp.json (or $GSD_HOME/mcp.json).
  * Returns array of server name strings.
  */
 export function readMcpServerNames(projectRoot: string): string[] {

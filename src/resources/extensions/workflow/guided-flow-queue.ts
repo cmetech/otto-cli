@@ -47,7 +47,7 @@ export async function showQueue(
   pi: ExtensionAPI,
   basePath: string,
 ): Promise<void> {
-  // ── Ensure .loop24/ exists ─────────────────────────────────────────────
+  // ── Ensure .gsd/ exists ─────────────────────────────────────────────
   const gsd = workflowRoot(basePath);
   if (!existsSync(gsd)) {
     ctx.ui.notify("No GSD project found. Run /gsd to start one first.", "warning");

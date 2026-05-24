@@ -2,7 +2,7 @@
  * Command — /loop24 pr-branch
  *
  * Creates a clean PR branch by cherry-picking commits while stripping
- * any changes to .loop24/, .planning/, and PLAN.md paths. Useful for
+ * any changes to .gsd/, .planning/, and PLAN.md paths. Useful for
  * upstream PRs where planning artifacts should not be included.
  */
 

@@ -867,7 +867,7 @@ export async function inlineDependencySummaries(
 }
 
 /**
- * Load a well-known .loop24/ root file for optional inlining.
+ * Load a well-known .gsd/ root file for optional inlining.
  * Handles the existsSync check internally.
  */
 export async function inlineWorkflowRootFile(
@@ -1812,7 +1812,7 @@ export async function buildDiscussMilestonePrompt(
 /**
  * Build a prompt for the workflow-preferences unit type (deep mode).
  * Default-writing stage: records high-impact workflow defaults in
- * .loop24/PREFERENCES.md. Runs ONCE per project, early
+ * .gsd/PREFERENCES.md. Runs ONCE per project, early
  * in deep-mode bootstrap before discuss-project.
  */
 export async function buildWorkflowPreferencesPrompt(
@@ -1828,7 +1828,7 @@ export async function buildWorkflowPreferencesPrompt(
 /**
  * Build a prompt for the research-project (parallel) unit type (deep mode).
  * Orchestrator that spawns 4 parallel Task() calls covering stack, features,
- * architecture, and pitfalls. Each subagent writes its findings to .loop24/research/.
+ * architecture, and pitfalls. Each subagent writes its findings to .gsd/research/.
  * Fires after research-decision marker says "research" and project research files
  * are missing. Skipped entirely if user picked "skip".
  */
@@ -1845,7 +1845,7 @@ export async function buildResearchProjectPrompt(
 /**
  * Build a prompt for the research-decision unit type (deep mode).
  * Fixed-question stage: asks "research first or skip?" via ask_user_questions
- * and writes .loop24/runtime/research-decision.json. Fires after discuss-requirements
+ * and writes .gsd/runtime/research-decision.json. Fires after discuss-requirements
  * and before research-project-parallel.
  */
 export async function buildResearchDecisionPrompt(
@@ -1860,7 +1860,7 @@ export async function buildResearchDecisionPrompt(
 
 /**
  * Build a prompt for the discuss-project unit type (deep mode).
- * Project-level interview: produces .loop24/PROJECT.md.
+ * Project-level interview: produces .gsd/PROJECT.md.
  * Fires before any milestone-level work when planning_depth === "deep" and
  * PROJECT.md is missing.
  */
@@ -1880,7 +1880,7 @@ export async function buildDiscussProjectPrompt(
 
 /**
  * Build a prompt for the discuss-requirements unit type (deep mode).
- * Requirements-level interview: produces .loop24/REQUIREMENTS.md using the
+ * Requirements-level interview: produces .gsd/REQUIREMENTS.md using the
  * structured R### format. Reads PROJECT.md as authoritative context.
  * Fires when planning_depth === "deep", PROJECT.md exists, and REQUIREMENTS.md is missing.
  */

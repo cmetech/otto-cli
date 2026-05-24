@@ -2,7 +2,7 @@
  * Type definitions for the GitHub Sync extension.
  *
  * Config shape (stored in preferences under `github` key) and
- * sync mapping records (stored in `.loop24/github-sync.json`).
+ * sync mapping records (stored in `.gsd/github-sync.json`).
  */
 
 // ─── Configuration ──────────────────────────────────────────────────────────

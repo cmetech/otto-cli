@@ -42,12 +42,12 @@ const CMD_TIMEOUT = 5_000;
 const WORKTREE_PATH_SEGMENT = `${join(".gsd", "worktrees")}/`;
 
 /**
- * Resolve the project root when running inside a `.loop24/worktrees/<name>/`
+ * Resolve the project root when running inside a `.gsd/worktrees/<name>/`
  * auto-worktree. Returns `null` if not in a worktree.
  *
  * Detection order:
  *   1. `GSD_WORKTREE` env var (set by the worktree launcher)
- *   2. `.loop24/worktrees/` segment in basePath
+ *   2. `.gsd/worktrees/` segment in basePath
  */
 function resolveWorktreeProjectRoot(basePath: string): string | null {
   const envRoot = (process.env.LOOP24_WORKTREE ?? process.env.GSD_WORKTREE);
@@ -57,7 +57,7 @@ function resolveWorktreeProjectRoot(basePath: string): string | null {
   const idx = normalised.indexOf(WORKTREE_PATH_SEGMENT.replace(/\\/g, "/"));
   if (idx === -1) return null;
 
-  // Everything before `.loop24/worktrees/` is the project root
+  // Everything before `.gsd/worktrees/` is the project root
   return basePath.slice(0, idx);
 }
 

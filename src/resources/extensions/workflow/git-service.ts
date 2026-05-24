@@ -380,7 +380,7 @@ export const RUNTIME_EXCLUSION_PATHS: readonly string[] = [
 
 /**
  * Path to the milestone metadata file that stores the integration branch.
- * Format: .loop24/milestones/<MID>/<MID>-META.json
+ * Format: .gsd/milestones/<MID>/<MID>-META.json
  */
 function milestoneMetaPath(basePath: string, milestoneId: string): string {
   return join(workflowRoot(basePath), "milestones", milestoneId, `${milestoneId}-META.json`);
@@ -457,7 +457,7 @@ export function writeIntegrationBranch(
 
   existing.integrationBranch = branch;
   writeFileSync(metaFile, JSON.stringify(existing, null, 2) + "\n", "utf-8");
-  // .loop24/ is managed externally (symlinked) — metadata is not committed to git.
+  // .gsd/ is managed externally (symlinked) — metadata is not committed to git.
 }
 
 export type IntegrationBranchResolutionStatus = "recorded" | "fallback" | "missing";
@@ -748,10 +748,10 @@ export class GitServiceImpl {
     // the git reset HEAD step below would otherwise undo the rm --cached.
     //
     // SAFETY: Only untrack the specific RUNTIME paths (activity/, runtime/,
-    // auto.lock, etc.) — NOT all of .loop24/. If .loop24/milestones/ files were
+    // auto.lock, etc.) — NOT all of .gsd/. If .gsd/milestones/ files were
     // previously tracked, they stay tracked until the milestone completes
     // and the worktree is torn down. This prevents a mid-execution behavioral
-    // discontinuity where the first half of a milestone has .loop24/ artifacts
+    // discontinuity where the first half of a milestone has .gsd/ artifacts
     // committed but the second half doesn't (#1326).
     if (!this._runtimeFilesCleanedUp) {
       let cleaned = false;
@@ -769,14 +769,14 @@ export class GitServiceImpl {
     // hashed by git. The old approach of `git add -A` followed by unstaging
     // hangs indefinitely on repos with large untracked artifact trees (#1605).
     //
-    // Exclude only RUNTIME paths from staging — not the entire .loop24/ directory.
-    // When .loop24/milestones/ files are already tracked in the index (projects
-    // where .loop24/ is not gitignored, or Windows junctions that git sees as
+    // Exclude only RUNTIME paths from staging — not the entire .gsd/ directory.
+    // When .gsd/milestones/ files are already tracked in the index (projects
+    // where .gsd/ is not gitignored, or Windows junctions that git sees as
     // real directories), they should continue to be committed. Excluding the
-    // entire .loop24/ directory mid-milestone causes silent commit failure where
+    // entire .gsd/ directory mid-milestone causes silent commit failure where
     // the second half of a milestone's artifacts are never committed (#1326).
     //
-    // If .loop24/ IS in .gitignore (the default for external state projects),
+    // If .gsd/ IS in .gitignore (the default for external state projects),
     // git add -A already skips it and the exclusions are harmless no-ops.
     const allExclusions = [...RUNTIME_EXCLUSION_PATHS, ...extraExclusions];
 
@@ -910,7 +910,7 @@ export class GitServiceImpl {
    * (e.g. pre-switch commits, stop commits, state rebuild commits).
    *
    * Returns the commit message on success, or null if nothing to commit.
-   * @param extraExclusions Additional paths to exclude from staging (e.g. [".loop24/"] for pre-switch commits).
+   * @param extraExclusions Additional paths to exclude from staging (e.g. [".gsd/"] for pre-switch commits).
    */
   autoCommit(
     unitType: string,
@@ -1023,8 +1023,8 @@ export class GitServiceImpl {
 
       // Re-run smartStage so the same RUNTIME_EXCLUSION_PATHS apply.
       // Snapshot commits used nativeAddTracked (git add -u) which stages
-      // ALL tracked modifications including .loop24/ state files. Without
-      // re-staging, those .loop24/ changes leak into the absorbed commit.
+      // ALL tracked modifications including .gsd/ state files. Without
+      // re-staging, those .gsd/ changes leak into the absorbed commit.
       this.smartStage();
 
       try {
@@ -1153,7 +1153,7 @@ export class GitServiceImpl {
     // Tokenize and run via execFileSync (no shell). Shell metacharacters in
     // user-supplied prefs.pre_merge_check would otherwise be interpreted as
     // chaining/redirection (e.g. `;`, `&&`, `|`, backticks) — a privesc
-    // surface in repos with a checked-in `.loop24/PREFERENCES.md`.
+    // surface in repos with a checked-in `.gsd/PREFERENCES.md`.
     // (Issue #4980 HIGH-2)
     if (containsUnquotedShellControl(command)) {
       return {

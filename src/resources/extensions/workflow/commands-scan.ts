@@ -3,7 +3,7 @@
  *
  * Rapid codebase assessment — lightweight alternative to /loop24 map-codebase.
  * Spawns one focused AI analysis pass and writes structured documents to
- * .loop24/codebase/ for use by planning and execution phases.
+ * .gsd/codebase/ for use by planning and execution phases.
  *
  * Usage:
  *   /loop24 scan                   — tech+arch focus (default)
@@ -66,7 +66,7 @@ export function resolveScanDocuments(focus: string): string[] {
 
 /**
  * Build absolute output paths for the documents produced by a scan focus.
- * All documents live under <basePath>/.loop24/codebase/
+ * All documents live under <basePath>/.gsd/codebase/
  */
 export function buildScanOutputPaths(focus: string, basePath: string): string[] {
   const docs = resolveScanDocuments(focus);

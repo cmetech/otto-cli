@@ -52,7 +52,7 @@ function inputExistsOnDisk(
 
   // Worktree mode: a referenced file may live at the canonical project root
   // rather than inside the isolated worktree checkout — either project
-  // metadata (.loop24/...) or source from already-merged work that has not yet
+  // metadata (.gsd/...) or source from already-merged work that has not yet
   // reached this worktree. Accept either as satisfying the input.
   if (context?.canonicalProjectRoot) {
     if (existsSync(resolve(context.canonicalProjectRoot, normalizedFile))) return true;
@@ -439,7 +439,7 @@ function extractPathFromAnnotation(raw: string): string {
   // like a path or URL. Handles prose-annotated bullets such as:
   //   `path/` directory listing (...)
   //   Prefix prose `https://...` suffix prose
-  //   Citing `.loop24/REQUIREMENTS.md` mid-sentence
+  //   Citing `.gsd/REQUIREMENTS.md` mid-sentence
   // Skips non-path backticked tokens like `note` or `npm test`.
   const backtickTokens = trimmed.matchAll(/`([^`]+)`/g);
   for (const match of backtickTokens) {

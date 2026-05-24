@@ -973,7 +973,7 @@ function _mergeWorktreeModeImpl(
 
     // Resolve roadmap — try project root first, then worktree path as
     // fallback. The worktree may hold the only copy when state-back
-    // projection silently dropped it or .loop24/ is not symlinked. Without
+    // projection silently dropped it or .gsd/ is not symlinked. Without
     // the fallback, a missing roadmap triggers bare teardown which
     // deletes the branch and orphans all milestone commits (#1573).
     let roadmapPath = resolveMilestoneFile(
@@ -1043,7 +1043,7 @@ function _mergeWorktreeModeImpl(
         "info",
       );
     } else {
-      // #1906 — milestone produced only .loop24/ metadata. Surface
+      // #1906 — milestone produced only .gsd/ metadata. Surface
       // clearly so the user knows the milestone is not truly complete.
       notify(
         `WARNING: Milestone ${milestoneId} merged to main but contained NO code changes — only .gsd/ metadata files. ` +

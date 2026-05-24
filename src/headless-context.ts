@@ -2,7 +2,7 @@
  * Headless Context Loading — stdin reading, file context, and project bootstrapping
  *
  * Handles loading context from files or stdin for headless new-milestone,
- * and bootstraps the .loop24/ directory structure when needed.
+ * and bootstraps the .gsd/ directory structure when needed.
  */
 
 import { readFileSync, mkdirSync } from 'node:fs'
@@ -49,7 +49,7 @@ export async function loadContext(options: ContextOptions): Promise<string> {
 // ---------------------------------------------------------------------------
 
 /**
- * Bootstrap .loop24/ directory structure for headless new-milestone.
+ * Bootstrap .gsd/ directory structure for headless new-milestone.
  * Mirrors the bootstrap logic from guided-flow.ts showSmartEntry().
  */
 export function bootstrapWorkflowProject(basePath: string): void {

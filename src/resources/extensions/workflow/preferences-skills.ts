@@ -27,7 +27,7 @@ export type { SkillRule, SkillDiscoveryMode, SkillResolution, SkillResolutionRep
  * Searches both the skills.sh ecosystem directory (~/.agents/skills/) and
  * Claude Code's official directory (~/.claude/skills/). Project-level
  * directories for both conventions are included as well.
- * Legacy ~/.loop24/agent/skills/ is included as a fallback for pre-migration installs.
+ * Legacy ~/.otto/agent/skills/ is included as a fallback for pre-migration installs.
  */
 export function getSkillSearchDirs(cwd: string): Array<{ dir: string; method: SkillResolution["method"] }> {
   const dirs: Array<{ dir: string; method: SkillResolution["method"] }> = [

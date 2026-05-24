@@ -20,7 +20,7 @@ const CONTEXT_MILESTONE_RE = /(?:^|[/\\])(M\d+(?:-[a-z0-9]{6})?)-CONTEXT\.md$/i;
 const DEPTH_VERIFICATION_MILESTONE_RE = /depth_verification[_-](M\d+(?:-[a-z0-9]{6})?)/i;
 
 /**
- * Path segment that identifies .loop24/ planning artifacts.
+ * Path segment that identifies .gsd/ planning artifacts.
  * Writes to these paths are allowed during queue mode.
  */
 const DIR_RE = /(^|[/\\])\.gsd([/\\]|$)/;
@@ -597,7 +597,7 @@ export function shouldBlockRootArtifactSaveInSnapshot(
  * When the queue phase is active, the agent should only create planning
  * artifacts (milestones, CONTEXT.md, QUEUE.md, etc.) — never execute work.
  * This function blocks write/edit/bash tool calls that would modify source
- * code outside of .loop24/.
+ * code outside of .gsd/.
  *
  * @param toolName  The tool being called (write, edit, bash, etc.)
  * @param input     For write/edit: the file path. For bash: the command string.
@@ -623,7 +623,7 @@ export function shouldBlockQueueExecutionInSnapshot(
   // Always-safe tools (read-only, discussion, planning)
   if (QUEUE_SAFE_TOOLS.has(toolName)) return { block: false };
 
-  // write/edit — allow if targeting .loop24/ planning artifacts
+  // write/edit — allow if targeting .gsd/ planning artifacts
   if (toolName === "write" || toolName === "edit") {
     if (DIR_RE.test(input)) return { block: false };
     return {
@@ -767,7 +767,7 @@ function blockReason(unitType: string, mode: string, what: string): string {
  *
  *   - "all"        → never blocks.
  *   - "read-only"  → blocks all writes, bash, and subagent dispatch.
- *   - "planning"   → blocks writes to paths outside <basePath>/.loop24/,
+ *   - "planning"   → blocks writes to paths outside <basePath>/.gsd/,
  *                    bash that isn't read-only, and subagent dispatch.
  *   - "planning-dispatch"
  *                  → like "planning", but permits subagent dispatch only
@@ -777,7 +777,7 @@ function blockReason(unitType: string, mode: string, what: string): string {
  *                    matching `allowedPathGlobs` relative to basePath.
  *   - "verification"
  *                  → allows Bash for project verification commands, but keeps
- *                    writes restricted to .loop24/ and blocks subagent dispatch.
+ *                    writes restricted to .gsd/ and blocks subagent dispatch.
  *
  * `pathOrCommand` is the file path for write/edit-shaped tools and the
  * shell command for bash. Other tools ignore this argument.
@@ -901,7 +901,7 @@ export function shouldBlockPlanningUnit(
     }
     const absPath = isAbsolute(pathOrCommand) ? pathOrCommand : resolve(basePath, pathOrCommand);
 
-    // Always allow .loop24/ writes — that's where planning artifacts live.
+    // Always allow .gsd/ writes — that's where planning artifacts live.
     if (isPathUnderGsd(absPath, basePath)) return { block: false };
 
     // docs mode additionally allows the manifest's allowedPathGlobs.
@@ -983,10 +983,10 @@ function isPathContained(target: string, container: string): boolean {
  *   2. `GSD_DISABLE_WORKTREE_WRITE_GUARD=1` self-hosting bypass.
  *   3. Isolation mode is not "worktree".
  *   4. Active unit is a bootstrap unit (discuss-milestone/plan-milestone/init).
- *   5. Target is inside `<projectRoot>/.loop24/worktrees/` (a real worktree).
- *   6. Target is inside `<projectRoot>/.loop24/` and isn't masquerading as a
- *      worktrees sibling (rejects the `.loop24/worktrees-extra/…` prefix trick).
- *   7. Auto is live AND `effectiveBasePath` is itself a `.loop24/worktrees/…` path.
+ *   5. Target is inside `<projectRoot>/.gsd/worktrees/` (a real worktree).
+ *   6. Target is inside `<projectRoot>/.gsd/` and isn't masquerading as a
+ *      worktrees sibling (rejects the `.gsd/worktrees-extra/…` prefix trick).
+ *   7. Auto is live AND `effectiveBasePath` is itself a `.gsd/worktrees/…` path.
  *
  * Otherwise: block with a message that points the agent at `/gsd` to start
  * auto-mode.
@@ -1016,7 +1016,7 @@ export function shouldBlockWorktreeWrite(
 
   // Resolve relative targets against the effective execution base path, then
   // canonicalize against the project root to defeat
-  // symlink-based escapes and prefix tricks (e.g. .loop24/worktrees-extra/).
+  // symlink-based escapes and prefix tricks (e.g. .gsd/worktrees-extra/).
   const projectRoot = resolveWorktreeProjectRoot(effectiveBasePath);
   const absTarget = isAbsolute(targetPath) ? targetPath : resolve(effectiveBasePath, targetPath);
   const realTarget = realpathOrResolve(absTarget);
@@ -1027,7 +1027,7 @@ export function shouldBlockWorktreeWrite(
   // Allow writes inside the legitimate worktrees subtree.
   if (isPathContained(realTarget, realWorktreesDir)) return { block: false };
 
-  // Allow writes to .loop24/ planning artifacts, but reject siblings whose name
+  // Allow writes to .gsd/ planning artifacts, but reject siblings whose name
   // starts with "worktrees" (the worktrees-extra prefix trick — case 4).
   if (isPathContained(realTarget, realGsd)) {
     const rel = relative(realGsd, realTarget);

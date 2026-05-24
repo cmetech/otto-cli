@@ -121,7 +121,7 @@ export interface BatchParsedFile {
 }
 
 /**
- * Batch-parse all .md files in a .loop24/ directory tree using the native parser.
+ * Batch-parse all .md files in a .gsd/ directory tree using the native parser.
  * Returns null if native module unavailable.
  */
 export function nativeBatchParseWorkflowFiles(directory: string): BatchParsedFile[] | null {
@@ -154,7 +154,7 @@ export interface WorkflowTreeEntry {
 }
 
 /**
- * Native-backed directory tree scan of a .loop24/ directory.
+ * Native-backed directory tree scan of a .gsd/ directory.
  * Returns a flat list of all entries, or null if native module unavailable.
  */
 export function nativeScanWorkflowTree(directory: string): WorkflowTreeEntry[] | null {

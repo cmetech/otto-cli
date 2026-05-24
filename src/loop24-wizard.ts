@@ -2,7 +2,7 @@
  * LOOP24 services first-run wizard.
  *
  * Captures gateway + langflow config from the user and persists to
- * ~/.loop24/config.json (mode 0600). Soft-warns on probe failure rather
+ * ~/.otto/config.json (mode 0600). Soft-warns on probe failure rather
  * than refusing to save — users frequently configure LOOP24 before the
  * services are running.
  *

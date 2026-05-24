@@ -247,7 +247,7 @@ function stripInheritedPlanningDepth(
   }
 
   // planning_depth is a project bootstrap routing flag, not a user-global
-  // preference. A global ~/.loop24/PREFERENCES.md value should not make every
+  // preference. A global ~/.otto/PREFERENCES.md value should not make every
   // fresh repo behave like `/loop24 new-project --deep`.
   const preferences: WorkflowPreferences = { ...loaded.preferences };
   delete preferences.planning_depth;

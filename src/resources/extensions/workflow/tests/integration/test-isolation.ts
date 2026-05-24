@@ -2,7 +2,7 @@
  * Test isolation utilities for integration tests.
  *
  * Integration tests often call `mergeMilestoneToMain` and other functions that
- * load preferences. If the user's global ~/.loop24/preferences.md has
+ * load preferences. If the user's global ~/.otto/preferences.md has
  * `git.main_branch: master`, tests fail because test repos use `main`.
  *
  * These utilities isolate tests from the user's global environment.
@@ -21,7 +21,7 @@ let fakeHome: string | null = null;
 /**
  * Isolate the test environment from user's global preferences.
  * Creates a fake HOME directory so loadEffectiveGSDPreferences() returns
- * empty global preferences instead of the user's ~/.loop24/preferences.md.
+ * empty global preferences instead of the user's ~/.otto/preferences.md.
  *
  * Call this in a test.before() hook.
  */

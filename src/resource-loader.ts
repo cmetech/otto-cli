@@ -22,7 +22,7 @@ function loadPiCodingAgentModule(): Promise<PiCodingAgentModule> {
 //
 // Why this matters: with `npm link`, src/resources/ points into the gsd-2 repo's
 // working tree. Switching branches there changes src/resources/ for ALL projects
-// that use the agent — causing stale/broken extensions to be synced to ~/.loop24/agent/.
+// that use the agent — causing stale/broken extensions to be synced to ~/.otto/agent/.
 // dist/resources/ is populated by the build step (`npm run copy-resources`) and
 // reflects the built state, not the currently checked-out branch.
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -348,7 +348,7 @@ function copyDirRecursive(src: string, dest: string): void {
  *
  * Native ESM `import()` ignores NODE_PATH — it resolves packages by walking
  * up the directory tree from the importing file. Extension files synced to
- * ~/.loop24/agent/extensions/ have no ancestor node_modules, so imports of
+ * ~/.otto/agent/extensions/ have no ancestor node_modules, so imports of
  * @loop24/* packages fail. The symlink makes Node's standard resolution find
  * them without requiring every call site to use jiti.
  *
@@ -569,11 +569,11 @@ function pruneRemovedBundledExtensions(
 }
 
 /**
- * Syncs all bundled resources to agentDir (~/.loop24/agent/) on every launch.
+ * Syncs all bundled resources to agentDir (~/.otto/agent/) on every launch.
  *
- * - extensions/ → ~/.loop24/agent/extensions/   (overwrite when version changes)
- * - agents/     → ~/.loop24/agent/agents/        (overwrite when version changes)
- * - WORKFLOW.md → ~/.loop24/agent/WORKFLOW.md (fallback for env var miss)
+ * - extensions/ → ~/.otto/agent/extensions/   (overwrite when version changes)
+ * - agents/     → ~/.otto/agent/agents/        (overwrite when version changes)
+ * - WORKFLOW.md → ~/.otto/agent/WORKFLOW.md (fallback for env var miss)
  *
  * Skills are NOT synced here. They are installed by the user via the
  * skills.sh CLI (`npx skills add <repo>`) into ~/.agents/skills/ — the
@@ -584,7 +584,7 @@ function pruneRemovedBundledExtensions(
  * After `npm update -g @ericsson/loop24`, versions will differ and the
  * copy runs once to land the new resources.
  *
- * Inspectable: `ls ~/.loop24/agent/extensions/`
+ * Inspectable: `ls ~/.otto/agent/extensions/`
  */
 export function initResources(agentDir: string, skillsDir: string = join(homedir(), '.agents', 'skills')): void {
   mkdirSync(agentDir, { recursive: true })
@@ -600,7 +600,7 @@ export function initResources(agentDir: string, skillsDir: string = join(homedir
   pruneRemovedBundledExtensions(manifest, agentDir)
   pruneStaleSiblingFiles(bundledExtensionsDir, extensionsDir)
 
-  // Ensure ~/.loop24/agent/node_modules symlinks to the agent's node_modules on EVERY
+  // Ensure ~/.otto/agent/node_modules symlinks to the agent's node_modules on EVERY
   // launch, not just during resource syncs. A stale/broken symlink makes ALL
   // extensions fail to resolve @loop24/* packages.
   ensureNodeModulesSymlink(agentDir)
@@ -655,7 +655,7 @@ export function initResources(agentDir: string, skillsDir: string = join(homedir
 
 /**
  * One-time migration: copy user-customized skills from the old
- * ~/.loop24/agent/skills/ directory into ~/.agents/skills/.
+ * ~/.otto/agent/skills/ directory into ~/.agents/skills/.
  *
  * The migration is conservative:
  *  - Only skill directories containing a SKILL.md are considered.
@@ -719,7 +719,7 @@ function migrateSkillsToEcosystemDir(agentDir: string): void {
         if (isSymlink) {
           // Recreate the symlink in the ecosystem directory using an absolute
           // target. Relative symlinks would resolve from the new parent dir
-          // (~/.agents/skills/) instead of the original (~/.loop24/agent/skills/),
+          // (~/.agents/skills/) instead of the original (~/.otto/agent/skills/),
           // pointing to the wrong location.
           const rawTarget = readlinkSync(sourcePath)
           const absTarget = resolve(dirname(sourcePath), rawTarget)
@@ -794,7 +794,7 @@ function collectRelativeFiles(rootDir: string): Set<string> {
 
 /**
  * Constructs a DefaultResourceLoader that loads extensions from both
- * ~/.loop24/agent/extensions/ (the agent's default) and ~/.pi/agent/extensions/ (pi's default).
+ * ~/.otto/agent/extensions/ (the agent's default) and ~/.pi/agent/extensions/ (pi's default).
  * This allows users to use extensions from either location.
  */
 // Cache bundled extension keys at module load — avoids re-scanning the extensions

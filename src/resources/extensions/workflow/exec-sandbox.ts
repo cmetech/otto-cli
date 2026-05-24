@@ -1,7 +1,7 @@
 // Exec Sandbox — tool-output sandboxing for sub-sessions.
 //
 // Runs a script in a subprocess and persists stdout/stderr to
-// `.loop24/exec/<id>.{stdout,stderr,meta.json}`. Only a short digest is
+// `.gsd/exec/<id>.{stdout,stderr,meta.json}`. Only a short digest is
 // returned to the calling agent's context, keeping large outputs
 // (e.g. Playwright snapshots, issue dumps) out of the window.
 //
@@ -132,7 +132,7 @@ function tail(buf: Buffer, chars: number): string {
 
 /**
  * Run a script in a subprocess, capture stdout/stderr to files under
- * `.loop24/exec/<id>.{stdout,stderr,meta.json}`, and return an `ExecSandboxResult`
+ * `.gsd/exec/<id>.{stdout,stderr,meta.json}`, and return an `ExecSandboxResult`
  * containing the digest plus metadata.
  *
  * Errors from spawn failures resolve (not reject) with `exit_code=null`.

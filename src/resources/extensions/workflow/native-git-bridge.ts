@@ -772,7 +772,7 @@ function isDotWorkflowIgnored(basePath: string): boolean {
 
 /**
  * Determine whether the project opts out of managed `.gitignore` via
- * `git.manage_gitignore: false` in `.loop24/PREFERENCES.md`. Uses a minimal
+ * `git.manage_gitignore: false` in `.gsd/PREFERENCES.md`. Uses a minimal
  * inline parser to avoid importing the full preferences module (which would
  * introduce a circular dependency back into this low-level bridge).
  *
@@ -919,7 +919,7 @@ export function nativeAddAllWithExclusions(basePath: string, exclusions: readonl
     if (stderr.includes("ignored by one of your .gitignore files")) {
       return;
     }
-    // When .gsd is a symlink, git rejects `:!.loop24/...` pathspecs with
+    // When .gsd is a symlink, git rejects `:!.gsd/...` pathspecs with
     // "beyond a symbolic link". Hand off to the self-heal fallback which
     // either adds `.gsd` to `.gitignore` and retries `git add -A`, or stages
     // real files explicitly when `git.manage_gitignore: false` forbids the
@@ -1069,7 +1069,7 @@ export function nativeMergeSquash(basePath: string, branch: string): GitMergeRes
       stderr.includes("overwritten by merge")
     ) {
       // Extract filenames from git stderr so callers can report which files
-      // are dirty instead of generically blaming .loop24/ (#2151).
+      // are dirty instead of generically blaming .gsd/ (#2151).
       // Git lists them as tab-indented lines between the "would be overwritten"
       // header and the "Please commit" footer.
       const dirtyFiles = stderr

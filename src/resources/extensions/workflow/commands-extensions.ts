@@ -3,7 +3,7 @@
  *
  * Manage the extension registry: list, enable, disable, info, install.
  * Self-contained — no imports outside the extensions tree (extensions are loaded
- * via jiti at runtime from ~/.loop24/agent/, not compiled by tsc).
+ * via jiti at runtime from ~/.otto/agent/, not compiled by tsc).
  */
 
 import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";

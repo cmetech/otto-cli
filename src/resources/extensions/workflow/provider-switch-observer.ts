@@ -7,7 +7,7 @@
 //
 //   1. UOK audit event (category model-policy, type provider-switch) — only
 //      when an auto trace is active.
-//   2. Persistent notification (.loop24/notifications.jsonl, severity warning) —
+//   2. Persistent notification (.gsd/notifications.jsonl, severity warning) —
 //      whenever the basePath is known, so users see the loss in the
 //      dashboard / status surface without GSD_VERBOSE.
 //   3. In-memory counter, exposed via getProviderSwitchStats() so any

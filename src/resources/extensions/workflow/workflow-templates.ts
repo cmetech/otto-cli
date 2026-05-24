@@ -17,7 +17,7 @@ import { formatRecommendedProcessPaths } from "./process-task-path.js";
 const __extensionDir = resolveWorkflowExtensionDir();
 const registryPath = join(__extensionDir, "workflow-templates", "registry.json");
 
-/** Resolve the workflow extension dir with fallback to ~/.loop24/agent/extensions/workflow/. */
+/** Resolve the workflow extension dir with fallback to ~/.otto/agent/extensions/workflow/. */
 function resolveWorkflowExtensionDir(): string {
   const moduleDir = dirname(fileURLToPath(import.meta.url));
   if (existsSync(join(moduleDir, "workflow-templates"))) return moduleDir;

@@ -1,5 +1,5 @@
 /**
- * crash-log.ts — Write crash diagnostics to ~/.loop24/crash/<timestamp>.log
+ * crash-log.ts — Write crash diagnostics to ~/.otto/crash/<timestamp>.log
  *
  * Zero cross-dependencies: only uses Node.js built-ins so it can be imported
  * safely from uncaughtException / unhandledRejection handlers and from tests
@@ -11,7 +11,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 /**
- * Write a crash log to ~/.loop24/crash/<timestamp>.log (or $GSD_HOME/crash/).
+ * Write a crash log to ~/.otto/crash/<timestamp>.log (or $GSD_HOME/crash/).
  * Never throws — must be safe to call from any error handler.
  */
 export function writeCrashLog(err: Error, source: string): void {

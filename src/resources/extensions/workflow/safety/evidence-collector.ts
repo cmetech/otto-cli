@@ -3,7 +3,7 @@
  * Tracks every bash command, file write, and file edit during a unit execution.
  * Evidence is compared against LLM completion claims in evidence-cross-ref.ts.
  *
- * Evidence is persisted to .loop24/safety/evidence-<mid>-<sid>-<tid>.json so it
+ * Evidence is persisted to .gsd/safety/evidence-<mid>-<sid>-<tid>.json so it
  * survives session restarts (pause/resume, crash recovery). On unit start,
  * call resetEvidence() then loadEvidenceFromDisk(). On every new tool call,
  * saveEvidenceToDisk() is called automatically by recordToolCall/recordToolResult.
@@ -93,7 +93,7 @@ export function getFilePaths(): string[] {
 
 /**
  * Build the path for the evidence JSON file for a given unit.
- * Lives under .loop24/safety/ which is gitignored and session-scoped.
+ * Lives under .gsd/safety/ which is gitignored and session-scoped.
  */
 function evidencePath(basePath: string, milestoneId: string, sliceId: string, taskId: string): string {
   return join(basePath, ".gsd", "safety", `evidence-${milestoneId}-${sliceId}-${taskId}.json`);

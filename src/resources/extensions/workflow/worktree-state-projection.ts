@@ -163,7 +163,7 @@ function syncTopLevelMilestoneArtifacts(
 }
 
 /**
- * Root-level .loop24/ files copied from worktree back to project root for
+ * Root-level .gsd/ files copied from worktree back to project root for
  * post-merge diagnostics. Markdown projections are NOT in this list — DB
  * remains authoritative.
  */

@@ -101,7 +101,7 @@ function stateFilePath(basePath: string): string {
 }
 
 /**
- * Persist the current orchestrator state to .loop24/orchestrator.json.
+ * Persist the current orchestrator state to .gsd/orchestrator.json.
  * Uses atomic write (tmp + rename) to prevent partial reads.
  */
 export function persistState(basePath: string): void {
@@ -158,7 +158,7 @@ function isPidAlive(pid: number): boolean {
 }
 
 /**
- * Restore orchestrator state from .loop24/orchestrator.json.
+ * Restore orchestrator state from .gsd/orchestrator.json.
  * Checks PID liveness for each worker:
  * - Living PID → state "running", process stays null (no handle)
  * - Dead PID → removed from restored state
@@ -251,7 +251,7 @@ function restoreRuntimeState(basePath: string): boolean {
 
   // Fallback: rebuild coordinator state from live session status files.
   // This covers cases where orchestrator.json is missing/corrupt but workers are
-  // still running and writing heartbeats under .loop24/parallel/.
+  // still running and writing heartbeats under .gsd/parallel/.
   cleanupStaleSessions(basePath);
   const statuses = readAllSessionStatuses(basePath);
   if (statuses.length === 0) {
@@ -558,7 +558,7 @@ export function _createMilestoneWorktree(basePath: string, milestoneId: string):
   // Run post-create hook if configured
   runWorktreePostCreateHook(basePath, info.path);
 
-  // Copy .loop24/ planning artifacts (milestones, CONTEXT, ROADMAP, etc.) from the
+  // Copy .gsd/ planning artifacts (milestones, CONTEXT, ROADMAP, etc.) from the
   // project root into the worktree. Without this, workers for newly-planned
   // milestones can't find their roadmap and exit immediately (#2184 Bug 4).
   syncWorkflowStateToWorktree(basePath, info.path);

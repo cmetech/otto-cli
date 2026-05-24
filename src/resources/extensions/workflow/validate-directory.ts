@@ -1,7 +1,7 @@
 /**
  * Directory Validation — Safeguards against running in dangerous directories.
  *
- * Prevents the agent from creating .loop24/ structures in system paths, home directories,
+ * Prevents the agent from creating .gsd/ structures in system paths, home directories,
  * or other locations where writing project scaffolding would be harmful.
  */
 

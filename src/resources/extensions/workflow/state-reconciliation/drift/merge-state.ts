@@ -2,7 +2,7 @@
 // File Purpose: ADR-017 unmerged-merge-state drift handler. Relocated from
 // auto-recovery.ts as part of issue #5701. Owns:
 //   - rebase/cherry-pick/revert leftover cleanup (#4980 HIGH-7)
-//   - MERGE_HEAD / SQUASH_MSG reconciliation with auto-resolve of .loop24/
+//   - MERGE_HEAD / SQUASH_MSG reconciliation with auto-resolve of .gsd/
 //     conflicts (#530, #2542)
 
 import { execFileSync } from "node:child_process";
@@ -300,7 +300,7 @@ function reconcileMergeStateCore(
       return "blocked";
     }
   } else {
-    // Still conflicted — try auto-resolving .loop24/ state file conflicts (#530)
+    // Still conflicted — try auto-resolving .gsd/ state file conflicts (#530)
     const workflowConflicts = conflictedFiles.filter((f) => f.startsWith(".gsd/"));
     const codeConflicts = conflictedFiles.filter((f) => !f.startsWith(".gsd/"));
 

@@ -1,6 +1,6 @@
 // Compaction Snapshot — writes a ≤2 KB markdown digest of durable
 // project state before the session context is compacted. On resume, an
-// agent can `gsd_resume` (or Read .loop24/last-snapshot.md) to re-orient
+// agent can `gsd_resume` (or Read .gsd/last-snapshot.md) to re-orient
 // without re-deriving the same memories.
 //
 // Inspired by mksglu/context-mode. Independent implementation.

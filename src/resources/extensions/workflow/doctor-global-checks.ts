@@ -5,7 +5,7 @@ import type { DoctorIssue, DoctorIssueCode } from "./doctor-types.js";
 import { readRepoMeta, externalProjectsRoot } from "./repo-identity.js";
 
 /**
- * Check for orphaned project state directories in ~/.loop24/projects/.
+ * Check for orphaned project state directories in ~/.otto/projects/.
  *
  * A project directory is orphaned when its recorded gitRoot no longer exists
  * on disk — the repo was deleted, moved, or the external drive was unmounted.

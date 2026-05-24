@@ -1,7 +1,7 @@
 /**
  * Codebase Map Generator
  *
- * Produces .loop24/CODEBASE.md — a structural table of contents for the project.
+ * Produces .gsd/CODEBASE.md — a structural table of contents for the project.
  * Gives fresh agent contexts instant orientation without filesystem exploration.
  *
  * Generation: walk `git ls-files`, group by directory, output with descriptions.
@@ -558,7 +558,7 @@ export function ensureCodebaseMapFresh(
 }
 
 /**
- * Write CODEBASE.md to .loop24/ directory.
+ * Write CODEBASE.md to .gsd/ directory.
  */
 export function writeCodebaseMap(basePath: string, content: string): string {
   const root = workflowRoot(basePath);

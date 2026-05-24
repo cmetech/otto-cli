@@ -289,7 +289,7 @@ function loadBundledPlugins(out: Map<string, WorkflowPlugin>): void {
 /**
  * Discover all workflow plugins. Project overrides global overrides bundled.
  *
- * The legacy `.loop24/workflow-defs/*.yaml` directory is also scanned as a
+ * The legacy `.gsd/workflow-defs/*.yaml` directory is also scanned as a
  * fallback YAML source so existing user definitions keep working.
  */
 export function discoverPlugins(basePath: string): Map<string, WorkflowPlugin> {

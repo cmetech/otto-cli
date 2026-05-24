@@ -97,7 +97,7 @@ export async function closeoutUnit(
       const llmCallFn = buildMemoryLLMCall(ctx);
       if (llmCallFn) {
         // Awaited: a fire-and-forget here lets memory-extractor writes land in
-        // .loop24/ after closeoutUnit returns but before the milestone merge
+        // .gsd/ after closeoutUnit returns but before the milestone merge
         // runs, which made the working tree appear dirty to `git merge
         // --squash` (root cause class of #4704). Completion latency is now
         // bounded by the extractor's LLM call, which is the acceptable price

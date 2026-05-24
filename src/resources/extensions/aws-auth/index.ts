@@ -26,7 +26,7 @@
  *
  * ## Setup
  *
- * Add to ~/.loop24/agent/settings.json (or project-level .loop24/settings.json):
+ * Add to ~/.otto/agent/settings.json (or project-level .gsd/settings.json):
  *
  *   { "awsAuthRefresh": "aws sso login --profile my-profile" }
  *
@@ -55,7 +55,7 @@ const AWS_AUTH_ERROR_RE =
 
 /**
  * Reads the `awsAuthRefresh` command from settings.json.
- * Checks project-level first, then global (~/.loop24/agent/settings.json).
+ * Checks project-level first, then global (~/.otto/agent/settings.json).
  */
 function getAwsAuthRefreshCommand(): string | undefined {
 	const configDir = process.env.PI_CONFIG_DIR || ".gsd";

@@ -1,7 +1,7 @@
 // Memory Ingest — turn raw content into memories
 //
 // Provides four entry points: ingestNote (inline text), ingestFile (local
-// path), ingestUrl (HTTP resource), and ingestArtifact (a named .loop24/ artifact
+// path), ingestUrl (HTTP resource), and ingestArtifact (a named .gsd/ artifact
 // for a given milestone). Each one inserts a row into `memory_sources` and,
 // if an LLM call is available, fires the extractor against the content with
 // source-specific scope/tags.

@@ -3,7 +3,7 @@
 /**
  * Auto Mode — Fresh Session Per Unit
  *
- * State machine driven by .loop24/ files on disk. Each "unit" of work
+ * State machine driven by .gsd/ files on disk. Each "unit" of work
  * (plan slice, execute task, complete slice) gets a fresh session via
  * the stashed ctx.newSession() pattern.
  *
@@ -2824,8 +2824,8 @@ export async function startAuto(
     // bundled extension updates before resume-time verification/state logic runs.
     // GSD_PKG_ROOT is set by loader.ts and points to the upstream package root.
     // The relative import ("../../../resource-loader.js") only works from the source
-    // tree; deployed extensions live at ~/.loop24/agent/extensions/gsd/ where the
-    // relative path resolves to ~/.loop24/agent/resource-loader.js which doesn't exist.
+    // tree; deployed extensions live at ~/.otto/agent/extensions/gsd/ where the
+    // relative path resolves to ~/.otto/agent/resource-loader.js which doesn't exist.
     // Using GSD_PKG_ROOT constructs a correct absolute path in both contexts (#3949).
     await refreshResumeResourcesAndDb(s.basePath);
     try {

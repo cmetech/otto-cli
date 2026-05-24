@@ -51,8 +51,8 @@ LEGEND (full-width bottom strip):
 Yellow = Personas · Otter Brown = OTTER · Blue = Gateway · Violet = Langflow · Green = kiro-cli + ACP paths · Copper Amber = OSCAR (remote) · Gray = External · Solid arrow = request · Thin arrow = response.
 
 TOP-RIGHT CALLOUTS (muted gray):
-• Three on-laptop components: OTTER, Gateway, Langflow (plus the kiro-cli pool under the Gateway).
+• Three on-laptop components: OTTER, Gateway, Langflow (plus kiro-cli pool).
 • OTTER doesn't speak ACP — the Gateway does, to kiro-cli (local) and OSCAR (remote).
 • Langflow is called via direct local API. Every Gateway call goes through Loop24 guardrails.
 
-AESTHETICS: plenty of negative space; consistent tile sizes and corner radius; the dashed laptop boundary is the dominant container, framing ~3/4 of the diagram. Thin (~2px) rounded arrows with chevron terminations; sans-serif type (Inter or IBM Plex Sans); numbered markers are small panel-gray circles with white numerals, sitting on arrows. The Gateway-to-OSCAR ACP arrow crossing the laptop boundary is the focal connection. OTTER and OSCAR warm (browns/coppers), Gateway/kiro-cli cool — agents are workers, the Gateway is the brain.
+AESTHETICS: plenty of negative space; consistent tile sizes and corner radius; the dashed laptop boundary is the dominant container, framing most of the diagram. Thin (~2px) rounded arrows with chevron terminations; sans-serif type (Inter or IBM Plex Sans); numbered markers are small panel-gray circles with white numerals on arrows. The Gateway→OSCAR ACP arrow crossing the laptop boundary is the focal connection. OTTER/OSCAR warm (browns/coppers), Gateway/kiro-cli cool — agents work, the Gateway thinks.

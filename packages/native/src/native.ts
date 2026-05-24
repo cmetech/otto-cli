@@ -80,7 +80,7 @@ function loadNative(): Record<string, unknown> {
   // entire import chain at startup (#1223). Consumers with JS fallbacks
   // (parseRoadmap, parsePlan, fuzzyFind, etc.) catch these and degrade gracefully.
   process.stderr.write(
-    `[loop24] Native addon not available for ${platformTag}. Falling back to JS implementations (slower).\n` +
+    `[otto] Native addon not available for ${platformTag}. Falling back to JS implementations (slower).\n` +
       `  Supported native platforms: ${supportedPlatforms.join(", ")}\n`,
   );
   return new Proxy({} as Record<string, unknown>, {

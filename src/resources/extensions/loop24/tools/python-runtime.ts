@@ -122,7 +122,7 @@ async function spawnCapture(
     child.on("close", (code) => {
       clearTimeout(timer);
       if (timedOut) {
-        resolve({ exitCode: 124, stdout, stderr: stderr + `\n[loop24] script timed out after ${timeoutMs}ms` });
+        resolve({ exitCode: 124, stdout, stderr: stderr + `\n[otto] script timed out after ${timeoutMs}ms` });
       } else {
         resolve({ exitCode: code ?? 0, stdout, stderr });
       }

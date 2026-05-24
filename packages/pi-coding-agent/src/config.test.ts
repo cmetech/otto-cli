@@ -15,5 +15,5 @@ test("COMMAND_NAMESPACE reads piConfig.commandNamespace from package.json", () =
 });
 
 test("BRAND_NAME reads piConfig.brandName from package.json", () => {
-  assert.equal(BRAND_NAME, "LOOP24");
+  assert.equal(BRAND_NAME, "OTTO");
 });

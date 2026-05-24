@@ -154,11 +154,11 @@ export default function Loop24(pi: ExtensionAPI): void {
       }
       if (errors.length > 0) {
         for (const e of errors) {
-          process.stderr.write(`[loop24] flow-trigger ${e.file}: ${e.message}\n`);
+          process.stderr.write(`[otto] flow-trigger ${e.file}: ${e.message}\n`);
         }
       }
     })
     .catch((err) => {
-      process.stderr.write(`[loop24] flow-trigger loader failed: ${(err as Error).message}\n`);
+      process.stderr.write(`[otto] flow-trigger loader failed: ${(err as Error).message}\n`);
     });
 }

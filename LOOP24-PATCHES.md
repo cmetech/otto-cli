@@ -495,6 +495,133 @@ should then appear in the TUI autocomplete as expected.
   protection list is effectively dead. Leave for now — removing it is
   the kind of cleanup that might break a sibling tool's expectations.
 
+## Phase 4 — LangFlow flow builder (tagged: phase-4-flow-builder)
+
+Ports the upstream `langflow-flow-builder` Claude Code skill to a first-class
+Pi extension. Adds `/loop24 build-flow <description>` — a natural-language →
+LangFlow JSON flow generator backed by seven typed Pi tools (TypeBox parameter
+schemas) wrapping bundled Python scripts.
+
+### src/resources/extensions/loop24/tools/scripts/ (NEW — 7 files)
+Verbatim copy from `~/Projects/repos/gitlab.rosetta.ericssondevops.com/loop_24/.claude/skills/langflow-flow-builder/scripts/`:
+`refresh_component_catalog.py`, `normalize_component_catalog.py`,
+`check_catalog_health.py`, `inspect_component.py`, `validate_flow.sh`,
+`import_flow.py`, `smoke_test_flow.py`. All marked executable.
+Byte-for-byte match with source confirmed via `diff -r`.
+
+### src/resources/extensions/loop24/reference/ (NEW — 4 files)
+Verbatim copy of `workflow.md`, `component-catalog-rules.md`,
+`edge-handle-rules.md`, `flow-json-rules.md` from the same source skill.
+Loaded as system context by `/loop24 build-flow` (see _system-context.ts).
+
+### src/resources/extensions/loop24/tools/python-runtime.ts (NEW)
+`runPython(scriptPath, args, opts)` / `runBash(scriptPath, args, opts)`
+spawn helpers. `ensurePython3()` resolves `LOOP24_PYTHON_BIN` (override) → `python3`
+on PATH; returns a structured error if missing. Every tool call surfaces
+missing-python as exitCode 127 with an install-docs hint.
+2-minute default timeout; exitCode 124 on timeout (coreutils convention).
+TDD: 7 passing tests.
+
+### src/resources/extensions/loop24/tools/{refresh,normalize,check}-catalog.ts + {inspect,validate,import,smoke}-*.ts (NEW — 7 files)
+One TS file per tool. Each exports a `ToolDefinition` with a TypeBox
+parameter schema (verified shape: `{ content: TextContent[], details: T }`
+on success, plus `isError: true` on failure — matches the existing pattern
+in `src/resources/extensions/context7/index.ts`). Execute() shells out via
+python-runtime.ts and returns combined stdout/stderr as tool-result text.
+- No-arg tools (`refresh_catalog`, `normalize_catalog`, `check_catalog_health`)
+  use `Type.Object({})`.
+- Single-positional-arg tools (`inspect_component`, `validate_flow`,
+  `import_flow`) take a `searchTerm` or `flowFile` string with `minLength: 1`.
+- `smoke_test_flow` takes two args (`flowId`, `message`) and a 180-second timeout.
+- `validate_flow` uses `runBash` (not `runPython`) — the bundled script is `.sh`.
+- `inspect_component` differentiates exit-2 ("no matches") from other non-zero
+  exits ("error") — only the latter sets `isError: true`.
+
+### src/resources/extensions/loop24/tools/_loader.ts (NEW)
+Exports `LOOP24_TOOL_NAMES` (readonly tuple of the seven tool names) and
+`registerLoop24Tools(pi)` for index.ts to call at extension load.
+Tools are eagerly registered — available from any conversation, not only
+inside `/loop24 build-flow` (e.g., users may want the model to refresh the
+catalog while debugging an existing flow). 2 TDD tests.
+
+### src/resources/extensions/loop24/clients/langflow.ts (MODIFIED)
+Added `importFlow(payload, timeoutMsOverride?)`. POSTs JSON to `/api/v1/flows/`.
+Reuses existing `_fetch` for auth (`x-api-key`) and timeout. Distinct from
+the bundled `import_flow.py` script which uses `/api/v1/flows/upload/`
+multipart; both ship — Python wrapper for the build-flow agent's tool use,
+TS method as a programmable surface for future imperative commands.
+3 TDD tests against in-process mock server.
+
+### src/resources/extensions/loop24/commands/build-flow/_scaffold.ts (NEW)
+`ensureRepoConventions(cwd)` creates `flows/{generated,templates,imported}`
+and `catalog/`. Patches `.gitignore` to skip the regenerable catalog cache
+(`catalog/components.raw.json`, `catalog/components.normalized.json`,
+`catalog/component-index.md`). Idempotent — safe to call every
+`/loop24 build-flow` invocation. 4 TDD tests.
+
+### src/resources/extensions/loop24/commands/build-flow/_system-context.ts (NEW)
+`loadReferenceDocs()` reads the four bundled `reference/*.md` files and
+concatenates them with file-header banners. Load order matters: `workflow.md`
+first (establishes the process), then the rules docs (catalog → edges → JSON).
+3 TDD tests.
+
+### src/resources/extensions/loop24/commands/build-flow/command.ts (NEW)
+`registerBuildFlowCommand(pi)` — registers `/loop24 build-flow <description>`.
+Handler:
+  1. usage hint on empty args
+  2. `ensureRepoConventions(ctx.cwd)` (stderr notes on dir/gitignore changes)
+  3. `loadReferenceDocs()` to assemble the system context
+  4. `ctx.newSession({ workspaceRoot: ctx.cwd })` — fresh session for this task
+  5. `pi.sendMessage({ customType: "loop24-build-flow", content: prompt, display: false }, { triggerTurn: true })`
+
+Same dispatch seam used by `src/resources/extensions/workflow/auto-direct-dispatch.ts:307-310`.
+The composed prompt embeds the four reference docs plus a tool catalog
+preamble and repo conventions.
+
+### src/resources/extensions/loop24/index.ts (MODIFIED)
+After Phase 1's `session_start` hook and BEFORE Phase 3's `loadFlowTriggers`,
+added two new lines at extension-init time:
+  - `registerLoop24Tools(pi)` — seven tools registered eagerly
+  - `registerBuildFlowCommand(pi)` — `/loop24 build-flow` registered
+
+Verified live: `LOOP24_DEBUG_EXTENSIONS=1 loop24 --print "hi" 2>&1 | grep "loop24-debug" | grep "build-flow"`
+emits `registered command 'build-flow' from .../loop24/index.js`.
+
+### src/resources/extensions/loop24/extension-manifest.json (MODIFIED)
+Version bumped 0.1.0 → 0.2.0. `description` updated to mention Phase 3 + 4.
+`provides.tools` enumerates the seven flow-builder tools; `provides.commands`
+declares `["build-flow"]`.
+
+### Tests added
+`python-runtime.test.ts` (7), `langflow-import-flow.test.ts` (3),
+`tools-loader.test.ts` (2), `build-flow-scaffold.test.ts` (4),
+`build-flow-system-context.test.ts` (3) = **19 new tests**, all passing.
+Full regression at end of Task 9: **54/54 pass**.
+
+### Hard dependency: Python 3
+The seven tool wrappers shell out to `python3`. If python3 is not on PATH,
+each tool returns exitCode 127 with an install-docs hint. Override with
+`LOOP24_PYTHON_BIN` if the interpreter is at a non-standard path.
+Python is **NOT bundled** — install it via your package manager.
+
+The bundled Python scripts depend on the `requests` PyPI package
+(`refresh_component_catalog.py`, `import_flow.py`, `smoke_test_flow.py`).
+`validate_flow.sh` optionally uses the `lfx` CLI for LangFlow schema
+validation; degrades to JSON-syntax-only validation when absent.
+
+### New env var: LOOP24_PYTHON_BIN
+Optional override for the python3 interpreter resolution. Used by
+`tools/python-runtime.ts:ensurePython3()`.
+
+### Live verification (deferred)
+Per-controller decision: the `/loop24 build-flow "summarize a chunk of text"`
+end-to-end live test against the user's running LangFlow at
+`http://localhost:7860` was deferred — to be run manually by the user.
+The Phase 4 surface is verified wired (registration + autocomplete + 54
+regression tests + `loop24-debug` smoke), but the multi-tool agent loop
+that actually generates the flow JSON has not been exercised live in this
+session.
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`

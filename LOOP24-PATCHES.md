@@ -1350,6 +1350,59 @@ the `GSD_X` fallback once external surfaces are migrated.
 - Directory renames: 2 (`gsd-parser/`, `create-gsd-extension/`).
 - Content-file sweeps: 14 files.
 
+## Phase 10 — Source residue sweep (tagged: phase-10-source-residue-sweep)
+
+Closes out the GSD source-code erasure that Phases 8 and 9 didn't reach.
+Refactored mid-flight per user decision to **preserve session state on
+disk** — `.gsd/` runtime directory and customType protocol strings stay
+unchanged so existing user sessions keep loading.
+
+### Scope (user-approved)
+
+- Task 1: 103 missed identifier names (functions + locals Task 6's
+  verb-prefix grep missed: `resolveGsdRoot`, `ensureGsdSymlink`,
+  `syncGsdStateToWorktree`, `originalGsdHome`, `tempGsdHome`,
+  `batchParseGsdFiles`, etc.). Word-boundary perl: `Gsd<UPPER>` →
+  `Workflow<UPPER>` and `\bgsd<UPPER>` → `workflow<UPPER>`. 338 files
+  touched. One collision fixed manually (`workflow-mcp.ts` had a
+  pre-existing `workflowCliPath` parameter; renamed `gsdCliPath` to
+  `agentCliPath` to disambiguate).
+- Task 2: 33 additional `process.env.GSD_*` vars get the Task 8 compat
+  shim treatment (`GSD_HEADLESS`, `GSD_WEB_*`, `GSD_WORKFLOW_MCP_*`,
+  `GSD_CLI_PATH`, `GSD_DEV_CLI_PATH`, `GSD_PROJECT_ID`, `GSD_AGENT_DIR`,
+  `GSD_CLAUDE_DEBUG`, plus 25 more). Combined with Tasks 4 + 8 + 10.2,
+  the compat-shim layer now covers ~63 distinct env vars.
+- Task 3: 648 files swept for brand-neutral language in comments / JSDoc
+  / prose strings.
+
+### Out of scope (preserved per user decision)
+
+- **`.gsd/` runtime directory references (~1,664 hits)** — preserved
+  so existing user sessions on disk keep working
+- **customType protocol strings** (`"gsd-add-tests"` etc., ~1,386 hits)
+  — persisted in session message files
+- **`process.env.GSD_X` compat-shim fallback** — intentional from
+  Tasks 8 + 10.2
+- **`@opengsd/engine-*` native binary deps** — intentional upstream reuse
+- **LICENSE / README / LOOP24-PATCHES.md** — fork attribution (MIT-required
+  or by design)
+- **Commit history** — destructive to rewrite
+
+### Verification
+
+- `npm run build` clean (exit 0) after every task
+- Standing regression: 74/74 pass throughout
+- Final residue grep for standalone `\bGSD\b` brand mentions (excluding
+  the preserved categories above) returns **0**
+
+### Diff summary
+
+- Task 1: 338 files, 2,453 line changes (identifier sweep)
+- Task 2: 25 files, 42/-31 lines (env var compat shim)
+- Task 3: 387 files, 442/-442 lines (brand-neutral comment sweep)
+
+Total Phase 10: ~750 files, ~3,400 lines touched.
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`
@@ -1437,9 +1490,11 @@ Local variable names holding GSD-home paths (`originalGsdHome`, `tempGsdHome`,
 and are scope-local — not in scope for identifier erasure, but they read as
 brand mentions in code reviews.
 
-Future cleanup: re-run the inventory grep with an open-ended verb pattern
-(`\b[a-z][a-zA-Z]*Gsd[A-Z][A-Za-z0-9]*`) and apply the same word-boundary
-sweep used in Task 6.
+**RESOLVED in Phase 10 Task 1.** Mechanical word-boundary perl sweep
+(`Gsd<UPPER>` → `Workflow<UPPER>` and `\bgsd<UPPER>` → `workflow<UPPER>`)
+applied across 338 files. One collision fixed (`workflow-mcp.ts`
+`gsdCliPath` parameter renamed to `agentCliPath` to disambiguate from
+the pre-existing `workflowCliPath` parameter).
 
 ### 9. Phase 8 Residue — 22 Additional Production Env Vars Not in the Naming Map
 
@@ -1460,22 +1515,18 @@ GSD_NATIVE_DISABLE, GSD_RTK_PATH, GSD_SKILL_MANIFEST_STRICT, GSD_STATE_DIR,
 GSD_UOK_FORCE_LEGACY, GSD_UOK_LEGACY_FALLBACK, GSD_WORKER_MODEL
 ```
 
-These remain `GSD_X`-only in production code; they work but lack the LOOP24_X
-canonical alias the Phase 8 compat shim provides for the other 30. Future
-cleanup: apply the same Task-8 perl sweep + manual setter dual-write pattern
-to this set. No behavior change required, just naming consistency.
+**RESOLVED in Phase 10 Task 2.** All 33 vars (including `GSD_UOK_FORCE_LEGACY`
+and `GSD_UOK_LEGACY_FALLBACK` discovered during Task 9) now have `LOOP24_X`
+canonical + `GSD_X` fallback compat shim. Combined coverage across
+Tasks 4 + 8 + 10.2: ~63 distinct env vars.
 
 ### 10. Workflow Prompt Files — Broader GSD Brand Sweep
 **Scope:** `src/resources/extensions/workflow/prompts/*.md` (~25 files)
 
-Phase 8 Task 9 swept only the 14 Cleanup-C-residue files. The broader
-`prompts/` directory has additional brand mentions across ~25 prompt files
-that are read by the LLM during workflow operations. These are LLM-facing
-content (not user-facing UI text), and changing them has subtle behavioral
-implications (the LLM's interpretation of "GSD" as a system identifier vs
-its generic equivalent). Recommended approach: brand-neutral sweep with
-manual review per prompt, treating it as content-policy work rather than
-mechanical refactor.
+**RESOLVED in Phase 10 Task 3.** Brand-neutral sweep across 648 files
+(prompts/, skills/, source comments, JSDoc). Multi-word substitutions from
+Phase 8 Task 9 applied broadly. `.gsd/` literal paths, customType strings,
+and fork-attribution references intentionally preserved.
 
 ### 11. Documentation Files Still Reference Old `extensions/gsd/` Path
 **Scope:** `docs/**`, `*.md`, SKILL.md files (the original deferral)

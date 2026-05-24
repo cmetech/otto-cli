@@ -738,6 +738,16 @@ export class InteractiveMode {
 		// Provider count was initialized at the top of init() (before any
 		// addChild call) so the footer's first render has the correct state —
 		// see comment there. No additional refresh needed at this point.
+
+		// Force one full redraw after init completes. Without this, async work
+		// inside session_start hooks (e.g. workflow's initHealthWidget setting
+		// the gsd-health widget below the editor) can land AFTER ui.start()'s
+		// first frame, causing layout shifts that pi-tui's differential
+		// renderer leaves partially stale — visible to the user as a
+		// not-quite-visible editor border / cursor at startup until they
+		// click or type to trigger a fresh paint.
+		this.ui.terminal.clearScreen();
+		this.ui.requestRender(true);
 	}
 
 	/**

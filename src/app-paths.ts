@@ -6,8 +6,8 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { CONFIG_DIR_NAME } from './piconfig.js'
 
-// LOOP24_HOME (preferred) and GSD_HOME (legacy) both accepted as overrides.
-export const appRoot = process.env.LOOP24_HOME || process.env.GSD_HOME || join(homedir(), CONFIG_DIR_NAME)
+// OTTO_HOME (canonical) with LOOP24_HOME / GSD_HOME accepted as fallbacks.
+export const appRoot = process.env.OTTO_HOME || process.env.LOOP24_HOME || process.env.GSD_HOME || join(homedir(), CONFIG_DIR_NAME)
 export const agentDir = join(appRoot, 'agent')
 export const sessionsDir = join(appRoot, 'sessions')
 export const authFilePath = join(agentDir, 'auth.json')

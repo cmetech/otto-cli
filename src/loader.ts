@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 // LOOP24 Startup Loader
+// Brand env normalization MUST be first: its side effect mirrors OTTO_*/LOOP24_*/
+// GSD_* before app-paths/brand read any brand var.
+import './env-normalize.js'
 import { fileURLToPath } from 'url'
 import { dirname, resolve, join, relative, delimiter } from 'path'
 import { existsSync, readFileSync, readdirSync, statSync, mkdirSync, symlinkSync, cpSync } from 'fs'

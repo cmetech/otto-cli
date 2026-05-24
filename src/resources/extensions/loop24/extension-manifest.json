@@ -1,8 +1,8 @@
 {
   "id": "loop24",
   "name": "LOOP24",
-  "version": "0.2.0",
-  "description": "LOOP24-specific services — gateway probe, LangFlow flow triggers (Phase 3), LangFlow flow builder (Phase 4)",
+  "version": "0.3.0",
+  "description": "LOOP24-specific services — gateway probe, LangFlow flow triggers (Phase 3), LangFlow flow builder (Phase 4), prompt engineer (Phase 5)",
   "tier": "core",
   "requires": { "platform": ">=2.29.0" },
   "provides": {
@@ -16,6 +16,6 @@
       "loop24__import_flow",
       "loop24__smoke_test_flow"
     ],
-    "commands": ["build-flow"]
+    "commands": ["build-flow", "prompt-engineer"]
   }
 }

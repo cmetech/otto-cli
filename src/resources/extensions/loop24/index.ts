@@ -7,6 +7,7 @@
  *   - Declarative LangFlow flow-trigger slash commands loaded from
  *     commands/flow-triggers/*.yaml
  *   - LangFlow flow-builder tools + /loop24 build-flow command (Phase 4)
+ *   - One-shot LLM polish: /loop24 prompt-engineer
  */
 
 import { dirname, join } from "node:path";
@@ -17,6 +18,7 @@ import { loadFlowTriggers } from "./commands/flow-triggers/_loader.js";
 import type { FlowTrigger, FlowTriggerInput } from "./commands/flow-triggers/_schema.js";
 import { registerLoop24Tools } from "./tools/_loader.js";
 import { registerBuildFlowCommand } from "./commands/build-flow/command.js";
+import { registerPromptEngineerCommand } from "./commands/prompt-engineer/command.js";
 
 const _here = dirname(fileURLToPath(import.meta.url));
 const FLOW_TRIGGERS_DIR = join(_here, "commands", "flow-triggers");
@@ -135,6 +137,9 @@ export default function Loop24(pi: ExtensionAPI): void {
 
   // ── Register /loop24 build-flow slash command (Phase 4) ──
   registerBuildFlowCommand(pi);
+
+  // ── Register /loop24 prompt-engineer slash command (Phase 5) ──
+  registerPromptEngineerCommand(pi);
 
   // ── Load and register flow-trigger slash commands ──
   // Fire-and-forget. Pi's command registry is dynamic; late registrations work.

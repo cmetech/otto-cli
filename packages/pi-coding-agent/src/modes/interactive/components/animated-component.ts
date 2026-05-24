@@ -1,6 +1,6 @@
 // LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/animated-component.ts - Shared animated component lifecycle.
 
-import type { Component } from "@gsd/pi-tui";
+import type { Component } from "@loop24/pi-tui";
 
 type IntervalHandle = ReturnType<typeof setInterval>;
 type TickResult = boolean | { done?: boolean; render?: boolean } | void;

@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 
 export {
   isDepthConfirmationAnswer,

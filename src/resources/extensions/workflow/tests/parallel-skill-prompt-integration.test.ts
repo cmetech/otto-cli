@@ -20,7 +20,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { loadSkills } from "@gsd/pi-coding-agent";
+import { loadSkills } from "@loop24/pi-coding-agent";
 import {
   buildResearchSlicePrompt,
   buildParallelResearchSlicesPrompt,

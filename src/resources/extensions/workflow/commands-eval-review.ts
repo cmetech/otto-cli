@@ -24,7 +24,7 @@
  *      `--*` tokens raise an explicit error.
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { existsSync, realpathSync } from "node:fs";
 import { open, readFile } from "node:fs/promises";

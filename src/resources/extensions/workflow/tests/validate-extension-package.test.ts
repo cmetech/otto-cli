@@ -35,7 +35,7 @@ test("validateExtensionPackage: valid package returns { valid: true }", (t) => {
     version: "1.0.0",
     gsd: { extension: true },
     pi: { extensions: ["./index.ts"] },
-    peerDependencies: { "@gsd/pi-coding-agent": "*" },
+    peerDependencies: { "@loop24/pi-coding-agent": "*" },
     dependencies: { "some-lib": "^1.0.0" },
   });
 
@@ -53,7 +53,7 @@ test("validateExtensionPackage: missing gsd.extension marker returns error", (t)
     name: "@gsd-extensions/test",
     version: "1.0.0",
     pi: { extensions: ["./index.ts"] },
-    peerDependencies: { "@gsd/pi-coding-agent": "*" },
+    peerDependencies: { "@loop24/pi-coding-agent": "*" },
   });
 
   const result = validateExtensionPackage(dir);
@@ -70,7 +70,7 @@ test("validateExtensionPackage: missing pi.extensions returns error", (t) => {
     name: "@gsd-extensions/test",
     version: "1.0.0",
     gsd: { extension: true },
-    peerDependencies: { "@gsd/pi-coding-agent": "*" },
+    peerDependencies: { "@loop24/pi-coding-agent": "*" },
   });
 
   const result = validateExtensionPackage(dir);
@@ -88,7 +88,7 @@ test("validateExtensionPackage: pi.extensions entry path not found returns error
     version: "1.0.0",
     gsd: { extension: true },
     pi: { extensions: ["./index.ts"] },
-    peerDependencies: { "@gsd/pi-coding-agent": "*" },
+    peerDependencies: { "@loop24/pi-coding-agent": "*" },
   });
 
   const result = validateExtensionPackage(dir);
@@ -96,7 +96,7 @@ test("validateExtensionPackage: pi.extensions entry path not found returns error
   assert.ok(result.errors.some(e => e.includes("index.ts")), `Expected error about index.ts, got: ${JSON.stringify(result.errors)}`);
 });
 
-test("validateExtensionPackage: @gsd/* in dependencies (not peerDependencies) returns error", (t) => {
+test("validateExtensionPackage: @loop24/* in dependencies (not peerDependencies) returns error", (t) => {
   const dir = makeTempDir();
   t.after(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -106,15 +106,15 @@ test("validateExtensionPackage: @gsd/* in dependencies (not peerDependencies) re
     version: "1.0.0",
     gsd: { extension: true },
     pi: { extensions: ["./index.ts"] },
-    dependencies: { "@gsd/pi-coding-agent": "^2.0.0" },
+    dependencies: { "@loop24/pi-coding-agent": "^2.0.0" },
   });
 
   const result = validateExtensionPackage(dir);
   assert.equal(result.valid, false);
-  assert.ok(result.errors.some(e => e.includes("@gsd/pi-coding-agent")), `Expected error about @gsd/ dep, got: ${JSON.stringify(result.errors)}`);
+  assert.ok(result.errors.some(e => e.includes("@loop24/pi-coding-agent")), `Expected error about @loop24/ dep, got: ${JSON.stringify(result.errors)}`);
 });
 
-test("validateExtensionPackage: @gsd/* in devDependencies returns error", (t) => {
+test("validateExtensionPackage: @loop24/* in devDependencies returns error", (t) => {
   const dir = makeTempDir();
   t.after(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -124,15 +124,15 @@ test("validateExtensionPackage: @gsd/* in devDependencies returns error", (t) =>
     version: "1.0.0",
     gsd: { extension: true },
     pi: { extensions: ["./index.ts"] },
-    peerDependencies: { "@gsd/pi-coding-agent": "*" },
-    devDependencies: { "@gsd/pi-tui": "^2.0.0" },
+    peerDependencies: { "@loop24/pi-coding-agent": "*" },
+    devDependencies: { "@loop24/pi-tui": "^2.0.0" },
   });
 
   const result = validateExtensionPackage(dir);
   assert.equal(result.valid, false);
   assert.ok(
-    result.errors.some(e => e.includes("@gsd/pi-tui") && e.includes("devDependencies")),
-    `Expected error about @gsd/ in devDependencies, got: ${JSON.stringify(result.errors)}`,
+    result.errors.some(e => e.includes("@loop24/pi-tui") && e.includes("devDependencies")),
+    `Expected error about @loop24/ in devDependencies, got: ${JSON.stringify(result.errors)}`,
   );
 });
 

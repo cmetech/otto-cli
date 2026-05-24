@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readManifest } from "@gsd/pi-coding-agent";
+import { readManifest } from "@loop24/pi-coding-agent";
 import {
 	createVisualBriefArtifactPolicy,
 	formatArtifactPolicy,

@@ -19,7 +19,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 
-import { COMMAND_NAMESPACE } from "@gsd/pi-coding-agent";
+import { COMMAND_NAMESPACE } from "@loop24/pi-coding-agent";
 
 import registerExtension from "../index.ts";
 

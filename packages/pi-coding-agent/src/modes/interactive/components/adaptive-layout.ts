@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Adaptive command-center dashboard for the interactive TUI.
 
-import { style, truncateToWidth, type Component } from "@gsd/pi-tui";
+import { style, truncateToWidth, type Component } from "@loop24/pi-tui";
 import { BRAND_NAME } from "../../../config.js";
 import type { TuiAdaptiveMode, TuiMode } from "../tui-mode.js";
 import { resolveTuiMode } from "../tui-mode.js";

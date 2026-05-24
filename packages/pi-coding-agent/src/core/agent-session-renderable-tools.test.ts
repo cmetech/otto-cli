@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, it } from "node:test";
 
-import { Agent } from "@gsd/pi-agent-core";
+import { Agent } from "@loop24/pi-agent-core";
 import { Type } from "@sinclair/typebox";
 import type { ToolDefinition } from "./extensions/types.js";
 import { AgentSession } from "./agent-session.js";

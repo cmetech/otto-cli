@@ -5,7 +5,7 @@
  * A heartfelt tribute to dax (@thdxr) for providing free Kimi K2.5 access via OpenCode.
  */
 
-import { type TUI, visibleWidth } from "@gsd/pi-tui";
+import { type TUI, visibleWidth } from "@loop24/pi-tui";
 import { theme } from "../theme/theme.js";
 import { AnimatedComponent } from "./animated-component.js";
 

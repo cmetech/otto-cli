@@ -5,9 +5,9 @@
  * a summary of the branch being left so context isn't lost.
  */
 
-import type { AgentMessage } from "@gsd/pi-agent-core";
-import type { Model } from "@gsd/pi-ai";
-import { completeSimple } from "@gsd/pi-ai";
+import type { AgentMessage } from "@loop24/pi-agent-core";
+import type { Model } from "@loop24/pi-ai";
+import { completeSimple } from "@loop24/pi-ai";
 import { COMPACTION_RESERVE_TOKENS } from "../constants.js";
 import { convertToLlm } from "../messages.js";
 import type { ReadonlySessionManager, SessionEntry } from "../session-manager.js";

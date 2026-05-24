@@ -1,4 +1,4 @@
-import { importExtensionModule, type ExtensionAPI, type ExtensionCommandContext, COMMAND_NAMESPACE } from "@gsd/pi-coding-agent";
+import { importExtensionModule, type ExtensionAPI, type ExtensionCommandContext, COMMAND_NAMESPACE } from "@loop24/pi-coding-agent";
 import { VISUAL_BRIEF_MODES } from "../visual-brief/prompts.js";
 
 const TOP_LEVEL_SUBCOMMANDS = [
@@ -45,7 +45,7 @@ const TOP_LEVEL_SUBCOMMANDS = [
   { cmd: "park", desc: "Park a milestone" },
   { cmd: "unpark", desc: "Reactivate a parked milestone" },
   { cmd: "update", desc: "Update GSD to the latest version" },
-  { cmd: "upgrade", desc: "Alias for update; installs the latest @opengsd package" },
+  { cmd: "upgrade", desc: "Alias for update; installs the latest @ericsson/loop24 package" },
   { cmd: "start", desc: "Start a workflow template" },
   { cmd: "templates", desc: "List available workflow templates" },
   { cmd: "extensions", desc: "Manage extensions" },

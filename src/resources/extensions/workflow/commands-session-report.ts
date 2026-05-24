@@ -5,7 +5,7 @@
  * duration, model usage breakdown.
  */
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

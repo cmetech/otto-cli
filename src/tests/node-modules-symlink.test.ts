@@ -111,7 +111,7 @@ test("pnpm layout: merged node_modules contains entries from both hoisted and in
   // Create internal entries (workspace packages)
   mkdirSync(join(internal, "@gsd", "pi-ai"), { recursive: true });
   mkdirSync(join(internal, "@gsd", "pi-coding-agent"), { recursive: true });
-  mkdirSync(join(internal, "@gsd-build", "core"), { recursive: true });
+  mkdirSync(join(internal, "@loop24-build", "core"), { recursive: true });
 
   reconcileMergedNodeModules(agentNodeModules, hoisted, internal);
 
@@ -122,8 +122,8 @@ test("pnpm layout: merged node_modules contains entries from both hoisted and in
 
   // Workspace packages resolve through internal symlinks
   assert.ok(existsSync(join(agentNodeModules, "@gsd")), "@gsd should resolve");
-  assert.ok(existsSync(join(agentNodeModules, "@gsd", "pi-ai")), "@gsd/pi-ai should resolve");
-  assert.ok(existsSync(join(agentNodeModules, "@gsd-build")), "@gsd-build should resolve");
+  assert.ok(existsSync(join(agentNodeModules, "@gsd", "pi-ai")), "@loop24/pi-ai should resolve");
+  assert.ok(existsSync(join(agentNodeModules, "@loop24-build")), "@loop24-build should resolve");
 
   // Package root itself is not symlinked into its own merged dir
   assert.ok(
@@ -192,12 +192,12 @@ test("hasMissingWorkspaceScopes detects pnpm layout", (t) => {
     "npm-style: no missing workspace scopes",
   );
 
-  // pnpm-style: @gsd-build only in internal
-  mkdirSync(join(internal, "@gsd-build"), { recursive: true });
+  // pnpm-style: @loop24-build only in internal
+  mkdirSync(join(internal, "@loop24-build"), { recursive: true });
   assert.equal(
     hasMissingWorkspaceScopes(hoisted, internal),
     true,
-    "pnpm-style: @gsd-build missing from hoisted should be detected",
+    "pnpm-style: @loop24-build missing from hoisted should be detected",
   );
 
   // Non-@gsd scope missing from hoisted does NOT trigger detection —
@@ -246,7 +246,7 @@ test("merged node_modules marker uses fingerprint including directory entries", 
   assert.notEqual(fingerprint, fingerprintAfter, "fingerprint should change when a hoisted dep is added");
 
   // Fingerprint is also sensitive to internal changes
-  mkdirSync(join(internal, "@gsd-build"), { recursive: true });
+  mkdirSync(join(internal, "@loop24-build"), { recursive: true });
   const fingerprintAfterInternal = mergedFingerprint(hoisted, internal);
   assert.notEqual(fingerprintAfter, fingerprintAfterInternal, "fingerprint should change when an internal dep is added");
 

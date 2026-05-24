@@ -13,7 +13,7 @@ import {
 	type TextContent,
 	type ThinkingBudgets,
 	type Transport,
-} from "@gsd/pi-ai";
+} from "@loop24/pi-ai";
 import { randomUUID } from "crypto";
 import { agentLoop, agentLoopContinue, ZERO_USAGE } from "./agent-loop.js";
 import type {

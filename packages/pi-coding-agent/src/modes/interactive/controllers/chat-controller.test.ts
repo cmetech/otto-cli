@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { Container } from "@gsd/pi-tui";
+import { Container } from "@loop24/pi-tui";
 import stripAnsi from "strip-ansi";
 
 import { findLatestPinnableText, handleAgentEvent } from "./chat-controller.js";

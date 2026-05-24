@@ -4,7 +4,7 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { getAgentDir, parseFrontmatter } from "@gsd/pi-coding-agent";
+import { getAgentDir, parseFrontmatter } from "@loop24/pi-coding-agent";
 
 const PROJECT_AGENT_DIR_CANDIDATES = [".gsd", ".pi"] as const;
 

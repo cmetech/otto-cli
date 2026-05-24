@@ -1,4 +1,4 @@
-// @gsd-build/mcp-server — Tests for env-writer utilities
+// @loop24-build/mcp-server — Tests for env-writer utilities
 
 import { describe, it, afterEach } from 'node:test';
 import assert from 'node:assert/strict';

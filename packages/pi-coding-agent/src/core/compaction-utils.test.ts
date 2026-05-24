@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import type { Message } from "@gsd/pi-ai";
+import type { Message } from "@loop24/pi-ai";
 
 import { serializeConversation, truncateForSummary } from "./compaction/index.js";
 

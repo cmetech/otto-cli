@@ -13,7 +13,7 @@ import {
 	type TUI,
 	truncateToWidth,
 	visibleWidth,
-} from "@gsd/pi-tui";
+} from "@loop24/pi-tui";
 import stripAnsi from "strip-ansi";
 import type { ToolDefinition } from "../../../core/extensions/types.js";
 import { computeEditDiff, type EditDiffError, type EditDiffResult } from "../../../core/tools/edit-diff.js";

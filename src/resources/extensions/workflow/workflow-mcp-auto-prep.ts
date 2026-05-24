@@ -1,4 +1,4 @@
-import type { ExtensionContext } from "@gsd/pi-coding-agent";
+import type { ExtensionContext } from "@loop24/pi-coding-agent";
 
 import {
   type EnsureProjectWorkflowMcpConfigResult,

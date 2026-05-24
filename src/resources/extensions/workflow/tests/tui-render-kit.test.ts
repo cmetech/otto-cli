@@ -4,7 +4,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 
-import { visibleWidth } from "@gsd/pi-tui";
+import { visibleWidth } from "@loop24/pi-tui";
 import {
   padRightVisible,
   renderFrame,

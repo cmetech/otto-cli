@@ -16,7 +16,7 @@ const manageRoute = await import("../../../web/app/api/session/manage/route.ts")
 const gitRoute = await import("../../../web/app/api/git/route.ts")
 const commandSurfaceContract = await import("../../../web/lib/command-surface-contract.ts")
 const { WorkspaceStore } = await import("../../../web/lib/gsd-workspace-store.tsx")
-const { AuthStorage } = await import("@gsd/pi-coding-agent")
+const { AuthStorage } = await import("@loop24/pi-coding-agent")
 
 class FakeRpcChild extends EventEmitter {
   stdin = new PassThrough()

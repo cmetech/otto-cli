@@ -7,8 +7,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { pathToFileURL } from "node:url";
 
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
-import { getAgentDir } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
+import { getAgentDir } from "@loop24/pi-coding-agent";
 
 import { logWarning } from "../workflow-logger.js";
 import {

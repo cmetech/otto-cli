@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import type { Api, Model } from "@gsd/pi-ai";
+import type { Api, Model } from "@loop24/pi-ai";
 import type { ModelRegistry } from "./model-registry.js";
 import { findInitialModel } from "./model-resolver.js";
 

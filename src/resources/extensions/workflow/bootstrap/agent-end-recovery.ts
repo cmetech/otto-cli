@@ -1,6 +1,6 @@
 // LOOP24 + src/resources/extensions/workflow/bootstrap/agent-end-recovery.ts - Handles provider and agent-end recovery for auto-mode.
 
-import type { ExtensionAPI, ExtensionContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
 
 import type { AgentEndEvent, ErrorContext } from "../auto/types.js";
 import { logWarning } from "../workflow-logger.js";

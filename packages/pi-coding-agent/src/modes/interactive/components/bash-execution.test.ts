@@ -2,7 +2,7 @@
 
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { type Container, type TUI } from "@gsd/pi-tui";
+import { type Container, type TUI } from "@loop24/pi-tui";
 import stripAnsi from "strip-ansi";
 import { initTheme } from "../theme/theme.js";
 import { BashExecutionComponent } from "./bash-execution.js";

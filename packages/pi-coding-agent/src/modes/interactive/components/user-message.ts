@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Left-edge user message rail renderer for interactive chat transcripts.
 
-import { Container, Markdown, type MarkdownTheme } from "@gsd/pi-tui";
+import { Container, Markdown, type MarkdownTheme } from "@loop24/pi-tui";
 import { getMarkdownTheme } from "../theme/theme.js";
 import { RenderCache } from "./render-cache.js";
 import { formatTimestamp, type TimestampFormat } from "./timestamp.js";

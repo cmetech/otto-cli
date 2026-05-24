@@ -13,7 +13,7 @@
 //   3. In-memory counter, exposed via getProviderSwitchStats() so any
 //      caller (dashboard, doctor, tests) can read the rollup.
 
-import { setProviderSwitchObserver, type ProviderSwitchReport } from "@gsd/pi-ai";
+import { setProviderSwitchObserver, type ProviderSwitchReport } from "@loop24/pi-ai";
 
 import { autoSession } from "./auto-runtime-state.js";
 import { appendNotification } from "./notification-store.js";

@@ -28,8 +28,8 @@
  * individual methods don't need it.
  */
 
-import { type Theme } from "@gsd/pi-coding-agent";
-import { truncateToWidth, visibleWidth, wrapTextWithAnsi } from "@gsd/pi-tui";
+import { type Theme } from "@loop24/pi-coding-agent";
+import { truncateToWidth, visibleWidth, wrapTextWithAnsi } from "@loop24/pi-tui";
 
 // ─── Glyphs ───────────────────────────────────────────────────────────────────
 // Change these to restyle every cursor, checkbox, and indicator at once.
@@ -191,7 +191,7 @@ export interface UI {
 
 	// ── Editor theme ──────────────────────────────────────────────────────────
 	/** Standard EditorTheme object for use with the Editor component */
-	editorTheme: import("@gsd/pi-tui").EditorTheme;
+	editorTheme: import("@loop24/pi-tui").EditorTheme;
 }
 
 /**
@@ -216,7 +216,7 @@ export function makeUI(theme: Theme, width: number): UI {
 
 	// ── EditorTheme ────────────────────────────────────────────────────────────
 
-	const editorTheme: import("@gsd/pi-tui").EditorTheme = {
+	const editorTheme: import("@loop24/pi-tui").EditorTheme = {
 		borderColor: (s) => theme.fg("accent", s),
 		selectList: {
 			selectedPrefix: (t) => theme.fg("accent", t),

@@ -3,7 +3,7 @@ import * as fsSync from "node:fs";
 import * as path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@gsd/pi-agent-core";
+import type { AgentTool, AgentToolResult, AgentToolUpdateCallback } from "@loop24/pi-agent-core";
 import {
 	ensureFileOpen,
 	getActiveClients,

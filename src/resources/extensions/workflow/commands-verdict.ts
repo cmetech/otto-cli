@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Handles manual milestone validation verdict overrides.
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { loadFile } from "./files.js";
 import { resolveMilestoneFile } from "./paths.js";

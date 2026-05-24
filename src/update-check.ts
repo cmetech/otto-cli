@@ -6,10 +6,10 @@ import { appRoot } from './app-paths.js'
 import { execSync } from 'node:child_process'
 
 const CACHE_FILE = join(appRoot, '.update-check')
-const NPM_PACKAGE_NAME = '@opengsd/gsd-pi'
+const NPM_PACKAGE_NAME = '@ericsson/loop24'
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000 // 24 hours
 const FETCH_TIMEOUT_MS = 5000
-const DEFAULT_REGISTRY_URL = `https://registry.npmjs.org/@opengsd%2fgsd-pi/latest`
+const DEFAULT_REGISTRY_URL = `https://registry.npmjs.org/@ericsson%2floop24/latest`
 
 interface UpdateCheckCache {
   lastCheck: number
@@ -109,7 +109,7 @@ export function resolveInstallCommand(pkg: string): string {
 }
 
 function printUpdateBanner(current: string, latest: string): void {
-  const installCmd = resolveInstallCommand('@opengsd/gsd-pi@latest')
+  const installCmd = resolveInstallCommand('@ericsson/loop24@latest')
   process.stderr.write(
     `  ${chalk.yellow('Update available:')} ${chalk.dim(`v${current}`)} → ${chalk.bold(`v${latest}`)}\n` +
     `  ${chalk.dim('Run')} ${installCmd} ${chalk.dim('or')} /gsd upgrade ${chalk.dim('to upgrade')}\n\n`,

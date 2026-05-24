@@ -4,10 +4,10 @@
  * State is stored in tool result details for proper branching support.
  */
 
-import type { ExtensionAPI, ExtensionContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
-import { StringEnum } from "@gsd/pi-ai";
-import { Text, truncateToWidth, matchesKey, Key } from "@gsd/pi-tui";
+import { StringEnum } from "@loop24/pi-ai";
+import { Text, truncateToWidth, matchesKey, Key } from "@loop24/pi-tui";
 
 interface {{ItemType}} {
   id: number;

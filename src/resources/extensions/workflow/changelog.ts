@@ -8,7 +8,7 @@
  * Entry point: handleChangelog() called from commands.ts
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

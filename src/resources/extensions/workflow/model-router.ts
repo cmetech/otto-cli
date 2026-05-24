@@ -4,9 +4,9 @@
 import type { ComplexityTier, ClassificationResult, TaskMetadata } from "./complexity-classifier.js";
 import { tierOrdinal } from "./complexity-classifier.js";
 import type { ResolvedModelConfig } from "./preferences.js";
-import { getProviderCapabilities, type ProviderCapabilities } from "@gsd/pi-ai";
-import { getToolCompatibility, getAllToolCompatibility } from "@gsd/pi-coding-agent";
-import type { ToolCompatibility } from "@gsd/pi-coding-agent";
+import { getProviderCapabilities, type ProviderCapabilities } from "@loop24/pi-ai";
+import { getToolCompatibility, getAllToolCompatibility } from "@loop24/pi-coding-agent";
+import type { ToolCompatibility } from "@loop24/pi-coding-agent";
 import { incrementLegacyTelemetry } from "./legacy-telemetry.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

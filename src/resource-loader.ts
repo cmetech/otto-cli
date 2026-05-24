@@ -1,4 +1,4 @@
-import type { DefaultResourceLoader as DefaultResourceLoaderType } from '@gsd/pi-coding-agent'
+import type { DefaultResourceLoader as DefaultResourceLoaderType } from '@loop24/pi-coding-agent'
 import { createHash } from 'node:crypto'
 import { homedir } from 'node:os'
 import { chmodSync, copyFileSync, cpSync, existsSync, lstatSync, mkdirSync, openSync, closeSync, readFileSync, readlinkSync, readdirSync, rmSync, statSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
@@ -9,12 +9,12 @@ import { discoverExtensionEntryPaths } from './extension-discovery.js'
 import { loadRegistry, readManifestFromEntryPath, isExtensionEnabled, ensureRegistryEntries } from './extension-registry.js'
 import { resolveBundledResourcesDirFromPackageRoot } from './bundled-resource-path.js'
 
-type PiCodingAgentModule = typeof import('@gsd/pi-coding-agent')
+type PiCodingAgentModule = typeof import('@loop24/pi-coding-agent')
 
 let piCodingAgentModulePromise: Promise<PiCodingAgentModule> | undefined
 
 function loadPiCodingAgentModule(): Promise<PiCodingAgentModule> {
-  return (piCodingAgentModulePromise ??= import('@gsd/pi-coding-agent'))
+  return (piCodingAgentModulePromise ??= import('@loop24/pi-coding-agent'))
 }
 
 // Resolve resources directory — prefer dist/resources/ (stable, set at build time)
@@ -349,13 +349,13 @@ function copyDirRecursive(src: string, dest: string): void {
  * Native ESM `import()` ignores NODE_PATH — it resolves packages by walking
  * up the directory tree from the importing file. Extension files synced to
  * ~/.loop24/agent/extensions/ have no ancestor node_modules, so imports of
- * @gsd/* packages fail. The symlink makes Node's standard resolution find
+ * @loop24/* packages fail. The symlink makes Node's standard resolution find
  * them without requiring every call site to use jiti.
  *
  * Layout differences by install method:
  * - Source/monorepo: packageRoot/node_modules has everything → simple symlink
- * - npm/bun global: deps hoisted to dirname(packageRoot), including @gsd/* → simple symlink
- * - pnpm global: external deps hoisted, but @gsd/* stays in packageRoot/node_modules
+ * - npm/bun global: deps hoisted to dirname(packageRoot), including @loop24/* → simple symlink
+ * - pnpm global: external deps hoisted, but @loop24/* stays in packageRoot/node_modules
  *   → merged directory with symlinks from both roots (#3529, #3564)
  */
 function ensureNodeModulesSymlink(agentDir: string): void {
@@ -370,7 +370,7 @@ function ensureNodeModulesSymlink(agentDir: string): void {
     return
   }
 
-  // Global install: check if workspace scopes (@gsd/*) are hoisted.
+  // Global install: check if workspace scopes (@loop24/*) are hoisted.
   // npm/bun hoist everything; pnpm keeps workspace packages internal.
   if (!hasMissingWorkspaceScopes(hoistedNodeModules, internalNodeModules)) {
     // Everything is hoisted — simple symlink to parent node_modules
@@ -421,8 +421,8 @@ function reconcileSymlink(link: string, target: string): void {
 
 /**
  * Create a real node_modules directory containing symlinks from both the
- * hoisted root (external deps) and internal root (@gsd/* workspace packages).
- * Used for pnpm global installs where @gsd/* isn't hoisted.
+ * hoisted root (external deps) and internal root (@loop24/* workspace packages).
+ * Used for pnpm global installs where @loop24/* isn't hoisted.
  */
 export function reconcileMergedNodeModules(
   agentNodeModules: string,
@@ -464,7 +464,7 @@ export function reconcileMergedNodeModules(
   }
 
   // Overlay internal node_modules entries that weren't hoisted.
-  // This covers @gsd/* workspace packages AND optional deps like
+  // This covers @loop24/* workspace packages AND optional deps like
   // @anthropic-ai/claude-agent-sdk that npm keeps internal.
   try {
     for (const entry of readdirSync(internal, { withFileTypes: true })) {
@@ -602,7 +602,7 @@ export function initResources(agentDir: string, skillsDir: string = join(homedir
 
   // Ensure ~/.loop24/agent/node_modules symlinks to the agent's node_modules on EVERY
   // launch, not just during resource syncs. A stale/broken symlink makes ALL
-  // extensions fail to resolve @gsd/* packages.
+  // extensions fail to resolve @loop24/* packages.
   ensureNodeModulesSymlink(agentDir)
 
   // Migrate legacy skills on every launch (not gated by manifest) so that

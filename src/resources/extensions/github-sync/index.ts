@@ -10,7 +10,7 @@
  * and status display.
  */
 
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 import { bootstrapSync } from "./sync.js";
 import { loadSyncMapping } from "./mapping.js";
 import { ghIsAvailable } from "./cli.js";
@@ -39,7 +39,7 @@ export default function (pi: ExtensionAPI) {
   });
 }
 
-async function showStatus(ctx: import("@gsd/pi-coding-agent").ExtensionCommandContext) {
+async function showStatus(ctx: import("@loop24/pi-coding-agent").ExtensionCommandContext) {
   if (!ghIsAvailable()) {
     ctx.ui.notify("GitHub sync: `gh` CLI not installed or not authenticated.", "warning");
     return;
@@ -69,7 +69,7 @@ async function showStatus(ctx: import("@gsd/pi-coding-agent").ExtensionCommandCo
   );
 }
 
-async function runBootstrap(ctx: import("@gsd/pi-coding-agent").ExtensionCommandContext) {
+async function runBootstrap(ctx: import("@loop24/pi-coding-agent").ExtensionCommandContext) {
   if (!ghIsAvailable()) {
     ctx.ui.notify("GitHub sync: `gh` CLI not installed or not authenticated.", "warning");
     return;

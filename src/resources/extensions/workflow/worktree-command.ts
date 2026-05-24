@@ -10,7 +10,7 @@
  *   /worktree remove <name> — remove a worktree and its branch
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { loadPrompt } from "./prompt-loader.js";
 import { autoCommitCurrentBranch, getMainBranch, resolveGitHeadPath, nudgeGitBranchCache } from "./worktree.js";
 import { runWorktreePostCreateHook } from "./auto-worktree.js";

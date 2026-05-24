@@ -13,7 +13,7 @@
  * polish task). Override with LOOP24_PROMPT_ENGINEER_MODEL.
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import type { ClientOptions } from "@anthropic-ai/sdk";
 import type { TextBlock } from "@anthropic-ai/sdk/resources/messages/messages.js";
 import { PROMPT_ENGINEER_SYSTEM } from "./_template.js";

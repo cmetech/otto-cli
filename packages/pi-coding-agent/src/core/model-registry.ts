@@ -19,8 +19,8 @@ import {
 	registerApiProvider,
 	resetApiProviders,
 	type SimpleStreamOptions,
-} from "@gsd/pi-ai";
-import { registerOAuthProvider, resetOAuthProviders } from "@gsd/pi-ai/oauth";
+} from "@loop24/pi-ai";
+import { registerOAuthProvider, resetOAuthProviders } from "@loop24/pi-ai/oauth";
 import { type Static, Type } from "@sinclair/typebox";
 import AjvModule from "ajv";
 import { existsSync, readFileSync } from "fs";

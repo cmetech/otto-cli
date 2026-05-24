@@ -1,4 +1,4 @@
-import { BRAND_NAME, COMMAND_NAMESPACE, CONFIG_DIR_NAME } from "@gsd/pi-coding-agent";
+import { BRAND_NAME, COMMAND_NAMESPACE, CONFIG_DIR_NAME } from "@loop24/pi-coding-agent";
 
 // User-facing brand strings for the workflow extension.
 // Centralizing here means changing piConfig.brandName / commandNamespace in

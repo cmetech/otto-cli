@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Type } from "@sinclair/typebox";
-import type { AgentTool } from "@gsd/pi-agent-core";
+import type { AgentTool } from "@loop24/pi-agent-core";
 import { filterToolsForProviderRequest, getAdjustToolSetRequestCustomMessages } from "./sdk.js";
 import { registerToolCompatibility, resetToolCompatibilityRegistry } from "./tools/tool-compatibility-registry.js";
 

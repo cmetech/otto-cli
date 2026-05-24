@@ -13,7 +13,7 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Type } from "@sinclair/typebox";
-import type { ToolDefinition } from "@gsd/pi-coding-agent";
+import type { ToolDefinition } from "@loop24/pi-coding-agent";
 import { runPython } from "./python-runtime.js";
 
 const _here = dirname(fileURLToPath(import.meta.url));

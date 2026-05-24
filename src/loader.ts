@@ -201,7 +201,7 @@ if (process.env.HTTP_PROXY || process.env.HTTPS_PROXY || process.env.http_proxy 
 }
 
 // Ensure workspace packages are linked (or copied on Windows) before importing
-// cli.js (which imports @gsd/*).
+// cli.js (which imports @loop24/*).
 // npm postinstall handles this normally, but npx --ignore-scripts skips postinstall.
 // On Windows without Developer Mode or admin rights, symlinkSync will throw even for
 // 'junction' type — so we fall back to cpSync (a full directory copy) which works
@@ -256,7 +256,7 @@ const gsdScopeDir = join(gsdNodeModules, '@gsd')
 const criticalPackages = ['pi-coding-agent']
 const missingPackages = criticalPackages.filter(pkg => !existsSync(join(gsdScopeDir, pkg)))
 if (missingPackages.length > 0) {
-  const missing = missingPackages.map(p => `@gsd/${p}`).join(', ')
+  const missing = missingPackages.map(p => `@loop24/${p}`).join(', ')
   process.stderr.write(
     `\nError: LOOP24 installation is broken — missing packages: ${missing}\n\n` +
     `This is usually caused by one of:\n` +

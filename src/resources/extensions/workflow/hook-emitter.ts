@@ -7,7 +7,7 @@
 // Set once from `registerGsdExtension`. All emitters are best-effort — a
 // missing `pi` (e.g. in standalone unit tests) silently becomes a no-op.
 
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 import type {
   BeforeCommitEventResult,
   BeforePrEventResult,
@@ -15,7 +15,7 @@ import type {
   BeforeVerifyEventResult,
   BudgetThresholdEventResult,
   VerifyFailure,
-} from "@gsd/pi-coding-agent";
+} from "@loop24/pi-coding-agent";
 
 let _pi: ExtensionAPI | undefined;
 

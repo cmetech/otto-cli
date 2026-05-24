@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it, afterEach } from "node:test";
 
-import { SessionManager } from "@gsd/pi-coding-agent";
+import { SessionManager } from "@loop24/pi-coding-agent";
 import subagentExtension from "../index.js";
 import type { AgentConfig } from "../agents.js";
 import {

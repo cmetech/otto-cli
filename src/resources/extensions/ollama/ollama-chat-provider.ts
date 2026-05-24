@@ -25,7 +25,7 @@ import {
 	type ToolCall,
 	type Usage,
 	EventStream,
-} from "@gsd/pi-ai";
+} from "@loop24/pi-ai";
 import { chat } from "./ollama-client.js";
 import type {
 	OllamaChatMessage,
@@ -405,7 +405,7 @@ function extractMetrics(chunk: OllamaChatResponse): InferenceMetrics | undefined
 }
 
 // ─── Stream lifecycle helpers ───────────────────────────────────────────────
-// Replicated from openai-shared.ts (not exported from @gsd/pi-ai)
+// Replicated from openai-shared.ts (not exported from @loop24/pi-ai)
 
 function buildInitialOutput(model: Model<Api>): AssistantMessage {
 	return {

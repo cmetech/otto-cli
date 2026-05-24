@@ -1,11 +1,11 @@
 {
-  "name": "@gsd/pi-coding-agent",
+  "name": "@loop24/pi-coding-agent",
   "version": "1.0.1",
   "description": "Coding agent CLI (vendored from pi-mono)",
   "type": "module",
   "gsd": {
     "linkable": true,
-    "scope": "@gsd",
+    "scope": "@loop24",
     "name": "pi-coding-agent"
   },
   "piConfig": {
@@ -28,7 +28,7 @@
     "copy-assets": "node scripts/copy-assets.cjs"
   },
   "dependencies": {
-    "@gsd-build/contracts": "^1.0.1",
+    "@loop24-build/contracts": "^1.0.1",
     "@mariozechner/jiti": "^2.6.2",
     "@silvia-odwyer/photon-node": "^0.3.4",
     "chalk": "^5.5.0",

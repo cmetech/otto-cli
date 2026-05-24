@@ -121,7 +121,7 @@ describe("truncateHead", () => {
 const truncateOutputSkip =
   typeof native.truncateOutput === "function"
     ? undefined
-    : "native.truncateOutput missing from @gsd/native binary — see #4854";
+    : "native.truncateOutput missing from @loop24/native binary — see #4854";
 
 describe("truncateOutput", { skip: truncateOutputSkip }, () => {
   test("no truncation when fits", () => {

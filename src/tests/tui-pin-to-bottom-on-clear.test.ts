@@ -12,7 +12,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { TUI, CURSOR_MARKER, type Component, type Terminal } from "@gsd/pi-tui";
+import { TUI, CURSOR_MARKER, type Component, type Terminal } from "@loop24/pi-tui";
 
 class ResizableMockTerminal implements Terminal {
   public writtenData: string[] = [];

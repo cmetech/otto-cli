@@ -8,8 +8,8 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve, join, delimiter } from 'node:path';
-import { RpcClient } from '@gsd-build/rpc-client';
-import type { SdkAgentEvent, RpcInitResult, RpcCostUpdateEvent, RpcExtensionUIRequest } from '@gsd-build/contracts';
+import { RpcClient } from '@loop24-build/rpc-client';
+import type { SdkAgentEvent, RpcInitResult, RpcCostUpdateEvent, RpcExtensionUIRequest } from '@loop24-build/contracts';
 import type {
   ManagedSession,
   ExecuteOptions,

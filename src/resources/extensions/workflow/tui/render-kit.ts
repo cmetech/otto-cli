@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Shared terminal rendering helpers for workflow extension TUI surfaces.
 
-import { truncateToWidth, visibleWidth, wrapTextWithAnsi } from "@gsd/pi-tui";
+import { truncateToWidth, visibleWidth, wrapTextWithAnsi } from "@loop24/pi-tui";
 
 export interface ThemeLike {
   fg(color: string, text: string): string;

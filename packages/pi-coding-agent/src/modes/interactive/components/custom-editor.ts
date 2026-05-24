@@ -8,7 +8,7 @@ import {
 	type TUI,
 	isKittyProtocolActive,
 	matchesKey,
-} from "@gsd/pi-tui";
+} from "@loop24/pi-tui";
 import type { AppAction, KeybindingsManager } from "../../../core/keybindings.js";
 
 /**

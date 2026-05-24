@@ -3,7 +3,7 @@
  *
  * Reads piConfig from package.json synchronously at module load — mirrors
  * src/help-text.ts and src/app-paths.ts so we don't import any compiled
- * @gsd/pi-coding-agent module (this file may be pulled in early by the
+ * @loop24/pi-coding-agent module (this file may be pulled in early by the
  * onboarding/welcome paths).
  */
 // Load LOOP24 services config first — its module-load side effect populates

@@ -1,7 +1,7 @@
 // LOOP24 — Pending auto-start handoff state.
 // Stores discuss-to-auto handoff entries keyed by project root.
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { createWorkspace, scopeMilestone, type MilestoneScope } from "./workspace.js";
 
 export interface PendingAutoStartEntry {

@@ -7,8 +7,8 @@
  * or opened from /loop24 status.
  */
 
-import type { Theme } from "@gsd/pi-coding-agent";
-import { truncateToWidth, visibleWidth, matchesKey, Key } from "@gsd/pi-tui";
+import type { Theme } from "@loop24/pi-coding-agent";
+import { truncateToWidth, visibleWidth, matchesKey, Key } from "@loop24/pi-tui";
 import { deriveState } from "./state.js";
 import { loadFile } from "./files.js";
 import { isDbAvailable, getMilestoneSlices, getSliceTasks } from "./db.js";

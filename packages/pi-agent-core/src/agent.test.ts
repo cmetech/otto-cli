@@ -7,7 +7,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { Agent } from "./agent.ts";
-import { getModel, type AssistantMessageEventStream } from "@gsd/pi-ai";
+import { getModel, type AssistantMessageEventStream } from "@loop24/pi-ai";
 
 function makeDoneStream(modelId: string): AssistantMessageEventStream {
 	const usage = {

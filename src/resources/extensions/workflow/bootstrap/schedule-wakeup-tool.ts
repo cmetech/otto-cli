@@ -2,7 +2,7 @@
 // File Purpose: Registers the auto-mode ScheduleWakeup continuation tool.
 
 import { Type } from "@sinclair/typebox";
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 
 import { getAutoRuntimeSnapshot } from "../auto-runtime-state.js";
 import { scheduleAutoWakeup } from "../auto/schedule-wakeup.js";

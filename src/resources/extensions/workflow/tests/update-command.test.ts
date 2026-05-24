@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { COMMAND_NAMESPACE } from "@gsd/pi-coding-agent";
+import { COMMAND_NAMESPACE } from "@loop24/pi-coding-agent";
 
 import { registerWorkflowCommand } from "../commands.ts";
 import { handleOpsCommand } from "../commands/handlers/ops.ts";
@@ -125,7 +125,7 @@ test("/gsd upgrade is listed in completions with correct description", () => {
   const upgradeEntry = completions.find((c: any) => c.value === "upgrade");
   assert.ok(upgradeEntry, "upgrade should appear in full completion list");
   assert.ok(
-    upgradeEntry.description.toLowerCase().includes("opengsd"),
+    upgradeEntry.description.toLowerCase().includes("@ericsson/loop24"),
     "completion description should mention the new package scope",
   );
 });

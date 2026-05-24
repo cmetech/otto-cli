@@ -16,7 +16,7 @@ import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { showNextAction } from "../shared/tui.js";
 import type { ProjectSignals, XcodePlatform } from "./detection.js";
 

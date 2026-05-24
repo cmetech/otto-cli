@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 
 import { saveActivityLog, clearActivityLogState } from "../activity-log.ts";
 import { clearPathCache } from "../paths.ts";
-import type { ExtensionContext } from "@gsd/pi-coding-agent";
+import type { ExtensionContext } from "@loop24/pi-coding-agent";
 
 function createCtx(entries: unknown[]) {
   return { sessionManager: { getEntries: () => entries } } as unknown as ExtensionContext;

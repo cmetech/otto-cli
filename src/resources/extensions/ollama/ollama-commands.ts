@@ -11,8 +11,8 @@
  *   /ollama ps       — Show running models and resource usage
  */
 
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
-import { Text } from "@gsd/pi-tui";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
+import { Text } from "@loop24/pi-tui";
 import * as client from "./ollama-client.js";
 import { discoverModels, formatModelForDisplay } from "./ollama-discovery.js";
 import { formatModelSize } from "./model-capabilities.js";

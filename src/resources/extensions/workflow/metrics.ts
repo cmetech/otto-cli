@@ -16,7 +16,7 @@
 
 import { join } from "node:path";
 import { openSync, closeSync, unlinkSync, statSync, writeFileSync } from "node:fs";
-import type { ExtensionContext } from "@gsd/pi-coding-agent";
+import type { ExtensionContext } from "@loop24/pi-coding-agent";
 import { gsdRoot } from "./paths.js";
 import { getAndClearSkills } from "./skill-telemetry.js";
 import { loadJsonFile, loadJsonFileOrNull, saveJsonFile } from "./json-persistence.js";
@@ -27,7 +27,7 @@ import type { MilestoneScope } from "./workspace.js";
 import { logWarning } from "./workflow-logger.js";
 
 // Re-export from shared — import directly from format-utils to avoid pulling
-// in the full barrel (mod.js → ui.js → @gsd/pi-tui) which breaks when loaded
+// in the full barrel (mod.js → ui.js → @loop24/pi-tui) which breaks when loaded
 // outside jiti's alias resolution (e.g. dynamic import in auto-loop reports).
 export { formatTokenCount } from "../shared/format-utils.js";
 

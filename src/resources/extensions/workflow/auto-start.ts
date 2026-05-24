@@ -14,7 +14,7 @@
 import type {
   ExtensionAPI,
   ExtensionCommandContext,
-} from "@gsd/pi-coding-agent";
+} from "@loop24/pi-coding-agent";
 import { deriveState } from "./state.js";
 import { loadFile, getManifestStatus } from "./files.js";
 import type { InterruptedSessionAssessment } from "./interrupted-session.js";

@@ -31,31 +31,31 @@ function writeText(root: string, relativePath: string, value: string): void {
 
 function createFixture(): string {
   const root = mkdtempSync(join(tmpdir(), "open-gsd-version-sync-"));
-  writeJson(root, "package.json", { name: "@opengsd/gsd-pi", version: "1.0.0" });
+  writeJson(root, "package.json", { name: "@ericsson/loop24", version: "1.0.0" });
   writeJson(root, "package-lock.json", {
-    name: "@opengsd/gsd-pi",
+    name: "@ericsson/loop24",
     version: "1.0.0",
     packages: {
-      "": { name: "@opengsd/gsd-pi", version: "1.0.0" },
+      "": { name: "@ericsson/loop24", version: "1.0.0" },
       "extensions/google-search": { name: "@gsd-extensions/google-search", version: "1.0.0" },
-      "packages/pi-coding-agent": { name: "@gsd/pi-coding-agent", version: "1.0.0" },
+      "packages/pi-coding-agent": { name: "@loop24/pi-coding-agent", version: "1.0.0" },
     },
   });
   writeJson(root, "extensions/google-search/package.json", {
     name: "@gsd-extensions/google-search",
     version: "1.0.0",
     peerDependencies: {
-      "@gsd/pi-coding-agent": "*",
-      "@gsd/pi-tui": "*",
+      "@loop24/pi-coding-agent": "*",
+      "@loop24/pi-tui": "*",
     },
   });
   writeJson(root, "packages/pi-coding-agent/package.json", {
-    name: "@gsd/pi-coding-agent",
+    name: "@loop24/pi-coding-agent",
     version: "1.0.0",
-    dependencies: { "@gsd-build/contracts": "^1.0.0" },
+    dependencies: { "@loop24-build/contracts": "^1.0.0" },
   });
   writeJson(root, "packages/contracts/package.json", {
-    name: "@gsd-build/contracts",
+    name: "@loop24-build/contracts",
     version: "1.0.0",
   });
   writeJson(root, "pkg/package.json", { name: "@glittercowboy/gsd", version: "1.0.0" });
@@ -99,7 +99,7 @@ version = "1.0.0"
 
 test("verifyVersionSync reports every release-owned surface that drifts from root", () => {
   const root = createFixture();
-  writeJson(root, "package.json", { name: "@opengsd/gsd-pi", version: "2.0.0" });
+  writeJson(root, "package.json", { name: "@ericsson/loop24", version: "2.0.0" });
 
   const issues = verifyVersionSync(root);
 
@@ -108,7 +108,7 @@ test("verifyVersionSync reports every release-owned surface that drifts from roo
   assert.match(issues.join("\n"), /packages\/pi-coding-agent\/package\.json version is 1\.0\.0, expected 2\.0\.0/);
   assert.match(
     issues.join("\n"),
-    /packages\/pi-coding-agent\/package\.json dependencies\.@gsd-build\/contracts is \^1\.0\.0, expected \^2\.0\.0/,
+    /packages\/pi-coding-agent\/package\.json dependencies\.@loop24-build\/contracts is \^1\.0\.0, expected \^2\.0\.0/,
   );
   assert.match(issues.join("\n"), /native\/Cargo\.toml workspace package version is 1\.0\.0, expected 2\.0\.0/);
   assert.match(issues.join("\n"), /native\/Cargo\.lock gsd-engine version is 1\.0\.0, expected 2\.0\.0/);
@@ -125,13 +125,13 @@ test("syncVersionSurfaces updates package, native, and bridge versions together"
   assert.equal(readJson<{ version: string }>(root, "pkg/package.json").version, "2.1.0-dev.abc123");
   assert.equal(
     readJson<{ dependencies: Record<string, string> }>(root, "packages/pi-coding-agent/package.json").dependencies[
-      "@gsd-build/contracts"
+      "@loop24-build/contracts"
     ],
     "^2.1.0-dev.abc123",
   );
   assert.deepEqual(readJson<{ peerDependencies: Record<string, string> }>(root, "extensions/google-search/package.json").peerDependencies, {
-    "@gsd/pi-coding-agent": "*",
-    "@gsd/pi-tui": "*",
+    "@loop24/pi-coding-agent": "*",
+    "@loop24/pi-tui": "*",
   });
   assert.match(readFileSync(join(root, "native/Cargo.toml"), "utf8"), /version = "2\.1\.0-dev\.abc123"/);
   assert.match(readFileSync(join(root, "native/Cargo.lock"), "utf8"), /name = "gsd-engine"\nversion = "2\.1\.0-dev\.abc123"/);

@@ -25,15 +25,15 @@ const PLATFORM_PACKAGE_DIRS = [
 ];
 
 const INTERNAL_PACKAGE_NAMES = new Set([
-  "@gsd-build/contracts",
-  "@gsd-build/daemon",
-  "@gsd-build/mcp-server",
-  "@gsd-build/rpc-client",
-  "@gsd/native",
-  "@gsd/pi-agent-core",
-  "@gsd/pi-ai",
-  "@gsd/pi-coding-agent",
-  "@gsd/pi-tui",
+  "@loop24-build/contracts",
+  "@loop24-build/daemon",
+  "@loop24-build/mcp-server",
+  "@loop24-build/rpc-client",
+  "@loop24/native",
+  "@loop24/pi-agent-core",
+  "@loop24/pi-ai",
+  "@loop24/pi-coding-agent",
+  "@loop24/pi-tui",
 ]);
 
 const NATIVE_CRATE_NAMES = new Set(["gsd-ast", "gsd-engine", "gsd-grep"]);

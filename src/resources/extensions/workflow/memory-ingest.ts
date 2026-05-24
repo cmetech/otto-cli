@@ -12,7 +12,7 @@
 
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { basename, isAbsolute, resolve } from "node:path";
-import type { ExtensionContext } from "@gsd/pi-coding-agent";
+import type { ExtensionContext } from "@loop24/pi-coding-agent";
 
 import { createMemorySource, type MemorySource, type MemorySourceKind } from "./memory-source-store.js";
 import { buildMemoryLLMCall, extractMemoriesFromTranscript } from "./memory-extractor.js";

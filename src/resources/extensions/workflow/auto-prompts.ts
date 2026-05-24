@@ -24,7 +24,7 @@ import { isContextModeEnabled } from "./preferences-types.js";
 import { parseRoadmap } from "./parsers-legacy.js";
 import type { WorkflowDbState, InlineLevel } from "./types.js";
 import type { WorkflowPreferences } from "./preferences.js";
-import { getLoadedSkills, type Skill } from "@gsd/pi-coding-agent";
+import { getLoadedSkills, type Skill } from "@loop24/pi-coding-agent";
 import { join, basename } from "node:path";
 import { existsSync } from "node:fs";
 import { computeBudgets, resolveExecutorContextWindow, truncateAtSectionBoundary, type MinimalModelRegistry } from "./context-budget.js";

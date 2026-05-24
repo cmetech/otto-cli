@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Assistant message rail renderer for interactive terminal sessions.
-import type { AssistantMessage } from "@gsd/pi-ai";
-import { Container, Markdown, type MarkdownTheme, Spacer, Text } from "@gsd/pi-tui";
+import type { AssistantMessage } from "@loop24/pi-ai";
+import { Container, Markdown, type MarkdownTheme, Spacer, Text } from "@loop24/pi-tui";
 import { BRAND_NAME } from "../../../config.js";
 import { getMarkdownTheme, theme } from "../theme/theme.js";
 import { type TimestampFormat } from "./timestamp.js";

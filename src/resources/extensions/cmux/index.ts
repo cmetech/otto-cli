@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CMUX_CHANNELS, type CmuxSidebarEvent, type CmuxLogEvent, type CmuxPreferencesInput, type CmuxStateInput } from "../shared/cmux-events.js";
-import type { EventBus } from "@gsd/pi-coding-agent";
+import type { EventBus } from "@loop24/pi-coding-agent";
 
 type CmuxPreferences = CmuxPreferencesInput;
 type CmuxState = CmuxStateInput;

@@ -7,7 +7,7 @@
 // When embeddings are unavailable, all calls become no-ops and
 // queryMemoriesRanked falls back to keyword-only scoring.
 
-import type { ExtensionContext } from "@gsd/pi-coding-agent";
+import type { ExtensionContext } from "@loop24/pi-coding-agent";
 
 import { _getAdapter, isDbAvailable, upsertMemoryEmbedding, deleteMemoryEmbedding } from "./db.js";
 import { logWarning } from "./workflow-logger.js";

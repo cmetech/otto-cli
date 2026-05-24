@@ -15,7 +15,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve as resolvePath } from "node:path";
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { projectRoot } from "./commands/context.js";
 import { ingestFile, ingestNote, ingestUrl, summarizeIngest } from "./memory-ingest.js";

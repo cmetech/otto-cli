@@ -11,7 +11,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 
 import { registerScreenshotTools } from "../../browser-tools/tools/screenshot.ts";
 import { registerZoomTools } from "../../browser-tools/tools/zoom.ts";

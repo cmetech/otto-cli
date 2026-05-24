@@ -11,7 +11,7 @@
  * never touches credentials, never offers a login flow.
  */
 
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 import { CLAUDE_CODE_MODELS } from "./models.js";
 import { isClaudeCodeReady } from "./readiness.js";
 import { streamViaClaudeCode } from "./stream-adapter.js";

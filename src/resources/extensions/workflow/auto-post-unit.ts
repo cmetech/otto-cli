@@ -13,7 +13,7 @@
  * Extracted from the pre-loop agent_end handler in auto.ts.
  */
 
-import type { ExtensionContext, ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionContext, ExtensionAPI } from "@loop24/pi-coding-agent";
 import { deriveState } from "./state.js";
 import { logWarning, logError } from "./workflow-logger.js";
 import { loadFile, parseSummary, resolveAllOverrides } from "./files.js";

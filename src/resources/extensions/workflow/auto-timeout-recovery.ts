@@ -4,7 +4,7 @@
  * and blocker placeholder generation.
  */
 
-import type { ExtensionAPI, ExtensionContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
 import {
   readUnitRuntimeRecord,
   writeUnitRuntimeRecord,

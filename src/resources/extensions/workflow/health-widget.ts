@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Always-on ambient health signal rendered below the editor.
 
-import type { ExtensionContext } from "@gsd/pi-coding-agent";
+import type { ExtensionContext } from "@loop24/pi-coding-agent";
 import type { WorkflowDbState } from "./types.js";
 import { runProviderChecks, summariseProviderIssues } from "./doctor-providers.js";
 import { runEnvironmentChecks } from "./doctor-environment.js";

@@ -73,7 +73,7 @@ export const TOP_LEVEL_SUBCOMMANDS: readonly GsdCommandDefinition[] = [
   { cmd: "park", desc: "Park a milestone — skip without deleting" },
   { cmd: "unpark", desc: "Reactivate a parked milestone" },
   { cmd: "update", desc: `Update ${BRAND} to the latest version` },
-  { cmd: "upgrade", desc: "Alias for update; installs the latest @opengsd package" },
+  { cmd: "upgrade", desc: "Alias for update; installs the latest @ericsson/loop24 package" },
   { cmd: "start", desc: "Start a workflow template (bugfix, spike, feature, etc.)" },
   // Note: leaving "full-project" nested completion description ("Complete workflow...") as-is — internal flavor text.
   { cmd: "templates", desc: "List available workflow templates" },

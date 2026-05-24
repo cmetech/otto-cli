@@ -6,7 +6,7 @@
  * logic in one place so md template behavior stays consistent.
  */
 
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 import { readFileSync } from "node:fs";
 
 import { loadPrompt } from "./prompt-loader.js";

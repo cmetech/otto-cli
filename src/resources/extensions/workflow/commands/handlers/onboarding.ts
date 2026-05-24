@@ -10,7 +10,7 @@
 // surfaced as notifications pointing the user at the canonical per-step
 // commands (/login, /loop24 keys, /loop24 remote) that are already ctx.ui-safe.
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent"
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent"
 import {
   ONBOARDING_STEPS,
   isValidStepId,

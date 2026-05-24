@@ -91,7 +91,7 @@ export function checkNamespaceReservation(extensionId: string, opts: ValidationO
 }
 
 /**
- * Per D-07/D-08/D-09/D-10: Scan both `dependencies` and `devDependencies` for @gsd/* packages.
+ * Per D-07/D-08/D-09/D-10: Scan both `dependencies` and `devDependencies` for @loop24/* packages.
  * peerDependencies is the correct placement and is NOT flagged.
  * Returns an error per violation naming the exact field and package.
  */
@@ -121,7 +121,7 @@ export function checkDependencyPlacement(pkg: unknown): ValidationError[] {
 
     const depsObj = deps as Record<string, unknown>
     for (const pkgName of Object.keys(depsObj)) {
-      if (pkgName.startsWith('@gsd/')) {
+      if (pkgName.startsWith('@loop24/')) {
         errors.push({
           code: 'WRONG_DEP_FIELD',
           message: `"${pkgName}" must not appear in "${field}". Move it to "peerDependencies". ${reason}`,

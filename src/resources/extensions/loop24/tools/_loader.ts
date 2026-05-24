@@ -10,7 +10,7 @@
  * agent inspect a component while debugging an existing flow.
  */
 
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 import { refreshCatalogTool } from "./refresh-catalog.js";
 import { normalizeCatalogTool } from "./normalize-catalog.js";
 import { checkCatalogHealthTool } from "./check-catalog-health.js";

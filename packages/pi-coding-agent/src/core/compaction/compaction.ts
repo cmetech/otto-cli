@@ -5,9 +5,9 @@
  * and after compaction the session is reloaded.
  */
 
-import type { AgentMessage } from "@gsd/pi-agent-core";
-import type { AssistantMessage, Model, Usage } from "@gsd/pi-ai";
-import { completeSimple } from "@gsd/pi-ai";
+import type { AgentMessage } from "@loop24/pi-agent-core";
+import type { AssistantMessage, Model, Usage } from "@loop24/pi-ai";
+import { completeSimple } from "@loop24/pi-ai";
 import { COMPACTION_KEEP_RECENT_TOKENS, COMPACTION_RESERVE_TOKENS } from "../constants.js";
 import { convertToLlm } from "../messages.js";
 import type { CompactionEntry, SessionEntry } from "../session-manager.js";

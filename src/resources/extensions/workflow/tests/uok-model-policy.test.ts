@@ -11,7 +11,7 @@ import {
 import {
   registerToolCompatibility,
   resetToolCompatibilityRegistry,
-} from "@gsd/pi-coding-agent";
+} from "@loop24/pi-coding-agent";
 
 test.afterEach(() => {
   resetToolCompatibilityRegistry();

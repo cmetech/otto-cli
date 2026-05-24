@@ -17,7 +17,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 /**
  * Minimal tool interface matching the agent's AgentTool shape.
- * Avoids a direct dependency on @gsd/pi-agent-core from this compiled module.
+ * Avoids a direct dependency on @loop24/pi-agent-core from this compiled module.
  *
  * `details` and `isError` are optional fields that runtime tool implementations
  * may populate. The MCP transport drops non-standard fields, so the wrapper at

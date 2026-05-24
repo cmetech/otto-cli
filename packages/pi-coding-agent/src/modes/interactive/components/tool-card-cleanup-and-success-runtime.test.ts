@@ -16,7 +16,7 @@
 import assert from "node:assert/strict";
 import { describe, it, before } from "node:test";
 
-import { Container, Text } from "@gsd/pi-tui";
+import { Container, Text } from "@loop24/pi-tui";
 import stripAnsi from "strip-ansi";
 
 import { initTheme, theme } from "../theme/theme.js";

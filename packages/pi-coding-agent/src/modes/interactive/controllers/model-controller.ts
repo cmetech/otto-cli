@@ -1,4 +1,4 @@
-import type { Model } from "@gsd/pi-ai";
+import type { Model } from "@loop24/pi-ai";
 
 export async function handleModelCommand(host: any, searchTerm?: string): Promise<void> {
 	if (!searchTerm) {

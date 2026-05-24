@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Provider-boundary token payload audit helpers.
 
-import type { Context, ImageContent, Message, TextContent, Tool } from "@gsd/pi-ai";
+import type { Context, ImageContent, Message, TextContent, Tool } from "@loop24/pi-ai";
 import type { AgentMessage } from "./types.js";
 
 const CHARS_PER_TOKEN = 4;

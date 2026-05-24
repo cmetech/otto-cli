@@ -6,7 +6,7 @@
 import type {
   ExtensionAPI,
   ExtensionCommandContext,
-} from "@gsd/pi-coding-agent";
+} from "@loop24/pi-coding-agent";
 
 import { deriveState } from "./state.js";
 import { loadFile } from "./files.js";

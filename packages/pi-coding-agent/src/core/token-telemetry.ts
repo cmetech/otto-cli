@@ -1,4 +1,4 @@
-// @gsd/pi-coding-agent + token-telemetry — opt-in per-call token observability
+// @loop24/pi-coding-agent + token-telemetry — opt-in per-call token observability
 //
 // Emits a single JSON line per assistant message to stderr when
 // `PI_TOKEN_TELEMETRY=1` is set. Captures the cache_read_input_tokens and
@@ -8,7 +8,7 @@
 //
 // Capture pattern: `PI_TOKEN_TELEMETRY=1 npm start 2> token-telemetry.jsonl`
 
-import type { AssistantMessage } from "@gsd/pi-ai";
+import type { AssistantMessage } from "@loop24/pi-ai";
 
 /** Schema of one telemetry line. JSON-stable for downstream ingestion. */
 export interface TokenTelemetryRecord {

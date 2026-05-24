@@ -38,7 +38,7 @@ function loadNative(): typeof nativeModule {
   try {
     // Dynamic import to avoid hard dependency - fails gracefully if native module not built
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require('@gsd/native');
+    const mod = require('@loop24/native');
     if (mod.parseFrontmatter && mod.extractSection && mod.batchParseGsdFiles) {
       nativeModule = mod;
     }

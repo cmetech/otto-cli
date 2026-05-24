@@ -12,7 +12,7 @@
 
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { LangFlowClient } from "./clients/langflow.js";
 import { loadFlowTriggers } from "./commands/flow-triggers/_loader.js";
 import type { FlowTrigger, FlowTriggerInput } from "./commands/flow-triggers/_schema.js";

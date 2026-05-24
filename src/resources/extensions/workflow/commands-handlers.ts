@@ -5,7 +5,7 @@
  * handleRunHook, handleUpdate, handleSkillHealth
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { existsSync, readFileSync, mkdirSync } from "node:fs";
 import { join, resolve as resolvePath, sep } from "node:path";
 import { homedir } from "node:os";
@@ -37,7 +37,7 @@ import {
 } from "./bootstrap/register-hooks.js";
 import { BRAND, CONFIG_DIR_NAME, slashCommand } from "./strings.js";
 
-const UPDATE_REGISTRY_URL = "https://registry.npmjs.org/@opengsd%2fgsd-pi/latest";
+const UPDATE_REGISTRY_URL = "https://registry.npmjs.org/@ericsson%2floop24/latest";
 const UPDATE_FETCH_TIMEOUT_MS = 5000;
 
 // Detects a bun-installed gsd via `process.argv[1]`. Mirrors isBunInstall in
@@ -475,7 +475,7 @@ function compareSemverLocal(a: string, b: string): number {
 export async function handleUpdate(ctx: ExtensionCommandContext): Promise<void> {
   const { execSync } = await import("node:child_process");
 
-  const NPM_PACKAGE = "@opengsd/gsd-pi";
+  const NPM_PACKAGE = "@ericsson/loop24";
   const current = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || "0.0.0";
 
   ctx.ui.notify(`Current version: v${current}\nChecking npm registry...`, "info");

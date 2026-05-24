@@ -12,9 +12,9 @@ function readPackageJson(path: string): { name?: string; optionalDependencies?: 
 	return JSON.parse(readFileSync(join(projectRoot, path), "utf8"));
 }
 
-test("published npm package names use the @opengsd scope", () => {
+test("published npm package names use the @ericsson scope", () => {
 	const rootPackage = readPackageJson("package.json");
-	assert.equal(rootPackage.name, "@opengsd/gsd-pi");
+	assert.equal(rootPackage.name, "@ericsson/loop24");
 
 	const platforms = [
 		"darwin-arm64",

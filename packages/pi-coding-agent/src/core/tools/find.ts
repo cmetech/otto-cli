@@ -1,5 +1,5 @@
-import type { AgentTool } from "@gsd/pi-agent-core";
-import { glob as nativeGlob } from "@gsd/native/glob";
+import type { AgentTool } from "@loop24/pi-agent-core";
+import { glob as nativeGlob } from "@loop24/native/glob";
 import { type Static, Type } from "@sinclair/typebox";
 import { existsSync } from "fs";
 import path from "path";

@@ -20,7 +20,7 @@
  * via buildExtractionStepsBlock — single source of truth.
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { existsSync, readFileSync } from "node:fs";
 import { join, basename, relative } from "node:path";

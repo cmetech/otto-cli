@@ -2,7 +2,7 @@
  * Tool wrappers for extensions.
  */
 
-import type { AgentTool, AgentToolUpdateCallback } from "@gsd/pi-agent-core";
+import type { AgentTool, AgentToolUpdateCallback } from "@loop24/pi-agent-core";
 import type { ExtensionRunner } from "./runner.js";
 import type { RegisteredTool, ToolCallEventResult } from "./types.js";
 

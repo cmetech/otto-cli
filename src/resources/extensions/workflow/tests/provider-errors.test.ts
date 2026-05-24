@@ -21,7 +21,7 @@ import { _buildCancelledUnitStopReason } from "../auto/phases.ts";
 import { autoSession } from "../auto-runtime-state.ts";
 import { getNextFallbackModel } from "../preferences.ts";
 // Zero-import module — imported by path rather than through the package
-// barrel to avoid pulling the full AgentSession / @gsd/pi-ai dep graph into
+// barrel to avoid pulling the full AgentSession / @loop24/pi-ai dep graph into
 // this unit test (see #4837).
 import { RETRYABLE_ERROR_RE } from "../../../../../packages/pi-coding-agent/src/core/retryable-error-regex.ts";
 import { streamOpenAICodexResponses } from "../../../../../packages/pi-ai/src/providers/openai-codex-responses.ts";

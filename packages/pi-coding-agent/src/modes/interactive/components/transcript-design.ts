@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Shared recommended transcript rendering primitives for assistant, tool, command, footer, and auto-mode TUI surfaces.
 
-import { alignRight, padRight, style, truncateToWidth, visibleWidth } from "@gsd/pi-tui";
+import { alignRight, padRight, style, truncateToWidth, visibleWidth } from "@loop24/pi-tui";
 import { BRAND_NAME } from "../../../config.js";
 import { theme, type ThemeBg, type ThemeColor } from "../theme/theme.js";
 import { formatTimestamp, type TimestampFormat } from "./timestamp.js";

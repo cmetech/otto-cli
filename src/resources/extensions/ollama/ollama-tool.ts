@@ -4,8 +4,8 @@
  * with the local Ollama instance — list models, pull new ones, check status.
  */
 
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
-import { Text } from "@gsd/pi-tui";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
+import { Text } from "@loop24/pi-tui";
 import { Type } from "@sinclair/typebox";
 import * as client from "./ollama-client.js";
 import { discoverModels, formatModelForDisplay } from "./ollama-discovery.js";

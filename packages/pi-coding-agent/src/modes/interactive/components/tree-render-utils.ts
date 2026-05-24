@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Shared tree and selector row rendering utilities.
 
-import { truncateToWidth } from "@gsd/pi-tui";
+import { truncateToWidth } from "@loop24/pi-tui";
 import { theme } from "../theme/theme.js";
 
 // ── Tree connector characters ────────────────────────────────────────

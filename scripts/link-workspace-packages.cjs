@@ -2,15 +2,15 @@
 /**
  * link-workspace-packages.cjs
  *
- * Creates node_modules/@gsd/* and node_modules/@gsd-build/* symlinks pointing
+ * Creates node_modules/@loop24/* and node_modules/@loop24-build/* symlinks pointing
  * to shipped packages/* directories.
  *
  * During development, npm workspaces creates these automatically. But in the
  * published tarball, workspace packages are shipped under packages/ (via the
- * "files" field) and the @gsd/* imports in compiled code need node_modules/@gsd/*
+ * "files" field) and the @loop24/* imports in compiled code need node_modules/@loop24/*
  * to resolve. This script bridges the gap.
  *
- * Runs as part of postinstall (before any ESM code that imports @gsd/*).
+ * Runs as part of postinstall (before any ESM code that imports @loop24/*).
  *
  * On Windows without Developer Mode or administrator rights, creating symlinks
  * (even NTFS junctions) can fail with EPERM. In that case we fall back to
@@ -22,7 +22,7 @@ const { getLinkablePackages, REPO_ROOT } = require('./lib/workspace-manifest.cjs
 
 const scopeDirs = {
   '@gsd': join(REPO_ROOT, 'node_modules', '@gsd'),
-  '@gsd-build': join(REPO_ROOT, 'node_modules', '@gsd-build'),
+  '@loop24-build': join(REPO_ROOT, 'node_modules', '@loop24-build'),
 }
 
 for (const scopeDir of Object.values(scopeDirs)) {

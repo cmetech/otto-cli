@@ -9,7 +9,7 @@
  * confirmed classifications.
  */
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { showNextAction } from "../shared/tui.js";
 import type { CaptureEntry, Classification, TriageResult } from "./captures.js";
 import { markCaptureResolved } from "./captures.js";

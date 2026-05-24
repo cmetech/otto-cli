@@ -4,7 +4,7 @@
  * Contains: InspectData type, formatInspectOutput, handleInspect
  */
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { gsdRoot } from "./paths.js";

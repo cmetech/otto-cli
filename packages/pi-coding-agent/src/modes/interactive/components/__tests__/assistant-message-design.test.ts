@@ -4,7 +4,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import stripAnsi from "strip-ansi";
-import type { AssistantMessage } from "@gsd/pi-ai";
+import type { AssistantMessage } from "@loop24/pi-ai";
 
 import { initTheme } from "../../theme/theme.js";
 import { AssistantMessageComponent } from "../assistant-message.js";

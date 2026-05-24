@@ -84,8 +84,8 @@ export function filterToolsForProviderRequest(
 
 	return { compatible, filtered };
 }
-import { Agent, maybeLogProviderPayloadAudit, type AgentMessage, type AgentTool, type ThinkingLevel } from "@gsd/pi-agent-core";
-import { getProviderCapabilities, type Message, type Model } from "@gsd/pi-ai";
+import { Agent, maybeLogProviderPayloadAudit, type AgentMessage, type AgentTool, type ThinkingLevel } from "@loop24/pi-agent-core";
+import { getProviderCapabilities, type Message, type Model } from "@loop24/pi-ai";
 import { getAgentDir, getDocsPath } from "../config.js";
 import { AgentSession } from "./agent-session.js";
 import { AuthStorage } from "./auth-storage.js";
@@ -264,7 +264,7 @@ function getDefaultAgentDir(): string {
  * const { session } = await createAgentSession();
  *
  * // With explicit model
- * import { getModel } from '@gsd/pi-ai';
+ * import { getModel } from '@loop24/pi-ai';
  * const { session } = await createAgentSession({
  *   model: getModel('anthropic', 'claude-opus-4-5'),
  *   thinkingLevel: 'high',

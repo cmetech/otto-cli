@@ -1,13 +1,13 @@
 // Project/App: LOOP24
 // File Purpose: Registers DB-backed workflow tools and compatibility aliases.
 import { Type } from "@sinclair/typebox";
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
-import { Text } from "@gsd/pi-tui";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
+import { Text } from "@loop24/pi-tui";
 
 import { loadEffectiveGSDPreferences } from "../preferences.js";
 import { ensureDbOpen, resolveCtxCwd } from "./dynamic-tools.js";
 import { loadWriteGateSnapshot, shouldBlockRootArtifactSaveInSnapshot } from "./write-gate.js";
-import { StringEnum } from "@gsd/pi-ai";
+import { StringEnum } from "@loop24/pi-ai";
 import { logError } from "../workflow-logger.js";
 import { getErrorMessage } from "../error-utils.js";
 import { incrementLegacyTelemetry } from "../legacy-telemetry.js";

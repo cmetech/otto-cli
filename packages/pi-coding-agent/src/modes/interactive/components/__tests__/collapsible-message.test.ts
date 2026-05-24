@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 import stripAnsi from "strip-ansi";
-import { Text } from "@gsd/pi-tui";
+import { Text } from "@loop24/pi-tui";
 import type { CustomMessage } from "../../../../core/messages.js";
 import { initTheme } from "../../theme/theme.js";
 import { BranchSummaryMessageComponent } from "../branch-summary-message.js";

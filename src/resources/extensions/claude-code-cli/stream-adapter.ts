@@ -18,9 +18,9 @@ import type {
 	SimpleStreamOptions,
 	ThinkingLevel,
 	ToolCall,
-} from "@gsd/pi-ai";
-import type { ExtensionUIContext } from "@gsd/pi-coding-agent";
-import { EventStream } from "@gsd/pi-ai";
+} from "@loop24/pi-ai";
+import type { ExtensionUIContext } from "@loop24/pi-coding-agent";
+import { EventStream } from "@loop24/pi-ai";
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -179,7 +179,7 @@ const SENSITIVE_FIELD_PATTERN = /(password|passphrase|secret|token|api[_\s-]*key
 
 /**
  * Construct an AssistantMessageEventStream using EventStream directly.
- * (The class itself is only re-exported as a type from the @gsd/pi-ai barrel.)
+ * (The class itself is only re-exported as a type from the @loop24/pi-ai barrel.)
  */
 function createAssistantStream(): AssistantMessageEventStream {
 	return new EventStream<AssistantMessageEvent, AssistantMessage>(
@@ -1294,9 +1294,9 @@ export async function resolveClaudePermissionMode(
 	return "bypassPermissions";
 }
 
-// NOTE: These helpers intentionally mirror @gsd/pi-ai anthropic-shared
+// NOTE: These helpers intentionally mirror @loop24/pi-ai anthropic-shared
 // behavior so this extension remains typecheck-stable even when the published
-// @gsd/pi-ai barrel lags behind monorepo source exports.
+// @loop24/pi-ai barrel lags behind monorepo source exports.
 /** Return true for model IDs that support the adaptive thinking API (Opus 4.6/4.7, Sonnet 4.6/4.7, Haiku 4.5). */
 function modelSupportsAdaptiveThinking(modelId: string): boolean {
 	return (

@@ -129,7 +129,7 @@ function main() {
 	const packages = getLinkablePackages()
 	const summary = []
 	for (const pkg of packages) {
-		if (pkg.packageName === '@gsd/native') {
+		if (pkg.packageName === '@loop24/native') {
 			const canRunNative = hasNativeAddon() || commandExists('cargo')
 			summary.push({
 				pkg: pkg.packageName,
@@ -155,7 +155,7 @@ function main() {
 	let failureCount = 0
 
 	for (const pkg of packages) {
-		if (pkg.packageName === '@gsd/native') {
+		if (pkg.packageName === '@loop24/native') {
 			if (!hasNativeAddon() && !commandExists('cargo')) {
 				process.stderr.write(
 					`Skipping ${pkg.packageName}: no native addon present and \`cargo\` is unavailable in this environment.\n`

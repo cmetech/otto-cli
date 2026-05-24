@@ -2,7 +2,7 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { SessionManager } from "@gsd/pi-coding-agent";
+import { SessionManager } from "@loop24/pi-coding-agent";
 import type { AgentConfig } from "./agents.js";
 
 export const SUBAGENT_CHILD_ENV_VAR = "GSD_SUBAGENT_CHILD";

@@ -1,6 +1,6 @@
 // LOOP24 — Extension registration: wires all workflow tools, commands, and hooks into pi
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { registerExitCommand } from "../exit-command.js";
 import { registerLazyWorktreeCommands } from "../worktree-command-bootstrap.js";

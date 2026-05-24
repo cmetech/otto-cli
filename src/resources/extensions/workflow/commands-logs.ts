@@ -10,7 +10,7 @@
  *   /loop24 logs clear        — Remove old activity and debug logs
  */
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { CONFIG_DIR_NAME, slashCommand } from "./strings.js";
 import { existsSync, readdirSync, readFileSync, statSync, unlinkSync } from "node:fs";
 import { join } from "node:path";

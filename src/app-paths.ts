@@ -1,6 +1,6 @@
 // Brand-aware app paths. Reads piConfig.configDir from package.json at module
 // load (synchronous, same pattern as src/help-text.ts) so we don't import any
-// compiled @gsd/pi-coding-agent module — this file is pulled in very early by
+// compiled @loop24/pi-coding-agent module — this file is pulled in very early by
 // src/loader.ts before heavy modules load.
 import { homedir } from 'node:os'
 import { join, resolve, dirname } from 'node:path'

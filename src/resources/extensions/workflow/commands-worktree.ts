@@ -5,7 +5,7 @@
 // same extension modules (worktree-manager, native-git-bridge, etc.) so the
 // behavior is identical to the CLI surface.
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { existsSync } from "node:fs";
 
 import { projectRoot } from "./commands/context.js";

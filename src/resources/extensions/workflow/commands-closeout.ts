@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Handles /loop24 closeout recovery commands for failed git closeout.
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { ensureDbOpen } from "./bootstrap/dynamic-tools.js";
 import {

@@ -5,7 +5,7 @@
  * with implementation context (summaries, changed files, test patterns).
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";

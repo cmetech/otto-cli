@@ -1,4 +1,4 @@
-// GSD-2 + scripts/lib/workspace-manifest.cjs — single source of truth for linkable @gsd/* packages
+// scripts/lib/workspace-manifest.cjs — single source of truth for linkable @loop24/* packages
 'use strict'
 
 const { readdirSync, readFileSync, existsSync, statSync } = require('fs')
@@ -11,13 +11,13 @@ const PACKAGES_DIR = join(REPO_ROOT, 'packages')
  * Returns the canonical list of linkable workspace packages.
  *
  * A package is "linkable" if its `package.json` contains:
- *   { "gsd": { "linkable": true, "scope": "@gsd" | "@gsd-build", "name": "<pkgname>" } }
+ *   { "gsd": { "linkable": true, "scope": "@loop24" | "@loop24-build", "name": "<pkgname>" } }
  *
  * Each returned entry has:
- *   - dir: directory name under packages/ (e.g. "gsd-agent-core")
- *   - scope: "@gsd" or "@gsd-build"
- *   - name: unscoped package name (e.g. "agent-core")
- *   - packageName: scoped name (e.g. "@gsd/agent-core")
+ *   - dir: directory name under packages/ (e.g. "pi-agent-core")
+ *   - scope: "@loop24" or "@loop24-build"
+ *   - name: unscoped package name (e.g. "pi-agent-core")
+ *   - packageName: scoped name (e.g. "@loop24/pi-agent-core")
  *   - path: absolute path to package directory
  *   - packageJsonPath: absolute path to its package.json
  *
@@ -49,9 +49,9 @@ function getLinkablePackages() {
 				`${pkgJsonPath}: "gsd.linkable" is true but "gsd.scope" or "gsd.name" is missing.`
 			)
 		}
-		if (gsd.scope !== '@gsd' && gsd.scope !== '@gsd-build') {
+		if (gsd.scope !== '@loop24' && gsd.scope !== '@loop24-build') {
 			throw new Error(
-				`${pkgJsonPath}: "gsd.scope" must be "@gsd" or "@gsd-build" (got "${gsd.scope}").`
+				`${pkgJsonPath}: "gsd.scope" must be "@loop24" or "@loop24-build" (got "${gsd.scope}").`
 			)
 		}
 		const expectedName = `${gsd.scope}/${gsd.name}`
@@ -73,9 +73,9 @@ function getLinkablePackages() {
 	return out
 }
 
-/** Returns only packages in the `@gsd` scope (excludes `@gsd-build`). */
+/** Returns only packages in the `@loop24` scope (excludes `@loop24-build`). */
 function getCorePackages() {
-	return getLinkablePackages().filter((p) => p.scope === '@gsd')
+	return getLinkablePackages().filter((p) => p.scope === '@loop24')
 }
 
 module.exports = {

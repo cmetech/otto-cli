@@ -13,7 +13,7 @@ import type {
   ExtensionCommandContext,
   ReadonlyFooterDataProvider,
   Theme,
-} from "@gsd/pi-coding-agent";
+} from "@loop24/pi-coding-agent";
 import type { WorkflowDbState } from "./types.js";
 import { getActiveHook } from "./post-unit-hooks.js";
 import { getLedger } from "./metrics.js";
@@ -26,7 +26,7 @@ import {
 import { isDbAvailable, getMilestoneSlices, getSliceTasks } from "./db.js";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { truncateToWidth, visibleWidth } from "@gsd/pi-tui";
+import { truncateToWidth, visibleWidth } from "@loop24/pi-tui";
 import { makeUI } from "../shared/tui.js";
 import { GLYPH, INDENT } from "../shared/mod.js";
 import { padRightVisible, renderPanel, renderProgressBar, rightAlign, wrapVisibleText } from "./tui/render-kit.js";

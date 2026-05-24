@@ -13,7 +13,7 @@
  *   /loop24 mcp init [dir]  — Write project-local workflow MCP config
  */
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { resolve } from "node:path";
 

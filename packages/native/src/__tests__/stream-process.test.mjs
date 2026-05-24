@@ -1,7 +1,7 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { processStreamChunk } from "@gsd/native/stream-process";
+import { processStreamChunk } from "@loop24/native/stream-process";
 
 const require_ = createRequire(import.meta.url);
 const { native } = require_("../../dist/native.js");

@@ -9,7 +9,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, unlinkSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 
-import type { ExtensionContext } from "@gsd/pi-coding-agent";
+import type { ExtensionContext } from "@loop24/pi-coding-agent";
 
 import { getErrorMessage } from "../../error-utils.js";
 import {

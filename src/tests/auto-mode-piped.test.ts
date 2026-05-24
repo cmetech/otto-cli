@@ -90,9 +90,9 @@ const modules = new Map([
 ])
 
 export async function resolve(specifier, context, nextResolve) {
-  if (specifier === '@gsd/pi-coding-agent') return { url: 'stub:pi-coding-agent', shortCircuit: true }
-  if (specifier === '@gsd/pi-ai' || specifier === '@gsd/pi-ai/oauth') return { url: 'stub:pi-ai', shortCircuit: true }
-  if (specifier === '@gsd/pi-tui') return { url: 'stub:pi-tui', shortCircuit: true }
+  if (specifier === '@loop24/pi-coding-agent') return { url: 'stub:pi-coding-agent', shortCircuit: true }
+  if (specifier === '@loop24/pi-ai' || specifier === '@loop24/pi-ai/oauth') return { url: 'stub:pi-ai', shortCircuit: true }
+  if (specifier === '@loop24/pi-tui') return { url: 'stub:pi-tui', shortCircuit: true }
   if (specifier === 'chalk') return { url: 'stub:chalk', shortCircuit: true }
   if (specifier === './headless.js' && context.parentURL?.endsWith('/src/cli.ts')) {
     return { url: 'stub:headless', shortCircuit: true }

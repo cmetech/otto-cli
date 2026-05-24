@@ -1,4 +1,4 @@
-import { ImageFormat, parseImage } from "@gsd/native/image";
+import { ImageFormat, parseImage } from "@loop24/native/image";
 
 /**
  * Convert image to PNG format for terminal display.

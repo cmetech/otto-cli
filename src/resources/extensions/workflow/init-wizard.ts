@@ -6,7 +6,7 @@
  * bootstraps .loop24/ structure, and transitions to the first milestone discussion.
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { showNextAction } from "../shared/tui.js";

@@ -1,4 +1,4 @@
-import { parseStreamingJson as nativeParseStreamingJson } from "@gsd/native";
+import { parseStreamingJson as nativeParseStreamingJson } from "@loop24/native";
 import { hasXmlParameterTags, hasYamlBulletLists, repairToolJson } from "./repair-tool-json.js";
 
 /**

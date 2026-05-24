@@ -1,5 +1,5 @@
 /**
- * @gsd-build/rpc-client — standalone RPC client SDK for the workflow.
+ * @loop24-build/rpc-client — standalone RPC client SDK for the workflow.
  *
  * Re-exports all types, JSONL utilities, and the RpcClient class.
  */

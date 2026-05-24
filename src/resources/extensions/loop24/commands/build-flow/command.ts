@@ -14,7 +14,7 @@
  * auto-direct-dispatch.ts uses.
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { ensureRepoConventions } from "./_scaffold.js";
 import { loadReferenceDocs } from "./_system-context.js";
 

@@ -2,7 +2,7 @@
  * Remote Questions — self-contained MCP-server adapter
  *
  * Mirrors the routing logic from src/resources/extensions/ask-user-questions.ts
- * but without any dependency on @gsd/pi-coding-agent or the main src/ tree.
+ * but without any dependency on @loop24/pi-coding-agent or the main src/ tree.
  * All channel adapters (Discord, Slack, Telegram), config resolution, HTTP
  * calls, and polling are inlined here so packages/mcp-server remains a
  * standalone package.

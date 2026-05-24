@@ -2,7 +2,7 @@ import type {
   ExtensionAPI,
   ExtensionCommandContext,
   ExtensionContext,
-} from "@gsd/pi-coding-agent";
+} from "@loop24/pi-coding-agent";
 
 import { getAutoDashboardData, startAuto, type AutoDashboardData } from "../auto.js";
 import { resetTransientRetryState } from "./agent-end-recovery.js";

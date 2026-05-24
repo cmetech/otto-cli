@@ -1,5 +1,5 @@
-import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@gsd/pi-coding-agent";
-import type { Model } from "@gsd/pi-ai";
+import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@loop24/pi-coding-agent";
+import type { Model } from "@loop24/pi-ai";
 import type { WorkflowDbState } from "../../types.js";
 import { createRequire } from "node:module";
 

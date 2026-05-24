@@ -1,9 +1,9 @@
 // Project/App: LOOP24
 // File Purpose: OAuth provider selector for login and logout actions.
 
-import type { OAuthProviderInterface } from "@gsd/pi-ai";
-import { getOAuthProviders } from "@gsd/pi-ai/oauth";
-import { Container, getEditorKeybindings, Spacer, TruncatedText } from "@gsd/pi-tui";
+import type { OAuthProviderInterface } from "@loop24/pi-ai";
+import { getOAuthProviders } from "@loop24/pi-ai/oauth";
+import { Container, getEditorKeybindings, Spacer, TruncatedText } from "@loop24/pi-tui";
 import type { AuthStorage } from "../../../core/auth-storage.js";
 import { theme } from "../theme/theme.js";
 import { DynamicBorder } from "./dynamic-border.js";

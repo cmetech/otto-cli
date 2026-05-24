@@ -5,8 +5,8 @@ import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import type { ExtensionAPI, ExtensionContext } from "@gsd/pi-coding-agent";
-import { isToolCallEventType } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
+import { isToolCallEventType } from "@loop24/pi-coding-agent";
 
 import type { EcosystemBeforeAgentStartHandler } from "../ecosystem/extension-api.js";
 import { updateSnapshot } from "../ecosystem/extension-api.js";

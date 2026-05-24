@@ -1,7 +1,7 @@
 // LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/dynamic-border.ts - Width-adaptive border with optional spinner.
 
-import type { TUI } from "@gsd/pi-tui";
-import { visibleWidth } from "@gsd/pi-tui";
+import type { TUI } from "@loop24/pi-tui";
+import { visibleWidth } from "@loop24/pi-tui";
 import { theme } from "../theme/theme.js";
 import { AnimatedComponent } from "./animated-component.js";
 

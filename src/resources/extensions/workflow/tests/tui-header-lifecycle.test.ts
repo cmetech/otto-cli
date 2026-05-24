@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { visibleWidth } from "@gsd/pi-tui";
+import { visibleWidth } from "@loop24/pi-tui";
 
 import { setCompletionProgressWidget, updateProgressWidget } from "../auto-dashboard.ts";
 import type { WorkflowDbState } from "../types.ts";

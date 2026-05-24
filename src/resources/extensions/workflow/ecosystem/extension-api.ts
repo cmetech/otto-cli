@@ -13,7 +13,7 @@ import type {
   BeforeAgentStartEvent,
   ExtensionAPI,
   ExtensionHandler,
-} from "@gsd/pi-coding-agent";
+} from "@loop24/pi-coding-agent";
 
 // Structural mirror of pi's internal BeforeAgentStartEventResult. The internal
 // type is not re-exported from the package root, and constraint #3 forbids

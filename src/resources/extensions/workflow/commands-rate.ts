@@ -3,7 +3,7 @@
  * Feeds into the adaptive routing history so future dispatches improve.
  */
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { loadLedgerFromDisk } from "./metrics.js";
 import { recordFeedback, initRoutingHistory } from "./routing-history.js";
 import type { ComplexityTier } from "./complexity-classifier.js";

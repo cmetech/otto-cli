@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Routes /loop24 commands through global guards and command handlers.
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { slashCommand } from "../strings.js";
 import { NoProjectError, projectRoot, withCommandCwd } from "./context.js";

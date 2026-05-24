@@ -1,6 +1,6 @@
 // Project/App: LOOP24
 // File Purpose: Selects the UOK kernel path and records parity diagnostics.
-import type { ExtensionAPI, ExtensionContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
 import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 

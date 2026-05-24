@@ -6,7 +6,7 @@
  * via jiti at runtime from ~/.loop24/agent/, not compiled by tsc).
  */
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { homedir, tmpdir } from "node:os";
@@ -231,12 +231,12 @@ export function validateExtensionPackage(packageDir: string): ValidationResult {
     }
   }
 
-  // (c) @gsd/* packages must be in peerDependencies, not dependencies/devDependencies (D-12c)
+  // (c) @loop24/* packages must be in peerDependencies, not dependencies/devDependencies (D-12c)
   // Mirrors validateExtensionManifest below and extension-validator.ts:checkDependencyPlacement.
   for (const field of ["dependencies", "devDependencies"] as const) {
     const deps = (pkg[field] as Record<string, unknown> | undefined) ?? {};
     for (const dep of Object.keys(deps)) {
-      if (dep.startsWith("@gsd/")) {
+      if (dep.startsWith("@loop24/")) {
         errors.push(`"${dep}" must be in peerDependencies, not ${field}`);
       }
     }
@@ -328,7 +328,7 @@ function validateExtensionManifest(pkg: unknown, opts: { extensionId?: string; a
       const deps = obj[field];
       if (typeof deps === "object" && deps !== null) {
         for (const pkgName of Object.keys(deps as Record<string, unknown>)) {
-          if (pkgName.startsWith("@gsd/")) {
+          if (pkgName.startsWith("@loop24/")) {
             errors.push({ code: "WRONG_DEP_FIELD", message: `"${pkgName}" must not appear in "${field}". Move it to "peerDependencies".`, field });
           }
         }

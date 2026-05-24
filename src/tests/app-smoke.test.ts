@@ -210,7 +210,7 @@ test("gsd update and upgrade bypass the managed-resource-mismatch gate; other co
   const currentVersion = "1.0.0";
   writeFileSync(
     join(fakeAgentDir, "managed-resources.json"),
-    JSON.stringify({ gsdVersion: futureVersion, packageName: "@opengsd/gsd-pi", syncedAt: Date.now() }),
+    JSON.stringify({ gsdVersion: futureVersion, packageName: "@ericsson/loop24", syncedAt: Date.now() }),
   );
 
   // Gate is armed: returns the newer version (cli.ts would print mismatch + exit 1)
@@ -256,7 +256,7 @@ test("managed resource skew ignores legacy manifests from the old npm package", 
   assert.strictEqual(
     getNewerManagedResourceVersion(fakeAgentDir, "1.0.1"),
     null,
-    "old unscoped gsd-pi resource stamps must not block @opengsd/gsd-pi startup",
+    "old unscoped loop24 resource stamps must not block @ericsson/loop24 startup",
   );
 });
 
@@ -277,7 +277,7 @@ test("managed resource skew ignores manifests stamped by a different package", a
   assert.strictEqual(
     getNewerManagedResourceVersion(fakeAgentDir, "1.0.1"),
     null,
-    "old gsd-pi resource stamps must be refreshed instead of treated as newer @opengsd resources",
+    "old loop24 resource stamps must be refreshed instead of treated as newer @ericsson resources",
   );
 });
 
@@ -292,7 +292,7 @@ test("managed resource skew ignores dev/build suffixes on the same release line"
 
   writeFileSync(
     join(fakeAgentDir, "managed-resources.json"),
-    JSON.stringify({ gsdVersion: "2.78.1", packageName: "@opengsd/gsd-pi", syncedAt: Date.now() }),
+    JSON.stringify({ gsdVersion: "2.78.1", packageName: "@ericsson/loop24", syncedAt: Date.now() }),
   );
 
   assert.strictEqual(
@@ -382,7 +382,7 @@ test("initResources skips copy when managed version matches current version", as
 
 test("loadStoredEnvKeys hydrates process.env from auth.json", async (t) => {
   const { loadStoredEnvKeys } = await import("../wizard.ts");
-  const { AuthStorage } = await import("@gsd/pi-coding-agent");
+  const { AuthStorage } = await import("@loop24/pi-coding-agent");
 
   const tmp = mkdtempSync(join(tmpdir(), "gsd-wizard-test-"));
   const authPath = join(tmp, "auth.json");
@@ -431,7 +431,7 @@ test("loadStoredEnvKeys hydrates process.env from auth.json", async (t) => {
 
 test("loadStoredEnvKeys does not overwrite existing env vars", async (t) => {
   const { loadStoredEnvKeys } = await import("../wizard.ts");
-  const { AuthStorage } = await import("@gsd/pi-coding-agent");
+  const { AuthStorage } = await import("@loop24/pi-coding-agent");
 
   const tmp = mkdtempSync(join(tmpdir(), "gsd-wizard-nooverwrite-"));
   const authPath = join(tmp, "auth.json");

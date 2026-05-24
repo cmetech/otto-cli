@@ -6,7 +6,7 @@
  * No execution state, no hooks, no tools — the LLM does the rest.
  */
 
-import type { ExtensionAPI, ExtensionContext, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import type { WorkflowDbState } from "./types.js";
 import { showNextAction } from "../shared/tui.js";
 import { loadFile, saveFile } from "./files.js";

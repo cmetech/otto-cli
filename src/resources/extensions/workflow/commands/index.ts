@@ -1,4 +1,4 @@
-import { COMMAND_NAMESPACE, type ExtensionAPI, type ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import { COMMAND_NAMESPACE, type ExtensionAPI, type ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { WORKFLOW_COMMAND_DESCRIPTION, getWorkflowArgumentCompletions } from "./catalog.js";
 

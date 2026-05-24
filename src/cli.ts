@@ -3,7 +3,7 @@ import type {
   ModelRegistry as ModelRegistryInstance,
   PackageCommand,
   SettingsManager as SettingsManagerInstance,
-} from '@gsd/pi-coding-agent'
+} from '@loop24/pi-coding-agent'
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { agentDir, sessionsDir, authFilePath } from './app-paths.js'
@@ -35,12 +35,12 @@ import { markStartup, printStartupTimings } from './startup-timings.js'
 import { applyRtkProcessEnv, GSD_RTK_DISABLED_ENV, LOOP24_RTK_DISABLED_ENV, isTruthy } from './rtk-shared.js'
 import type { EnsureRtkResult } from './rtk.js'
 
-type PiCodingAgentModule = typeof import('@gsd/pi-coding-agent')
+type PiCodingAgentModule = typeof import('@loop24/pi-coding-agent')
 
 let piCodingAgentModulePromise: Promise<PiCodingAgentModule> | undefined
 
 function loadPiCodingAgentModule(): Promise<PiCodingAgentModule> {
-  return (piCodingAgentModulePromise ??= import('@gsd/pi-coding-agent'))
+  return (piCodingAgentModulePromise ??= import('@loop24/pi-coding-agent'))
 }
 
 // ---------------------------------------------------------------------------
@@ -62,7 +62,7 @@ function exitIfManagedResourcesAreNewer(currentAgentDir: string): void {
   process.stderr.write(
     `[gsd] ${chalk.yellow('Version mismatch detected')}\n` +
     `[gsd] Synced resources are from ${chalk.bold(`v${managedVersion}`)}, but this \`gsd\` binary is ${chalk.dim(`v${currentVersion}`)}.\n` +
-    `[gsd] Run ${chalk.bold('npm install -g @opengsd/gsd-pi@latest')} or ${chalk.bold('gsd upgrade')}, then try again.\n`,
+    `[gsd] Run ${chalk.bold('npm install -g @ericsson/loop24@latest')} or ${chalk.bold('gsd upgrade')}, then try again.\n`,
   )
   process.exit(1)
 }
@@ -247,7 +247,7 @@ if (shouldBypassManagedResourceMismatchGate(cliFlags.messages[0])) {
 // ---------------------------------------------------------------------------
 if (cliFlags.messages[0] === 'graph') {
   const sub = cliFlags.messages[1]
-  const { buildGraph, writeGraph, graphStatus, graphQuery, graphDiff, resolveGsdRoot } = await import('@gsd-build/mcp-server')
+  const { buildGraph, writeGraph, graphStatus, graphQuery, graphDiff, resolveGsdRoot } = await import('@loop24-build/mcp-server')
 
   const projectDir = process.cwd()
   const gsdRoot = resolveGsdRoot(projectDir)

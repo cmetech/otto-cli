@@ -8,7 +8,7 @@
  * use a single source of truth.
  */
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { existsSync, readFileSync } from "node:fs";
 import { saveFile } from "./files.js";

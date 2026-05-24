@@ -2,7 +2,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { CURSOR_MARKER, TUI, type Component, type Terminal } from "@gsd/pi-tui";
+import { CURSOR_MARKER, TUI, type Component, type Terminal } from "@loop24/pi-tui";
 
 class MockTTYTerminal implements Terminal {
   public writtenData: string[] = [];

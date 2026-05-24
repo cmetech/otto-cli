@@ -4,8 +4,8 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-import type { ExtensionAPI, ExtensionContext } from "@gsd/pi-coding-agent";
-import { Key } from "@gsd/pi-tui";
+import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
+import { Key } from "@loop24/pi-tui";
 
 import { SHORTCUTS } from "../shortcut-defs.js";
 import { shortcutDesc } from "../../shared/mod.js";

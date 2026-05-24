@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Interactive terminal footer renderer for workspace, model, usage, context, and extension status.
 
-import { type Component, truncateToWidth, visibleWidth } from "@gsd/pi-tui";
+import { type Component, truncateToWidth, visibleWidth } from "@loop24/pi-tui";
 import { BRAND_NAME } from "../../../config.js";
 import type { AgentSession } from "../../../core/agent-session.js";
 import type { ReadonlyFooterDataProvider } from "../../../core/footer-data-provider.js";

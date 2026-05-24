@@ -10,9 +10,9 @@
  */
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { ProcessTerminal } from "@gsd/pi-tui";
-import { TUI } from "@gsd/pi-tui";
-import type { Terminal } from "@gsd/pi-tui";
+import { ProcessTerminal } from "@loop24/pi-tui";
+import { TUI } from "@loop24/pi-tui";
+import type { Terminal } from "@loop24/pi-tui";
 
 /**
  * A mock terminal that tracks writes and render activity.

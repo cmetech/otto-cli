@@ -9,9 +9,9 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { listDescendants } from "@gsd/native";
-import type { AgentMessage } from "@gsd/pi-agent-core";
-import type { AssistantMessage, ImageContent, Message, Model, OAuthProviderId } from "@gsd/pi-ai";
+import { listDescendants } from "@loop24/native";
+import type { AgentMessage } from "@loop24/pi-agent-core";
+import type { AssistantMessage, ImageContent, Message, Model, OAuthProviderId } from "@loop24/pi-ai";
 import type {
 	AutocompleteItem,
 	EditorComponent,
@@ -21,7 +21,7 @@ import type {
 	OverlayHandle,
 	OverlayOptions,
 	SlashCommand,
-} from "@gsd/pi-tui";
+} from "@loop24/pi-tui";
 import {
 	CombinedAutocompleteProvider,
 	type Component,
@@ -37,7 +37,7 @@ import {
 	TruncatedText,
 	TUI,
 	visibleWidth,
-} from "@gsd/pi-tui";
+} from "@loop24/pi-tui";
 import { spawn, spawnSync } from "child_process";
 import {
 	APP_NAME,
@@ -831,7 +831,7 @@ export class InteractiveMode {
 		if (process.env.PI_SKIP_VERSION_CHECK || process.env.PI_OFFLINE) return undefined;
 
 		try {
-			const response = await fetch("https://registry.npmjs.org/@gsd/pi-coding-agent/latest", {
+			const response = await fetch("https://registry.npmjs.org/@loop24/pi-coding-agent/latest", {
 				signal: AbortSignal.timeout(10000),
 			});
 			if (!response.ok) return undefined;
@@ -3063,7 +3063,7 @@ export class InteractiveMode {
 	}
 
 	showNewVersionNotification(newVersion: string): void {
-		const action = theme.fg("accent", getUpdateInstruction("@gsd/pi-coding-agent"));
+		const action = theme.fg("accent", getUpdateInstruction("@loop24/pi-coding-agent"));
 		const updateInstruction = theme.fg("muted", `New version ${newVersion} is available. `) + action;
 		const changelogUrl = theme.fg(
 			"accent",

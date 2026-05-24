@@ -13,7 +13,7 @@ import assert from 'node:assert';
 import { existsSync, mkdtempSync, rmSync, writeFileSync, readFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { ExtensionCommandContext } from '@gsd/pi-coding-agent';
+import type { ExtensionCommandContext } from '@loop24/pi-coding-agent';
 import { runClaudeImportFlow, getClaudeSearchRoots, discoverClaudeSkills, discoverClaudePlugins } from '../claude-import.js';
 import { getMarketplaceFixtures } from './marketplace-test-fixtures.js';
 

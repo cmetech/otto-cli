@@ -16,8 +16,8 @@
 import { execSync } from 'node:child_process';
 import { basename, resolve } from 'node:path';
 import { EventEmitter } from 'node:events';
-import { RpcClient } from '@gsd-build/rpc-client';
-import type { RpcCostUpdateEvent, RpcExtensionUIRequest, RpcInitResult, SdkAgentEvent } from '@gsd-build/contracts';
+import { RpcClient } from '@loop24-build/rpc-client';
+import type { RpcCostUpdateEvent, RpcExtensionUIRequest, RpcInitResult, SdkAgentEvent } from '@loop24-build/contracts';
 import type {
   ManagedSession,
   StartSessionOptions,

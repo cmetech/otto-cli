@@ -7,7 +7,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { visibleWidth } from "@gsd/pi-tui";
+import { visibleWidth } from "@loop24/pi-tui";
 import { appendNotification, initNotificationStore, _resetNotificationStore } from "../notification-store.ts";
 import { NotificationOverlay, notificationOverlayOptions } from "../notification-overlay.ts";
 import { wrapVisibleText } from "../tui/render-kit.ts";

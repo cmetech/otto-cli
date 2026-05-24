@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: State-aware home menu for the bare /loop24 command.
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import { showNextAction } from "../shared/tui.js";
 import type { NextAction } from "../shared/next-action-ui.js";

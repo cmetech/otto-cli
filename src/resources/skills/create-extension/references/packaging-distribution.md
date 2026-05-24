@@ -39,7 +39,7 @@ If no `pi` manifest exists, auto-discovers:
 </convention_directories>
 
 <dependencies>
-- List `@gsd/pi-ai`, `@gsd/pi-coding-agent`, `@gsd/pi-tui`, `@sinclair/typebox` in `peerDependencies` with `"*"` — they're bundled by the runtime.
+- List `@loop24/pi-ai`, `@loop24/pi-coding-agent`, `@loop24/pi-tui`, `@sinclair/typebox` in `peerDependencies` with `"*"` — they're bundled by the runtime.
 - Other npm deps go in `dependencies`. The runtime runs `npm install` on package installation.
 </dependencies>
 

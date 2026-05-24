@@ -37,7 +37,7 @@ import {
 import {
   registerToolCompatibility,
   resetToolCompatibilityRegistry,
-} from "@gsd/pi-coding-agent";
+} from "@loop24/pi-coding-agent";
 
 function makeTempProject(): { dir: string; cleanup: () => void; restoreEnv: () => void } {
   const originalCwd = process.cwd();

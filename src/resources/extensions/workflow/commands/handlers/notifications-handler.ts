@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Handles /loop24 notifications commands and opens the notification history overlay.
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 import {
   readNotifications,

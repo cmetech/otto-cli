@@ -7,7 +7,7 @@ import test from "node:test";
 import { setupEditorSubmitHandler } from "./input-controller.js";
 import { ContextualTips } from "../../../core/contextual-tips.js";
 import type { InteractiveModeStateHost } from "../interactive-mode-state.js";
-import type { ImageContent } from "@gsd/pi-ai";
+import type { ImageContent } from "@loop24/pi-ai";
 
 /** Minimal mock host satisfying InteractiveModeStateHost + setupEditorSubmitHandler extras. */
 function createMockHost() {

@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { SettingsManager, getAllowedCommandPrefixes, SAFE_COMMAND_PREFIXES, setAllowedCommandPrefixes } from "@gsd/pi-coding-agent";
+import { SettingsManager, getAllowedCommandPrefixes, SAFE_COMMAND_PREFIXES, setAllowedCommandPrefixes } from "@loop24/pi-coding-agent";
 import { getFetchAllowedUrls, setFetchAllowedUrls } from "../resources/extensions/search-the-web/url-utils.ts";
 import { applySecurityOverrides } from "../security-overrides.ts";
 

@@ -1,4 +1,4 @@
-import type { Model } from "@gsd/pi-ai";
+import type { Model } from "@loop24/pi-ai";
 import { providerDisplayName } from "./model-selector.js";
 import {
 	Container,
@@ -10,7 +10,7 @@ import {
 	matchesKey,
 	Spacer,
 	Text,
-} from "@gsd/pi-tui";
+} from "@loop24/pi-tui";
 import { theme } from "../theme/theme.js";
 import { DynamicBorder } from "./dynamic-border.js";
 

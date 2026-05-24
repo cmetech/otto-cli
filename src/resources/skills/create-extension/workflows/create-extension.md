@@ -88,7 +88,7 @@ Only include non-empty arrays in `provides`. See `docs/extension-sdk/manifest-sp
 Start with the skeleton:
 
 ```typescript
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 
 export default function (pi: ExtensionAPI) {
   // Register events, tools, commands here
@@ -100,7 +100,7 @@ Then add capabilities based on Step 2. Reference the appropriate reference files
 **Tool registration pattern:**
 ```typescript
 import { Type } from "@sinclair/typebox";
-import { StringEnum } from "@gsd/pi-ai";
+import { StringEnum } from "@loop24/pi-ai";
 
 pi.registerTool({
   name: "my_tool",

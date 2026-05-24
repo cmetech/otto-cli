@@ -13,7 +13,7 @@
  * caller checks the result and handles control flow.
  */
 
-import type { ExtensionContext, ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionContext, ExtensionAPI } from "@loop24/pi-coding-agent";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { gsdProjectionRoot, resolveSlicePath, resolveMilestoneFile } from "./paths.js";
 import { resolveCanonicalMilestoneRoot } from "./worktree-manager.js";

@@ -6,7 +6,7 @@
 // `context_mode.enabled: false` in preferences.
 
 import { Type } from "@sinclair/typebox";
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 
 import { resolveCtxCwd } from "./dynamic-tools.js";
 

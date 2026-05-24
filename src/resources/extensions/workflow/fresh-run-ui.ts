@@ -1,7 +1,7 @@
 // Project/App: LOOP24
 // File Purpose: Clears stale run surfaces before starting new workflow work.
 
-import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
 
 const FRESH_RUN_COMMANDS = new Set([
   "",

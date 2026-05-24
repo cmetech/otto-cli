@@ -4,7 +4,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { visibleWidth } from "@gsd/pi-tui";
+import { visibleWidth } from "@loop24/pi-tui";
 
 function assertLinesFit(lines: string[], width: number): void {
   for (const line of lines) {

@@ -2,7 +2,7 @@
  * Remote Questions — configuration resolution and validation
  */
 
-import { AuthStorage } from "@gsd/pi-coding-agent";
+import { AuthStorage } from "@loop24/pi-coding-agent";
 import { loadEffectiveGSDPreferences, type RemoteQuestionsConfig } from "../workflow/preferences.js";
 import type { RemoteChannel } from "./types.js";
 

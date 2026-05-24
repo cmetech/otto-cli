@@ -5,8 +5,8 @@ import { existsSync, statSync, readFileSync, openSync, readSync, closeSync, read
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
-import type { Theme } from "@gsd/pi-coding-agent";
-import { matchesKey, Key } from "@gsd/pi-tui";
+import type { Theme } from "@loop24/pi-coding-agent";
+import { matchesKey, Key } from "@loop24/pi-tui";
 
 import { formatDuration } from "../shared/mod.js";
 import { formattedShortcutPair } from "./shortcut-defs.js";

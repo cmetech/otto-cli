@@ -1,4 +1,4 @@
-import { importExtensionModule, type ExtensionAPI, type ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import { importExtensionModule, type ExtensionAPI, type ExtensionCommandContext } from "@loop24/pi-coding-agent";
 import { BRAND } from "./strings.js";
 
 type StopAutoFn = (ctx: ExtensionCommandContext, pi: ExtensionAPI, reason?: string) => Promise<void>;

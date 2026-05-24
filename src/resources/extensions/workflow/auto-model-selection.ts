@@ -4,9 +4,9 @@
  * and fallback chains.
  */
 
-import type { Api, Model } from "@gsd/pi-ai";
-import { getProviderCapabilities } from "@gsd/pi-ai";
-import type { ExtensionAPI, ExtensionContext } from "@gsd/pi-coding-agent";
+import type { Api, Model } from "@loop24/pi-ai";
+import { getProviderCapabilities } from "@loop24/pi-ai";
+import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
 import type { WorkflowPreferences } from "./preferences.js";
 import { resolveModelWithFallbacksForUnit, resolveDynamicRoutingConfig } from "./preferences.js";
 import type { ComplexityTier } from "./complexity-classifier.js";

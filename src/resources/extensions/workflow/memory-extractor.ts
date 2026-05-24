@@ -5,8 +5,8 @@
 // (mutex guard). Fire-and-forget — never blocks auto-mode.
 
 import { readFileSync, statSync } from 'node:fs';
-import type { ExtensionContext } from '@gsd/pi-coding-agent';
-import type { Api, AssistantMessage, Model } from '@gsd/pi-ai';
+import type { ExtensionContext } from '@loop24/pi-coding-agent';
+import type { Api, AssistantMessage, Model } from '@loop24/pi-ai';
 import {
   getActiveMemories,
   isUnitProcessed,
@@ -98,7 +98,7 @@ export function buildMemoryLLMCall(ctx: ExtensionContext): LLMCallFn | null {
     // Expose on the returned fn so tests can await resolution deterministically
     // (avoids arbitrary setTimeout polling for an internal microtask).
     const llmCall = async (system: string, user: string): Promise<string> => {
-      const { completeSimple } = await import('@gsd/pi-ai');
+      const { completeSimple } = await import('@loop24/pi-ai');
       const resolvedApiKey = await resolvedKeyPromise;
       const result: AssistantMessage = await completeSimple(selectedModel, {
         systemPrompt: system,

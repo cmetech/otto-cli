@@ -67,7 +67,7 @@ const VERSION_TIMEOUT_MS = 5_000
 const AUTH_TIMEOUT_MS = 15_000
 
 function debugLog(...parts: unknown[]): void {
-  if (process.env.GSD_CLAUDE_DEBUG) {
+  if ((process.env.LOOP24_CLAUDE_DEBUG ?? process.env.GSD_CLAUDE_DEBUG)) {
     process.stderr.write(`[claude-cli-check] ${parts.map(p => (typeof p === 'string' ? p : JSON.stringify(p))).join(' ')}\n`)
   }
 }

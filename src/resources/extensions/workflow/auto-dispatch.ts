@@ -587,7 +587,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
           midTitle,
           basePath,
           structuredQuestionsAvailable,
-          { headless: !!process.env.GSD_HEADLESS },
+          { headless: !!(process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) },
         ),
       };
     },
@@ -645,7 +645,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
           uatContent ?? "",
           basePath,
         ),
-        pauseAfterDispatch: !process.env.GSD_HEADLESS && uatType !== "artifact-driven" && uatType !== "browser-executable" && uatType !== "runtime-executable",
+        pauseAfterDispatch: !(process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) && uatType !== "artifact-driven" && uatType !== "browser-executable" && uatType !== "runtime-executable",
       };
     },
   },
@@ -737,7 +737,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
           midTitle,
           basePath,
           structuredQuestionsAvailable,
-          { headless: !!process.env.GSD_HEADLESS },
+          { headless: !!(process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) },
         ),
       };
     },
@@ -905,7 +905,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
           midTitle,
           basePath,
           structuredQuestionsAvailable,
-          { headless: !!process.env.GSD_HEADLESS },
+          { headless: !!(process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) },
         ),
       };
     },

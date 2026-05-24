@@ -27,7 +27,7 @@ export function applySecurityOverrides(settingsManager: SettingsManager): void {
   }
 
   // --- Fetch URL allowlist (SSRF exemptions) ---
-  const envUrls = process.env.GSD_FETCH_ALLOWED_URLS
+  const envUrls = (process.env.LOOP24_FETCH_ALLOWED_URLS ?? process.env.GSD_FETCH_ALLOWED_URLS)
   if (envUrls) {
     const urls = envUrls.split(',').map(s => s.trim()).filter(Boolean)
     if (urls.length > 0) {

@@ -108,7 +108,7 @@ function renderMarkdown({ summary, history, binaryPath }) {
 function main() {
   const outputIndex = process.argv.indexOf('--output')
   const outputPath = outputIndex !== -1 ? process.argv[outputIndex + 1] : null
-  const binaryPath = process.env.GSD_RTK_PATH || getManagedRtkPath()
+  const binaryPath = (process.env.LOOP24_RTK_PATH ?? process.env.GSD_RTK_PATH) || getManagedRtkPath()
 
   if (!binaryPath) {
     throw new Error('RTK binary path not resolved')

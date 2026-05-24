@@ -15,7 +15,7 @@ export interface UokFlags {
 }
 
 function envForcesLegacyFallback(): boolean {
-  const raw = process.env.GSD_UOK_FORCE_LEGACY ?? process.env.GSD_UOK_LEGACY_FALLBACK;
+  const raw = (process.env.LOOP24_UOK_FORCE_LEGACY ?? process.env.GSD_UOK_FORCE_LEGACY) ?? (process.env.LOOP24_UOK_LEGACY_FALLBACK ?? process.env.GSD_UOK_LEGACY_FALLBACK);
   if (!raw) return false;
   const normalized = raw.trim().toLowerCase();
   return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";

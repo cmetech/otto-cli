@@ -199,7 +199,7 @@ async function runQuickTaskChoice(ctx: ExtensionCommandContext, pi: ExtensionAPI
 
 function isNonInteractiveContext(ctx: ExtensionCommandContext): boolean {
   if (!ctx.hasUI) return true;
-  return process.env.GSD_HEADLESS === "1" || process.env.GSD_WEB_BRIDGE_TUI === "1";
+  return (process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) === "1" || (process.env.LOOP24_WEB_BRIDGE_TUI ?? process.env.GSD_WEB_BRIDGE_TUI) === "1";
 }
 
 /**

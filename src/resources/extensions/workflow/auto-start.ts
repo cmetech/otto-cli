@@ -754,7 +754,7 @@ export async function bootstrapAutoSession(
 
   try {
     // Validate GSD_PROJECT_ID early so the user gets immediate feedback
-    const customProjectId = process.env.GSD_PROJECT_ID;
+    const customProjectId = (process.env.LOOP24_PROJECT_ID ?? process.env.GSD_PROJECT_ID);
     if (customProjectId && !validateProjectId(customProjectId)) {
       ctx.ui.notify(
         `GSD_PROJECT_ID must contain only alphanumeric characters, hyphens, and underscores. Got: "${customProjectId}"`,
@@ -947,7 +947,7 @@ export async function bootstrapAutoSession(
     let state = await deriveState(base);
 
     if (
-      process.env.GSD_HEADLESS === "1" &&
+      (process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) === "1" &&
       orphanAuditRecovered &&
       !state.activeMilestone &&
       state.phase === "complete"
@@ -1392,7 +1392,7 @@ export async function bootstrapAutoSession(
     // GSD_WORKER_MODEL is injected by the coordinator when parallel.worker_model
     // is configured, so parallel milestone workers use a cheaper model than the
     // coordinator session (e.g. Haiku for execution, Sonnet for planning).
-    const workerModelOverride = process.env.GSD_WORKER_MODEL;
+    const workerModelOverride = (process.env.LOOP24_WORKER_MODEL ?? process.env.GSD_WORKER_MODEL);
     if (workerModelOverride && (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) === "1") {
       const availableModels = ctx.modelRegistry.getAvailable();
       const { resolveModelId } = await import("./auto-model-selection.js");

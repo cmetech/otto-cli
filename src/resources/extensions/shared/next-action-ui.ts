@@ -219,7 +219,7 @@ export async function showNextAction(
 
 function isInteractiveUIContext(ctx: ExtensionCommandContext): boolean {
 	if (!ctx.hasUI) return false;
-	if (process.env.GSD_HEADLESS === "1") return false;
+	if ((process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) === "1") return false;
 	const uiMode = (ctx.ui as { mode?: string } | undefined)?.mode;
 	if (uiMode === "rpc" || uiMode === "headless") return false;
 	return true;

@@ -34,7 +34,7 @@ let _loadedSuccessfully = false;
 function loadNative(): Record<string, unknown> {
   const errors: string[] = [];
 
-  if (process.env.GSD_NATIVE_DISABLE === "1") {
+  if ((process.env.LOOP24_NATIVE_DISABLE ?? process.env.GSD_NATIVE_DISABLE) === "1") {
     errors.push("disabled by GSD_NATIVE_DISABLE=1");
   } else {
     // 1. Try the platform-specific npm optional dependency

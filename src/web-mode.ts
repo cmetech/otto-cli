@@ -588,15 +588,22 @@ export async function launchWebMode(
     ...(deps.env ?? process.env),
     HOSTNAME: host,
     PORT: String(port),
+    LOOP24_WEB_HOST: host,
     GSD_WEB_HOST: host,
+    LOOP24_WEB_PORT: String(port),
     GSD_WEB_PORT: String(port),
+    LOOP24_WEB_AUTH_TOKEN: authToken,
     GSD_WEB_AUTH_TOKEN: authToken,
+    LOOP24_WEB_PROJECT_CWD: options.cwd,
     GSD_WEB_PROJECT_CWD: options.cwd,
+    LOOP24_WEB_PROJECT_SESSIONS_DIR: options.projectSessionsDir,
     GSD_WEB_PROJECT_SESSIONS_DIR: options.projectSessionsDir,
+    LOOP24_WEB_PACKAGE_ROOT: resolution.packageRoot,
     GSD_WEB_PACKAGE_ROOT: resolution.packageRoot,
+    LOOP24_WEB_HOST_KIND: resolution.kind,
     GSD_WEB_HOST_KIND: resolution.kind,
     ...(resolution.kind === 'source-dev' ? { NEXT_PUBLIC_GSD_DEV: '1' } : {}),
-    ...(options.allowedOrigins?.length ? { GSD_WEB_ALLOWED_ORIGINS: options.allowedOrigins.join(',') } : {}),
+    ...(options.allowedOrigins?.length ? { LOOP24_WEB_ALLOWED_ORIGINS: options.allowedOrigins.join(','), GSD_WEB_ALLOWED_ORIGINS: options.allowedOrigins.join(',') } : {}),
   }
 
   try {

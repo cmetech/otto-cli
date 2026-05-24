@@ -1580,7 +1580,7 @@ export async function stopAuto(
         allMilestonesComplete: options.completionWidget.allMilestonesComplete,
         basePath: s.originalBasePath || s.basePath || null,
       });
-      if (process.env.GSD_HEADLESS === "1") {
+      if ((process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) === "1") {
         ctx.ui.notify(`${stopNotificationPrefix}.`, "info");
       }
     }

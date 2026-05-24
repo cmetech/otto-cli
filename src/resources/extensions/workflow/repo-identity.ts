@@ -285,7 +285,7 @@ export function validateProjectId(id: string): boolean {
  * which worktree the caller is inside.
  */
 export function repoIdentity(basePath: string): string {
-  const projectId = process.env.GSD_PROJECT_ID;
+  const projectId = (process.env.LOOP24_PROJECT_ID ?? process.env.GSD_PROJECT_ID);
   if (projectId) {
     return projectId;
   }
@@ -310,7 +310,7 @@ export function repoIdentity(basePath: string): string {
  * otherwise `~/.loop24/projects/<hash>`.
  */
 export function externalWorkflowRoot(basePath: string): string {
-  const base = process.env.GSD_STATE_DIR || workflowHome();
+  const base = (process.env.LOOP24_STATE_DIR ?? process.env.GSD_STATE_DIR) || workflowHome();
   return join(base, "projects", repoIdentity(basePath));
 }
 
@@ -319,7 +319,7 @@ export function externalWorkflowRoot(basePath: string): string {
  * Honors GSD_STATE_DIR override before falling back to GSD_HOME.
  */
 export function externalProjectsRoot(): string {
-  const base = process.env.GSD_STATE_DIR || workflowHome();
+  const base = (process.env.LOOP24_STATE_DIR ?? process.env.GSD_STATE_DIR) || workflowHome();
   return join(base, "projects");
 }
 
@@ -428,7 +428,7 @@ function hasProjectState(externalPath: string): boolean {
  * Returns the resolved external path (may differ from the computed identity).
  */
 function resolveExternalPathWithRecovery(projectPath: string): { path: string; identity: string } {
-  const base = process.env.GSD_STATE_DIR || workflowHome();
+  const base = (process.env.LOOP24_STATE_DIR ?? process.env.GSD_STATE_DIR) || workflowHome();
   const computedId = repoIdentity(projectPath);
   const computedPath = join(base, "projects", computedId);
   const computedHasState = hasProjectState(computedPath);

@@ -1000,7 +1000,7 @@ export function shouldBlockWorktreeWrite(
 ): { block: boolean; reason?: string } {
   const tool = canonicalToolName(toolName);
   if (!PLANNING_WRITE_TOOLS.has(tool)) return { block: false };
-  if (process.env.GSD_DISABLE_WORKTREE_WRITE_GUARD === "1") return { block: false };
+  if ((process.env.LOOP24_DISABLE_WORKTREE_WRITE_GUARD ?? process.env.GSD_DISABLE_WORKTREE_WRITE_GUARD) === "1") return { block: false };
   if (getIsolationMode(effectiveBasePath) !== "worktree") return { block: false };
   if (currentUnitType && WORKTREE_GATE_BOOTSTRAP_UNITS.has(currentUnitType)) return { block: false };
 

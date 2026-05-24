@@ -32,7 +32,7 @@ for (const [provider, models] of Object.entries(CUSTOM_MODELS)) {
 
 // E2E-test-only: register the fake model when GSD_FAKE_LLM_TRANSCRIPT is set.
 // Env var must be set BEFORE this module is imported. See providers/fake.ts.
-if (process.env.GSD_FAKE_LLM_TRANSCRIPT) {
+if ((process.env.LOOP24_FAKE_LLM_TRANSCRIPT ?? process.env.GSD_FAKE_LLM_TRANSCRIPT)) {
 	const providerModels = new Map<string, Model<Api>>();
 	providerModels.set(FAKE_MODEL_ID, FAKE_MODEL as Model<Api>);
 	modelRegistry.set(FAKE_PROVIDER, providerModels);

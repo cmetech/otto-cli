@@ -161,7 +161,7 @@ export function warnIfManifestHasMissingSkills(
 ): void {
   // Strict mode is intentionally opt-in via exactly "1"; values like "0" or
   // "false" must preserve the normal silent manifest behavior.
-  if (process.env.GSD_SKILL_MANIFEST_STRICT !== "1") return;
+  if ((process.env.LOOP24_SKILL_MANIFEST_STRICT ?? process.env.GSD_SKILL_MANIFEST_STRICT) !== "1") return;
   const allowlist = resolveSkillManifest(unitType);
   if (!allowlist) return;
   for (const name of allowlist) {

@@ -15,7 +15,7 @@ import { builtinThemes } from "./themes.js";
 // Issue #453: native preview highlighting can wedge the entire interactive
 // session after a successful file tool. Keep the safer plain-text path as the
 // default and allow native highlighting only as an explicit opt-in.
-const NATIVE_TUI_HIGHLIGHT_ENABLED = process.env.GSD_ENABLE_NATIVE_TUI_HIGHLIGHT === "1";
+const NATIVE_TUI_HIGHLIGHT_ENABLED = (process.env.LOOP24_ENABLE_NATIVE_TUI_HIGHLIGHT ?? process.env.GSD_ENABLE_NATIVE_TUI_HIGHLIGHT) === "1";
 
 // ============================================================================
 // Types & Schema

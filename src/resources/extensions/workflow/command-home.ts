@@ -170,7 +170,7 @@ export async function showWorkflowHome(
   const state = await deriveState(basePath);
   const model = buildHomeModel(state);
 
-  if (!ctx.hasUI || process.env.GSD_HEADLESS === "1") {
+  if (!ctx.hasUI || (process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) === "1") {
     ctx.ui.notify(formatHomeText(model), "info");
     return;
   }

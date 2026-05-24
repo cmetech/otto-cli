@@ -202,7 +202,7 @@ export function resetApiProviders(): void {
  * fails loudly instead of silently falling through to a real provider.
  */
 function registerFakeProviderIfEnabled(): void {
-	const transcriptPath = process.env.GSD_FAKE_LLM_TRANSCRIPT;
+	const transcriptPath = (process.env.LOOP24_FAKE_LLM_TRANSCRIPT ?? process.env.GSD_FAKE_LLM_TRANSCRIPT);
 	if (!transcriptPath) return;
 	try {
 		registerApiProvider(createFakeProvider({ transcriptPath }), "fake");

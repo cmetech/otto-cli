@@ -103,6 +103,7 @@ export async function runEvidenceCommand(command, env) {
 export async function collectLegacyCleanupEvidence(opts) {
   const env = {
     ...process.env,
+    LOOP24_LEGACY_TELEMETRY_FILE: opts.file,
     GSD_LEGACY_TELEMETRY_FILE: opts.file,
   };
 

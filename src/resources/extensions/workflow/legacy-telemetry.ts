@@ -84,7 +84,7 @@ function emitLegacyDiagnostic(counter: LegacyTelemetryCounter): void {
 }
 
 function persistLegacyTelemetry(): void {
-  const outputPath = process.env.GSD_LEGACY_TELEMETRY_FILE?.trim();
+  const outputPath = (process.env.LOOP24_LEGACY_TELEMETRY_FILE ?? process.env.GSD_LEGACY_TELEMETRY_FILE)?.trim();
   if (!outputPath) return;
 
   try {

@@ -60,9 +60,9 @@ function exitIfManagedResourcesAreNewer(currentAgentDir: string): void {
   }
 
   process.stderr.write(
-    `[gsd] ${chalk.yellow('Version mismatch detected')}\n` +
-    `[gsd] Synced resources are from ${chalk.bold(`v${managedVersion}`)}, but this \`gsd\` binary is ${chalk.dim(`v${currentVersion}`)}.\n` +
-    `[gsd] Run ${chalk.bold('npm install -g @ericsson/loop24@latest')} or ${chalk.bold('gsd upgrade')}, then try again.\n`,
+    `[otto] ${chalk.yellow('Version mismatch detected')}\n` +
+    `[otto] Synced resources are from ${chalk.bold(`v${managedVersion}`)}, but this \`gsd\` binary is ${chalk.dim(`v${currentVersion}`)}.\n` +
+    `[otto] Run ${chalk.bold('npm install -g @ericsson/loop24@latest')} or ${chalk.bold('gsd upgrade')}, then try again.\n`,
   )
   process.exit(1)
 }
@@ -162,7 +162,7 @@ function applyModelOverride(
   if (match) {
     void session.setModel(match)
   } else {
-    process.stderr.write(`[gsd] Warning: Model "${modelFlag}" not found. Using configured default.\n`)
+    process.stderr.write(`[otto] Warning: Model "${modelFlag}" not found. Using configured default.\n`)
   }
 }
 
@@ -220,7 +220,7 @@ async function doRtkBootstrap(): Promise<void> {
   }
   markStartup('bootstrapRtk')
   if (!rtkStatus.available && rtkStatus.supported && rtkStatus.enabled && rtkStatus.reason) {
-    process.stderr.write(`[gsd] Warning: RTK unavailable — continuing without shell-command compression (${rtkStatus.reason}).\n`)
+    process.stderr.write(`[otto] Warning: RTK unavailable — continuing without shell-command compression (${rtkStatus.reason}).\n`)
   }
 }
 function ensureRtkBootstrap(): Promise<void> {
@@ -276,7 +276,7 @@ if (cliFlags.messages[0] === 'graph') {
         process.stdout.write(`  lastBuild: ${result.lastBuild ?? 'n/a'}\n`)
       }
     } catch (err) {
-      process.stderr.write(`[gsd] graph status failed: ${err instanceof Error ? err.message : String(err)}\n`)
+      process.stderr.write(`[otto] graph status failed: ${err instanceof Error ? err.message : String(err)}\n`)
       process.exit(1)
     }
   } else if (sub === 'query') {
@@ -296,7 +296,7 @@ if (cliFlags.messages[0] === 'graph') {
         }
       }
     } catch (err) {
-      process.stderr.write(`[gsd] graph query failed: ${err instanceof Error ? err.message : String(err)}\n`)
+      process.stderr.write(`[otto] graph query failed: ${err instanceof Error ? err.message : String(err)}\n`)
       process.exit(1)
     }
   } else if (sub === 'diff') {
@@ -309,7 +309,7 @@ if (cliFlags.messages[0] === 'graph') {
       process.stdout.write(`  edges added:    ${result.edges.added.length}\n`)
       process.stdout.write(`  edges removed:  ${result.edges.removed.length}\n`)
     } catch (err) {
-      process.stderr.write(`[gsd] graph diff failed: ${err instanceof Error ? err.message : String(err)}\n`)
+      process.stderr.write(`[otto] graph diff failed: ${err instanceof Error ? err.message : String(err)}\n`)
       process.exit(1)
     }
   } else {
@@ -671,7 +671,7 @@ if (!isPrintMode) {
 // Warn if terminal is too narrow for readable output
 if (!isPrintMode && process.stdout.columns && process.stdout.columns < 40) {
   process.stderr.write(
-    chalk.yellow(`[gsd] Terminal width is ${process.stdout.columns} columns (minimum recommended: 40). Output may be unreadable.\n`),
+    chalk.yellow(`[otto] Terminal width is ${process.stdout.columns} columns (minimum recommended: 40). Output may be unreadable.\n`),
   )
 }
 

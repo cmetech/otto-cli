@@ -48,7 +48,7 @@ export function replaySliceComplete(milestoneId: string, sliceId: string, ts: st
     const incompleteTasks = tasks.filter(t => !isClosedStatus(t.status));
     if (incompleteTasks.length > 0) {
       process.stderr.write(
-        `[gsd] reconcile: skipping complete_slice replay for ${sliceId} — ` +
+        `[otto] reconcile: skipping complete_slice replay for ${sliceId} — ` +
         `${incompleteTasks.length} task(s) still pending\n`,
       );
       return;

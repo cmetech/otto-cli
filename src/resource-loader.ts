@@ -415,7 +415,7 @@ function reconcileSymlink(link: string, target: string): void {
   try {
     symlinkSync(target, link, 'junction')
   } catch (err) {
-    console.error(`[gsd] WARN: Failed to symlink ${link} → ${target}: ${err instanceof Error ? err.message : err}`)
+    console.error(`[otto] WARN: Failed to symlink ${link} → ${target}: ${err instanceof Error ? err.message : err}`)
   }
 }
 
@@ -460,7 +460,7 @@ export function reconcileMergedNodeModules(
       try { symlinkSync(join(hoisted, entry.name), join(agentNodeModules, entry.name), 'junction'); linkedCount++ } catch { /* skip individual */ }
     }
   } catch (err) {
-    console.error(`[gsd] WARN: Failed to read hoisted node_modules at ${hoisted}: ${err instanceof Error ? err.message : err}`)
+    console.error(`[otto] WARN: Failed to read hoisted node_modules at ${hoisted}: ${err instanceof Error ? err.message : err}`)
   }
 
   // Overlay internal node_modules entries that weren't hoisted.
@@ -475,7 +475,7 @@ export function reconcileMergedNodeModules(
       try { symlinkSync(join(internal, entry.name), link, 'junction'); linkedCount++ } catch { /* skip individual */ }
     }
   } catch (err) {
-    console.error(`[gsd] WARN: Failed to read internal node_modules at ${internal}: ${err instanceof Error ? err.message : err}`)
+    console.error(`[otto] WARN: Failed to read internal node_modules at ${internal}: ${err instanceof Error ? err.message : err}`)
   }
 
   // Only stamp marker if we actually linked something — avoids caching a broken state

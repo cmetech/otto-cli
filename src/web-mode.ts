@@ -210,13 +210,13 @@ export function stopWebMode(deps: Pick<WebModeDeps, 'pidFilePath' | 'readPidFile
     for (const [cwd, entry] of entries) {
       const result = killPid(entry.pid)
       if (result === 'killed') {
-        stderr.write(`[gsd] Stopped web server for ${cwd} (pid=${entry.pid})\n`)
+        stderr.write(`[otto] Stopped web server for ${cwd} (pid=${entry.pid})\n`)
         stopped++
       } else if (result === 'already-dead') {
-        stderr.write(`[gsd] Web server for ${cwd} was already stopped (pid=${entry.pid})\n`)
+        stderr.write(`[otto] Web server for ${cwd} was already stopped (pid=${entry.pid})\n`)
         stopped++
       } else {
-        stderr.write(`[gsd] Failed to stop web server for ${cwd}: ${result.error}\n`)
+        stderr.write(`[otto] Failed to stop web server for ${cwd}: ${result.error}\n`)
       }
       unregisterInstance(cwd)
     }
@@ -224,7 +224,7 @@ export function stopWebMode(deps: Pick<WebModeDeps, 'pidFilePath' | 'readPidFile
     const deletePid = deps.deletePidFile ?? deletePidFile
     const pidFilePath = deps.pidFilePath ?? defaultWebPidFilePath
     deletePid(pidFilePath)
-    stderr.write(`[gsd] Stopped ${stopped} instance${stopped === 1 ? '' : 's'}.\n`)
+    stderr.write(`[otto] Stopped ${stopped} instance${stopped === 1 ? '' : 's'}.\n`)
     return { ok: true, stoppedCount: stopped }
   }
 
@@ -234,19 +234,19 @@ export function stopWebMode(deps: Pick<WebModeDeps, 'pidFilePath' | 'readPidFile
     const registry = readInstanceRegistry()
     const entry = registry[resolvedCwd]
     if (!entry) {
-      stderr.write(`[gsd] No web server running for ${resolvedCwd}\n`)
+      stderr.write(`[otto] No web server running for ${resolvedCwd}\n`)
       return { ok: false, reason: 'not-found' }
     }
     const result = killPid(entry.pid)
     unregisterInstance(resolvedCwd)
     if (result === 'killed') {
-      stderr.write(`[gsd] Stopped web server for ${resolvedCwd} (pid=${entry.pid})\n`)
+      stderr.write(`[otto] Stopped web server for ${resolvedCwd} (pid=${entry.pid})\n`)
       return { ok: true, stoppedCount: 1 }
     } else if (result === 'already-dead') {
-      stderr.write(`[gsd] Web server for ${resolvedCwd} was already stopped — cleared stale entry.\n`)
+      stderr.write(`[otto] Web server for ${resolvedCwd} was already stopped — cleared stale entry.\n`)
       return { ok: true, stoppedCount: 1 }
     } else {
-      stderr.write(`[gsd] Failed to stop web server for ${resolvedCwd}: ${result.error}\n`)
+      stderr.write(`[otto] Failed to stop web server for ${resolvedCwd}: ${result.error}\n`)
       return { ok: false, reason: result.error }
     }
   }
@@ -263,22 +263,22 @@ function stopLegacyPidFile(deps: Pick<WebModeDeps, 'pidFilePath' | 'readPidFile'
 
   const pid = readPid(pidFilePath)
   if (pid === null) {
-    stderr.write(`[gsd] Web server is not running (no PID file found)\n`)
+    stderr.write(`[otto] Web server is not running (no PID file found)\n`)
     return { ok: false, reason: 'no-pid-file' }
   }
 
-  stderr.write(`[gsd] Stopping web server (pid=${pid})…\n`)
+  stderr.write(`[otto] Stopping web server (pid=${pid})…\n`)
 
   const result = killPid(pid)
   deletePid(pidFilePath)
   if (result === 'killed') {
-    stderr.write(`[gsd] Web server stopped.\n`)
+    stderr.write(`[otto] Web server stopped.\n`)
     return { ok: true }
   } else if (result === 'already-dead') {
-    stderr.write(`[gsd] Web server was already stopped — cleared stale PID file.\n`)
+    stderr.write(`[otto] Web server was already stopped — cleared stale PID file.\n`)
     return { ok: true }
   } else {
-    stderr.write(`[gsd] Failed to stop web server: ${result.error}\n`)
+    stderr.write(`[otto] Failed to stop web server: ${result.error}\n`)
     return { ok: false, reason: result.error }
   }
 }
@@ -359,10 +359,10 @@ function needsWindowsShell(command: string, platform: NodeJS.Platform): boolean 
 
 function formatLaunchStatus(status: WebModeLaunchStatus): string {
   if (status.ok) {
-    return `[gsd] Web mode startup: status=started cwd=${status.cwd} port=${status.port} host=${status.hostPath} kind=${status.hostKind} url=${status.url}\n`
+    return `[otto] Web mode startup: status=started cwd=${status.cwd} port=${status.port} host=${status.hostPath} kind=${status.hostKind} url=${status.url}\n`
   }
 
-  return `[gsd] Web mode startup: status=failed cwd=${status.cwd} port=${status.port ?? 'n/a'} host=${status.hostPath ?? 'unresolved'} kind=${status.hostKind} reason=${status.failureReason}\n`
+  return `[otto] Web mode startup: status=failed cwd=${status.cwd} port=${status.port ?? 'n/a'} host=${status.hostPath ?? 'unresolved'} kind=${status.hostKind} reason=${status.failureReason}\n`
 }
 
 function emitLaunchStatus(stderr: WritableLike, status: WebModeLaunchStatus): void {
@@ -475,7 +475,7 @@ async function waitForBootReady(url: string, timeoutMs = 180_000, stderr?: Writa
       if (response.statusCode >= 200 && response.statusCode < 300) {
         if (!hostUp) {
           hostUp = true
-          stderr?.write(`[gsd] Web host ready.\n`)
+          stderr?.write(`[otto] Web host ready.\n`)
         }
         consecutive5xx = 0
         // Host responded successfully — it's ready for the browser
@@ -508,9 +508,9 @@ async function waitForBootReady(url: string, timeoutMs = 180_000, stderr?: Writa
     if (now - lastTickAt >= TICKER_INTERVAL_MS) {
       lastTickAt = now
       if (hostUp) {
-        stderr?.write(`[gsd] Still waiting… (${elapsed()})\n`)
+        stderr?.write(`[otto] Still waiting… (${elapsed()})\n`)
       } else {
-        stderr?.write(`[gsd] Waiting for web host… (${elapsed()})\n`)
+        stderr?.write(`[otto] Waiting for web host… (${elapsed()})\n`)
       }
     }
 
@@ -532,14 +532,14 @@ function cleanupStaleInstance(cwd: string, stderr: WritableLike, registryPath?: 
   const stale = registry[key]
   if (!stale) return
 
-  stderr.write(`[gsd] Cleaning up stale web server for ${key} (pid=${stale.pid}, port=${stale.port})…\n`)
+  stderr.write(`[otto] Cleaning up stale web server for ${key} (pid=${stale.pid}, port=${stale.port})…\n`)
   const result = killPid(stale.pid)
   if (result === 'killed') {
-    stderr.write(`[gsd] Killed stale web server (pid=${stale.pid}).\n`)
+    stderr.write(`[otto] Killed stale web server (pid=${stale.pid}).\n`)
   } else if (result === 'already-dead') {
-    stderr.write(`[gsd] Stale web server was already stopped (pid=${stale.pid}) — clearing entry.\n`)
+    stderr.write(`[otto] Stale web server was already stopped (pid=${stale.pid}) — clearing entry.\n`)
   } else {
-    stderr.write(`[gsd] Could not kill stale web server (pid=${stale.pid}): ${result.error}\n`)
+    stderr.write(`[otto] Could not kill stale web server (pid=${stale.pid}): ${result.error}\n`)
   }
   unregisterInstance(cwd, registryPath)
 }
@@ -574,7 +574,7 @@ export async function launchWebMode(
     return failure
   }
 
-  stderr.write(`[gsd] Starting web mode…\n`)
+  stderr.write(`[otto] Starting web mode…\n`)
 
   // Kill any stale server instance for this project before reserving a port.
   // This prevents EADDRINUSE when the previous `gsd --web` was terminated
@@ -607,7 +607,7 @@ export async function launchWebMode(
   }
 
   try {
-    stderr.write(`[gsd] Initialising resources…\n`)
+    stderr.write(`[otto] Initialising resources…\n`)
     const bootstrap = deps.initResources ? { initResources: deps.initResources } : await loadResourceBootstrap()
     bootstrap.initResources(options.agentDir)
   } catch (error) {
@@ -636,7 +636,7 @@ export async function launchWebMode(
     deps.execPath ?? process.execPath,
   )
 
-  stderr.write(`[gsd] Launching web host on port ${port}…\n`)
+  stderr.write(`[otto] Launching web host on port ${port}…\n`)
 
   const spawnResult = await spawnDetachedProcess(
     deps.spawn ?? ((command, args, spawnOptions) => spawn(command, args, spawnOptions)),
@@ -704,7 +704,7 @@ export async function launchWebMode(
     try {
       ;(deps.openBrowser ?? openBrowser)(authenticatedUrl)
     } catch (browserError) {
-      stderr.write(`[gsd] Could not open browser: ${browserError instanceof Error ? browserError.message : String(browserError)}\n`)
+      stderr.write(`[otto] Could not open browser: ${browserError instanceof Error ? browserError.message : String(browserError)}\n`)
     }
   } catch (error) {
     const failure: WebModeLaunchFailure = {
@@ -737,7 +737,7 @@ export async function launchWebMode(
     hostPath: resolution.entryPath,
     hostRoot: resolution.hostRoot,
   }
-  stderr.write(`[gsd] Ready → ${authenticatedUrl}\n`)
+  stderr.write(`[otto] Ready → ${authenticatedUrl}\n`)
   emitLaunchStatus(stderr, success)
   return success
 }

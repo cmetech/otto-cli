@@ -35,25 +35,25 @@ export function handleRecoverableExtensionProcessError(err: Error): boolean {
       process.exit(0);
     }
     process.stderr.write(
-      `[gsd] swallowed EPIPE (syscall=${(err as NodeJS.ErrnoException).syscall ?? "?"}); see ~/.gsd/crash/ for details\n`,
+      `[otto] swallowed EPIPE (syscall=${(err as NodeJS.ErrnoException).syscall ?? "?"}); see ~/.gsd/crash/ for details\n`,
     );
     return true;
   }
   if ((err as NodeJS.ErrnoException).code === "EIO") {
     const syscall = (err as NodeJS.ErrnoException).syscall;
     if (syscall === "read") {
-      process.stderr.write(`[gsd] EIO: ${err.message}\n`);
+      process.stderr.write(`[otto] EIO: ${err.message}\n`);
       return true;
     }
   }
   if ((err as NodeJS.ErrnoException).code === "ENOENT") {
     const syscall = (err as NodeJS.ErrnoException).syscall;
     if (syscall?.startsWith("spawn")) {
-      process.stderr.write(`[gsd] spawn ENOENT: ${(err as any).path ?? "unknown"} — command not found\n`);
+      process.stderr.write(`[otto] spawn ENOENT: ${(err as any).path ?? "unknown"} — command not found\n`);
       return true;
     }
     if (syscall === "uv_cwd") {
-      process.stderr.write(`[gsd] ENOENT (${syscall}): ${err.message}\n`);
+      process.stderr.write(`[otto] ENOENT (${syscall}): ${err.message}\n`);
       return true;
     }
   }
@@ -99,7 +99,7 @@ export function registerWorkflowExtension(pi: ExtensionAPI): void {
       // Non-fatal — emitters simply become no-ops if this import fails, but
       // surface the failure so silent bootstrap breakage is debuggable.
       process.stderr.write(
-        `[gsd] Failed to bootstrap hook-emitter bridge: ${err instanceof Error ? err.stack ?? err.message : String(err)}\n`,
+        `[otto] Failed to bootstrap hook-emitter bridge: ${err instanceof Error ? err.stack ?? err.message : String(err)}\n`,
       );
     });
 

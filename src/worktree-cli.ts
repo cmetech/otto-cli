@@ -92,7 +92,7 @@ function toErrorMessage(error: unknown): string {
 
 function logDebugFailure(scope: string, error: unknown): void {
   if ((process.env.LOOP24_DEBUG ?? process.env.GSD_DEBUG) === '1') {
-    process.stderr.write(chalk.dim(`[gsd] ${scope} failed: ${toErrorMessage(error)}\n`))
+    process.stderr.write(chalk.dim(`[otto] ${scope} failed: ${toErrorMessage(error)}\n`))
   }
 }
 
@@ -445,7 +445,7 @@ async function createAndEnter(ext: ExtensionModules, basePath: string, name: str
 
     const hookError = ext.runWorktreePostCreateHook(basePath, info.path)
     if (hookError) {
-      process.stderr.write(chalk.yellow(`[gsd] ${hookError}\n`))
+      process.stderr.write(chalk.yellow(`[otto] ${hookError}\n`))
     }
 
     process.chdir(info.path)
@@ -456,7 +456,7 @@ async function createAndEnter(ext: ExtensionModules, basePath: string, name: str
     process.stderr.write(chalk.dim(`  branch ${info.branch}\n\n`))
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    process.stderr.write(chalk.red(`[gsd] Failed to create worktree: ${msg}\n`))
+    process.stderr.write(chalk.red(`[otto] Failed to create worktree: ${msg}\n`))
     process.exit(1)
   }
 }

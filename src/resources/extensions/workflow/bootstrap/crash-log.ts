@@ -21,7 +21,7 @@ export function writeCrashLog(err: Error, source: string): void {
     const ts = new Date().toISOString().replace(/[:.]/g, "-");
     const logPath = join(crashDir, `${ts}.log`);
     const lines = [
-      `[gsd] ${source}: ${err.message}`,
+      `[otto] ${source}: ${err.message}`,
       `timestamp: ${new Date().toISOString()}`,
       `pid: ${process.pid}`,
       err.stack ?? "(no stack trace available)",

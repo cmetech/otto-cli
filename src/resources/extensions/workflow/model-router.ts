@@ -814,7 +814,7 @@ export function filterToolsForProvider(
     const trimmed = compatible.splice(GROQ_MAX_TOOLS);
     filtered.push(...trimmed);
     console.warn(
-      `[gsd] Groq tool limit: ${compatible.length + trimmed.length} tools active but Groq allows at most ${GROQ_MAX_TOOLS}. ` +
+      `[otto] Groq tool limit: ${compatible.length + trimmed.length} tools active but Groq allows at most ${GROQ_MAX_TOOLS}. ` +
         `Trimming to the first ${GROQ_MAX_TOOLS} tools. Removed: ${trimmed.join(", ")}`,
     );
   }

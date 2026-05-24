@@ -224,14 +224,14 @@ function createLockCompromisedHandler(lockFilePath: string): () => void {
     const elapsed = Date.now() - _lockAcquiredAt;
     if (elapsed < 1_800_000) {
       process.stderr.write(
-        `[gsd] Lock heartbeat caught up after ${Math.round(elapsed / 1000)}s — long LLM call, no action needed.\n`,
+        `[otto] Lock heartbeat caught up after ${Math.round(elapsed / 1000)}s — long LLM call, no action needed.\n`,
       );
       return;
     }
     const existing = readExistingLockDataWithRetry(lockFilePath);
     if (existing && existing.pid === process.pid) {
       process.stderr.write(
-        `[gsd] Lock heartbeat mismatch after ${Math.round(elapsed / 1000)}s — lock file still owned by PID ${process.pid}, treating as false positive.\n`,
+        `[otto] Lock heartbeat mismatch after ${Math.round(elapsed / 1000)}s — lock file still owned by PID ${process.pid}, treating as false positive.\n`,
       );
       return;
     }
@@ -477,7 +477,7 @@ export function getSessionLockStatus(basePath: string): SessionLockStatus {
         const result = acquireSessionLock(basePath);
         if (result.acquired) {
           process.stderr.write(
-            `[gsd] Lock recovered after onCompromised — lock file PID matched, re-acquired.\n`,
+            `[otto] Lock recovered after onCompromised — lock file PID matched, re-acquired.\n`,
           );
           return { valid: true, recovered: true };
         }

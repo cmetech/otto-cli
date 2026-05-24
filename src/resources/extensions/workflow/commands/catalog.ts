@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 import { loadRegistry } from "../workflow-templates.js";
 import { gsdHome } from "../gsd-home.js";
 import { VISUAL_BRIEF_MODES } from "../../visual-brief/prompts.js";
-import { BRAND, CMD, slashCommand } from "../strings.js";
+import { BRAND, slashCommand } from "../strings.js";
 
 
 export interface GsdCommandDefinition {

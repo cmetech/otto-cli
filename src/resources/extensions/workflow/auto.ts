@@ -39,14 +39,9 @@ import { collectSecretsFromManifest } from "../get-secrets-from-user.js";
 import {
   gsdRoot,
   resolveMilestoneFile,
-  resolveSliceFile,
-  resolveSlicePath,
   resolveMilestonePath,
   resolveDir,
-  resolveTasksDir,
-  resolveTaskFile,
   milestonesDir,
-  buildTaskFileName,
 } from "./paths.js";
 import { invalidateAllCaches } from "./cache.js";
 import { clearActivityLogState } from "./activity-log.js";
@@ -80,36 +75,25 @@ import {
 import { sendDesktopNotification } from "./notifications.js";
 import type { GSDPreferences } from "./preferences.js";
 import {
-  type BudgetAlertLevel,
   getBudgetAlertLevel,
   getNewBudgetAlertLevel,
   getBudgetEnforcementAction,
-  getContextPauseAction,
 } from "./auto-budget.js";
 import {
   markToolStart as _markToolStart,
   markToolEnd as _markToolEnd,
   getOldestInFlightToolAgeMs as _getOldestInFlightToolAgeMs,
-  getInFlightToolCount,
-  getOldestInFlightToolStart,
-  hasInteractiveToolInFlight,
   clearInFlightTools,
   isToolInvocationError,
   isQueuedUserMessageSkip,
   isDeterministicPolicyError,
 } from "./auto-tool-tracking.js";
 import { closeoutUnit } from "./auto-unit-closeout.js";
-import { recoverTimedOutUnit } from "./auto-timeout-recovery.js";
 import { selectAndApplyModel, resolveModelId, clearToolBaseline } from "./auto-model-selection.js";
 import { resetRoutingHistory, recordOutcome } from "./routing-history.js";
 import {
-  checkPostUnitHooks,
-  getActiveHook,
   resetHookState,
-  isRetryPending,
-  consumeRetryTrigger,
   runPreDispatchHooks,
-  persistHookState,
   restoreHookState,
   clearPersistedHookState,
 } from "./post-unit-hooks.js";
@@ -117,11 +101,8 @@ import { runGSDDoctor, rebuildState } from "./doctor.js";
 import {
   preDispatchHealthGate,
   recordHealthSnapshot,
-  checkHealEscalation,
   resetProactiveHealing,
   setLevelChangeCallback,
-  formatHealthSummary,
-  getConsecutiveErrorUnits,
 } from "./doctor-proactive.js";
 import { clearSkillSnapshot } from "./skill-discovery.js";
 import {
@@ -139,38 +120,29 @@ import {
   formatCost,
   formatTokenCount,
 } from "./metrics.js";
-import { setLogBasePath, logWarning, logError } from "./workflow-logger.js";
+import { setLogBasePath, logWarning } from "./workflow-logger.js";
 import { preflightCleanRoot, postflightPopStash } from "./clean-root-preflight.js";
 import { isAbsolute, join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { readFileSync, existsSync, mkdirSync, writeFileSync, unlinkSync } from "node:fs";
+import { readFileSync, existsSync, mkdirSync } from "node:fs";
 import { atomicWriteSync } from "./atomic-write.js";
 import {
-  autoCommitCurrentBranch,
   captureIntegrationBranch,
   detectWorktreeName,
   getCurrentBranch,
   getMainBranch,
-  MergeConflictError,
-  parseSliceBranch,
   setActiveMilestoneId,
   resolveProjectRoot,
 } from "./worktree.js";
 import { GitServiceImpl } from "./git-service.js";
-import { nativeCheckoutBranch } from "./native-git-bridge.js";
 import { getPriorSliceCompletionBlocker } from "./dispatch-guard.js";
 import {
   createAutoWorktree,
-  enterAutoWorktree,
-  enterBranchModeForMilestone,
   teardownAutoWorktree,
   isInAutoWorktree,
   getAutoWorktreePath,
-  getAutoWorktreeOriginalBase,
   mergeMilestoneToMain,
   autoWorktreeBranch,
-  syncWorktreeStateBack,
-  readResourceVersion,
   checkResourcesStale,
   escapeStaleWorktree,
 } from "./auto-worktree.js";
@@ -260,8 +232,6 @@ import { classifyFailure } from "./recovery-classification.js";
 import { supportsStructuredQuestions } from "./workflow-mcp.js";
 import type { MinimalModelRegistry } from "./context-budget.js";
 // Slice-level parallelism (#2340)
-import { getEligibleSlices } from "./slice-parallel-eligibility.js";
-import { startSliceParallel } from "./slice-parallel-orchestrator.js";
 import {
   WorktreeLifecycle,
   type WorktreeLifecycleDeps,
@@ -329,8 +299,6 @@ import { slashCommand } from "./strings.js";
 // Tests in auto-session-encapsulation.test.ts enforce this invariant.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Throttle STATE.md rebuilds — at most once per 30 seconds */
-const STATE_REBUILD_MIN_INTERVAL_MS = 30_000;
 
 export function formatAutoStopNotification(prefix: string, totals: { cost: number; tokens: { total: number } }, unitCount: number): string {
   return [
@@ -3087,9 +3055,6 @@ export async function dispatchHookUnit(
   hookModel: string | undefined,
   targetBasePath: string,
 ): Promise<boolean> {
-  const wasActive = s.active;
-  const previousBasePath = s.basePath;
-  const previousCurrentUnit = s.currentUnit ? { ...s.currentUnit } : null;
 
   if (!s.active) {
     s.active = true;

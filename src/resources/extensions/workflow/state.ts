@@ -8,7 +8,6 @@ import type {
   GSDState,
   ActiveRef,
   Roadmap,
-  RoadmapSliceEntry,
   SlicePlan,
   MilestoneRegistryEntry,
 } from './types.js';
@@ -26,7 +25,6 @@ import {
 } from './files.js';
 
 import {
-  resolveMilestonePath,
   resolveMilestoneFile,
   resolveSlicePath,
   resolveSliceFile,
@@ -39,7 +37,7 @@ import {
 import { findMilestoneIds } from './milestone-ids.js';
 import { loadQueueOrder, sortByQueueOrder } from './queue-order.js';
 import { isClosedStatus, isDeferredStatus } from './status-guards.js';
-import { nativeBatchParseGsdFiles, type BatchParsedFile } from './native-parser-bridge.js';
+import { nativeBatchParseGsdFiles } from './native-parser-bridge.js';
 import { autoHealSketchFlags } from './state-reconciliation/drift/sketch-flag.js';
 
 import { join, resolve } from 'path';
@@ -444,7 +442,7 @@ const isStatusDone = isClosedStatus;
  * reconciled, or used as completion signals.
  */
 
-function buildCompletenessSet(basePath: string, milestones: MilestoneRow[]) {
+function buildCompletenessSet(_basePath: string, milestones: MilestoneRow[]) {
   const completeMilestoneIds = new Set<string>();
   const parkedMilestoneIds = new Set<string>();
 
@@ -466,7 +464,7 @@ function buildCompletenessSet(basePath: string, milestones: MilestoneRow[]) {
 }
 
 async function buildRegistryAndFindActive(
-  basePath: string,
+  _basePath: string,
   milestones: MilestoneRow[],
   completeMilestoneIds: Set<string>,
   parkedMilestoneIds: Set<string>
@@ -613,7 +611,7 @@ function handleNoActiveMilestone(
 }
 
 async function handleAllSlicesDone(
-  basePath: string,
+  _basePath: string,
   activeMilestone: ActiveRef,
   registry: MilestoneRegistryEntry[],
   requirements: any,
@@ -699,7 +697,7 @@ function resolveSliceDependencies(activeMilestoneSlices: SliceRow[]): { activeSl
   return { activeSlice: null, activeSliceRow: null };
 }
 
-async function detectBlockers(basePath: string, milestoneId: string, sliceId: string, tasks: TaskRow[]): Promise<string | null> {
+async function detectBlockers(_basePath: string, _milestoneId: string, _sliceId: string, tasks: TaskRow[]): Promise<string | null> {
   const completedTasks = tasks.filter(t => isStatusDone(t.status));
   for (const ct of completedTasks) {
     if (ct.blocker_discovered) {
@@ -709,7 +707,7 @@ async function detectBlockers(basePath: string, milestoneId: string, sliceId: st
   return null;
 }
 
-function checkReplanTrigger(basePath: string, milestoneId: string, sliceId: string): boolean {
+function checkReplanTrigger(_basePath: string, milestoneId: string, sliceId: string): boolean {
   const sliceRow = getSlice(milestoneId, sliceId);
   return !!sliceRow?.replan_triggered_at;
 }

@@ -80,7 +80,7 @@ import { ExtensionEditorComponent } from "./components/extension-editor.js";
 import { ExtensionInputComponent } from "./components/extension-input.js";
 import { ExtensionSelectorComponent } from "./components/extension-selector.js";
 import { FooterComponent } from "./components/footer.js";
-import { appKey, appKeyHint, editorKey, formatKeyForDisplay, keyHint, rawKeyHint } from "./components/keybinding-hints.js";
+import { appKey, appKeyHint, keyHint, rawKeyHint } from "./components/keybinding-hints.js";
 import { LoginDialogComponent } from "./components/login-dialog.js";
 import { ModelSelectorComponent, providerDisplayName } from "./components/model-selector.js";
 import { OAuthSelectorComponent } from "./components/oauth-selector.js";
@@ -94,7 +94,7 @@ import { TreeSelectorComponent } from "./components/tree-selector.js";
 import { UserMessageComponent } from "./components/user-message.js";
 import { UserMessageSelectorComponent } from "./components/user-message-selector.js";
 import { ContextualTips } from "../../core/contextual-tips.js";
-import { type SlashCommandContext, dispatchSlashCommand, getAppKeyDisplay } from "./slash-command-handlers.js";
+import { type SlashCommandContext, getAppKeyDisplay } from "./slash-command-handlers.js";
 import { handleAgentEvent } from "./controllers/chat-controller.js";
 import { createExtensionUIContext as buildExtensionUIContext } from "./controllers/extension-ui-controller.js";
 import { setupEditorSubmitHandler as setupEditorSubmitHandlerController } from "./controllers/input-controller.js";
@@ -106,16 +106,13 @@ import {
 } from "./controllers/model-controller.js";
 import {
 	getAvailableThemes,
-	getAvailableThemesWithPaths,
 	getEditorTheme,
 	getMarkdownTheme,
-	getThemeByName,
 	initTheme,
 	onThemeChange,
 	stopThemeWatcher,
 	setRegisteredThemes,
 	setTheme,
-	setThemeInstance,
 	Theme,
 	type ThemeColor,
 	theme,
@@ -390,14 +387,6 @@ export class InteractiveMode {
 
 	// Track pending bash components (shown in pending area, moved to chat on submit)
 	private pendingBashComponents: BashExecutionComponent[] = [];
-
-	// Auto-compaction state
-	private autoCompactionLoader: Loader | undefined = undefined;
-	private autoCompactionEscapeHandler?: () => void;
-
-	// Auto-retry state
-	private retryLoader: Loader | undefined = undefined;
-	private retryEscapeHandler?: () => void;
 
 	// Messages queued while compaction is running
 	private compactionQueuedMessages: CompactionQueuedMessage[] = [];

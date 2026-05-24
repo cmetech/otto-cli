@@ -7,10 +7,10 @@
  */
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
-import { existsSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { showNextAction } from "../shared/tui.js";
-import { nativeIsRepo, nativeInit, nativeAddAll, nativeCommit, nativeDetectMainBranch } from "./native-git-bridge.js";
+import { nativeInit, nativeAddAll, nativeCommit, nativeDetectMainBranch } from "./native-git-bridge.js";
 import { ensureGitignore, untrackRuntimeFiles } from "./gitignore.js";
 import { gsdRoot } from "./paths.js";
 import { assertSafeDirectory } from "./validate-directory.js";
@@ -68,7 +68,7 @@ const DEFAULT_PREFS: ProjectPreferences = {
  */
 export async function showProjectInit(
   ctx: ExtensionCommandContext,
-  pi: ExtensionAPI,
+  _pi: ExtensionAPI,
   basePath: string,
   detection: ProjectDetection,
 ): Promise<InitWizardResult> {

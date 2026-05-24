@@ -15,7 +15,7 @@
 
 import type { ExtensionContext, ExtensionAPI } from "@gsd/pi-coding-agent";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { gsdProjectionRoot, resolveSliceFile, resolveSlicePath, resolveMilestoneFile } from "./paths.js";
+import { gsdProjectionRoot, resolveSlicePath, resolveMilestoneFile } from "./paths.js";
 import { resolveCanonicalMilestoneRoot } from "./worktree-manager.js";
 import { parseUnitId } from "./unit-id.js";
 import { isDbAvailable, getTask, getSliceTasks, getMilestoneSlices } from "./gsd-db.js";

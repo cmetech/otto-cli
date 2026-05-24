@@ -85,7 +85,7 @@ function getStatus(basePath: string, name: string, wtPath: string): WorktreeStat
 
 export function formatWorktreeList(statuses: WorktreeStatus[]): string {
   if (statuses.length === 0) {
-    return "No worktrees.\n\nCreate one from the CLI: gsd -w <name>";
+    return "No worktrees.\n\nCreate one from the CLI: loop24 -w <name>";
   }
 
   const lines: string[] = [`Worktrees — ${statuses.length}`, ""];
@@ -106,9 +106,9 @@ export function formatWorktreeList(statuses: WorktreeStatus[]): string {
     lines.push("");
   }
   lines.push("Commands:");
-  lines.push("  /gsd worktree merge <name>   Merge into main and clean up");
-  lines.push("  /gsd worktree remove <name>  Remove a worktree (--force to skip safety checks)");
-  lines.push("  /gsd worktree clean          Remove all merged/empty worktrees");
+  lines.push("  /loop24 worktree merge <name>   Merge into main and clean up");
+  lines.push("  /loop24 worktree remove <name>  Remove a worktree (--force to skip safety checks)");
+  lines.push("  /loop24 worktree clean          Remove all merged/empty worktrees");
   return lines.join("\n");
 }
 
@@ -149,7 +149,7 @@ async function handleMerge(args: string, ctx: ExtensionCommandContext): Promise<
       return;
     } else {
       const names = worktrees.map((w) => w.name).join(", ");
-      ctx.ui.notify(`Usage: /gsd worktree merge <name>\n\nWorktrees: ${names}`, "warning");
+      ctx.ui.notify(`Usage: /loop24 worktree merge <name>\n\nWorktrees: ${names}`, "warning");
       return;
     }
   }
@@ -185,7 +185,7 @@ async function handleMerge(args: string, ctx: ExtensionCommandContext): Promise<
         [
           `Auto-commit before merge failed: ${msg}`,
           "",
-          `Commit or stash changes in ${wt.path}, then re-run /gsd worktree merge ${target}.`,
+          `Commit or stash changes in ${wt.path}, then re-run /loop24 worktree merge ${target}.`,
         ].join("\n"),
         "error",
       );
@@ -203,12 +203,12 @@ async function handleMerge(args: string, ctx: ExtensionCommandContext): Promise<
     const msg = err instanceof Error ? err.message : String(err);
     if (err instanceof WorkflowError && err.code === GIT_ERROR) {
       ctx.ui.notify(
-        `Merge requires the main branch to be checked out: ${msg}\n\nSwitch to ${mainBranch} (e.g. 'git checkout ${mainBranch}'), then re-run /gsd worktree merge ${target}.`,
+        `Merge requires the main branch to be checked out: ${msg}\n\nSwitch to ${mainBranch} (e.g. 'git checkout ${mainBranch}'), then re-run /loop24 worktree merge ${target}.`,
         "error",
       );
     } else {
       ctx.ui.notify(
-        `Merge failed: ${msg}\n\nResolve conflicts manually, then run /gsd worktree merge ${target} again.`,
+        `Merge failed: ${msg}\n\nResolve conflicts manually, then run /loop24 worktree merge ${target} again.`,
         "error",
       );
     }
@@ -231,8 +231,8 @@ async function handleMerge(args: string, ctx: ExtensionCommandContext): Promise<
       "",
       `Cleanup failed after the merge succeeded: ${msg}`,
       err instanceof WorkflowError && err.code === GIT_ERROR
-        ? `Switch to ${mainBranch} (e.g. 'git checkout ${mainBranch}'), then remove the worktree manually with /gsd worktree remove ${target} --force.`
-        : `Remove the worktree manually with /gsd worktree remove ${target} --force, or run 'git worktree prune' to clean up dangling registrations.`,
+        ? `Switch to ${mainBranch} (e.g. 'git checkout ${mainBranch}'), then remove the worktree manually with /loop24 worktree remove ${target} --force.`
+        : `Remove the worktree manually with /loop24 worktree remove ${target} --force, or run 'git worktree prune' to clean up dangling registrations.`,
     ];
     ctx.ui.notify(cleanupLines.join("\n"), "warning");
   }
@@ -286,7 +286,7 @@ async function handleRemove(args: string, ctx: ExtensionCommandContext): Promise
   const force = tokens.includes("--force");
   const name = tokens.find((t) => t !== "--force");
   if (!name) {
-    ctx.ui.notify("Usage: /gsd worktree remove <name> [--force]", "warning");
+    ctx.ui.notify("Usage: /loop24 worktree remove <name> [--force]", "warning");
     return;
   }
 
@@ -304,8 +304,8 @@ async function handleRemove(args: string, ctx: ExtensionCommandContext): Promise
       [
         `Worktree "${name}" has pending changes (${formatCleanKeepReason(status)}).`,
         "",
-        `  Merge first:     /gsd worktree merge ${name}`,
-        `  Or force-remove: /gsd worktree remove ${name} --force`,
+        `  Merge first:     /loop24 worktree merge ${name}`,
+        `  Or force-remove: /loop24 worktree remove ${name} --force`,
       ].join("\n"),
       "warning",
     );
@@ -327,7 +327,7 @@ async function handleRemove(args: string, ctx: ExtensionCommandContext): Promise
 // ─── Help text ──────────────────────────────────────────────────────────────
 
 const HELP_TEXT = [
-  "Usage: /gsd worktree <command> [args]",
+  "Usage: /loop24 worktree <command> [args]",
   "",
   "Commands:",
   "  list                       Show all worktrees with status",
@@ -336,8 +336,8 @@ const HELP_TEXT = [
   "  clean                      Remove all merged/empty worktrees",
   "",
   "The -w flag (CLI only) creates/resumes worktrees on session start:",
-  "  gsd -w               Auto-name a new worktree, or resume the only active one",
-  "  gsd -w my-feature    Create or resume a named worktree",
+  "  loop24 -w               Auto-name a new worktree, or resume the only active one",
+  "  loop24 -w my-feature    Create or resume a named worktree",
 ].join("\n");
 
 // ─── Dispatcher ─────────────────────────────────────────────────────────────

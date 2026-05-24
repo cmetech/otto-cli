@@ -79,18 +79,18 @@ function exitIfManagedResourcesAreNewer(currentAgentDir: string): void {
  */
 function printNonTtyErrorAndExit(missing: string | undefined, includeWebHint: boolean): never {
   const suffix = missing ? ` but ${missing} not a TTY` : ''
-  process.stderr.write(`[gsd] Error: Interactive mode requires a terminal (TTY)${suffix}.\n`)
-  process.stderr.write('[gsd] Non-interactive alternatives:\n')
-  process.stderr.write('[gsd]   gsd auto                       Auto-mode (pipeable, no TUI)\n')
-  process.stderr.write('[gsd]   gsd --print "your message"     Single-shot prompt\n')
+  process.stderr.write(`[loop24] Error: Interactive mode requires a terminal (TTY)${suffix}.\n`)
+  process.stderr.write('[loop24] Non-interactive alternatives:\n')
+  process.stderr.write('[loop24]   loop24 auto                       Auto-mode (pipeable, no TUI)\n')
+  process.stderr.write('[loop24]   loop24 --print "your message"     Single-shot prompt\n')
   if (includeWebHint) {
-    process.stderr.write('[gsd]   gsd --web [path]               Browser-only web mode\n')
+    process.stderr.write('[loop24]   loop24 --web [path]               Browser-only web mode\n')
   }
-  process.stderr.write('[gsd]   gsd --mode rpc                 JSON-RPC over stdin/stdout\n')
-  process.stderr.write('[gsd]   gsd --mode mcp                 MCP server over stdin/stdout\n')
-  process.stderr.write('[gsd]   gsd --mode text "message"      Text output mode\n')
+  process.stderr.write('[loop24]   loop24 --mode rpc                 JSON-RPC over stdin/stdout\n')
+  process.stderr.write('[loop24]   loop24 --mode mcp                 MCP server over stdin/stdout\n')
+  process.stderr.write('[loop24]   loop24 --mode text "message"      Text output mode\n')
   if (includeWebHint) {
-    process.stderr.write('[gsd]   gsd headless                   Auto-mode without TUI\n')
+    process.stderr.write('[loop24]   loop24 headless                   Auto-mode without TUI\n')
   }
   process.exit(1)
 }
@@ -258,14 +258,14 @@ if (cliFlags.messages[0] === 'graph') {
       await writeGraph(workflowRoot, graph)
       process.stdout.write(`Graph built: ${graph.nodes.length} nodes, ${graph.edges.length} edges\n`)
     } catch (err) {
-      process.stderr.write(`[gsd] graph build failed: ${err instanceof Error ? err.message : String(err)}\n`)
+      process.stderr.write(`[loop24] graph build failed: ${err instanceof Error ? err.message : String(err)}\n`)
       process.exit(1)
     }
   } else if (sub === 'status') {
     try {
       const result = await graphStatus(projectDir)
       if (!result.exists) {
-        process.stdout.write('Graph: not built yet. Run: gsd graph build\n')
+        process.stdout.write('Graph: not built yet. Run: loop24 graph build\n')
       } else {
         process.stdout.write(`Graph status:\n`)
         process.stdout.write(`  exists:    ${result.exists}\n`)
@@ -282,7 +282,7 @@ if (cliFlags.messages[0] === 'graph') {
   } else if (sub === 'query') {
     const term = cliFlags.messages[2]
     if (!term) {
-      process.stderr.write('Usage: gsd graph query <term>\n')
+      process.stderr.write('Usage: loop24 graph query <term>\n')
       process.exit(1)
     }
     try {

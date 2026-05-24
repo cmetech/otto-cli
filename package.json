@@ -49,7 +49,7 @@
     "name": "loop24",
     "configDir": ".loop24",
     "commandNamespace": "loop24",
-    "brandName": "LOOP24"
+    "brandName": "OTTO"
   },
   "engines": {
     "node": ">=22.0.0"

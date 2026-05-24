@@ -1,9 +1,9 @@
 /**
  * Service Tier — gating, status formatting, icon resolution, and
- * the /gsd fast command handler.
+ * the /loop24 fast command handler.
  *
  * Service tiers (priority/flex) are an OpenAI feature that currently only
- * applies to gpt-5.4 variants in GSD. This module centralizes the model-gating logic
+ * applies to gpt-5.4 variants in the workflow. This module centralizes the model-gating logic
  * so that icons, preferences, and the before_provider_request hook all
  * use a single source of truth.
  */
@@ -38,7 +38,7 @@ const SERVICE_TIER_SCOPE_NOTE = "Only affects gpt-5.4 models, regardless of prov
  * GPT-5.5 is intentionally excluded until we verify its provider payload
  * contract instead of assuming `service_tier` support.
  *
- * See: https://github.com/open-gsd/gsd-pi/issues/2546
+ * See: upstream #2546
  */
 const SERVICE_TIER_MODEL_PREFIXES = ["gpt-5.4"] as const;
 
@@ -160,7 +160,7 @@ async function writeGlobalServiceTier(
 // ─── Command Handler ─────────────────────────────────────────────────────────
 
 /**
- * Handle `/gsd fast [on|off|flex|status]`.
+ * Handle `/loop24 fast [on|off|flex|status]`.
  */
 export async function handleFast(args: string, ctx: ExtensionCommandContext): Promise<void> {
   const trimmed = args.trim().toLowerCase();

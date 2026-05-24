@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Best-effort worker heartbeat adapter for auto-mode loop.
 
 export interface WorkerHeartbeatSession {

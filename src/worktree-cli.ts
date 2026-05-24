@@ -1,5 +1,5 @@
 /**
- * GSD Worktree CLI — standalone subcommand and -w flag handling.
+ * Worktree CLI — standalone subcommand and -w flag handling.
  *
  * Manages the full worktree lifecycle from the command line:
  *   gsd -w                    Create auto-named worktree, start interactive session
@@ -10,7 +10,7 @@
  *   gsd worktree remove <n>   Remove a specific worktree
  *
  * On session exit (via session_shutdown event), auto-commits dirty work
- * so nothing is lost. The GSD extension reads GSD_CLI_WORKTREE to know
+ * so nothing is lost. The workflow extension reads GSD_CLI_WORKTREE to know
  * when a session was launched via -w.
  *
  * Note: Extension modules are .ts files loaded via jiti (not compiled to .js).

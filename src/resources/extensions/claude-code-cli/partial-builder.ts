@@ -2,7 +2,7 @@
  * Content-block mapping helpers and streaming state tracker.
  *
  * Translates the Claude Agent SDK's `BetaRawMessageStreamEvent` sequence
- * into GSD's `AssistantMessageEvent` deltas for incremental TUI rendering.
+ * into the agent's `AssistantMessageEvent` deltas for incremental TUI rendering.
  */
 
 import type {
@@ -39,7 +39,7 @@ export function parseMcpToolName(name: string): { server: string; tool: string }
 }
 
 /**
- * Build a GSD ToolCall block from a Claude Code SDK tool_use block, stripping
+ * Build a ToolCall block from a Claude Code SDK tool_use block, stripping
  * the `mcp__<server>__` prefix from the name so registered extension renderers
  * (which use the unprefixed canonical names) can match. The original server
  * name is preserved on the block for diagnostics and rendering.
@@ -67,7 +67,7 @@ function toolCallFromBlock(
 // ---------------------------------------------------------------------------
 
 /**
- * Convert a single BetaContentBlock to the corresponding GSD content type.
+ * Convert a single BetaContentBlock to the corresponding content type.
  */
 export function mapContentBlock(
 	block: BetaContentBlock,
@@ -123,7 +123,7 @@ export function mapStopReason(reason: string | null): StopReason {
 }
 
 /**
- * Convert SDK usage + total_cost_usd into GSD's Usage shape.
+ * Convert SDK usage + total_cost_usd into the agent's Usage shape.
  *
  * The SDK does not break cost down per-bucket, so all cost is
  * attributed to `cost.total`.

@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Pure budget and context guard decisions for GSD auto-mode.
+// Project/App: LOOP24
+// File Purpose: Pure budget and context guard decisions for auto-mode.
 /**
  * Budget alert level tracking and enforcement for auto-mode.
  * Pure functions — no module state or side effects.

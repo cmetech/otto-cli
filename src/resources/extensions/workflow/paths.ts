@@ -1,6 +1,6 @@
-// GSD-2 — ID-based path resolution for GSD project files and directories
+// LOOP24 — ID-based path resolution for the workflow project files and directories
 /**
- * GSD Paths — ID-based path resolution
+ * Workflow Paths — ID-based path resolution
  *
  * Directories use bare IDs: M001/, S01/, etc.
  * Files use ID-SUFFIX: M001-ROADMAP.md, S01-PLAN.md, T01-PLAN.md
@@ -25,7 +25,7 @@ const dirEntryCache = new Map<string, Dirent[]>();
 const dirListCache = new Map<string, string[]>();
 
 // ─── Native Tree Cache ────────────────────────────────────────────────────────
-// When the native module is available, scan the entire .gsd/ tree in one call
+// When the native module is available, scan the entire .loop24/ tree in one call
 // and serve directory listings from memory instead of individual readdirSync calls.
 
 let nativeTreeCache: Map<string, GsdTreeEntry[]> | null = null;
@@ -66,7 +66,7 @@ function cachedReaddirWithTypes(dirPath: string): Dirent[] {
   const cached = dirEntryCache.get(dirPath);
   if (cached) return cached;
 
-  // Try native tree cache for paths under .gsd/
+  // Try native tree cache for paths under .loop24/
   if (nativeTreeBase) {
     const key = nativeTreeKey(dirPath, nativeTreeBase);
     if (key && nativeTreeCache) {
@@ -108,7 +108,7 @@ function cachedReaddir(dirPath: string): string[] {
   const cached = dirListCache.get(dirPath);
   if (cached) return cached;
 
-  // Try native tree cache for paths under .gsd/
+  // Try native tree cache for paths under .loop24/
   if (nativeTreeBase) {
     const key = nativeTreeKey(dirPath, nativeTreeBase);
     if (key && nativeTreeCache) {
@@ -295,7 +295,7 @@ const LEGACY_GSD_ROOT_FILES: Record<GSDRootFileKey, string> = {
   CODEBASE: "codebase.md",
 };
 
-// ─── GSD Root Discovery ───────────────────────────────────────────────────────
+// ─── Root Discovery ───────────────────────────────────────────────────────
 
 // Process-lifetime cache for gsdRoot() results.
 // Keys are realpath-normalized (via normCacheKey) so /foo and /foo/ share the
@@ -318,7 +318,7 @@ export interface GsdPathContract {
   worktreeGsd: string | null;
   /** Canonical authoritative SQLite DB path. */
   projectDb: string;
-  /** True when workRoot is inside a GSD worktree layout. */
+  /** True when workRoot is inside a workflow worktree layout. */
   isWorktree: boolean;
 }
 
@@ -418,7 +418,7 @@ export function gsdRoot(basePath: string): string {
 
   // Defense-in-depth: if basePath resolves to the user's home directory and
   // the result equals gsdHome(), refuse — project-scoped writes must never
-  // land in the global ~/.gsd. Paths under ~/.gsd/projects/<hash>/ are still
+  // land in the global ~/.gsd. Paths under ~/.loop24/projects/<hash>/ are still
   // valid (their basePath does not equal homedir).
   assertNotGlobalGsdHome(basePath, result);
 
@@ -454,9 +454,9 @@ function assertNotGlobalGsdHome(basePath: string, result: string): void {
 }
 
 /**
- * Detect if a path is inside a .gsd/worktrees/<name>/ structure.
+ * Detect if a path is inside a .loop24/worktrees/<name>/ structure.
  *
- * GSD auto-worktrees live at <project>/.gsd/worktrees/<milestoneId>/.
+ * Auto-worktrees live at <project>/.loop24/worktrees/<milestoneId>/.
  * When gsdRoot() is called with such a path, we must NOT walk up to the
  * project root's .gsd — each worktree manages its own .gsd state (#2594).
  *
@@ -464,7 +464,7 @@ function assertNotGlobalGsdHome(basePath: string, result: string): void {
  * Windows paths (path.sep = '\\') and normalized Unix paths.
  */
 function isInsideGsdWorktree(p: string): boolean {
-  // Match /.gsd/worktrees/<name> where <name> is the final segment or
+  // Match /.loop24/worktrees/<name> where <name> is the final segment or
   // followed by a separator. The <name> segment must be non-empty.
   const sepFwd = "/";
   const sepNative = "\\";
@@ -493,7 +493,7 @@ function probeGsdRoot(rawBasePath: string): string {
   const local = join(rawBasePath, ".gsd");
   if (existsSync(local)) return local;
 
-  // 1b. Worktree guard (#2594) — if basePath is inside a .gsd/worktrees/<name>/
+  // 1b. Worktree guard (#2594) — if basePath is inside a .loop24/worktrees/<name>/
   //     structure, return the worktree-local .gsd path immediately. Without this,
   //     the git-root probe (step 2) or walk-up (step 3) escapes to the project
   //     root's .gsd, causing ensurePreconditions() and deriveState() to read/write
@@ -535,7 +535,7 @@ function probeGsdRoot(rawBasePath: string): string {
 
   if (gitRoot) {
     const candidate = join(gitRoot, ".gsd");
-    // Skip if the candidate resolves to the global GSD home — a subdir basePath
+    // Skip if the candidate resolves to the global agent home — a subdir basePath
     // must not be anchored to ~/.gsd just because $HOME is a git repo.
     if (existsSync(candidate) && normPath(candidate) !== gsdHomeNorm) return candidate;
   }
@@ -647,10 +647,10 @@ export function resolveTaskFile(
   return file ? join(tDir, file) : null;
 }
 
-// ─── Relative Path Builders (for prompts — .gsd/milestones/...) ────────────
+// ─── Relative Path Builders (for prompts — .loop24/milestones/...) ────────────
 
 /**
- * Build relative .gsd/ path to a milestone directory.
+ * Build relative .loop24/ path to a milestone directory.
  * Uses the actual directory name on disk if it exists, otherwise bare ID.
  */
 export function relMilestonePath(basePath: string, milestoneId: string): string {
@@ -660,7 +660,7 @@ export function relMilestonePath(basePath: string, milestoneId: string): string 
 }
 
 /**
- * Build relative .gsd/ path to a milestone file.
+ * Build relative .loop24/ path to a milestone file.
  */
 export function relMilestoneFile(
   basePath: string, milestoneId: string, suffix: string
@@ -675,7 +675,7 @@ export function relMilestoneFile(
 }
 
 /**
- * Build relative .gsd/ path to a slice directory.
+ * Build relative .loop24/ path to a slice directory.
  */
 export function relSlicePath(
   basePath: string, milestoneId: string, sliceId: string
@@ -691,7 +691,7 @@ export function relSlicePath(
 }
 
 /**
- * Build relative .gsd/ path to a slice file.
+ * Build relative .loop24/ path to a slice file.
  */
 export function relSliceFile(
   basePath: string, milestoneId: string, sliceId: string, suffix: string
@@ -706,7 +706,7 @@ export function relSliceFile(
 }
 
 /**
- * Build relative .gsd/ path to a task file.
+ * Build relative .loop24/ path to a task file.
  */
 export function relTaskFile(
   basePath: string, milestoneId: string, sliceId: string,

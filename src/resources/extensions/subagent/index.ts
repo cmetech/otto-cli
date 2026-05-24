@@ -435,7 +435,7 @@ async function runSingleAgent(
 		};
 	}
 
-	// GSD phase guard: block agents that conflict with the active GSD phase
+	// workflow phase guard: block agents that conflict with the active workflow phase
 	if (agent.conflictsWith && agent.conflictsWith.length > 0) {
 		const activePhase = getCurrentPhase();
 		if (activePhase && agent.conflictsWith.includes(activePhase)) {

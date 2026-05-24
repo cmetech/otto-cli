@@ -3,12 +3,12 @@
  *
  * Discovers workflow definitions from three tiers (project > global > bundled)
  * in both YAML and markdown formats. Each plugin declares an execution mode
- * that controls how `/gsd workflow <name>` dispatches it:
+ * that controls how `/loop24 workflow <name>` dispatches it:
  *
  *   oneshot         — prompt-only, no state or scaffolding
  *   yaml-step       — CustomWorkflowEngine run with GRAPH.yaml
  *   markdown-phase  — STATE.json + phase gates (current md template behavior)
- *   auto-milestone  — hooks into /gsd auto pipeline (full-project only)
+ *   auto-milestone  — hooks into /loop24 auto pipeline (full-project only)
  *
  * Precedence: project > global > bundled. Same-named file wins.
  */
@@ -289,7 +289,7 @@ function loadBundledPlugins(out: Map<string, WorkflowPlugin>): void {
 /**
  * Discover all workflow plugins. Project overrides global overrides bundled.
  *
- * The legacy `.gsd/workflow-defs/*.yaml` directory is also scanned as a
+ * The legacy `.loop24/workflow-defs/*.yaml` directory is also scanned as a
  * fallback YAML source so existing user definitions keep working.
  */
 export function discoverPlugins(basePath: string): Map<string, WorkflowPlugin> {
@@ -355,7 +355,7 @@ export function listPluginsFormatted(basePath: string): string {
 }
 
 /**
- * Format a single plugin's metadata for `/gsd workflow info <name>`.
+ * Format a single plugin's metadata for `/loop24 workflow info <name>`.
  */
 export function formatPluginInfo(plugin: WorkflowPlugin): string {
   const lines = [

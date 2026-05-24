@@ -1,8 +1,8 @@
 /**
- * GSD Guided Flow — Smart Entry Wizard
+ * Guided Flow — Smart Entry Wizard
  *
  * One function: showSmartEntry(). Reads state from disk, shows a contextual
- * wizard via showNextAction(), and dispatches through GSD-WORKFLOW.md.
+ * wizard via showNextAction(), and dispatches through the agent-WORKFLOW.md.
  * No execution state, no hooks, no tools — the LLM does the rest.
  */
 
@@ -466,7 +466,7 @@ async function dispatchNextDeepProjectSetupStage(entry: PendingDeepProjectSetupE
     // Claude Code currently surfaces workflow-MCP question calls as tool-request
     // UI that can be cancelled outside the normal chat flow. During the
     // foreground deep project setup interview, keep user input in plain chat so
-    // `/gsd new-project --deep` cannot bounce through cancelled tool requests.
+    // `/loop24 new-project --deep` cannot bounce through cancelled tool requests.
     structuredQuestionsAvailable: "false" as const,
   };
   let result: Awaited<ReturnType<(typeof DISPATCH_RULES)[number]["match"]>> = null;
@@ -683,7 +683,7 @@ export function checkAutoStartAfterDiscuss(lookupBasePath?: string): boolean {
   // R3b: belt-and-suspenders for silent registration failure. The discuss flow
   // finished and STATE.md exists, but the milestone may never have landed in
   // the DB. Without this guard, the user sees "Milestone M001 ready." and then
-  // /gsd reports "No Active Milestone".
+  // /loop24 reports "No Active Milestone".
   if (isDbAvailable()) {
     const milestoneRow = getMilestone(milestoneId);
     if (!milestoneRow) {
@@ -766,7 +766,7 @@ function hasToolUse(msg: any): boolean {
  *
  * When the LLM emits "Milestone {{id}} ready." but has not written the
  * milestone CONTEXT/ROADMAP artifacts, `checkAutoStartAfterDiscuss()` silently
- * returns false and the next /gsd invocation loops into the "All milestones
+ * returns false and the next /loop24 invocation loops into the "All milestones
  * complete" warning.
  *
  * This function, called from `handleAgentEnd` after `checkAutoStartAfterDiscuss`
@@ -914,7 +914,7 @@ export function maybeHandleEmptyIntentTurn(
   lookupBasePath?: string,
 ): boolean {
   // Gate: only fire when there is system-driven work in flight. Interactive
-  // /gsd discuss (user-driven) produces legitimate text-only turns.
+  // /loop24 discuss (user-driven) produces legitimate text-only turns.
   if (!isAuto && !hasPendingAutoStart(lookupBasePath)) return false;
 
   const lastMsg = event.messages[event.messages.length - 1];
@@ -1080,7 +1080,7 @@ async function dispatchWorkflow(
   // Providers with grammar-based constrained decoding (xAI/Grok) return
   // "Grammar is too complex" when the combined tool schema is too large.
   // Guided workflow turns only need the active unit's tool surface; strip
-  // unrelated GSD tools and broad non-GSD tools for this queued turn, then
+  // unrelated workflow tools and broad non-workflow tools for this queued turn, then
   // restore so the narrowed surface does not leak into future dispatches.
   let savedTools: ReturnType<typeof scopeGsdWorkflowToolsForDispatch> = null;
 
@@ -1092,8 +1092,8 @@ async function dispatchWorkflow(
       restoreVisibleSkills: typeof pi.setVisibleSkills === "function",
     };
     if (unitType?.startsWith("discuss-") && !isFullGsdToolSurfaceRequested()) {
-      // Keep all non-GSD tools (builtins, other extensions) and only the
-      // GSD tools on the discuss allowlist.
+      // Keep all non-workflow tools (builtins, other extensions) and only the
+      // workflow tools on the discuss allowlist.
       const scopedTools = currentTools.filter(
         (t) => !t.startsWith("gsd_") || DISCUSS_TOOLS_ALLOWLIST.includes(t),
       );
@@ -1309,8 +1309,8 @@ async function prepareAndBuildDiscussPrompt(
 }
 
 /**
- * Bootstrap a .gsd/ project from scratch for headless use.
- * Ensures git repo, .gsd/ structure, gitignore, and preferences all exist.
+ * Bootstrap a .loop24/ project from scratch for headless use.
+ * Ensures git repo, .loop24/ structure, gitignore, and preferences all exist.
  */
 function bootstrapGsdProject(basePath: string): void {
   if (!nativeIsRepo(basePath) || isInheritedRepo(basePath)) {
@@ -1344,7 +1344,7 @@ export async function showHeadlessMilestoneCreation(
   // Clear stale reservations from previous cancelled sessions (#2488)
   clearReservedMilestoneIds();
 
-  // Ensure .gsd/ is bootstrapped
+  // Ensure .loop24/ is bootstrapped
   bootstrapGsdProject(basePath);
 
   const { ensureDbOpen } = await import("./bootstrap/dynamic-tools.js");
@@ -1483,7 +1483,7 @@ async function buildDiscussSlicePrompt(
 }
 
 /**
- * /gsd discuss — show a picker of non-done slices and run a slice interview.
+ * /loop24 discuss — show a picker of non-done slices and run a slice interview.
  * Loops back to the picker after each discussion so the user can chain
  * multiple slice interviews in one session.
  */
@@ -1493,7 +1493,7 @@ export async function showDiscuss(
   basePath: string,
   options?: { target?: string },
 ): Promise<void> {
-  // Guard: no .gsd/ project
+  // Guard: no .loop24/ project
   if (!existsSync(gsdRoot(basePath))) {
     ctx.ui.notify("No GSD project found. Run /gsd to start one first.", "warning");
     return;
@@ -1910,8 +1910,8 @@ async function dispatchDiscussForMilestone(
 /**
  * Self-heal: scan runtime records and clear stale ones left behind when
  * auto-mode crashed mid-unit. auto.ts has its own selfHealRuntimeRecords()
- * but guided-flow (manual /gsd mode) never called it — meaning stale records
- * persisted until the next /gsd auto run.  This ensures the wizard always
+ * but guided-flow (manual /loop24 mode) never called it — meaning stale records
+ * persisted until the next /loop24 auto run.  This ensures the wizard always
  * starts from a clean state regardless of how the previous session ended.
  */
 function selfHealRuntimeRecords(basePath: string, ctx: ExtensionContext): { cleared: number } {
@@ -2059,7 +2059,7 @@ export async function showSmartEntry(
   const stepMode = options?.step;
 
   // ── Clear stale milestone ID reservations from previous cancelled sessions ──
-  // Reservations only need to survive within a single /gsd interaction.
+  // Reservations only need to survive within a single /loop24 interaction.
   // Without this, each cancelled session permanently bumps the next ID. (#2488)
   clearReservedMilestoneIds();
 
@@ -2080,8 +2080,8 @@ export async function showSmartEntry(
   }
 
   // ── Detection preamble — run before any bootstrap ────────────────────
-  // Check bootstrap completeness, not just .gsd/ directory existence.
-  // A zombie .gsd/ state (symlink exists but missing PREFERENCES.md and
+  // Check bootstrap completeness, not just .loop24/ directory existence.
+  // A zombie .loop24/ state (symlink exists but missing PREFERENCES.md and
   // milestones/) must trigger the init wizard, not skip it (#2942).
   const gsdPath = gsdRoot(basePath);
   const hasBootstrapArtifacts = hasGsdBootstrapArtifacts(gsdPath);
@@ -2102,16 +2102,16 @@ export async function showSmartEntry(
       // "fresh" — fall through to init wizard
     }
 
-    // No .gsd/ or zombie .gsd/ — run the project init wizard
+    // No .loop24/ or zombie .loop24/ — run the project init wizard
     const result = await showProjectInit(ctx, pi, basePath, detection);
     if (!result.completed) return; // User cancelled
     skipGitBootstrap = shouldSkipGitBootstrapAfterInit(result);
 
-    // Init wizard bootstrapped .gsd/ — fall through to the normal flow below
+    // Init wizard bootstrapped .loop24/ — fall through to the normal flow below
     // which will detect "no milestones" and start the discuss prompt
   }
 
-  // ── Ensure git repo exists — GSD needs it for worktree isolation ──────
+  // ── Ensure git repo exists — requires it for worktree isolation ──────
   // Also handle inherited repos: if basePath is a subdirectory of another
   // git repo that has no .gsd, create a fresh repo to prevent cross-project
   // state leaks (#1639).
@@ -2128,7 +2128,7 @@ export async function showSmartEntry(
     if (manageGitignore !== false) untrackRuntimeFiles(basePath);
   }
 
-  // Deep setup can pre-create .gsd/PREFERENCES.md before the normal init
+  // Deep setup can pre-create .loop24/PREFERENCES.md before the normal init
   // wizard path runs. If that path also initialized git, make HEAD reachable
   // now so later worktree/git-log operations do not run on an unborn branch.
   if (!skipGitBootstrap && nativeIsRepo(basePath) && !nativeHasCommittedHead(basePath)) {
@@ -2219,7 +2219,7 @@ export async function showSmartEntry(
   }
 
   // ── Deep planning mode kickoff ────────────────────────────────────────
-  // When `planning_depth: deep` is set (e.g. via `/gsd new-project --deep`)
+  // When `planning_depth: deep` is set (e.g. via `/loop24 new-project --deep`)
   // and any project-level stage gate is still pending, keep the user-question
   // stages in the foreground conversation. Auto-mode is resumed only after
   // the project interview artifacts exist, so questions do not look like
@@ -2240,8 +2240,8 @@ export async function showSmartEntry(
 
   if (!state.activeMilestone?.id) {
     // Guard: if a discuss session is already in flight, don't re-inject the prompt.
-    // Both /gsd and /gsd auto reach this branch when no milestone exists yet.
-    // Without this guard, every subsequent /gsd call overwrites the pending auto-start
+    // Both /loop24 and /loop24 auto reach this branch when no milestone exists yet.
+    // Without this guard, every subsequent /loop24 call overwrites the pending auto-start
     // and fires another dispatchWorkflow, resetting the conversation mid-interview.
     if (hasPendingAutoStart(basePath)) {
       // #3274: If /clear interrupted the discussion, the pending entry is stale.

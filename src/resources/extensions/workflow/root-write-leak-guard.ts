@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Detect project-root file writes during isolated milestone worktree units.
 
 import { execFileSync } from "node:child_process";

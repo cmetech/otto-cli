@@ -1,4 +1,4 @@
-// GSD Extension — Session History View
+// Workflow Extension — Session History View
 // Human-readable display of past auto-mode unit executions.
 
 import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";

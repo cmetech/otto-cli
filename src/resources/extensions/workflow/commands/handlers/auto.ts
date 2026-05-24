@@ -26,7 +26,7 @@ async function hasUnresolvedCloseoutBlocker(ctx: ExtensionCommandContext, basePa
 
 /**
  * Parse --yolo flag and optional file path from the auto command string.
- * Supports: `/gsd auto --yolo path/to/file.md` or `/gsd auto -y path/to/file.md`
+ * Supports: `/loop24 auto --yolo path/to/file.md` or `/loop24 auto -y path/to/file.md`
  */
 function parseYoloFlag(trimmed: string): { yoloSeedFile: string | null; rest: string } {
   const yoloRe = /(?:--yolo|-y)\s+("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\S+)/;

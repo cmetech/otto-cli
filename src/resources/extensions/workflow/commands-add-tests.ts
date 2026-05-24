@@ -1,5 +1,5 @@
 /**
- * GSD Command — /gsd add-tests
+ * Command — /loop24 add-tests
  *
  * Generates tests for a completed slice by dispatching an LLM prompt
  * with implementation context (summaries, changed files, test patterns).

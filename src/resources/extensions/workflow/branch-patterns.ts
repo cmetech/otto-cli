@@ -1,5 +1,5 @@
 /**
- * GSD branch naming patterns — single source of truth.
+ * Branch naming patterns — single source of truth.
  *
  * gsd/<worktree>/<milestone>/<slice>  → SLICE_BRANCH_RE
  * gsd/quick/<id>-<slug>               → QUICK_BRANCH_RE

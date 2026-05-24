@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * GSD Interactive Installer
+ * Interactive Installer
  *
  * Entry point for `npx @ericsson/loop24` or `npx @ericsson/loop24@latest`.
  * When invoked directly (not as a postinstall hook), runs the visual
@@ -52,7 +52,7 @@ try {
 } catch { /* ignore */ }
 
 // ── Brand strings (templated from package.json so the published @ericsson/loop24
-// ── package self-describes correctly without hard-coding gsd-pi names) ────────
+// ── package self-describes correctly without hard-coding upstream names) ────────
 let PKG_NAME = '@ericsson/loop24'
 let BRAND = 'LOOP24'
 let CMD = 'loop24'

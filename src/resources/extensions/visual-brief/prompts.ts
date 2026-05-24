@@ -1,4 +1,4 @@
-// GSD-2 + Visual Brief prompt construction
+// LOOP24 + Visual Brief prompt construction
 
 import {
 	createVisualBriefArtifactPolicy,
@@ -100,7 +100,7 @@ export function parseVisualBriefArgs(args: string): VisualBriefRequest | null {
 
 export interface VisualBriefPromptOptions {
 	outputDir: string;
-	/** GSD version rendered in the shell header/footer. Falls back to "0.0.0" when not provided. */
+	/** version rendered in the shell header/footer. Falls back to "0.0.0" when not provided. */
 	version?: string;
 }
 

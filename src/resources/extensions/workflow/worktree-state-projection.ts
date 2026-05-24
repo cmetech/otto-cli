@@ -1,4 +1,4 @@
-// GSD-2 — Worktree State Projection module: directional state-flow rules between project root and auto-worktree.
+// LOOP24 — Worktree State Projection module: directional state-flow rules between project root and auto-worktree.
 /**
  * Worktree State Projection module — first-class Module for directional
  * state-file flow between the project root and the auto-worktree.
@@ -163,7 +163,7 @@ function syncTopLevelMilestoneArtifacts(
 }
 
 /**
- * Root-level .gsd/ files copied from worktree back to project root for
+ * Root-level .loop24/ files copied from worktree back to project root for
  * post-merge diagnostics. Markdown projections are NOT in this list — DB
  * remains authoritative.
  */

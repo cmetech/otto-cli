@@ -1,9 +1,9 @@
 /**
- * GSD Init Wizard — Per-project onboarding.
+ * Init Wizard — Per-project onboarding.
  *
- * Guides users through project setup when entering a directory without .gsd/.
+ * Guides users through project setup when entering a directory without .loop24/.
  * Detects project ecosystem, offers v1 migration, configures project preferences,
- * bootstraps .gsd/ structure, and transitions to the first milestone discussion.
+ * bootstraps .loop24/ structure, and transitions to the first milestone discussion.
  */
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
@@ -64,7 +64,7 @@ const DEFAULT_PREFS: ProjectPreferences = {
 
 /**
  * Run the project init wizard.
- * Called when entering a directory without .gsd/ (or via /gsd init).
+ * Called when entering a directory without .loop24/ (or via /loop24 init).
  */
 export async function showProjectInit(
   ctx: ExtensionCommandContext,
@@ -267,12 +267,12 @@ export async function showProjectInit(
   });
 
   if (reviewChoice === "not_yet") {
-    // User deferred — don't create .gsd/ or persist preferences. Pre-step state
+    // User deferred — don't create .loop24/ or persist preferences. Pre-step state
     // (e.g. git init from Step 2) remains as-is, matching prior step semantics.
     return { completed: false, bootstrapped: false };
   }
 
-  // ── Step 10: Bootstrap .gsd/ + write preferences ───────────────────────────
+  // ── Step 10: Bootstrap .loop24/ + write preferences ───────────────────────────
   bootstrapGsdDirectoryStructure(basePath, signals);
   const prefillPrefs = mapInitPrefsToWizardShape(prefs);
   // Always derive the preferences path from basePath so init writing the
@@ -293,8 +293,8 @@ export async function showProjectInit(
     });
   }
 
-  // Initialize SQLite database so GSD starts in full-capability mode (#3880).
-  // Without this, isDbAvailable() returns false and GSD enters degraded
+  // Initialize SQLite database so the agent starts in full-capability mode (#3880).
+  // Without this, isDbAvailable() returns false and the agent enters degraded
   // markdown-only mode until a tool handler happens to call ensureDbOpen().
   try {
     const { ensureDbOpen } = await import("./bootstrap/dynamic-tools.js");
@@ -335,8 +335,8 @@ export async function showProjectInit(
     // Non-fatal — codebase map generation failure should never block project init
   }
 
-  // Write initial STATE.md so it exists before the first /gsd invocation.
-  // The explicit /gsd init path (ops.ts) returns without entering showSmartEntry(),
+  // Write initial STATE.md so it exists before the first /loop24 invocation.
+  // The explicit /loop24 init path (ops.ts) returns without entering showSmartEntry(),
   // which would otherwise generate STATE.md at guided-flow.ts:1358.
   try {
     const { deriveState } = await import("./state.js");
@@ -346,7 +346,7 @@ export async function showProjectInit(
     const state = await deriveState(basePath);
     await saveFile(resolveGsdRootFile(basePath, "STATE"), buildStateMarkdown(state));
   } catch {
-    // Non-fatal — STATE.md will be regenerated on next /gsd invocation
+    // Non-fatal — STATE.md will be regenerated on next /loop24 invocation
   }
 
   {
@@ -405,7 +405,7 @@ export async function offerMigration(
 // ─── Re-init Handler ────────────────────────────────────────────────────────────
 
 /**
- * Handle /gsd init when .gsd/ already exists.
+ * Handle /loop24 init when .loop24/ already exists.
  * Offers preference reset without destructive milestone deletion.
  */
 export async function handleReinit(
@@ -544,7 +544,7 @@ async function customizeAdvancedPrefs(
 // ─── Bootstrap ──────────────────────────────────────────────────────────────────
 
 /**
- * Create .gsd/ directory structure and seed CONTEXT.md.
+ * Create .loop24/ directory structure and seed CONTEXT.md.
  *
  * Preferences are written separately by the caller via the unified
  * writePreferencesFile helper so init and the prefs wizard share one path.

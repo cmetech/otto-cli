@@ -1,4 +1,4 @@
-// Shared assertion helpers for GSD test files.
+// Shared assertion helpers for the workflow test files.
 //
 // Usage:
 //   import { createTestContext } from './test-helpers.ts';

@@ -1,4 +1,4 @@
-// GSD2 — Shared interview round UI widget
+// LOOP24 — Shared interview round UI widget
 /**
  * Shared interview round UI widget.
  *

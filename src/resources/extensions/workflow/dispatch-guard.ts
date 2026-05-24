@@ -1,4 +1,4 @@
-// GSD Dispatch Guard — prevents out-of-order slice dispatch
+// Dispatch Guard — prevents out-of-order slice dispatch
 
 import { resolveMilestoneFile } from "./paths.js";
 import { findMilestoneIds } from "./guided-flow.js";
@@ -39,7 +39,7 @@ type ConsecutiveDispatchState = Pick<
  * `state.lastDispatchedKey`, and `state.lastDispatchPhase`.
  *
  * Returns `null` when dispatch is allowed, or a blocker message (including
- * guidance to run `/gsd resume`) when the cap is reached.
+ * guidance to run `/loop24 resume`) when the cap is reached.
  */
 export function getConsecutiveDispatchBlocker(
   state: ConsecutiveDispatchState,

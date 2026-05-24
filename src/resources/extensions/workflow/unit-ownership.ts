@@ -1,9 +1,9 @@
-// GSD Extension — Unit Ownership
+// Workflow Extension — Unit Ownership
 // Opt-in per-unit ownership claims for multi-agent safety.
 //
 // An agent can claim a unit (task, slice) before working on it.
 // complete-task and complete-slice enforce ownership when claims exist.
-// Claims are stored in SQLite (.gsd/unit-claims.db) for atomic
+// Claims are stored in SQLite (.loop24/unit-claims.db) for atomic
 // first-writer-wins semantics via INSERT OR IGNORE.
 //
 // Unit key format:
@@ -167,7 +167,7 @@ export function sliceUnitKey(milestoneId: string, sliceId: string): string {
 
 /**
  * Initialize the ownership SQLite database for a given basePath.
- * Creates .gsd/ directory and unit-claims.db with the unit_claims table.
+ * Creates .loop24/ directory and unit-claims.db with the unit_claims table.
  * Safe to call multiple times (idempotent).
  */
 export function initOwnershipTable(basePath: string): void {

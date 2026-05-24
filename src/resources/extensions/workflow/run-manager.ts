@@ -1,7 +1,7 @@
 /**
  * run-manager.ts — Create and list isolated workflow run directories.
  *
- * Each run lives under `.gsd/workflow-runs/<name>/<timestamp>/` and contains:
+ * Each run lives under `.loop24/workflow-runs/<name>/<timestamp>/` and contains:
  * - DEFINITION.yaml — frozen snapshot of the workflow definition at run-creation time
  * - GRAPH.yaml — initialized step graph with all steps pending
  * - PARAMS.json — (optional) parameter overrides used for this run
@@ -109,9 +109,9 @@ export function createRunFromDefinition(
  *
  * Resolution order:
  *   1. Plugin resolver (project → global → bundled), YAML format only.
- *   2. Legacy `.gsd/workflow-defs/<defName>.yaml`.
+ *   2. Legacy `.loop24/workflow-defs/<defName>.yaml`.
  *
- * Creates `<basePath>/.gsd/workflow-runs/<defName>/<timestamp>/` containing
+ * Creates `<basePath>/.loop24/workflow-runs/<defName>/<timestamp>/` containing
  * DEFINITION.yaml (frozen), GRAPH.yaml (initialized), and optional PARAMS.json.
  *
  * @throws Error if no matching definition is found anywhere.
@@ -127,7 +127,7 @@ export function createRun(
     return createRunFromDefinition(basePath, defName, plugin.path, overrides);
   }
 
-  // Fall back to legacy `.gsd/workflow-defs/<defName>.yaml`.
+  // Fall back to legacy `.loop24/workflow-defs/<defName>.yaml`.
   const defsDir = join(basePath, ".gsd", DEFS_DIR);
   const rawDef = loadDefinition(defsDir, defName);
   const def: WorkflowDefinition = overrides
@@ -157,7 +157,7 @@ export function createRun(
 /**
  * List existing workflow runs with metadata.
  *
- * Scans `<basePath>/.gsd/workflow-runs/` for run directories. Each run's
+ * Scans `<basePath>/.loop24/workflow-runs/` for run directories. Each run's
  * GRAPH.yaml is read to derive step counts and overall status.
  *
  * @param basePath — project root directory

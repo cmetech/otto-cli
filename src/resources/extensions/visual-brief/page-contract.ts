@@ -1,4 +1,4 @@
-// GSD-2 + Visual Brief page contract
+// LOOP24 + Visual Brief page contract
 
 import type { VisualBriefMode } from "./prompts.js";
 

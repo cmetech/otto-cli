@@ -1,5 +1,5 @@
 /**
- * GSD Queue Management — showQueue, reorder, add, and context builder.
+ * Queue Management — showQueue, reorder, add, and context builder.
  *
  * Self-contained queue UI extracted from guided-flow.ts.
  * Safe to run while auto-mode is executing — only writes to future milestone
@@ -47,7 +47,7 @@ export async function showQueue(
   pi: ExtensionAPI,
   basePath: string,
 ): Promise<void> {
-  // ── Ensure .gsd/ exists ─────────────────────────────────────────────
+  // ── Ensure .loop24/ exists ─────────────────────────────────────────────
   const gsd = gsdRoot(basePath);
   if (!existsSync(gsd)) {
     ctx.ui.notify("No GSD project found. Run /gsd to start one first.", "warning");
@@ -438,6 +438,6 @@ function syncProjectMdSequence(
   const newTable = [headerLine, separatorLine, ...newRows];
   lines.splice(tableStart, tableEnd - tableStart, ...newTable);
   // Atomic write: tmp+rename avoids a torn PROJECT.md appearing dirty in
-  // another worktree's working tree during a concurrent /gsd auto merge.
+  // another worktree's working tree during a concurrent /loop24 auto merge.
   atomicWriteSync(projectPath, lines.join("\n"), "utf-8");
 }

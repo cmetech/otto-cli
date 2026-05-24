@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Adapts shared GSD workflow handlers for MCP executor calls.
+// Project/App: LOOP24
+// File Purpose: Adapts shared workflow handlers for MCP executor calls.
 
 import { ensureDbOpen } from "../bootstrap/dynamic-tools.js";
 import { sanitizeCompleteMilestoneParams } from "../bootstrap/sanitize-complete-milestone.js";
@@ -212,7 +212,7 @@ export async function executeSummarySave(
         });
         // PROJECT.md was persisted by saveArtifactToDb above; the artifacts row
         // changed even though no milestones registered. Invalidate so subsequent
-        // /gsd reads see the persisted artifact instead of the pre-save cache.
+        // /loop24 reads see the persisted artifact instead of the pre-save cache.
         invalidateStateCache();
         return {
           content: [{

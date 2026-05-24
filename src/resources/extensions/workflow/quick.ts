@@ -1,11 +1,11 @@
 /**
- * GSD Quick Mode — /gsd quick <task>
+ * Quick Mode — /loop24 quick <task>
  * Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
  *
- * Lightweight task execution with GSD guarantees (atomic commits, state
+ * Lightweight task execution with the agent guarantees (atomic commits, state
  * tracking) but without the full milestone/slice ceremony.
  *
- * Quick tasks live in `.gsd/quick/` and are tracked in STATE.md's
+ * Quick tasks live in `.loop24/quick/` and are tracked in STATE.md's
  * "Quick Tasks Completed" table.
  */
 
@@ -199,7 +199,7 @@ export async function handleQuick(
   const basePath = process.cwd();
   const root = gsdRoot(basePath);
 
-  // Validate: .gsd/ must exist
+  // Validate: .loop24/ must exist
   if (!existsSync(root)) {
     ctx.ui.notify(
       "No .gsd/ directory found. Run /gsd to initialize a project first.",

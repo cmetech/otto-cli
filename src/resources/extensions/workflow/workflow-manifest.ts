@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: State manifest snapshot and restore orchestration for GSD workflow data.
+// Project/App: LOOP24
+// File Purpose: State manifest snapshot and restore orchestration for workflow data.
 
 import {
   _getAdapter,
@@ -202,7 +202,7 @@ export function snapshotState(): StateManifest {
 // ─── writeManifest ───────────────────────────────────────────────────────
 
 /**
- * Write current DB state to .gsd/state-manifest.json via atomicWriteSync.
+ * Write current DB state to .loop24/state-manifest.json via atomicWriteSync.
  * Uses JSON.stringify with 2-space indent for git three-way merge friendliness.
  */
 export function writeManifest(basePath: string): void {

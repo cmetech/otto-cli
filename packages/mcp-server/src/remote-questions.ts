@@ -104,7 +104,7 @@ const ENV_KEYS: Record<RemoteChannel, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Config resolution — reads ~/.gsd/PREFERENCES.md YAML frontmatter
+// Config resolution — reads ~/.loop24/PREFERENCES.md YAML frontmatter
 // ---------------------------------------------------------------------------
 
 function clampNumber(value: unknown, fallback: number, min: number, max: number): number {
@@ -833,7 +833,7 @@ function formatForTool(answer: RemoteAnswer): Record<string, { answers: string[]
 }
 
 /**
- * Normalize a `RemoteAnswer` into the `RoundResult` shape the GSD
+ * Normalize a `RemoteAnswer` into the `RoundResult` shape the agent
  * discussion-gate hook reads from `tool_result` `details.response`. Mirrors
  * `src/resources/extensions/remote-questions/manager.ts:toRoundResultResponse`
  * and the local-path helper `buildAskUserQuestionsRoundResult` in server.ts.

@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Custom-engine iteration-data adapter for auto-mode loop.
 
 import type { GSDState } from "../types.js";

@@ -397,7 +397,7 @@ export class DiscordBot {
       const projectPath = collected.values[0];
       this.logger.info('gsd-start: project selected', { projectPath });
 
-      // Defer the update immediately — startSession can take 10-30s to spawn the GSD process,
+      // Defer the update immediately — startSession can take 10-30s to spawn the agent process,
       // and Discord's component interaction token expires in 3 seconds without deferral.
       await collected.deferUpdate();
 

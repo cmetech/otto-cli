@@ -771,13 +771,13 @@ function isDotGsdIgnored(basePath: string): boolean {
 }
 
 /**
- * Determine whether the project opts out of GSD-managed `.gitignore` via
- * `git.manage_gitignore: false` in `.gsd/PREFERENCES.md`. Uses a minimal
+ * Determine whether the project opts out of managed `.gitignore` via
+ * `git.manage_gitignore: false` in `.loop24/PREFERENCES.md`. Uses a minimal
  * inline parser to avoid importing the full preferences module (which would
  * introduce a circular dependency back into this low-level bridge).
  *
  * Returns true when management is disabled. Any parse failure or missing
- * file returns false (default: GSD may manage `.gitignore`).
+ * file returns false (default: the agent may manage `.gitignore`).
  */
 function isGitignoreManagementDisabled(basePath: string): boolean {
   const prefsPath = join(basePath, ".gsd", "PREFERENCES.md");
@@ -846,7 +846,7 @@ function stageUntrackedExcludingDotGsd(basePath: string): void {
     const code = entry.slice(0, 2);
     const path = entry.slice(3);
     if (code !== "??") continue;
-    // Skip GSD runtime artifacts. Under `manage_gitignore: false` the user
+    // Skip runtime artifacts. Under `manage_gitignore: false` the user
     // may not have these in `.gitignore`, so we filter explicitly to avoid
     // committing transient state (.gsd external link, migration lock,
     // background shell scratch dir).
@@ -919,7 +919,7 @@ export function nativeAddAllWithExclusions(basePath: string, exclusions: readonl
     if (stderr.includes("ignored by one of your .gitignore files")) {
       return;
     }
-    // When .gsd is a symlink, git rejects `:!.gsd/...` pathspecs with
+    // When .gsd is a symlink, git rejects `:!.loop24/...` pathspecs with
     // "beyond a symbolic link". Hand off to the self-heal fallback which
     // either adds `.gsd` to `.gitignore` and retries `git add -A`, or stages
     // real files explicitly when `git.manage_gitignore: false` forbids the
@@ -969,7 +969,7 @@ export function nativeResetPaths(basePath: string, paths: string[]): void {
  * Uses `git commit -F -` so normal user hooks run and commit.gpgsign is honored.
  *
  * The fallback intentionally does NOT use --no-verify — user pre-commit /
- * commit-msg / prepare-commit-msg hooks must fire on every GSD-automated
+ * commit-msg / prepare-commit-msg hooks must fire on every automated
  * commit. (Issue #4980 CRIT-1)
  */
 export function nativeCommit(
@@ -979,7 +979,7 @@ export function nativeCommit(
 ): string | null {
   // Use git CLI with stdin pipe for safe multi-line messages. Hooks run;
   // commit.gpgsign honored. libgit2 commit-create bypasses hooks, so automated
-  // GSD commits intentionally stay on the CLI path even when native git is on.
+  // workflow commits intentionally stay on the CLI path even when native git is on.
   try {
     const args = ["commit", "-F", "-"];
     if (options?.allowEmpty) args.push("--allow-empty");
@@ -1069,7 +1069,7 @@ export function nativeMergeSquash(basePath: string, branch: string): GitMergeRes
       stderr.includes("overwritten by merge")
     ) {
       // Extract filenames from git stderr so callers can report which files
-      // are dirty instead of generically blaming .gsd/ (#2151).
+      // are dirty instead of generically blaming .loop24/ (#2151).
       // Git lists them as tab-indented lines between the "would be overwritten"
       // header and the "Please commit" footer.
       const dirtyFiles = stderr

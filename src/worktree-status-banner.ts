@@ -1,4 +1,4 @@
-// GSD worktree startup banner
+// Worktree startup banner
 import { execFileSync } from 'node:child_process'
 import { existsSync, realpathSync } from 'node:fs'
 import { join, resolve, sep } from 'node:path'

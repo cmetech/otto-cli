@@ -1,7 +1,7 @@
 /**
- * Shared next-action prompt for GSD extensions.
+ * Shared next-action prompt for workflow extensions.
  *
- * Renders a consistent "step complete" UI at the end of every GSD stage:
+ * Renders a consistent "step complete" UI at the end of every workflow stage:
  *
  *   ─────────────────────────────────────────
  *   ✓  Phase 1 research complete
@@ -11,7 +11,7 @@
  *      [optional extra content block]
  *
  *   Files written:
- *      .gsd/phases/01-foo/01-RESEARCH.md
+ *      .loop24/phases/01-foo/01-RESEARCH.md
  *
  *   › 1. Plan phase 1           ← recommended, pre-selected
  *        Create PLAN.md files for execution

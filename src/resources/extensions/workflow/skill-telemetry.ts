@@ -1,5 +1,5 @@
 /**
- * GSD Skill Telemetry — Track which skills are loaded per unit (#599)
+ * Skill Telemetry — Track which skills are loaded per unit (#599)
  *
  * Captures skill names at dispatch time for inclusion in UnitMetrics.
  * Distinguishes between "available" skills (in system prompt) and

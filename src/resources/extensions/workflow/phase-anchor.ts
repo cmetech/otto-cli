@@ -1,6 +1,6 @@
 /**
  * Phase handoff anchors — compact structured summaries written between
- * GSD auto-mode phases so downstream agents inherit decisions, blockers,
+ * auto-mode phases so downstream agents inherit decisions, blockers,
  * and intent without re-inferring from scratch.
  */
 

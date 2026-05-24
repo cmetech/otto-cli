@@ -1,6 +1,6 @@
-// GSD Directory Writer — Format Functions & Directory Orchestrator
-// Format functions: pure string-returning functions that serialize GSD types into the exact markdown
-// format that GSD-2's parsers expect (parseRoadmap, parsePlan, parseSummary, parseRequirementCounts).
+// Directory Writer — Format Functions & Directory Orchestrator
+// Format functions: pure string-returning functions that serialize types into the exact markdown
+// format that the parsers expect (parseRoadmap, parsePlan, parseSummary, parseRequirementCounts).
 // writeGSDDirectory: orchestrator that writes a complete .gsd directory tree from a GSDProject.
 
 import { join } from 'node:path';
@@ -408,7 +408,7 @@ export function formatContext(milestoneId: string): string {
 /**
  * Format STATE.md.
  * deriveState() does not read STATE.md — it recomputes from scratch.
- * Write a minimal stub that will be overwritten on first /gsd status.
+ * Write a minimal stub that will be overwritten on first /loop24 status.
  */
 export function formatState(milestones: GSDMilestone[]): string {
   const lines: string[] = [];

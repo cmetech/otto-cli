@@ -1,5 +1,5 @@
 /**
- * Pure GSD health widget logic.
+ * Pure health widget logic.
  *
  * Separates project-state detection and line rendering from the widget's
  * runtime integrations so the regressions can be tested directly.

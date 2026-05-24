@@ -25,7 +25,7 @@ const jiti = createJiti(fileURLToPath(import.meta.url), { interopDefault: true, 
 const { existsSync } = await import('node:fs')
 
 /**
- * Resolve the GSD extensions root for headless-query. Prefers the synced
+ * Resolve the agent extensions root for headless-query. Prefers the synced
  * agent directory (so headless-query loads the same extension copy as
  * interactive/auto modes — #3471) and falls back to the bundled source
  * resource for source-tree dev workflows.

@@ -1,4 +1,4 @@
-// GSD-2 doctor git health checks
+// LOOP24 doctor git health checks
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, realpathSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -20,7 +20,7 @@ import { resolveWorktreeProjectRoot } from "./worktree-root.js";
 
 /**
  * Returns true if the directory contains only doctor artifacts
- * (e.g. `.gsd/doctor-history.jsonl`). These dirs are created by
+ * (e.g. `.loop24/doctor-history.jsonl`). These dirs are created by
  * appendDoctorHistory() writing to worktree-scoped paths during the audit
  * and should not be flagged as orphaned worktrees (#3105).
  */
@@ -432,7 +432,7 @@ export async function checkGitHealth(
     const wtDir = worktreesDir(basePath);
     if (existsSync(wtDir)) {
       // Resolve symlinks and normalize separators so that symlinked .gsd
-      // paths (e.g. ~/.gsd/projects/<hash>/worktrees/…) match the paths
+      // paths (e.g. ~/.loop24/projects/<hash>/worktrees/…) match the paths
       // returned by `git worktree list`.
       const normalizePath = (p: string): string => {
         try { p = realpathSync(p); } catch { /* path may not exist */ }
@@ -448,7 +448,7 @@ export async function checkGitHealth(
         } catch { continue; }
         const normalizedFullPath = normalizePath(fullPath);
         if (!registeredPaths.has(normalizedFullPath)) {
-          // Skip directories that only contain doctor artifacts (.gsd/doctor-history.jsonl).
+          // Skip directories that only contain doctor artifacts (.loop24/doctor-history.jsonl).
           // appendDoctorHistory() can recreate these dirs during the audit itself,
           // causing a circular false positive (#3105 Bug 1).
           if (isDoctorArtifactOnly(fullPath)) continue;
@@ -544,8 +544,8 @@ export async function checkGitHealth(
   }
 
   // ── Worktree lifecycle checks ──────────────────────────────────────────
-  // Check GSD-managed worktrees for: merged branches, stale work, dirty
-  // state, and unpushed commits. Only worktrees under .gsd/worktrees/.
+  // Check managed worktrees for: merged branches, stale work, dirty
+  // state, and unpushed commits. Only worktrees under .loop24/worktrees/.
   try {
     const healthBasePath = resolveWorktreeProjectRoot(basePath);
     const healthStatuses = getAllWorktreeHealth(healthBasePath);

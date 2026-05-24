@@ -1,5 +1,5 @@
 /**
- * GSD Command — `/gsd memory`
+ * Command — `/loop24 memory`
  *
  * Subcommands:
  *   list            — show recent active memories
@@ -105,7 +105,7 @@ export async function handleMemory(
 ): Promise<void> {
   const parsed = parseArgs(args);
 
-  // `/gsd memory` or `/gsd memory help`
+  // `/loop24 memory` or `/loop24 memory help`
   if (parsed.sub === "" || parsed.sub === "help") {
     ctx.ui.notify(usage(), "info");
     return;

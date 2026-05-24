@@ -276,8 +276,8 @@ export interface PlanningPhaseFile {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// GSD Output Types — produced by transformer, consumed by writer (S03)
-// Mirror GSD-2 runtime shapes so deriveState() works on migrated output.
+// Output Types — produced by transformer, consumed by writer (S03)
+// Mirror current runtime shapes so deriveState() works on migrated output.
 // ═══════════════════════════════════════════════════════════════════════════
 
 export interface GSDProject {

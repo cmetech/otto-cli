@@ -6,9 +6,9 @@
  * Parent process env vars that, if leaked into a git child process, can
  * silently redirect every operation to a different repo or index.
  *
- * Stripped from GIT_NO_PROMPT_ENV so a GSD invoked from inside a git hook,
+ * Stripped from GIT_NO_PROMPT_ENV so a the agent invoked from inside a git hook,
  * a different worktree's terminal, or any context that pre-set these vars
- * cannot redirect GSD's git operations to the wrong target.
+ * cannot redirect the agent's git operations to the wrong target.
  * (Issue #4980 NEW-1)
  */
 const LEAKING_GIT_ENV_VARS = [

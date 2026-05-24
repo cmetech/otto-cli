@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Shared tree and selector row rendering utilities.
 
 import { truncateToWidth } from "@gsd/pi-tui";

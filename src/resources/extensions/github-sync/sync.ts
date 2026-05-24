@@ -1,8 +1,8 @@
 /**
  * Core GitHub sync engine.
  *
- * Entry point: `runGitHubSync()` — called from the GSD post-unit pipeline.
- * Routes to per-event sync functions based on the unit type, reads GSD
+ * Entry point: `runGitHubSync()` — called from the post-unit pipeline.
+ * Routes to per-event sync functions based on the unit type, reads workflow
  * files to build GitHub entities, and persists the sync mapping.
  *
  * All errors are caught internally — sync failures never block execution.
@@ -58,7 +58,7 @@ import {
 // ─── Entry Point ────────────────────────────────────────────────────────────
 
 /**
- * Main sync entry point — called from GSD post-unit pipeline.
+ * Main sync entry point — called from post-unit pipeline.
  * Routes to the appropriate sync function based on unit type.
  */
 export async function runGitHubSync(
@@ -478,7 +478,7 @@ async function syncMilestoneComplete(
 // ─── Bootstrap ──────────────────────────────────────────────────────────────
 
 /**
- * Walk the `.gsd/milestones/` tree and create GitHub entities for any
+ * Walk the `.loop24/milestones/` tree and create GitHub entities for any
  * that are missing from the sync mapping. Safe to run multiple times.
  */
 export async function bootstrapSync(basePath: string): Promise<{

@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Handles operational /gsd subcommands.
+// Project/App: LOOP24
+// File Purpose: Handles operational /loop24 subcommands.
 import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
 
 import { enableDebug } from "../../debug-logger.js";
@@ -342,7 +342,7 @@ Examples:
   }
   if (trimmed === "scan" || trimmed.startsWith("scan ")) {
     const { handleScan } = await import("../../commands-scan.js");
-    // \s* (not \s+) is intentional: handles both /gsd scan (no args) and /gsd scan --focus X
+    // \s* (not \s+) is intentional: handles both /loop24 scan (no args) and /loop24 scan --focus X
     await handleScan(trimmed.replace(/^scan\s*/, "").trim(), ctx, pi);
     return true;
   }

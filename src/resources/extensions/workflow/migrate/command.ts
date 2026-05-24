@@ -1,12 +1,12 @@
 /**
- * /gsd migrate — one-shot migration from .planning to .gsd
+ * /loop24 migrate — one-shot migration from .planning to .gsd
  *
  * Thin UX orchestrator: resolves paths, runs the validate → parse → transform →
  * preview → write pipeline, and shows confirmation UI via showNextAction.
  * All business logic lives in the pipeline modules (S01–S03).
  *
  * After a successful write, offers a read-only review that audits the output
- * for GSD-2 standards compliance.
+ * for the workflow-2 standards compliance.
  */
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";

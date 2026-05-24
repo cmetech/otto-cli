@@ -505,7 +505,7 @@ function normalizeToolCallId(id: string): string {
 	return sanitized.length > 64 ? sanitized.slice(0, 64) : sanitized;
 }
 
-/** Convert GSD context messages to the Bedrock `Message[]` format, collapsing consecutive tool-result turns into a single user message. */
+/** Convert context messages to the Bedrock `Message[]` format, collapsing consecutive tool-result turns into a single user message. */
 function convertMessages(
 	context: Context,
 	model: Model<"bedrock-converse-stream">,
@@ -655,7 +655,7 @@ function convertMessages(
 	return result;
 }
 
-/** Convert GSD tool definitions and tool-choice preference to a Bedrock `ToolConfiguration`, appending a cache point for supported models. */
+/** Convert workflow tool definitions and tool-choice preference to a Bedrock `ToolConfiguration`, appending a cache point for supported models. */
 function convertToolConfig(
 	tools: Tool[] | undefined,
 	toolChoice: BedrockOptions["toolChoice"],
@@ -699,7 +699,7 @@ function convertToolConfig(
 	return { tools: bedrockTools, toolChoice: bedrockToolChoice };
 }
 
-/** Map a Bedrock stop-reason string to GSD's internal `StopReason`. */
+/** Map a Bedrock stop-reason string to the agent's internal `StopReason`. */
 function mapStopReason(reason: string | undefined): StopReason {
 	switch (reason) {
 		case BedrockStopReason.END_TURN:

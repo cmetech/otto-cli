@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Registers DB-backed GSD workflow tools and compatibility aliases.
+// Project/App: LOOP24
+// File Purpose: Registers DB-backed workflow tools and compatibility aliases.
 import { Type } from "@sinclair/typebox";
 import type { ExtensionAPI } from "@gsd/pi-coding-agent";
 import { Text } from "@gsd/pi-tui";
@@ -886,7 +886,7 @@ export function registerDbTools(pi: ExtensionAPI): void {
       invalidateStateCache();
 
       // Rebuild STATE.md so it reflects the skip immediately (#3477).
-      // Without this, /gsd auto reads stale STATE.md and resumes the skipped slice.
+      // Without this, /loop24 auto reads stale STATE.md and resumes the skipped slice.
       try {
         const { rebuildState } = await import("../doctor.js");
         await rebuildState(basePath);

@@ -417,7 +417,7 @@ export function supportsStructuredQuestions(
   if (!hasAskUserQuestionsTool(activeTools)) return false;
   if (usesWorkflowMcpTransport(options.authMode, options.baseUrl)) {
     // Claude Code local workflow-MCP exposes ask_user_questions, but form
-    // elicitation can return an immediate cancel outside GSD's chat turn. Keep
+    // elicitation can return an immediate cancel outside the agent's chat turn. Keep
     // checkpoints in plain chat unless a caller deliberately opts into testing
     // that transport.
     return workflowMcpStructuredQuestionsOptIn(options.env);

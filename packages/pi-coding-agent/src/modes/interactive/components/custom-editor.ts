@@ -1,4 +1,4 @@
-// GSD-2 + packages/pi-coding-agent/src/modes/interactive/components/custom-editor.ts - App-level editor key handling.
+// LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/custom-editor.ts - App-level editor key handling.
 
 import {
 	Editor,

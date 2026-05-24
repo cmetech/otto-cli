@@ -8,7 +8,7 @@
  * The parent milestone must still be open (not complete).
  */
 
-// GSD — reopen-slice tool handler
+//  reopen-slice tool handler
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 
 import {

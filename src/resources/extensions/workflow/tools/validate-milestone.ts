@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Validate-milestone tool handler for GSD workflow quality gates.
+// Project/App: LOOP24
+// File Purpose: Validate-milestone tool handler for workflow quality gates.
 
 /**
  * validate-milestone handler — the core operation behind gsd_validate_milestone.

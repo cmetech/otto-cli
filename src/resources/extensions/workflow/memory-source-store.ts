@@ -1,4 +1,4 @@
-// GSD Memory Sources — CRUD for raw ingested content (notes, files, URLs, artifacts)
+// Memory Sources — CRUD for raw ingested content (notes, files, URLs, artifacts)
 //
 // Distinct from `memories`: a `memory_source` row is the preserved raw input
 // that an extractor may (or may not) distill into one or more memories.

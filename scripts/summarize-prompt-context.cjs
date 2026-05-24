@@ -1,5 +1,4 @@
-// Project/App: GSD-2
-// File Purpose: Summarize prompt-context debug events from GSD debug logs.
+// File Purpose: Summarize prompt-context debug events from agent debug logs.
 
 const fs = require("node:fs");
 const path = require("node:path");

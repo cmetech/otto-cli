@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Host-owned verification verdict policy for auto-mode units.
 
 import type { VerificationResult as VerificationGateResult } from "./types.js";

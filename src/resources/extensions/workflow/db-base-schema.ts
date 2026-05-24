@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Base table, index, and view DDL for the GSD database facade.
+// Project/App: LOOP24
+// File Purpose: Base table, index, and view DDL for the workflow database facade.
 
 import type { DbAdapter } from "./db-adapter.js";
 

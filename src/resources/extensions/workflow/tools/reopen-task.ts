@@ -7,7 +7,7 @@
  * closed slice.
  */
 
-// GSD — reopen-task tool handler
+//  reopen-task tool handler
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 
 import {

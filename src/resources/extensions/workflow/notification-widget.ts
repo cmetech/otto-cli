@@ -1,4 +1,4 @@
-// GSD Extension — Notification Status
+// Workflow Extension — Notification Status
 // Always-on ambient notification chip surfaced as an extension status on the
 // footer pwd row. Refreshes on store change + on a 30s timer. Hidden when
 // unread=0. Key sorts late so the chip renders to the right of other

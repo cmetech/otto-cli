@@ -1,5 +1,5 @@
 /**
- * GSD Forensics — Post-mortem investigation of auto-mode failures
+ * Forensics — Post-mortem investigation of auto-mode failures
  *
  * Programmatically scans activity logs, metrics, crash locks, and doctor
  * diagnostics for anomalies, then hands a structured report to the LLM
@@ -67,7 +67,7 @@ interface ActivityLogMeta {
 }
 
 /**
- * Summary of .gsd/journal/ data for forensic investigation.
+ * Summary of .loop24/journal/ data for forensic investigation.
  *
  * To avoid loading huge journal histories into memory, only the most recent
  * daily files are fully parsed. Older files are line-counted for totals.
@@ -241,7 +241,7 @@ export async function handleForensics(
   const report = await buildForensicReport(basePath);
   const savedPath = saveForensicReport(basePath, report, problemDescription);
 
-  // Derive GSD source dir for prompt — fall back to ~/.loop24/agent/extensions/workflow/
+  // Derive workflow source dir for prompt — fall back to ~/.loop24/agent/extensions/workflow/
   // when import.meta.url resolves to the npm-global install path (Windows).
   let gsdSourceDir = dirname(fileURLToPath(import.meta.url));
   if (!existsSync(join(gsdSourceDir, "prompts"))) {
@@ -327,7 +327,7 @@ export async function buildForensicReport(basePath: string): Promise<ForensicRep
     }
   }
 
-  // 8. GSD version — use GSD_VERSION env var set by the loader at startup.
+  // 8. version — use GSD_VERSION env var set by the loader at startup.
   // Extensions run from ~/.loop24/agent/extensions/workflow/ at runtime, so path-traversal
   // from import.meta.url would resolve to ~/package.json (wrong on every system).
   const gsdVersion = process.env.GSD_VERSION || "unknown";

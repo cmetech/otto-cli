@@ -1,4 +1,4 @@
-// GSD worktree session state
+// workflow worktree session state
 let originalCwd: string | null = null;
 
 export function getWorktreeOriginalCwd(): string | null {

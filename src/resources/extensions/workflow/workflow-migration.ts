@@ -1,4 +1,4 @@
-// GSD Extension — Legacy Markdown to Engine Migration
+// Workflow Extension — Legacy Markdown to Engine Migration
 // Converts legacy markdown-only projects to engine state by parsing
 // existing ROADMAP.md, *-PLAN.md, and *-SUMMARY.md files.
 // Populates data into the already-existing v10 schema tables.
@@ -13,7 +13,7 @@ import { resolveMilestoneFile } from "./paths.js";
 // ─── needsAutoMigration ───────────────────────────────────────────────────
 
 /**
- * Returns true when engine tables are empty AND a .gsd/milestones/ directory
+ * Returns true when engine tables are empty AND a .loop24/milestones/ directory
  * with markdown files exists — signals that this is a legacy project that needs
  * one-time migration from markdown to engine state.
  */
@@ -30,7 +30,7 @@ export function needsAutoMigration(basePath: string): boolean {
     return false;
   }
 
-  // Check if .gsd/milestones/ directory exists
+  // Check if .loop24/milestones/ directory exists
   const milestonesDir = join(basePath, ".gsd", "milestones");
   if (!existsSync(milestonesDir)) return false;
 
@@ -40,8 +40,8 @@ export function needsAutoMigration(basePath: string): boolean {
 // ─── migrateFromMarkdown ──────────────────────────────────────────────────
 
 /**
- * Migrate legacy markdown-only .gsd/ projects to engine DB state.
- * Reads .gsd/milestones/<ID>/ directories and parses ROADMAP.md, *-PLAN.md
+ * Migrate legacy markdown-only .loop24/ projects to engine DB state.
+ * Reads .loop24/milestones/<ID>/ directories and parses ROADMAP.md, *-PLAN.md
  * files. All inserts are wrapped in a transaction.
  *
  * This function only INSERTs data into the already-existing v10 schema tables

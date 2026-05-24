@@ -160,7 +160,7 @@ export interface ComponentDependencies {
 }
 
 export interface ComponentCompatibility {
-	/** Minimum GSD version (semver range). */
+	/** Minimum version (semver range). */
 	gsd?: string;
 
 	/** Minimum Node.js version (semver range). */

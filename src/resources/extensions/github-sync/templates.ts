@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Markdown formatters for GitHub sync issues, PR bodies, and comments.
 
 /**

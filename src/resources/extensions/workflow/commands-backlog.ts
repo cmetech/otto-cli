@@ -1,8 +1,8 @@
 /**
- * GSD Command — /gsd backlog
+ * Command — /loop24 backlog
  *
  * Structured backlog management with 999.x numbering.
- * Items stored in .gsd/BACKLOG.md as markdown checklist.
+ * Items stored in .loop24/BACKLOG.md as markdown checklist.
  * Items can be promoted to active slices via add-slice.
  */
 

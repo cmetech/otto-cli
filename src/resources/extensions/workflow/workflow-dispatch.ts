@@ -1,8 +1,8 @@
 /**
  * workflow-dispatch.ts — Shared dispatchers for workflow plugins.
  *
- * Called by both `/gsd start <template>` (existing markdown path) and
- * `/gsd workflow <name>` (new direct dispatch). Keeps the prompt-build
+ * Called by both `/loop24 start <template>` (existing markdown path) and
+ * `/loop24 workflow <name>` (new direct dispatch). Keeps the prompt-build
  * logic in one place so md template behavior stays consistent.
  */
 

@@ -1,5 +1,5 @@
 /**
- * GSD Doctor — Environment Health Checks (#1221)
+ * Doctor — Environment Health Checks (#1221)
  *
  * Deterministic checks for environment readiness that prevent the model
  * from spinning its wheels on missing tools, port conflicts, stale
@@ -42,12 +42,12 @@ const CMD_TIMEOUT = 5_000;
 const WORKTREE_PATH_SEGMENT = `${join(".gsd", "worktrees")}/`;
 
 /**
- * Resolve the project root when running inside a `.gsd/worktrees/<name>/`
+ * Resolve the project root when running inside a `.loop24/worktrees/<name>/`
  * auto-worktree. Returns `null` if not in a worktree.
  *
  * Detection order:
  *   1. `GSD_WORKTREE` env var (set by the worktree launcher)
- *   2. `.gsd/worktrees/` segment in basePath
+ *   2. `.loop24/worktrees/` segment in basePath
  */
 function resolveWorktreeProjectRoot(basePath: string): string | null {
   const envRoot = process.env.GSD_WORKTREE;
@@ -57,7 +57,7 @@ function resolveWorktreeProjectRoot(basePath: string): string | null {
   const idx = normalised.indexOf(WORKTREE_PATH_SEGMENT.replace(/\\/g, "/"));
   if (idx === -1) return null;
 
-  // Everything before `.gsd/worktrees/` is the project root
+  // Everything before `.loop24/worktrees/` is the project root
   return basePath.slice(0, idx);
 }
 
@@ -555,7 +555,7 @@ export function runEnvironmentChecks(basePath: string): EnvironmentCheckResult[]
 
 /**
  * Run environment checks with git remote check included.
- * Use this for explicit /gsd doctor invocations, not pre-dispatch gates.
+ * Use this for explicit /loop24 doctor invocations, not pre-dispatch gates.
  */
 export function runFullEnvironmentChecks(basePath: string): EnvironmentCheckResult[] {
   const results = runEnvironmentChecks(basePath);
@@ -568,7 +568,7 @@ export function runFullEnvironmentChecks(basePath: string): EnvironmentCheckResu
 
 /**
  * Run slow opt-in checks (build and/or test).
- * These are never run on the pre-dispatch gate — only on explicit /gsd doctor --build/--test.
+ * These are never run on the pre-dispatch gate — only on explicit /loop24 doctor --build/--test.
  */
 export function runSlowEnvironmentChecks(
   basePath: string,

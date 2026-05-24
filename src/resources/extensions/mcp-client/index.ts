@@ -2,7 +2,7 @@
  * MCP Client Extension — Native MCP server integration for pi
  *
  * Provides on-demand access to MCP servers configured in project files
- * (.mcp.json, .gsd/mcp.json) and the global ~/.gsd/mcp.json (or
+ * (.mcp.json, .loop24/mcp.json) and the global ~/.loop24/mcp.json (or
  * $GSD_HOME/mcp.json) using the @modelcontextprotocol/sdk Client
  * directly — no external CLI dependency required.
  *
@@ -248,7 +248,7 @@ function formatToolList(serverName: string, tools: McpToolSchema[]): string {
 	return lines.join("\n");
 }
 
-// ─── Status helper (consumed by /gsd mcp) ─────────────────────────────────────
+// ─── Status helper (consumed by /loop24 mcp) ─────────────────────────────────────
 
 /**
  * Return the live connection status for a named MCP server.

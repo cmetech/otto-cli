@@ -268,7 +268,7 @@ export async function handleSetup(args: string, ctx: ExtensionCommandContext, pi
   const { isOnboardingComplete, readOnboardingRecord } = await import("../../onboarding-state.js");
 
   // Sub-route dispatch — keep redirects but route the canonical work to /gsd
-  // onboarding (single source for wizard steps) and /gsd keys (single source
+  // onboarding (single source for wizard steps) and /loop24 keys (single source
   // for credentials).
   if (args === "onboarding" || args === "wizard") {
     const { handleOnboarding } = await import("./onboarding.js");
@@ -306,7 +306,7 @@ export async function handleSetup(args: string, ctx: ExtensionCommandContext, pi
     return;
   }
 
-  // Bare /gsd setup — render the hub: status + actions
+  // Bare /loop24 setup — render the hub: status + actions
   const globalConfigured = hasGlobalSetup();
   const detection = detectProjectState(projectRoot());
   const onboardingDone = isOnboardingComplete();
@@ -458,9 +458,9 @@ async function handleModel(trimmedArgs: string, ctx: ExtensionCommandContext, pi
     return;
   }
 
-  // /gsd model is an explicit per-session pin for GSD dispatches.
+  // /loop24 model is an explicit per-session pin for the agent dispatches.
   // This is captured at auto bootstrap so it survives internal session
-  // switches during /gsd auto and /gsd next runs.
+  // switches during /loop24 auto and /loop24 next runs.
   const sessionId = ctx.sessionManager?.getSessionId?.();
   if (sessionId) {
     setSessionModelOverride(sessionId, {

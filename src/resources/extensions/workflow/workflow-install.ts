@@ -6,12 +6,12 @@
  *   - gist:abc123           → https://gist.githubusercontent.com/anonymous/abc123/raw
  *   - gh:owner/repo/path[@ref] → raw.githubusercontent.com/owner/repo/<ref>/path
  *
- * Installed files land in `~/.gsd/workflows/<name>.<ext>` by default, or
- * `.gsd/workflows/<name>.<ext>` with the `--project` flag.
+ * Installed files land in `~/.loop24/workflows/<name>.<ext>` by default, or
+ * `.loop24/workflows/<name>.<ext>` with the `--project` flag.
  *
- * A provenance file `~/.gsd/workflows/.installed.json` (or project equivalent)
- * records source URL, timestamp, and sha256 so `/gsd workflow uninstall` can
- * clean up and future `/gsd workflow update` can refresh.
+ * A provenance file `~/.loop24/workflows/.installed.json` (or project equivalent)
+ * records source URL, timestamp, and sha256 so `/loop24 workflow uninstall` can
+ * clean up and future `/loop24 workflow update` can refresh.
  */
 
 import {

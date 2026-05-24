@@ -1,4 +1,4 @@
-// GSD2 - Coding agent session factory and runtime wiring
+// LOOP24 - Coding agent session factory and runtime wiring
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 

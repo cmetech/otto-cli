@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Complete-milestone tool handler for GSD workflow state and summaries.
+// Project/App: LOOP24
+// File Purpose: Complete-milestone tool handler for workflow state and summaries.
 
 // GSD2 complete-milestone tool handler
 /**

@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Keyboard input parsing and matching for terminal applications.
 
 /**

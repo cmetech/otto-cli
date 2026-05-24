@@ -64,7 +64,7 @@ export type SessionStatus = 'starting' | 'running' | 'blocked' | 'completed' | '
 // ---------------------------------------------------------------------------
 
 /**
- * A daemon-managed GSD headless session.
+ * A daemon-managed headless session.
  */
 export interface ManagedSession {
   /** Unique session ID returned from RpcClient.init() */
@@ -146,7 +146,7 @@ export interface StartSessionOptions {
   /** Absolute path to the project directory */
   projectDir: string;
 
-  /** Command to send after '/gsd auto' (default: none) */
+  /** Command to send after '/loop24 auto' (default: none) */
   command?: string;
 
   /** Model ID override */
@@ -164,7 +164,7 @@ export interface StartSessionOptions {
 // ---------------------------------------------------------------------------
 
 /**
- * Formatted Discord message payload for a GSD event.
+ * Formatted Discord message payload for a workflow event.
  * content is the plain-text fallback; embeds and components are optional.
  */
 export interface FormattedEvent {

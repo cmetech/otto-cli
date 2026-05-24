@@ -1,9 +1,9 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Registers memory-layer tools.
-// GSD2 — Memory tool registration
+// LOOP24 — Memory tool registration
 //
 // Exposes the memory-layer tools (capture_thought, memory_query, gsd_graph)
-// to the LLM over MCP. All three degrade gracefully when the GSD database
+// to the LLM over MCP. All three degrade gracefully when the workflow database
 // is unavailable.
 
 import { Type } from "@sinclair/typebox";

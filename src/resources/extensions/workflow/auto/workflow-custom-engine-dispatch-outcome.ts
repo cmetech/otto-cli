@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Applies custom-engine dispatch decisions to auto-mode loop side effects.
 
 import type { EngineDispatchDecision } from "./workflow-kernel.js";

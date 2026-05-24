@@ -1,6 +1,6 @@
 /**
  * ChannelManager — manages per-project Discord text channels under a
- * 'GSD Projects' category, with archive support.
+ * 'Projects' category, with archive support.
  *
  * Pure helper `sanitizeChannelName` exported separately for testability.
  */
@@ -135,7 +135,7 @@ export class ChannelManager {
   }
 
   /**
-   * Create a text channel for a project under the GSD Projects category.
+   * Create a text channel for a project under the Projects category.
    * Channel name is derived from the project directory path.
    */
   async createProjectChannel(projectDir: string): Promise<TextChannel> {
@@ -159,7 +159,7 @@ export class ChannelManager {
   }
 
   /**
-   * Archive a channel by moving it to the 'GSD Archive' category and
+   * Archive a channel by moving it to the 'Archive' category and
    * setting permission overwrite to deny ViewChannel for @everyone.
    */
   async archiveChannel(channelId: string): Promise<void> {

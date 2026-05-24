@@ -1,7 +1,7 @@
-// GSD2 — Ecosystem extension loader for ./.gsd/extensions/
+// LOOP24 — Ecosystem extension loader for ./.loop24/extensions/
 // Discovers and registers single-file extensions that consume GSDExtensionAPI.
 // Trust-gated (mirrors pi's `.pi/extensions/` model) and isolated from pi's
-// own loader chain — handlers run in GSD's own dispatch step, not pi's.
+// own loader chain — handlers run in the agent's own dispatch step, not pi's.
 
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -43,7 +43,7 @@ let _readyPromise: Promise<void> | null = null;
 let _untrustedWarned = false;
 
 /**
- * Discover and register ecosystem extensions from `./.gsd/extensions/`.
+ * Discover and register ecosystem extensions from `./.loop24/extensions/`.
  * Idempotent: subsequent calls with the same arguments return the same
  * pending promise (no double-load).
  */

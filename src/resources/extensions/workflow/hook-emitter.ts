@@ -1,4 +1,4 @@
-// GSD Extension — Layer 2 Event Emitter Bridge
+// Workflow Extension — Layer 2 Event Emitter Bridge
 //
 // Holds a module-scoped reference to the ExtensionAPI so deeply-nested code
 // (auto-loop, git-service callers, verification, budget) can emit Layer 2

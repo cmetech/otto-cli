@@ -1,5 +1,5 @@
 /**
- * GSD Config — Tool API key management.
+ * Config — Tool API key management.
  *
  * Contains: TOOL_KEYS, loadToolApiKeys, getConfigAuthStorage, handleConfig
  */

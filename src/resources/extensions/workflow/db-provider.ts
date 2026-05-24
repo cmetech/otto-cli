@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: SQLite provider loading and fallback helpers for the GSD database facade.
+// Project/App: LOOP24
+// File Purpose: SQLite provider loading and fallback helpers for the workflow database facade.
 
 export type DbProviderName = "node:sqlite" | "better-sqlite3";
 

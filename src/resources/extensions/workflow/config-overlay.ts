@@ -1,10 +1,10 @@
 /**
- * GSD Configuration Overlay
+ * Configuration Overlay
  *
- * Read-only TUI overlay showing the effective GSD configuration:
+ * Read-only TUI overlay showing the effective agent configuration:
  * token profile, model assignments, dynamic routing, git settings,
  * budget, workflow toggles, and preference file sources.
- * Opened via `/gsd show-config` or `/gsd config`.
+ * Opened via `/loop24 show-config` or `/loop24 config`.
  */
 
 import type { Theme } from "@gsd/pi-coding-agent";

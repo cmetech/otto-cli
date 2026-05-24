@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Thin adapter for auto-mode workflow journal event emission.
 
 import type { JournalEntry, JournalEventType } from "../journal.js";

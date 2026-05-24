@@ -81,7 +81,7 @@ export function formatDoctorIssuesForPrompt(issues: DoctorIssue[]): string {
 
 /**
  * Serialize a doctor report to JSON — suitable for CI/tooling integration.
- * Usage: /gsd doctor --json
+ * Usage: /loop24 doctor --json
  */
 export function formatDoctorReportJson(report: DoctorReport): string {
   return JSON.stringify(

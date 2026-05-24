@@ -1,8 +1,8 @@
 /**
  * dev-workflow-engine.ts — DevWorkflowEngine implementation.
  *
- * Implements WorkflowEngine by delegating to existing GSD state derivation
- * and dispatch logic. This is the "dev" engine — it wraps the current GSD
+ * Implements WorkflowEngine by delegating to existing workflow state derivation
+ * and dispatch logic. This is the "dev" engine — it wraps the current workflow logic
  * auto-mode behavior behind the engine-polymorphic interface.
  */
 
@@ -25,7 +25,7 @@ import { BRAND } from "./strings.js";
 // ─── Bridge: DispatchAction → EngineDispatchAction ────────────────────────
 
 /**
- * Map a GSD-specific DispatchAction (which carries `matchedRule`, `unitType`,
+ * Map a workflow-specific DispatchAction (which carries `matchedRule`, `unitType`,
  * etc.) to the engine-generic EngineDispatchAction discriminated union.
  *
  * Exported for unit testing.

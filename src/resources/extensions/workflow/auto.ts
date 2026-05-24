@@ -1,9 +1,9 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Auto-mode orchestration, session lifecycle, and stop handling.
 /**
- * GSD Auto Mode — Fresh Session Per Unit
+ * Auto Mode — Fresh Session Per Unit
  *
- * State machine driven by .gsd/ files on disk. Each "unit" of work
+ * State machine driven by .loop24/ files on disk. Each "unit" of work
  * (plan slice, execute task, complete slice) gets a fresh session via
  * the stashed ctx.newSession() pattern.
  *
@@ -576,7 +576,7 @@ export function shouldUseWorktreeIsolation(basePath?: string): boolean {
 
 /**
  * Model captured at auto-mode start. Used to prevent model bleed between
- * concurrent GSD instances sharing the same global settings.json (#650).
+ * concurrent agent instances sharing the same global settings.json (#650).
  * When preferences don't specify a model for a unit type, this ensures
  * the session's original model is re-applied instead of reading from
  * the shared global settings (which another instance may have overwritten).
@@ -843,7 +843,7 @@ export function markToolEnd(toolCallId: string): void {
 
 /**
  * Record a tool invocation error on the current session (#2883).
- * Called from tool_execution_end when a GSD tool fails with isError.
+ * Called from tool_execution_end when a workflow tool fails with isError.
  * Stores the error if it matches:
  *   - tool-invocation-error pattern (malformed/truncated JSON)
  *   - queued-user-message skip pattern
@@ -911,8 +911,8 @@ export function stopAutoRemote(projectRoot: string): {
 /**
  * Check if a remote auto-mode session is running (from a different process).
  * Reads the crash lock, checks PID liveness, and returns session details.
- * Used by the guard in commands.ts to prevent bare /gsd, /gsd next, and
- * /gsd auto from stealing the session lock.
+ * Used by the guard in commands.ts to prevent bare /gsd, /loop24 next, and
+ * /loop24 auto from stealing the session lock.
  */
 export function checkRemoteAutoSession(projectRoot: string): {
   running: boolean;
@@ -1120,7 +1120,7 @@ export async function cleanupAfterLoopExit(ctx: ExtensionContext): Promise<void>
   restoreProjectRootEnv();
   restoreMilestoneLockEnv();
 
-  // Clear crash lock and release session lock so the next `/gsd next` does
+  // Clear crash lock and release session lock so the next `/loop24 next` does
   // not see a stale lock with the current PID and treat it as a "remote"
   // session (which would cause it to SIGTERM itself). (#2730)
   try {
@@ -1697,7 +1697,7 @@ export async function stopAuto(
     restoreProjectRootEnv();
     restoreMilestoneLockEnv();
 
-    // Drop the active-tool baseline so a subsequent /gsd auto run on the
+    // Drop the active-tool baseline so a subsequent /loop24 auto run on the
     // same `pi` instance recaptures from the live tool set rather than
     // restoring this session's snapshot and silently undoing any tool
     // changes the user made between sessions (#4959).
@@ -1738,7 +1738,7 @@ export function _selectStopAutoWorktreeExit(args: {
 
 /**
  * Pause auto-mode without destroying state. Context is preserved.
- * The user can interact with the agent, then `/gsd auto` resumes
+ * The user can interact with the agent, then `/loop24 auto` resumes
  * from disk state. Called when the user presses Escape during auto-mode.
  */
 export async function pauseAuto(
@@ -2822,10 +2822,10 @@ export async function startAuto(
     restoreHookState(s.basePath);
     // Re-sync managed resources on resume so long-lived auto sessions pick up
     // bundled extension updates before resume-time verification/state logic runs.
-    // GSD_PKG_ROOT is set by loader.ts and points to the gsd-pi package root.
+    // GSD_PKG_ROOT is set by loader.ts and points to the upstream package root.
     // The relative import ("../../../resource-loader.js") only works from the source
-    // tree; deployed extensions live at ~/.gsd/agent/extensions/gsd/ where the
-    // relative path resolves to ~/.gsd/agent/resource-loader.js which doesn't exist.
+    // tree; deployed extensions live at ~/.loop24/agent/extensions/gsd/ where the
+    // relative path resolves to ~/.loop24/agent/resource-loader.js which doesn't exist.
     // Using GSD_PKG_ROOT constructs a correct absolute path in both contexts (#3949).
     await refreshResumeResourcesAndDb(s.basePath);
     try {

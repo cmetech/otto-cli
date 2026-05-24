@@ -2,7 +2,7 @@
  * Milestone ID primitives — pure utilities for generating, parsing, sorting,
  * and discovering milestone identifiers.
  *
- * Consumed by 15+ modules across the GSD extension. Zero side-effects.
+ * Consumed by 15+ modules across the workflow extension. Zero side-effects.
  */
 
 import { randomInt } from "node:crypto";

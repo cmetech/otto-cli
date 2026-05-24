@@ -1,5 +1,5 @@
 /**
- * GSD Command — /gsd eval-review
+ * Command — /loop24 eval-review
  *
  * Audits the implemented evaluation strategy of a slice against the planned
  * `AI-SPEC.md` and observed `SUMMARY.md`. Dispatches an LLM turn that scores
@@ -53,7 +53,7 @@ import {
 
 /**
  * Slice-ID format. Must match the canonical `/^S\d+$/` used elsewhere in the
- * GSD extension (`commands-ship.ts:56`). Trailing whitespace, embedded
+ * workflow extension (`commands-ship.ts:56`). Trailing whitespace, embedded
  * separators, traversal sequences, and unicode look-alikes are all rejected.
  */
 export const SLICE_ID_PATTERN = /^S\d+$/;
@@ -76,7 +76,7 @@ const USAGE = "Usage: /gsd eval-review <sliceId> [--force] [--show]  (e.g. S07)"
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
-/** Parsed and validated arguments for the `/gsd eval-review` command. */
+/** Parsed and validated arguments for the `/loop24 eval-review` command. */
 export interface EvalReviewArgs {
   /** Validated slice ID matching {@link SLICE_ID_PATTERN}. */
   sliceId: string;
@@ -205,7 +205,7 @@ export function parseEvalReviewArgs(raw: string): EvalReviewArgs {
  *   - `no-slice-dir` → likely a typo in the slice ID, milestone exists but
  *      slice does not.
  *   - `no-summary` → slice exists but `SUMMARY.md` is missing; the user
- *      probably skipped `/gsd execute-phase`.
+ *      probably skipped `/loop24 execute-phase`.
  *   - `ready` → audit can run.
  *
  * AI-SPEC.md is optional in every state where the slice directory exists —
@@ -588,7 +588,7 @@ export function planEvalReviewAction(
 // ─── Handler entry ────────────────────────────────────────────────────────────
 
 /**
- * Handle `/gsd eval-review <sliceId> [--force] [--show]`.
+ * Handle `/loop24 eval-review <sliceId> [--force] [--show]`.
  *
  * Workflow:
  *   1. Parse and validate args (path-traversal-safe).

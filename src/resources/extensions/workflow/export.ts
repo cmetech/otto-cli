@@ -1,4 +1,4 @@
-// GSD Extension — Session/Milestone Export
+// Workflow Extension — Session/Milestone Export
 // Generate shareable reports of milestone work in JSON or markdown format.
 
 import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";

@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Registers GSD extension runtime hooks and token-saving tool policies.
+// Project/App: LOOP24
+// File Purpose: Registers workflow extension runtime hooks and token-saving tool policies.
 
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -372,7 +372,7 @@ async function applyDisabledModelProviderPolicy(ctx: ExtensionContext): Promise<
 }
 
 /**
- * Bridge `context_management.compaction_threshold_percent` from GSD preferences
+ * Bridge `context_management.compaction_threshold_percent` from preferences
  * into the agent's runtime compaction settings (#5475). The preference is
  * validated to [0.5, 0.95] at load time, but defense-in-depth normalization
  * here protects against a stale or hand-edited prefs file. Calling with
@@ -576,7 +576,7 @@ export function registerHooks(
     }
     clearDeferredApprovalGate(beforeAgentBasePath);
 
-    // GSD's own context injection (existing behavior — unchanged).
+    // the agent's own context injection (existing behavior — unchanged).
     const { buildBeforeAgentStartResult } = await import("./system-context.js");
     const gsdResult = await buildBeforeAgentStartResult(event, ctx);
 
@@ -821,8 +821,8 @@ export function registerHooks(
     }
 
     // ── Queue-mode execution guard (#2545): block source-code mutations ──
-    // When /gsd queue is active, the agent should only create milestones,
-    // not execute work. Block write/edit to non-.gsd/ paths and bash commands
+    // When /loop24 queue is active, the agent should only create milestones,
+    // not execute work. Block write/edit to non-.loop24/ paths and bash commands
     // that would modify files.
     if (isQueuePhaseActive(discussionBasePath)) {
       let queueInput = "";
@@ -839,13 +839,13 @@ export function registerHooks(
 
     // ── Planning-unit tools-policy enforcement (#4934): runtime half ─────
     // The active auto-mode unit's manifest declares a ToolsPolicy. For
-    // planning/docs/read-only modes, deny writes outside .gsd/ (or the
+    // planning/docs/read-only modes, deny writes outside .loop24/ (or the
     // manifest's allowedPathGlobs), bash that isn't read-only, and
     // subagent dispatch. Closes the b23 bug class where a discuss-milestone
     // turn used the host Edit tool to modify user source files.
     const dash = getAutoRuntimeSnapshot();
 
-    // ScheduleWakeup is registered by the GSD extension so auto-mode can
+    // ScheduleWakeup is registered by the workflow extension so auto-mode can
     // continue the same unit session after long external waits.
     const guidedUnit = getGuidedUnitContext(discussionBasePath);
     const activeUnitType = dash.currentUnit?.type ?? guidedUnit?.unitType;

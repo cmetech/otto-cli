@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Project/App: Open GSD
+// Project/App: LOOP24
 // File Purpose: Release version bump entry point.
 /**
  * Bump version in package.json, then sync platform packages and pkg/package.json.

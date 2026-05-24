@@ -1,8 +1,8 @@
-// Project/App: GSD-2
-// File Purpose: Registers packaged workflow tools exposed by the GSD MCP server.
+// Project/App: LOOP24
+// File Purpose: Registers packaged workflow tools exposed by the MCP server.
 
 /**
- * Workflow MCP tools — exposes the core GSD mutation/read handlers over MCP.
+ * Workflow MCP tools — exposes the core mutation/read handlers over MCP.
  */
 
 import { existsSync, readdirSync, realpathSync } from "node:fs";
@@ -311,7 +311,7 @@ function isWithinRoot(candidatePath: string, rootPath: string): boolean {
 
 /**
  * Resolve the symlink target of `<allowedRoot>/.gsd` when it points into the
- * external state layout (`~/.gsd/projects/<hash>/`). Returns the realpath of
+ * external state layout (`~/.loop24/projects/<hash>/`). Returns the realpath of
  * that target so callers can accept worktree paths that live under
  * `<external-state>/worktrees/<MID>/`. Returns null when `.gsd` is absent or
  * resolution fails — the caller should fall back to the direct containment
@@ -344,8 +344,8 @@ export function validateProjectDir(projectDir: string, env: NodeJS.ProcessEnv = 
   if (isWithinRoot(resolvedProjectDir, resolvedAllowedRoot)) return resolvedProjectDir;
 
   // External state layout: `<allowedRoot>/.gsd` may be a symlink into
-  // `~/.gsd/projects/<hash>/`, and auto-worktrees live under
-  // `~/.gsd/projects/<hash>/worktrees/<MID>/`. Accept candidates that are
+  // `~/.loop24/projects/<hash>/`, and auto-worktrees live under
+  // `~/.loop24/projects/<hash>/worktrees/<MID>/`. Accept candidates that are
   // under the realpath of `<allowedRoot>/.gsd` — they belong to this project
   // even though their absolute path is outside allowedRoot (#issue-a44).
   const externalRoot = resolveExternalStateRoot(resolvedAllowedRoot);
@@ -390,15 +390,15 @@ function extractMilestoneId(parsed: Record<string, unknown>): string | null {
 
 /**
  * If an auto-worktree exists for the given milestone under
- * `<projectRoot>/.gsd/worktrees/<milestoneId>/`, return that path as the
+ * `<projectRoot>/.loop24/worktrees/<milestoneId>/`, return that path as the
  * basePath the tool should write against. Returns null when no worktree
  * exists for this milestone, leaving the caller to use the project root.
  *
  * This unbreaks the external-state layout where the MCP server's process.cwd()
  * is the project root (set at Claude Code launch) but auto-mode is actually
  * working inside a per-milestone worktree. Without this, tool writes go to
- * the shared project `.gsd/` and auto-mode's verifyExpectedArtifact (which
- * uses the worktree `.gsd/`) fails, triggering a guaranteed retry per unit.
+ * the shared project `.loop24/` and auto-mode's verifyExpectedArtifact (which
+ * uses the worktree `.loop24/`) fails, triggering a guaranteed retry per unit.
  */
 function resolveActiveWorktreeBasePath(
   projectRoot: string,
@@ -415,7 +415,7 @@ function resolveActiveWorktreeBasePath(
 
 /**
  * Fallback when the tool call has no milestoneId: if exactly one auto-worktree
- * exists under `<projectRoot>/.gsd/worktrees/`, treat it as the active one.
+ * exists under `<projectRoot>/.loop24/worktrees/`, treat it as the active one.
  * Multiple worktrees → ambiguous, return null and let writes go to project root.
  */
 function resolveSoleActiveWorktree(projectRoot: string): string | null {

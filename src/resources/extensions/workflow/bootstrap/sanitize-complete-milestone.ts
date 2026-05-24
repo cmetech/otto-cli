@@ -8,7 +8,7 @@
  * boolean true, etc.  This sanitizer normalizes all fields so
  * handleCompleteMilestone never crashes on type mismatches.
  *
- * See: https://github.com/open-gsd/gsd-pi/issues/3013
+ * See: upstream #3013
  */
 
 import type { CompleteMilestoneParams } from "../tools/complete-milestone.js";

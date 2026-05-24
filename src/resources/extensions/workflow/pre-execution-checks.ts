@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Pre-execution validation checks for GSD task plans.
+// Project/App: LOOP24
+// File Purpose: Pre-execution validation checks for task plans.
 
 /**
  * Pre-Execution Checks — Validate task plans before execution begins.
@@ -52,7 +52,7 @@ function inputExistsOnDisk(
 
   // Worktree mode: a referenced file may live at the canonical project root
   // rather than inside the isolated worktree checkout — either project
-  // metadata (.gsd/...) or source from already-merged work that has not yet
+  // metadata (.loop24/...) or source from already-merged work that has not yet
   // reached this worktree. Accept either as satisfying the input.
   if (context?.canonicalProjectRoot) {
     if (existsSync(resolve(context.canonicalProjectRoot, normalizedFile))) return true;
@@ -178,7 +178,7 @@ export function extractPackageReferences(description: string): string[] {
   // natural-language prose like `from "What's Next"` or `from 'master'` does
   // not produce false package-existence failures.  Requiring the leading import
   // keyword anchors the match to JavaScript/TypeScript syntax.
-  // See: https://github.com/open-gsd/gsd-pi/issues/4388
+  // See: upstream #4388
   const importPattern = /(?:require\s*\(\s*['"]|import\b[\s\S]*?\bfrom\s+['"])([a-zA-Z0-9@/_-]+)['"\)]/g;
   let importMatch: RegExpExecArray | null;
   while ((importMatch = importPattern.exec(description)) !== null) {
@@ -439,7 +439,7 @@ function extractPathFromAnnotation(raw: string): string {
   // like a path or URL. Handles prose-annotated bullets such as:
   //   `path/` directory listing (...)
   //   Prefix prose `https://...` suffix prose
-  //   Citing `.gsd/REQUIREMENTS.md` mid-sentence
+  //   Citing `.loop24/REQUIREMENTS.md` mid-sentence
   // Skips non-path backticked tokens like `note` or `npm test`.
   const backtickTokens = trimmed.matchAll(/`([^`]+)`/g);
   for (const match of backtickTokens) {

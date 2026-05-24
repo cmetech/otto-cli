@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Shared terminal rendering helpers for GSD extension TUI surfaces.
+// Project/App: LOOP24
+// File Purpose: Shared terminal rendering helpers for workflow extension TUI surfaces.
 
 import { truncateToWidth, visibleWidth, wrapTextWithAnsi } from "@gsd/pi-tui";
 

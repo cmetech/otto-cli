@@ -67,7 +67,7 @@ function buildEnvPath(nodePath: string): string {
 
 // --------------- plist generation ---------------
 
-/** Generate valid launchd plist XML for the GSD daemon. */
+/** Generate valid launchd plist XML for the agent daemon. */
 export function generatePlist(opts: PlistOptions): string {
   const home = homedir();
   const workDir = opts.workingDirectory ?? home;

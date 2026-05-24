@@ -1,12 +1,12 @@
 /**
- * GSD Session Lock — OS-level exclusive locking for auto-mode sessions.
+ * Session Lock — OS-level exclusive locking for auto-mode sessions.
  *
- * Prevents multiple GSD processes from running auto-mode concurrently on
+ * Prevents multiple the agent processes from running auto-mode concurrently on
  * the same project. Uses proper-lockfile for OS-level file locking (flock/
  * lockfile) which eliminates the TOCTOU race condition that existed with
  * the old advisory JSON lock approach.
  *
- * The lock file (.gsd/auto.lock) contains JSON metadata (PID, start time,
+ * The lock file (.loop24/auto.lock) contains JSON metadata (PID, start time,
  * unit info) for diagnostics, but the actual exclusion is enforced by the
  * OS-level lock held via proper-lockfile.
  *
@@ -100,7 +100,7 @@ const LOCK_FILE = "auto.lock";
  * Derive the effective lock file name for the current process.
  * In parallel worker mode (GSD_PARALLEL_WORKER + GSD_MILESTONE_LOCK),
  * each worker uses a per-milestone lock file (`auto-<milestoneId>.lock`)
- * to avoid contending on the shared `.gsd/auto.lock` (#2184).
+ * to avoid contending on the shared `.loop24/auto.lock` (#2184).
  */
 export function effectiveLockFile(): string {
   const mid = process.env.GSD_PARALLEL_WORKER ? process.env.GSD_MILESTONE_LOCK : null;
@@ -109,8 +109,8 @@ export function effectiveLockFile(): string {
 
 /**
  * Derive the OS-level lock target directory for the current process.
- * In parallel worker mode, uses `.gsd/parallel/<milestoneId>/` instead of
- * `.gsd/` so workers don't contend on the same proper-lockfile directory (#2184).
+ * In parallel worker mode, uses `.loop24/parallel/<milestoneId>/` instead of
+ * `.loop24/` so workers don't contend on the same proper-lockfile directory (#2184).
  */
 export function effectiveLockTarget(gsdDir: string): string {
   const mid = process.env.GSD_PARALLEL_WORKER ? process.env.GSD_MILESTONE_LOCK : null;
@@ -135,7 +135,7 @@ function lockPath(basePath: string): string {
 export function cleanupStrayLockFiles(basePath: string): void {
   const gsdDir = gsdRoot(basePath);
 
-  // Clean numbered auto lock files inside .gsd/
+  // Clean numbered auto lock files inside .loop24/
   try {
     if (existsSync(gsdDir)) {
       for (const entry of readdirSync(gsdDir)) {
@@ -186,7 +186,7 @@ function ensureExitHandler(_gsdDir: string): void {
       if (_releaseFunction) { _releaseFunction(); _releaseFunction = null; }
     } catch { /* best-effort */ }
     // Clean ALL registered lock paths, not just the current one (#1578).
-    // Lock files accumulate across main project .gsd/, worktree .gsd/,
+    // Lock files accumulate across main project .loop24/, worktree .loop24/,
     // and projects registry paths — cleanup must cover all of them.
     for (const dir of _lockDirRegistry) {
       const lockFile = join(dir, LOCK_FILE);
@@ -312,7 +312,7 @@ export function acquireSessionLock(basePath: string): SessionLockResult {
   // #3218: Pre-flight stale lock cleanup — if the .lock/ directory exists but
   // no auto.lock metadata is present (or the PID is dead), remove the lock
   // directory before attempting acquisition. This prevents the 30-min stale
-  // window from blocking /gsd after crashes, SIGKILL, or laptop sleep.
+  // window from blocking /loop24 after crashes, SIGKILL, or laptop sleep.
   const lockDir = lockTarget + ".lock";
   if (existsSync(lockDir)) {
     const existingData = readExistingLockData(lp);
@@ -329,7 +329,7 @@ export function acquireSessionLock(basePath: string): SessionLockResult {
     // Try to acquire an exclusive OS-level lock on the lock target.
     // We lock a directory since proper-lockfile works best on directories,
     // and the lock file itself may not exist yet.
-    // In parallel worker mode, lockTarget is .gsd/parallel/<MID>/ (#2184).
+    // In parallel worker mode, lockTarget is .loop24/parallel/<MID>/ (#2184).
     mkdirSync(lockTarget, { recursive: true });
 
     const release = lockfile.lockSync(lockTarget, {
@@ -552,7 +552,7 @@ export function releaseSessionLock(basePath: string): void {
   }
 
   // Remove the proper-lockfile directory for the current lock target.
-  // In parallel worker mode, this is .gsd/parallel/<MID>.lock/ (#2184).
+  // In parallel worker mode, this is .loop24/parallel/<MID>.lock/ (#2184).
   const gsdDir = gsdRoot(basePath);
   const lockTarget = effectiveLockTarget(gsdDir);
   try {
@@ -571,7 +571,7 @@ export function releaseSessionLock(basePath: string): void {
   }
 
   // Clean ALL registered lock paths (#1578) — lock files accumulate across
-  // main project .gsd/, worktree .gsd/, and projects registry paths.
+  // main project .loop24/, worktree .loop24/, and projects registry paths.
   for (const dir of _lockDirRegistry) {
     const lockFile = join(dir, LOCK_FILE);
     const ownsRegisteredLock = isLockFileOwnedByCurrentProcess(lockFile);

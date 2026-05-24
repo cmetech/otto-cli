@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Clears stale GSD run surfaces before starting new workflow work.
+// Project/App: LOOP24
+// File Purpose: Clears stale run surfaces before starting new workflow work.
 
 import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
 

@@ -1,9 +1,9 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Git operations, commit-message formatting, and turn git actions.
 /**
- * GSD Git Service
+ * Git Service
  *
- * Core git operations for GSD: types, constants, and pure helpers.
+ * Core git operations for the workflow: types, constants, and pure helpers.
  * Higher-level operations (commit, staging, branching) build on these.
  *
  * This module centralizes the GitPreferences interface, runtime exclusion
@@ -64,10 +64,10 @@ export interface GitPreferences {
    *  - "none": (default) no git isolation — commits land on the user's current branch directly
    */
   isolation?: "worktree" | "branch" | "none";
-  /** When false, GSD will not modify .gitignore at all — no baseline patterns
+  /** When false, the agent will not modify .gitignore at all — no baseline patterns
    *  are added and no self-healing occurs. Use this if you manage your own
-   *  .gitignore and don't want GSD touching it.
-   *  Default: true (GSD ensures baseline patterns are present).
+   *  .gitignore and do not want the agent touching it.
+   *  Default: true (the agent ensures baseline patterns are present).
    */
   manage_gitignore?: boolean;
   /** Script to run after a worktree is created (#597).
@@ -152,9 +152,9 @@ export interface TaskCommitContext {
 
 /**
  * Build a meaningful conventional commit message from task execution context.
- * Format: `{type}: {description}` (clean conventional commit — no GSD IDs in subject).
+ * Format: `{type}: {description}` (clean conventional commit — no workflow IDs in subject).
  *
- * GSD metadata is placed in a `GSD-Task:` git trailer at the end of the body,
+ * workflow metadata is placed in a `Workflow-Task:` git trailer at the end of the body,
  * following the same convention as `Signed-off-by:` or `Co-Authored-By:`.
  *
  * The description is the task summary one-liner if available (it describes
@@ -200,7 +200,7 @@ export function buildTaskCommitMessage(ctx: TaskCommitContext): string {
     bodyParts.push(`GSD context:\n${contextLines.join("\n")}`);
   }
 
-  // Trailers: GSD-Task first, then Resolves
+  // Trailers: Workflow-Task first, then Resolves
   bodyParts.push(`GSD-Task: ${ctx.taskId}`);
 
   if (ctx.issueNumber) {
@@ -351,7 +351,7 @@ export interface PreMergeCheckResult {
 // ─── Constants ─────────────────────────────────────────────────────────────
 
 /**
- * GSD runtime paths that should be excluded from smart staging.
+ * runtime paths that should be excluded from smart staging.
  * These are transient/generated artifacts that should never be committed.
  *
  * NOTE: GSD_RUNTIME_PATTERNS in gitignore.ts is the canonical source of truth.
@@ -380,7 +380,7 @@ export const RUNTIME_EXCLUSION_PATHS: readonly string[] = [
 
 /**
  * Path to the milestone metadata file that stores the integration branch.
- * Format: .gsd/milestones/<MID>/<MID>-META.json
+ * Format: .loop24/milestones/<MID>/<MID>-META.json
  */
 function milestoneMetaPath(basePath: string, milestoneId: string): string {
   return join(gsdRoot(basePath), "milestones", milestoneId, `${milestoneId}-META.json`);
@@ -457,7 +457,7 @@ export function writeIntegrationBranch(
 
   existing.integrationBranch = branch;
   writeFileSync(metaFile, JSON.stringify(existing, null, 2) + "\n", "utf-8");
-  // .gsd/ is managed externally (symlinked) — metadata is not committed to git.
+  // .loop24/ is managed externally (symlinked) — metadata is not committed to git.
 }
 
 export type IntegrationBranchResolutionStatus = "recorded" | "fallback" | "missing";
@@ -737,7 +737,7 @@ export class GitServiceImpl {
   }
 
   /**
-   * Smart staging: `git add -A` excluding GSD runtime paths via pathspec.
+   * Smart staging: `git add -A` excluding runtime paths via pathspec.
    * Falls back to plain `git add -A` if the exclusion pathspec fails.
    * @param extraExclusions Additional pathspec exclusions beyond RUNTIME_EXCLUSION_PATHS.
    */
@@ -748,10 +748,10 @@ export class GitServiceImpl {
     // the git reset HEAD step below would otherwise undo the rm --cached.
     //
     // SAFETY: Only untrack the specific RUNTIME paths (activity/, runtime/,
-    // auto.lock, etc.) — NOT all of .gsd/. If .gsd/milestones/ files were
+    // auto.lock, etc.) — NOT all of .loop24/. If .loop24/milestones/ files were
     // previously tracked, they stay tracked until the milestone completes
     // and the worktree is torn down. This prevents a mid-execution behavioral
-    // discontinuity where the first half of a milestone has .gsd/ artifacts
+    // discontinuity where the first half of a milestone has .loop24/ artifacts
     // committed but the second half doesn't (#1326).
     if (!this._runtimeFilesCleanedUp) {
       let cleaned = false;
@@ -769,14 +769,14 @@ export class GitServiceImpl {
     // hashed by git. The old approach of `git add -A` followed by unstaging
     // hangs indefinitely on repos with large untracked artifact trees (#1605).
     //
-    // Exclude only RUNTIME paths from staging — not the entire .gsd/ directory.
-    // When .gsd/milestones/ files are already tracked in the index (projects
-    // where .gsd/ is not gitignored, or Windows junctions that git sees as
+    // Exclude only RUNTIME paths from staging — not the entire .loop24/ directory.
+    // When .loop24/milestones/ files are already tracked in the index (projects
+    // where .loop24/ is not gitignored, or Windows junctions that git sees as
     // real directories), they should continue to be committed. Excluding the
-    // entire .gsd/ directory mid-milestone causes silent commit failure where
+    // entire .loop24/ directory mid-milestone causes silent commit failure where
     // the second half of a milestone's artifacts are never committed (#1326).
     //
-    // If .gsd/ IS in .gitignore (the default for external state projects),
+    // If .loop24/ IS in .gitignore (the default for external state projects),
     // git add -A already skips it and the exclusions are harmless no-ops.
     const allExclusions = [...RUNTIME_EXCLUSION_PATHS, ...extraExclusions];
 
@@ -910,7 +910,7 @@ export class GitServiceImpl {
    * (e.g. pre-switch commits, stop commits, state rebuild commits).
    *
    * Returns the commit message on success, or null if nothing to commit.
-   * @param extraExclusions Additional paths to exclude from staging (e.g. [".gsd/"] for pre-switch commits).
+   * @param extraExclusions Additional paths to exclude from staging (e.g. [".loop24/"] for pre-switch commits).
    */
   autoCommit(
     unitType: string,
@@ -1023,8 +1023,8 @@ export class GitServiceImpl {
 
       // Re-run smartStage so the same RUNTIME_EXCLUSION_PATHS apply.
       // Snapshot commits used nativeAddTracked (git add -u) which stages
-      // ALL tracked modifications including .gsd/ state files. Without
-      // re-staging, those .gsd/ changes leak into the absorbed commit.
+      // ALL tracked modifications including .loop24/ state files. Without
+      // re-staging, those .loop24/ changes leak into the absorbed commit.
       this.smartStage();
 
       try {
@@ -1046,7 +1046,7 @@ export class GitServiceImpl {
    * branches are created from and merged back into.
    *
    * This is often `main` or `master`, but not necessarily. When a user
-   * starts GSD on a feature branch like `f-123-new-thing`, that branch
+   * starts the agent on a feature branch like `f-123-new-thing`, that branch
    * is recorded as the integration target, and all slice branches merge
    * back into it — not the repo's default branch. The name "main branch"
    * in variable names is historical; think of it as "integration branch".
@@ -1153,7 +1153,7 @@ export class GitServiceImpl {
     // Tokenize and run via execFileSync (no shell). Shell metacharacters in
     // user-supplied prefs.pre_merge_check would otherwise be interpreted as
     // chaining/redirection (e.g. `;`, `&&`, `|`, backticks) — a privesc
-    // surface in repos with a checked-in `.gsd/PREFERENCES.md`.
+    // surface in repos with a checked-in `.loop24/PREFERENCES.md`.
     // (Issue #4980 HIGH-2)
     if (containsUnquotedShellControl(command)) {
       return {

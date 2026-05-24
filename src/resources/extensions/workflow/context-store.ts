@@ -1,4 +1,4 @@
-// GSD Context Store — Query Layer & Formatters
+// Context Store — Query Layer & Formatters
 //
 // Typed query functions for decisions and requirements from the DB views,
 // with optional filtering. Format functions produce prompt-injectable markdown.

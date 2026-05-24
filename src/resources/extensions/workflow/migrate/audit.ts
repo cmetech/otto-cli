@@ -1,4 +1,4 @@
-// GSD-2 - /gsd migrate audit helpers.
+// LOOP24 - /loop24 migrate audit helpers.
 // File Purpose: Legacy archive, migration manifest, and projection verification support.
 
 import { cpSync, existsSync, readFileSync } from "node:fs";

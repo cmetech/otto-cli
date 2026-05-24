@@ -345,7 +345,7 @@ function buildLog(basePath: string, args: string): string {
 /**
  * Attempt a dynamic import, returning null if the module cannot be loaded.
  * Used for optional modules like auto.js and metrics.js that may not be
- * available outside a full GSD process context.
+ * available outside a full agent process context.
  */
 async function tryImportModule<T>(specifier: string): Promise<T | null> {
   try {

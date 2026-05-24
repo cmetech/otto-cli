@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Auto-mode coordination SQLite schema helper for the GSD database facade.
+// Project/App: LOOP24
+// File Purpose: Auto-mode coordination SQLite schema helper for the workflow database facade.
 
 import type { DbAdapter } from "./db-adapter.js";
 

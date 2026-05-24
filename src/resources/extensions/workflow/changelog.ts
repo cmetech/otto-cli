@@ -1,7 +1,7 @@
 /**
- * GSD Changelog — Fetch and display categorized release notes from GitHub
+ * Changelog — Fetch and display categorized release notes from GitHub
  *
- * Fetches releases from the open-gsd/gsd-pi GitHub repository,
+ * Fetches releases from the upstream GitHub repository,
  * prompts the user for a version filter, and sends raw release notes
  * into the conversation for the LLM to summarize.
  *

@@ -1,4 +1,4 @@
-// GSD — /gsd onboarding command handler (re-entry hub)
+//  /loop24 onboarding command handler (re-entry hub)
 //
 // The first-run wizard in src/onboarding.ts uses @clack/prompts and takes over
 // raw stdin. Running it from inside the pi-coding-agent TUI wedges the TUI
@@ -8,7 +8,7 @@
 //
 // Clack-only steps (llm/search/remote/tool-keys via the first-run wizard) are
 // surfaced as notifications pointing the user at the canonical per-step
-// commands (/login, /gsd keys, /gsd remote) that are already ctx.ui-safe.
+// commands (/login, /loop24 keys, /loop24 remote) that are already ctx.ui-safe.
 
 import type { ExtensionCommandContext } from "@gsd/pi-coding-agent"
 import {

@@ -15,7 +15,7 @@ export interface GsdDispatchContext {
 }
 
 /**
- * Typed error for when GSD is run outside a valid project directory.
+ * Typed error for when the agent is run outside a valid project directory.
  * Command handlers catch this to show a friendly message instead of a raw exception.
  */
 export class GSDNoProjectError extends Error {

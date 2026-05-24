@@ -16,7 +16,7 @@ type CopilotCredentials = OAuthCredentials & {
 //
 // NOTE: This credential is public in the source code. It should NOT be
 // obfuscated because security scanners flag obfuscated data as potentially
-// malicious (see: https://socket.dev/npm/package/gsd-pi/alerts/2.70.1?alert_name=obfuscatedFile)
+// malicious (see: upstream package security advisory
 //
 // GitHub's device flow for public clients (CLI/desktop apps) does not use
 // a client secret - only the client ID is required. This is standard OAuth

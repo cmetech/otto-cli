@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Registers GSD keyboard shortcuts for dashboard, notifications, and parallel overlays.
+// Project/App: LOOP24
+// File Purpose: Registers workflow keyboard shortcuts for dashboard, notifications, and parallel overlays.
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -97,5 +97,5 @@ export function registerShortcuts(pi: ExtensionAPI): void {
   });
 
   // No Ctrl+Shift+P fallback — conflicts with cycleModelBackward (shift+ctrl+p).
-  // Use Ctrl+Alt+P or /gsd parallel watch instead.
+  // Use Ctrl+Alt+P or /loop24 parallel watch instead.
 }

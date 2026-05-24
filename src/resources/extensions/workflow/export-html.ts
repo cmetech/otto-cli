@@ -1,8 +1,8 @@
 /**
- * GSD HTML Report Generator
+ * HTML Report Generator
  *
  * Produces a single self-contained HTML file with:
- *   - Branding header (project name, path, GSD version, generated timestamp)
+ *   - Branding header (project name, path, version, generated timestamp)
  *   - Project summary & overall progress
  *   - Progress tree (milestones → slices → tasks, with critical path)
  *   - Execution timeline (chronological unit history)

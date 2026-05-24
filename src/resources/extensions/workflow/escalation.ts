@@ -1,6 +1,6 @@
-// Project/App: GSD-2
-// File Purpose: Mid-execution escalation artifact and state helpers for GSD tasks.
-// GSD Extension — ADR-011 Phase 2 Mid-Execution Escalation
+// Project/App: LOOP24
+// File Purpose: Mid-execution escalation artifact and state helpers for the workflow tasks.
+// Workflow Extension — ADR-011 Phase 2 Mid-Execution Escalation
 //
 // A single module that owns: escalation artifact I/O, detection, resolution,
 // carry-forward injection lookup, and audit-event emission. Scoped to
@@ -30,7 +30,7 @@ import { logWarning } from "./workflow-logger.js";
 
 /**
  * Canonical escalation artifact path, parallel to T##-SUMMARY.md:
- *   .gsd/milestones/{M}/slices/{S}/tasks/{T}-ESCALATION.json
+ *   .loop24/milestones/{M}/slices/{S}/tasks/{T}-ESCALATION.json
  */
 export function escalationArtifactPath(
   basePath: string, milestoneId: string, sliceId: string, taskId: string,
@@ -335,7 +335,7 @@ function formatOverrideBlock(art: EscalationArtifact): string {
 
 // ─── Display ──────────────────────────────────────────────────────────────
 
-/** Human-readable summary of an artifact for `/gsd escalate show`. */
+/** Human-readable summary of an artifact for `/loop24 escalate show`. */
 export function formatEscalationForDisplay(art: EscalationArtifact): string {
   const resolved = art.respondedAt
     ? `\nResolved: ${art.respondedAt} — user chose "${art.userChoice}"${art.userRationale ? ` (rationale: ${art.userRationale})` : ""}`
@@ -358,12 +358,12 @@ export function formatEscalationForDisplay(art: EscalationArtifact): string {
   ].join("\n");
 }
 
-/** List actionable (unresolved) escalations for `/gsd escalate list`. */
+/** List actionable (unresolved) escalations for `/loop24 escalate list`. */
 export function listActionableEscalations(milestoneId: string): TaskRow[] {
   return listEscalationArtifacts(milestoneId, /* includeResolved */ false);
 }
 
-/** List every escalation (including resolved) for `/gsd escalate list --all`. */
+/** List every escalation (including resolved) for `/loop24 escalate list --all`. */
 export function listAllEscalations(milestoneId: string): TaskRow[] {
   return listEscalationArtifacts(milestoneId, /* includeResolved */ true);
 }

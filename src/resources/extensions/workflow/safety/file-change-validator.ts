@@ -62,7 +62,7 @@ export function validateFileChanges(
   const actualFiles = getChangedFilesFromLastCommit(basePath);
   if (!actualFiles) return null;
 
-  // Filter out .gsd/ internal files — only validate project source files
+  // Filter out .loop24/ internal files — only validate project source files
   const projectFiles = actualFiles.filter(f => !f.startsWith(".gsd/") && !f.startsWith(".gsd\\"));
 
   // Normalize expected paths (strip leading ./ or /)

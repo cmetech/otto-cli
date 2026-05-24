@@ -1,5 +1,5 @@
 /**
- * GSD Preferences Wizard — TUI wizard for configuring GSD preferences.
+ * Preferences Wizard — TUI wizard for configuring preferences.
  *
  * Contains: handlePrefsWizard, buildCategorySummaries, all configure* functions,
  * serializePreferencesToFrontmatter, yamlSafeString, ensurePreferencesFile,
@@ -1563,18 +1563,18 @@ export async function handlePrefsWizard(
   prefill?: Record<string, unknown>,
   opts?: { pathOverride?: string },
 ): Promise<void> {
-  // pathOverride lets callers like /gsd init pass a basePath-derived target
+  // pathOverride lets callers like /loop24 init pass a basePath-derived target
   // path so the wizard doesn't fall back to cwd-based getProjectGSDPreferencesPath
   // when the init target diverges from the current working directory.
   const path = opts?.pathOverride
     ?? (scope === "project" ? getProjectGSDPreferencesPath() : getGlobalGSDPreferencesPath());
   const existing = scope === "project" ? loadProjectGSDPreferences() : loadGlobalGSDPreferences();
   // Order: existing-on-disk values, overlaid with prefill (caller's seeded answers).
-  // Callers like /gsd init pass freshly-collected init answers as prefill so the
+  // Callers like /loop24 init pass freshly-collected init answers as prefill so the
   // wizard menu shows them populated and writeable in one place.
   // `normalizePreferencesShape` tolerates a missing preferences file, a malformed
   // wrapper (`{ preferences: undefined }`), or a bare prefs object so the wizard
-  // never reaches the category menu with a half-formed root. See issue: /gsd setup
+  // never reaches the category menu with a half-formed root. See issue: /loop24 setup
   // prefs crashed with "Cannot read properties of undefined (reading 'models')".
   const prefs: Record<string, unknown> = {
     ...normalizePreferencesShape(existing),
@@ -1633,7 +1633,7 @@ export async function handlePrefsWizard(
 /**
  * Single source of truth for writing a PREFERENCES.md file.
  *
- * Both `/gsd init` and the prefs wizard route through this helper so we can't
+ * Both `/loop24 init` and the prefs wizard route through this helper so we can't
  * drift on serialization, body preservation, or post-write reload. Callers
  * pass `ctx` for the reload/notify side effects; the function is safe to call
  * without a full UI context for tests via `ctx: null` (skips reload/notify).
@@ -1794,9 +1794,9 @@ export async function ensurePreferencesFile(
 }
 
 /**
- * Handle `/gsd language [code]` — set or clear the global language preference.
+ * Handle `/loop24 language [code]` — set or clear the global language preference.
  * Without an argument, shows the current setting.
- * Project-level override can be set by editing `.gsd/PREFERENCES.md` directly
+ * Project-level override can be set by editing `.loop24/PREFERENCES.md` directly
  * (project language overrides global when both are set).
  */
 export async function handleLanguage(args: string, ctx: ExtensionCommandContext): Promise<void> {

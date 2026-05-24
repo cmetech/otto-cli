@@ -1,4 +1,4 @@
-// GSD-2 + src/resources/extensions/workflow/auto/run-unit.ts - Runs one GSD auto-mode unit from session creation through agent completion.
+// LOOP24 + src/resources/extensions/workflow/auto/run-unit.ts - Runs one auto-mode unit from session creation through agent completion.
 
 /**
  * auto/run-unit.ts — Single unit execution: session create → prompt → await agent_end.

@@ -1,5 +1,5 @@
 /**
- * GSD Preferences -- loading, merging, and rendering.
+ * Preferences -- loading, merging, and rendering.
  *
  * This module is the primary entry point for preference operations.
  * Type definitions live in ./preferences-types.js, validation in
@@ -247,8 +247,8 @@ function stripInheritedPlanningDepth(
   }
 
   // planning_depth is a project bootstrap routing flag, not a user-global
-  // preference. A global ~/.gsd/PREFERENCES.md value should not make every
-  // fresh repo behave like `/gsd new-project --deep`.
+  // preference. A global ~/.loop24/PREFERENCES.md value should not make every
+  // fresh repo behave like `/loop24 new-project --deep`.
   const preferences: GSDPreferences = { ...loaded.preferences };
   delete preferences.planning_depth;
   return { ...loaded, preferences };
@@ -295,7 +295,7 @@ export function parsePreferencesMarkdown(content: string): GSDPreferences | null
   }
 
   // Fallback: heading+list format (e.g. "## Git\n- isolation: none") (#2036)
-  // GSD agents may write preferences files without frontmatter delimiters.
+  // agents may write preferences files without frontmatter delimiters.
   if (/^##\s+\w/m.test(content)) {
     return parseHeadingListFormat(content);
   }
@@ -671,7 +671,7 @@ export function resolvePreDispatchHooks(): PreDispatchHookConfig[] {
  * Resolve the effective git isolation mode from preferences.
  * Returns "none" (default), "worktree", or "branch".
  *
- * Default is "none" so GSD works out of the box without preferences.md.
+ * Default is "none" so the agent works out of the box without preferences.md.
  * Worktree isolation requires explicit opt-in because it depends on git
  * branch infrastructure that must be set up before use.
  */

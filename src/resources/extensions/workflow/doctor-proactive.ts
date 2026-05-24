@@ -1,5 +1,5 @@
 /**
- * GSD Doctor — Proactive Healing Layer
+ * Doctor — Proactive Healing Layer
  *
  * Three mechanisms for automatic health monitoring during auto-mode:
  *

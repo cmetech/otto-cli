@@ -130,7 +130,7 @@ export function resolveModelWithFallbacksForUnit(unitType: string): ResolvedMode
 }
 
 /**
- * Resolve the default session model from GSD preferences.
+ * Resolve the default session model from preferences.
  *
  * Used at auto-mode bootstrap to override the session model that was
  * determined by settings.json (defaultProvider/defaultModel).  When
@@ -210,11 +210,11 @@ export function resolveDefaultSessionModel(
 
 /**
  * Returns true if `provider` is defined as a custom provider in the user's
- * `~/.gsd/agent/models.json` (Ollama, vLLM, LM Studio, OpenAI-compatible
+ * `~/.loop24/agent/models.json` (Ollama, vLLM, LM Studio, OpenAI-compatible
  * proxies, etc.).
  *
  * Used by auto-mode bootstrap to decide whether the session model
- * (set via `/gsd model`) should override `PREFERENCES.md`.  Custom providers
+ * (set via `/loop24 model`) should override `PREFERENCES.md`.  Custom providers
  * are never reachable from `PREFERENCES.md` (which only knows built-in
  * providers), so when the user has explicitly selected one, it must take
  * priority — otherwise auto-mode tries to start the built-in provider from
@@ -303,7 +303,7 @@ export function validateModelId(modelId: string): boolean {
 }
 
 /**
- * Update the models section of the global GSD preferences file.
+ * Update the models section of the global preferences file.
  * Performs a safe read-modify-write: reads current content, updates the models
  * YAML block, and writes back. Creates the file if it doesn't exist.
  */

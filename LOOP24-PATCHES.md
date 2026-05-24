@@ -495,6 +495,97 @@ should then appear in the TUI autocomplete as expected.
   protection list is effectively dead. Leave for now — removing it is
   the kind of cleanup that might break a sibling tool's expectations.
 
+## Cleanup C — GSD comment/JSDoc erasure (tagged: cleanup-c-comment-erasure)
+
+First step toward the "no one should know we started from GSD" goal. Pure
+brand erasure pass on comments and JSDoc — zero runtime behavior change,
+just text cleanup.
+
+### Scope (user-approved policy)
+
+- **Style:** brand-neutral. Strip "GSD" mentions where redundant; use generic
+  language ("the agent", "the workflow", "the CLI") over LOOP24 in comments.
+  Future rebrands need a smaller surface to touch.
+- **Directories:** `src/` + `packages/` + `scripts/`. Excludes `docs/`,
+  `LOOP24-PATCHES.md`, test files, `dist/`, `node_modules/`.
+- **Accuracy fixes folded in:** stale `~/.gsd/` paths → `~/.loop24/`,
+  stale `@opengsd/gsd-pi` references → `@ericsson/loop24`.
+- **NOT touched per policy:** internal env vars (`GSD_DEBUG`, `GSD_HOME`,
+  `GSD_PKG_ROOT`, `GSD_WORKFLOW_PATH`, etc.), npm workspace scope
+  (`@gsd/pi-coding-agent`, `@gsd/pi-ai`, `@gsd-build/*`), TypeScript
+  identifiers (`GSDState`, `registerGSDCommand`, `GSDNoProjectError`),
+  customType strings (`"gsd-add-tests"`, `"gsd-dispatch"`), error codes
+  (`MISSING_GSD_MARKER`), filenames that haven't been renamed yet
+  (`GSD-WORKFLOW.md`, `gsd-db.ts`, etc.). All deliberately deferred to
+  the separate content-files-and-identifiers phase.
+
+### Sweep statistics
+
+- **547 files edited**
+- **1,439 insertions / 1,440 deletions** (net -1 — comment swaps are 1:1)
+- **3,300+ comment hits collapsed to 0** for the in-scope patterns
+- **63/63 regression tests still pass** (comments don't affect runtime)
+- **Build clean** (no JSDoc opener accidentally truncated)
+
+### High-frequency batches handled mechanically
+
+The subagent used `Edit replace_all` and `perl -i -pe` with comment-context
+guards (`/^\s*(\/\/|\*)/`) for these repetitive patterns:
+- `// Project/App: GSD-2` banner — 388 occurrences across 176 files
+- `~/.gsd/` → `~/.loop24/` and `.gsd/` → `.loop24/` (accuracy)
+- `github.com/open-gsd/gsd-pi/issues/XXXX` → `upstream #XXXX` (preserves
+  issue numbers while dropping the upstream repo URL)
+- `@opengsd/gsd-pi` → `@ericsson/loop24` (accuracy)
+- Common component headers (`// GSD Extension —`, `GSD Auto Mode`, …)
+
+The remaining ~37 stubborn cases were handled file-by-file with judgment.
+
+### Judgment calls worth noting
+
+- **`notifications.ts:31`** — `"GSD"` literal in a backward-compat string
+  check kept as-is (refers to the literal value, not a brand mention).
+- **`forensics.ts:970`** — `**GSD Version:** ${report.gsdVersion}` is a
+  template literal in CODE (the regex matched `**` in markdown bold);
+  left as-is per "code string literals unchanged" policy.
+- **GitHub issue URLs** — replaced with `upstream #XXXX` rather than
+  dropping them; preserves the issue number for future traceback.
+- **`@opengsd/engine-{platform}`** in `packages/native/src/native.ts` —
+  reframed comment to note LOOP24 doesn't ship Rust binaries; the legacy
+  upstream path is documented for clarity but tagged as legacy.
+- **`GSD-Task:` git trailer** mentioned in `git-service.ts` comments —
+  rewritten as `Workflow-Task:` to match what the runtime actually emits.
+
+### 15 remaining hits — out-of-policy-scope (separate phase)
+
+All in CONTENT FILES (`.md` prompts/skills/fixtures the agent reads or
+tests assert against), not comments:
+
+- `src/resources/GSD-WORKFLOW.md` (the runtime workflow content)
+- `src/resources/extensions/workflow/prompts/forensics.md`,
+  `worktree-merge.md` (agent system prompts)
+- `src/resources/extensions/workflow/tests/fixtures/pr-body/*.md` (×3)
+- `src/resources/extensions/workflow/docs/preferences-reference.md`
+- `src/resources/skills/decompose-into-slices/SKILL.md`
+- `src/resources/skills/create-gsd-extension/**` (×3 — dir itself is
+  GSD-named, both name + contents in the separate phase)
+- `src/resources/skills/forensics/SKILL.md`
+- `packages/native/src/gsd-parser/index.ts`, `types.ts` (×2 — dir name
+  is `gsd-parser/`, both name + contents in the separate phase)
+
+These are tracked for the next phase, which will:
+1. Rename `GSD-WORKFLOW.md` → new name + update loader env var
+2. Rename `gsd-*.ts` filenames (gsd-db, gsd-home, gsd-command-home,
+   gsd-extension-api, gsd-phase-state, gsd-parser/) + every import
+3. Rename `create-gsd-extension/` skill dir + skill registration
+4. Sweep brand mentions inside all of the above content files
+5. Test the agent end-to-end after renames (runtime risk)
+
+### Diff summary
+
+The 547-file change is large but reviewable: ~80% are 1-line edits
+(file-banner `// Project/App: GSD-2` removal) or path-string swaps. The
+remaining ~20% are judgment-rewritten JSDoc blocks with full context.
+
 ## Cleanup A — piConfig single-source-of-truth (tagged: cleanup-a-piconfig)
 
 Eliminates the manual three-place piConfig sync. Root `package.json` is now

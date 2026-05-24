@@ -1,5 +1,5 @@
 /**
- * GSD Prompt Loader
+ * Prompt Loader
  *
  * Reads .md prompt templates from the prompts/ directory and substitutes
  * {{variable}} placeholders with provided values.
@@ -53,7 +53,7 @@ export function resolveExtensionDirFromCandidates(
 }
 
 /**
- * Resolve the GSD extension directory.
+ * Resolve the workflow extension directory.
  *
  * `import.meta.url` resolves to whichever copy of this module is executing.
  * On Windows (npm global install via MSYS2 / Git Bash) this can resolve to
@@ -215,7 +215,7 @@ export function loadPrompt(name: string, vars: Record<string, string> = {}): str
 
     // Use split/join instead of replaceAll to avoid JavaScript's special
     // replacement patterns ($', $`, $&) being interpreted in the value.
-    // See: https://github.com/open-gsd/gsd-pi/issues/2968
+    // See: upstream #2968
     content = content.split(`{{${key}}}`).join(safeValue);
   }
 

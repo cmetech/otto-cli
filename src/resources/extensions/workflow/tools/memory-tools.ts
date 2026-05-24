@@ -1,4 +1,4 @@
-// GSD Memory Tools — Phase 1 executors for capture_thought, memory_query, gsd_graph
+// Memory Tools — Phase 1 executors for capture_thought, memory_query, gsd_graph
 //
 // These executors back the three memory-layer tools the LLM can call at any
 // point in a session. They build on the existing `memory-store.ts` layer
@@ -344,7 +344,7 @@ export function executeGsdGraph(params: GsdGraphParams): ToolExecutionResult {
 
   if (params.mode === "build") {
     // The extractor emits LINK actions incrementally (Phase 4). There is no
-    // batch rebuild step to run today — ingest artifacts via `/gsd memory
+    // batch rebuild step to run today — ingest artifacts via `/loop24 memory
     // extract <SRC-...>` and the next extraction turn will add edges.
     return {
       content: [

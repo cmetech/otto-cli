@@ -1,16 +1,16 @@
 /**
- * MCP Status — `/gsd mcp` command handler.
+ * MCP Status — `/loop24 mcp` command handler.
  *
  * Shows configured MCP servers, their connection status, and available tools.
  *
  * Subcommands:
- *   /gsd mcp             — Overview of all servers (alias: /gsd mcp status)
- *   /gsd mcp status      — Same as bare /gsd mcp
- *   /gsd mcp check <srv> — Detailed status for a specific server
- *   /gsd mcp test <srv>  — Test handshake + tools/list for a server
- *   /gsd mcp enable <srv> / disable <srv> — Toggle local server exposure
- *   /gsd mcp import <srv> [as <name>] — Copy a discovered server into local config
- *   /gsd mcp init [dir]  — Write project-local GSD workflow MCP config
+ *   /loop24 mcp             — Overview of all servers (alias: /loop24 mcp status)
+ *   /loop24 mcp status      — Same as bare /loop24 mcp
+ *   /loop24 mcp check <srv> — Detailed status for a specific server
+ *   /loop24 mcp test <srv>  — Test handshake + tools/list for a server
+ *   /loop24 mcp enable <srv> / disable <srv> — Toggle local server exposure
+ *   /loop24 mcp import <srv> [as <name>] — Copy a discovered server into local config
+ *   /loop24 mcp init [dir]  — Write project-local workflow MCP config
  */
 
 import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
@@ -169,7 +169,7 @@ export function formatMcpConnectionTestResult(result: ManagedMcpConnectionTestRe
 // ─── Command handler ────────────────────────────────────────────────────────
 
 /**
- * Handle `/gsd mcp [status|check <server>]`.
+ * Handle `/loop24 mcp [status|check <server>]`.
  */
 export async function handleMcpStatus(
   args: string,
@@ -181,7 +181,7 @@ export async function handleMcpStatus(
   const configs = management.servers;
   const systemPrompt = ctx.getSystemPrompt();
 
-  // /gsd mcp init [dir]
+  // /loop24 mcp init [dir]
   if (!lowered || lowered === "status") {
     // handled below
   } else if (lowered === "init" || lowered.startsWith("init ")) {
@@ -199,7 +199,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /gsd mcp test <server>
+  // /loop24 mcp test <server>
   if (lowered.startsWith("test ")) {
     const serverName = trimmed.slice("test ".length).trim();
     const result = await testMcpServerConnection(serverName);
@@ -207,7 +207,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /gsd mcp disable <server>
+  // /loop24 mcp disable <server>
   if (lowered.startsWith("disable ")) {
     const serverName = trimmed.slice("disable ".length).trim();
     try {
@@ -219,7 +219,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /gsd mcp enable <server>
+  // /loop24 mcp enable <server>
   if (lowered.startsWith("enable ")) {
     const serverName = trimmed.slice("enable ".length).trim();
     try {
@@ -231,7 +231,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /gsd mcp delete <server> --confirm
+  // /loop24 mcp delete <server> --confirm
   if (lowered.startsWith("delete ")) {
     const raw = trimmed.slice("delete ".length).trim();
     const confirmed = /\s--confirm$/.test(raw) || raw === "--confirm";
@@ -249,7 +249,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /gsd mcp import <server> [as <name>]
+  // /loop24 mcp import <server> [as <name>]
   if (lowered.startsWith("import ")) {
     const raw = trimmed.slice("import ".length).trim();
     const match = raw.match(/^(.*?)\s+as\s+(.+)$/i);
@@ -290,7 +290,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /gsd mcp check <server>
+  // /loop24 mcp check <server>
   if (lowered.startsWith("check ")) {
     const serverName = trimmed.slice("check ".length).trim();
     const config = configs.find((c) => c.name === serverName);
@@ -339,7 +339,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /gsd mcp or /gsd mcp status
+  // /loop24 mcp or /loop24 mcp status
   if (!lowered || lowered === "status") {
     // Build status for each server
     const statuses: McpServerStatus[] = [];

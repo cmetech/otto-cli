@@ -1,4 +1,4 @@
-// GSD-2 + packages/pi-coding-agent/src/modes/interactive/components/extension-input.ts - Extension text input dialog.
+// LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/extension-input.ts - Extension text input dialog.
 /**
  * Simple text input component for extensions.
  */

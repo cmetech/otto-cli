@@ -2,10 +2,11 @@
  * Native addon loader.
  *
  * Locates and loads the compiled Rust N-API addon (`.node` file).
- * Resolution order:
- *   1. @opengsd/engine-{platform} npm optional dependency (production install)
- *   2. native/addon/gsd_engine.{platform}.node (local release build)
- *   3. native/addon/gsd_engine.dev.node (local debug build)
+ * Resolution order (LOOP24 does not ship Rust binaries; resolution always
+ * falls through to the JS implementations — see packages/native/dist):
+ *   1. {platform} engine npm optional dependency (legacy upstream path)
+ *   2. native/addon/engine.{platform}.node (local release build)
+ *   3. native/addon/engine.dev.node (local debug build)
  */
 
 import * as path from "node:path";

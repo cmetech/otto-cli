@@ -1,6 +1,6 @@
-// Project/App: GSD-2
-// File Purpose: Markdown projection renderer for GSD workflow database rows.
-// GSD Markdown Renderer — DB → Markdown file generation
+// Project/App: LOOP24
+// File Purpose: Markdown projection renderer for workflow database rows.
+// Markdown Renderer — DB → Markdown file generation
 //
 // Transforms DB state into correct markdown files on disk.
 // Each render function reads from DB, writes a markdown projection to disk,
@@ -45,7 +45,7 @@ import { clearPathCache } from "./paths.js";
 
 /**
  * Convert an absolute file path to a .gsd-relative artifact path.
- * E.g. "/project/.gsd/milestones/M001/M001-ROADMAP.md" → "milestones/M001/M001-ROADMAP.md"
+ * E.g. "/project/.loop24/milestones/M001/M001-ROADMAP.md" → "milestones/M001/M001-ROADMAP.md"
  */
 function toArtifactPath(absPath: string, basePath: string): string {
   const projectionRoot = gsdProjectionRoot(basePath);

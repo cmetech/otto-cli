@@ -1,5 +1,5 @@
 /**
- * Remote Questions — /gsd remote command
+ * Remote Questions — /loop24 remote command
  */
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";

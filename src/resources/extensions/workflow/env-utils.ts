@@ -1,4 +1,4 @@
-// GSD Extension — Environment variable utilities
+// Workflow Extension — Environment variable utilities
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 //
 // Pure utility for checking existing env keys in .env files and process.env.

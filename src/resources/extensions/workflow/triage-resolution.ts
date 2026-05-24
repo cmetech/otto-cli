@@ -1,5 +1,5 @@
 /**
- * GSD Triage Resolution — Execute triage classifications
+ * Triage Resolution — Execute triage classifications
  *
  * Provides resolution executors for each capture classification type:
  *
@@ -131,7 +131,7 @@ export function executeReplan(
  * Execute a backtrack directive — user wants to abandon current milestone
  * and return to a previous one (milestone regression).
  *
- * Writes a BACKTRACK-TRIGGER.md marker at `.gsd/BACKTRACK-TRIGGER.md` with
+ * Writes a BACKTRACK-TRIGGER.md marker at `.loop24/BACKTRACK-TRIGGER.md` with
  * the target milestone, reason, and timestamp. The state machine (deriveState)
  * detects this and transitions the project to the target milestone, resetting
  * its slices to allow re-planning.

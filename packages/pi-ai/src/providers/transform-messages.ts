@@ -30,7 +30,7 @@ let providerSwitchObserver: ProviderSwitchObserver | undefined;
  * Register a single observer that receives every non-empty ProviderSwitchReport
  * produced by `transformMessagesWithReport`. Pass `undefined` to clear.
  *
- * Single-subscriber by design — one host (GSD) owns telemetry. The observer
+ * Single-subscriber by design — one host owns telemetry. The observer
  * runs synchronously after the verbose-stderr log; errors are swallowed so a
  * misbehaving observer cannot break a stream.
  */

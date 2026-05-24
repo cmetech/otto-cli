@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: ADR-017 roadmap-divergence drift handler. Detects mismatches
 // between ROADMAP.md (parsed slice sequence, depends declarations, and
 // checkboxes) and the DB slice rows for that milestone, then re-renders the

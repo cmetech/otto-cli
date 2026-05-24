@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Routes work to appropriate models while preserving configured ceilings.
 
 import type { ComplexityTier, ClassificationResult, TaskMetadata } from "./complexity-classifier.js";
@@ -746,7 +746,7 @@ export const GROQ_MAX_TOOLS = 128;
 
 /**
  * Provider IDs that map to the Groq API backend.
- * Used to detect Groq at the GSD routing layer where only the provider string
+ * Used to detect Groq at the routing layer where only the provider string
  * is available (the pi-ai openai-completions adapter is shared across providers).
  */
 const GROQ_PROVIDER_IDS = new Set(["groq"]);

@@ -7,7 +7,7 @@
  *
  * Single entry point: classifyError(errorMsg, retryAfterMs?)
  *
- * @see https://github.com/open-gsd/gsd-pi/issues/2577
+ * @see upstream #2577
  */
 
 // ── ErrorClass discriminated union ──────────────────────────────────────────
@@ -55,11 +55,11 @@ const RATE_LIMIT_RE = /rate.?limit|too many requests|429|hit your limit|usage li
 const AFFORDABILITY_RE = /requires more credits|can only afford|insufficient credits|not enough credits|fewer max_tokens/i;
 // "Stream idle timeout" and "partial response received" are emitted by the SDK/harness
 // for mid-stream disconnects. Both indicate a transient network-level interruption.
-// See: https://github.com/open-gsd/gsd-pi/issues/4558
+// See: upstream #4558
 const NETWORK_RE = /network|ECONNRESET|ETIMEDOUT|ECONNREFUSED|socket hang up|fetch failed|connection.*reset|dns|unexpected eof|stream idle timeout|partial response received/i;
 // Context overflow errors (context window/length exceeded) should be treated as server-class
 // transient errors so auto-mode can retry with reduced budget or fall back to a larger-context model.
-// See: https://github.com/open-gsd/gsd-pi/issues/4528
+// See: upstream #4528
 const SERVER_RE = /internal(?: server)?[ _-]?error|500|502|503|overloaded|server_error|api_error|service.?unavailable|context (?:window|length) exceed|context window exceed/i;
 // ECONNRESET/ECONNREFUSED are in NETWORK_RE (same-model retry first).
 const CONNECTION_RE = /terminated|connection.?(?:refused|error)|other side closed|EPIPE|network.?(?:is\s+)?unavailable|stream_exhausted(?:_without_result)?/i;

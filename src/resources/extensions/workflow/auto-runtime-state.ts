@@ -1,4 +1,4 @@
-// GSD auto-mode runtime state
+// auto-mode runtime state
 import { AutoSession } from "./auto/session.js";
 import type { CurrentUnit } from "./auto/session.js";
 import {

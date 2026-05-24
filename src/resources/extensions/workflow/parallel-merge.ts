@@ -1,5 +1,5 @@
 /**
- * GSD Parallel Merge — Worktree reconciliation for parallel milestones.
+ * Parallel Merge — Worktree reconciliation for parallel milestones.
  *
  * Handles merging completed milestone worktrees back to main branch
  * with safety checks for parallel execution context.
@@ -86,7 +86,7 @@ function discoverDbCompletedMilestones(basePath: string): Set<string> {
  * When basePath is provided, also checks the canonical project DB as the
  * source of truth. Workers with stale orchestrator state (e.g. "error")
  * are included if their project DB row shows status='complete'.
- * See: https://github.com/open-gsd/gsd-pi/issues/2812
+ * See: upstream #2812
  */
 export function determineMergeOrder(
   workers: WorkerInfo[],

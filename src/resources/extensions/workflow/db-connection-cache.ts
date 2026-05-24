@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Workspace-scoped database connection cache helpers for the GSD database facade.
+// Project/App: LOOP24
+// File Purpose: Workspace-scoped database connection cache helpers for the workflow database facade.
 
 import type { DbAdapter } from "./db-adapter.js";
 

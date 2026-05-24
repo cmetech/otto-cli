@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Post-execution validation checks for completed GSD task output.
+// Project/App: LOOP24
+// File Purpose: Post-execution validation checks for completed task output.
 
 /**
  * Post-Execution Checks — Validate task output after execution completes.

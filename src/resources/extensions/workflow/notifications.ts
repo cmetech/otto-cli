@@ -1,4 +1,4 @@
-// GSD Extension — Desktop Notification Helper
+// Workflow Extension — Desktop Notification Helper
 // Cross-platform desktop notifications for auto-mode events.
 
 import { execFileSync } from "node:child_process";
@@ -115,7 +115,7 @@ export function buildDesktopNotificationCommand(
     // so it gets a proper permission entry in System Settings → Notifications.
     // osascript notifications are silently swallowed when the calling terminal
     // (Ghostty, iTerm2, etc.) lacks notification permissions — exits 0, no error.
-    // See: https://github.com/open-gsd/gsd-pi/issues/2632
+    // See: upstream #2632
     const tnPath = findExecutable("terminal-notifier");
     if (tnPath) {
       const sound = level === "error" ? "Basso" : "Glass";

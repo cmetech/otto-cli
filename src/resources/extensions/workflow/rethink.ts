@@ -1,5 +1,5 @@
 /**
- * GSD Rethink — Conversational project reorganization.
+ * Rethink — Conversational project reorganization.
  *
  * Collects a snapshot of all milestones (status, dependencies, slice progress,
  * queue order) and dispatches a prompt that turns Claude into a reorganization

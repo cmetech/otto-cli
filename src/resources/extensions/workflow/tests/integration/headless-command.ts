@@ -2,13 +2,13 @@
  * Integration test for `gsd headless` CLI subcommand
  *
  * Validates that the headless CLI entry point works end-to-end:
- *   1. Creates a temp dir with a complete .gsd/ project fixture
+ *   1. Creates a temp dir with a complete .loop24/ project fixture
  *   2. Initializes a git repo in the temp dir
  *   3. Spawns `node dist/loader.js headless --json next` as a child process
  *   4. Waits for the process to exit (with a 5-minute timeout)
  *   5. Validates exit code, JSONL stdout, stderr progress, and task artifact
  *
- * Auth: Uses OAuth credentials from ~/.gsd/agent/auth.json (Claude Code Max).
+ * Auth: Uses OAuth credentials from ~/.loop24/agent/auth.json (Claude Code Max).
  * Falls back to ANTHROPIC_API_KEY env var if OAuth is not configured (D013).
  *
  * Usage:
@@ -29,7 +29,7 @@ const TIMEOUT_MS = parseInt(process.env.HEADLESS_TIMEOUT_MS ?? "300000", 10); //
 const DRY_RUN = process.argv.includes("--dry-run");
 
 // ── Fixture Data ─────────────────────────────────────────────────────────────
-// A complete .gsd/ project state that deriveState() can parse.
+// A complete .loop24/ project state that deriveState() can parse.
 // The trivial task asks the agent to create a single file — zero questions needed.
 
 const FIXTURE_PROJECT_MD = `# Project
@@ -153,7 +153,7 @@ To call this milestone complete, we must prove:
 
 const FIXTURE_ROADMAP_MD = `# M001: Headless Proof
 
-**Vision:** Prove GSD auto-mode works headlessly.
+**Vision:** Prove auto-mode works headlessly.
 
 ## Success Criteria
 
@@ -242,12 +242,12 @@ Create a file called hello.txt in the project root with the content "Hello from 
 function createFixture(): string {
   const tmpDir = mkdtempSync(join(tmpdir(), "gsd-headless-cmd-"));
 
-  // Initialize git repo (GSD requires it for branch-per-slice)
+  // Initialize git repo (the agent requires it for branch-per-slice)
   execSync("git init -b main", { cwd: tmpDir, stdio: "pipe" });
   execSync('git config user.email "test@test.com"', { cwd: tmpDir, stdio: "pipe" });
   execSync('git config user.name "Test"', { cwd: tmpDir, stdio: "pipe" });
 
-  // Create .gsd/ structure
+  // Create .loop24/ structure
   const gsdDir = join(tmpDir, ".gsd");
   const milestonesDir = join(gsdDir, "milestones");
   const m001Dir = join(milestonesDir, "M001");
@@ -274,7 +274,7 @@ function createFixture(): string {
     ".gsd/runtime/",
   ].join("\n") + "\n");
 
-  // Initial commit so GSD has a clean git state
+  // Initial commit so the agent has a clean git state
   execSync("git add -A && git commit -m 'init: headless command test fixture'", {
     cwd: tmpDir,
     stdio: "pipe",
@@ -351,7 +351,7 @@ async function main(): Promise<void> {
   // ── Step 2: Validate environment ────────────────────────────────────────
   console.log("\n[2/6] Validating environment...");
 
-  // Auth: prefer OAuth credentials from ~/.gsd/agent/auth.json (D013).
+  // Auth: prefer OAuth credentials from ~/.loop24/agent/auth.json (D013).
   // Fall back to ANTHROPIC_API_KEY env var if present.
   const authJsonPath = join(homedir(), ".gsd", "agent", "auth.json");
   let hasOAuth = false;

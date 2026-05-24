@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Executor for the gsd_exec MCP tool.
 
 import {

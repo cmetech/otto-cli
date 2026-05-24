@@ -1,5 +1,5 @@
 /**
- * GSD Parallel Orchestrator — Core engine for parallel milestone orchestration.
+ * Parallel Orchestrator — Core engine for parallel milestone orchestration.
  *
  * Manages worker lifecycle, budget tracking, and coordination. Workers are
  * separate processes spawned via child_process, each running in its own git
@@ -101,7 +101,7 @@ function stateFilePath(basePath: string): string {
 }
 
 /**
- * Persist the current orchestrator state to .gsd/orchestrator.json.
+ * Persist the current orchestrator state to .loop24/orchestrator.json.
  * Uses atomic write (tmp + rename) to prevent partial reads.
  */
 export function persistState(basePath: string): void {
@@ -158,7 +158,7 @@ function isPidAlive(pid: number): boolean {
 }
 
 /**
- * Restore orchestrator state from .gsd/orchestrator.json.
+ * Restore orchestrator state from .loop24/orchestrator.json.
  * Checks PID liveness for each worker:
  * - Living PID → state "running", process stays null (no handle)
  * - Dead PID → removed from restored state
@@ -251,7 +251,7 @@ function restoreRuntimeState(basePath: string): boolean {
 
   // Fallback: rebuild coordinator state from live session status files.
   // This covers cases where orchestrator.json is missing/corrupt but workers are
-  // still running and writing heartbeats under .gsd/parallel/.
+  // still running and writing heartbeats under .loop24/parallel/.
   cleanupStaleSessions(basePath);
   const statuses = readAllSessionStatuses(basePath);
   if (statuses.length === 0) {
@@ -558,7 +558,7 @@ export function _createMilestoneWorktree(basePath: string, milestoneId: string):
   // Run post-create hook if configured
   runWorktreePostCreateHook(basePath, info.path);
 
-  // Copy .gsd/ planning artifacts (milestones, CONTEXT, ROADMAP, etc.) from the
+  // Copy .loop24/ planning artifacts (milestones, CONTEXT, ROADMAP, etc.) from the
   // project root into the worktree. Without this, workers for newly-planned
   // milestones can't find their roadmap and exit immediately (#2184 Bug 4).
   syncGsdStateToWorktree(basePath, info.path);
@@ -573,7 +573,7 @@ export function _createMilestoneWorktree(basePath: string, milestoneId: string):
  * The worker runs `gsd headless --json auto` in the milestone's worktree
  * with GSD_MILESTONE_LOCK set to isolate state derivation.
  *
- * IMPORTANT: We use `headless --json auto` instead of `--print "/gsd auto"`.
+ * IMPORTANT: We use `headless --json auto` instead of `--print "/loop24 auto"`.
  * --print mode calls session.prompt() which returns immediately after the
  * extension command handler fires, because auto-mode's ctx.newSession()
  * resets the session and unblocks the outer prompt() await. This causes
@@ -593,7 +593,7 @@ export function spawnWorker(
   if (!worker) return false;
   if (worker.process) return true; // already spawned
 
-  // Resolve the GSD CLI binary path
+  // Resolve the CLI binary path
   const binPath = resolveGsdBin();
   if (!binPath) return false;
 
@@ -738,7 +738,7 @@ export function spawnWorker(
 }
 
 /**
- * Resolve the GSD CLI binary path.
+ * Resolve the CLI binary path.
  * Uses GSD_BIN_PATH env var (set by loader.ts) or falls back to
  * finding the binary relative to the current module.
  */
@@ -827,7 +827,7 @@ function processWorkerLine(basePath: string, milestoneId: string, line: string):
 
   // tool_execution_start can track current unit
   if (type === "extension_ui_request" && event.method === "notify") {
-    // GSD auto-mode sends notifications about current unit
+    // auto-mode sends notifications about current unit
     const worker = state.workers.get(milestoneId);
     if (worker) {
       writeSessionStatus(basePath, {

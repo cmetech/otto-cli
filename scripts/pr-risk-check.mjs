@@ -124,7 +124,7 @@ function parseMap(mapPath) {
     const rawPath = cols[0];
     const rawSystems = cols[1] || '';
 
-    // Skip bold section headers like **GSD Extension (Core Workflow Engine)**
+    // Skip bold section headers like **Workflow Extension (Core Workflow Engine)**
     if (rawPath.startsWith('**') || rawPath === '') continue;
 
     // Clean up path — remove parenthetical notes like "(50+ files)"

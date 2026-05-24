@@ -413,7 +413,7 @@ export async function checkRuntimeHealth(
         ".gsd/event-log.jsonl",
       ];
 
-      // If blanket .gsd/ or .gsd is present, all patterns are covered
+      // If blanket .loop24/ or .gsd is present, all patterns are covered
       const hasBlanketIgnore = existingLines.has(".gsd/") || existingLines.has(".gsd");
 
       if (!hasBlanketIgnore) {
@@ -490,7 +490,7 @@ export async function checkRuntimeHealth(
         }
 
         // ── Symlinked .gsd without .gitignore entry (#4423) ──
-        // When `.gsd` is a symlink AND not gitignored, `git add -A -- :!.gsd/...`
+        // When `.gsd` is a symlink AND not gitignored, `git add -A -- :!.loop24/...`
         // pathspecs fail with "beyond a symbolic link". Without self-heal this
         // silently drops new user files during auto-commit.
         if (nativeIsRepo(basePath) && !isGsdGitignored(basePath)) {

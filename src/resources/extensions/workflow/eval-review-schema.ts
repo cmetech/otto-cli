@@ -1,7 +1,7 @@
 /**
  * EVAL-REVIEW frontmatter schema and parser.
  *
- * The auditor agent for `/gsd eval-review` writes a markdown file whose
+ * The auditor agent for `/loop24 eval-review` writes a markdown file whose
  * machine-readable contract lives entirely in YAML frontmatter. The body
  * after the closing `---` is human-only prose and is never parsed by any
  * consumer (the design response to a prior parser that used regex over LLM-generated

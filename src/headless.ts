@@ -1,7 +1,7 @@
 /**
  * Headless Orchestrator — `gsd headless`
  *
- * Runs any /gsd subcommand without a TUI by spawning a child process in
+ * Runs any /loop24 subcommand without a TUI by spawning a child process in
  * RPC mode, auto-responding to extension UI requests, and streaming
  * progress to stderr.
  *
@@ -324,7 +324,7 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
     }
   }
 
-  // For new-milestone, load context and bootstrap .gsd/ before spawning RPC child
+  // For new-milestone, load context and bootstrap .loop24/ before spawning RPC child
   if (isNewMilestone) {
     if (!options.context && !options.contextText) {
       process.stderr.write('[headless] Error: new-milestone requires --context <file> or --context-text <text>\n')
@@ -339,11 +339,11 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
       process.exit(1)
     }
 
-    // Bootstrap .gsd/ if needed
+    // Bootstrap .loop24/ if needed
     const gsdDir = join(process.cwd(), '.gsd')
     if (!existsSync(gsdDir)) {
       if (!options.json) {
-        process.stderr.write('[headless] Bootstrapping .gsd/ project structure...\n')
+        process.stderr.write('[headless] Bootstrapping .loop24/ project structure...\n')
       }
       bootstrapGsdProject(process.cwd())
     }
@@ -354,10 +354,10 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
     writeFileSync(join(runtimeDir, 'headless-context.md'), contextContent, 'utf-8')
   }
 
-  // Validate .gsd/ directory (skip for new-milestone since we just bootstrapped it)
+  // Validate .loop24/ directory (skip for new-milestone since we just bootstrapped it)
   const gsdDir = join(process.cwd(), '.gsd')
   if (!isNewMilestone && !existsSync(gsdDir)) {
-    process.stderr.write('[headless] Error: No .gsd/ directory found in current directory.\n')
+    process.stderr.write('[headless] Error: No .loop24/ directory found in current directory.\n')
     process.stderr.write("[headless] Run 'gsd' interactively first to initialize a project.\n")
     process.exit(1)
   }
@@ -388,7 +388,7 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
   }
 
   // Doctor: read-only health check, no RPC child needed (#4904 live-regression).
-  // The interactive `/gsd doctor` command lives in the GSD extension; this CLI
+  // The interactive `/loop24 doctor` command lives in the workflow extension; this CLI
   // path lets non-interactive callers (CI, recovery scripts, the live-regression
   // suite) get the same diagnostic without a TTY.
   if (options.command === 'doctor') {
@@ -429,7 +429,7 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
   if (injector) {
     clientOptions.env = injector.getSecretEnvVars()
   }
-  // Signal headless mode to the GSD extension (skips UAT human pause, etc.)
+  // Signal headless mode to the workflow extension (skips UAT human pause, etc.)
   clientOptions.env = { ...(clientOptions.env as Record<string, string> || {}), GSD_HEADLESS: '1' }
   // Propagate --bare to the child process
   if (options.bare) {
@@ -979,7 +979,7 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
     await completionPromise
   }
 
-  // Auto-mode chaining: if --auto and milestone creation succeeded, send /gsd auto
+  // Auto-mode chaining: if --auto and milestone creation succeeded, send /loop24 auto
   if (isNewMilestone && options.auto && milestoneReady && !blocked && exitCode === EXIT_SUCCESS) {
     if (!options.json) {
       process.stderr.write('[headless] Milestone ready — chaining into auto-mode...\n')

@@ -1,4 +1,4 @@
-// GSD-2 + src/resources/extensions/workflow/auto-dashboard.ts - Auto-mode progress widget rendering and dashboard helpers.
+// LOOP24 + src/resources/extensions/workflow/auto-dashboard.ts - Auto-mode progress widget rendering and dashboard helpers.
 
 /**
  * Auto-mode Dashboard — progress widget rendering, elapsed time formatting,

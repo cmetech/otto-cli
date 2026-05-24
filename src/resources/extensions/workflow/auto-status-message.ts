@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Compact connected status message formatting for GSD TUI notifications.
+// Project/App: LOOP24
+// File Purpose: Compact connected status message formatting for the workflow TUI notifications.
 
 const STATUS_INDENT = "    ";
 const STATUS_RULE = "────────────────────────────────────────";

@@ -1,4 +1,4 @@
-// GSD MCP Server — .gsd/ directory resolution
+// MCP Server — .loop24/ directory resolution
 
 import { existsSync, statSync, readdirSync } from 'node:fs';
 import { join, resolve, dirname, basename } from 'node:path';
@@ -11,7 +11,7 @@ import { execFileSync } from 'node:child_process';
 // Read-only MCP tools (gsd_progress, gsd_roadmap, gsd_doctor, …) hammer the
 // filesystem on every call: gsd_roadmap alone resolves milestone directories
 // 5–6× per milestone, and resolveGsdRoot can spawn `git rev-parse` for
-// non-direct .gsd/ layouts. Without caching, an MCP host pipelining several
+// non-direct .loop24/ layouts. Without caching, an MCP host pipelining several
 // tool calls blocks the event loop on dozens of redundant readdir/stat
 // syscalls per request.
 //
@@ -111,7 +111,7 @@ export function _resetReaderCaches(): void {
 }
 
 /**
- * Resolve the .gsd/ root directory for a project.
+ * Resolve the .loop24/ root directory for a project.
  *
  * Probes in order:
  *   1. projectDir/.gsd (fast path)
@@ -125,7 +125,7 @@ export function resolveGsdRoot(projectDir: string): string {
   const cached = cachedGsdRoot(resolved);
   if (cached) return cached;
 
-  // Fast path: .gsd/ in the given directory
+  // Fast path: .loop24/ in the given directory
   const direct = join(resolved, '.gsd');
   if (existsSync(direct) && statSync(direct).isDirectory()) {
     rememberGsdRoot(resolved, direct);

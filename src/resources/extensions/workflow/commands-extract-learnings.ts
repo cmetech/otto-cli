@@ -1,10 +1,10 @@
 /**
- * GSD Command — /gsd extract-learnings
+ * Command — /loop24 extract-learnings
  *
  * Analyses completed milestone artefacts and dispatches an LLM turn that
  * extracts structured knowledge into 4 categories (Decisions · Lessons ·
  * Patterns · Surprises), writes a LEARNINGS.md audit trail, and persists
- * the durable subset into the GSD memory store via capture_thought:
+ * the durable subset into the memory store via capture_thought:
  *
  *   - Patterns  → capture_thought(category="pattern")
  *   - Lessons   → capture_thought(category="gotcha" | "convention")
@@ -51,7 +51,7 @@ export interface PhaseArtifacts {
 
 /**
  * Full context required by `buildExtractLearningsPrompt` to construct the
- * manual `/gsd extract-learnings` dispatch prompt. Covers the milestone
+ * manual `/loop24 extract-learnings` dispatch prompt. Covers the milestone
  * identity, the output target, the inlined artefact contents, and any
  * missing optional artefacts that should be surfaced to the agent.
  */
@@ -127,7 +127,7 @@ export interface FrontmatterContext {
 // ─── Pure functions ───────────────────────────────────────────────────────────
 
 /**
- * Parses the argument string passed to `/gsd extract-learnings`.
+ * Parses the argument string passed to `/loop24 extract-learnings`.
  *
  * Returns `{ milestoneId: null }` for empty / whitespace-only input — the
  * handler surfaces a usage hint in that case. A non-empty trimmed value is
@@ -181,7 +181,7 @@ export function resolvePhaseArtifacts(milestoneDir: string, milestoneId: string)
  * Canonical structured-extraction instructions.
  *
  * Used in two places — kept in sync by construction:
- *   1. /gsd extract-learnings manual path (buildExtractLearningsPrompt).
+ *   1. /loop24 extract-learnings manual path (buildExtractLearningsPrompt).
  *   2. complete-milestone auto path ({{extractLearningsSteps}} placeholder,
  *      injected by auto-prompts::buildCompleteMilestonePrompt).
  *
@@ -287,14 +287,14 @@ captured only in the LEARNINGS.md file written in Step 2.`;
 }
 
 /**
- * Build the full dispatch prompt for the manual `/gsd extract-learnings` path.
+ * Build the full dispatch prompt for the manual `/loop24 extract-learnings` path.
  *
  * Composes a header block (title, project, output file), the inlined milestone
  * artefacts (roadmap, summary, optional verification and UAT reports), and the
  * canonical {@link buildExtractionStepsBlock} procedure. The same procedure is
  * rendered verbatim in the auto-mode `complete-milestone` turn via the
  * `{{extractLearningsSteps}}` placeholder, guaranteeing a single source of
- * truth for how learnings flow into the GSD memory store via capture_thought.
+ * truth for how learnings flow into the memory store via capture_thought.
  *
  * Missing optional artefacts are surfaced as a note at the end of the artefact
  * section so the LLM can mark them explicitly in the LEARNINGS frontmatter.
@@ -385,7 +385,7 @@ missing_artifacts:${missingValue}
 }
 
 /**
- * Extracts the project display name from `.gsd/PROJECT.md` frontmatter.
+ * Extracts the project display name from `.loop24/PROJECT.md` frontmatter.
  *
  * Falls back to the project directory's basename if PROJECT.md is missing,
  * unreadable, or has no `name:` field. Never throws — surfacing the raw
@@ -411,7 +411,7 @@ export function extractProjectName(basePath: string): string {
 // ─── Handler ──────────────────────────────────────────────────────────────────
 
 /**
- * Handles the `/gsd extract-learnings <MID>` slash command.
+ * Handles the `/loop24 extract-learnings <MID>` slash command.
  *
  * Resolves and reads the milestone artefacts, constructs the dispatch prompt
  * via {@link buildExtractLearningsPrompt}, and triggers a new LLM turn via

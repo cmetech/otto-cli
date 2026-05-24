@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Mutable auto-mode session state container.
 /**
  * AutoSession — encapsulates all mutable auto-mode state into a single instance.
@@ -159,7 +159,7 @@ export class AutoSession {
 
   // ── Model state ──────────────────────────────────────────────────────────
   autoModeStartModel: StartModel | null = null;
-  /** Explicit /gsd model pin captured at bootstrap (session-scoped policy override). */
+  /** Explicit /loop24 model pin captured at bootstrap (session-scoped policy override). */
   manualSessionModelOverride: StartModel | null = null;
   currentUnitModel: Model<Api> | null = null;
   /** Fully-qualified model ID (provider/id) set after selectAndApplyModel + hook overrides (#2899). */
@@ -205,7 +205,7 @@ export class AutoSession {
   readonly preExecRetryCount: Map<string, number> = new Map();
 
   // ── Tool invocation errors (#2883) ──────────────────────────────────
-  /** Set when a GSD tool execution ends with isError due to malformed/truncated
+  /** Set when a workflow tool execution ends with isError due to malformed/truncated
    *  JSON arguments. Checked by postUnitPreVerification to break retry loops. */
   lastToolInvocationError: string | null = null;
   /** Agent-end messages from the just-finished unit, consumed during finalize. */

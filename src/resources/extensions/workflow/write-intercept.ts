@@ -1,4 +1,4 @@
-// GSD Extension — Write Intercept for Agent State File Blocks
+// Workflow Extension — Write Intercept for Agent State File Blocks
 // Detects agent attempts to write authoritative state files and returns
 // an error directing the agent to use the engine tool API instead.
 
@@ -6,10 +6,10 @@ import { realpathSync } from "node:fs";
 import { resolve } from "node:path";
 
 /**
- * Patterns matching authoritative .gsd/ state files that agents must NOT write directly.
+ * Patterns matching authoritative .loop24/ state files that agents must NOT write directly.
  *
  * Only STATE.md is blocked — it is purely engine-rendered from DB state.
- * All other .gsd/ files are agent-authored content that agents create and
+ * All other .loop24/ files are agent-authored content that agents create and
  * update during discuss, plan, and execute phases:
  * - REQUIREMENTS.md — agents create during discuss, read during planning
  * - PROJECT.md — agents create during discuss, update at milestone close
@@ -19,10 +19,10 @@ import { resolve } from "node:path";
 const BLOCKED_PATTERNS: RegExp[] = [
   // STATE.md is the only purely engine-rendered file.
   // Case-insensitive to prevent bypass on macOS (case-insensitive APFS).
-  // (^|[/\\]) matches both absolute paths (/project/.gsd/…) and bare relative
-  // paths (.gsd/STATE.md) so a path without a leading separator is also blocked.
+  // (^|[/\\]) matches both absolute paths (/project/.loop24/…) and bare relative
+  // paths (.loop24/STATE.md) so a path without a leading separator is also blocked.
   /(^|[/\\])\.gsd[/\\]STATE\.md$/i,
-  // Also match resolved symlink paths under ~/.gsd/projects/ (Pitfall #6)
+  // Also match resolved symlink paths under ~/.loop24/projects/ (Pitfall #6)
   /(^|[/\\])\.gsd[/\\]projects[/\\][^/\\]+[/\\]STATE\.md$/i,
   // gsd.db and WAL/SHM files — single-writer WAL connection managed by engine (#3625)
   /(^|[/\\])\.gsd[/\\]gsd\.db(-wal|-shm)?$/i,
@@ -53,7 +53,7 @@ const BASH_STATE_PATTERNS: RegExp[] = [
 ];
 
 /**
- * Tests whether the given file path matches a blocked authoritative .gsd/ state file.
+ * Tests whether the given file path matches a blocked authoritative .loop24/ state file.
  * Resolves `..` segments via path.resolve() and attempts realpathSync for symlinks.
  */
 export function isBlockedStateFile(filePath: string): boolean {
@@ -87,7 +87,7 @@ function matchesBlockedPattern(path: string): boolean {
 }
 
 /**
- * Error message returned when an agent attempts to directly write an authoritative .gsd/ state file.
+ * Error message returned when an agent attempts to directly write an authoritative .loop24/ state file.
  * Directs the agent to use engine tool calls instead.
  */
 export const BLOCKED_WRITE_ERROR = `Direct writes to .gsd/STATE.md and .gsd/gsd.db are blocked. Use engine tool calls instead:

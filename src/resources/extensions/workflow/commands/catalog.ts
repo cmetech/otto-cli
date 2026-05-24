@@ -75,7 +75,7 @@ export const TOP_LEVEL_SUBCOMMANDS: readonly GsdCommandDefinition[] = [
   { cmd: "update", desc: `Update ${BRAND} to the latest version` },
   { cmd: "upgrade", desc: "Alias for update; installs the latest @opengsd package" },
   { cmd: "start", desc: "Start a workflow template (bugfix, spike, feature, etc.)" },
-  // Note: leaving "full-project" nested completion description ("Complete GSD workflow...") as-is — internal flavor text.
+  // Note: leaving "full-project" nested completion description ("Complete workflow...") as-is — internal flavor text.
   { cmd: "templates", desc: "List available workflow templates" },
   { cmd: "extensions", desc: "Manage extensions (list, enable, disable, info)" },
   { cmd: "fast", desc: "Toggle OpenAI service tier (on/off/flex/status)" },
@@ -532,7 +532,7 @@ export function getGsdArgumentCompletions(prefix: string) {
     return [];
   }
 
-  // Completion for `/gsd workflow info <name>` — list all discoverable plugins (project + global).
+  // Completion for `/loop24 workflow info <name>` — list all discoverable plugins (project + global).
   if (command === "workflow" && subcommand === "info" && parts.length <= 3) {
     const results: GsdCommandDefinition[] = [];
     const seen = new Set<string>();

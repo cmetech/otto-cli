@@ -1,4 +1,4 @@
-// GSD-2 + src/resources/extensions/workflow/bootstrap/agent-end-recovery.ts - Handles provider and agent-end recovery for GSD auto-mode.
+// LOOP24 + src/resources/extensions/workflow/bootstrap/agent-end-recovery.ts - Handles provider and agent-end recovery for auto-mode.
 
 import type { ExtensionAPI, ExtensionContext } from "@gsd/pi-coding-agent";
 
@@ -443,7 +443,7 @@ export async function handleAgentEnd(
 
     // ── 1a. Unsupported-model: provider rejected this model for the current
     //        account/plan at request time (#4513).  Persist a block so the
-    //        same dead model isn't reselected on the next /gsd auto restart,
+    //        same dead model isn't reselected on the next /loop24 auto restart,
     //        then try a fallback before pausing.
     if (cls.kind === "unsupported-model") {
       const dash = getAutoDashboardData();

@@ -1,4 +1,4 @@
-// GSD-2 + src/resources/extensions/workflow/working-output-messages.ts - Formats and audits user-facing working-state messages.
+// LOOP24 + src/resources/extensions/workflow/working-output-messages.ts - Formats and audits user-facing working-state messages.
 
 export type WorkingOutputSurface =
   | "loader"

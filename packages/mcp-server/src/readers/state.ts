@@ -1,4 +1,4 @@
-// GSD MCP Server — project state reader
+// MCP Server — project state reader
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 
 import { readFileSync, existsSync } from 'node:fs';

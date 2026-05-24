@@ -1,5 +1,5 @@
 /**
- * GSD Doctor — Provider & Integration Health Checks
+ * Doctor — Provider & Integration Health Checks
  *
  * Fast, deterministic checks for external service configuration.
  * Checks key presence in auth.json and environment variables — no HTTP calls,
@@ -225,7 +225,7 @@ function hasModelsJsonApiKey(providerId: string): boolean {
 function resolveKey(providerId: string): KeyLookup {
   const info = PROVIDER_REGISTRY.find(p => p.id === providerId);
 
-  // claude-code never stores credentials in auth.json — GSD delegates entirely to
+  // claude-code never stores credentials in auth.json — the agent delegates entirely to
   // the local CLI binary. Presence of the binary in PATH is the only signal.
   if (providerId === "claude-code") {
     return { found: isCliBinaryInPath("claude-code"), source: "env", backedOff: false };

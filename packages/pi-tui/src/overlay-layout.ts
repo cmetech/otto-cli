@@ -1,4 +1,4 @@
-// GSD-2 + packages/pi-tui/src/overlay-layout.ts - Overlay layout resolution, compositing, and rendering utilities.
+// LOOP24 + packages/pi-tui/src/overlay-layout.ts - Overlay layout resolution, compositing, and rendering utilities.
 
 /**
  * Overlay layout resolution, compositing, and rendering utilities.

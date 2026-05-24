@@ -1,5 +1,5 @@
 /**
- * GSD Milestone Actions — Park, Unpark, and Discard operations.
+ * Milestone Actions — Park, Unpark, and Discard operations.
  *
  * Park: Creates a PARKED.md marker file. deriveState() skips parked milestones
  * when finding the active milestone, but keeps them in the registry.
@@ -105,7 +105,7 @@ export function unparkMilestone(basePath: string, milestoneId: string): boolean 
   const dbThinksParked = isDbAvailable() && getMilestone(milestoneId)?.status === "parked";
 
   // Recover the reverse desync too: DB can still say "parked" even when the
-  // PARKED marker was lost on disk, and /gsd unpark should repair that state.
+  // PARKED marker was lost on disk, and /loop24 unpark should repair that state.
   if (!hadParkedFile && !dbThinksParked) return false;
 
   if (hadParkedFile) {

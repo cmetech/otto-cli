@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: ADR-017 drift handler registry. Single source of truth for
 // the catalog. Tests can override per-call via ReconciliationDeps.registry.
 

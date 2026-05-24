@@ -1,4 +1,4 @@
-// GSD2 — Extension registration: wires all GSD tools, commands, and hooks into pi
+// LOOP24 — Extension registration: wires all workflow tools, commands, and hooks into pi
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
 
@@ -90,7 +90,7 @@ export function registerGsdExtension(pi: ExtensionAPI): void {
   registerLazyWorktreeCommands(pi);
   registerExitCommand(pi);
 
-  // Wire the Layer 2 event emitter bridge so deeply-nested GSD code can emit
+  // Wire the Layer 2 event emitter bridge so deeply-nested workflow code can emit
   // extension events (git lifecycle, verify, budget, milestone, unit) without
   // threading `pi` through every call site.
   import("../hook-emitter.js")
@@ -106,7 +106,7 @@ export function registerGsdExtension(pi: ExtensionAPI): void {
   installEpipeGuard();
 
   // Ecosystem handlers captured by the GSDExtensionAPI wrapper for the
-  // GSD-owned `before_agent_start` dispatch step (#3338).
+  // workflow-owned `before_agent_start` dispatch step (#3338).
   const ecosystemHandlers: GSDEcosystemBeforeAgentStartHandler[] = [];
 
   pi.registerCommand("kill", {

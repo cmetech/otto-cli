@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Custom-engine successful verification reconcile adapter for auto-mode loop.
 
 import type { EngineState, ReconcileResult } from "../engine-types.js";

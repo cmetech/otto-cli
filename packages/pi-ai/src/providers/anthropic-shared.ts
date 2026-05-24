@@ -454,7 +454,7 @@ function applyCacheControlToParam(
 	}
 }
 
-/** Convert GSD tools to Anthropic SDK tool definitions, applying cache control to the last entry. */
+/** Convert workflow tools to Anthropic SDK tool definitions, applying cache control to the last entry. */
 export function convertTools(
 	tools: Tool[],
 	isOAuthToken: boolean,
@@ -598,7 +598,7 @@ export function buildParams(
 	return params;
 }
 
-/** Map an Anthropic API stop reason string to GSD's internal `StopReason`. */
+/** Map an Anthropic API stop reason string to the agent's internal `StopReason`. */
 export function mapStopReason(reason: string): StopReason {
 	switch (reason) {
 		case "end_turn":

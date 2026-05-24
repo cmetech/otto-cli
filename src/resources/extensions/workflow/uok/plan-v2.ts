@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: UOK plan v2 graph compilation from GSD workflow state.
+// Project/App: LOOP24
+// File Purpose: UOK plan v2 graph compilation from workflow state.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

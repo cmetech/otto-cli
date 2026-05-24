@@ -1,13 +1,13 @@
 /**
- * /gsd logs — Browse activity logs, debug logs, and metrics.
+ * /loop24 logs — Browse activity logs, debug logs, and metrics.
  *
  * Subcommands:
- *   /gsd logs              — List recent activity + debug logs
- *   /gsd logs <N>          — Show summary of activity log #N
- *   /gsd logs debug        — List debug log files
- *   /gsd logs debug <N>    — Show debug log summary #N
- *   /gsd logs tail [N]     — Show last N activity log entries (default 5)
- *   /gsd logs clear        — Remove old activity and debug logs
+ *   /loop24 logs              — List recent activity + debug logs
+ *   /loop24 logs <N>          — Show summary of activity log #N
+ *   /loop24 logs debug        — List debug log files
+ *   /loop24 logs debug <N>    — Show debug log summary #N
+ *   /loop24 logs tail [N]     — Show last N activity log entries (default 5)
+ *   /loop24 logs clear        — Remove old activity and debug logs
  */
 
 import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
@@ -249,34 +249,34 @@ export async function handleLogs(args: string, ctx: ExtensionCommandContext): Pr
   const parts = args.trim().split(/\s+/).filter(Boolean);
   const subCmd = parts[0] ?? "";
 
-  // /gsd logs clear
+  // /loop24 logs clear
   if (subCmd === "clear") {
     await handleLogsClear(basePath, ctx);
     return;
   }
 
-  // /gsd logs debug [N]
+  // /loop24 logs debug [N]
   if (subCmd === "debug") {
     const idx = parts[1] ? parseInt(parts[1], 10) : undefined;
     await handleLogsDebug(basePath, ctx, idx);
     return;
   }
 
-  // /gsd logs tail [N]
+  // /loop24 logs tail [N]
   if (subCmd === "tail") {
     const count = parts[1] ? parseInt(parts[1], 10) : 5;
     await handleLogsTail(basePath, ctx, count);
     return;
   }
 
-  // /gsd logs <N> — show specific activity log
+  // /loop24 logs <N> — show specific activity log
   if (subCmd && /^\d+$/.test(subCmd)) {
     const seq = parseInt(subCmd, 10);
     await handleLogsShow(basePath, ctx, seq);
     return;
   }
 
-  // /gsd logs — list overview
+  // /loop24 logs — list overview
   await handleLogsList(basePath, ctx);
 }
 

@@ -1,5 +1,5 @@
 /**
- * GSD Command Handlers — fire-and-forget handlers that delegate to other modules.
+ * Command Handlers — fire-and-forget handlers that delegate to other modules.
  *
  * Contains: handleDoctor, handleSteer, handleCapture, handleTriage, handleKnowledge,
  * handleRunHook, handleUpdate, handleSkillHealth
@@ -174,7 +174,7 @@ export async function handleSkillHealth(args: string, ctx: ExtensionCommandConte
 
   const basePath = projectRoot();
 
-  // /gsd skill-health <skill-name> — detail view
+  // /loop24 skill-health <skill-name> — detail view
   if (args && !args.startsWith("--")) {
     const detail = formatSkillDetail(basePath, args);
     ctx.ui.notify(detail, "info");
@@ -222,7 +222,7 @@ export async function handleCapture(args: string, ctx: ExtensionCommandContext):
 
   const basePath = currentDirectoryRoot();
 
-  // Ensure .gsd/ exists — capture should work even without a milestone
+  // Ensure .loop24/ exists — capture should work even without a milestone
   const gsdDir = gsdRoot(basePath);
   if (!existsSync(gsdDir)) {
     mkdirSync(gsdDir, { recursive: true });

@@ -1,4 +1,4 @@
-// Native GSD Parser Bridge
+// Native Parser Bridge
 // Provides drop-in replacements for the JS parsing functions in files.ts,
 // backed by the Rust native parser for better performance on large projects.
 //
@@ -121,7 +121,7 @@ export interface BatchParsedFile {
 }
 
 /**
- * Batch-parse all .md files in a .gsd/ directory tree using the native parser.
+ * Batch-parse all .md files in a .loop24/ directory tree using the native parser.
  * Returns null if native module unavailable.
  */
 export function nativeBatchParseGsdFiles(directory: string): BatchParsedFile[] | null {
@@ -154,7 +154,7 @@ export interface GsdTreeEntry {
 }
 
 /**
- * Native-backed directory tree scan of a .gsd/ directory.
+ * Native-backed directory tree scan of a .loop24/ directory.
  * Returns a flat list of all entries, or null if native module unavailable.
  */
 export function nativeScanGsdTree(directory: string): GsdTreeEntry[] | null {

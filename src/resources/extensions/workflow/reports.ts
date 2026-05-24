@@ -1,17 +1,17 @@
 /**
- * GSD Reports Registry
+ * Reports Registry
  *
- * Manages .gsd/reports/ — the persistent progression log of HTML snapshots.
+ * Manages .loop24/reports/ — the persistent progression log of HTML snapshots.
  *
  * Layout:
- *   .gsd/reports/
+ *   .loop24/reports/
  *     reports.json          lightweight metadata index (never re-parses HTML)
  *     index.html            auto-regenerated on every new snapshot
  *     M001-20260101T120000.html    per-milestone snapshot
  *     final-20260201T090000.html   full-project final snapshot
  *
  * Auto-triggered: after each milestone completion (when auto_report: true).
- * Manual: /gsd report --html
+ * Manual: /loop24 report --html
  */
 
 import { readFileSync, mkdirSync, existsSync } from 'node:fs';
@@ -110,7 +110,7 @@ export interface WriteReportSnapshotArgs {
 }
 
 /**
- * Write a report snapshot to .gsd/reports/, update reports.json, regenerate index.html.
+ * Write a report snapshot to .loop24/reports/, update reports.json, regenerate index.html.
  * Returns the path of the written report file.
  */
 export function writeReportSnapshot(args: WriteReportSnapshotArgs): string {

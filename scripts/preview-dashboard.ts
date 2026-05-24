@@ -120,7 +120,7 @@ function render(w: number, healthState: { icon: string; color: string; summary: 
   // Top bar
   lines.push(...ui.bar());
 
-  // Header: GSD AUTO + health ... elapsed + ETA
+  // Header: AUTO + health ... elapsed + ETA
   const dot = theme.fg("accent", GLYPH.statusActive);
   const healthIcon = healthState.color === "success" ? "o"
     : healthState.color === "warning" ? "!"

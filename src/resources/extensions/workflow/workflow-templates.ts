@@ -1,8 +1,8 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Workflow template registry loading, matching, and display helpers.
 
 /**
- * GSD Workflow Templates — Registry & Resolution
+ * Workflow Templates — Registry & Resolution
  *
  * Loads the workflow template registry and resolves templates by name,
  * alias, or trigger-keyword matching against user input.
@@ -17,7 +17,7 @@ import { formatRecommendedProcessPaths } from "./process-task-path.js";
 const __extensionDir = resolveGsdExtensionDir();
 const registryPath = join(__extensionDir, "workflow-templates", "registry.json");
 
-/** Resolve the GSD extension dir with fallback to ~/.loop24/agent/extensions/workflow/. */
+/** Resolve the workflow extension dir with fallback to ~/.loop24/agent/extensions/workflow/. */
 function resolveGsdExtensionDir(): string {
   const moduleDir = dirname(fileURLToPath(import.meta.url));
   if (existsSync(join(moduleDir, "workflow-templates"))) return moduleDir;

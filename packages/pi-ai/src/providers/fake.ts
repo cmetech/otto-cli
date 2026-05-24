@@ -1,5 +1,5 @@
 /**
- * GSD-2 fake LLM provider — deterministic JSONL replay for e2e tests.
+ * LOOP24 fake LLM provider — deterministic JSONL replay for e2e tests.
  *
  * Activated only when `GSD_FAKE_LLM_TRANSCRIPT` env var is set. Reads a
  * JSONL transcript file (one turn per line) and replays scripted responses

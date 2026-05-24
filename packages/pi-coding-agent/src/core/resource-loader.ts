@@ -840,8 +840,8 @@ export class DefaultResourceLoader implements ResourceLoader {
 
 /**
  * Extract the extension directory name (key) from a full extension path.
- * Given extensionsDir `/home/user/.gsd/agent/extensions` and
- * ownerPath `/home/user/.gsd/agent/extensions/mcp-client/index.js`,
+ * Given extensionsDir `/home/user/.loop24/agent/extensions` and
+ * ownerPath `/home/user/.loop24/agent/extensions/mcp-client/index.js`,
  * returns `"mcp-client"`.  Returns `undefined` when the path is not
  * under extensionsDir.
  */

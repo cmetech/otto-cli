@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Normalized SQLite adapter wrapper used by the GSD database facade.
+// Project/App: LOOP24
+// File Purpose: Normalized SQLite adapter wrapper used by the workflow database facade.
 
 export interface DbStatement {
   run(...params: unknown[]): unknown;

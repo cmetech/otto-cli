@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Watch-mode terminal header and splash renderer for GSD project status.
+// Project/App: LOOP24
+// File Purpose: Watch-mode terminal header and splash renderer for the workflow project status.
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -78,7 +78,7 @@ function panelLine(content: string, width: number): string {
 // ─── Data Readers ─────────────────────────────────────────────────────────────
 
 /**
- * Read the configured execution model from GSD preferences.
+ * Read the configured execution model from preferences.
  * Falls back through execution -> planning -> research -> first found.
  * Returns "default" if nothing is configured.
  */
@@ -142,8 +142,8 @@ export function readGitBranch(projectRoot: string): string {
 }
 
 /**
- * Read MCP server names from .mcp.json, .gsd/mcp.json, and the global
- * ~/.gsd/mcp.json (or $GSD_HOME/mcp.json).
+ * Read MCP server names from .mcp.json, .loop24/mcp.json, and the global
+ * ~/.loop24/mcp.json (or $GSD_HOME/mcp.json).
  * Returns array of server name strings.
  */
 export function readMcpServerNames(projectRoot: string): string[] {
@@ -236,7 +236,7 @@ export function formatMcpRow(servers: string[], width: number): string {
 /**
  * Render the full header as an array of terminal-safe strings.
  *
- * Layout: compact GSD mark on the left with a command-center status panel on
+ * Layout: compact status mark on the left with a command-center status panel on
  * the right. This keeps the splash visual while making the actionable command
  * and workspace state easier to scan.
  */

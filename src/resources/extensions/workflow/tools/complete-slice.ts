@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Complete-slice tool handler for GSD workflow state and summaries.
+// Project/App: LOOP24
+// File Purpose: Complete-slice tool handler for workflow state and summaries.
 
 /**
  * complete-slice handler — the core operation behind gsd_slice_complete.

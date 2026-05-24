@@ -1,4 +1,4 @@
-// GSD Extension — Notify Interceptor
+// Workflow Extension — Notify Interceptor
 // Wraps ctx.ui.notify() in-place to persist every notification through the
 // notification store. Uses a WeakSet to prevent double-wrapping and handle
 // UI context replacement on /reload gracefully.

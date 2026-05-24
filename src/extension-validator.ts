@@ -1,8 +1,8 @@
-// GSD-2 — Extension Package Format Validator
+// LOOP24 — Extension Package Format Validator
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 
 /**
- * Install-time validator for GSD extension packages. Called by the install command
+ * Install-time validator for extension packages. Called by the install command
  * (Phase 8) before writing files. Not called on bundled extensions — they are
  * discovered at load time, not installed.
  */
@@ -35,7 +35,7 @@ export interface ValidationOptions {
 
 /**
  * Per D-03: Check that pkg.gsd.extension === true with STRICT equality (not truthiness).
- * Packages without this marker are not recognized as GSD extensions.
+ * Packages without this marker are not recognized as extensions.
  */
 export function checkInstallDiscriminator(pkg: unknown): ValidationError | null {
   if (typeof pkg !== 'object' || pkg === null) {
@@ -137,7 +137,7 @@ export function checkDependencyPlacement(pkg: unknown): ValidationError[] {
 // ─── Composite Validation ─────────────────────────────────────────────────────
 
 /**
- * Run all validation checks for a GSD extension package.json.
+ * Run all validation checks for an extension package.json.
  * - If opts.extensionId is provided, runs namespace reservation check.
  * - If opts.extensionId is not provided, skips namespace check and adds a warning.
  * - valid is ALWAYS derived as errors.length === 0.

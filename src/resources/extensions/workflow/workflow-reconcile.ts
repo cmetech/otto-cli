@@ -362,7 +362,7 @@ function writeEventLog(basePath: string, events: WorkflowEvent[]): void {
 // ─── writeConflictsFile ───────────────────────────────────────────────────────
 
 /**
- * Write a human-readable CONFLICTS.md to basePath/.gsd/CONFLICTS.md.
+ * Write a human-readable CONFLICTS.md to basePath/.loop24/CONFLICTS.md.
  * Lists each conflict with both sides' event payloads and resolution instructions.
  */
 export function writeConflictsFile(

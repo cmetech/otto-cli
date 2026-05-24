@@ -1,4 +1,4 @@
-// GSD-2 — In-TUI handler for /gsd worktree commands (list, merge, clean, remove).
+// LOOP24 — In-TUI handler for /loop24 worktree commands (list, merge, clean, remove).
 //
 // Mirrors the CLI subcommands in src/worktree-cli.ts but emits results via
 // ctx.ui.notify() instead of writing colored output to stderr. Reuses the

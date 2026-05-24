@@ -1,10 +1,10 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Workflow template commands for starting, listing, and dispatching workflows.
 
 /**
- * GSD Workflow Template Commands — /gsd start, /gsd templates
+ * Workflow Template Commands — /loop24 start, /loop24 templates
  *
- * Handles the `/gsd start [template] [description]` and `/gsd templates` commands.
+ * Handles the `/loop24 start [template] [description]` and `/loop24 templates` commands.
  * Resolves templates by name or auto-detection, then dispatches the workflow prompt.
  */
 
@@ -166,7 +166,7 @@ function findInProgressWorkflows(basePath: string): WorkflowState[] {
   return results;
 }
 
-// ─── /gsd start ──────────────────────────────────────────────────────────────
+// ─── /loop24 start ──────────────────────────────────────────────────────────────
 
 export async function handleStart(
   args: string,
@@ -175,7 +175,7 @@ export async function handleStart(
 ): Promise<void> {
   const trimmed = args.trim();
 
-  // /gsd start --list → same as /gsd templates
+  // /loop24 start --list → same as /loop24 templates
   if (trimmed === "--list" || trimmed === "list") {
     ctx.ui.notify(listTemplates(), "info");
     return;
@@ -202,7 +202,7 @@ export async function handleStart(
   }
 
   // ─── Resume detection ───────────────────────────────────────────────────
-  // /gsd start --resume or /gsd start resume → resume in-progress workflow
+  // /loop24 start --resume or /loop24 start resume → resume in-progress workflow
   if (trimmed === "--resume" || trimmed === "resume") {
     const basePath = currentDirectoryRoot();
     const inProgress = findInProgressWorkflows(basePath);
@@ -253,7 +253,7 @@ export async function handleStart(
     return;
   }
 
-  // Show in-progress workflows when /gsd start is called with no args
+  // Show in-progress workflows when /loop24 start is called with no args
   if (!trimmed) {
     const basePath = currentDirectoryRoot();
     const inProgress = findInProgressWorkflows(basePath);
@@ -271,7 +271,7 @@ export async function handleStart(
     }
   }
 
-  // /gsd start --dry-run <template> → preview without executing
+  // /loop24 start --dry-run <template> → preview without executing
   const dryRun = trimmed.includes("--dry-run");
   const cleanedArgs = trimmed.replace(/--dry-run\s*/, "").trim();
 
@@ -405,7 +405,7 @@ export async function handleStart(
     return;
   }
 
-  // ─── Route full-project to standard GSD workflow ────────────────────────
+  // ─── Route full-project to standard workflow ────────────────────────
 
   if (templateId === "full-project") {
     const root = gsdRoot(basePath);
@@ -414,7 +414,7 @@ export async function handleStart(
         `Routing to ${slashCommand("init")} for full project setup...`,
         "info",
       );
-      // Trigger /gsd init by dispatching to the handler
+      // Trigger /loop24 init by dispatching to the handler
       pi.sendMessage(
         {
           customType: "gsd-workflow-template",
@@ -522,7 +522,7 @@ export async function handleStart(
   );
 }
 
-// ─── /gsd templates ──────────────────────────────────────────────────────────
+// ─── /loop24 templates ──────────────────────────────────────────────────────────
 
 export async function handleTemplates(
   args: string,
@@ -530,7 +530,7 @@ export async function handleTemplates(
 ): Promise<void> {
   const trimmed = args.trim();
 
-  // /gsd templates info <name>
+  // /loop24 templates info <name>
   if (trimmed.startsWith("info ")) {
     const name = trimmed.replace(/^info\s+/, "").trim();
     const info = getTemplateInfo(name);
@@ -545,12 +545,12 @@ export async function handleTemplates(
     return;
   }
 
-  // /gsd templates — list all
+  // /loop24 templates — list all
   ctx.ui.notify(listTemplates(), "info");
 }
 
 /**
- * Return template IDs for autocomplete in /gsd templates info <name>.
+ * Return template IDs for autocomplete in /loop24 templates info <name>.
  */
 export function getTemplateCompletions(prefix: string): Array<{ value: string; label: string; description: string }> {
   try {
@@ -567,7 +567,7 @@ export function getTemplateCompletions(prefix: string): Array<{ value: string; l
   }
 }
 
-// ─── Shared markdown-phase dispatcher (used by /gsd workflow <name>) ────────
+// ─── Shared markdown-phase dispatcher (used by /loop24 workflow <name>) ────────
 
 /**
  * Dispatch a markdown-phase workflow plugin. Mirrors `handleStart`'s execution

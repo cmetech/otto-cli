@@ -1,6 +1,6 @@
-// GSD2 — KNOWLEDGE.md hybrid projection renderer (ADR-013 Stage 2b).
+// LOOP24 — KNOWLEDGE.md hybrid projection renderer (ADR-013 Stage 2b).
 //
-// Renders `.gsd/KNOWLEDGE.md` as a hybrid file:
+// Renders `.loop24/KNOWLEDGE.md` as a hybrid file:
 //   - Rules section: read directly from the existing KNOWLEDGE.md (manual,
 //     per ADR-013 line 39 — Rules are not migrated to memories).
 //   - Patterns section: read from `memories` where `category = "pattern"`
@@ -13,7 +13,7 @@
 // knowledge backfill runs. Output is byte-stable when nothing has changed
 // (atomic write). The Rules section is preserved verbatim — including
 // indentation, trailing whitespace, and comments — so manual edits to that
-// section continue to round-trip through `/gsd knowledge`.
+// section continue to round-trip through `/loop24 knowledge`.
 //
 // Memories captured directly via `capture_thought` (without a
 // `sourceKnowledgeId` marker) are intentionally NOT rendered into

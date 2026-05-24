@@ -1,4 +1,4 @@
-// GSD Extension — Verification Gate
+// Workflow Extension — Verification Gate
 // Pure functions for discovering and running verification commands.
 // Discovery order (D003): task plan verify → preference → package.json scripts.
 // First non-empty source wins.

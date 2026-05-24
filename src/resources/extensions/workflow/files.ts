@@ -1,4 +1,4 @@
-// GSD Extension - File Parsing and I/O
+// Workflow Extension - File Parsing and I/O
 // Parsers for roadmap, plan, summary, and continue files.
 // Used by state derivation and the status widget.
 // Pure functions, zero Pi dependencies - uses only Node built-ins.
@@ -666,7 +666,7 @@ export function parseTaskPlanIO(content: string): { inputFiles: string[]; output
 // ─── UAT Type Extractor ────────────────────────────────────────────────────
 
 /**
- * The four UAT classification types recognised by GSD auto-mode.
+ * The four UAT classification types recognised by auto-mode.
  * `undefined` is returned (not this union) when no type can be determined.
  */
 export type UatType = 'artifact-driven' | 'live-runtime' | 'human-experience' | 'mixed' | 'browser-executable' | 'runtime-executable';

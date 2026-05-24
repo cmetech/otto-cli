@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * GSD Parallel Worker Monitor
+ * Parallel Worker Monitor
  * 
- * Real-time TUI dashboard for monitoring parallel GSD auto-mode workers.
+ * Real-time TUI dashboard for monitoring parallel auto-mode workers.
  * Zero dependencies — uses raw ANSI escape codes, Node.js builtins only.
  * 
  * Usage:
@@ -18,15 +18,15 @@
  *   --heal                Auto-respawn dead workers (opt-in, off by default)
  *   --heal-retries <n>    Max respawn attempts per worker (default: 3)
  *   --heal-cooldown <sec> Seconds between respawn attempts (default: 30)
- *   --dir <path>          Status file directory (default: .gsd/parallel)
+ *   --dir <path>          Status file directory (default: .loop24/parallel)
  *   --root <path>         Project root (default: cwd)
  * 
  * Data sources:
- *   .gsd/parallel/M0xx.status.json  — heartbeat, cost, state (written by orchestrator)
- *   .gsd/worktrees/M0xx/.gsd/auto.lock — current unit type + ID (written by worker)
- *   .gsd/worktrees/M0xx/.gsd/gsd.db — task/slice completion (SQLite, queried via cli)
- *   .gsd/parallel/M0xx.stdout.log — NDJSON events (cost extraction, notify messages)
- *   .gsd/parallel/M0xx.stderr.log — error surfacing
+ *   .loop24/parallel/M0xx.status.json  — heartbeat, cost, state (written by orchestrator)
+ *   .loop24/worktrees/M0xx/.loop24/auto.lock — current unit type + ID (written by worker)
+ *   .loop24/worktrees/M0xx/.loop24/gsd.db — task/slice completion (SQLite, queried via cli)
+ *   .loop24/parallel/M0xx.stdout.log — NDJSON events (cost extraction, notify messages)
+ *   .loop24/parallel/M0xx.stderr.log — error surfacing
  * 
  * Health indicators:
  *   ● green  — PID alive, fresh heartbeat (<30s)
@@ -274,7 +274,7 @@ function extractCostFromNdjson(mid) {
 
 // ─── Self-Healing ────────────────────────────────────────────────────────────
 
-// Auto-detect the GSD loader path — works across npm global, homebrew, and local installs
+// Auto-detect the loader path — works across npm global, homebrew, and local installs
 function findGsdLoader() {
   // 1. Check if we're running from inside the gsd-2 repo itself
   const repoLoader = path.resolve(import.meta.dirname, '..', 'dist', 'loader.js');

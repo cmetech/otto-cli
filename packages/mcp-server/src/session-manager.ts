@@ -1,5 +1,5 @@
 /**
- * SessionManager — manages RpcClient lifecycle for background GSD execution.
+ * SessionManager — manages RpcClient lifecycle for background agent execution.
  *
  * One active session per projectDir. Tracks events in a ring buffer,
  * detects blockers, tracks terminal state, and accumulates cost using
@@ -84,11 +84,11 @@ export class SessionManager {
   private sessions = new Map<string, ManagedSession>();
 
   /**
-   * Start a new GSD auto-mode session for the given project directory.
+   * Start a new auto-mode session for the given project directory.
    *
    * Rejects if a session already exists for this projectDir.
    * Creates an RpcClient, starts the process, performs the v2 init handshake,
-   * wires event tracking, and sends '/gsd auto' to begin execution.
+   * wires event tracking, and sends '/loop24 auto' to begin execution.
    */
   async startSession(projectDir: string, options: ExecuteOptions = {}): Promise<string> {
     if (!projectDir || projectDir.trim() === '') {
@@ -228,7 +228,7 @@ export class SessionManager {
   /**
    * Cancel a session looked up by project directory.
    *
-   * This is the fallback path for interactive sessions (started via `/gsd auto`
+   * This is the fallback path for interactive sessions (started via `/loop24 auto`
    * in the terminal) and sessions from a restarted MCP server that have no
    * registered sessionId. The sessions map is keyed by projectDir, so this
    * lookup always succeeds for any tracked session regardless of sessionId.
@@ -319,7 +319,7 @@ export class SessionManager {
   }
 
   /**
-   * Resolve the GSD CLI path.
+   * Resolve the CLI path.
    *
    * 1. GSD_CLI_PATH env var (highest priority)
    * 2. PATH lookup → resolve to the actual gsd executable/shim

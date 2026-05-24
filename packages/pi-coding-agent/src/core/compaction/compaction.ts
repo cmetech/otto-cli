@@ -90,7 +90,7 @@ export interface CompactionSettings {
 	 * Optional percent-of-context-window threshold (0 < value < 1). When set,
 	 * `shouldCompact()` fires once `contextTokens > contextWindow * thresholdPercent`,
 	 * overriding the absolute `reserveTokens` calculation. Lets host integrations
-	 * (e.g. GSD) express compaction policy as a fraction independent of model size.
+	 * (e.g. LOOP24) express compaction policy as a fraction independent of model size.
 	 */
 	thresholdPercent?: number;
 }

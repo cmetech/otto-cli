@@ -1,4 +1,4 @@
-// Project/App: Open GSD
+// Project/App: LOOP24
 // File Purpose: Development prerelease version stamping.
 import { readFileSync, writeFileSync } from "fs";
 import { execFileSync, execSync } from "child_process";

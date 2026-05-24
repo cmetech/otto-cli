@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * GSD Postinstall
+ * Postinstall
  *
  * Thin wrapper that delegates to install.js in postinstall mode
  * (workspace linking + deps only, no global/local npm install).

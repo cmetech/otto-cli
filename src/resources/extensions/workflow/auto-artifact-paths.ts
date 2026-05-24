@@ -1,6 +1,6 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Resolves expected auto-mode artifact paths across project and worktree projections.
-// GSD Auto-mode — Artifact Path Resolution
+// Auto-mode — Artifact Path Resolution
 //
 // resolveExpectedArtifactPath and diagnoseExpectedArtifact moved here from
 // auto-recovery.ts (Phase 5 dead-code cleanup). The artifact verification

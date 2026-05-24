@@ -1,4 +1,4 @@
-// GSD MCP Server — knowledge base reader
+// MCP Server — knowledge base reader
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 
 import { readFileSync, existsSync } from 'node:fs';

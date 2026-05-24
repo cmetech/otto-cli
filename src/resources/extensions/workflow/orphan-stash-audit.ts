@@ -1,4 +1,4 @@
-// GSD-2 + src/resources/extensions/workflow/orphan-stash-audit.ts
+// LOOP24 + src/resources/extensions/workflow/orphan-stash-audit.ts
 // Startup sweep for orphaned gsd-preflight-stash entries left behind by
 // interrupted milestone merges (#5538-followup).
 
@@ -18,7 +18,7 @@ export interface OrphanPreflightStashAuditResult {
  * run already applied this stash), `git stash apply` aborts with
  * `<path> already exists, no checkout` and exits non-zero. That is the
  * idempotent steady state for this audit, not a recovery failure — treat
- * it as a no-op so repeated GSD startups stop spamming the user with
+ * it as a no-op so repeated agent startups stop spamming the user with
  * warnings about stashes that have already been restored (#5538-followup
  * peer-review feedback).
  */

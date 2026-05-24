@@ -1,5 +1,5 @@
 /**
- * GSD Gate Registry — single source of truth for quality-gate ownership.
+ * Gate Registry — single source of truth for quality-gate ownership.
  *
  * Each gate declares which workflow turn owns it, the scope at which it is
  * persisted in the `quality_gates` table, and the question/guidance text used

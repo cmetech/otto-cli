@@ -1,4 +1,4 @@
-// GSD Memory Extractor — Background LLM extraction from activity logs
+// Memory Extractor — Background LLM extraction from activity logs
 //
 // After each unit completes, extracts durable knowledge from the session
 // transcript and stores it as memory entries. One extraction at a time
@@ -93,7 +93,7 @@ export function buildMemoryLLMCall(ctx: ExtensionContext): LLMCallFn | null {
     // Resolve API key via modelRegistry so OAuth tokens (auth.json) are used.
     // Without this, streamSimpleAnthropic only checks env vars via getEnvApiKey,
     // which returns undefined for OAuth users (Claude Max / Claude Pro).
-    // See: https://github.com/open-gsd/gsd-pi/issues/2959
+    // See: upstream #2959
     const resolvedKeyPromise = ctx.modelRegistry.getApiKey(selectedModel).catch(() => undefined);
     // Expose on the returned fn so tests can await resolution deterministically
     // (avoids arbitrary setTimeout polling for an internal microtask).

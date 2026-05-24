@@ -1,4 +1,4 @@
-// GSD-2 — Worktree Lifecycle module: owns milestone entry/exit lifecycle behind a small, typed Interface.
+// LOOP24 — Worktree Lifecycle module: owns milestone entry/exit lifecycle behind a small, typed Interface.
 /**
  * Worktree Lifecycle module — first-class Module for worktree create/enter/exit/merge.
  *
@@ -973,7 +973,7 @@ function _mergeWorktreeModeImpl(
 
     // Resolve roadmap — try project root first, then worktree path as
     // fallback. The worktree may hold the only copy when state-back
-    // projection silently dropped it or .gsd/ is not symlinked. Without
+    // projection silently dropped it or .loop24/ is not symlinked. Without
     // the fallback, a missing roadmap triggers bare teardown which
     // deletes the branch and orphans all milestone commits (#1573).
     let roadmapPath = resolveMilestoneFile(
@@ -1043,7 +1043,7 @@ function _mergeWorktreeModeImpl(
         "info",
       );
     } else {
-      // #1906 — milestone produced only .gsd/ metadata. Surface
+      // #1906 — milestone produced only .loop24/ metadata. Surface
       // clearly so the user knows the milestone is not truly complete.
       notify(
         `WARNING: Milestone ${milestoneId} merged to main but contained NO code changes — only .gsd/ metadata files. ` +
@@ -1072,7 +1072,7 @@ function _mergeWorktreeModeImpl(
     emitWorktreeMergeFailedOnce(originalBasePath || worktreeBasePath, milestoneId, err);
     // Surface a clear, actionable error. Worktree and milestone branch
     // are intentionally preserved — nothing has been deleted. User can
-    // retry /gsd dispatch complete-milestone or merge manually once the
+    // retry /loop24 dispatch complete-milestone or merge manually once the
     // underlying issue is fixed (#1668, #1891).
     notify(
       `Milestone merge failed: ${msg}. Your worktree and milestone branch are preserved — retry with \`${slashCommand("dispatch complete-milestone")}\` or merge manually.`,

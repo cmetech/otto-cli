@@ -1,4 +1,4 @@
-// GSD Extension — Unified Rule Registry
+// Workflow Extension — Unified Rule Registry
 //
 // Holds all dispatch rules and hooks as a flat list of UnifiedRule objects.
 // Provides evaluation methods for each phase (dispatch, post-unit, pre-dispatch)

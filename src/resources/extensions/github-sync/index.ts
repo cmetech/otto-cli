@@ -1,7 +1,7 @@
 /**
- * GitHub Sync extension for GSD.
+ * GitHub Sync extension for the workflow.
  *
- * Opt-in extension that syncs GSD lifecycle events to GitHub:
+ * Opt-in extension that syncs lifecycle events to GitHub:
  * milestones → GH Milestones + tracking issues, slices → draft PRs,
  * tasks → sub-issues with auto-close on commit.
  *

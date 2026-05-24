@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Schema migration DDL steps for the GSD database facade.
+// Project/App: LOOP24
+// File Purpose: Schema migration DDL steps for the workflow database facade.
 
 import type { DbAdapter } from "./db-adapter.js";
 import { ensureColumn } from "./db-schema-metadata.js";

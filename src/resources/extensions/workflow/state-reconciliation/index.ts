@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: ADR-017 drift-driven State Reconciliation Module entry point.
 // reconcileBeforeDispatch runs before every Dispatch decision and worker spawn.
 

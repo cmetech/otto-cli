@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Canonical process recommendations for routing work by task size.
 
 export type ProcessTaskSize =

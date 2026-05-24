@@ -1,5 +1,5 @@
 /**
- * GSD Skill Catalog — Curated skill packs mapped to tech stacks.
+ * Skill Catalog — Curated skill packs mapped to tech stacks.
  *
  * Each pack maps a detected (or user-chosen) tech stack to a skills.sh
  * repo + specific skill names.  The init wizard uses this catalog to
@@ -642,7 +642,7 @@ export const SKILL_CATALOG: SkillPack[] = [
  * NOT shown directly to users during init (greenfield installs essentials
  * only and defers stack-specific skills).  These mappings are available for:
  *   1. The LLM to install skills after establishing a design
- *   2. The `/gsd skills` command (explicit user request)
+ *   2. The `/loop24 skills` command (explicit user request)
  *   3. Re-running brownfield detection after project files are created
  */
 export const GREENFIELD_STACKS: Array<{

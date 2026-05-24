@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: OAuth provider selector for login and logout actions.
 
 import type { OAuthProviderInterface } from "@gsd/pi-ai";

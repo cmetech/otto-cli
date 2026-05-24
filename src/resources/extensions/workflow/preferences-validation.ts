@@ -1,5 +1,5 @@
 /**
- * Validation logic for GSD preferences.
+ * Validation logic for preferences.
  *
  * Pure validation -- no filesystem access, no loading, no merging.
  * Accepts a raw GSDPreferences object and returns a sanitized copy
@@ -40,7 +40,7 @@ export function validatePreferences(preferences: GSDPreferences): {
   const validated: GSDPreferences = {};
 
   // ─── Unknown Key Detection ──────────────────────────────────────────
-  // Common key migration hints for pi-level settings that don't map to GSD prefs
+  // Common key migration hints for pi-level settings that don't map to the agent prefs
   const KEY_MIGRATION_HINTS: Record<string, string> = {
     taskIsolation: 'use "git.isolation" instead (values: worktree, branch, none)',
     task_isolation: 'use "git.isolation" instead (values: worktree, branch, none)',

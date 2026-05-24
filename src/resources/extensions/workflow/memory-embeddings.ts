@@ -1,4 +1,4 @@
-// GSD Memory Embeddings — provider-agnostic embedding layer
+// Memory Embeddings — provider-agnostic embedding layer
 //
 // Same model-discovery pattern as buildMemoryLLMCall: prefers a dedicated
 // embedding-capable model when available, and returns null when none is

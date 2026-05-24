@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Best-effort dispatch ledger write helpers for auto-mode loop adapters.
 
 interface DispatchLedgerWriteDeps {

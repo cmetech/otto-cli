@@ -1,4 +1,4 @@
-// GSD2 — Ollama Extension: First-class local LLM support
+// LOOP24 — Ollama Extension: First-class local LLM support
 /**
  * Ollama Extension
  *
@@ -62,7 +62,7 @@ export async function probeAndRegister(pi: ExtensionAPI): Promise<boolean> {
 
 	const models = await discoverModels();
 	if (models.length === 0) {
-		// No local models means there's nothing usable to register in GSD.
+		// No local models means there's nothing usable to register in the workflow.
 		// Keep the footer/status clean instead of advertising Ollama availability.
 		if (providerRegistered) {
 			pi.unregisterProvider("ollama");

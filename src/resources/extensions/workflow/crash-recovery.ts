@@ -1,5 +1,5 @@
 /**
- * GSD Crash Recovery (Phase C pt 2 — DB-backed)
+ * Crash Recovery (Phase C pt 2 — DB-backed)
  *
  * Detects interrupted auto-mode sessions via the DB-backed workers +
  * unit_dispatches + runtime_kv tables. The auto.lock file is gone; the

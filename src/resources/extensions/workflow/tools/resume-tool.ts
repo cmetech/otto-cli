@@ -1,4 +1,4 @@
-// GSD Resume Tool — returns the contents of .gsd/last-snapshot.md so
+// Resume Tool — returns the contents of .loop24/last-snapshot.md so
 // agents can re-orient after compaction or session resume without
 // re-deriving project memory state.
 

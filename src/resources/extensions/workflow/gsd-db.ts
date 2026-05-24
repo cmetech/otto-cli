@@ -1,6 +1,6 @@
-// Project/App: GSD-2
-// File Purpose: GSD database facade, schema, migrations, and single-writer write API.
-// GSD Database Abstraction Layer
+// Project/App: LOOP24
+// File Purpose: workflow database facade, schema, migrations, and single-writer write API.
+// Database Abstraction Layer
 // Provides a SQLite database with provider fallback chain:
 //   node:sqlite (built-in) → better-sqlite3 (npm) → null (unavailable)
 //
@@ -10,7 +10,7 @@
 // ─── Single-writer invariant ─────────────────────────────────────────────
 // This file is the ONLY place in the codebase that issues write SQL
 // (INSERT / UPDATE / DELETE / REPLACE / BEGIN-COMMIT transactions) against
-// the engine database at `.gsd/gsd.db`. All other modules must call the
+// the engine database at `.loop24/gsd.db`. All other modules must call the
 // typed wrappers exported here. The structural test
 // `tests/single-writer-invariant.test.ts` fails CI if a new bypass appears.
 //
@@ -18,7 +18,7 @@
 // (context-store, memory-store queries, doctor checks, projections).
 // Do NOT use it for writes — add a wrapper here instead.
 //
-// The separate `.gsd/unit-claims.db` managed by `unit-ownership.ts` is an
+// The separate `.loop24/unit-claims.db` managed by `unit-ownership.ts` is an
 // intentionally independent store for cross-worktree claim races and is
 // excluded from this invariant.
 
@@ -1551,7 +1551,7 @@ export function setTaskBlockerSource(
   ).run({ ":src": source, ":mid": milestoneId, ":sid": sliceId, ":tid": taskId });
 }
 
-/** List tasks with active escalation artifacts across a milestone (for /gsd escalate list). */
+/** List tasks with active escalation artifacts across a milestone (for /loop24 escalate list). */
 export function listEscalationArtifacts(milestoneId: string, includeResolved: boolean = false): TaskRow[] {
   if (!currentDb) return [];
   const filter = includeResolved
@@ -1642,7 +1642,7 @@ export function setMilestoneQueueOrder(order: string[]): void {
 /**
  * Update a milestone's status in the database.
  * Used by park/unpark to keep the DB in sync with the filesystem marker.
- * See: https://github.com/open-gsd/gsd-pi/issues/2694
+ * See: upstream #2694
  */
 export function updateMilestoneStatus(milestoneId: string, status: string, completedAt?: string | null): void {
   if (!currentDb) throw new GSDError(GSD_STALE_STATE, "gsd-db: No database open");

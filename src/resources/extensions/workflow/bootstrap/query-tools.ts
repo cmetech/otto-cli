@@ -1,6 +1,6 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Registers read-only DB query tools.
-// GSD2 — Read-only query tools exposing DB state to the LLM via the WAL connection
+// LOOP24 — Read-only query tools exposing DB state to the LLM via the WAL connection
 
 import { Type } from "@sinclair/typebox";
 import type { ExtensionAPI } from "@gsd/pi-coding-agent";

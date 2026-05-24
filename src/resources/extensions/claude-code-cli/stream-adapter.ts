@@ -1,6 +1,6 @@
-// GSD2 - Claude Code CLI provider stream adapter
+// LOOP24 - Claude Code CLI provider stream adapter
 /**
- * Stream adapter: bridges the Claude Agent SDK into GSD's streamSimple contract.
+ * Stream adapter: bridges the Claude Agent SDK into the agent's streamSimple contract.
  *
  * The SDK runs the full agentic loop (multi-turn, tool execution, compaction)
  * in one call. This adapter translates the SDK's streaming output into
@@ -313,7 +313,7 @@ function extractMessageText(msg: { role: string; content: unknown }): string {
 }
 
 /**
- * Build a full conversational prompt from GSD's context messages.
+ * Build a full conversational prompt from the agent's context messages.
  *
  * Previous behaviour sent only the last user message, making every SDK
  * call effectively stateless. This version serialises the complete
@@ -1234,7 +1234,7 @@ export function createClaudeCodeElicitationHandler(
 }
 
 /**
- * Aborted by the caller's AbortSignal — distinct from exhaustion. GSD's
+ * Aborted by the caller's AbortSignal — distinct from exhaustion. the agent's
  * agent loop keys off `stopReason === "aborted"` to treat this as a clean
  * user cancel instead of a retry-eligible provider failure.
  */
@@ -1378,12 +1378,12 @@ export function buildSdkOptions(
 		}
 	}
 
-	// Globally unblock the tools GSD expects Claude Code to run. When the
+	// Globally unblock the tools the agent expects Claude Code to run. When the
 	// workflow MCP server is available, prefer its `ask_user_questions` tool over
 	// Claude Code's native `AskUserQuestion`; the MCP path carries stable IDs and
-	// routes responses through the GSD elicitation bridge.
+	// routes responses through the elicitation bridge.
 	// Opt back into gated mode with GSD_CLAUDE_CODE_PERMISSION_MODE=acceptEdits.
-	// Include the workflow pattern in allowedTools whether the server is GSD-injected
+	// Include the workflow pattern in allowedTools whether the server is injected
 	// or declared in the project config — but not if explicitly blocked by user prefs.
 	const workflowMcpTools = filteredMcpServers
 		? Object.keys(filteredMcpServers).map((serverName) => `mcp__${serverName}__*`)
@@ -1677,7 +1677,7 @@ export function mergePendingToolCalls(
 // ---------------------------------------------------------------------------
 
 /**
- * GSD streamSimple function that delegates to the Claude Agent SDK.
+ * streamSimple function that delegates to the Claude Agent SDK.
  *
  * Emits AssistantMessageEvent deltas for real-time TUI rendering
  * (thinking, text, tool calls). The final AssistantMessage preserves
@@ -1723,7 +1723,7 @@ async function pumpSdkMessages(
 			}) => AsyncIterable<SDKMessage>;
 		};
 
-		// Bridge GSD's AbortSignal to SDK's AbortController
+		// Bridge the agent's AbortSignal to SDK's AbortController
 		const controller = new AbortController();
 		if (options?.signal) {
 			options.signal.addEventListener("abort", () => controller.abort(), { once: true });
@@ -1957,7 +1957,7 @@ async function pumpSdkMessages(
 		}
 
 		// Generator exhaustion without a terminal result is a stream interruption,
-		// not a successful completion. Emitting an error lets GSD classify it as a
+		// not a successful completion. Emitting an error lets the agent classify it as a
 		// transient provider failure instead of advancing auto-mode state.
 		const fallback = makeStreamExhaustedErrorMessage(modelId, lastTextContent);
 		stream.push({ type: "error", reason: "error", error: fallback });

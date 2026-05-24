@@ -1,5 +1,5 @@
 /**
- * MCP Server — registers GSD orchestration, project-state, and workflow tools.
+ * MCP Server — registers orchestration, project-state, and workflow tools.
  *
  * Session tools (6): gsd_execute, gsd_status, gsd_result, gsd_cancel, gsd_query, gsd_resolve_blocker
  * Interactive tools (2): ask_user_questions, secure_env_collect via MCP form elicitation
@@ -334,7 +334,7 @@ interface AskUserQuestionsElicitRequest {
  * Structured payload mirrored to the MCP `structuredContent` field on
  * `ask_user_questions` results. Mirrors the `LocalResultDetails` shape that
  * src/resources/extensions/ask-user-questions.ts already produces, so the
- * GSD discussion-gate hook in register-hooks.ts can treat the MCP path
+ * discussion-gate hook in register-hooks.ts can treat the MCP path
  * identically to the in-process extension path. Without this, the bridge
  * surfaces `details = undefined` and the gate hook's
  * `if (details?.cancelled || !details?.response)` branch HARD-BLOCKs every
@@ -473,7 +473,7 @@ export function formatAskUserQuestionsElicitResult(
 
 /**
  * Normalize an MCP elicitation form result into the `RoundResult` shape the
- * GSD discussion-gate hook reads from `tool_result` `details.response`. The
+ * discussion-gate hook reads from `tool_result` `details.response`. The
  * elicitation `content` map carries `{ [id]: label, [id]__note?: string }`;
  * the hook expects `{ answers: { [id]: { selected, notes } } }`. Mirrored into
  * `structuredContent` by `askUserQuestionsHandler`. See #5267.
@@ -886,7 +886,7 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_execute — start a new GSD auto-mode session.
+  // gsd_execute — start a new auto-mode session.
   //
   // If the JSON-RPC request is aborted while the session is starting (or
   // immediately after), we cancel the session so we don't leak a background
@@ -995,7 +995,7 @@ export async function createMcpServer(
   //   2. projectDir — absolute path to the project directory (fallback)
   //
   // The projectDir fallback handles interactive sessions (started via
-  // `/gsd auto` in the terminal) and post-restart MCP sessions that were
+  // `/loop24 auto` in the terminal) and post-restart MCP sessions that were
   // never registered with a sessionId in this server instance.
   // -----------------------------------------------------------------------
   server.tool(
@@ -1255,10 +1255,10 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_graph — knowledge graph for GSD projects
+  // gsd_graph — knowledge graph for the workflow projects
   //
   // Modes:
-  //   build   Parse .gsd/ artifacts and write graph.json atomically.
+  //   build   Parse .loop24/ artifacts and write graph.json atomically.
   //   query   Search the graph for nodes matching a term (BFS, budget-trimmed).
   //   status  Check whether graph.json exists and whether it is stale (>24h).
   //   diff    Compare graph.json with the last build snapshot.

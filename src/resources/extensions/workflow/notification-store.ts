@@ -1,6 +1,6 @@
-// GSD Extension — Persistent Notification Store
+// Workflow Extension — Persistent Notification Store
 // Captures all ctx.ui.notify() calls and workflow-logger warnings to
-// .gsd/notifications.jsonl so they survive context resets and session restarts.
+// .loop24/notifications.jsonl so they survive context resets and session restarts.
 // Rotates at MAX_ENTRIES to prevent unbounded growth.
 
 import { appendFileSync, existsSync, mkdirSync, openSync, closeSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";

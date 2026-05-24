@@ -1,8 +1,8 @@
-// Project/App: GSD-2
-// File Purpose: Ship command for creating pull requests from GSD milestone evidence.
+// Project/App: LOOP24
+// File Purpose: Ship command for creating pull requests from the agent milestone evidence.
 
 /**
- * GSD Command — /gsd ship
+ * Command — /loop24 ship
  *
  * Creates a PR from milestone artifacts: generates title + body from
  * roadmap, slice summaries, and metrics, then opens via `gh pr create`.
@@ -218,7 +218,7 @@ export async function handleShip(
   const milestoneId = state.activeMilestone.id;
   const milestoneTitle = state.activeMilestone.title ?? "";
 
-  // 2. Check for incomplete work (use GSD phase as proxy — no phase field on ActiveRef)
+  // 2. Check for incomplete work (use workflow phase as proxy — no phase field on ActiveRef)
   if (state.phase !== "complete" && !force) {
     ctx.ui.notify(
       `Milestone ${milestoneId} may not be complete (phase: ${state.phase}). Use --force to ship anyway.`,

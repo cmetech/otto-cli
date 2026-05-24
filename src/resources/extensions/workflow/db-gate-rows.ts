@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Quality gate row mapper for the GSD database facade.
+// Project/App: LOOP24
+// File Purpose: Quality gate row mapper for the workflow database facade.
 
 import type { GateId, GateRow, GateScope, GateStatus, GateVerdict } from "./types.js";
 

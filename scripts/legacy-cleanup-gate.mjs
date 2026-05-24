@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Checks persisted Phase 8 legacy telemetry before cleanup deletions.
 
 import { readFile } from "node:fs/promises";

@@ -1,5 +1,5 @@
 /**
- * Shared input-validation primitives for GSD tool handlers.
+ * Shared input-validation primitives for workflow tool handlers.
  */
 
 /** Type guard: value is a string with at least one non-whitespace character. */
@@ -8,14 +8,14 @@ export function isNonEmptyString(value: unknown): value is string {
 }
 
 /**
- * Characters that are used as delimiters in GSD state management documents
+ * Characters that are used as delimiters in workflow state management documents
  * and should not appear in milestone or slice titles.
  */
 const TITLE_DELIMITER_RE = /[\u2014\u2013\/]/; // em dash, en dash, forward slash
 
 /**
  * Check whether a milestone or slice title contains characters that conflict
- * with GSD's state document delimiter conventions.
+ * with the agent's state document delimiter conventions.
  * Returns a human-readable description of the problem, or null if the title is safe.
  */
 export function validateTitle(title: string): string | null {

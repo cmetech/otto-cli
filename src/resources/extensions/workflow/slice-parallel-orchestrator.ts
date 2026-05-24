@@ -1,5 +1,5 @@
 /**
- * GSD Slice Parallel Orchestrator — Engine for parallel slice execution
+ * Slice Parallel Orchestrator — Engine for parallel slice execution
  * within a single milestone.
  *
  * Mirrors the existing parallel-orchestrator.ts pattern at slice scope
@@ -689,7 +689,7 @@ function filterConflictingSlices(
 // ─── Internal: Worker Spawning ─────────────────────────────────────────────
 
 /**
- * Resolve the GSD CLI binary path.
+ * Resolve the CLI binary path.
  * Same logic as parallel-orchestrator.ts resolveGsdBin().
  */
 function resolveGsdBin(): string | null {

@@ -1,5 +1,5 @@
 /**
- * SessionManager — manages RpcClient lifecycle for daemon-driven GSD execution.
+ * SessionManager — manages RpcClient lifecycle for daemon-driven execution.
  *
  * Extends EventEmitter to emit typed session lifecycle events.
  * One active session per projectDir. Tracks events in a ring buffer,
@@ -73,11 +73,11 @@ export class SessionManager extends EventEmitter {
   }
 
   /**
-   * Start a new GSD auto-mode session for the given project directory.
+   * Start a new auto-mode session for the given project directory.
    *
    * Rejects if a session already exists for this projectDir.
    * Creates an RpcClient, starts the process, performs the v2 init handshake,
-   * wires event tracking, and sends '/gsd auto' to begin execution.
+   * wires event tracking, and sends '/loop24 auto' to begin execution.
    */
   async startSession(options: StartSessionOptions): Promise<string> {
     const { projectDir } = options;
@@ -281,7 +281,7 @@ export class SessionManager extends EventEmitter {
   }
 
   /**
-   * Resolve the GSD CLI path.
+   * Resolve the CLI path.
    *
    * 1. GSD_CLI_PATH env var (highest priority)
    * 2. `which gsd` → resolve to the actual dist/cli.js

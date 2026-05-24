@@ -16,8 +16,8 @@ export {
 } from "./bootstrap/write-gate.js";
 
 export default async function registerExtension(pi: ExtensionAPI) {
-  // Always register the core /gsd command first, in isolation.
-  // This ensures /gsd is available even if the full bootstrap (shortcuts,
+  // Always register the core /loop24 command first, in isolation.
+  // This ensures /loop24 is available even if the full bootstrap (shortcuts,
   // tools, hooks) fails — e.g. due to a Windows-specific import error.
   const { registerGSDCommand } = await import("./commands/index.js");
   registerGSDCommand(pi);

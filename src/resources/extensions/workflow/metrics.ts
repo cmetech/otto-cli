@@ -1,10 +1,10 @@
-// GSD-2 + metrics.ts: token & cost tracking for auto-mode units
+// LOOP24 + metrics.ts: token & cost tracking for auto-mode units
 /**
- * GSD Metrics — Token & Cost Tracking
+ * Metrics — Token & Cost Tracking
  *
  * Accumulates per-unit usage data across auto-mode sessions.
  * Data is extracted from session entries before each context wipe,
- * written to .gsd/metrics.json, and surfaced in the dashboard.
+ * written to .loop24/metrics.json, and surfaced in the dashboard.
  *
  * Data flow:
  *   1. Before newSession() wipes context, snapshotUnitMetrics() scans

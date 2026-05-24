@@ -1,5 +1,5 @@
 /**
- * GSD bootstrappers for .gitignore and PREFERENCES.md
+ * Bootstrappers for .gitignore and PREFERENCES.md
  *
  * Ensures baseline .gitignore exists with universally-correct patterns.
  * Creates an empty PREFERENCES.md template if it doesn't exist.
@@ -14,7 +14,7 @@ import { gsdRoot } from "./paths.js";
 import { GIT_NO_PROMPT_ENV } from "./git-constants.js";
 
 /**
- * GSD runtime patterns for git index cleanup.
+ * runtime patterns for git index cleanup.
  *
  * CANONICAL SOURCE OF TRUTH: This array is the authoritative list of runtime
  * ignore patterns. Other modules (RUNTIME_EXCLUSION_PATHS in git-service.ts,
@@ -46,7 +46,7 @@ const GSD_RUNTIME_PATTERNS = [
 ] as const;
 
 const BASELINE_PATTERNS = [
-  // ── GSD state directory (symlink to external storage) ──
+  // ── workflow state directory (symlink to external storage) ──
   ".gsd",
   ".gsd-id",
   ".mcp.json",
@@ -112,7 +112,7 @@ const BASELINE_PATTERNS = [
  *
  * Uses `git check-ignore` for accurate evaluation — this respects nested
  * .gitignore files, global gitignore, and negation patterns. Returns true
- * only when git would actually ignore `.gsd/`.
+ * only when git would actually ignore `.loop24/`.
  *
  * Returns false (not ignored) if:
  *   - No `.gitignore` exists
@@ -120,7 +120,7 @@ const BASELINE_PATTERNS = [
  *   - Not a git repo or git is unavailable
  */
 export function isGsdGitignored(basePath: string): boolean {
-  // Check both `.gsd` and `.gsd/` because `.gsd/` in .gitignore (trailing
+  // Check both `.gsd` and `.loop24/` because `.loop24/` in .gitignore (trailing
   // slash = directory-only pattern) only matches the directory form. Using
   // both paths covers all gitignore pattern variants.
   for (const path of [".gsd", ".gsd/"]) {
@@ -140,16 +140,16 @@ export function isGsdGitignored(basePath: string): boolean {
 }
 
 /**
- * Check whether `.gsd/` contains files tracked by git.
- * If so, the project intentionally keeps `.gsd/` in version control
+ * Check whether `.loop24/` contains files tracked by git.
+ * If so, the project intentionally keeps `.loop24/` in version control
  * and we must NOT add `.gsd` to `.gitignore` or attempt migration.
  *
- * Returns true if git tracks at least one file under `.gsd/`.
+ * Returns true if git tracks at least one file under `.loop24/`.
  * Returns false (safe to ignore) if:
  *   - Not a git repo
- *   - `.gsd/` is a symlink (external state, should be ignored)
- *   - `.gsd/` doesn't exist
- *   - No tracked files found under `.gsd/`
+ *   - `.loop24/` is a symlink (external state, should be ignored)
+ *   - `.loop24/` doesn't exist
+ *   - No tracked files found under `.loop24/`
  */
 export function hasGitTrackedGsdFiles(basePath: string): boolean {
   const localGsd = join(basePath, ".gsd");
@@ -162,7 +162,7 @@ export function hasGitTrackedGsdFiles(basePath: string): boolean {
     return false;
   }
 
-  // Check if git tracks any files under .gsd/
+  // Check if git tracks any files under .loop24/
   try {
     const tracked = nativeLsFiles(basePath, ".gsd");
     if (tracked.length > 0) return true;
@@ -189,8 +189,8 @@ export function hasGitTrackedGsdFiles(basePath: string): boolean {
  * Creates the file if missing; appends missing patterns.
  * Returns true if the file was created or modified, false if already complete.
  *
- * **Safety check:** If `.gsd/` contains git-tracked files (i.e., the project
- * intentionally keeps `.gsd/` in version control), the `.gsd` ignore pattern
+ * **Safety check:** If `.loop24/` contains git-tracked files (i.e., the project
+ * intentionally keeps `.loop24/` in version control), the `.gsd` ignore pattern
  * is excluded to prevent data loss. Only the `.gsd` pattern is affected —
  * all other baseline patterns are still applied normally.
  */
@@ -216,7 +216,7 @@ export function ensureGitignore(
       .filter((l) => l && !l.startsWith("#")),
   );
 
-  // Determine which patterns to apply. If .gsd/ has tracked files,
+  // Determine which patterns to apply. If .loop24/ has tracked files,
   // exclude the ".gsd" pattern to prevent deleting tracked state.
   const gsdIsTracked = hasGitTrackedGsdFiles(basePath);
   const patternsToApply = gsdIsTracked
@@ -253,7 +253,7 @@ export function ensureGitignore(
  *
  * Note: These are strictly runtime/ephemeral paths (activity logs, lock files,
  * metrics, STATE.md). They are always safe to untrack, even when the project
- * intentionally keeps other `.gsd/` files (like PROJECT.md, milestones/) in
+ * intentionally keeps other `.loop24/` files (like PROJECT.md, milestones/) in
  * version control.
  */
 export function untrackRuntimeFiles(basePath: string): void {
@@ -271,7 +271,7 @@ export function untrackRuntimeFiles(basePath: string): void {
 }
 
 /**
- * Ensure basePath/.gsd/PREFERENCES.md exists as an empty template.
+ * Ensure basePath/.loop24/PREFERENCES.md exists as an empty template.
  * Creates the file with frontmatter only if it doesn't exist.
  * Returns true if created, false if already exists.
  *

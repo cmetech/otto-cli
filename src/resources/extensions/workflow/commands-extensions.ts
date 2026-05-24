@@ -1,9 +1,9 @@
 /**
- * GSD Extensions Command — /gsd extensions
+ * Extensions Command — /loop24 extensions
  *
  * Manage the extension registry: list, enable, disable, info, install.
  * Self-contained — no imports outside the extensions tree (extensions are loaded
- * via jiti at runtime from ~/.gsd/agent/, not compiled by tsc).
+ * via jiti at runtime from ~/.loop24/agent/, not compiled by tsc).
  */
 
 import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";

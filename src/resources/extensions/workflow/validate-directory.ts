@@ -1,7 +1,7 @@
 /**
- * GSD Directory Validation — Safeguards against running in dangerous directories.
+ * Directory Validation — Safeguards against running in dangerous directories.
  *
- * Prevents GSD from creating .gsd/ structures in system paths, home directories,
+ * Prevents the agent from creating .loop24/ structures in system paths, home directories,
  * or other locations where writing project scaffolding would be harmful.
  */
 
@@ -12,7 +12,7 @@ import { resolve } from "node:path";
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 export interface DirectoryValidationResult {
-  /** Whether the directory is safe for GSD operations */
+  /** Whether the directory is safe for the workflow operations */
   safe: boolean;
   /** Severity: "blocked" = hard stop, "warning" = user can override */
   severity: "ok" | "blocked" | "warning";
@@ -91,7 +91,7 @@ function isBlockedWindowsPath(normalized: string): boolean {
 // ─── Core Validation ────────────────────────────────────────────────────────────
 
 /**
- * Validate whether a directory is safe for GSD to operate in.
+ * Validate whether a directory is safe for the workflow to operate in.
  *
  * Checks in order:
  * 1. Blocked system paths (hard stop)
@@ -173,7 +173,7 @@ export function validateDirectory(dirPath: string): DirectoryValidationResult {
 }
 
 /**
- * Assert that a directory is safe for GSD operations.
+ * Assert that a directory is safe for the workflow operations.
  * Throws with a descriptive message if the directory is blocked.
  * Returns the validation result for warnings (caller decides how to handle).
  */

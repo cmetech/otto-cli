@@ -1,4 +1,4 @@
-// GSD-2 doctor report types
+// LOOP24 doctor report types
 export type DoctorSeverity = "info" | "warning" | "error";
 export type DoctorIssueCode =
   | "invalid_preferences"
@@ -53,7 +53,7 @@ export type DoctorIssueCode =
   | "integration_branch_missing"
   | "worktree_directory_orphaned"
   | "worktree_empty_with_project_content"
-  // GSD state structural checks
+  // workflow state structural checks
   | "circular_slice_dependency"
   | "orphaned_slice_directory"
   | "missing_slice_dir"
@@ -120,7 +120,7 @@ export interface DoctorReport {
   basePath: string;
   issues: DoctorIssue[];
   fixesApplied: string[];
-  /** Per-domain check durations in milliseconds. Present on explicit /gsd doctor runs. */
+  /** Per-domain check durations in milliseconds. Present on explicit /loop24 doctor runs. */
   timing?: { git: number; runtime: number; environment: number; gsdState: number };
 }
 

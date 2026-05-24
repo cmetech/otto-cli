@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Helpers for safe auto-mode milestone worktree repair decisions.
 
 import { existsSync, lstatSync, readdirSync, type Stats } from "node:fs";

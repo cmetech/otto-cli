@@ -1,5 +1,5 @@
 /**
- * GSD Slice Parallel Conflict Detection — File overlap analysis between slices.
+ * Slice Parallel Conflict Detection — File overlap analysis between slices.
  *
  * Reads PLAN.md for each slice and extracts file paths mentioned in task
  * descriptions. If two slices share more than 5 file paths, they are considered

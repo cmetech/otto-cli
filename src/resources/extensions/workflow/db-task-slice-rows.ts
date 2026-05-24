@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Task and slice row mappers for the GSD database facade.
+// Project/App: LOOP24
+// File Purpose: Task and slice row mappers for the workflow database facade.
 
 export interface SliceRow {
   milestone_id: string;

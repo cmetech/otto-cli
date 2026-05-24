@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Thin adapter for auto-mode UOK phase-result reporting.
 
 import type { TurnPhase, UokTurnObserver } from "../uok/contracts.js";

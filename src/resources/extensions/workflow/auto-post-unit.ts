@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Auto-mode post-unit git, verification, projection, and hook processing.
 /**
  * Post-unit processing for auto-loop — auto-commit, doctor run,
@@ -1556,7 +1556,7 @@ export async function postUnitPreVerification(pctx: PostUnitContext, opts?: PreV
           if (mid && sid) {
             // Phase C: write to the canonical project root (#5236 scope)
             // so non-symlinked worktrees no longer maintain a separate
-            // local .gsd/ projection. copyPlanningArtifacts has been
+            // local .loop24/ projection. copyPlanningArtifacts has been
             // deleted; reads + writes converge at projectRoot.
             const regenerated = await regenerateIfMissing(s.canonicalProjectRoot, mid, sid, "PLAN");
             if (regenerated) {
@@ -2353,7 +2353,7 @@ export async function postUnitPostVerification(pctx: PostUnitContext): Promise<"
   }
 
   // Step mode → show wizard instead of dispatch.
-  // Without this notify(), /gsd next finishes a unit and silently exits the
+  // Without this notify(), /loop24 next finishes a unit and silently exits the
   // loop, leaving the user with no next-step command.
   if (s.stepMode) {
     let phaseAfterUnit: string | null = null;

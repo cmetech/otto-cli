@@ -1,4 +1,4 @@
-// GSD-2 + src/resources/extensions/workflow/auto/unit-runner-events.ts - Classifies agent lifecycle events before Unit settlement.
+// LOOP24 + src/resources/extensions/workflow/auto/unit-runner-events.ts - Classifies agent lifecycle events before Unit settlement.
 
 import type { AgentEndEvent } from "./types.js";
 

@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Session tree selector with filtering, labels, and branch navigation.
 
 import {

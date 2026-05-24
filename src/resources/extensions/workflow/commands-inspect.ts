@@ -1,5 +1,5 @@
 /**
- * GSD Inspect — SQLite DB diagnostics.
+ * Workflow Inspector — SQLite DB diagnostics.
  *
  * Contains: InspectData type, formatInspectOutput, handleInspect
  */

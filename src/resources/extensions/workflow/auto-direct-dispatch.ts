@@ -1,5 +1,5 @@
 /**
- * Direct phase dispatch — handles manual /gsd dispatch commands.
+ * Direct phase dispatch — handles manual /loop24 dispatch commands.
  * Resolves phase name → unit type + prompt, creates a session, and sends the message.
  */
 
@@ -55,7 +55,7 @@ export async function dispatchDirectPhase(
   const projectRoot = base;
 
   // Switch the dispatch base to the canonical milestone worktree if one
-  // exists. Without this, /gsd dispatch invoked from the project root would
+  // exists. Without this, /loop24 dispatch invoked from the project root would
   // build prompts and create a session anchored to the project root even
   // though the milestone's actual code lives in the worktree.
   const dispatchBase = resolveCanonicalMilestoneRoot(base, mid);

@@ -1,5 +1,5 @@
 /**
- * GSD Prompt Validation — Validates enhanced context and turn output
+ * Prompt Validation — Validates enhanced context and turn output
  * artifacts before writing.
  *
  * Implements R109 validation requirement: CONTEXT.md must have required

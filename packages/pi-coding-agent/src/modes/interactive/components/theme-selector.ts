@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Theme selector dialog for interactive TUI theme switching.
 
 import { Container, type SelectItem, SelectList, Text } from "@gsd/pi-tui";

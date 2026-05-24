@@ -1,4 +1,4 @@
-// GSD Extension — Advisory Sync Lock
+// Workflow Extension — Advisory Sync Lock
 // Prevents concurrent worktree syncs from colliding via a simple file lock.
 // Stale locks (mtime > 60s, owner PID confirmed dead) are overridden. Lock
 // acquisition waits up to 5 seconds then skips non-fatally.

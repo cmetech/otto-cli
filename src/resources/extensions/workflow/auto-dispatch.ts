@@ -1,10 +1,10 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Declarative auto-mode dispatch rules and dispatch resolver.
 
 /**
  * Auto-mode Dispatch Table — declarative phase → unit mapping.
  *
- * Each rule maps a GSD state to the unit type, unit ID, and prompt builder
+ * Each rule maps a workflow state to the unit type, unit ID, and prompt builder
  * that should be dispatched. Rules are evaluated in order; the first match wins.
  *
  * This replaces the 130-line if-else chain in dispatchNextUnit with a
@@ -438,7 +438,7 @@ const MAX_REWRITE_ATTEMPTS = 3;
 // ─── Disk-persisted rewrite attempt counter ──────────────────────────────────
 // The counter must survive session restarts (crash recovery, pause/resume,
 // step-mode). Storing it on the in-memory session object caused the circuit
-// breaker to never trip — see https://github.com/open-gsd/gsd-pi/issues/2203
+// breaker to never trip — see upstream #2203
 function rewriteCountPath(basePath: string): string {
   return join(gsdRoot(basePath), "runtime", "rewrite-count.json");
 }
@@ -491,7 +491,7 @@ export function incrementUatCount(basePath: string, mid: string, sid: string): n
  * operational verification is needed.  Covers common phrasings the planning
  * agent may use: "None", "None required", "N/A", "Not applicable", etc.
  *
- * @see https://github.com/open-gsd/gsd-pi/issues/2931
+ * @see upstream #2931
  */
 export function isVerificationNotApplicable(value: string): boolean {
   const v = (value ?? "").toLowerCase().trim().replace(/[.\s]+$/, "");
@@ -557,7 +557,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
     // pre-planning guard at `pre-planning (no context) → discuss-milestone`
     // no longer fires. The plan-v2 gate correctly detects the missing context
     // but can only block — it cannot redispatch. Without this rule the
-    // milestone is stuck until `/gsd doctor heal` repairs it (and heal
+    // milestone is stuck until `/loop24 doctor heal` repairs it (and heal
     // historically missed this check too).
     //
     // Fire BEFORE the execution-entry phase rules so we redispatch to
@@ -800,7 +800,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
     // Deep mode research gate: capture user's research decision.
     // Fires after discuss-requirements (REQUIREMENTS.md exists) when no decision
     // marker has been written yet. Asks one yes/no question via ask_user_questions
-    // and writes .gsd/runtime/research-decision.json. Downstream research-project
+    // and writes .loop24/runtime/research-decision.json. Downstream research-project
     // rule reads the marker to decide whether to fan out 4 parallel research subagents.
     // Light mode skips entirely.
     name: "deep: pre-planning (no research decision) → research-decision",
@@ -1655,7 +1655,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
         };
       }
 
-      // Safety signal (#1703, #5097): detect milestones with only .gsd/
+      // Safety signal (#1703, #5097): detect milestones with only .loop24/
       // artifacts. This no longer hard-blocks completion because some
       // milestones are intentionally planning/documentation-only.
       const artifactCheck = hasImplementationArtifacts(basePath, mid);

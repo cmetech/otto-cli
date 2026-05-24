@@ -1,7 +1,7 @@
 /**
- * GSD Worktree Command — /worktree
+ * Worktree Command — /worktree
  *
- * Create, list, merge, and remove git worktrees under .gsd/worktrees/.
+ * Create, list, merge, and remove git worktrees under .loop24/worktrees/.
  *
  * Usage:
  *   /worktree <name>        — create a new worktree
@@ -257,7 +257,7 @@ export function registerWorktreeCommand(pi: ExtensionAPI): void {
 // ─── Handlers ──────────────────────────────────────────────────────────────
 
 /**
- * Check if the worktree has existing GSD milestones that would
+ * Check if the worktree has existing workflow milestones that would
  * cause auto-mode to continue previous work instead of starting fresh.
  */
 function hasExistingMilestones(wtPath: string): boolean {
@@ -273,8 +273,8 @@ function hasExistingMilestones(wtPath: string): boolean {
 }
 
 /**
- * Clear GSD planning artifacts so auto-mode starts fresh with the discuss flow.
- * Keeps the .gsd/ directory structure intact but removes milestones and root planning files.
+ * Clear planning artifacts so auto-mode starts fresh with the discuss flow.
+ * Keeps the .loop24/ directory structure intact but removes milestones and root planning files.
  */
 function clearGSDPlans(wtPath: string): void {
   const mDir = milestonesDir(wtPath);
@@ -569,7 +569,7 @@ async function handleMerge(
       return;
     }
 
-    // Gather merge context — full repo diff, not just .gsd/
+    // Gather merge context — full repo diff, not just .loop24/
     const diffSummary = diffWorktreeAll(basePath, name);
     const numstat = diffWorktreeNumstat(basePath, name);
     const gsdDiff = getWorktreeGSDDiff(basePath, name);
@@ -591,7 +591,7 @@ async function handleMerge(
     let totalRemoved = 0;
     for (const s of numstat) { totalAdded += s.added; totalRemoved += s.removed; }
 
-    // Split files into code vs GSD for the preview
+    // Split files into code vs workflow files for the preview
     const isGSD = (f: string) => f.startsWith(".gsd/");
     const codeChanges = diffSummary.added.filter(f => !isGSD(f)).length
       + diffSummary.modified.filter(f => !isGSD(f)).length

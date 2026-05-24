@@ -1,17 +1,17 @@
 /**
- * GSD Command — /gsd scan
+ * Command — /loop24 scan
  *
- * Rapid codebase assessment — lightweight alternative to /gsd map-codebase.
+ * Rapid codebase assessment — lightweight alternative to /loop24 map-codebase.
  * Spawns one focused AI analysis pass and writes structured documents to
- * .gsd/codebase/ for use by planning and execution phases.
+ * .loop24/codebase/ for use by planning and execution phases.
  *
  * Usage:
- *   /gsd scan                   — tech+arch focus (default)
- *   /gsd scan --focus tech      — technology stack + integrations only
- *   /gsd scan --focus arch      — architecture + structure only
- *   /gsd scan --focus quality   — conventions + testing patterns only
- *   /gsd scan --focus concerns  — technical debt + concerns only
- *   /gsd scan --focus tech+arch — explicit default (same as no flag)
+ *   /loop24 scan                   — tech+arch focus (default)
+ *   /loop24 scan --focus tech      — technology stack + integrations only
+ *   /loop24 scan --focus arch      — architecture + structure only
+ *   /loop24 scan --focus quality   — conventions + testing patterns only
+ *   /loop24 scan --focus concerns  — technical debt + concerns only
+ *   /loop24 scan --focus tech+arch — explicit default (same as no flag)
  */
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
@@ -66,7 +66,7 @@ export function resolveScanDocuments(focus: string): string[] {
 
 /**
  * Build absolute output paths for the documents produced by a scan focus.
- * All documents live under <basePath>/.gsd/codebase/
+ * All documents live under <basePath>/.loop24/codebase/
  */
 export function buildScanOutputPaths(focus: string, basePath: string): string[] {
   const docs = resolveScanDocuments(focus);

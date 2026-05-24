@@ -7,7 +7,7 @@
  * recovers by stripping older images from the conversation history, preserving
  * the most recent ones to maintain session continuity.
  *
- * @see https://github.com/open-gsd/gsd-pi/issues/2874
+ * @see upstream #2874
  */
 
 import type { Message, ImageContent, TextContent } from "@gsd/pi-ai";

@@ -24,7 +24,7 @@ type AntigravityCredentials = OAuthCredentials & {
 //
 // NOTE: These credentials are public in the source code. They should NOT be
 // obfuscated because security scanners flag obfuscated data as potentially
-// malicious (see: https://socket.dev/npm/package/gsd-pi/alerts/2.70.1?alert_name=obfuscatedFile)
+// malicious (see: upstream package security advisory
 //
 // Google's OAuth implementation requires client_secret for Desktop App OAuth
 // clients even though it cannot be kept secret in distributed applications.

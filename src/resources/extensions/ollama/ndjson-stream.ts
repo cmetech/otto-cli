@@ -1,4 +1,4 @@
-// GSD2 — Ollama Extension: NDJSON streaming parser
+// LOOP24 — Ollama Extension: NDJSON streaming parser
 
 /**
  * Parses a streaming NDJSON (newline-delimited JSON) response body into

@@ -3,11 +3,11 @@
  *
  * Four synchronous functions for recovering from broken git state
  * during auto-mode operations. Uses only `git reset --hard HEAD` —
- * never `git clean` (which would delete untracked .gsd/ dirs).
+ * never `git clean` (which would delete untracked .loop24/ dirs).
  *
  * Observability: Each function returns structured results describing
  * what actions were taken. `formatGitError` maps raw git errors to
- * user-friendly messages suggesting `/gsd doctor`.
+ * user-friendly messages suggesting `/loop24 doctor`.
  */
 
 import { execFileSync } from "node:child_process";
@@ -142,7 +142,7 @@ const ERROR_PATTERNS: Array<{ pattern: RegExp; message: string }> = [
  * Translate raw git error strings into user-friendly messages.
  *
  * Pattern-matches against common git error strings and returns
- * a non-technical message suggesting `/gsd doctor`. Returns the
+ * a non-technical message suggesting `/loop24 doctor`. Returns the
  * original message if no pattern matches.
  */
 export function formatGitError(error: string | Error): string {

@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Interactive terminal footer renderer for workspace, model, usage, context, and extension status.
 
 import { type Component, truncateToWidth, visibleWidth } from "@gsd/pi-tui";
@@ -161,7 +161,7 @@ export class FooterComponent implements Component {
 			}
 		}
 
-		// Group 4: context bar + percentage (mirrors /gsd auto dashboard style).
+		// Group 4: context bar + percentage (mirrors /loop24 auto dashboard style).
 		// Bar colors track the same thresholds as the percent text.
 		const autoIndicator = this.autoCompactEnabled ? " (auto)" : "";
 		const barColor: "error" | "warning" | "success" =

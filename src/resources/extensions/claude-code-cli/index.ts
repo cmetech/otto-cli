@@ -5,7 +5,7 @@
  * locally-installed Claude Code CLI via the official Agent SDK.
  *
  * Users with a Claude Code subscription (Pro/Max/Team) get access to
- * subsidized inference through GSD's UI — no API key required.
+ * subsidized inference through the agent's UI — no API key required.
  *
  * TOS-compliant: uses Anthropic's official `@anthropic-ai/claude-agent-sdk`,
  * never touches credentials, never offers a login flow.

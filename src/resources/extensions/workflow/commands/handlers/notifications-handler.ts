@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Handles /gsd notifications commands and opens the notification history overlay.
+// Project/App: LOOP24
+// File Purpose: Handles /loop24 notifications commands and opens the notification history overlay.
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
 
@@ -39,7 +39,7 @@ export async function handleNotificationsCommand(
   ctx: ExtensionCommandContext,
   pi: ExtensionAPI,
 ): Promise<boolean> {
-  // /gsd notifications clear
+  // /loop24 notifications clear
   if (args === "clear") {
     clearNotifications();
     // Suppress persistence so the confirmation toast doesn't re-populate the store
@@ -52,7 +52,7 @@ export async function handleNotificationsCommand(
     return true;
   }
 
-  // /gsd notifications tail [N]
+  // /loop24 notifications tail [N]
   if (args === "tail" || args.startsWith("tail ")) {
     const countStr = args.replace(/^tail\s*/, "").trim();
     const count = countStr ? parseInt(countStr, 10) : 20;
@@ -75,7 +75,7 @@ export async function handleNotificationsCommand(
     return true;
   }
 
-  // /gsd notifications filter <severity>
+  // /loop24 notifications filter <severity>
   if (args.startsWith("filter ")) {
     const severity = args.replace(/^filter\s+/, "").trim().toLowerCase();
     if (!["error", "warning", "info", "success"].includes(severity)) {
@@ -99,7 +99,7 @@ export async function handleNotificationsCommand(
     return true;
   }
 
-  // /gsd notifications (no args) — open overlay in TUI, or print summary
+  // /loop24 notifications (no args) — open overlay in TUI, or print summary
   if (args === "" || args === "status") {
     // Try overlay first (TUI mode)
     if (ctx.hasUI) {

@@ -1,5 +1,5 @@
-// Delegation policy — codifies which GSD MCP tools are safe to run as
-// background sub-agents while the foreground /gsd flow continues. Verdicts
+// Delegation policy — codifies which MCP tools are safe to run as
+// background sub-agents while the foreground /loop24 flow continues. Verdicts
 // are derived from the round-1 and round-2 evaluations recorded in this
 // branch's PR description; the rationale field on each entry preserves
 // the reason so future changes have to revisit the analysis explicitly.

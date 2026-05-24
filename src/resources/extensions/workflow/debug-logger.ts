@@ -1,5 +1,5 @@
-// GSD Extension — Debug Logger
-// Structured JSONL debug logging for diagnosing stuck/slow GSD sessions.
+// Workflow Extension — Debug Logger
+// Structured JSONL debug logging for diagnosing stuck/slow agent sessions.
 // Zero overhead when disabled — all public functions are no-ops.
 
 import { appendFileSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs';
@@ -98,7 +98,7 @@ export function debugLog(event: string, data?: Record<string, unknown>): void {
   try {
     appendFileSync(_logPath, JSON.stringify(entry) + '\n');
   } catch {
-    // Silently ignore write failures — debug logging must never break GSD
+    // Silently ignore write failures — debug logging must never break the workflow
   }
 }
 

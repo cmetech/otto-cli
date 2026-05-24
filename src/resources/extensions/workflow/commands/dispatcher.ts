@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Routes /gsd commands through global guards and command handlers.
+// Project/App: LOOP24
+// File Purpose: Routes /loop24 commands through global guards and command handlers.
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
 

@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Shared RGB palette for the pre-theme GSD watch splash.
+// Project/App: LOOP24
+// File Purpose: Shared RGB palette for the pre-theme watch splash.
 
 export const splashPalette = {
   accent: "#8db7ff",

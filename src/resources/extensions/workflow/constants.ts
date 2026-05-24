@@ -1,7 +1,7 @@
 /**
- * GSD Extension — Shared Constants
+ * Workflow Extension — Shared Constants
  *
- * Centralized timeout and cache-size constants used across the GSD extension.
+ * Centralized timeout and cache-size constants used across the workflow extension.
  */
 
 // ─── Timeouts ─────────────────────────────────────────────────────────────────
@@ -23,11 +23,11 @@ export const CACHE_MAX = 50;
 // ─── Tool Scoping ─────────────────────────────────────────────────────────────
 
 /**
- * GSD tools allowed during discuss flows (#2949).
+ * workflow tools allowed during discuss flows (#2949).
  *
  * xAI/Grok (and potentially other providers with grammar-based constrained
  * decoding) return "Grammar is too complex" (HTTP 400) when the combined
- * tool schemas exceed their internal grammar limit. The full GSD tool set
+ * tool schemas exceed their internal grammar limit. The full workflow tool set
  * registers ~33 tools with deeply nested schemas; discuss flows only need
  * a small subset.
  *

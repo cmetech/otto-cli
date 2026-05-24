@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Transaction depth helper for the GSD database facade.
+// Project/App: LOOP24
+// File Purpose: Transaction depth helper for the workflow database facade.
 
 export interface DbTransactionControls {
   begin(): void;

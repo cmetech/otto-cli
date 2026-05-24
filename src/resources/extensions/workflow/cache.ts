@@ -1,11 +1,11 @@
-// GSD Extension — Unified Cache Invalidation
+// Workflow Extension — Unified Cache Invalidation
 //
-// Three module-scoped read caches exist across the GSD extension:
+// Three module-scoped read caches exist across the workflow extension:
 //   1. State cache (state.ts)  — memoized deriveState() result
 //   2. Path cache  (paths.ts)  — directory listing results (readdirSync)
 //   3. Parse cache (files.ts)  — parsed markdown file results
 //
-// After any file write that changes .gsd/ contents, all three must be
+// After any file write that changes .loop24/ contents, all three must be
 // invalidated together to prevent stale reads. This module provides a
 // single function that clears all three atomically.
 //
@@ -27,10 +27,10 @@ import { clearPathCache } from './paths.js';
 import { clearParseCache } from './files.js';
 
 /**
- * Invalidate all GSD runtime read caches in one call.
+ * Invalidate all runtime read caches in one call.
  *
  * Call this after file writes, milestone transitions, merge reconciliation,
- * or any operation that changes .gsd/ contents on disk. Forgetting to clear
+ * or any operation that changes .loop24/ contents on disk. Forgetting to clear
  * any single cache causes stale reads (see #431).
  */
 export function invalidateAllCaches(): void {

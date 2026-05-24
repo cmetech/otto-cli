@@ -1,20 +1,20 @@
 /**
- * GSD home directory resolution.
+ * Home directory resolution.
  *
- * Exports gsdHome() which returns the GSD configuration directory,
+ * Exports gsdHome() which returns the agent configuration directory,
  * defaulting to ~/.gsd with a GSD_HOME env var override.
  *
  * For the user's home directory, use os.homedir() directly — it handles
  * platform-specific env lookup (USERPROFILE on Windows, HOME on POSIX)
  * with appropriate fallbacks.
  *
- * @see https://github.com/open-gsd/gsd-pi/issues/5015
+ * @see upstream #5015
  */
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 
 /**
- * Resolve the GSD home directory (typically ~/.gsd).
+ * Resolve the agent home directory (typically ~/.gsd).
  *
  * `GSD_HOME` env var overrides the default location.
  * Falls back to `homedir()/.gsd`.

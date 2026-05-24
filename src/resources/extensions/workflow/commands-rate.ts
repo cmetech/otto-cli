@@ -1,5 +1,5 @@
 /**
- * /gsd rate — Submit feedback on the last unit's model tier assignment.
+ * /loop24 rate — Submit feedback on the last unit's model tier assignment.
  * Feeds into the adaptive routing history so future dispatches improve.
  */
 

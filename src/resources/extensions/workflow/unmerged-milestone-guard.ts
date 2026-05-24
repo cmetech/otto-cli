@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Block new workflow entry when completed milestone branches are still unmerged.
 
 import {

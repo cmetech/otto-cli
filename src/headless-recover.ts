@@ -1,8 +1,8 @@
-// gsd-pi — Headless Recover entrypoint
+// LOOP24 — Headless Recover entrypoint
 /**
  * Headless Recover — `gsd headless recover`
  *
- * Non-interactive parallel of the `/gsd recover` slash command. Clears the
+ * Non-interactive parallel of the `/loop24 recover` slash command. Clears the
  * milestones / slices / tasks tables and re-imports them from the on-disk
  * markdown projections (ROADMAP.md, PLAN.md, SUMMARY.md, …) via
  * migrateHierarchyToDb. Mutating: this is the one headless subcommand that
@@ -16,7 +16,7 @@
  *
  * Exit codes:
  *   0 — recovery succeeded
- *   1 — `.gsd/` missing, DB could not be opened, or migration threw
+ *   1 — `.loop24/` missing, DB could not be opened, or migration threw
  */
 
 import { createJiti } from '@mariozechner/jiti'

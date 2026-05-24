@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: ADR-015 Tool Contract module for Unit prompt, policy, and tool parity.
 
 import {

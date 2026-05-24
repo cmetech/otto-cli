@@ -1,5 +1,5 @@
 /**
- * GSD Detection — Project state and ecosystem detection.
+ * Detection — Project state and ecosystem detection.
  *
  * Pure functions, zero UI dependencies, zero side effects.
  * Used by init-wizard.ts and guided-flow.ts to determine what onboarding
@@ -17,10 +17,10 @@ import { gsdHome } from "./gsd-home.js";
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 export interface ProjectDetection {
-  /** What kind of GSD state exists in this directory */
+  /** What kind of workflow state exists in this directory */
   state: "none" | "v1-planning" | "v2-gsd" | "v2-gsd-empty";
 
-  /** Is this the first time GSD has been used on this machine? */
+  /** Is this the first time the agent has been used on this machine? */
   isFirstEverLaunch: boolean;
 
   /** Does ~/.gsd/ exist with preferences? */
@@ -340,7 +340,7 @@ export function detectProjectState(basePath: string): ProjectDetection {
 // ─── V1 Planning Detection ──────────────────────────────────────────────────────
 
 /**
- * Detect a v1 .planning/ directory with GSD v1 markers.
+ * Detect a v1 .planning/ directory with the agent v1 markers.
  * Returns null if no .planning/ directory found.
  */
 export function detectV1Planning(basePath: string): V1Detection | null {
@@ -377,7 +377,7 @@ export function detectV1Planning(basePath: string): V1Detection | null {
   };
 }
 
-// ─── V2 GSD Detection ──────────────────────────────────────────────────────────
+// ─── V2 Detection ──────────────────────────────────────────────────────────
 
 function detectV2Gsd(basePath: string): V2Detection | null {
   const gsdPath = gsdRoot(basePath);
@@ -844,7 +844,7 @@ function detectVerificationCommands(
 // ─── Global Setup Detection ─────────────────────────────────────────────────────
 
 /**
- * Check if global GSD setup exists (has ~/.gsd/ with preferences).
+ * Check if global agent setup exists (has ~/.loop24/ with preferences).
  */
 export function hasGlobalSetup(): boolean {
   return (
@@ -854,8 +854,8 @@ export function hasGlobalSetup(): boolean {
 }
 
 /**
- * Check if this is the very first time GSD has been used on this machine.
- * Returns true if ~/.gsd/ doesn't exist or has no preferences or auth.
+ * Check if this is the very first time the agent has been used on this machine.
+ * Returns true if ~/.loop24/ doesn't exist or has no preferences or auth.
  */
 export function isFirstEverLaunch(): boolean {
   if (!existsSync(gsdHome())) return true;
@@ -1282,10 +1282,10 @@ export function hasProjectFileInAncestor(
 }
 
 /**
- * Check whether a project's `.gsd/` directory contains the bootstrap artifacts
+ * Check whether a project's `.loop24/` directory contains the bootstrap artifacts
  * (`PREFERENCES.md` or `milestones/`) that indicate a completed init run.
  *
- * A zombie `.gsd/` state — symlink exists but neither artifact is present —
+ * A zombie `.loop24/` state — symlink exists but neither artifact is present —
  * must be treated as "needs init wizard". The previous guard checked only
  * `existsSync(gsdRoot(basePath))`, which accepted zombie states and skipped
  * the wizard (#2942).

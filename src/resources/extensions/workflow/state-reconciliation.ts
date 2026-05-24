@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: ADR-017 State Reconciliation Module — public entry point.
 // Re-exports the drift-driven implementation from the state-reconciliation/
 // folder so existing import paths (./state-reconciliation.js) keep working.

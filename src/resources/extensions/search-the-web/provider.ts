@@ -16,7 +16,7 @@ import { gsdHome } from "../workflow/gsd-home.js";
 
 // Compute authFilePath lazily so GSD_HOME overrides (e.g. in tests) take effect.
 // Imported locally instead of from app-paths.ts because extensions are copied to
-// ~/.gsd/agent/extensions/ at runtime where '../../../app-paths.ts' doesn't resolve.
+// ~/.loop24/agent/extensions/ at runtime where '../../../app-paths.ts' doesn't resolve.
 function authFilePath(): string {
   return join(gsdHome(), 'agent', 'auth.json');
 }

@@ -1,4 +1,4 @@
-// Canonical GSD shortcut definitions used by registration, help text, and overlays.
+// Canonical shortcut definitions used by registration, help text, and overlays.
 
 import { formatShortcut } from "./files.js";
 import { slashCommand } from "./strings.js";

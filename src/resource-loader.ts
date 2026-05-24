@@ -22,7 +22,7 @@ function loadPiCodingAgentModule(): Promise<PiCodingAgentModule> {
 //
 // Why this matters: with `npm link`, src/resources/ points into the gsd-2 repo's
 // working tree. Switching branches there changes src/resources/ for ALL projects
-// that use gsd — causing stale/broken extensions to be synced to ~/.gsd/agent/.
+// that use the agent — causing stale/broken extensions to be synced to ~/.loop24/agent/.
 // dist/resources/ is populated by the build step (`npm run copy-resources`) and
 // reflects the built state, not the currently checked-out branch.
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -38,14 +38,14 @@ interface ManagedResourceManifest {
   /** Content fingerprint of bundled resources — detects same-version content changes. */
   contentHash?: string
   /**
-   * Root-level files installed in extensions/ by this GSD version.
+   * Root-level files installed in extensions/ by this version.
    * Used on the next upgrade to detect and prune files that were removed or
    * moved into a subdirectory, preventing orphaned non-extension files from
    * causing extension load errors.
    */
   installedExtensionRootFiles?: string[]
   /**
-   * Subdirectory extension names installed in extensions/ by this GSD version.
+   * Subdirectory extension names installed in extensions/ by this version.
    * Used on the next upgrade to detect and prune subdirectory extensions that
    * were removed from the bundle.
    */
@@ -83,9 +83,9 @@ function getBundledGsdVersion(): string {
 function getBundledPackageName(): string {
   try {
     const pkg = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf-8'))
-    return typeof pkg?.name === 'string' ? pkg.name : '@opengsd/gsd-pi'
+    return typeof pkg?.name === 'string' ? pkg.name : '@ericsson/loop24'
   } catch {
-    return '@opengsd/gsd-pi'
+    return '@ericsson/loop24'
   }
 }
 
@@ -342,12 +342,12 @@ function copyDirRecursive(src: string, dest: string): void {
 }
 
 /**
- * Creates (or updates) a symlink at agentDir/node_modules pointing to GSD's
- * own node_modules directory.
+ * Creates (or updates) a symlink at agentDir/node_modules pointing to the
+ * agent's own node_modules directory.
  *
  * Native ESM `import()` ignores NODE_PATH — it resolves packages by walking
  * up the directory tree from the importing file. Extension files synced to
- * ~/.gsd/agent/extensions/ have no ancestor node_modules, so imports of
+ * ~/.loop24/agent/extensions/ have no ancestor node_modules, so imports of
  * @gsd/* packages fail. The symlink makes Node's standard resolution find
  * them without requiring every call site to use jiti.
  *
@@ -453,7 +453,7 @@ export function reconcileMergedNodeModules(
   // Symlink entries from the hoisted node_modules (external deps)
   try {
     for (const entry of readdirSync(hoisted, { withFileTypes: true })) {
-      // Skip the gsd-pi package itself and dotfiles
+      // Skip the package itself and dotfiles
       if (entry.name === basename(packageRoot)) continue
       if (entry.name.startsWith('.')) continue
       try { symlinkSync(join(hoisted, entry.name), join(agentNodeModules, entry.name), 'junction'); linkedCount++ } catch { /* skip individual */ }
@@ -495,7 +495,7 @@ export function mergedFingerprint(hoisted: string, internal: string): string {
 }
 
 /**
- * Prune root-level extension files that were installed by a previous GSD version
+ * Prune root-level extension files that were installed by a previous version
  * but have since been removed or relocated to a subdirectory.
  *
  * Two strategies:
@@ -568,22 +568,22 @@ function pruneRemovedBundledExtensions(
 }
 
 /**
- * Syncs all bundled resources to agentDir (~/.gsd/agent/) on every launch.
+ * Syncs all bundled resources to agentDir (~/.loop24/agent/) on every launch.
  *
- * - extensions/ → ~/.gsd/agent/extensions/   (overwrite when version changes)
- * - agents/     → ~/.gsd/agent/agents/        (overwrite when version changes)
- * - GSD-WORKFLOW.md → ~/.gsd/agent/GSD-WORKFLOW.md (fallback for env var miss)
+ * - extensions/ → ~/.loop24/agent/extensions/   (overwrite when version changes)
+ * - agents/     → ~/.loop24/agent/agents/        (overwrite when version changes)
+ * - GSD-WORKFLOW.md → ~/.loop24/agent/GSD-WORKFLOW.md (fallback for env var miss)
  *
  * Skills are NOT synced here. They are installed by the user via the
  * skills.sh CLI (`npx skills add <repo>`) into ~/.agents/skills/ — the
  * industry-standard Agent Skills ecosystem directory.
  *
  * Skips the copy when the managed-resources.json version matches the current
- * GSD version, avoiding ~128ms of synchronous cpSync on every startup.
- * After `npm update -g @glittercowboy/gsd`, versions will differ and the
+ * version, avoiding ~128ms of synchronous cpSync on every startup.
+ * After `npm update -g @ericsson/loop24`, versions will differ and the
  * copy runs once to land the new resources.
  *
- * Inspectable: `ls ~/.gsd/agent/extensions/`
+ * Inspectable: `ls ~/.loop24/agent/extensions/`
  */
 export function initResources(agentDir: string, skillsDir: string = join(homedir(), '.agents', 'skills')): void {
   mkdirSync(agentDir, { recursive: true })
@@ -599,9 +599,9 @@ export function initResources(agentDir: string, skillsDir: string = join(homedir
   pruneRemovedBundledExtensions(manifest, agentDir)
   pruneStaleSiblingFiles(bundledExtensionsDir, extensionsDir)
 
-  // Ensure ~/.gsd/agent/node_modules symlinks to GSD's node_modules on EVERY
+  // Ensure ~/.loop24/agent/node_modules symlinks to the agent's node_modules on EVERY
   // launch, not just during resource syncs. A stale/broken symlink makes ALL
-  // extensions fail to resolve @gsd/* packages, rendering GSD non-functional.
+  // extensions fail to resolve @gsd/* packages.
   ensureNodeModulesSymlink(agentDir)
 
   // Migrate legacy skills on every launch (not gated by manifest) so that
@@ -645,12 +645,12 @@ export function initResources(agentDir: string, skillsDir: string = join(homedir
 
 /**
  * One-time migration: copy user-customized skills from the old
- * ~/.gsd/agent/skills/ directory into ~/.agents/skills/.
+ * ~/.loop24/agent/skills/ directory into ~/.agents/skills/.
  *
  * The migration is conservative:
  *  - Only skill directories containing a SKILL.md are considered.
  *  - Copies, does not move — the old directory stays intact so downgrading
- *    to a pre-migration GSD version still works.
+ *    to a pre-migration version still works.
  *  - Collision-safe — if a skill name already exists in the target, the
  *    existing ecosystem skill wins (user may have already installed a newer
  *    version via skills.sh).
@@ -665,7 +665,7 @@ function migrateSkillsToEcosystemDir(agentDir: string): void {
   if (!existsSync(legacyDir)) return
 
   // Atomic marker check — 'wx' fails if file already exists, preventing races
-  // when two GSD processes start simultaneously.
+  // when two agent processes start simultaneously.
   let markerFd: number
   try {
     markerFd = openSync(markerPath, 'wx')
@@ -709,7 +709,7 @@ function migrateSkillsToEcosystemDir(agentDir: string): void {
         if (isSymlink) {
           // Recreate the symlink in the ecosystem directory using an absolute
           // target. Relative symlinks would resolve from the new parent dir
-          // (~/.agents/skills/) instead of the original (~/.gsd/agent/skills/),
+          // (~/.agents/skills/) instead of the original (~/.loop24/agent/skills/),
           // pointing to the wrong location.
           const rawTarget = readlinkSync(sourcePath)
           const absTarget = resolve(dirname(sourcePath), rawTarget)
@@ -784,7 +784,7 @@ function collectRelativeFiles(rootDir: string): Set<string> {
 
 /**
  * Constructs a DefaultResourceLoader that loads extensions from both
- * ~/.gsd/agent/extensions/ (GSD's default) and ~/.pi/agent/extensions/ (pi's default).
+ * ~/.loop24/agent/extensions/ (the agent's default) and ~/.pi/agent/extensions/ (pi's default).
  * This allows users to use extensions from either location.
  */
 // Cache bundled extension keys at module load — avoids re-scanning the extensions
@@ -829,7 +829,7 @@ export async function buildResourceLoader(
     additionalExtensionPaths,
     bundledExtensionKeys: bundledKeys,
     extensionPathsTransform: (paths: string[]) => {
-      // 1. Filter community extensions through the GSD registry
+      // 1. Filter community extensions through the registry
       const filteredPaths = paths.filter((entryPath) => {
         const manifest = readManifestFromEntryPath(entryPath)
         if (!manifest) return true // no manifest = always load

@@ -1065,7 +1065,7 @@ function discoverExtensionsInDir(dir: string): string[] {
  * Discover and load extensions from standard locations.
  *
  * @deprecated Use DefaultResourceLoader.reload() instead — this function is
- * not called in the GSD loading flow. Extension discovery happens through
+ * not called in the loading flow. Extension discovery happens through
  * DefaultPackageManager.resolve() → addAutoDiscoveredResources(). Kept for
  * backwards compatibility with direct pi-coding-agent consumers.
  */
@@ -1105,7 +1105,7 @@ export async function discoverAndLoadExtensions(
 
 	// 2. Global extensions: agentDir/extensions/
 	const globalExtDir = path.join(agentDir, "extensions");
-	// 2b. Installed extensions: ~/.gsd/extensions/ merged with bundled (D-14, D-15)
+	// 2b. Installed extensions: ~/.loop24/extensions/ merged with bundled (D-14, D-15)
 	// Discovery handles ID-based merge — loader stays dumb.
 	const installedExtDir = path.join(path.dirname(agentDir), "extensions");
 	const globalPaths = discoverExtensionsInDir(globalExtDir);

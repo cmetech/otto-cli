@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: State-aware home menu for the bare /gsd command.
+// Project/App: LOOP24
+// File Purpose: State-aware home menu for the bare /loop24 command.
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent";
 

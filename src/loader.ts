@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// GSD Startup Loader
+// LOOP24 Startup Loader
 import { fileURLToPath } from 'url'
 import { dirname, resolve, join, relative, delimiter } from 'path'
 import { existsSync, readFileSync, readdirSync, statSync, mkdirSync, symlinkSync, cpSync } from 'fs'
@@ -46,7 +46,7 @@ if (firstArg === '--help' || firstArg === '-h') {
   const nodeCheck = checkNodeVersion(process.versions.node, MIN_NODE_MAJOR)
   if (!nodeCheck.ok) {
     process.stderr.write(
-      `\n${red}${bold}Error:${reset} GSD requires Node.js >= ${MIN_NODE_MAJOR}.0.0\n` +
+      `\n${red}${bold}Error:${reset} LOOP24 requires Node.js >= ${MIN_NODE_MAJOR}.0.0\n` +
       `       You are running Node.js ${process.versions.node}\n\n` +
       `${dim}Install a supported version:${reset}\n` +
       `  nvm install ${MIN_NODE_MAJOR}   ${dim}# if using nvm${reset}\n` +
@@ -61,7 +61,7 @@ if (firstArg === '--help' || firstArg === '-h') {
   const gitOk = requireGit((cmd, args) => execFileSync(cmd, args as string[], { stdio: 'ignore' }))
   if (!gitOk) {
     process.stderr.write(
-      `\n${red}${bold}Error:${reset} GSD requires git but it was not found on PATH.\n\n` +
+      `\n${red}${bold}Error:${reset} LOOP24 requires git but it was not found on PATH.\n\n` +
       `${dim}Install git:${reset}\n` +
       `  https://git-scm.com/downloads\n\n`
     )
@@ -87,7 +87,7 @@ const pkgDir = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'pkg')
 // MUST be set before any dynamic import of pi SDK fires — this is what config.js
 // reads to determine APP_NAME and CONFIG_DIR_NAME
 process.env.PI_PACKAGE_DIR = pkgDir
-process.env.PI_SKIP_VERSION_CHECK = '1'  // GSD runs its own update check in cli.ts — suppress pi's
+process.env.PI_SKIP_VERSION_CHECK = '1'  // LOOP24 runs its own update check in cli.ts — suppress pi's
 process.title = 'loop24'
 
 // LOOP24_CLEAR_ON_START — opt-in pre-launch screen clear. pi-tui renders inline
@@ -131,22 +131,22 @@ if (!existsSync(appRoot)) {
   process.env.GSD_FIRST_RUN_BANNER = '1'
 }
 
-// GSD_CODING_AGENT_DIR — tells pi's getAgentDir() to return ~/.gsd/agent/ instead of ~/.gsd/agent/
+// GSD_CODING_AGENT_DIR — tells pi's getAgentDir() to return ~/.loop24/agent/ instead of ~/.pi/agent/
 process.env.GSD_CODING_AGENT_DIR = agentDir
 
-// GSD_PKG_ROOT — absolute path to @opengsd/gsd-pi package root. Used by deployed extensions
+// GSD_PKG_ROOT — absolute path to @ericsson/loop24 package root. Used by deployed extensions
 // (e.g. auto.ts resume path) to import modules like resource-loader.js that live
-// in the package tree, not in the deployed ~/.gsd/agent/ tree.
+// in the package tree, not in the deployed ~/.loop24/agent/ tree.
 process.env.GSD_PKG_ROOT = gsdRoot
 
-// RTK environment — make ~/.gsd/agent/bin visible to all child-process paths,
-// not just the bash tool, and force-disable RTK telemetry for GSD-managed use.
+// RTK environment — make ~/.loop24/agent/bin visible to all child-process paths,
+// not just the bash tool, and force-disable RTK telemetry for managed use.
 applyRtkProcessEnv(process.env)
 
-// NODE_PATH — make gsd's own node_modules available to extensions loaded via jiti.
+// NODE_PATH — make the agent's own node_modules available to extensions loaded via jiti.
 // Without this, extensions (e.g. browser-tools) can't resolve dependencies like
-// `playwright` because jiti resolves modules from pi-coding-agent's location, not gsd's.
-// Prepending gsd's node_modules to NODE_PATH fixes this for all extensions.
+// `playwright` because jiti resolves modules from pi-coding-agent's location.
+// Prepending the agent's node_modules to NODE_PATH fixes this for all extensions.
 const gsdNodeModules = join(gsdRoot, 'node_modules')
 process.env.NODE_PATH = [gsdNodeModules, process.env.NODE_PATH]
   .filter(Boolean)
@@ -157,16 +157,16 @@ process.env.NODE_PATH = [gsdNodeModules, process.env.NODE_PATH]
 const { Module } = await import('module');
 (Module as any)._initPaths?.()
 
-// GSD_VERSION — expose package version so extensions can display it
+// GSD_VERSION — expose package version so extensions can display it (env var name kept for compatibility)
 process.env.GSD_VERSION = gsdVersion
 
 // GSD_BIN_PATH — absolute path to the CLI entrypoint, used by patched
-// subagent/parallel workers to spawn gsd instead of pi when dispatching
+// subagent/parallel workers to spawn loop24 instead of pi when dispatching
 // workflow tasks. In source-dev mode this must remain scripts/dev-cli.js, not
 // src/loader.ts, because child processes need the --import resolve-ts wrapper.
 applyLoaderCliEntrypointEnv(process.env, { gsdRoot, invokedBinPath: process.argv[1] })
 
-// GSD_WORKFLOW_PATH — absolute path to bundled GSD-WORKFLOW.md, used by patched gsd extension
+// GSD_WORKFLOW_PATH — absolute path to bundled GSD-WORKFLOW.md, used by patched workflow extension
 // when dispatching workflow prompts. Prefers dist/resources/ (stable, set at build time)
 // over src/resources/ (live working tree) — see resource-loader.ts for rationale.
 const resourcesDir = resolveBundledResourcesDirFromPackageRoot(gsdRoot)
@@ -174,7 +174,7 @@ process.env.GSD_WORKFLOW_PATH = join(resourcesDir, 'GSD-WORKFLOW.md')
 
 // GSD_BUNDLED_EXTENSION_PATHS — dynamically discovered bundled extension entry points.
 // Uses the shared discoverExtensionEntryPaths() to scan the bundled resources
-// directory, then remaps discovered paths to agentDir (~/.gsd/agent/extensions/)
+// directory, then remaps discovered paths to agentDir (~/.loop24/agent/extensions/)
 // where initResources() will sync them.
 const bundledExtDir = join(resourcesDir, 'extensions')
 const agentExtDir = join(agentDir, 'extensions')
@@ -190,7 +190,7 @@ const discoveredExtensionPaths = discoverExtensionEntryPaths(bundledExtDir)
 process.env.GSD_BUNDLED_EXTENSION_PATHS = serializeBundledExtensionPaths(discoveredExtensionPaths)
 
 // Respect HTTP_PROXY / HTTPS_PROXY / NO_PROXY env vars for all outbound requests.
-// pi-coding-agent's cli.ts sets this, but GSD bypasses that entry point — so we
+// pi-coding-agent's cli.ts sets this, but the loader bypasses that entry point — so we
 // must set it here before any SDK clients are created.
 // Lazy-load undici (~200ms) only when proxy env vars are actually set.
 if (process.env.HTTP_PROXY || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.https_proxy) {
@@ -256,15 +256,14 @@ const missingPackages = criticalPackages.filter(pkg => !existsSync(join(gsdScope
 if (missingPackages.length > 0) {
   const missing = missingPackages.map(p => `@gsd/${p}`).join(', ')
   process.stderr.write(
-    `\nError: GSD installation is broken — missing packages: ${missing}\n\n` +
+    `\nError: LOOP24 installation is broken — missing packages: ${missing}\n\n` +
     `This is usually caused by one of:\n` +
-    `  • An outdated version installed from npm (run: npm install -g @opengsd/gsd-pi@latest)\n` +
+    `  • An outdated version installed from npm (run: npm install -g @ericsson/loop24@latest)\n` +
     `  • The packages/ directory was excluded from the installed tarball\n` +
     `  • A filesystem error prevented linking or copying the workspace packages\n\n` +
     `Fix it by reinstalling:\n\n` +
-    `  npm install -g @opengsd/gsd-pi@latest\n\n` +
-    `If the issue persists, please open an issue at:\n` +
-    `  https://github.com/open-gsd/gsd-pi/issues\n`
+    `  npm install -g @ericsson/loop24@latest\n\n` +
+    `If the issue persists, please open an issue with the project maintainers.\n`
   )
   process.exit(1)
 }

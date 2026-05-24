@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Canonical RPC protocol contracts shared across runtime, SDK, MCP, and app surfaces.
 
 export const RPC_CONTRACT_VERSION = 1 as const;

@@ -1,5 +1,5 @@
-// GSD-2 — Smart entry routing decisions.
-// Pure route selection for /gsd guided wizard choices.
+// LOOP24 — Smart entry routing decisions.
+// Pure route selection for /loop24 guided wizard choices.
 
 export type SmartEntryIsolationMode = "worktree" | "branch" | "none";
 

@@ -523,7 +523,7 @@ if (cliFlags.messages[0] === 'headless') {
   await ensureRtkBootstrap()
   // Sync bundled resources before headless runs (#3471). Without this,
   // headless-query loads from src/resources/ while auto/interactive load
-  // from ~/.gsd/agent/extensions/ — different extension copies diverge.
+  // from ~/.loop24/agent/extensions/ — different extension copies diverge.
   initResources(agentDir)
   const { runHeadless, parseHeadlessArgs } = await import('./headless.js')
   await runHeadless(parseHeadlessArgs(process.argv))
@@ -728,7 +728,7 @@ if (cliFlags.listModels !== undefined) {
   process.exit(0)
 }
 
-// GSD always uses quiet startup — the gsd extension renders its own branded header
+// Always uses quiet startup — the workflow extension renders its own branded header
 if (!settingsManager.getQuietStartup()) {
   settingsManager.setQuietStartup(true)
 }
@@ -866,7 +866,7 @@ const cwd = process.cwd()
 const projectSessionsDir = getProjectSessionsDir(cwd)
 
 // Migrate legacy flat sessions: before per-directory scoping, all .jsonl session
-// files lived directly in ~/.gsd/sessions/. Move them into the correct per-cwd
+// files lived directly in ~/.loop24/sessions/. Move them into the correct per-cwd
 // subdirectory so /resume can find them.
 migrateLegacyFlatSessions(sessionsDir, projectSessionsDir)
 

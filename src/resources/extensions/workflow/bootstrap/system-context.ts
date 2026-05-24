@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: System prompt and hidden context bootstrap for GSD sessions.
+// Project/App: LOOP24
+// File Purpose: System prompt and hidden context bootstrap for agent sessions.
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 
@@ -230,7 +230,7 @@ export async function buildBeforeAgentStartResult(
       const rawContent = rawCodebase.trim();
       if (rawContent) {
         // Cap injection size to ~2 000 tokens to avoid bloating every request.
-        // Full map is always available at .gsd/CODEBASE.md.
+        // Full map is always available at .loop24/CODEBASE.md.
         const generatedMatch = rawContent.match(/Generated: (\S+)/);
         const generatedAt = generatedMatch?.[1] ?? "unknown";
         const content = rawContent.length > DEFAULT_CODEBASE_MAX_CHARS
@@ -351,7 +351,7 @@ function markMemoryContextSupplied(memoryContent: string): string {
  * combining two memory sets:
  *
  * 1. Always-on "critical" set — top-ranked active memories in categories
- *    that future GSD turns generally want without asking. After ADR-013
+ *    that future workflow turns generally want without asking. After ADR-013
  *    expands this to include "architecture", these memories serve as the
  *    auto-injected replacement for inlineDecisionsFromDb when the cutover
  *    in step 6 lands.
@@ -406,7 +406,7 @@ export async function loadMemoryBlock(
 }
 
 export function loadKnowledgeBlock(gsdHomeDir: string, cwd: string): { block: string; globalSizeKb: number } {
-  // 1. Global knowledge (~/.gsd/agent/KNOWLEDGE.md) — cross-project,
+  // 1. Global knowledge (~/.loop24/agent/KNOWLEDGE.md) — cross-project,
   //    user-maintained. NOT migrated to memories (which are project-scoped),
   //    so the full file is injected unchanged.
   let globalKnowledge = "";
@@ -424,7 +424,7 @@ export function loadKnowledgeBlock(gsdHomeDir: string, cwd: string): { block: st
     }
   }
 
-  // 2. Project knowledge (.gsd/KNOWLEDGE.md) — project-specific.
+  // 2. Project knowledge (.loop24/KNOWLEDGE.md) — project-specific.
   //    ADR-013 Stage 2b: Patterns and Lessons are projected from the
   //    memories table and already reach the LLM via loadMemoryBlock. Inject
   //    only the intro prose + `## Rules` section here to avoid duplicating

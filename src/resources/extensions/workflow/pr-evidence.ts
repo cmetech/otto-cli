@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Shared pull request evidence generator for GSD shipping paths.
+// Project/App: LOOP24
+// File Purpose: Shared pull request evidence generator for the workflow shipping paths.
 
 export type PrChangeType = "feat" | "fix" | "refactor" | "test" | "docs" | "chore";
 

@@ -1574,7 +1574,7 @@ export async function handlePrefsWizard(
   // wizard menu shows them populated and writeable in one place.
   // `normalizePreferencesShape` tolerates a missing preferences file, a malformed
   // wrapper (`{ preferences: undefined }`), or a bare prefs object so the wizard
-  // never reaches the category menu with a half-formed root. See issue: /loop24 setup
+  // never reaches the category menu with a half-formed root. See issue: /otto setup
   // prefs crashed with "Cannot read properties of undefined (reading 'models')".
   const prefs: Record<string, unknown> = {
     ...normalizePreferencesShape(existing),

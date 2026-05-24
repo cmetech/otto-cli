@@ -161,7 +161,7 @@ export class FooterComponent implements Component {
 			}
 		}
 
-		// Group 4: context bar + percentage (mirrors /loop24 auto dashboard style).
+		// Group 4: context bar + percentage (mirrors /otto auto dashboard style).
 		// Bar colors track the same thresholds as the percent text.
 		const autoIndicator = this.autoCompactEnabled ? " (auto)" : "";
 		const barColor: "error" | "warning" | "success" =

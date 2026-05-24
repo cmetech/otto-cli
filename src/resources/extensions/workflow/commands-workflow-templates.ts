@@ -2,9 +2,9 @@
 // File Purpose: Workflow template commands for starting, listing, and dispatching workflows.
 
 /**
- * Workflow Template Commands — /loop24 start, /loop24 templates
+ * Workflow Template Commands — /otto start, /otto templates
  *
- * Handles the `/loop24 start [template] [description]` and `/loop24 templates` commands.
+ * Handles the `/otto start [template] [description]` and `/otto templates` commands.
  * Resolves templates by name or auto-detection, then dispatches the workflow prompt.
  */
 
@@ -166,7 +166,7 @@ function findInProgressWorkflows(basePath: string): WorkflowState[] {
   return results;
 }
 
-// ─── /loop24 start ──────────────────────────────────────────────────────────────
+// ─── /otto start ──────────────────────────────────────────────────────────────
 
 export async function handleStart(
   args: string,
@@ -175,7 +175,7 @@ export async function handleStart(
 ): Promise<void> {
   const trimmed = args.trim();
 
-  // /loop24 start --list → same as /loop24 templates
+  // /otto start --list → same as /otto templates
   if (trimmed === "--list" || trimmed === "list") {
     ctx.ui.notify(listTemplates(), "info");
     return;
@@ -202,7 +202,7 @@ export async function handleStart(
   }
 
   // ─── Resume detection ───────────────────────────────────────────────────
-  // /loop24 start --resume or /loop24 start resume → resume in-progress workflow
+  // /otto start --resume or /otto start resume → resume in-progress workflow
   if (trimmed === "--resume" || trimmed === "resume") {
     const basePath = currentDirectoryRoot();
     const inProgress = findInProgressWorkflows(basePath);
@@ -253,7 +253,7 @@ export async function handleStart(
     return;
   }
 
-  // Show in-progress workflows when /loop24 start is called with no args
+  // Show in-progress workflows when /otto start is called with no args
   if (!trimmed) {
     const basePath = currentDirectoryRoot();
     const inProgress = findInProgressWorkflows(basePath);
@@ -271,7 +271,7 @@ export async function handleStart(
     }
   }
 
-  // /loop24 start --dry-run <template> → preview without executing
+  // /otto start --dry-run <template> → preview without executing
   const dryRun = trimmed.includes("--dry-run");
   const cleanedArgs = trimmed.replace(/--dry-run\s*/, "").trim();
 
@@ -522,7 +522,7 @@ export async function handleStart(
   );
 }
 
-// ─── /loop24 templates ──────────────────────────────────────────────────────────
+// ─── /otto templates ──────────────────────────────────────────────────────────
 
 export async function handleTemplates(
   args: string,
@@ -530,7 +530,7 @@ export async function handleTemplates(
 ): Promise<void> {
   const trimmed = args.trim();
 
-  // /loop24 templates info <name>
+  // /otto templates info <name>
   if (trimmed.startsWith("info ")) {
     const name = trimmed.replace(/^info\s+/, "").trim();
     const info = getTemplateInfo(name);
@@ -545,12 +545,12 @@ export async function handleTemplates(
     return;
   }
 
-  // /loop24 templates — list all
+  // /otto templates — list all
   ctx.ui.notify(listTemplates(), "info");
 }
 
 /**
- * Return template IDs for autocomplete in /loop24 templates info <name>.
+ * Return template IDs for autocomplete in /otto templates info <name>.
  */
 export function getTemplateCompletions(prefix: string): Array<{ value: string; label: string; description: string }> {
   try {

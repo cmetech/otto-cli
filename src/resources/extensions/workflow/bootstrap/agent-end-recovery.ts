@@ -443,7 +443,7 @@ export async function handleAgentEnd(
 
     // ── 1a. Unsupported-model: provider rejected this model for the current
     //        account/plan at request time (#4513).  Persist a block so the
-    //        same dead model isn't reselected on the next /loop24 auto restart,
+    //        same dead model isn't reselected on the next /otto auto restart,
     //        then try a fallback before pausing.
     if (cls.kind === "unsupported-model") {
       const dash = getAutoDashboardData();

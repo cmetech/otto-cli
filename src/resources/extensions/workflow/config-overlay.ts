@@ -4,7 +4,7 @@
  * Read-only TUI overlay showing the effective agent configuration:
  * token profile, model assignments, dynamic routing, git settings,
  * budget, workflow toggles, and preference file sources.
- * Opened via `/loop24 show-config` or `/loop24 config`.
+ * Opened via `/loop24 show-config` or `/otto config`.
  */
 
 import type { Theme } from "@loop24/pi-coding-agent";

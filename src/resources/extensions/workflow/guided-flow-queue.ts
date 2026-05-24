@@ -438,6 +438,6 @@ function syncProjectMdSequence(
   const newTable = [headerLine, separatorLine, ...newRows];
   lines.splice(tableStart, tableEnd - tableStart, ...newTable);
   // Atomic write: tmp+rename avoids a torn PROJECT.md appearing dirty in
-  // another worktree's working tree during a concurrent /loop24 auto merge.
+  // another worktree's working tree during a concurrent /otto auto merge.
   atomicWriteSync(projectPath, lines.join("\n"), "utf-8");
 }

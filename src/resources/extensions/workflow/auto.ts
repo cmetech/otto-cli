@@ -911,8 +911,8 @@ export function stopAutoRemote(projectRoot: string): {
 /**
  * Check if a remote auto-mode session is running (from a different process).
  * Reads the crash lock, checks PID liveness, and returns session details.
- * Used by the guard in commands.ts to prevent bare /gsd, /loop24 next, and
- * /loop24 auto from stealing the session lock.
+ * Used by the guard in commands.ts to prevent bare /gsd, /otto next, and
+ * /otto auto from stealing the session lock.
  */
 export function checkRemoteAutoSession(projectRoot: string): {
   running: boolean;
@@ -1120,7 +1120,7 @@ export async function cleanupAfterLoopExit(ctx: ExtensionContext): Promise<void>
   restoreProjectRootEnv();
   restoreMilestoneLockEnv();
 
-  // Clear crash lock and release session lock so the next `/loop24 next` does
+  // Clear crash lock and release session lock so the next `/otto next` does
   // not see a stale lock with the current PID and treat it as a "remote"
   // session (which would cause it to SIGTERM itself). (#2730)
   try {
@@ -1697,7 +1697,7 @@ export async function stopAuto(
     restoreProjectRootEnv();
     restoreMilestoneLockEnv();
 
-    // Drop the active-tool baseline so a subsequent /loop24 auto run on the
+    // Drop the active-tool baseline so a subsequent /otto auto run on the
     // same `pi` instance recaptures from the live tool set rather than
     // restoring this session's snapshot and silently undoing any tool
     // changes the user made between sessions (#4959).
@@ -1738,7 +1738,7 @@ export function _selectStopAutoWorktreeExit(args: {
 
 /**
  * Pause auto-mode without destroying state. Context is preserved.
- * The user can interact with the agent, then `/loop24 auto` resumes
+ * The user can interact with the agent, then `/otto auto` resumes
  * from disk state. Called when the user presses Escape during auto-mode.
  */
 export async function pauseAuto(

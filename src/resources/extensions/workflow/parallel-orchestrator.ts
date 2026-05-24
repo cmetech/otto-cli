@@ -573,7 +573,7 @@ export function _createMilestoneWorktree(basePath: string, milestoneId: string):
  * The worker runs `gsd headless --json auto` in the milestone's worktree
  * with GSD_MILESTONE_LOCK set to isolate state derivation.
  *
- * IMPORTANT: We use `headless --json auto` instead of `--print "/loop24 auto"`.
+ * IMPORTANT: We use `headless --json auto` instead of `--print "/otto auto"`.
  * --print mode calls session.prompt() which returns immediately after the
  * extension command handler fires, because auto-mode's ctx.newSession()
  * resets the session and unblocks the outer prompt() await. This causes

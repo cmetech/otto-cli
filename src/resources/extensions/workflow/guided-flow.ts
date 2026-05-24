@@ -1911,7 +1911,7 @@ async function dispatchDiscussForMilestone(
  * Self-heal: scan runtime records and clear stale ones left behind when
  * auto-mode crashed mid-unit. auto.ts has its own selfHealRuntimeRecords()
  * but guided-flow (manual /loop24 mode) never called it — meaning stale records
- * persisted until the next /loop24 auto run.  This ensures the wizard always
+ * persisted until the next /otto auto run.  This ensures the wizard always
  * starts from a clean state regardless of how the previous session ended.
  */
 function selfHealRuntimeRecords(basePath: string, ctx: ExtensionContext): { cleared: number } {
@@ -2240,7 +2240,7 @@ export async function showSmartEntry(
 
   if (!state.activeMilestone?.id) {
     // Guard: if a discuss session is already in flight, don't re-inject the prompt.
-    // Both /loop24 and /loop24 auto reach this branch when no milestone exists yet.
+    // Both /loop24 and /otto auto reach this branch when no milestone exists yet.
     // Without this guard, every subsequent /loop24 call overwrites the pending auto-start
     // and fires another dispatchWorkflow, resetting the conversation mid-interview.
     if (hasPendingAutoStart(basePath)) {

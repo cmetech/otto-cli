@@ -1,7 +1,7 @@
 //  Setup catalog (single source of truth for onboarding steps + provider sub-views)
 //
 // Re-exports filtered views over PROVIDER_REGISTRY (key-manager.ts) and owns the
-// canonical ONBOARDING_STEPS list. Consumers (CLI wizard, /loop24 setup hub,
+// canonical ONBOARDING_STEPS list. Consumers (CLI wizard, /otto setup hub,
 // onboarding handler, web alignment) all read from here so adding a step or
 // provider lands in one place. Keep this module thin: no behavior beyond
 // filters + lookup helpers, so it stays cycle-safe even though it depends on
@@ -25,7 +25,7 @@ export interface OnboardingStepDef {
   label: string
   /** Required steps gate the "complete" flag. Skipped required steps mark the wizard incomplete. */
   required: boolean
-  /** Short description shown in /loop24 setup status hub. */
+  /** Short description shown in /otto setup status hub. */
   hint: string
 }
 

@@ -692,7 +692,7 @@ export function removeWorktree(
     // worktree remove), force-remove the git internal worktree metadata first,
     // then remove the filesystem directory. Without this, the .git/worktrees/<name>
     // lock prevents rmSync from cleaning up, and the orphaned worktree directory
-    // causes every subsequent `/loop24 auto` to re-enter the stale worktree.
+    // causes every subsequent `/otto auto` to re-enter the stale worktree.
     if (existsSync(resolvedWtPath)) {
       try {
         const wtInternalDir = join(basePath, ".git", "worktrees", name);

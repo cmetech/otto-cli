@@ -5,7 +5,7 @@
  * from the loop24 extension's index.ts at extension load.
  *
  * Tools are always registered (not lazy), so the model can call them from any
- * conversation — not only inside /loop24 build-flow. This is intentional:
+ * conversation — not only inside /otto build-flow. This is intentional:
  * users may want to refresh the catalog from a normal chat, or have the
  * agent inspect a component while debugging an existing flow.
  */

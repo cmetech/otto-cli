@@ -6,8 +6,8 @@
  *   - Connection probes for gateway + langflow at session_start
  *   - Declarative LangFlow flow-trigger slash commands loaded from
  *     commands/flow-triggers/*.yaml
- *   - LangFlow flow-builder tools + /loop24 build-flow command (Phase 4)
- *   - One-shot LLM polish: /loop24 prompt-engineer
+ *   - LangFlow flow-builder tools + /otto build-flow command (Phase 4)
+ *   - One-shot LLM polish: /otto prompt-engineer
  */
 
 import { dirname, join } from "node:path";
@@ -136,10 +136,10 @@ export default function Loop24(pi: ExtensionAPI): void {
   // ── Register flow-builder tools (Phase 4) ──
   registerLoop24Tools(pi);
 
-  // ── Register /loop24 build-flow slash command (Phase 4) ──
+  // ── Register /otto build-flow slash command (Phase 4) ──
   registerBuildFlowCommand(pi);
 
-  // ── Register /loop24 prompt-engineer slash command (Phase 5) ──
+  // ── Register /otto prompt-engineer slash command (Phase 5) ──
   registerPromptEngineerCommand(pi);
 
   // ── Load and register flow-trigger slash commands ──

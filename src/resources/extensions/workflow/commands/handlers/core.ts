@@ -306,7 +306,7 @@ export async function handleSetup(args: string, ctx: ExtensionCommandContext, pi
     return;
   }
 
-  // Bare /loop24 setup — render the hub: status + actions
+  // Bare /otto setup — render the hub: status + actions
   const globalConfigured = hasGlobalSetup();
   const detection = detectProjectState(projectRoot());
   const onboardingDone = isOnboardingComplete();
@@ -460,7 +460,7 @@ async function handleModel(trimmedArgs: string, ctx: ExtensionCommandContext, pi
 
   // /loop24 model is an explicit per-session pin for the agent dispatches.
   // This is captured at auto bootstrap so it survives internal session
-  // switches during /loop24 auto and /loop24 next runs.
+  // switches during /otto auto and /otto next runs.
   const sessionId = ctx.sessionManager?.getSessionId?.();
   if (sessionId) {
     setSessionModelOverride(sessionId, {

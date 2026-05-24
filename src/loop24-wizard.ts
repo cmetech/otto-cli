@@ -11,7 +11,7 @@
  * warn line instead of crashing boot.
  *
  * Re-entry: idempotent. Re-running just overwrites the existing config.
- * Available as `loop24 config [gateway|langflow|all]`.
+ * Available as `otto config [gateway|langflow|all]`.
  */
 
 import { existsSync } from 'node:fs'

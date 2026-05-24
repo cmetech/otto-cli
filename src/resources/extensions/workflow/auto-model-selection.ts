@@ -74,7 +74,7 @@ export interface PreferredModelConfig {
 // LIFECYCLE: the baseline is tied to a single auto session, NOT to the
 // lifetime of the `pi` instance (which can outlive many auto runs and have
 // the user mutate tools between them).  `clearToolBaseline` MUST be called
-// at auto start AND auto stop so that a second `/loop24 auto` run on the same
+// at auto start AND auto stop so that a second `/otto auto` run on the same
 // `pi` does not silently restore a stale snapshot from the prior run and
 // undo any tool changes the user made between sessions.
 const TOOL_BASELINE = new WeakMap<object, string[]>();
@@ -492,7 +492,7 @@ export async function selectAndApplyModel(
 
       // Skip models the provider has previously rejected for this account
       // (issue #4513).  The block is persisted in .loop24/runtime/blocked-models.json
-      // so it survives /loop24 auto restarts — without this, the same dead model
+      // so it survives /otto auto restarts — without this, the same dead model
       // gets reselected after every restart.
       if (isModelBlocked(basePath, model.provider, model.id)) {
         ctx.ui.notify(

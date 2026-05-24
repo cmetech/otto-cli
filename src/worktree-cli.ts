@@ -206,7 +206,7 @@ async function handleList(basePath: string): Promise<void> {
   const worktrees = ext.listWorktrees(basePath)
 
   if (worktrees.length === 0) {
-    process.stderr.write(chalk.dim('No worktrees. Create one with: loop24 -w <name>\n'))
+    process.stderr.write(chalk.dim('No worktrees. Create one with: otto -w <name>\n'))
     return
   }
 
@@ -230,8 +230,8 @@ async function handleMerge(basePath: string, args: string[]): Promise<void> {
       await doMerge(ext, basePath, worktrees[0].name)
       return
     }
-    process.stderr.write(chalk.red('Usage: loop24 worktree merge <name>\n'))
-    process.stderr.write(chalk.dim('Run loop24 worktree list to see worktrees.\n'))
+    process.stderr.write(chalk.red('Usage: otto worktree merge <name>\n'))
+    process.stderr.write(chalk.dim('Run otto worktree list to see worktrees.\n'))
     process.exit(1)
   }
   await doMerge(ext, basePath, name)
@@ -278,7 +278,7 @@ async function doMerge(ext: ExtensionModules, basePath: string, name: string): P
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     process.stderr.write(chalk.red(`✗ Merge failed: ${msg}\n`))
-    process.stderr.write(chalk.dim('  Resolve conflicts manually, then run loop24 worktree merge again.\n'))
+    process.stderr.write(chalk.dim('  Resolve conflicts manually, then run otto worktree merge again.\n'))
     process.exit(1)
   }
 }
@@ -320,7 +320,7 @@ async function handleRemove(basePath: string, args: string[]): Promise<void> {
   basePath = ext.resolveWorktreeProjectRoot(basePath)
   const name = args[0]
   if (!name) {
-    process.stderr.write(chalk.red('Usage: loop24 worktree remove <name>\n'))
+    process.stderr.write(chalk.red('Usage: otto worktree remove <name>\n'))
     process.exit(1)
   }
 
@@ -334,7 +334,7 @@ async function handleRemove(basePath: string, args: string[]): Promise<void> {
   const status = getWorktreeStatus(ext, basePath, name, wt.path, wt.branch)
   if (status.filesChanged > 0 || status.uncommitted) {
     process.stderr.write(chalk.yellow(`⚠ Worktree "${name}" has unmerged changes (${status.filesChanged} files).\n`))
-    process.stderr.write(chalk.yellow('  Use --force to remove anyway, or merge first: loop24 worktree merge ' + name + '\n'))
+    process.stderr.write(chalk.yellow('  Use --force to remove anyway, or merge first: otto worktree merge ' + name + '\n'))
     if (!process.argv.includes('--force')) {
       process.exit(1)
     }
@@ -370,7 +370,7 @@ async function handleStatusBanner(basePath: string): Promise<void> {
     chalk.yellow(`${withChanges.length} worktree${withChanges.length === 1 ? '' : 's'} with unmerged changes: `) +
     names + '\n' +
     chalk.dim('[otto] ') +
-    chalk.dim('Resume: loop24 -w <name>  |  Merge: loop24 worktree merge <name>  |  List: loop24 worktree list\n\n'),
+    chalk.dim('Resume: otto -w <name>  |  Merge: otto worktree merge <name>  |  List: otto worktree list\n\n'),
   )
 }
 
@@ -412,7 +412,7 @@ async function handleWorktreeFlag(worktreeFlag: boolean | string): Promise<void>
         const status = getWorktreeStatus(ext, basePath, wt.name, wt.path, wt.branch)
         process.stderr.write(formatStatus(status) + '\n\n')
       }
-      process.stderr.write(chalk.dim('Specify which one: loop24 -w <name>\n'))
+      process.stderr.write(chalk.dim('Specify which one: otto -w <name>\n'))
       process.exit(0)
     }
 

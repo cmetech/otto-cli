@@ -886,7 +886,7 @@ export function registerDbTools(pi: ExtensionAPI): void {
       invalidateStateCache();
 
       // Rebuild STATE.md so it reflects the skip immediately (#3477).
-      // Without this, /loop24 auto reads stale STATE.md and resumes the skipped slice.
+      // Without this, /otto auto reads stale STATE.md and resumes the skipped slice.
       try {
         const { rebuildState } = await import("../doctor.js");
         await rebuildState(basePath);

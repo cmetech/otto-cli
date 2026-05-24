@@ -592,7 +592,7 @@ export async function _runMilestoneMergeWithStashRestore(
     if (mergeError instanceof MergeConflictError) {
       // A merge conflict is a recoverable human checkpoint, not an
       // infrastructure failure — the user resolves the conflict and runs
-      // `/loop24 auto` to resume. Pause (don't stop): stopAuto tears down the
+      // `/otto auto` to resume. Pause (don't stop): stopAuto tears down the
       // session and, because `milestoneMergedInPhases` stays false here,
       // re-runs the already-failed worktree merge in its cleanup step
       // (#2645), then drops the user out of the interactive TUI onto a
@@ -611,7 +611,7 @@ export async function _runMilestoneMergeWithStashRestore(
     });
     // Like a merge conflict, a non-conflict merge failure (index lock,
     // network, permissions) is recoverable — the user fixes the cause and
-    // runs `/loop24 auto` to resume. Pause (don't stop) so the session stays
+    // runs `/otto auto` to resume. Pause (don't stop) so the session stays
     // resumable and stopAuto's teardown does not re-run the failed merge.
     const mergeFailReason = `Merge error on milestone ${milestoneId}: ${mergeError instanceof Error ? mergeError.message : String(mergeError)}. Resolve and run /gsd auto to resume.`;
     ctx.ui.notify(mergeFailReason, "error");
@@ -1241,7 +1241,7 @@ export async function runPreDispatch(
       );
     } else if (state.phase === "blocked") {
       const blockedResumeMessage = formatBlockedResumeMessage(state.blockers);
-      // Pause instead of hard-stop so the session is resumable with `/loop24 auto`.
+      // Pause instead of hard-stop so the session is resumable with `/otto auto`.
       // Hard-stop here was causing premature termination when slice dependencies
       // were temporarily unresolvable (e.g. after reassessment added new slices).
       await deps.pauseAuto(ctx, pi);
@@ -1415,7 +1415,7 @@ export async function runDispatch(
     deps.emitJournalEvent({ ts: new Date().toISOString(), flowId: ic.flowId, seq: ic.nextSeq(), eventType: "dispatch-stop", rule: dispatchResult.matchedRule, data: { reason: dispatchResult.reason } });
     // Warning-level stops are recoverable human checkpoints (e.g. UAT verdict
     // gate) — pause instead of hard-stopping so the session is resumable with
-    // `/loop24 auto`. Error/info-level stops remain hard stops for infrastructure
+    // `/otto auto`. Error/info-level stops remain hard stops for infrastructure
     // failures and terminal conditions respectively.
     // See: upstream #2474
     if (dispatchResult.level === "warning") {

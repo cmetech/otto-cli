@@ -1,5 +1,5 @@
 /**
- * /loop24 build-flow <description>
+ * /otto build-flow <description>
  *
  * Drives an agent turn that generates a LangFlow flow from natural language.
  * The agent gets:
@@ -18,10 +18,10 @@ import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-ag
 import { ensureRepoConventions } from "./_scaffold.js";
 import { loadReferenceDocs } from "./_system-context.js";
 
-const USAGE = `Usage: /loop24 build-flow <natural-language description of the flow>
+const USAGE = `Usage: /otto build-flow <natural-language description of the flow>
 
 Example:
-  /loop24 build-flow "summarize a chunk of text using ollama"
+  /otto build-flow "summarize a chunk of text using ollama"
 
 The agent will inspect the LangFlow component catalog, design a flow,
 validate the JSON, and write it under flows/generated/. Imports and
@@ -44,10 +44,10 @@ export function registerBuildFlowCommand(pi: ExtensionAPI): void {
           const bits: string[] = [];
           if (result.created.length > 0) bits.push(`created ${result.created.join(", ")}`);
           if (result.gitignoreUpdated) bits.push("updated .gitignore");
-          process.stderr.write(`[loop24 build-flow] ${bits.join("; ")}\n`);
+          process.stderr.write(`[otto build-flow] ${bits.join("; ")}\n`);
         }
       } catch (err) {
-        process.stderr.write(`[loop24 build-flow] scaffold failed: ${(err as Error).message}\n`);
+        process.stderr.write(`[otto build-flow] scaffold failed: ${(err as Error).message}\n`);
         return;
       }
 
@@ -56,7 +56,7 @@ export function registerBuildFlowCommand(pi: ExtensionAPI): void {
       try {
         referenceContext = await loadReferenceDocs();
       } catch (err) {
-        process.stderr.write(`[loop24 build-flow] could not load reference docs: ${(err as Error).message}\n`);
+        process.stderr.write(`[otto build-flow] could not load reference docs: ${(err as Error).message}\n`);
         return;
       }
 
@@ -95,7 +95,7 @@ export function registerBuildFlowCommand(pi: ExtensionAPI): void {
       // Fresh session for the build-flow task, then dispatch.
       const sessionResult = await ctx.newSession({ workspaceRoot: ctx.cwd });
       if (sessionResult.cancelled) {
-        process.stderr.write(`[loop24 build-flow] session creation cancelled\n`);
+        process.stderr.write(`[otto build-flow] session creation cancelled\n`);
         return;
       }
       pi.sendMessage(

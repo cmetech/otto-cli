@@ -1,5 +1,5 @@
 /**
- * System prompt for /loop24 prompt-engineer.
+ * System prompt for /otto prompt-engineer.
  *
  * Opinionated. Turns rough developer task descriptions into structured
  * prompts suitable for handing to a coding agent (Claude Code, GitHub

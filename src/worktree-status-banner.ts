@@ -145,6 +145,6 @@ export function showWorktreeStatusBanner(basePath: string): void {
     chalk.yellow(`${withChanges.length} worktree${withChanges.length === 1 ? '' : 's'} with unmerged changes: `) +
     names + '\n' +
     chalk.dim('[otto] ') +
-    chalk.dim('Resume: loop24 -w <name>  |  Merge: loop24 worktree merge <name>  |  List: loop24 worktree list\n\n'),
+    chalk.dim('Resume: otto -w <name>  |  Merge: otto worktree merge <name>  |  List: otto worktree list\n\n'),
   )
 }

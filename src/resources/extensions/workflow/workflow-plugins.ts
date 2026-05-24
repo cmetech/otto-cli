@@ -8,7 +8,7 @@
  *   oneshot         — prompt-only, no state or scaffolding
  *   yaml-step       — CustomWorkflowEngine run with GRAPH.yaml
  *   markdown-phase  — STATE.json + phase gates (current md template behavior)
- *   auto-milestone  — hooks into /loop24 auto pipeline (full-project only)
+ *   auto-milestone  — hooks into /otto auto pipeline (full-project only)
  *
  * Precedence: project > global > bundled. Same-named file wins.
  */

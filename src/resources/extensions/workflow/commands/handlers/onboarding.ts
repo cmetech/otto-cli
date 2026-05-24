@@ -1,4 +1,4 @@
-//  /loop24 onboarding command handler (re-entry hub)
+//  /otto onboarding command handler (re-entry hub)
 //
 // The first-run wizard in src/onboarding.ts uses @clack/prompts and takes over
 // raw stdin. Running it from inside the pi-coding-agent TUI wedges the TUI

@@ -2353,7 +2353,7 @@ export async function postUnitPostVerification(pctx: PostUnitContext): Promise<"
   }
 
   // Step mode → show wizard instead of dispatch.
-  // Without this notify(), /loop24 next finishes a unit and silently exits the
+  // Without this notify(), /otto next finishes a unit and silently exits the
   // loop, leaving the user with no next-step command.
   if (s.stepMode) {
     let phaseAfterUnit: string | null = null;

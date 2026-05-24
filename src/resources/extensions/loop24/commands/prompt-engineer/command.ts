@@ -1,5 +1,5 @@
 /**
- * /loop24 prompt-engineer <description>
+ * /otto prompt-engineer <description>
  *
  * One-shot LLM call. Takes a rough developer task description, returns a
  * polished prompt suitable for handing to a coding agent. Prints the
@@ -19,11 +19,11 @@ import type { TextBlock } from "@anthropic-ai/sdk/resources/messages/messages.js
 import { PROMPT_ENGINEER_SYSTEM } from "./_template.js";
 import { savePromptHistory } from "./_storage.js";
 
-const USAGE = `Usage: /loop24 prompt-engineer <rough task description>
+const USAGE = `Usage: /otto prompt-engineer <rough task description>
 
 Examples:
-  /loop24 prompt-engineer add caching to the search endpoint
-  /loop24 prompt-engineer refactor auth module to remove session tokens
+  /otto prompt-engineer add caching to the search endpoint
+  /otto prompt-engineer refactor auth module to remove session tokens
 
 Output: polished prompt printed to stdout; copy saved to ~/.loop24/prompts/.`;
 
@@ -52,7 +52,7 @@ async function runPromptEngineer(description: string): Promise<PromptEngineerRes
     if (!directApiKey) {
       throw new Error(
         "No LLM credentials configured. Set LOOP24_GATEWAY_URL (gateway mode) " +
-          "or ANTHROPIC_API_KEY (direct mode). See `loop24 config` for setup.",
+          "or ANTHROPIC_API_KEY (direct mode). See `otto config` for setup.",
       );
     }
     clientOpts = { apiKey: directApiKey };
@@ -95,7 +95,7 @@ export function registerPromptEngineerCommand(pi: ExtensionAPI): void {
       try {
         result = await runPromptEngineer(description);
       } catch (err) {
-        process.stderr.write(`[loop24 prompt-engineer] ${(err as Error).message}\n`);
+        process.stderr.write(`[otto prompt-engineer] ${(err as Error).message}\n`);
         return;
       }
 
@@ -107,10 +107,10 @@ export function registerPromptEngineerCommand(pi: ExtensionAPI): void {
           polished: result.polished,
           modelId: result.modelId,
         });
-        process.stderr.write(`[loop24 prompt-engineer] saved → ${savedPath}\n`);
+        process.stderr.write(`[otto prompt-engineer] saved → ${savedPath}\n`);
       } catch (err) {
         process.stderr.write(
-          `[loop24 prompt-engineer] save failed: ${(err as Error).message}\n`,
+          `[otto prompt-engineer] save failed: ${(err as Error).message}\n`,
         );
       }
     },

@@ -1,5 +1,5 @@
 /**
- * Repo conventions for /loop24 build-flow.
+ * Repo conventions for /otto build-flow.
  *
  * Idempotent. Creates four directories under the workspace and patches
  * .gitignore to keep the (regenerable) catalog cache out of source control.

@@ -146,7 +146,7 @@ export function setupEditorSubmitHandler(host: InteractiveModeStateHost & {
  * Drag-and-drop inserts paths like "/Users/name/Desktop/file.png" which
  * should be treated as plain text input, not a /Users command.
  *
- * Heuristic: a slash command is a single token like "/help" or "/loop24 auto".
+ * Heuristic: a slash command is a single token like "/help" or "/otto auto".
  * File paths have a second "/" within the first token (e.g., "/Users/...").
  */
 function looksLikeFilePath(text: string): boolean {

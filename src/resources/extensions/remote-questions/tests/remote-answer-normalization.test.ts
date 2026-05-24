@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 
 import { toRoundResultResponse } from "../manager.ts";
 import type { RemoteAnswer } from "../types.ts";
-import { isDepthConfirmationAnswer } from "../../gsd/bootstrap/write-gate.ts";
+import { isDepthConfirmationAnswer } from "../../workflow/bootstrap/write-gate.ts";
 
 const STANDARD_OPTIONS = [
   { label: "Yes, you got it (Recommended)" },

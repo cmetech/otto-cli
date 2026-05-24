@@ -6,6 +6,7 @@
  *   - Connection probes for gateway + langflow at session_start
  *   - Declarative LangFlow flow-trigger slash commands loaded from
  *     commands/flow-triggers/*.yaml
+ *   - LangFlow flow-builder tools + /loop24 build-flow command (Phase 4)
  */
 
 import { dirname, join } from "node:path";
@@ -14,6 +15,8 @@ import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent
 import { LangFlowClient } from "./clients/langflow.js";
 import { loadFlowTriggers } from "./commands/flow-triggers/_loader.js";
 import type { FlowTrigger, FlowTriggerInput } from "./commands/flow-triggers/_schema.js";
+import { registerLoop24Tools } from "./tools/_loader.js";
+import { registerBuildFlowCommand } from "./commands/build-flow/command.js";
 
 const _here = dirname(fileURLToPath(import.meta.url));
 const FLOW_TRIGGERS_DIR = join(_here, "commands", "flow-triggers");
@@ -126,6 +129,12 @@ export default function Loop24(pi: ExtensionAPI): void {
       process.stderr.write(`  ${yellow}langflow:${reset} ${dim}offline (${lfHost})${reset}\n`);
     }
   });
+
+  // ── Register flow-builder tools (Phase 4) ──
+  registerLoop24Tools(pi);
+
+  // ── Register /loop24 build-flow slash command (Phase 4) ──
+  registerBuildFlowCommand(pi);
 
   // ── Load and register flow-trigger slash commands ──
   // Fire-and-forget. Pi's command registry is dynamic; late registrations work.

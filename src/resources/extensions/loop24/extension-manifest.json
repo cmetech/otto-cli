@@ -1,11 +1,21 @@
 {
   "id": "loop24",
   "name": "LOOP24",
-  "version": "0.1.0",
-  "description": "LOOP24-specific services — gateway connection probe, future LangFlow flow triggers, brand banner and theme",
+  "version": "0.2.0",
+  "description": "LOOP24-specific services — gateway probe, LangFlow flow triggers (Phase 3), LangFlow flow builder (Phase 4)",
   "tier": "core",
   "requires": { "platform": ">=2.29.0" },
   "provides": {
-    "hooks": ["session_start"]
+    "hooks": ["session_start"],
+    "tools": [
+      "loop24__refresh_catalog",
+      "loop24__normalize_catalog",
+      "loop24__check_catalog_health",
+      "loop24__inspect_component",
+      "loop24__validate_flow",
+      "loop24__import_flow",
+      "loop24__smoke_test_flow"
+    ],
+    "commands": ["build-flow"]
   }
 }

@@ -11,7 +11,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { registerSearchTool, resetSearchLoopGuardState } from "../resources/extensions/search-the-web/tool-search.ts";
+import { registerSearchTool, resetSearchLoopGuardState, _setRateLimitTimestamps } from "../resources/extensions/search-the-web/tool-search.ts";
 import searchExtension from "../resources/extensions/search-the-web/index.ts";
 
 const ORIGINAL_ENV = {
@@ -285,8 +285,11 @@ test("session search budget blocks after MAX_SEARCHES_PER_SESSION varied queries
   assert.ok(tool, "search tool should be registered");
   const execute = tool.execute.bind(tool);
 
-  // Issue 15 unique queries — all should succeed (budget = 15)
+  // Issue 15 unique queries — all should succeed (budget = 15).
+  // Clear rate-limit timestamps between batches so the per-minute
+  // limiter doesn't interfere with the per-session budget test.
   for (let i = 1; i <= 15; i++) {
+    _setRateLimitTimestamps([]);
     const result = await callSearch(execute, `unique budget query ${i}`, `budget-${i}`);
     assert.notEqual(result.isError, true, `query ${i} should succeed within budget`);
   }
@@ -320,8 +323,9 @@ test("session search budget resets via resetSearchLoopGuardState", async (t) => 
   const tool = pi.getRegisteredTool();
   const execute = tool.execute.bind(tool);
 
-  // Exhaust budget
+  // Exhaust budget (clear rate-limit timestamps between batches)
   for (let i = 1; i <= 15; i++) {
+    _setRateLimitTimestamps([]);
     await callSearch(execute, `budget reset query ${i}`, `br-${i}`);
   }
   const exhausted = await callSearch(execute, "exhausted query", "br-exhausted");
@@ -331,4 +335,110 @@ test("session search budget resets via resetSearchLoopGuardState", async (t) => 
   resetSearchLoopGuardState();
   const fresh = await callSearch(execute, "fresh session query", "br-fresh");
   assert.notEqual(fresh.isError, true, "first query after reset should succeed");
+});
+
+// =============================================================================
+// Rate Limiting Tests
+// =============================================================================
+
+test("rate limiter blocks after 5 searches in 60-second window", async (t) => {
+  process.env.BRAVE_API_KEY = "test-key-rate-limit";
+  delete process.env.TAVILY_API_KEY;
+  delete process.env.OLLAMA_API_KEY;
+  const restoreFetch = mockFetch(makeBraveResponse());
+
+  t.after(() => {
+    restoreFetch();
+    restoreSearchEnv();
+  });
+
+  resetSearchLoopGuardState();
+  const pi = createMockPI();
+  registerSearchTool(pi as any);
+
+  const tool = pi.getRegisteredTool();
+  assert.ok(tool, "search tool should be registered");
+  const execute = tool.execute.bind(tool);
+
+  // 5 unique queries should all succeed (rate limit = 5 per 60s)
+  for (let i = 1; i <= 5; i++) {
+    const result = await callSearch(execute, `rate limit query ${i}`, `rl-${i}`);
+    assert.notEqual(result.isError, true, `query ${i} should succeed within rate limit`);
+  }
+
+  // Query 6: rate limited
+  const blocked = await callSearch(execute, "rate limit overflow", "rl-6");
+  assert.equal(blocked.isError, true, "query 6 should be rate limited");
+  assert.equal(blocked.details?.errorKind, "rate_limited");
+  assert.ok(
+    blocked.content[0].text.includes("Search rate limited"),
+    "error message should mention rate limiting"
+  );
+  assert.ok(
+    typeof blocked.details?.retryAfterMs === "number" && blocked.details.retryAfterMs > 0,
+    "should include retryAfterMs"
+  );
+});
+
+test("rate limiter allows requests after window expires", async (t) => {
+  process.env.BRAVE_API_KEY = "test-key-rate-limit-expire";
+  delete process.env.TAVILY_API_KEY;
+  delete process.env.OLLAMA_API_KEY;
+  const restoreFetch = mockFetch(makeBraveResponse());
+
+  t.after(() => {
+    restoreFetch();
+    restoreSearchEnv();
+  });
+
+  resetSearchLoopGuardState();
+  const pi = createMockPI();
+  registerSearchTool(pi as any);
+
+  const tool = pi.getRegisteredTool();
+  const execute = tool.execute.bind(tool);
+
+  // Inject 5 timestamps from 61 seconds ago (outside the 60s window)
+  const staleTimestamp = Date.now() - 61_000;
+  _setRateLimitTimestamps([
+    staleTimestamp, staleTimestamp, staleTimestamp, staleTimestamp, staleTimestamp,
+  ]);
+
+  // Should succeed — stale timestamps are outside the window
+  const result = await callSearch(execute, "after window expires", "rl-expire-1");
+  assert.notEqual(result.isError, true, "query after window expiry should succeed");
+});
+
+test("rate limiter resets via resetSearchLoopGuardState", async (t) => {
+  process.env.BRAVE_API_KEY = "test-key-rate-limit-reset";
+  delete process.env.TAVILY_API_KEY;
+  delete process.env.OLLAMA_API_KEY;
+  const restoreFetch = mockFetch(makeBraveResponse());
+
+  t.after(() => {
+    restoreFetch();
+    restoreSearchEnv();
+  });
+
+  resetSearchLoopGuardState();
+  const pi = createMockPI();
+  registerSearchTool(pi as any);
+
+  const tool = pi.getRegisteredTool();
+  const execute = tool.execute.bind(tool);
+
+  // Inject 5 recent timestamps to simulate a full window
+  const recentTimestamp = Date.now() - 1_000;
+  _setRateLimitTimestamps([
+    recentTimestamp, recentTimestamp, recentTimestamp, recentTimestamp, recentTimestamp,
+  ]);
+
+  // Should be rate limited
+  const blocked = await callSearch(execute, "rate reset blocked", "rl-reset-1");
+  assert.equal(blocked.isError, true, "should be rate limited before reset");
+
+  // Reset clears rate limit state
+  resetSearchLoopGuardState();
+  const fresh = await callSearch(execute, "rate reset fresh", "rl-reset-2");
+  assert.notEqual(fresh.isError, true, "should succeed after reset");
 });

@@ -115,11 +115,23 @@ let consecutiveDupeCount = 0;
 const MAX_SEARCHES_PER_SESSION = 15;
 let sessionTotalSearches = 0;
 
-/** Reset session-scoped search guard state (both duplicate and budget). */
+// Sliding-window rate limiter: max N requests per window.
+// Prevents bursts of rapid-fire API calls that exhaust provider quotas.
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 5;
+let rateLimitTimestamps: number[] = [];
+
+/** Reset session-scoped search guard state (duplicate, budget, and rate limit). */
 export function resetSearchLoopGuardState(): void {
   lastSearchKey = "";
   consecutiveDupeCount = 0;
   sessionTotalSearches = 0;
+  rateLimitTimestamps = [];
+}
+
+/** @internal — test-only: inject timestamps into the rate limiter. */
+export function _setRateLimitTimestamps(timestamps: number[]): void {
+  rateLimitTimestamps = timestamps;
 }
 
 // Summarizer responses: max 50 entries, 15-minute TTL
@@ -374,6 +386,22 @@ export function registerSearchTool(pi: ExtensionAPI) {
         };
       }
 
+      // ------------------------------------------------------------------
+      // Sliding-window rate limit
+      // ------------------------------------------------------------------
+      const now = Date.now();
+      rateLimitTimestamps = rateLimitTimestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+      if (rateLimitTimestamps.length >= RATE_LIMIT_MAX_REQUESTS) {
+        const oldestInWindow = rateLimitTimestamps[0];
+        const retryAfterMs = RATE_LIMIT_WINDOW_MS - (now - oldestInWindow);
+        const retryAfterSec = Math.ceil(retryAfterMs / 1000);
+        return {
+          content: [{ type: "text" as const, text: `⚠️ Search rate limited: ${RATE_LIMIT_MAX_REQUESTS} searches in the last 60 seconds. Wait ${retryAfterSec}s before searching again. Use previous search results to continue your work.` }],
+          isError: true,
+          details: { errorKind: "rate_limited", error: `Client rate limit: ${RATE_LIMIT_MAX_REQUESTS} requests per ${RATE_LIMIT_WINDOW_MS / 1000}s`, retryAfterMs } satisfies Partial<SearchDetails>,
+        };
+      }
+
       const count = params.count ?? 5;
       const wantSummary = params.summary ?? false;
 
@@ -429,6 +457,7 @@ export function registerSearchTool(pi: ExtensionAPI) {
 
       // Count every search that passes the guards toward the session budget.
       sessionTotalSearches++;
+      rateLimitTimestamps.push(Date.now());
 
       const cached = searchCache.get(cacheKey);
 

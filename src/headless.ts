@@ -17,7 +17,7 @@ import { join } from 'node:path'
 import { resolve } from 'node:path'
 import { ChildProcess } from 'node:child_process'
 
-import { RpcClient, SessionManager } from '@gsd/pi-coding-agent'
+import { RpcClient, SessionManager, COMMAND_NAMESPACE } from '@gsd/pi-coding-agent'
 import type { SessionInfo } from '@gsd/pi-coding-agent'
 import { getProjectSessionsDir } from './project-sessions.js'
 import { loadAndValidateAnswerFile, AnswerInjector } from './headless-answers.js'
@@ -92,7 +92,7 @@ export function buildHeadlessSlashCommand(options: Pick<HeadlessOptions, 'comman
   if (options.command === 'new-milestone' && options.auto && !commandArgs.includes(HEADLESS_CHAIN_AUTO_FLAG)) {
     commandArgs.push(HEADLESS_CHAIN_AUTO_FLAG)
   }
-  return `/gsd ${options.command}${commandArgs.length > 0 ? ' ' + commandArgs.join(' ') : ''}`
+  return `/${COMMAND_NAMESPACE} ${options.command}${commandArgs.length > 0 ? ' ' + commandArgs.join(' ') : ''}`
 }
 
 /**
@@ -999,7 +999,7 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
     })
 
     try {
-      await client.prompt('/gsd auto')
+      await client.prompt(`/${COMMAND_NAMESPACE} auto`)
     } catch (err) {
       process.stderr.write(`[headless] Error: Failed to start auto-mode: ${err instanceof Error ? err.message : String(err)}\n`)
       exitCode = EXIT_ERROR

@@ -31,10 +31,10 @@ if (existsSync(agentsMdSrc)) {
   copied.push('AGENTS.md')
 }
 
-const workflowSrc = join(resourcesDir, 'GSD-WORKFLOW.md')
+const workflowSrc = join(resourcesDir, 'WORKFLOW.md')
 if (existsSync(workflowSrc)) {
-  writeFileSync(join(piRoot, 'GSD-WORKFLOW.md'), readFileSync(workflowSrc))
-  copied.push('GSD-WORKFLOW.md')
+  writeFileSync(join(piRoot, 'WORKFLOW.md'), readFileSync(workflowSrc))
+  copied.push('WORKFLOW.md')
 }
 
 process.stdout.write(

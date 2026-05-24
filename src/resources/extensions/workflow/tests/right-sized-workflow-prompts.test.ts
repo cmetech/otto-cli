@@ -115,7 +115,7 @@ test("plan-milestone standard prompt keeps project and decisions on-demand", asy
 });
 
 test("workflow docs no longer contain blanket 4-10 slice guidance", () => {
-  const docs = readFileSync(join(process.cwd(), "src", "resources", "GSD-WORKFLOW.md"), "utf-8");
+  const docs = readFileSync(join(process.cwd(), "src", "resources", "WORKFLOW.md"), "utf-8");
   assert.doesNotMatch(docs, /4-10 slices/);
   assert.match(docs, /1-10 slices/);
   assert.match(docs, /single-file/);

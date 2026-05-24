@@ -79,7 +79,7 @@ async function fetchLatestVersionForCommand(): Promise<string | null> {
 }
 
 export function dispatchDoctorHeal(pi: ExtensionAPI, scope: string | undefined, reportText: string, structuredIssues: string): void {
-  const workflowPath = process.env.GSD_WORKFLOW_PATH ?? join(gsdHome(), "agent", "GSD-WORKFLOW.md");
+  const workflowPath = process.env.LOOP24_WORKFLOW_PATH ?? process.env.GSD_WORKFLOW_PATH ?? join(gsdHome(), "agent", "WORKFLOW.md");
   const workflow = readFileSync(workflowPath, "utf-8");
   const prompt = loadPrompt("doctor-heal", {
     doctorSummary: buildDoctorHealSummary(reportText),
@@ -273,7 +273,7 @@ export async function handleTriage(ctx: ExtensionCommandContext, pi: ExtensionAP
     roadmapContext: roadmapContext || "(no active roadmap)",
   });
 
-  const workflowPath = process.env.GSD_WORKFLOW_PATH ?? join(gsdHome(), "agent", "GSD-WORKFLOW.md");
+  const workflowPath = process.env.LOOP24_WORKFLOW_PATH ?? process.env.GSD_WORKFLOW_PATH ?? join(gsdHome(), "agent", "WORKFLOW.md");
   const workflow = readFileSync(workflowPath, "utf-8");
   const savedTools = scopeGsdWorkflowToolsForDispatch(pi);
 

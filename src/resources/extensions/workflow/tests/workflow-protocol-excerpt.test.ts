@@ -13,9 +13,9 @@ import {
 
 test("workflow protocol helper emits capped excerpt plus source path", () => {
   const workflow = `# Protocol\n${"FULL_WORKFLOW_BODY ".repeat(500)}`;
-  const excerpt = buildWorkflowProtocolExcerpt(workflow, "/tmp/GSD-WORKFLOW.md", { maxChars: 1200 });
+  const excerpt = buildWorkflowProtocolExcerpt(workflow, "/tmp/WORKFLOW.md", { maxChars: 1200 });
 
-  assert.match(excerpt, /Source: `\/tmp\/GSD-WORKFLOW\.md`/);
+  assert.match(excerpt, /Source: `\/tmp\/WORKFLOW\.md`/);
   assert.match(excerpt, /\[Workflow Protocol Truncated\]/);
   assert.ok(excerpt.length < workflow.length);
   assert.ok(excerpt.length < 1600);
@@ -25,7 +25,7 @@ test("workflow dispatch uses excerpt instead of full workflow body", () => {
   const workflow = `# Protocol\n${"FULL_WORKFLOW_BODY ".repeat(500)}`;
   const content = buildWorkflowDispatchContent({
     workflow,
-    workflowPath: "/tmp/GSD-WORKFLOW.md",
+    workflowPath: "/tmp/WORKFLOW.md",
     task: "Run the selected unit.",
     maxProtocolChars: 1200,
   });
@@ -54,7 +54,7 @@ test("workflow protocol excerpt includes late verification and advance rules", (
     "advance rules",
   ].join("\n");
 
-  const excerpt = buildWorkflowProtocolExcerpt(workflow, "/tmp/GSD-WORKFLOW.md", { maxChars: 1300 });
+  const excerpt = buildWorkflowProtocolExcerpt(workflow, "/tmp/WORKFLOW.md", { maxChars: 1300 });
 
   assert.match(excerpt, /Quick Start/);
   assert.match(excerpt, /Phase 5: Verify/);

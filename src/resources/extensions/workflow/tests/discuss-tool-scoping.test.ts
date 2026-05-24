@@ -96,7 +96,7 @@ describe("discuss tool scoping (#2949)", () => {
   test("dispatchWorkflow scopes and restores tools for discuss unit types", async () => {
     const originalWorkflowPath = process.env.GSD_WORKFLOW_PATH;
     const tmp = mkdtempSync(join(tmpdir(), "gsd-discuss-tools-"));
-    const workflowPath = join(tmp, "GSD-WORKFLOW.md");
+    const workflowPath = join(tmp, "WORKFLOW.md");
     writeFileSync(workflowPath, "# Workflow\n");
     const setCalls: string[][] = [];
     const sent: unknown[] = [];

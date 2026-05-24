@@ -110,6 +110,7 @@ function getBundledWorkflowMcpCliPath(env: NodeJS.ProcessEnv): string | null {
   const envAnchors = [
     env.GSD_BIN_PATH?.trim(),
     env.GSD_CLI_PATH?.trim(),
+    env.LOOP24_WORKFLOW_PATH?.trim(),
     env.GSD_WORKFLOW_PATH?.trim(),
   ].filter((value): value is string => typeof value === "string" && value.length > 0);
 

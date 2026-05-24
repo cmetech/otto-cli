@@ -12,7 +12,7 @@ import { _dispatchWorkflowForTest } from "../guided-flow.ts";
 
 test("discuss workflow scopes tools for the queued turn and restores the full tool set", async () => {
   const dir = mkdtempSync(join(tmpdir(), "gsd-discuss-tools-"));
-  const workflowPath = join(dir, "GSD-WORKFLOW.md");
+  const workflowPath = join(dir, "WORKFLOW.md");
   const originalWorkflowPath = process.env.GSD_WORKFLOW_PATH;
   const originalTools = [
     "gsd_task_complete",

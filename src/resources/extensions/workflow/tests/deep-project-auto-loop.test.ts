@@ -191,7 +191,7 @@ async function runNewProjectCommand(base: string, command: string): Promise<unkn
   const previousGsdHome = process.env.GSD_HOME;
   const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
   const previousProjectRoot = process.env.GSD_PROJECT_ROOT;
-  const workflowPath = join(base, "GSD-WORKFLOW.md");
+  const workflowPath = join(base, "WORKFLOW.md");
   writeFileSync(workflowPath, "# Test Workflow\n");
 
   try {
@@ -225,7 +225,7 @@ async function runBareGsdCommand(base: string): Promise<unknown[]> {
   const previousGsdHome = process.env.GSD_HOME;
   const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
   const previousProjectRoot = process.env.GSD_PROJECT_ROOT;
-  const workflowPath = join(base, "GSD-WORKFLOW.md");
+  const workflowPath = join(base, "WORKFLOW.md");
   writeFileSync(workflowPath, "# Test Workflow\n");
 
   try {
@@ -753,11 +753,11 @@ test("deep project setup: new-project --deep uses cwd when nested inside a paren
   execFileSync("git", ["config", "user.email", "test@test.com"], { cwd: parent });
   execFileSync("git", ["config", "user.name", "Test"], { cwd: parent });
   writeFileSync(join(child, "package.json"), '{"name":"nested-app"}\n');
-  writeFileSync(join(child, "GSD-WORKFLOW.md"), "# Test Workflow\n");
+  writeFileSync(join(child, "WORKFLOW.md"), "# Test Workflow\n");
 
   try {
     process.env.GSD_HOME = join(child, ".test-gsd-home");
-    process.env.GSD_WORKFLOW_PATH = join(child, "GSD-WORKFLOW.md");
+    process.env.GSD_WORKFLOW_PATH = join(child, "WORKFLOW.md");
     delete process.env.GSD_PROJECT_ROOT;
     process.chdir(child);
 
@@ -812,7 +812,7 @@ test("deep project setup: new-project --deep uses cwd when nested inside a paren
 test("deep project setup: new-project asks interview stages in foreground", async () => {
   const base = makeBase();
   const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
-  process.env.GSD_WORKFLOW_PATH = join(base, "GSD-WORKFLOW.md");
+  process.env.GSD_WORKFLOW_PATH = join(base, "WORKFLOW.md");
   writeFileSync(process.env.GSD_WORKFLOW_PATH, "# Test Workflow\n");
 
   try {
@@ -959,7 +959,7 @@ test("deep project setup: unrelated agent_end sessions do not advance pending se
   const base = makeBase();
   const otherBase = makeBase();
   const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
-  process.env.GSD_WORKFLOW_PATH = join(base, "GSD-WORKFLOW.md");
+  process.env.GSD_WORKFLOW_PATH = join(base, "WORKFLOW.md");
   writeFileSync(process.env.GSD_WORKFLOW_PATH, "# Test Workflow\n");
 
   try {
@@ -1007,7 +1007,7 @@ test("deep project setup: unrelated agent_end sessions do not advance pending se
 test("deep project setup: same project advances when agent_end session id changes", async () => {
   const base = makeBase();
   const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
-  process.env.GSD_WORKFLOW_PATH = join(base, "GSD-WORKFLOW.md");
+  process.env.GSD_WORKFLOW_PATH = join(base, "WORKFLOW.md");
   writeFileSync(process.env.GSD_WORKFLOW_PATH, "# Test Workflow\n");
 
   try {
@@ -1276,7 +1276,7 @@ test("deep project setup: research-project supervision timeout is capped narrowl
 test("deep project setup: empty legacy pseudo-milestone dirs do not block first real milestone", async () => {
   const base = makeBase();
   const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
-  const workflowPath = join(base, "GSD-WORKFLOW.md");
+  const workflowPath = join(base, "WORKFLOW.md");
   try {
     writeFileSync(workflowPath, "# Test Workflow\n");
     process.env.GSD_WORKFLOW_PATH = workflowPath;

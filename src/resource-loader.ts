@@ -572,7 +572,7 @@ function pruneRemovedBundledExtensions(
  *
  * - extensions/ → ~/.loop24/agent/extensions/   (overwrite when version changes)
  * - agents/     → ~/.loop24/agent/agents/        (overwrite when version changes)
- * - GSD-WORKFLOW.md → ~/.loop24/agent/GSD-WORKFLOW.md (fallback for env var miss)
+ * - WORKFLOW.md → ~/.loop24/agent/WORKFLOW.md (fallback for env var miss)
  *
  * Skills are NOT synced here. They are installed by the user via the
  * skills.sh CLI (`npx skills add <repo>`) into ~/.agents/skills/ — the
@@ -626,11 +626,11 @@ export function initResources(agentDir: string, skillsDir: string = join(homedir
   syncResourceDir(join(resourcesDir, 'agents'), join(agentDir, 'agents'))
   syncResourceDir(join(resourcesDir, 'skills'), skillsDir)
 
-  // Sync GSD-WORKFLOW.md to agentDir as a fallback for when GSD_WORKFLOW_PATH
-  // env var is not set (e.g. fork/dev builds, alternative entry points).
-  const workflowSrc = join(resourcesDir, 'GSD-WORKFLOW.md')
+  // Sync WORKFLOW.md to agentDir as a fallback for when LOOP24_WORKFLOW_PATH /
+  // GSD_WORKFLOW_PATH env var is not set (e.g. fork/dev builds, alternative entry points).
+  const workflowSrc = join(resourcesDir, 'WORKFLOW.md')
   if (existsSync(workflowSrc)) {
-    try { copyFileSync(workflowSrc, join(agentDir, 'GSD-WORKFLOW.md')) } catch { /* non-fatal */ }
+    try { copyFileSync(workflowSrc, join(agentDir, 'WORKFLOW.md')) } catch { /* non-fatal */ }
   }
 
   // Ensure all newly copied files are owner-writable so the next run can

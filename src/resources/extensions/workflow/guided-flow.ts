@@ -1015,7 +1015,7 @@ export function resolveGuidedDispatchProjectRoot(basePath?: string): string {
 }
 
 /**
- * Read GSD-WORKFLOW.md and dispatch it to the LLM with a contextual note.
+ * Read WORKFLOW.md and dispatch it to the LLM with a contextual note.
  * This is the only way the wizard triggers work — everything else is the LLM's job.
  *
  * When a unitType is provided, resolves the user's model preference for that
@@ -1114,7 +1114,7 @@ async function dispatchWorkflow(
       savedTools = scopeGsdWorkflowToolsForDispatch(pi, unitType) ?? savedTools;
     }
 
-    const workflowPath = process.env.GSD_WORKFLOW_PATH ?? join(gsdHome(), "agent", "GSD-WORKFLOW.md");
+    const workflowPath = process.env.LOOP24_WORKFLOW_PATH ?? process.env.GSD_WORKFLOW_PATH ?? join(gsdHome(), "agent", "WORKFLOW.md");
     const workflow = readFileSync(workflowPath, "utf-8");
 
     if (unitType) setGuidedUnitContext(projectRoot, unitType);

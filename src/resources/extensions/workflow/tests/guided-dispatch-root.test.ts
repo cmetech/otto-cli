@@ -21,7 +21,7 @@ test("guided dispatch falls back to cwd only when no project root is supplied", 
 test("guided dispatch passes the explicit project root through model and compatibility checks", async () => {
   const explicitRoot = mkdtempSync(join(tmpdir(), "gsd-guided-root-explicit-"));
   const otherRoot = mkdtempSync(join(tmpdir(), "gsd-guided-root-cwd-"));
-  const workflowPath = join(explicitRoot, "GSD-WORKFLOW.md");
+  const workflowPath = join(explicitRoot, "WORKFLOW.md");
   const originalWorkflowPath = process.env.GSD_WORKFLOW_PATH;
   const originalCwd = process.cwd();
   const seen = {

@@ -166,11 +166,14 @@ process.env.GSD_VERSION = gsdVersion
 // src/loader.ts, because child processes need the --import resolve-ts wrapper.
 applyLoaderCliEntrypointEnv(process.env, { gsdRoot, invokedBinPath: process.argv[1] })
 
-// GSD_WORKFLOW_PATH — absolute path to bundled GSD-WORKFLOW.md, used by patched workflow extension
+// LOOP24_WORKFLOW_PATH — absolute path to bundled WORKFLOW.md, used by patched workflow extension
 // when dispatching workflow prompts. Prefers dist/resources/ (stable, set at build time)
 // over src/resources/ (live working tree) — see resource-loader.ts for rationale.
+// GSD_WORKFLOW_PATH kept as fallback during identifier-erasure transition.
 const resourcesDir = resolveBundledResourcesDirFromPackageRoot(gsdRoot)
-process.env.GSD_WORKFLOW_PATH = join(resourcesDir, 'GSD-WORKFLOW.md')
+const workflowPath = join(resourcesDir, 'WORKFLOW.md')
+process.env.LOOP24_WORKFLOW_PATH = workflowPath
+process.env.GSD_WORKFLOW_PATH = workflowPath
 
 // GSD_BUNDLED_EXTENSION_PATHS — dynamically discovered bundled extension entry points.
 // Uses the shared discoverExtensionEntryPaths() to scan the bundled resources

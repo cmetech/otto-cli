@@ -57,7 +57,7 @@ removeResourceEntries('extensions')
 removeResourceEntries('skills')
 removeResourceEntries('agents')
 removeIfContentMatches(join(piAgentDir, 'AGENTS.md'), join(resourcesDir, 'AGENTS.md'), 'agent/AGENTS.md')
-removeIfContentMatches(join(piRoot, 'GSD-WORKFLOW.md'), join(resourcesDir, 'GSD-WORKFLOW.md'), 'GSD-WORKFLOW.md')
+removeIfContentMatches(join(piRoot, 'WORKFLOW.md'), join(resourcesDir, 'WORKFLOW.md'), 'WORKFLOW.md')
 
 process.stdout.write(
   `Removed GSD resources from ${piRoot}\n` +

@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 
 import { deriveState } from "../state.js";
 import { resolveMilestoneFile } from "../paths.js";
-import { closeDatabase, insertMilestone, openDatabase } from "../gsd-db.js";
+import { closeDatabase, insertMilestone, openDatabase } from "../db.js";
 
 function writeDraftOnlyMilestone(base: string): void {
   const milestoneDir = join(base, ".gsd", "milestones", "M001");

@@ -242,7 +242,7 @@ export function milestoneRowToScopeInput(row: {
  */
 export async function getMilestonePipelineVariant(mid: string): Promise<PipelineVariant | null> {
   try {
-    const { isDbAvailable, getMilestone } = await import("./gsd-db.js");
+    const { isDbAvailable, getMilestone } = await import("./db.js");
     if (!isDbAvailable()) return null;
     const row = getMilestone(mid);
     if (!row) return null;

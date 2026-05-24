@@ -27,7 +27,7 @@ import { createHash } from "node:crypto";
 import { parse as parseYaml } from "yaml";
 
 import { validateDefinition } from "./definition-loader.js";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 
 // ─── Constants ───────────────────────────────────────────────────────────
 

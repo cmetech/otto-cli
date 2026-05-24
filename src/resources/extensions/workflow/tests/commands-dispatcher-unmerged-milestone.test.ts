@@ -11,7 +11,7 @@ import {
   closeDatabase,
   insertMilestone,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { invalidateStateCache } from "../state.ts";
 import { cleanup, git, makeTempRepo } from "./test-utils.ts";
 

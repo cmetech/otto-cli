@@ -51,7 +51,7 @@ export async function handleCleanupBranches(ctx: ExtensionCommandContext, basePa
     const { loadFile } = await import("./files.js");
     const { parseRoadmap } = await import("./parsers-legacy.js");
     const { isMilestoneComplete } = await import("./state.js");
-    const { isDbAvailable, getMilestone } = await import("./gsd-db.js");
+    const { isDbAvailable, getMilestone } = await import("./db.js");
 
     const attachedBranches = new Set(
       listWorktrees(basePath).map((wt) => wt.branch),
@@ -489,7 +489,7 @@ export async function handleCleanupProjects(args: string, ctx: ExtensionCommandC
  * Prints counts of recovered items and the resulting project phase.
  */
 export async function handleRecover(ctx: ExtensionCommandContext, basePath: string): Promise<void> {
-  const { isDbAvailable: dbAvailable, clearEngineHierarchy, transaction: dbTransaction } = await import("./gsd-db.js");
+  const { isDbAvailable: dbAvailable, clearEngineHierarchy, transaction: dbTransaction } = await import("./db.js");
   const { migrateHierarchyToDb } = await import("./md-importer.js");
   const { invalidateStateCache } = await import("./state.js");
 

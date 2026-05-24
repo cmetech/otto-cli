@@ -37,7 +37,7 @@ import {
 import { forceReleaseLeasesForWorker } from "./db/milestone-leases.js";
 import { markLatestActiveForWorkerCanceled, type DispatchStatus } from "./db/unit-dispatches.js";
 import { getRuntimeKv, setRuntimeKv, deleteRuntimeKv } from "./db/runtime-kv.js";
-import { _getAdapter, isDbAvailable } from "./gsd-db.js";
+import { _getAdapter, isDbAvailable } from "./db.js";
 import { gsdRoot, normalizeRealPath } from "./paths.js";
 import { atomicWriteSync } from "./atomic-write.js";
 import { effectiveLockFile } from "./session-lock.js";

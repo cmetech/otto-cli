@@ -19,7 +19,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "nod
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { recoverTimedOutUnit, type RecoveryContext } from "../auto-timeout-recovery.ts";
-import { closeDatabase, insertMilestone, insertSlice, insertTask, openDatabase } from "../gsd-db.ts";
+import { closeDatabase, insertMilestone, insertSlice, insertTask, openDatabase } from "../db.ts";
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 

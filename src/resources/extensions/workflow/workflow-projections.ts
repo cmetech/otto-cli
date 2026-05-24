@@ -12,7 +12,7 @@ import {
   getMilestoneSlices,
   getSliceTasks,
   getVerificationEvidence,
-} from "./gsd-db.js";
+} from "./db.js";
 import type { MilestoneRow } from "./db-milestone-artifact-rows.js";
 import type { SliceRow, TaskRow } from "./db-task-slice-rows.js";
 import type { VerificationEvidenceRow } from "./db-verification-evidence-rows.js";

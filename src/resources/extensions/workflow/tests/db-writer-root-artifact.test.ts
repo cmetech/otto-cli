@@ -19,7 +19,7 @@ import {
   saveArtifactToDbByScope,
   saveArtifactToDbForWorkspace,
 } from "../db-writer.ts";
-import { openDatabase, closeDatabase } from "../gsd-db.ts";
+import { openDatabase, closeDatabase } from "../db.ts";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

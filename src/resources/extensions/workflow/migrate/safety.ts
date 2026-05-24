@@ -7,7 +7,7 @@ import { homedir } from "node:os";
 
 import { ensureDbOpen } from "../bootstrap/dynamic-tools.js";
 import { readCrashLock, isLockProcessAlive } from "../crash-recovery.js";
-import { closeDatabase } from "../gsd-db.js";
+import { closeDatabase } from "../db.js";
 import { readPausedSessionMetadata } from "../interrupted-session.js";
 import { gsdRoot } from "../paths.js";
 import type { MigrationPreview } from "./writer.js";

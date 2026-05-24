@@ -299,7 +299,7 @@ test('writeBlockerPlaceholder: updates DB task status for execute-task (#2531)',
   const base = createFixtureBase();
   try {
     const { openDatabase, closeDatabase, insertMilestone, insertSlice, insertTask, getTask, isDbAvailable } =
-      await import("../../gsd-db.ts");
+      await import("../../db.ts");
 
     const dbPath = join(base, ".gsd", "gsd.db");
     // Create the tasks directory (required for artifact path resolution)
@@ -334,7 +334,7 @@ test('writeBlockerPlaceholder: does NOT update DB for non-execute-task types', a
   const base = createFixtureBase();
   try {
     const { openDatabase, closeDatabase, insertMilestone, insertSlice, getSlice, isDbAvailable } =
-      await import("../../gsd-db.ts");
+      await import("../../db.ts");
 
     const dbPath = join(base, ".gsd", "gsd.db");
     mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
@@ -369,7 +369,7 @@ test('writeBlockerPlaceholder: updates execute-task plan checkbox after DB recov
       insertTask,
       getTask,
       isDbAvailable,
-    } = await import("../../gsd-db.ts");
+    } = await import("../../db.ts");
 
     const dbPath = join(base, ".gsd", "gsd.db");
     const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
@@ -413,7 +413,7 @@ test('writeBlockerPlaceholder: updates DB slice status for complete-slice (#2653
   const base = createFixtureBase();
   try {
     const { openDatabase, closeDatabase, insertMilestone, insertSlice, getSlice, isDbAvailable } =
-      await import("../../gsd-db.ts");
+      await import("../../db.ts");
 
     const dbPath = join(base, ".gsd", "gsd.db");
     mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
@@ -447,7 +447,7 @@ test('writeBlockerPlaceholder: inserts placeholder slice for plan-milestone so d
   const base = createFixtureBase();
   try {
     const { openDatabase, closeDatabase, insertMilestone, getMilestoneSlices, isDbAvailable } =
-      await import("../../gsd-db.ts");
+      await import("../../db.ts");
 
     const dbPath = join(base, ".gsd", "gsd.db");
     mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });

@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { _getAdapter, closeDatabase, openDatabase } from '../gsd-db.ts';
+import { _getAdapter, closeDatabase, openDatabase } from '../db.ts';
 import {
   createMemorySource,
   deleteMemorySource,

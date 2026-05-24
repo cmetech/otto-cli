@@ -7,7 +7,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { visibleWidth, truncateToWidth } from "@gsd/pi-tui";
 import { loadEffectiveGSDPreferences } from "../preferences.js";
-import { gsdHome } from "../gsd-home.js";
+import { gsdHome } from "../home.js";
 import { splashPalette } from "./splash-palette.js";
 
 // ─── Constants ────────────────────────────────────────────────────────────────

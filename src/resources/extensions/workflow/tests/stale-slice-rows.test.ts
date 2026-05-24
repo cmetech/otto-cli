@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 import { deriveState, invalidateStateCache } from "../state.ts";
-import { closeDatabase, insertMilestone, insertSlice, openDatabase } from "../gsd-db.ts";
+import { closeDatabase, insertMilestone, insertSlice, openDatabase } from "../db.ts";
 
 let tempBase: string | null = null;
 

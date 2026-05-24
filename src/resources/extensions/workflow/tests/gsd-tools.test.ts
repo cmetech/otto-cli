@@ -16,7 +16,7 @@ import {
   getRequirementById,
   _getAdapter,
   insertArtifact,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import {
   saveDecisionToDb,
   updateRequirementInDb,

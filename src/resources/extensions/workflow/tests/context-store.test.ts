@@ -9,7 +9,7 @@ import {
   insertDecision,
   insertRequirement,
   insertArtifact,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import {
   queryDecisions,
   queryRequirements,

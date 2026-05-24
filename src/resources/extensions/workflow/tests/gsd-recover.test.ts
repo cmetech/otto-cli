@@ -21,7 +21,7 @@ import {
   getMilestone,
   getSlice,
   getTask,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import { migrateHierarchyToDb } from '../md-importer.ts';
 import { deriveStateFromDb, invalidateStateCache } from '../state.ts';
 // ─── Fixture Helpers ───────────────────────────────────────────────────────

@@ -20,7 +20,7 @@ import {
   insertMilestone,
   insertSlice,
   insertTask,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 function createFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-stale-milestone-"));

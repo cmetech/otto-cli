@@ -3,7 +3,7 @@
 import { resolveMilestoneFile } from "./paths.js";
 import { findMilestoneIds } from "./guided-flow.js";
 import { parseUnitId } from "./unit-id.js";
-import { isDbAvailable, getMilestoneSlices, getMilestone } from "./gsd-db.js";
+import { isDbAvailable, getMilestoneSlices, getMilestone } from "./db.js";
 import { parseRoadmap } from "./parsers-legacy.js";
 import { isClosedStatus, isSkippedForDispatch } from "./status-guards.js";
 import { classifyMilestoneSummaryContent } from "./milestone-summary-classifier.js";

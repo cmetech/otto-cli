@@ -16,7 +16,7 @@ import {
   insertMilestone,
   getMilestone,
   upsertMilestonePlanning,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 test("upsertMilestonePlanning updates title when DB row pre-exists with empty title (#2879)", () => {
   try {

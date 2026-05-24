@@ -7,8 +7,8 @@ import { existsSync, mkdtempSync, mkdirSync, rmSync, readFileSync, writeFileSync
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { regenerateIfMissing, renderPlanContent, renderStateProjection } from '../workflow-projections.ts';
-import type { SliceRow, TaskRow } from '../gsd-db.ts';
-import { closeDatabase, insertMilestone, insertSlice, insertTask, openDatabase } from '../gsd-db.ts';
+import type { SliceRow, TaskRow } from '../db.ts';
+import { closeDatabase, insertMilestone, insertSlice, insertTask, openDatabase } from '../db.ts';
 import { clearPathCache, _clearGsdRootCache } from '../paths.ts';
 import { invalidateStateCache } from '../state.ts';
 import { clearParseCache } from '../files.ts';

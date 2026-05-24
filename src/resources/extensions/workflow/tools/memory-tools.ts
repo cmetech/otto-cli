@@ -9,7 +9,7 @@
 //   - memory_query    → keyword-filtered, score-ranked listing of active memories
 //   - gsd_graph       → returns a memory and its supersedes edges only (Phase 4 adds memory_relations)
 
-import { _getAdapter, isDbAvailable } from "../gsd-db.js";
+import { _getAdapter, isDbAvailable } from "../db.js";
 import {
   createMemory,
   getActiveMemoriesRanked,

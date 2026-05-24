@@ -26,7 +26,7 @@ import {
   insertArtifact,
   isDbAvailable,
   _getAdapter,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 afterEach(() => {
   if (isDbAvailable()) {

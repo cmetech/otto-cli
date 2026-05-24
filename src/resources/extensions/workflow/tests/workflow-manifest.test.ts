@@ -13,7 +13,7 @@ import {
   insertSlice,
   insertTask,
   _getAdapter,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import {
   writeManifest,
   readManifest,

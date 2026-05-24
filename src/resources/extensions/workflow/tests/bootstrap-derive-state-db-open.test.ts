@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 import { ensureDbOpen } from "../bootstrap/dynamic-tools.ts";
-import { closeDatabase, isDbAvailable } from "../gsd-db.ts";
+import { closeDatabase, isDbAvailable } from "../db.ts";
 
 afterEach(() => {
   if (isDbAvailable()) closeDatabase();

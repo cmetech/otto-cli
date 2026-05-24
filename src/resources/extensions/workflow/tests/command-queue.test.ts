@@ -6,7 +6,7 @@ import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { openDatabase, closeDatabase } from "../gsd-db.ts";
+import { openDatabase, closeDatabase } from "../db.ts";
 import {
   enqueueCommand,
   claimNextCommand,

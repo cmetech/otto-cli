@@ -7,7 +7,7 @@
 
 import { existsSync } from "node:fs";
 
-import { getMilestone, isDbAvailable } from "../../gsd-db.js";
+import { getMilestone, isDbAvailable } from "../../db.js";
 import { findMilestoneIds } from "../../milestone-ids.js";
 import { resolveMilestoneFile } from "../../paths.js";
 import type { GSDState } from "../../types.js";

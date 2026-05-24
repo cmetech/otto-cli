@@ -23,7 +23,7 @@ import {
   insertTask,
   insertArtifact,
   updateSliceStatus,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { isDeferredStatus } from "../status-guards.ts";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -177,7 +177,7 @@ describe("deferred-slice-dispatch (#2661)", () => {
 `);
 
       const { saveDecisionToDb } = await import("../db-writer.ts");
-      const { getSlice } = await import("../gsd-db.ts");
+      const { getSlice } = await import("../db.ts");
 
       // Save a deferral decision that references M001/S03
       await saveDecisionToDb(

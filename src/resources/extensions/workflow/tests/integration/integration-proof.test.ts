@@ -50,7 +50,7 @@ import {
   transaction,
   isDbAvailable,
   _getAdapter,
-} from "../../gsd-db.ts";
+} from "../../db.ts";
 
 // ── Tool handlers ─────────────────────────────────────────────────────────
 import { handleCompleteTask } from "../../tools/complete-task.ts";

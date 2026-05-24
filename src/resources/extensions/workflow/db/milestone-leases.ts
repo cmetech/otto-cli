@@ -19,7 +19,7 @@ import {
   isDbAvailable,
   transaction,
   insertAuditEvent,
-} from "../gsd-db.js";
+} from "../db.js";
 
 const LEASE_TTL_SECONDS = 60;
 

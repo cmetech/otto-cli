@@ -31,7 +31,7 @@ import {
   closeDatabase,
   openDatabase,
   getDbPath,
-} from "./gsd-db.js";
+} from "./db.js";
 import { atomicWriteSync } from "./atomic-write.js";
 import { execFileSync } from "node:child_process";
 import { gsdRoot, resolveGsdPathContract } from "./paths.js";
@@ -80,7 +80,7 @@ import {
   nativeWorktreeList,
   nativeLsFiles,
 } from "./native-git-bridge.js";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 import { type MilestoneScope, type GsdWorkspace, createWorkspace } from "./workspace.js";
 import {
   _finalizeProjectionForMergeImpl,

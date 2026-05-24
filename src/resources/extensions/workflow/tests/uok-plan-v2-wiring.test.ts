@@ -10,7 +10,7 @@ import {
   insertSlice,
   insertTask,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import type { GSDState, Phase } from "../types.ts";
 import {
   ensurePlanV2Graph,

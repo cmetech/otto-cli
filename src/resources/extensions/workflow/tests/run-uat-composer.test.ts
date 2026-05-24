@@ -17,7 +17,7 @@ import {
   upsertMilestonePlanning,
   insertSlice,
   insertArtifact,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-runuat-composer-"));

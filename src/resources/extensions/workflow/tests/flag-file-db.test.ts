@@ -25,7 +25,7 @@ import {
   insertTask,
   insertReplanHistory,
   _getAdapter,
-} from '../gsd-db.ts';
+} from '../db.ts';
 // ─── Fixture Helpers ───────────────────────────────────────────────────────
 
 function createFixtureBase(): string {

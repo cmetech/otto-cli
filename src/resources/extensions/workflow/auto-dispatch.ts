@@ -17,7 +17,7 @@ import type { GSDPreferences } from "./preferences.js";
 import type { UatType } from "./files.js";
 import type { MinimalModelRegistry } from "./context-budget.js";
 import { loadFile, extractUatType, loadActiveOverrides } from "./files.js";
-import { isDbAvailable, getMilestoneSlices, getPendingGates, markAllGatesOmitted, getMilestone, insertAssessment, setSliceSketchFlag, transaction, getAssessment } from "./gsd-db.js";
+import { isDbAvailable, getMilestoneSlices, getPendingGates, markAllGatesOmitted, getMilestone, insertAssessment, setSliceSketchFlag, transaction, getAssessment } from "./db.js";
 import { isClosedStatus } from "./status-guards.js";
 import { extractVerdict, isAcceptableUatVerdict } from "./verdict-parser.js";
 
@@ -1089,7 +1089,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
         // signal isn't silently lost. The planner may expand beyond it.
         let softScopeHint = "";
         try {
-          const { isDbAvailable, getSlice } = await import("./gsd-db.js");
+          const { isDbAvailable, getSlice } = await import("./db.js");
           if (isDbAvailable()) {
             softScopeHint = getSlice(mid, sid)?.sketch_scope ?? "";
           }

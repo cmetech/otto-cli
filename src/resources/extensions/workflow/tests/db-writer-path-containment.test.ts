@@ -6,7 +6,7 @@ import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { openDatabase, closeDatabase } from "../gsd-db.ts";
+import { openDatabase, closeDatabase } from "../db.ts";
 import { createWorkspace, scopeMilestone } from "../workspace.ts";
 import {
   saveArtifactToDbForWorkspace,

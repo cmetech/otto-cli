@@ -6,7 +6,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { renderPlanContent, renderRoadmapContent, renderSummaryContent } from '../workflow-projections.ts';
-import type { SliceRow, TaskRow } from '../gsd-db.ts';
+import type { SliceRow, TaskRow } from '../db.ts';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 

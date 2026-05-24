@@ -8,7 +8,7 @@ import {
 } from "./native-git-bridge.js";
 import { autoWorktreeBranch } from "./auto-worktree.js";
 import { ensureDbOpen } from "./bootstrap/dynamic-tools.js";
-import { getAllMilestones } from "./gsd-db.js";
+import { getAllMilestones } from "./db.js";
 import { resolveMilestoneIntegrationBranch } from "./git-service.js";
 import { loadEffectiveGSDPreferences } from "./preferences.js";
 import { captureRootDirtySnapshot, type RootDirtyEntry } from "./root-write-leak-guard.js";

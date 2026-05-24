@@ -15,7 +15,7 @@ import {
   insertTask,
   getSlice,
   getSliceTasks,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import { handleReopenSlice } from '../tools/reopen-slice.ts';
 
 function makeTmpBase(): string {

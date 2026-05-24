@@ -47,7 +47,7 @@ function resolveAgentExtensionModule(agentDir: string, segments: string[]): stri
 
 async function loadExtensionModules() {
   const stateModule = await jiti.import(gsdExtensionPath('state.ts'), {}) as any
-  const dbModule = await jiti.import(gsdExtensionPath('gsd-db.ts'), {}) as any
+  const dbModule = await jiti.import(gsdExtensionPath('db.ts'), {}) as any
   const importerModule = await jiti.import(gsdExtensionPath('md-importer.ts'), {}) as any
   const dynamicToolsModule = await jiti.import(gsdExtensionPath('bootstrap/dynamic-tools.ts'), {}) as any
   return {

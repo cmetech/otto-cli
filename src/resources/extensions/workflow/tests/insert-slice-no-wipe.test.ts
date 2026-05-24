@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { openDatabase, closeDatabase, insertMilestone, insertSlice, getSlice } from '../gsd-db.ts';
+import { openDatabase, closeDatabase, insertMilestone, insertSlice, getSlice } from '../db.ts';
 
 test('insertSlice with minimal args does not wipe populated fields', (t) => {
   t.after(() => { try { closeDatabase(); } catch { /* noop */ } });

@@ -111,7 +111,7 @@ export function executeReplan(
     // Also write replan_triggered_at column for DB-backed detection
     try {
       const req = createRequire(import.meta.url);
-      const { isDbAvailable, setSliceReplanTriggeredAt } = req("./gsd-db.js");
+      const { isDbAvailable, setSliceReplanTriggeredAt } = req("./db.js");
       if (isDbAvailable()) {
         setSliceReplanTriggeredAt(mid, sid, ts);
       }

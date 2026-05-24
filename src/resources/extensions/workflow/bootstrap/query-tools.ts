@@ -57,7 +57,7 @@ export function registerQueryTools(pi: ExtensionAPI): void {
           details: { operation: "checkpoint_db", error: "db_unavailable" },
         };
       }
-      const { checkpointDatabase } = await import("../gsd-db.js");
+      const { checkpointDatabase } = await import("../db.js");
       checkpointDatabase();
       return {
         content: [{ type: "text", text: "WAL checkpoint complete. gsd.db is now up to date and safe to stage with git add." }],

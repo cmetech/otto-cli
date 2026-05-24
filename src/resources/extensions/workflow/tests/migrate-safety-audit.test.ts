@@ -21,7 +21,7 @@ import {
 } from "../migrate/audit.ts";
 import { assertMigrationDbReadiness, executeMigrationWrite, importWrittenMigrationToDb } from "../migrate/command.ts";
 import { writeGSDDirectory } from "../migrate/writer.ts";
-import { closeDatabase, getArtifact } from "../gsd-db.ts";
+import { closeDatabase, getArtifact } from "../db.ts";
 import type { GSDProject } from "../migrate/types.ts";
 
 function makeBase(prefix: string): string {

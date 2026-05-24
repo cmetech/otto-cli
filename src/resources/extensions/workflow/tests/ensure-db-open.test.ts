@@ -11,7 +11,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import * as fs from 'node:fs';
 import { createRequire } from 'node:module';
-import { closeDatabase, isDbAvailable, getDecisionById, SCHEMA_VERSION, _getAdapter } from '../gsd-db.ts';
+import { closeDatabase, isDbAvailable, getDecisionById, SCHEMA_VERSION, _getAdapter } from '../db.ts';
 
 const _require = createRequire(import.meta.url);
 
@@ -441,7 +441,7 @@ describe('ensure-db-open', () => {
 
     // Create a DB file first
     const dbPath = path.join(gsdDir, 'gsd.db');
-    const { openDatabase } = await import('../gsd-db.ts');
+    const { openDatabase } = await import('../db.ts');
     openDatabase(dbPath);
     closeDatabase();
 

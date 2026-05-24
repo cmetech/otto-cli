@@ -16,7 +16,7 @@ import {
   insertTask,
   openDatabase,
   upsertMilestonePlanning,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 type AutoPromptBuilders = typeof import("../auto-prompts.ts");
 

@@ -21,7 +21,7 @@
 // surface; KNOWLEDGE.md projects only the KNOWLEDGE.md-originating subset.
 
 import { atomicWriteSync } from "./atomic-write.js";
-import { _getAdapter, isDbAvailable } from "./gsd-db.js";
+import { _getAdapter, isDbAvailable } from "./db.js";
 import {
   KNOWLEDGE_SECTIONS,
   knowledgeMdPath,

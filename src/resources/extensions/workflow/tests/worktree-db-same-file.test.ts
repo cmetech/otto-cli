@@ -17,7 +17,7 @@ import {
   closeDatabase,
   reconcileWorktreeDb,
   insertDecision,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import {
   _shouldReconcileWorktreeDb,
 } from "../auto-worktree.ts";

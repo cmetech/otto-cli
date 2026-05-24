@@ -24,7 +24,7 @@ import {
   openDatabase,
   closeDatabase,
   _getAdapter,
-} from '../gsd-db.ts';
+} from '../db.ts';
 
 const _require = createRequire(import.meta.url);
 

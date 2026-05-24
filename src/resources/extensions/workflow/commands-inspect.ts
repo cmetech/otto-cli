@@ -49,7 +49,7 @@ export function formatInspectOutput(data: InspectData): string {
 
 export async function handleInspect(ctx: ExtensionCommandContext): Promise<void> {
   try {
-    const { isDbAvailable, _getAdapter, openDatabase } = await import("./gsd-db.js");
+    const { isDbAvailable, _getAdapter, openDatabase } = await import("./db.js");
 
     if (!isDbAvailable()) {
       const gsdDir = gsdRoot(process.cwd());

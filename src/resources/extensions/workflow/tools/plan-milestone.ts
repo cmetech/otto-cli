@@ -13,7 +13,7 @@ import {
   insertSlice,
   upsertMilestonePlanning,
   upsertSlicePlanning,
-} from "../gsd-db.js";
+} from "../db.js";
 import { invalidateStateCache } from "../state.js";
 import { renderRoadmapFromDb } from "../markdown-renderer.js";
 import { renderAllProjections } from "../workflow-projections.js";

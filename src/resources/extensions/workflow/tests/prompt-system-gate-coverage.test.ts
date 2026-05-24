@@ -31,7 +31,7 @@ import {
   insertGateRow,
   getPendingGates,
   getPendingGatesForTurn,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import {
   GATE_REGISTRY,
   getGatesForTurn,

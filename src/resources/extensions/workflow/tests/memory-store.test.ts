@@ -4,7 +4,7 @@ import {
   isDbAvailable,
   SCHEMA_VERSION,
   _getAdapter,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import {
   _resetLogs,
   peekLogs,

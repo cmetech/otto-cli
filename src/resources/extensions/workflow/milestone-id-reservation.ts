@@ -1,4 +1,4 @@
-import { isDbAvailable, getAllMilestones } from "./gsd-db.js";
+import { isDbAvailable, getAllMilestones } from "./db.js";
 import {
   getReservedMilestoneIds,
   milestoneIdSort,

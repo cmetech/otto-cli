@@ -16,7 +16,7 @@ import {
   insertSlice,
   openDatabase,
   upsertMilestonePlanning,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { invalidateAllCaches } from "../cache.ts";
 import type { GSDState } from "../types.ts";
 

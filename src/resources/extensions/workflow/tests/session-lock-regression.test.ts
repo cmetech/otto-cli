@@ -25,7 +25,7 @@ import {
   isSessionLockHeld,
 } from '../session-lock.ts';
 import { gsdRoot } from '../paths.ts';
-import { openDatabase, closeDatabase, _getAdapter } from "../gsd-db.ts";
+import { openDatabase, closeDatabase, _getAdapter } from "../db.ts";
 import { registerAutoWorker, getAutoWorker } from "../db/auto-workers.ts";
 import { normalizeRealPath } from "../paths.ts";
 import { describe, test } from 'node:test';

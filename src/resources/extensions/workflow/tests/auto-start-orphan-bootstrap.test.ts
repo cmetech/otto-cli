@@ -13,7 +13,7 @@ import {
   closeDatabase,
   insertMilestone,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 function runGit(base: string, args: string[]): string {
   return execFileSync("git", args, {

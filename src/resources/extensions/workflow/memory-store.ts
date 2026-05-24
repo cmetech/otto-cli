@@ -18,7 +18,7 @@ import {
   supersedeLowestRankedMemories,
   deleteMemoryEmbedding,
   deleteMemoryRelationsFor,
-} from './gsd-db.js';
+} from './db.js';
 import { createMemoryRelation, isValidRelation } from './memory-relations.js';
 import { logWarning } from './workflow-logger.js';
 

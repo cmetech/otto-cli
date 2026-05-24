@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { getPriorSliceCompletionBlocker } from "../dispatch-guard.ts";
-import { closeDatabase, insertMilestone, insertSlice, openDatabase } from "../gsd-db.ts";
+import { closeDatabase, insertMilestone, insertSlice, openDatabase } from "../db.ts";
 
 describe("dispatch-guard isClosedStatus migration (#3653)", () => {
   let base: string;

@@ -11,7 +11,7 @@ import { getGlobalGSDPreferencesPath, loadEffectiveGSDPreferences } from "../wor
 import { getRemoteConfigStatus, isValidChannelId, resolveRemoteConfig } from "./config.js";
 import { maskEditorLine, sanitizeError } from "../shared/mod.js";
 import { getLatestPromptSummary } from "./status.js";
-import { gsdHome } from "../workflow/gsd-home.js";
+import { gsdHome } from "../workflow/home.js";
 
 export async function handleRemote(
   subcommand: string,

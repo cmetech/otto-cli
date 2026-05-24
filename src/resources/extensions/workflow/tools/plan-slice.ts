@@ -16,7 +16,7 @@ import {
   setSliceSketchFlag,
   deleteTask,
   deleteArtifactByPath,
-} from "../gsd-db.js";
+} from "../db.js";
 import type { GateId } from "../types.js";
 import { invalidateStateCache } from "../state.js";
 import { renderPlanFromDb } from "../markdown-renderer.js";

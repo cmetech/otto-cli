@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 import { openProjectDbIfPresent } from "../auto-start.ts";
-import { closeDatabase, isDbAvailable, openDatabase } from "../gsd-db.ts";
+import { closeDatabase, isDbAvailable, openDatabase } from "../db.ts";
 
 test.afterEach(() => {
   if (isDbAvailable()) closeDatabase();

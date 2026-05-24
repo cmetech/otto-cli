@@ -19,7 +19,7 @@ import {
   closeDatabase,
   insertMilestone,
   insertSlice,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 test("deriveStateFromDb does NOT skip to validating when slice array is empty (#2667)", async () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-vacuous-truth-"));

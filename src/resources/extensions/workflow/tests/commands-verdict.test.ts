@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 
 import { handleVerdict, parseValidationFile } from "../commands-verdict.ts";
-import { openDatabase, closeDatabase, _getAdapter, insertAssessment } from "../gsd-db.ts";
+import { openDatabase, closeDatabase, _getAdapter, insertAssessment } from "../db.ts";
 import { invalidateStateCache } from "../state.ts";
 
 interface NotifyCall {

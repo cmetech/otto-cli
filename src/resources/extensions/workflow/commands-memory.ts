@@ -28,7 +28,7 @@ import {
   getActiveMemoriesRanked,
   supersedeMemory,
 } from "./memory-store.js";
-import { _getAdapter, isDbAvailable } from "./gsd-db.js";
+import { _getAdapter, isDbAvailable } from "./db.js";
 import { createMemoryRelation, listRelationsFor } from "./memory-relations.js";
 import { slashCommand } from "./strings.js";
 

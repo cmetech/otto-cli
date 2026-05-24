@@ -14,7 +14,7 @@ import {
   getMilestoneSlices,
   getAssessment,
   _getAdapter,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import { handleReassessRoadmap } from '../tools/reassess-roadmap.ts';
 
 function makeTmpBase(): string {

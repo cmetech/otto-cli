@@ -21,7 +21,7 @@ import { GSDError, GSD_PARSE_ERROR } from "./errors.js";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { logWarning } from "./workflow-logger.js";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 
 type ExistsFn = (path: string) => boolean;
 

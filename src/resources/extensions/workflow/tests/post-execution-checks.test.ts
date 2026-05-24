@@ -22,7 +22,7 @@ import {
   runPostExecutionChecks,
   type PostExecutionResult,
 } from "../post-execution-checks.ts";
-import type { TaskRow } from "../gsd-db.ts";
+import type { TaskRow } from "../db.ts";
 
 // ─── Test Fixtures ───────────────────────────────────────────────────────────
 

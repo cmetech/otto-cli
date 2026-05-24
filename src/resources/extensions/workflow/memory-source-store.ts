@@ -6,7 +6,7 @@
 // user a way to trace a memory back to its origin.
 
 import { createHash, randomUUID } from "node:crypto";
-import { _getAdapter, isDbAvailable, insertMemorySourceRow, deleteMemorySourceRow } from "./gsd-db.js";
+import { _getAdapter, isDbAvailable, insertMemorySourceRow, deleteMemorySourceRow } from "./db.js";
 
 export type MemorySourceKind = "note" | "url" | "file" | "artifact" | "capture" | "learning";
 

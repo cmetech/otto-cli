@@ -28,7 +28,7 @@ import {
   normalizeFilePath,
   type PreExecutionResult,
 } from "../pre-execution-checks.ts";
-import type { TaskRow } from "../gsd-db.ts";
+import type { TaskRow } from "../db.ts";
 
 // ─── Test Fixtures ───────────────────────────────────────────────────────────
 

@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, rmSync, readFileSync, existsSync } from 'node:f
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import { openDatabase, closeDatabase } from '../gsd-db.ts';
+import { openDatabase, closeDatabase } from '../db.ts';
 import { handlePlanMilestone } from '../tools/plan-milestone.ts';
 
 const boundaryMap = [

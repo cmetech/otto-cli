@@ -15,7 +15,7 @@ import {
   createGSDExtensionAPI,
   type GSDEcosystemBeforeAgentStartHandler,
   type GSDExtensionAPI,
-} from "./gsd-extension-api.js";
+} from "./extension-api.js";
 
 // ─── Trust check (inlined; pi does not export isProjectTrusted from its
 // package root, and constraint forbids modifying packages/pi-coding-agent/) ─

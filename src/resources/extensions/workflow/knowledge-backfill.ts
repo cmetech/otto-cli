@@ -15,7 +15,7 @@
 // is the row count; subsequent runs are an O(N) lookup that finds existing
 // markers and exits.
 
-import { _getAdapter, isDbAvailable } from "./gsd-db.js";
+import { _getAdapter, isDbAvailable } from "./db.js";
 import { createMemory } from "./memory-store.js";
 import { parseKnowledgeRows, readKnowledgeMd, type KnowledgeRow } from "./knowledge-parser.js";
 import { logWarning } from "./workflow-logger.js";

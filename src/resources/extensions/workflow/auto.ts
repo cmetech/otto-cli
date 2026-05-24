@@ -110,7 +110,7 @@ import {
   resetSkillTelemetry,
 } from "./skill-telemetry.js";
 import { getRtkSessionSavings } from "../shared/rtk-session-stats.js";
-import { deactivateGSD } from "../shared/gsd-phase-state.js";
+import { deactivateGSD } from "../shared/phase-state.js";
 import {
   initMetrics,
   resetMetrics,
@@ -181,7 +181,7 @@ import {
   deregisterSigtermHandler as _deregisterSigtermHandler,
   detectWorkingTreeActivity,
 } from "./auto-supervisor.js";
-import { isDbAvailable, getMilestone, getMilestoneSlices } from "./gsd-db.js";
+import { isDbAvailable, getMilestone, getMilestoneSlices } from "./db.js";
 import { markLatestActiveForWorkerCanceled } from "./db/unit-dispatches.js";
 import { writeUnitRuntimeRecord } from "./unit-runtime.js";
 import { countPendingCaptures } from "./captures.js";
@@ -276,7 +276,7 @@ export type {
   StartModel,
 } from "./auto/session.js";
 import { autoSession as s } from "./auto-runtime-state.js";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 import { createWorkspace, scopeMilestone } from "./workspace.js";
 import {
   registerAutoWorker,
@@ -1470,7 +1470,7 @@ export async function stopAuto(
     // ── Step 6: DB cleanup ──
     if (isDbAvailable()) {
       try {
-        const { closeDatabase } = await import("./gsd-db.js");
+        const { closeDatabase } = await import("./db.js");
         closeDatabase();
       } catch (e) {
         debugLog("db-close-failed", {

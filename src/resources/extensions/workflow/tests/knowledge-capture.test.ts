@@ -20,7 +20,7 @@ import {
   _getAdapter,
   closeDatabase,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { captureKnowledgeEntry, nextKnowledgeId } from "../knowledge-capture.ts";
 import { knowledgeMdPath } from "../knowledge-parser.ts";
 

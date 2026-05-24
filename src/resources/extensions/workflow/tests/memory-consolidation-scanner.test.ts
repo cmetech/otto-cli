@@ -16,7 +16,7 @@ import {
   openDatabase,
   closeDatabase,
   insertDecision,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { createMemory } from "../memory-store.ts";
 import {
   _resetNotificationStore,

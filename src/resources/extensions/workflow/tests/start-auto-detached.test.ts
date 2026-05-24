@@ -54,7 +54,7 @@ test("bare /gsd stays in the foreground home flow (#5125 regression)", () => {
   );
 
   assert.ok(
-    bareCommandBranch.includes('await import("../../gsd-command-home.js")'),
+    bareCommandBranch.includes('await import("../../command-home.js")'),
     "bare /gsd should load the state-aware home flow",
   );
   assert.ok(

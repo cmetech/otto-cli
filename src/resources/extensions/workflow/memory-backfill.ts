@@ -23,7 +23,7 @@
 // already migrated (e.g. a fresh md-importer run that introduced a new
 // supersedes-chain).
 
-import { isDbAvailable, _getAdapter } from "./gsd-db.js";
+import { isDbAvailable, _getAdapter } from "./db.js";
 import { createMemory } from "./memory-store.js";
 import { logWarning } from "./workflow-logger.js";
 

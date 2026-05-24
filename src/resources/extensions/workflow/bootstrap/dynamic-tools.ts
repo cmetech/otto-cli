@@ -41,7 +41,7 @@ export function resolveProjectRootDbPath(basePath: string): string {
 
 export async function ensureDbOpen(basePath: string = safeWorkspaceCwd()): Promise<boolean> {
   try {
-    const db = await import("../gsd-db.js");
+    const db = await import("../db.js");
     const contract = resolveGsdPathContract(basePath);
     const dbPath = contract.projectDb;
     const gsdDir = contract.projectGsd;

@@ -15,7 +15,7 @@ import {
   getTask,
   getReplanHistory,
   _getAdapter,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import { handleReplanSlice } from '../tools/replan-slice.ts';
 import { parsePlan } from '../parsers-legacy.ts';
 

@@ -16,7 +16,7 @@ import {
   getPendingGates,
   insertMilestone,
   insertSlice,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import type { GateVerdict } from "../types.ts";
 
 describe("gate-state canonicalization (#4950)", () => {

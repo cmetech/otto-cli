@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 
 import { appendEvent, readEvents } from "../workflow-events.ts";
 import { listConflicts, reconcileWorktreeLogs, resolveConflict } from "../workflow-reconcile.ts";
-import { closeDatabase } from "../gsd-db.ts";
+import { closeDatabase } from "../db.ts";
 
 const tmpDirs: string[] = [];
 

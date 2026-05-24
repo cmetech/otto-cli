@@ -396,7 +396,7 @@ interface MilestoneSnapshot {
 async function readMilestonesFromDb(): Promise<MilestoneSnapshot[]> {
   try {
     const dbMod = await tryImportModule<{ getAllMilestones(): MilestoneSnapshot[] }>(
-      "../workflow/gsd-db.js",
+      "../workflow/db.js",
     );
     return dbMod?.getAllMilestones() ?? [];
   } catch {

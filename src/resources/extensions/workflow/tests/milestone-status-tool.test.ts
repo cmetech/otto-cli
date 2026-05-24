@@ -12,7 +12,7 @@ import {
   openDatabase,
   closeDatabase,
   _getAdapter,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

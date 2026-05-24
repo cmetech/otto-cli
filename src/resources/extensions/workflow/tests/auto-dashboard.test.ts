@@ -38,7 +38,7 @@ import {
   insertMilestone,
   insertSlice,
   insertTask,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 function makeTempDir(prefix: string): string {
   return join(

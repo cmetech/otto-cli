@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 import { isStaleWrite } from "../auto/turn-epoch.js";
 import { withFileLockSync } from "../file-lock.js";
 import { gsdRoot } from "../paths.js";
-import { isDbAvailable, insertAuditEvent } from "../gsd-db.js";
+import { isDbAvailable, insertAuditEvent } from "../db.js";
 import { CURRENT_UOK_CONTRACT_VERSION, validateAuditEvent, type AuditEventEnvelope } from "./contracts.js";
 
 function auditLogPath(basePath: string): string {

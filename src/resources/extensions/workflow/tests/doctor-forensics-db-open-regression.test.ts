@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { closeDatabase } from "../gsd-db.ts";
+import { closeDatabase } from "../db.ts";
 import { buildForensicReport } from "../forensics.ts";
 import { handleDoctor } from "../commands-handlers.ts";
 import { withCommandCwd } from "../commands/context.ts";

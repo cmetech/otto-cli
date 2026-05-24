@@ -13,7 +13,7 @@ import {
   insertAssessment,
   upsertRequirement,
   getAllMilestones,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { deriveState, invalidateStateCache } from "../state.ts";
 import { markApprovalGateVerified, markDepthVerified, clearDiscussionFlowState, loadWriteGateSnapshot, setPendingGate } from "../bootstrap/write-gate.ts";
 import {

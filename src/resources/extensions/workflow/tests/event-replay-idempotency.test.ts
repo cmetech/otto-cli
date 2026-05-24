@@ -12,7 +12,7 @@ import {
   updateTaskStatus,
   insertVerificationEvidence,
   upsertDecision,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { extractEntityKey } from "../workflow-reconcile.ts";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

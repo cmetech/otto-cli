@@ -18,7 +18,7 @@ import {
   _getAdapter,
   isDbAvailable,
   transaction,
-} from "../gsd-db.js";
+} from "../db.js";
 
 export type RuntimeKvScope = "global" | "worker" | "milestone";
 

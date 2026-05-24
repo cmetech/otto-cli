@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import { openDatabase, closeDatabase } from '../gsd-db.ts';
+import { openDatabase, closeDatabase } from '../db.ts';
 import { handleCompleteTask } from '../tools/complete-task.ts';
 import { readEvents } from '../workflow-events.ts';
 import { readManifest } from '../workflow-manifest.ts';

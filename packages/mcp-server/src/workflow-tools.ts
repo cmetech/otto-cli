@@ -1006,7 +1006,7 @@ async function handleSaveGateResult(
 
 async function ensureMilestoneDbRow(milestoneId: string): Promise<void> {
   try {
-    const { insertMilestone } = await importLocalModule<any>("../../../src/resources/extensions/workflow/gsd-db.js");
+    const { insertMilestone } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db.js");
     insertMilestone({ id: milestoneId, status: "queued" });
   } catch {
     // Ignore pre-existing rows or transient DB availability issues.
@@ -1015,7 +1015,7 @@ async function ensureMilestoneDbRow(milestoneId: string): Promise<void> {
 
 async function findDatabaseMilestoneIds(): Promise<string[]> {
   try {
-    const { getAllMilestones } = await importLocalModule<any>("../../../src/resources/extensions/workflow/gsd-db.js");
+    const { getAllMilestones } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db.js");
     return (getAllMilestones?.() ?? [])
       .map((milestone: unknown) => {
         const id = (milestone as { id?: unknown })?.id;

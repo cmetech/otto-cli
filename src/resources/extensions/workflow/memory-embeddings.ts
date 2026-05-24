@@ -9,7 +9,7 @@
 
 import type { ExtensionContext } from "@gsd/pi-coding-agent";
 
-import { _getAdapter, isDbAvailable, upsertMemoryEmbedding, deleteMemoryEmbedding } from "./gsd-db.js";
+import { _getAdapter, isDbAvailable, upsertMemoryEmbedding, deleteMemoryEmbedding } from "./db.js";
 import { logWarning } from "./workflow-logger.js";
 
 // ─── Types ──────────────────────────────────────────────────────────────────

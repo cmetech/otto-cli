@@ -13,7 +13,7 @@ import {
   insertMilestone,
   getAllMilestones,
   _getAdapter,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 

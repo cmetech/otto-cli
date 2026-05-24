@@ -10,7 +10,7 @@ import {
   writeCompactionSnapshot,
   DEFAULT_SNAPSHOT_BYTES,
 } from '../compaction-snapshot.ts';
-import { closeDatabase, openDatabase } from '../gsd-db.ts';
+import { closeDatabase, openDatabase } from '../db.ts';
 import { createMemory } from '../memory-store.ts';
 import { executeResume } from '../tools/resume-tool.ts';
 
@@ -86,7 +86,7 @@ test('writeCompactionSnapshot + readCompactionSnapshot + executeResume: end-to-e
   const base = freshBase();
   try {
     openDatabase(':memory:');
-    createMemory({ category: 'architecture', content: 'Single-writer DB through gsd-db.ts', confidence: 0.95 });
+    createMemory({ category: 'architecture', content: 'Single-writer DB through db.ts', confidence: 0.95 });
     createMemory({ category: 'convention', content: 'Prefer typed helpers over raw SQL', confidence: 0.9 });
 
     const out = writeCompactionSnapshot(base, { activeContext: 'M099 resume check' });

@@ -15,7 +15,7 @@ import {
   getSliceTasks,
   updateTaskStatus,
   updateSliceStatus,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { isClosedStatus } from "../status-guards.ts";
 
 // ─── Setup / Teardown ──────────────────────────────────────────────────────

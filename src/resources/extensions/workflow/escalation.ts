@@ -21,7 +21,7 @@ import {
   findUnappliedEscalationOverride,
   setTaskBlockerSource,
   listEscalationArtifacts,
-} from "./gsd-db.js";
+} from "./db.js";
 import type { TaskRow } from "./db-task-slice-rows.js";
 import { emitUokAuditEvent, buildAuditEnvelope } from "./uok/audit.js";
 import { logWarning } from "./workflow-logger.js";

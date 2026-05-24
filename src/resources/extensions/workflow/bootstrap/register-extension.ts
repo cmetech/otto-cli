@@ -4,7 +4,7 @@ import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent
 
 import { registerExitCommand } from "../exit-command.js";
 import { registerLazyWorktreeCommands } from "../worktree-command-bootstrap.js";
-import type { GSDEcosystemBeforeAgentStartHandler } from "../ecosystem/gsd-extension-api.js";
+import type { GSDEcosystemBeforeAgentStartHandler } from "../ecosystem/extension-api.js";
 import { registerDbTools } from "./db-tools.js";
 import { registerDynamicTools } from "./dynamic-tools.js";
 import { registerExecTools } from "./exec-tools.js";

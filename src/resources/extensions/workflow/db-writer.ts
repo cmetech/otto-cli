@@ -216,7 +216,7 @@ function isRootCanonicalArtifact(opts: SaveArtifactOpts): boolean {
  */
 export async function nextDecisionId(): Promise<string> {
   try {
-    const db = await import('./gsd-db.js');
+    const db = await import('./db.js');
     const adapter = db._getAdapter();
     if (!adapter) return 'D001';
 
@@ -247,7 +247,7 @@ export async function nextDecisionId(): Promise<string> {
  * monotonic and avoids collisions on the next save.
  */
 function nextDecisionIdAcrossSurfaces(
-  adapter: ReturnType<typeof import('./gsd-db.js')._getAdapter>,
+  adapter: ReturnType<typeof import('./db.js')._getAdapter>,
 ): string {
   if (!adapter) return 'D001';
 
@@ -305,7 +305,7 @@ function nextDecisionIdAcrossSurfaces(
  */
 export async function nextRequirementId(): Promise<string> {
   try {
-    const db = await import('./gsd-db.js');
+    const db = await import('./db.js');
     const adapter = db._getAdapter();
     if (!adapter) return 'R001';
 
@@ -352,7 +352,7 @@ export async function saveRequirementToDb(
   basePath: string,
 ): Promise<{ id: string }> {
   try {
-    const db = await import('./gsd-db.js');
+    const db = await import('./db.js');
 
     // Atomic ID assignment + insert inside a transaction.
     const txResult = db.transaction(() => {
@@ -503,7 +503,7 @@ export async function saveDecisionToDb(
   }
 
   try {
-    const db = await import('./gsd-db.js');
+    const db = await import('./db.js');
     const adapter = db._getAdapter();
     const normalized: NormalizedSaveDecisionFields = {
       ...fields,
@@ -717,7 +717,7 @@ export async function updateRequirementInDb(
   basePath: string,
 ): Promise<void> {
   try {
-    const db = await import('./gsd-db.js');
+    const db = await import('./db.js');
 
     const existing = db.getRequirementById(id);
 
@@ -809,7 +809,7 @@ export async function saveArtifactToDbForWorkspace(
   opts: SaveArtifactOpts,
 ): Promise<void> {
   try {
-    const db = await import('./gsd-db.js');
+    const db = await import('./db.js');
 
     const gsdDir = workspace.contract.projectGsd;
     const fullPath = resolve(gsdDir, opts.path);
@@ -881,7 +881,7 @@ export async function saveArtifactToDbByScope(
   }
 
   try {
-    const db = await import('./gsd-db.js');
+    const db = await import('./db.js');
 
     // Use contract.projectGsd as the canonical .gsd directory — never a hand-rolled basePath join.
     const gsdDir = scope.workspace.contract.projectGsd;

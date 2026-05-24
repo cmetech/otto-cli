@@ -13,7 +13,7 @@ import {
   markLatestCloseoutFailureResolved,
   retryLatestCloseoutFailure,
 } from "../closeout-recovery.ts";
-import { closeDatabase, openDatabase, upsertTurnGitTransaction } from "../gsd-db.ts";
+import { closeDatabase, openDatabase, upsertTurnGitTransaction } from "../db.ts";
 
 function run(command: string, cwd: string): string {
   return execSync(command, { cwd, stdio: ["ignore", "pipe", "pipe"], encoding: "utf-8" }).trim();

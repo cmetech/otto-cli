@@ -11,7 +11,7 @@
  * dispatch rules, and state derivation. See gate-registry.ts.
  */
 
-import { isDbAvailable, upsertQualityGate } from "./gsd-db.js";
+import { isDbAvailable, upsertQualityGate } from "./db.js";
 import { getGatesForTurn } from "./gate-registry.js";
 
 /**

@@ -27,7 +27,7 @@ import {
   upsertDecision,
   getActiveDecisions,
   isDbAvailable,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';

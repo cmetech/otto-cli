@@ -12,7 +12,7 @@ import { dirname, join, resolve } from "node:path";
 import { homedir, tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 
 const _require = createRequire(import.meta.url);
 const { lockSync, unlockSync } = _require("proper-lockfile") as {

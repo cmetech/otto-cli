@@ -12,7 +12,7 @@ import {
   _getAdapter,
   insertMilestone,
   insertSlice,
-} from "../gsd-db.js";
+} from "../db.js";
 import { clearPathCache } from "../paths.js";
 import { clearParseCache } from "../files.js";
 

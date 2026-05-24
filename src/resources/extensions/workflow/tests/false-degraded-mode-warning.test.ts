@@ -17,7 +17,7 @@ import {
   openDatabase,
   closeDatabase,
   wasDbOpenAttempted,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 describe("wasDbOpenAttempted (#3922)", () => {
   beforeEach(() => { closeDatabase(); });

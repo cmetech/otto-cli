@@ -11,7 +11,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-import { openDatabase, closeDatabase, isDbAvailable, _resetProvider } from '../gsd-db.ts';
+import { openDatabase, closeDatabase, isDbAvailable, _resetProvider } from '../db.ts';
 import { migrateFromMarkdown } from '../md-importer.ts';
 import {
   queryDecisions,

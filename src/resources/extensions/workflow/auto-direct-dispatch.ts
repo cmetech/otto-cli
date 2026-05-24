@@ -10,7 +10,7 @@ import type {
 
 import { deriveState } from "./state.js";
 import { loadFile } from "./files.js";
-import { isDbAvailable, getMilestoneSlices } from "./gsd-db.js";
+import { isDbAvailable, getMilestoneSlices } from "./db.js";
 import { parseRoadmap } from "./parsers-legacy.js";
 import {
   resolveMilestoneFile, resolveSliceFile, relSliceFile,

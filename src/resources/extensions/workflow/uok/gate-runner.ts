@@ -1,5 +1,5 @@
 import type { FailureClass, GateResult } from "./contracts.js";
-import { insertGateRun } from "../gsd-db.js";
+import { insertGateRun } from "../db.js";
 import { buildAuditEnvelope, emitUokAuditEvent } from "./audit.js";
 
 export interface GateRunnerContext {

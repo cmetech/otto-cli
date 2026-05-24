@@ -60,7 +60,7 @@ import {
   getRequirementCounts,
   getLatestAssessmentByScope,
   getPendingGateCountForTurn,
-} from './gsd-db.js';
+} from './db.js';
 import type { MilestoneRow } from './db-milestone-artifact-rows.js';
 import type { SliceRow, TaskRow } from './db-task-slice-rows.js';
 import { CMD, slashCommand } from './strings.js';

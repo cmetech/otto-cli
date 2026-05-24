@@ -64,7 +64,7 @@ import { initRoutingHistory } from "./routing-history.js";
 import { restoreHookState, resetHookState } from "./post-unit-hooks.js";
 import { resetProactiveHealing, setLevelChangeCallback } from "./doctor-proactive.js";
 import { snapshotSkills } from "./skill-discovery.js";
-import { isDbAvailable, getMilestone, getAllMilestones, insertMilestone, openDatabase, getDbStatus } from "./gsd-db.js";
+import { isDbAvailable, getMilestone, getAllMilestones, insertMilestone, openDatabase, getDbStatus } from "./db.js";
 import { isClosedStatus } from "./status-guards.js";
 import { classifyMilestoneSummaryContent } from "./milestone-summary-classifier.js";
 import { extractVerdict } from "./verdict-parser.js";
@@ -1196,7 +1196,7 @@ export async function bootstrapAutoSession(
 
     // ── Initialize session state ──
     // Notify shared phase state so subagent conflict checks can fire
-    const { activateGSD: activateGSDPhaseState } = await import("../shared/gsd-phase-state.js");
+    const { activateGSD: activateGSDPhaseState } = await import("../shared/phase-state.js");
     activateGSDPhaseState();
     s.active = true;
     s.stepMode = requestedStepMode;
@@ -1330,7 +1330,7 @@ export async function bootstrapAutoSession(
     const gsdDirPath = join(s.basePath, ".gsd");
     if (existsSync(gsdDirPath) && !existsSync(gsdDbPath)) {
       try {
-        const { openDatabase: openDb } = await import("./gsd-db.js");
+        const { openDatabase: openDb } = await import("./db.js");
         openDb(gsdDbPath);
       } catch (err) {
         logError("engine", `failed to initialize project database: ${(err as Error).message}`);
@@ -1338,7 +1338,7 @@ export async function bootstrapAutoSession(
     }
     if (_shouldAbortBootstrapForUnavailableDbForTest(gsdDbPath, isDbAvailable())) {
       try {
-        const { openDatabase: openDb } = await import("./gsd-db.js");
+        const { openDatabase: openDb } = await import("./db.js");
         openDb(gsdDbPath);
       } catch (err) {
         logError("engine", `failed to open existing database: ${(err as Error).message}`);

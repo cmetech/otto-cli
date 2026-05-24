@@ -32,7 +32,7 @@ export interface BeforeAgentStartEventResult {
 }
 
 import type { GSDActiveUnit, GSDState, Phase } from "../types.js";
-import { isGSDActive, getCurrentPhase } from "../../shared/gsd-phase-state.js";
+import { isGSDActive, getCurrentPhase } from "../../shared/phase-state.js";
 import { logWarning } from "../workflow-logger.js";
 
 // ─── Public Interface ───────────────────────────────────────────────────

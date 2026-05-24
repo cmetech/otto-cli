@@ -25,7 +25,7 @@ import {
 
 import type { MigrationPreview, WrittenFiles } from "./writer.js";
 import { ensureDbOpen } from "../bootstrap/dynamic-tools.js";
-import { clearArtifacts, clearDecisions, clearRequirements, clearEngineHierarchy, transaction } from "../gsd-db.js";
+import { clearArtifacts, clearDecisions, clearRequirements, clearEngineHierarchy, transaction } from "../db.js";
 import { migrateFromMarkdown } from "../md-importer.js";
 import { deriveState, invalidateStateCache } from "../state.js";
 import {

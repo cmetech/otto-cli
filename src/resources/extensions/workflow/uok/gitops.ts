@@ -1,4 +1,4 @@
-import { isDbAvailable, upsertTurnGitTransaction } from "../gsd-db.js";
+import { isDbAvailable, upsertTurnGitTransaction } from "../db.js";
 import type { TurnCloseoutRecord } from "./contracts.js";
 import { buildAuditEnvelope, emitUokAuditEvent } from "./audit.js";
 

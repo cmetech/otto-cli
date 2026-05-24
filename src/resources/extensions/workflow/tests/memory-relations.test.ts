@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { closeDatabase, openDatabase } from '../gsd-db.ts';
+import { closeDatabase, openDatabase } from '../db.ts';
 import { applyMemoryActions, createMemory, supersedeMemory } from '../memory-store.ts';
 import {
   createMemoryRelation,

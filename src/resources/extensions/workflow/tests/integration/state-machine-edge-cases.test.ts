@@ -51,7 +51,7 @@ import {
   getReplanHistory,
   insertGateRow,
   getPendingGates,
-} from "../../gsd-db.ts";
+} from "../../db.ts";
 
 // ── State derivation ──────────────────────────────────────────────────────
 import {

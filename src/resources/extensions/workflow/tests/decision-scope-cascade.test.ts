@@ -12,7 +12,7 @@ import {
   closeDatabase,
   isDbAvailable,
   insertDecision,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import {
   queryDecisions,
   formatDecisionsForPrompt,

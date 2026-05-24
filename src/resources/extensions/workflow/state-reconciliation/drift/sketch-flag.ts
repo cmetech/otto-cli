@@ -14,7 +14,7 @@ import {
   getSketchedSliceIds,
   isDbAvailable,
   setSliceSketchFlag,
-} from "../../gsd-db.js";
+} from "../../db.js";
 import { resolveSliceFile } from "../../paths.js";
 import type { GSDState } from "../../types.js";
 import type { DriftContext, DriftHandler, DriftRecord } from "../types.js";

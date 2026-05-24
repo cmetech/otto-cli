@@ -11,7 +11,7 @@ import {
   insertMilestone,
   insertSlice,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 test("skipped validation dispatch persists the validation file and DB assessment together", async () => {
   const basePath = mkdtempSync(join(tmpdir(), "gsd-skip-validation-"));

@@ -8,7 +8,7 @@ import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
 import { AuthStorage } from "@gsd/pi-coding-agent";
 import { existsSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 
 /**
  * Tool API key configurations.

@@ -12,7 +12,7 @@ import {
   insertSlice,
   insertTask,
   getSliceTasks,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import {
   checkMarkdownHierarchyAgainstDb,
   countMarkdownHierarchy,

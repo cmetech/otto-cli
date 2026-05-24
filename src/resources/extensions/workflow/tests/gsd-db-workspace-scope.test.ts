@@ -19,7 +19,7 @@ import {
   closeAllDatabases,
   _getDbCache,
   _getAdapter,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

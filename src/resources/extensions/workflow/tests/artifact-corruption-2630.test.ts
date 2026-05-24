@@ -11,7 +11,7 @@ import {
   renderRoadmapContent,
   renderStateContent,
 } from '../workflow-projections.ts';
-import type { SliceRow, TaskRow, MilestoneRow } from '../gsd-db.ts';
+import type { SliceRow, TaskRow, MilestoneRow } from '../db.ts';
 import type { GSDState } from '../types.ts';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────

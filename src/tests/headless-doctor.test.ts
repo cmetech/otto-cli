@@ -34,7 +34,7 @@ import {
   closeDatabase,
   insertMilestone,
   _getAdapter,
-} from "../resources/extensions/workflow/gsd-db.ts";
+} from "../resources/extensions/workflow/db.ts";
 import { registerAutoWorker } from "../resources/extensions/workflow/db/auto-workers.ts";
 import { claimMilestoneLease } from "../resources/extensions/workflow/db/milestone-leases.ts";
 import { recordDispatchClaim } from "../resources/extensions/workflow/db/unit-dispatches.ts";

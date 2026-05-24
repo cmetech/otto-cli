@@ -14,7 +14,7 @@ import {
   getSliceTasks,
   getActiveSliceFromDb,
   getActiveTaskFromDb,
-} from '../gsd-db.ts';
+} from '../db.ts';
 
 function makeTmp(): string {
   return mkdtempSync(join(tmpdir(), 'gsd-v9-'));

@@ -8,7 +8,7 @@ import { resolveMilestoneFile } from "./paths.js";
 import { deriveState } from "./state.js";
 import { executeValidateMilestone } from "./tools/workflow-tool-executors.js";
 import { ensureDbOpen } from "./bootstrap/dynamic-tools.js";
-import { getLatestAssessmentByScope } from "./gsd-db.js";
+import { getLatestAssessmentByScope } from "./db.js";
 import {
   VALIDATION_VERDICTS,
   extractVerdict,

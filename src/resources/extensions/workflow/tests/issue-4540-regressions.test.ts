@@ -16,7 +16,7 @@ import {
   insertGateRow,
   getPendingGates,
   _getAdapter,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 import { emitJournalEvent, queryJournal } from "../journal.ts";
 

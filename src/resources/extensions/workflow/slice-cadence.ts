@@ -42,7 +42,7 @@ import { logWarning } from "./workflow-logger.js";
 import { emitSliceMerged, emitMilestoneResquash } from "./worktree-telemetry.js";
 import { loadEffectiveGSDPreferences } from "./preferences.js";
 import { GIT_NO_PROMPT_ENV } from "./git-constants.js";
-import { getMilestone, getSlice, isDbAvailable } from "./gsd-db.js";
+import { getMilestone, getSlice, isDbAvailable } from "./db.js";
 
 /**
  * Auto-worktree milestone branch name. Must match autoWorktreeBranch() in

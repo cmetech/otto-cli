@@ -13,7 +13,7 @@ import {
   insertAssessment,
   deleteAssessmentByScope,
   deleteSlice,
-} from "../gsd-db.js";
+} from "../db.js";
 import { invalidateStateCache } from "../state.js";
 import { renderRoadmapFromDb, renderAssessmentFromDb } from "../markdown-renderer.js";
 import { renderAllProjections } from "../workflow-projections.js";

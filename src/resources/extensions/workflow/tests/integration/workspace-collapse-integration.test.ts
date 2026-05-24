@@ -33,7 +33,7 @@ import {
   openDatabaseByWorkspace,
   closeAllDatabases,
   _getDbCache,
-} from "../../gsd-db.ts";
+} from "../../db.ts";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

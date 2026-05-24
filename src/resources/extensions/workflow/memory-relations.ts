@@ -10,7 +10,7 @@ import {
   deleteMemoryRelationsFor,
   insertMemoryRelationRow,
   isDbAvailable,
-} from "./gsd-db.js";
+} from "./db.js";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

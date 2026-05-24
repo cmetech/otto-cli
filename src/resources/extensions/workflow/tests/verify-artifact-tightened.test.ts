@@ -19,7 +19,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 import { verifyExpectedArtifact } from "../auto-recovery.ts";
-import { closeDatabase, insertMilestone, insertSlice, insertTask, isDbAvailable, openDatabase } from "../gsd-db.ts";
+import { closeDatabase, insertMilestone, insertSlice, insertTask, isDbAvailable, openDatabase } from "../db.ts";
 
 /** Scaffold .gsd/milestones/M001/slices/S01/ with tasks/ and a T01-SUMMARY.md. */
 function scaffoldProject(t: { after: (fn: () => void) => void }): {

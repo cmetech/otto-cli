@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 
 import { deriveState } from "../state.js";
 import { showSmartEntry } from "../guided-flow.js";
-import { closeDatabase, insertMilestone, insertSlice, openDatabase } from "../gsd-db.js";
+import { closeDatabase, insertMilestone, insertSlice, openDatabase } from "../db.js";
 
 function writeCompleteMilestone(base: string): void {
   const milestoneDir = join(base, ".gsd", "milestones", "M001");

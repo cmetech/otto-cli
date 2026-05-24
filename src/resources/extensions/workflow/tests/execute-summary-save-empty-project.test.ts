@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 
-import { openDatabase, closeDatabase, getAllMilestones } from "../gsd-db.ts";
+import { openDatabase, closeDatabase, getAllMilestones } from "../db.ts";
 import { markApprovalGateVerified, clearDiscussionFlowState } from "../bootstrap/write-gate.ts";
 import { executeSummarySave } from "../tools/workflow-tool-executors.ts";
 

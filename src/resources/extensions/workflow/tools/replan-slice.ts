@@ -8,7 +8,7 @@ import {
   upsertTaskPlanning,
   insertReplanHistory,
   deleteTask,
-} from "../gsd-db.js";
+} from "../db.js";
 import { invalidateStateCache } from "../state.js";
 import { isClosedStatus } from "../status-guards.js";
 import { isNonEmptyString } from "../validation.js";

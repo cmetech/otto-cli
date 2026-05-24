@@ -57,7 +57,7 @@ const MIGRATED_FILES = new Set([
   "bootstrap/dynamic-tools.ts",
   "bootstrap/journal-tools.ts",
   // core infrastructure
-  "gsd-db.ts",
+  "db.ts",
   "workflow-logger.ts",
   "workflow-reconcile.ts",
   "workflow-migration.ts",
@@ -204,7 +204,7 @@ describe("workflow-logger coverage (#3348)", () => {
       const rel = relative(gsdDir, file);
       const basename = rel.split("/").pop()!;
       // gsd-db.ts has intentionally silent provider probes
-      if (basename === "gsd-db.ts" || basename === "session-lock.ts") continue;
+      if (basename === "db.ts" || basename === "session-lock.ts") continue;
 
       const empties = findEmptyCatches(file);
       for (const empty of empties) {

@@ -23,7 +23,7 @@ import {
   isDbAvailable,
   transaction,
   insertAuditEvent,
-} from "../gsd-db.js";
+} from "../db.js";
 import { normalizeRealPath } from "../paths.js";
 
 const HEARTBEAT_TTL_SECONDS = 60;

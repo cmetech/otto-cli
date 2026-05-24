@@ -18,7 +18,7 @@ import {
   closeDatabase,
   insertMilestone,
   _getAdapter,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { registerAutoWorker } from "../db/auto-workers.ts";
 import { claimMilestoneLease } from "../db/milestone-leases.ts";
 import {

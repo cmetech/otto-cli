@@ -22,7 +22,7 @@ import {
   isDbAvailable,
   insertMilestone,
   getMilestone,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { resolveMilestoneFile } from "../paths.ts";
 
 describe("pre-flight CONTEXT-DRAFT filter (#2473)", () => {

@@ -26,7 +26,7 @@ import {
   setSliceSummaryMd,
   updateSliceStatus,
   updateTaskStatus,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { clearParseCache } from "../files.ts";
 import { clearPathCache } from "../paths.ts";
 import { detectStaleRenders } from "../markdown-renderer.ts";

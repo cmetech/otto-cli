@@ -24,7 +24,7 @@ import {
   runPostExecutionChecks,
   type PostExecutionResult,
 } from "../post-execution-checks.ts";
-import type { TaskRow } from "../gsd-db.ts";
+import type { TaskRow } from "../db.ts";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -83,7 +83,7 @@ function createTask(overrides: Partial<TaskRow> = {}): TaskRow {
 
 // These are actual GSD extension source files that exist in the codebase
 const REAL_GSD_FILES = [
-  "gsd-db.ts",
+  "db.ts",
   "auto-verification.ts",
   "pre-execution-checks.ts",
   "post-execution-checks.ts",
@@ -133,7 +133,7 @@ describe("Enhanced Verification Integration Tests", () => {
             join(GSD_SRC_DIR, "errors.ts"),
           ],
           expected_output: [
-            join(GSD_SRC_DIR, "gsd-db.ts"),
+            join(GSD_SRC_DIR, "db.ts"),
           ],
         }),
       ];
@@ -176,7 +176,7 @@ import { join, dirname } from "node:path";
 import { existsSync } from "node:fs";
 
 // Use existing GSD types
-import type { TaskRow } from "./gsd-db.ts";
+import type { TaskRow } from "./db.ts";
 \`\`\`
 
 Update the file watcher to use these imports.
@@ -222,7 +222,7 @@ Update the file watcher to use these imports.
 Read the types from src/resources/extensions/workflow/types.ts and use them.
           `.trim(),
           inputs: [join(GSD_SRC_DIR, "types.ts")],
-          files: [join(GSD_SRC_DIR, "gsd-db.ts")],
+          files: [join(GSD_SRC_DIR, "db.ts")],
         }),
       ];
 
@@ -254,7 +254,7 @@ Read the types from src/resources/extensions/workflow/types.ts and use them.
         title: "Update gsd-db validation",
         status: "complete",
         key_files: [
-          join(GSD_SRC_DIR, "gsd-db.ts"),
+          join(GSD_SRC_DIR, "db.ts"),
           join(GSD_SRC_DIR, "types.ts"),
         ],
       });
@@ -317,7 +317,7 @@ Read the types from src/resources/extensions/workflow/types.ts and use them.
         status: "complete",
         key_files: [
           join(GSD_SRC_DIR, "state.ts"),
-          join(GSD_SRC_DIR, "gsd-db.ts"),
+          join(GSD_SRC_DIR, "db.ts"),
           join(GSD_SRC_DIR, "cache.ts"),
         ],
       });
@@ -349,7 +349,7 @@ Read the types from src/resources/extensions/workflow/types.ts and use them.
           sequence: 0,
           title: "Define TaskRow interface",
           status: "complete",
-          key_files: [join(GSD_SRC_DIR, "gsd-db.ts")],
+          key_files: [join(GSD_SRC_DIR, "db.ts")],
         }),
       ];
 
@@ -407,7 +407,7 @@ import { runPostExecutionChecks } from "./post-execution-checks.ts";
           ],
           inputs: [
             join(GSD_SRC_DIR, "types.ts"),
-            join(GSD_SRC_DIR, "gsd-db.ts"),
+            join(GSD_SRC_DIR, "db.ts"),
           ],
           expected_output: [
             join(GSD_SRC_DIR, "tests/enhanced-verification-integration.test.ts"),

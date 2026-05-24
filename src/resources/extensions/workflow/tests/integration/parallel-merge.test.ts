@@ -43,7 +43,7 @@ import {
   closeDatabase,
   insertMilestone,
   updateMilestoneStatus,
-} from "../../gsd-db.ts";
+} from "../../db.ts";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

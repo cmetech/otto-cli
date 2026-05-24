@@ -33,7 +33,7 @@ import {
   insertSlice,
   insertTask,
   openDatabase,
-} from "../../gsd-db.ts";
+} from "../../db.ts";
 
 function run(cmd: string, cwd: string): string {
   // Safe: all inputs are hardcoded test strings, not user input

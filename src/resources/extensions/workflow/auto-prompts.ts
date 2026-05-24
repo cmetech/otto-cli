@@ -28,7 +28,7 @@ import { getLoadedSkills, type Skill } from "@gsd/pi-coding-agent";
 import { join, basename } from "node:path";
 import { existsSync } from "node:fs";
 import { computeBudgets, resolveExecutorContextWindow, truncateAtSectionBoundary, type MinimalModelRegistry } from "./context-budget.js";
-import { getPendingGates, getPendingGatesForTurn } from "./gsd-db.js";
+import { getPendingGates, getPendingGatesForTurn } from "./db.js";
 import {
   GATE_REGISTRY,
   assertGateCoverage,
@@ -813,7 +813,7 @@ export async function inlineDependencySummaries(
   // DB primary path — get slice depends directly
   let depends: string[] | null = null;
   try {
-    const { isDbAvailable, getSlice } = await import("./gsd-db.js");
+    const { isDbAvailable, getSlice } = await import("./db.js");
     if (isDbAvailable()) {
       const slice = getSlice(mid, sid);
       if (slice) {
@@ -895,7 +895,7 @@ export async function inlineDecisionsFromDb(
 ): Promise<string | null> {
   const inlineLevel = level ?? resolveInlineLevel();
   try {
-    const { isDbAvailable } = await import("./gsd-db.js");
+    const { isDbAvailable } = await import("./db.js");
     if (isDbAvailable()) {
       // ADR-013 Phase 6 cutover (Stage 1): read decisions from the `memories`
       // table. Both `queryDecisions` (legacy) and `queryDecisionsFromMemories`
@@ -941,7 +941,7 @@ export async function inlineRequirementsFromDb(
 ): Promise<string | null> {
   const inlineLevel = level ?? resolveInlineLevel();
   try {
-    const { isDbAvailable } = await import("./gsd-db.js");
+    const { isDbAvailable } = await import("./db.js");
     if (isDbAvailable()) {
       const { queryRequirements, formatRequirementsForPrompt } = await import("./context-store.js");
       const requirements = queryRequirements({ milestoneId, sliceId });
@@ -967,7 +967,7 @@ export async function inlineProjectFromDb(
   base: string,
 ): Promise<string | null> {
   try {
-    const { isDbAvailable } = await import("./gsd-db.js");
+    const { isDbAvailable } = await import("./db.js");
     if (isDbAvailable()) {
       const { queryProject } = await import("./context-store.js");
       const content = queryProject();
@@ -1638,7 +1638,7 @@ export async function checkNeedsReassessment(
 ): Promise<{ sliceId: string } | null> {
   // DB primary path — fall through to file-based when DB has no data for this milestone
   try {
-    const { isDbAvailable, getMilestoneSlices } = await import("./gsd-db.js");
+    const { isDbAvailable, getMilestoneSlices } = await import("./db.js");
     if (isDbAvailable()) {
       const slices = getMilestoneSlices(mid);
       if (slices.length > 0) {
@@ -1693,7 +1693,7 @@ export async function checkNeedsRunUat(
 ): Promise<{ sliceId: string; uatType: UatType } | null> {
   // DB primary path — fall through to file-based when DB has no data for this milestone
   try {
-    const { isDbAvailable, getMilestoneSlices } = await import("./gsd-db.js");
+    const { isDbAvailable, getMilestoneSlices } = await import("./db.js");
     if (isDbAvailable()) {
       const slices = getMilestoneSlices(mid);
       if (slices.length > 0) {
@@ -2576,7 +2576,7 @@ export async function buildRefineSlicePrompt(
   // Pull the stored sketch scope from the DB — the hard constraint we plan within.
   let sketchScope = "";
   try {
-    const { isDbAvailable, getSlice } = await import("./gsd-db.js");
+    const { isDbAvailable, getSlice } = await import("./db.js");
     if (isDbAvailable()) {
       sketchScope = getSlice(mid, sid)?.sketch_scope ?? "";
     }
@@ -3013,7 +3013,7 @@ export async function buildCompleteMilestonePrompt(
   // Inline all slice summaries (deduplicated by slice ID)
   let sliceIds: string[] = [];
   try {
-    const { isDbAvailable, getMilestoneSlices } = await import("./gsd-db.js");
+    const { isDbAvailable, getMilestoneSlices } = await import("./db.js");
     if (isDbAvailable()) {
       sliceIds = getMilestoneSlices(mid)
         .filter(s => s.status !== "skipped")
@@ -3185,7 +3185,7 @@ export async function buildValidateMilestonePrompt(
 
   // Inline verification classes from planning (if available in DB)
   try {
-    const { isDbAvailable, getMilestone } = await import("./gsd-db.js");
+    const { isDbAvailable, getMilestone } = await import("./db.js");
     if (isDbAvailable()) {
       const milestone = getMilestone(mid);
       if (milestone) {
@@ -3210,7 +3210,7 @@ export async function buildValidateMilestonePrompt(
   // whole milestone on every closeout pass.
   let valSliceIds: string[] = [];
   try {
-    const { isDbAvailable, getMilestoneSlices } = await import("./gsd-db.js");
+    const { isDbAvailable, getMilestoneSlices } = await import("./db.js");
     if (isDbAvailable()) {
       valSliceIds = getMilestoneSlices(mid)
         .filter(s => s.status !== "skipped")
@@ -4045,7 +4045,7 @@ export async function buildRewriteDocsPrompt(
         // DB primary path — get incomplete tasks
         let incompleteTasks: { id: string }[] | null = null;
         try {
-          const { isDbAvailable, getSliceTasks } = await import("./gsd-db.js");
+          const { isDbAvailable, getSliceTasks } = await import("./db.js");
           if (isDbAvailable()) {
             incompleteTasks = getSliceTasks(mid, sid)
               .filter(t => t.status !== "complete" && t.status !== "done")

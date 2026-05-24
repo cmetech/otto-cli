@@ -29,7 +29,7 @@ import {
   insertSlice,
   insertTask,
   openDatabase,
-} from "../gsd-db.js";
+} from "../db.js";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

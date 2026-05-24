@@ -11,7 +11,7 @@ import { join, resolve as resolvePath, sep } from "node:path";
 import { homedir } from "node:os";
 import { deriveState } from "./state.js";
 import { gsdRoot } from "./paths.js";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 import { appendCapture, hasPendingCaptures, loadPendingCaptures } from "./captures.js";
 import { appendOverride, appendKnowledge } from "./files.js";
 import {

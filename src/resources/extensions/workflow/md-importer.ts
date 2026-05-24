@@ -18,7 +18,7 @@ import {
   transaction,
   updateSliceStatus,
   _getAdapter,
-} from './gsd-db.js';
+} from './db.js';
 import {
   resolveGsdRootFile,
   resolveMilestoneFile,

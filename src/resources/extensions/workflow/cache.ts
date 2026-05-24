@@ -19,7 +19,7 @@
 // the `artifacts` table empty and the agent looping on "file exists but
 // DB record missing" recovery calls. If a call site genuinely needs the
 // artifact table cleared after an out-of-band file mutation, it should
-// invoke clearArtifacts() from gsd-db.js explicitly — do not add it back
+// invoke clearArtifacts() from db.js explicitly — do not add it back
 // here.
 
 import { invalidateStateCache } from './state.js';

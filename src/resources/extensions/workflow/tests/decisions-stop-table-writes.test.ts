@@ -28,7 +28,7 @@ import {
   closeDatabase,
   insertDecision,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { saveDecisionToDb } from "../db-writer.ts";
 import {
   getAllDecisionsFromMemories,

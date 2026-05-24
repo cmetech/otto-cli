@@ -6,7 +6,7 @@ import {
   getMilestoneSlices,
   getSliceTasks,
   isDbAvailable,
-} from "./gsd-db.js";
+} from "./db.js";
 import { parsePlan, parseRoadmap } from "./parsers-legacy.js";
 import {
   milestonesDir,

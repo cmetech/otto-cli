@@ -24,7 +24,7 @@ import { fileURLToPath } from "node:url";
 import { parse as parseYaml } from "yaml";
 
 import { loadRegistry, type WorkflowMode } from "./workflow-templates.js";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 
 export type { WorkflowMode } from "./workflow-templates.js";
 

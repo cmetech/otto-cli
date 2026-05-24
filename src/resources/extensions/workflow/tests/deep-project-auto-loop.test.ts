@@ -28,7 +28,7 @@ import {
   closeDatabase,
   insertMilestone,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import type { GSDPreferences } from "../preferences.ts";
 import type { GSDState } from "../types.ts";
 
@@ -214,7 +214,7 @@ async function runNewProjectCommand(base: string, command: string): Promise<unkn
     else process.env.GSD_PROJECT_ROOT = previousProjectRoot;
 
     try {
-      const { closeDatabase } = await import("../gsd-db.ts");
+      const { closeDatabase } = await import("../db.ts");
       closeDatabase();
     } catch {}
   }
@@ -253,7 +253,7 @@ async function runBareGsdCommand(base: string): Promise<unknown[]> {
     else process.env.GSD_PROJECT_ROOT = previousProjectRoot;
 
     try {
-      const { closeDatabase } = await import("../gsd-db.ts");
+      const { closeDatabase } = await import("../db.ts");
       closeDatabase();
     } catch {}
   }
@@ -309,7 +309,7 @@ test("deep project setup: bootstrap can start auto-mode without an active milest
     assert.equal(s.currentMilestoneId, null);
   } finally {
     try {
-      const { closeDatabase } = await import("../gsd-db.ts");
+      const { closeDatabase } = await import("../db.ts");
       closeDatabase();
     } catch {}
     rmSync(base, { recursive: true, force: true });
@@ -803,7 +803,7 @@ test("deep project setup: new-project --deep uses cwd when nested inside a paren
     clearPendingDeepProjectSetup(child);
     rmSync(parent, { recursive: true, force: true });
     try {
-      const { closeDatabase } = await import("../gsd-db.ts");
+      const { closeDatabase } = await import("../db.ts");
       closeDatabase();
     } catch {}
   }
@@ -1314,7 +1314,7 @@ test("deep project setup: empty legacy pseudo-milestone dirs do not block first 
     else process.env.GSD_WORKFLOW_PATH = previousWorkflowPath;
     clearPendingAutoStart(base);
     try {
-      const { closeDatabase } = await import("../gsd-db.ts");
+      const { closeDatabase } = await import("../db.ts");
       closeDatabase();
     } catch {}
     rmSync(base, { recursive: true, force: true });

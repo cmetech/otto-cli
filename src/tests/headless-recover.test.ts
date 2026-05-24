@@ -34,7 +34,7 @@ import {
   getMilestoneSlices,
   getSliceTasks,
   insertGateRow,
-} from "../resources/extensions/workflow/gsd-db.ts";
+} from "../resources/extensions/workflow/db.ts";
 import { migrateHierarchyToDb } from "../resources/extensions/workflow/md-importer.ts";
 import { invalidateStateCache } from "../resources/extensions/workflow/state.ts";
 

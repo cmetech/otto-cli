@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { closeDatabase, openDatabase, _getAdapter } from "../gsd-db.ts";
+import { closeDatabase, openDatabase, _getAdapter } from "../db.ts";
 import { UokGateRunner } from "../uok/gate-runner.ts";
 
 test.beforeEach(() => {

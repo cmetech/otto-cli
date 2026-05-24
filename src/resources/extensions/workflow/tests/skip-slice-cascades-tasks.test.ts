@@ -23,7 +23,7 @@ import {
   getSliceTasks,
   updateSliceStatus,
   updateTaskStatus,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { handleSkipSlice } from "../tools/skip-slice.ts";
 
 describe("handleSkipSlice cascades skip to tasks (#4375)", () => {

@@ -17,7 +17,7 @@ import {
   transaction,
   updateSliceStatus,
   updateTaskStatus,
-} from "../gsd-db.js";
+} from "../db.js";
 import { isClosedStatus } from "../status-guards.js";
 
 /**

@@ -34,7 +34,7 @@ import {
   formatSkillRef,
 } from "./preferences-types.js";
 import { validatePreferences } from "./preferences-validation.js";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 
 // ─── Re-exports: types ──────────────────────────────────────────────────────
 // Every type/interface that was previously exported from this file is

@@ -36,7 +36,7 @@ import {
   insertMilestone,
   upsertMilestonePlanning,
   insertSlice,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 // ─── Pure composer tests ──────────────────────────────────────────────────
 

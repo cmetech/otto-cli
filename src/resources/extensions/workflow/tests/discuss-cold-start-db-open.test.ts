@@ -20,7 +20,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 import { ensureDbOpen } from "../bootstrap/dynamic-tools.ts";
-import { openDatabase, closeDatabase, isDbAvailable, insertMilestone } from "../gsd-db.ts";
+import { openDatabase, closeDatabase, isDbAvailable, insertMilestone } from "../db.ts";
 import { deriveState, invalidateStateCache } from "../state.ts";
 
 afterEach(() => {

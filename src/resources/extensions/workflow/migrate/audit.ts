@@ -5,7 +5,7 @@ import { cpSync, existsSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
 import { saveFile } from "../files.js";
-import { insertArtifact } from "../gsd-db.js";
+import { insertArtifact } from "../db.js";
 import { renderAllFromDb } from "../markdown-renderer.js";
 import { gsdRoot } from "../paths.js";
 import { countDbHierarchy, countMarkdownHierarchy, type HierarchyCounts } from "../migration-auto-check.js";

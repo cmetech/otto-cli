@@ -20,7 +20,7 @@ import {
   insertTask,
   getTask,
   getSlice,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { invalidateAllCaches } from "../cache.ts";
 import { existsSync } from "node:fs";
 

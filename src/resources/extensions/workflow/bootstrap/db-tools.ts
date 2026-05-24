@@ -404,7 +404,7 @@ export function registerDbTools(pi: ExtensionAPI): void {
       }
 
       await ensureDbOpen(basePath);
-      const { getAllMilestones } = await import("../gsd-db.js");
+      const { getAllMilestones } = await import("../db.js");
       const existingIds = [
         ...findMilestoneIds(basePath),
         ...getAllMilestones().map((m) => m.id),
@@ -436,7 +436,7 @@ export function registerDbTools(pi: ExtensionAPI): void {
     const dbAvailable = await ensureDbOpen(basePath);
     if (!dbAvailable) return;
     try {
-      const { insertMilestone } = await import("../gsd-db.js");
+      const { insertMilestone } = await import("../db.js");
       insertMilestone({ id: milestoneId, status: "queued" });
     } catch (e) {
       logError("tool", `insertMilestone failed for ${milestoneId}: ${(e as Error).message}`);

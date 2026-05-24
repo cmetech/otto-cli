@@ -10,7 +10,7 @@ import {
   getMilestone,
   getMilestoneSlices,
   isDbAvailable,
-} from "../../gsd-db.js";
+} from "../../db.js";
 import { renderRoadmapFromDb } from "../../markdown-renderer.js";
 import { findMilestoneIds } from "../../milestone-ids.js";
 import { parseRoadmap } from "../../parsers-legacy.js";

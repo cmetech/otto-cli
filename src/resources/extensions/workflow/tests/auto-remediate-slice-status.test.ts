@@ -20,7 +20,7 @@ import {
   insertSlice,
   isDbAvailable,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 afterEach(() => {
   if (isDbAvailable()) closeDatabase();

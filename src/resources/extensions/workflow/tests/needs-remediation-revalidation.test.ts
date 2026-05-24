@@ -21,7 +21,7 @@ import {
   insertMilestone,
   insertSlice,
   openDatabase,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import { deriveStateFromDb } from '../state.ts';
 
 describe('needs-remediation revalidation guard (#3670)', () => {

@@ -25,11 +25,11 @@ import {
   closeDatabase,
   insertMilestone,
   _getAdapter,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { registerAutoWorker } from "../db/auto-workers.ts";
 import { claimMilestoneLease } from "../db/milestone-leases.ts";
 import { recordDispatchClaim } from "../db/unit-dispatches.ts";
-import { insertSlice, insertTask } from "../gsd-db.ts";
+import { insertSlice, insertTask } from "../db.ts";
 import { setRuntimeKv } from "../db/runtime-kv.ts";
 import { normalizeRealPath } from "../paths.ts";
 import type { GSDState } from "../types.ts";

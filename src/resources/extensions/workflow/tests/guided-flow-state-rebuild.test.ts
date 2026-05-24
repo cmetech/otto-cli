@@ -22,7 +22,7 @@ import {
   insertMilestone,
   insertSlice,
   insertTask,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import {
   checkAutoStartAfterDiscuss,
   clearPendingAutoStart,

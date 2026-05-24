@@ -27,7 +27,7 @@ import {
   setSliceSummaryMd,
   saveGateResult,
   getPendingGatesForTurn,
-} from "../gsd-db.js";
+} from "../db.js";
 import { getGatesForTurn } from "../gate-registry.js";
 import { gsdProjectionRoot, clearPathCache, resolveMilestoneFile } from "../paths.js";
 import { resolveCanonicalMilestoneRoot } from "../worktree-manager.js";

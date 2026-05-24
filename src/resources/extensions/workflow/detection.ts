@@ -11,7 +11,7 @@ import { existsSync, openSync, readSync, closeSync, readdirSync, readFileSync, s
 import { dirname, join, parse as parsePath } from "node:path";
 import { homedir } from "node:os";
 import { gsdRoot } from "./paths.js";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 
 
 // ─── Types ──────────────────────────────────────────────────────────────────────

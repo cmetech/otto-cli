@@ -6,7 +6,7 @@ import { join } from "node:path";
 
 import type { GSDState, Phase } from "../types.js";
 import { gsdRoot, resolveMilestoneFile, resolveSliceFile } from "../paths.js";
-import { isDbAvailable, getMilestoneSlices, getSliceTasks } from "../gsd-db.js";
+import { isDbAvailable, getMilestoneSlices, getSliceTasks } from "../db.js";
 import type { SliceRow } from "../db-task-slice-rows.js";
 import type { UokGraphNode } from "./contracts.js";
 

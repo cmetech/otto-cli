@@ -18,7 +18,7 @@ import {
   getPendingSliceGateCount,
   insertMilestone,
   insertSlice,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 describe("quality_gates CRUD", () => {
   let tmpDir: string;

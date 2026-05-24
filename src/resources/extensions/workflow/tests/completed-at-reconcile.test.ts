@@ -20,7 +20,7 @@ import {
   insertSlice,
   insertTask,
   getTask,
-} from '../gsd-db.ts';
+} from '../db.ts';
 
 let basePath: string;
 

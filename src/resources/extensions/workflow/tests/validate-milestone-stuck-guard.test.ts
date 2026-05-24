@@ -14,7 +14,7 @@ import {
   closeDatabase,
   insertMilestone,
   insertSlice,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { invalidateAllCaches } from "../cache.ts";
 import { _clearGsdRootCache } from "../paths.ts";
 

@@ -5,7 +5,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { _getAdapter, bulkInsertLegacyHierarchy } from "./gsd-db.js";
+import { _getAdapter, bulkInsertLegacyHierarchy } from "./db.js";
 import { parseRoadmap, parsePlan } from "./parsers-legacy.js";
 import { logWarning } from "./workflow-logger.js";
 import { resolveMilestoneFile } from "./paths.js";

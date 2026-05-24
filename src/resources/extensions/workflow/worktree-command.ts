@@ -656,7 +656,7 @@ async function handleMerge(
     const mainDbPath = contract.projectDb;
     if (existsSync(wtDbPath) && existsSync(mainDbPath)) {
       try {
-        const { reconcileWorktreeDb } = await import("./gsd-db.js");
+        const { reconcileWorktreeDb } = await import("./db.js");
         reconcileWorktreeDb(mainDbPath, wtDbPath);
       } catch { /* non-fatal */ }
     }

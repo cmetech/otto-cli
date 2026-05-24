@@ -10,7 +10,7 @@ import {
   closeDatabase,
   insertMilestone,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import {
   findUnmergedCompletedMilestones,
   formatUnmergedMilestoneBlockMessage,

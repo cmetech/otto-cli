@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 
 export interface WorktreeSegment {
   gsdIdx: number;

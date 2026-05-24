@@ -130,7 +130,7 @@ test("buildParallelResearchSlicesPrompt injects subagent model for each slice", 
 });
 
 test("buildGateEvaluatePrompt uses nested context guidance and model instruction", async (t) => {
-  const { closeDatabase, insertGateRow, insertMilestone, insertSlice, openDatabase } = await import("../gsd-db.ts");
+  const { closeDatabase, insertGateRow, insertMilestone, insertSlice, openDatabase } = await import("../db.ts");
   const repo = mkdtempSync(join(tmpdir(), "gsd-subagent-model-gate-"));
   t.after(() => {
     try { closeDatabase(); } catch { /* noop */ }

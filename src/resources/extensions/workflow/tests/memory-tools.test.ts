@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { _getAdapter, closeDatabase, openDatabase } from '../gsd-db.ts';
+import { _getAdapter, closeDatabase, openDatabase } from '../db.ts';
 import { createMemory, supersedeMemory } from '../memory-store.ts';
 import {
   executeGsdGraph,

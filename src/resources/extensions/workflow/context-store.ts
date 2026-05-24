@@ -4,7 +4,7 @@
 // with optional filtering. Format functions produce prompt-injectable markdown.
 // All functions degrade gracefully: return empty results when DB unavailable, never throw.
 
-import { isDbAvailable, _getAdapter } from './gsd-db.js';
+import { isDbAvailable, _getAdapter } from './db.js';
 import type { Decision, DecisionMadeBy, Requirement } from './types.js';
 
 // ─── Query Functions ───────────────────────────────────────────────────────

@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { buildGsdHomeModel, showGsdHome } from "../gsd-command-home.ts";
+import { buildGsdHomeModel, showGsdHome } from "../command-home.ts";
 import type { GSDState } from "../types.ts";
 
 function baseState(overrides: Partial<GSDState> = {}): GSDState {

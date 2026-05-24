@@ -22,7 +22,7 @@ import {
   insertTask,
   setMilestoneQueueOrder,
   updateTaskStatus,
-} from '../gsd-db.ts';
+} from '../db.ts';
 
 // ─── Fixture Helpers ───────────────────────────────────────────────────────
 

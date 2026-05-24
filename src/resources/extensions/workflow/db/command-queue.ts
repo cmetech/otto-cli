@@ -17,7 +17,7 @@ import {
   _getAdapter,
   isDbAvailable,
   transaction,
-} from "../gsd-db.js";
+} from "../db.js";
 
 export interface CommandQueueRow {
   id: number;

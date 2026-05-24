@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { closeDatabase, getAllMilestones, insertMilestone, isDbAvailable, openDatabase } from "../gsd-db.ts";
+import { closeDatabase, getAllMilestones, insertMilestone, isDbAvailable, openDatabase } from "../db.ts";
 import { reconcileProjectMilestonesFromDisk } from "../auto-start.ts";
 
 test.afterEach(() => {

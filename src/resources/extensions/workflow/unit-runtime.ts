@@ -10,7 +10,7 @@ import {
 } from "./paths.js";
 import { loadFile, parseTaskPlanMustHaves, countMustHavesMentionedInSummary } from "./files.js";
 import { parseUnitId } from "./unit-id.js";
-import { getTask, isDbAvailable, refreshOpenDatabaseFromDisk } from "./gsd-db.js";
+import { getTask, isDbAvailable, refreshOpenDatabaseFromDisk } from "./db.js";
 import { isClosedStatus } from "./status-guards.js";
 
 // Per-record advisory lock — prevents read-modify-write races between

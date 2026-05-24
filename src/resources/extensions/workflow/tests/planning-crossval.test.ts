@@ -15,7 +15,7 @@ import {
   insertTask,
   getMilestoneSlices,
   getSliceTasks,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import {
   renderRoadmapFromDb,
   renderPlanFromDb,

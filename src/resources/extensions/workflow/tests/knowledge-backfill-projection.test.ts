@@ -27,7 +27,7 @@ import {
   _getAdapter,
   closeDatabase,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { backfillKnowledgeToMemories } from "../knowledge-backfill.ts";
 import {
   knowledgeMdPath,

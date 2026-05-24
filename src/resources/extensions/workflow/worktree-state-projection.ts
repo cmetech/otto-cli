@@ -31,7 +31,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 
-import { reconcileWorktreeDb } from "./gsd-db.js";
+import { reconcileWorktreeDb } from "./db.js";
 import { resolveGsdPathContract } from "./paths.js";
 import { safeCopy, safeCopyRecursive } from "./safe-fs.js";
 import type { MilestoneScope } from "./workspace.js";

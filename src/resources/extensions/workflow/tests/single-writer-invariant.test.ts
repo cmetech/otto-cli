@@ -25,7 +25,7 @@ import { join, relative } from "node:path";
 const gsdDir = join(process.cwd(), "src/resources/extensions/workflow");
 
 const ALLOWLIST = new Set([
-  "gsd-db.ts",
+  "db.ts",
   "unit-ownership.ts",
 ]);
 
@@ -134,7 +134,7 @@ test("no module outside gsd-db.ts issues raw write SQL against the engine DB", (
 test("gsd-db.ts exports the expected single-writer wrappers", async () => {
   // Positive assertion — fail loudly if the module layout changes so this
   // structural test can't silently become a no-op.
-  const db = await import("../gsd-db.js");
+  const db = await import("../db.js");
 
   const expected = [
     "deleteDecisionById",
@@ -173,7 +173,7 @@ test("the invariant test touches every .ts module under gsd/ (sanity check)", ()
 
   // Spot-check a couple of known files that must be included
   const rels = files.map((f) => relative(gsdDir, f));
-  assert.ok(rels.includes("gsd-db.ts"), "walker must include gsd-db.ts");
+  assert.ok(rels.includes("db.ts"), "walker must include db.ts");
   assert.ok(rels.includes("memory-store.ts"), "walker must include memory-store.ts");
   assert.ok(rels.includes("workflow-manifest.ts"), "walker must include workflow-manifest.ts");
 });

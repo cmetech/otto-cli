@@ -16,7 +16,7 @@ import assert from 'node:assert/strict'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { closeDatabase, insertMilestone, insertSlice, openDatabase } from '../gsd-db.ts'
+import { closeDatabase, insertMilestone, insertSlice, openDatabase } from '../db.ts'
 import { renderAllProjections } from '../workflow-projections.ts'
 
 describe('renderAllProjections must not overwrite PLAN.md (#3651)', () => {

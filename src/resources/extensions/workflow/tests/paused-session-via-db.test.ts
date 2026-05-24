@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import {
   openDatabase,
   closeDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import {
   setRuntimeKv,
   getRuntimeKv,

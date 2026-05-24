@@ -3,7 +3,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { _getAdapter, isDbAvailable } from "../gsd-db.js";
+import { _getAdapter, isDbAvailable } from "../db.js";
 import { gsdRoot } from "../paths.js";
 
 export interface TurnTimelineFilter {

@@ -67,7 +67,7 @@ import {
   insertMilestone,
   insertSlice,
   insertTask,
-} from "../../gsd-db.ts";
+} from "../../db.ts";
 import {
   deriveState,
   deriveStateFromDb,
@@ -767,7 +767,7 @@ describe("state consistency under DB mutations", () => {
     states.push(s1.phase);
 
     // pending → complete
-    const { updateTaskStatus } = await import("../../gsd-db.ts");
+    const { updateTaskStatus } = await import("../../db.ts");
     updateTaskStatus("M001", "S01", "T01", "complete", new Date().toISOString());
     invalidateAllCaches();
     const s2 = await deriveStateFromDb(base);
@@ -795,7 +795,7 @@ describe("state consistency under DB mutations", () => {
     assert.equal(s1.phase, "validating-milestone");
 
     // Mark milestone complete directly
-    const { updateMilestoneStatus } = await import("../../gsd-db.ts");
+    const { updateMilestoneStatus } = await import("../../db.ts");
     updateMilestoneStatus("M001", "complete", new Date().toISOString());
     // Write SUMMARY to make it truly complete
     writeFileSync(

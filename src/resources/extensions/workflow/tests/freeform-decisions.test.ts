@@ -7,7 +7,7 @@ import {
   openDatabase,
   closeDatabase,
   _getAdapter,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import {
   parseDecisionsTable,
 } from '../md-importer.ts';

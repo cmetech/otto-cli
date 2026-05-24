@@ -21,7 +21,7 @@ import {
   openDatabase,
   closeDatabase,
   insertMilestone,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import {
   clearDiscussionFlowState,
   clearPendingGate,

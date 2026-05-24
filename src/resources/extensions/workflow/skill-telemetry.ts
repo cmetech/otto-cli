@@ -13,7 +13,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 import { homedir } from "node:os";
 
 // ─── In-memory state ──────────────────────────────────────────────────────────

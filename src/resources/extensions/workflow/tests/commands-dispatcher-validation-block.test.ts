@@ -15,7 +15,7 @@ import {
   insertMilestone,
   insertSlice,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { invalidateStateCache } from "../state.ts";
 import { BRAND } from "../strings.ts";
 

@@ -17,7 +17,7 @@ import {
   insertMilestone,
   insertSlice,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 let tempBase: string | null = null;
 

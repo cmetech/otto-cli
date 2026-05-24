@@ -15,7 +15,7 @@ import {
   insertRequirement,
   insertSlice,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { migrateHierarchyToDb } from "../md-importer.ts";
 import { checkMarkdownHierarchyAgainstDb } from "../migration-auto-check.ts";
 import { queryDecisions } from "../context-store.ts";

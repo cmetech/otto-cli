@@ -13,7 +13,7 @@
 // others only in memories) and on a fresh project where neither has any
 // entries yet.
 
-import { _getAdapter, isDbAvailable } from "./gsd-db.js";
+import { _getAdapter, isDbAvailable } from "./db.js";
 import { createMemory } from "./memory-store.js";
 import { parseKnowledgeRows, readKnowledgeMd } from "./knowledge-parser.js";
 import { logWarning } from "./workflow-logger.js";

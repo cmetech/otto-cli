@@ -7,7 +7,7 @@ import { isAbsolute, join, resolve } from "node:path";
 
 import { GIT_NO_PROMPT_ENV } from "./git-constants.js";
 import { runTurnGitAction, type TurnGitActionMode, type TurnGitActionResult } from "./git-service.js";
-import { _getAdapter, upsertTurnGitTransaction } from "./gsd-db.js";
+import { _getAdapter, upsertTurnGitTransaction } from "./db.js";
 import { listUnmergedGitPaths } from "./git-conflict-state.js";
 import { parseUnitId } from "./unit-id.js";
 

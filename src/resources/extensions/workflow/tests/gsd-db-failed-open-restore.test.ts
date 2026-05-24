@@ -13,7 +13,7 @@ import {
   isDbAvailable,
   getDbPath,
   _getDbCache,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { createWorkspace } from "../workspace.ts";
 import type { GsdWorkspace } from "../workspace.ts";
 

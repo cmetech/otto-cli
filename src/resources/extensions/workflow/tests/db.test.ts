@@ -39,7 +39,7 @@ import {
   refreshOpenDatabaseFromDisk,
   tryCreateMemoriesFts,
   _isLikelyWslDrvFsPathForTest,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import { _resetLogs, peekLogs, setStderrLoggingEnabled } from '../workflow-logger.ts';
 
 const _require = createRequire(import.meta.url);
@@ -922,7 +922,7 @@ describe('gsd-db', () => {
       'src-erf/Models/foo.cs, src-erf/Models/bar.cs',
       'docs/input-a.md, docs/input-b.md',
       'dist/out-a.md, dist/out-b.md',
-      'src/resources/extensions/workflow/gsd-db.ts, src/resources/extensions/workflow/state.ts',
+      'src/resources/extensions/workflow/db.ts, src/resources/extensions/workflow/state.ts',
       '"decision-1"',
       'M001',
       'S01',
@@ -936,7 +936,7 @@ describe('gsd-db', () => {
     assert.deepStrictEqual(task!.expected_output, ['dist/out-a.md', 'dist/out-b.md']);
     assert.deepStrictEqual(
       task!.key_files,
-      ['src/resources/extensions/workflow/gsd-db.ts', 'src/resources/extensions/workflow/state.ts'],
+      ['src/resources/extensions/workflow/db.ts', 'src/resources/extensions/workflow/state.ts'],
     );
     assert.deepStrictEqual(task!.key_decisions, ['decision-1']);
 

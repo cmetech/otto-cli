@@ -17,7 +17,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { closeDatabase, insertMilestone, openDatabase } from '../gsd-db.ts';
+import { closeDatabase, insertMilestone, openDatabase } from '../db.ts';
 import { clearPathCache } from '../paths.ts';
 import { isGhostMilestone } from '../state.ts';
 

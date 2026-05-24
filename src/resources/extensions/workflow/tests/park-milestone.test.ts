@@ -17,7 +17,7 @@ import {
   insertSlice,
   insertTask,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { createWorktree } from "../worktree-manager.ts";
 
 // ─── Fixture Helpers ───────────────────────────────────────────────────────

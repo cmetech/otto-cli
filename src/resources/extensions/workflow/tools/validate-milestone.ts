@@ -20,7 +20,7 @@ import {
   getMilestoneSlices,
   getMilestone,
   getArtifact,
-} from "../gsd-db.js";
+} from "../db.js";
 import { gsdProjectionRoot, clearPathCache, resolveSliceFile } from "../paths.js";
 import { resolveCanonicalMilestoneRoot } from "../worktree-manager.js";
 import { saveFile, clearParseCache, loadFile } from "../files.js";

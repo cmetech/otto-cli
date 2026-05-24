@@ -14,7 +14,7 @@ import {
   openDatabase,
   closeDatabase,
   insertMilestone,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { invalidateAllCaches } from "../cache.ts";
 import type { DoctorIssue, DoctorIssueCode } from "../doctor-types.ts";
 

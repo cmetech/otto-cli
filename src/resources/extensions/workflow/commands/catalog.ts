@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { loadRegistry } from "../workflow-templates.js";
-import { gsdHome } from "../gsd-home.js";
+import { gsdHome } from "../home.js";
 import { VISUAL_BRIEF_MODES } from "../../visual-brief/prompts.js";
 import { BRAND, slashCommand } from "../strings.js";
 

@@ -7,7 +7,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { logWarning } from "./workflow-logger.js"
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 
 /**
  * Bump `FLOW_VERSION` whenever a new required step is added to ONBOARDING_STEPS.

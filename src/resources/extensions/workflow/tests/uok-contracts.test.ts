@@ -26,7 +26,7 @@ import {
 import { buildAuditEnvelope, emitUokAuditEvent } from "../uok/audit.ts";
 import { buildDispatchEnvelope, explainDispatch } from "../uok/dispatch-envelope.ts";
 import { buildTurnTimeline } from "../uok/timeline.ts";
-import { _getAdapter, closeDatabase, openDatabase } from "../gsd-db.ts";
+import { _getAdapter, closeDatabase, openDatabase } from "../db.ts";
 
 test("uok contracts serialize/deserialize turn envelopes", () => {
   const contract: TurnContract = {

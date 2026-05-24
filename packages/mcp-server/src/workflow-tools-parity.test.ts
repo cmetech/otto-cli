@@ -26,7 +26,7 @@ import { fileURLToPath } from "node:url";
 import {
   closeDatabase,
   getTask,
-} from "../../../src/resources/extensions/workflow/gsd-db.ts";
+} from "../../../src/resources/extensions/workflow/db.ts";
 import { executeTaskComplete } from "../../../src/resources/extensions/workflow/tools/workflow-tool-executors.ts";
 import { registerWorkflowTools } from "./workflow-tools.ts";
 

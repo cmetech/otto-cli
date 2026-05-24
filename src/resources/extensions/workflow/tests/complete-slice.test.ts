@@ -15,7 +15,7 @@ import {
   getSliceTasks,
   setSliceSummaryMd,
   SCHEMA_VERSION,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import { handleCompleteSlice } from '../tools/complete-slice.ts';
 import { parseRoadmap } from '../parsers-legacy.ts';
 import type { CompleteSliceParams } from '../types.ts';

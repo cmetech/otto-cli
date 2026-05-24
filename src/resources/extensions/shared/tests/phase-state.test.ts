@@ -13,7 +13,7 @@ import {
 	clearCurrentPhase,
 	isGSDActive,
 	getCurrentPhase,
-} from "../gsd-phase-state.js";
+} from "../phase-state.js";
 
 describe("gsd-phase-state", () => {
 	beforeEach(() => {

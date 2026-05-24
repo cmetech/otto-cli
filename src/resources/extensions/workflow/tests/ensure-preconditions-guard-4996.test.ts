@@ -13,7 +13,7 @@ import {
   openDatabase,
   closeDatabase,
   insertMilestone,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 import type { GSDState } from "../types.ts";
 

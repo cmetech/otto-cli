@@ -20,7 +20,7 @@ import {
   getSliceTasks,
   getLatestAssessmentByScope,
   updateMilestoneStatus,
-} from "../gsd-db.js";
+} from "../db.js";
 import { gsdProjectionRoot, clearPathCache } from "../paths.js";
 import { resolveCanonicalMilestoneRoot } from "../worktree-manager.js";
 import { isClosedStatus } from "../status-guards.js";

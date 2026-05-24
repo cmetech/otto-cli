@@ -16,7 +16,7 @@ import {
   updateMilestoneStatus,
   updateSliceStatus,
   updateTaskStatus,
-} from "../../gsd-db.js";
+} from "../../db.js";
 import {
   resolveMilestoneFile,
   resolveSliceFile,

@@ -24,7 +24,7 @@ import {
   getArtifact,
   insertArtifact,
   getGateResults,
-} from "./gsd-db.js";
+} from "./db.js";
 import type { MilestoneRow, ArtifactRow } from "./db-milestone-artifact-rows.js";
 import type { SliceRow, TaskRow } from "./db-task-slice-rows.js";
 import type { GateRow } from "./types.js";

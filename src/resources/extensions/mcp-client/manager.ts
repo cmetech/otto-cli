@@ -12,7 +12,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import { buildHttpTransportOpts, type McpHttpAuthConfig } from "./auth.js";
-import { gsdHome } from "../workflow/gsd-home.js";
+import { gsdHome } from "../workflow/home.js";
 
 export type ManagedMcpTransport = "stdio" | "http" | "unsupported";
 export type ManagedMcpSourceKind = "project-shared" | "project-local" | "global";

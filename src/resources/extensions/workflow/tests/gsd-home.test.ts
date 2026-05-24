@@ -14,7 +14,7 @@ describe("gsdHome", () => {
 
   beforeEach(async () => {
     savedGsdHome = process.env.GSD_HOME;
-    const mod = await import("../gsd-home.js");
+    const mod = await import("../home.js");
     gsdHome = mod.gsdHome;
   });
 

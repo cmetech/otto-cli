@@ -17,7 +17,7 @@ import {
   setTaskBlockerDiscovered,
   insertOrIgnoreSlice,
   insertOrIgnoreTask,
-} from "./gsd-db.js";
+} from "./db.js";
 import { isClosedStatus } from "./status-guards.js";
 import { invalidateStateCache } from "./state.js";
 import { clearPathCache, resolveGsdPathContract } from "./paths.js";

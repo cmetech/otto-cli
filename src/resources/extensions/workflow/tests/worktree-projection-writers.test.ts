@@ -15,7 +15,7 @@ import {
   insertTask,
   openDatabase,
   updateSliceStatus,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { clearParseCache } from "../files.ts";
 import { clearPathCache } from "../paths.ts";
 import { invalidateStateCache } from "../state.ts";

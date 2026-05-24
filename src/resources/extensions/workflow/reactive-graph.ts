@@ -11,7 +11,7 @@
 
 import type { TaskIO, DerivedTaskNode, ReactiveExecutionState } from "./types.js";
 import { loadFile, parseTaskPlanIO } from "./files.js";
-import { isDbAvailable, getSliceTasks } from "./gsd-db.js";
+import { isDbAvailable, getSliceTasks } from "./db.js";
 import { parsePlan } from "./parsers-legacy.js";
 import { resolveTasksDir, resolveTaskFiles } from "./paths.js";
 import { join } from "node:path";

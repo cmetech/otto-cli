@@ -20,7 +20,7 @@ import {
   insertMemoryRow,
   incrementMemoryHitCount,
   SCHEMA_VERSION,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 function makeTmp(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), "gsd-v27v28-"));

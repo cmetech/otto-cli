@@ -19,7 +19,7 @@ import {
   saveGateResult,
   markAllGatesOmitted,
   getPendingSliceGateCount,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { deriveState, invalidateStateCache } from "../state.ts";
 import { renderPlanFromDb } from "../markdown-renderer.ts";
 import { invalidateAllCaches } from "../cache.ts";

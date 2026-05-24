@@ -23,9 +23,9 @@ import {
   getMilestoneSlices,
   getSliceTasks,
   getGateResults,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { renderRoadmapContent } from "../workflow-projections.ts";
-import type { MilestoneRow, SliceRow } from "../gsd-db.ts";
+import type { MilestoneRow, SliceRow } from "../db.ts";
 import type { AutoSession } from "../auto/session.ts";
 
 // ─── Fixture helpers ────────────────────────────────────────────────────────
@@ -378,7 +378,7 @@ describe("#2945 Bug 4: validate-milestone must persist quality_gates records", (
 
     // Quality gate records should exist in DB for this milestone
     // Use a wildcard slice_id since milestone-level gates use a sentinel
-    const adapter = (await import("../gsd-db.ts"))._getAdapter()!;
+    const adapter = (await import("../db.ts"))._getAdapter()!;
     const gates = adapter.prepare(
       "SELECT * FROM quality_gates WHERE milestone_id = 'M001'"
     ).all();
@@ -407,7 +407,7 @@ describe("#2945 Bug 4: validate-milestone must persist quality_gates records", (
       remediationPlan: "Fix S01",
     }, basePath);
 
-    const adapter = (await import("../gsd-db.ts"))._getAdapter()!;
+    const adapter = (await import("../db.ts"))._getAdapter()!;
     const gates = adapter.prepare(
       "SELECT * FROM quality_gates WHERE milestone_id = 'M001'"
     ).all();

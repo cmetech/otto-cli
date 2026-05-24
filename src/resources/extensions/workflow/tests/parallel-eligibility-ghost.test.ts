@@ -20,7 +20,7 @@ import {
   insertSlice,
   insertTask,
   updateMilestoneStatus,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 // ─── Fixture Helpers ───────────────────────────────────────────────────────
 

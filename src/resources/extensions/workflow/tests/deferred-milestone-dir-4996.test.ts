@@ -10,7 +10,7 @@ import { isReusableGhostMilestone } from "../state.ts";
 import { nextMilestoneIdReserved } from "../milestone-id-reservation.ts";
 import { clearReservedMilestoneIds, findMilestoneIds } from "../milestone-ids.ts";
 import { invalidateAllCaches } from "../cache.ts";
-import { closeDatabase, openDatabase } from "../gsd-db.ts";
+import { closeDatabase, openDatabase } from "../db.ts";
 
 function makeBase(prefix = "gsd-deferred-dir-"): string {
   const base = mkdtempSync(join(tmpdir(), prefix));

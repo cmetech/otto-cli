@@ -5,7 +5,7 @@ import path from "node:path";
 import fs from "node:fs";
 
 import { handleInspect } from "../commands-inspect.ts";
-import { closeDatabase, openDatabase } from "../gsd-db.ts";
+import { closeDatabase, openDatabase } from "../db.ts";
 
 test("/gsd inspect opens existing database when it was not yet opened in session", async (t) => {
   closeDatabase();

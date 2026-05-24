@@ -15,7 +15,7 @@ import {
   insertSlice,
   setSliceSketchFlag,
   getSlice,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { autoHealSketchFlags } from "../state-reconciliation/drift/sketch-flag.ts";
 import { deriveState, deriveStateFromDb } from "../state.ts";
 import { resolveDispatch } from "../auto-dispatch.ts";

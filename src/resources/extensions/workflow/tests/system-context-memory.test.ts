@@ -5,7 +5,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { buildContextMessage, isLowEntropyResumePrompt, loadMemoryBlock } from "../bootstrap/system-context.ts";
-import { closeDatabase, openDatabase } from "../gsd-db.ts";
+import { closeDatabase, openDatabase } from "../db.ts";
 import { createMemory } from "../memory-store.ts";
 
 test("buildContextMessage marks hidden guided context when memory is supplied", () => {

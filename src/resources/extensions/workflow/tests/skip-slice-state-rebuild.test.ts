@@ -16,7 +16,7 @@ import {
   insertMilestone,
   insertSlice,
   openDatabase,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 test("gsd_skip_slice marks a slice skipped and refreshes STATE.md", async () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-skip-slice-"));

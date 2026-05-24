@@ -9,7 +9,7 @@ import {
   readUnitRuntimeRecord,
   writeUnitRuntimeRecord,
 } from "../unit-runtime.ts";
-import { closeDatabase, insertMilestone, insertSlice, insertTask, openDatabase } from "../gsd-db.ts";
+import { closeDatabase, insertMilestone, insertSlice, insertTask, openDatabase } from "../db.ts";
 import { clearPathCache } from '../paths.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

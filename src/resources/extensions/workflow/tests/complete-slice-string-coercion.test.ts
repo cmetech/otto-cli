@@ -11,7 +11,7 @@ import {
   insertMilestone,
   insertSlice,
   insertTask,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { handleCompleteSlice } from "../tools/complete-slice.ts";
 import type { CompleteSliceParams } from "../types.ts";
 

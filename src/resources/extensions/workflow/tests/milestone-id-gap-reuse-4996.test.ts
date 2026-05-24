@@ -15,7 +15,7 @@ import {
   openDatabase,
   closeDatabase,
   insertMilestone,
-} from "../gsd-db.ts";
+} from "../db.ts";
 import { clearReservedMilestoneIds, findMilestoneIds } from "../milestone-ids.ts";
 import { invalidateAllCaches } from "../cache.ts";
 

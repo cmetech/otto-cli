@@ -9,7 +9,7 @@ import { existsSync } from "node:fs";
 import { deriveState } from "./state.js";
 import { resolveGsdPathContract, resolveMilestoneFile, resolveSliceFile } from "./paths.js";
 import { findMilestoneIds } from "./guided-flow.js";
-import { isDbAvailable, getMilestoneSlices, getSliceTasks, openDatabase } from "./gsd-db.js";
+import { isDbAvailable, getMilestoneSlices, getSliceTasks, openDatabase } from "./db.js";
 import type { MilestoneRegistryEntry } from "./types.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

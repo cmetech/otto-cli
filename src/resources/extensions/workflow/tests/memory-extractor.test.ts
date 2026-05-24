@@ -2,7 +2,7 @@ import { parseMemoryResponse, buildMemoryLLMCall } from '../memory-extractor.ts'
 import {
   openDatabase,
   closeDatabase,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import {
   getActiveMemories,
   applyMemoryActions,

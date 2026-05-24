@@ -15,7 +15,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 
-import { _getAdapter, isDbAvailable } from "./gsd-db.js";
+import { _getAdapter, isDbAvailable } from "./db.js";
 import { appendNotification } from "./notification-store.js";
 import { resolveGsdRootFile } from "./paths.js";
 import { logWarning } from "./workflow-logger.js";

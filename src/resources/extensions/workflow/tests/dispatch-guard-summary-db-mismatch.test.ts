@@ -10,7 +10,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { getPriorSliceCompletionBlocker } from "../dispatch-guard.ts";
-import { openDatabase, closeDatabase, insertMilestone, insertSlice } from "../gsd-db.ts";
+import { openDatabase, closeDatabase, insertMilestone, insertSlice } from "../db.ts";
 
 function setupRepo(): string {
   const repo = mkdtempSync(join(tmpdir(), "gsd-dispatch-guard-4663-"));

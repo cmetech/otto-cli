@@ -19,7 +19,7 @@ import {
   insertSlice,
   openDatabase,
   upsertMilestonePlanning,
-} from "../../../src/resources/extensions/workflow/gsd-db.ts";
+} from "../../../src/resources/extensions/workflow/db.ts";
 import { buildReassessRoadmapPrompt } from "../../../src/resources/extensions/workflow/auto-prompts.ts";
 import { invalidateAllCaches } from "../../../src/resources/extensions/workflow/cache.ts";
 import {

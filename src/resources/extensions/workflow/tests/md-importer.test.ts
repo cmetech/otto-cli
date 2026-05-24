@@ -11,7 +11,7 @@ import {
   insertArtifact,
   SCHEMA_VERSION,
   _getAdapter,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import {
   parseDecisionsTable,
   parseRequirementsSections,

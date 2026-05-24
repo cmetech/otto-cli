@@ -18,7 +18,7 @@ import {
   updateSliceStatus,
   updateTaskStatus,
   transaction,
-} from "../gsd-db.js";
+} from "../db.js";
 import { invalidateStateCache } from "../state.js";
 import { isClosedStatus } from "../status-guards.js";
 import { renderAllProjections } from "../workflow-projections.js";

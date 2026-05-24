@@ -14,7 +14,7 @@ import { execFileSync } from "node:child_process";
 
 import { DISPATCH_RULES, resolveDispatch, type DispatchContext } from "../auto-dispatch.ts";
 import { AutoSession } from "../auto/session.ts";
-import { closeDatabase, insertMilestone, insertSlice, openDatabase } from "../gsd-db.ts";
+import { closeDatabase, insertMilestone, insertSlice, openDatabase } from "../db.ts";
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-complete-dispatch-"));

@@ -17,7 +17,7 @@ import {
   _getAdapter,
   copyWorktreeDb,
   reconcileWorktreeDb,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 

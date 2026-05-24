@@ -8,7 +8,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { isAbsolute, join } from "node:path";
-import { gsdHome } from "./gsd-home.js";
+import { gsdHome } from "./home.js";
 import { statSync } from "node:fs";
 
 import type {

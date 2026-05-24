@@ -8,7 +8,7 @@
 
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { closeDatabase, getMilestone, insertMilestone, openDatabase } from '../gsd-db.ts';
+import { closeDatabase, getMilestone, insertMilestone, openDatabase } from '../db.ts';
 
 describe('insertMilestone defaults status to queued (#3695)', () => {
   test('omitted status persists as queued, not active', () => {

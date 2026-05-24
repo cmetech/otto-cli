@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 
 import { createWorkspace, scopeMilestone } from "../workspace.ts";
 import { saveArtifactToDb, saveArtifactToDbByScope } from "../db-writer.ts";
-import { openDatabase, closeDatabase } from "../gsd-db.ts";
+import { openDatabase, closeDatabase } from "../db.ts";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 

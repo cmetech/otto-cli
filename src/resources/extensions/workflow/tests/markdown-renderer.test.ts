@@ -14,7 +14,7 @@ import {
   getSliceTasks,
   updateSliceStatus,
   _getAdapter,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import {
   renderRoadmapCheckboxes,
   renderPlanCheckboxes,
@@ -717,7 +717,7 @@ test('── markdown-renderer: renderSliceSummary round-trip ──', async () 
 
     // Update slice with summary and UAT content
     // Since insertSlice uses INSERT OR IGNORE, we need to set the content via raw adapter
-    const db = await import('../gsd-db.ts');
+    const db = await import('../db.ts');
     const adapter = db._getAdapter()!;
     adapter.prepare(
       `UPDATE slices SET full_summary_md = :sm, full_uat_md = :um WHERE milestone_id = 'M001' AND id = 'S01'`,

@@ -13,7 +13,7 @@ import { join } from "node:path";
 import { gsdRoot } from "./paths.js";
 import { milestoneIdSort } from "./milestone-ids.js";
 import { loadJsonFileOrNull, saveJsonFile } from "./json-persistence.js";
-import { isDbAvailable, setMilestoneQueueOrder } from "./gsd-db.js";
+import { isDbAvailable, setMilestoneQueueOrder } from "./db.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

@@ -12,7 +12,7 @@ import {
   getDecisionById,
   getRequirementById,
   _getAdapter,
-} from '../gsd-db.ts';
+} from '../db.ts';
 import {
   parseDecisionsTable,
   parseRequirementsSections,

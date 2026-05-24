@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 import { checkRemoteAutoSession } from "../auto.ts";
-import { openDatabase, closeDatabase, _getAdapter } from "../gsd-db.ts";
+import { openDatabase, closeDatabase, _getAdapter } from "../db.ts";
 import { registerAutoWorker } from "../db/auto-workers.ts";
 import { normalizeRealPath } from "../paths.ts";
 import { readCrashLock } from "../crash-recovery.ts";

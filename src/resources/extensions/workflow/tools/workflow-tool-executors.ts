@@ -12,7 +12,7 @@ import {
   getSliceTaskCounts,
   readTransaction,
   saveGateResult,
-} from "../gsd-db.js";
+} from "../db.js";
 import { GATE_REGISTRY } from "../gate-registry.js";
 import { generateRequirementsMd, saveArtifactToDb } from "../db-writer.js";
 import { resolveMilestoneFile, resolveSliceFile } from "../paths.js";

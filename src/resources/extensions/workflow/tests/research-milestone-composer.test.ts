@@ -14,7 +14,7 @@ import {
   insertMilestone,
   upsertMilestonePlanning,
   insertArtifact,
-} from "../gsd-db.ts";
+} from "../db.ts";
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-research-ms-composer-"));

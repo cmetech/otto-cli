@@ -22,7 +22,7 @@ import {
 } from "../slice-cadence.ts";
 import { MergeConflictError } from "../git-service.ts";
 import { summarizeWorktreeTelemetry } from "../worktree-telemetry.ts";
-import { closeDatabase, insertMilestone, insertSlice, openDatabase } from "../gsd-db.ts";
+import { closeDatabase, insertMilestone, insertSlice, openDatabase } from "../db.ts";
 
 function git(args: string[], cwd: string): string {
   return execFileSync("git", args, { cwd, stdio: ["ignore", "pipe", "pipe"], encoding: "utf-8" }).trim();

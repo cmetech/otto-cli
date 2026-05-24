@@ -230,7 +230,7 @@ The Phase 7 prep commit already handles the rest (package shape, fork attributio
 ## Risks worth knowing
 
 - **`@ericsson` scope availability on public npmjs.org.** It was free at the 2026-05-24 check, but trademark-style company names often get reserved. If publishing public, claim it early; if it's contested, fall back to `@ericssondevops`, `@cmetech`, or unscoped `loop24`.
-- **Workspace pkgs ship as files inside the tarball.** Mirrors `@opengsd/gsd-pi`'s pattern. The `@gsd/*` workspace package names are unchanged — they're loaded as files at runtime via the postinstall script, not resolved from a registry. This works for npmjs.org and Artifactory equally.
+- **Workspace pkgs ship as files inside the tarball.** Mirrors `@opengsd/gsd-pi`'s pattern. The `@loop24/*` workspace package names are unchanged — they're loaded as files at runtime via the postinstall script, not resolved from a registry. This works for npmjs.org and Artifactory equally.
 - **`scripts/validate-pack.js:155`** still hardcodes `@opengsd/gsd-pi`. Dropped from `prepublishOnly` to unblock Phase 7 prep. Fix is straightforward (read the name from `package.json`) but not done yet.
 - **Phase 7 prep removed `sync-platform-versions`** from `prepublishOnly` because it references the deleted `native/scripts/` (Known Deferred Cleanups item 2). Native-platform support was dropped during Phase 0; the removed script wasn't doing anything useful for our fork.
 - **Multiple registries means version drift risk.** Always publish the same tarball — `npm pack` once, `npm publish <tarball>` twice — or you get the same `name@version` serving different bytes across registries.

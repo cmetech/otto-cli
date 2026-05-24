@@ -181,7 +181,7 @@ backwards compatibility.
 
 Run `/gsd workflow new <name>` to scaffold via the `create-workflow` skill.
 Plugins are plain YAML (`.yaml`) or markdown (`.md`) files. See
-`src/resources/extensions/gsd/workflow-templates/` for bundled examples.
+`src/resources/extensions/workflow/workflow-templates/` for bundled examples.
 
 ## Extensions
 

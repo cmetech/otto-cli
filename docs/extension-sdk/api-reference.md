@@ -373,7 +373,7 @@ Agent lifecycle events carry optional correlation metadata when the current prov
 `ToolCallEvent` is a discriminated union by `toolName`. Use `isToolCallEventType()` and `isToolResultEventType()` type guards for narrowing:
 
 ```typescript
-import { isToolCallEventType } from "@gsd/pi-coding-agent";
+import { isToolCallEventType } from "@loop24/pi-coding-agent";
 
 pi.on("tool_call", (event, ctx) => {
   if (isToolCallEventType("bash", event)) {
@@ -411,7 +411,7 @@ pi.on("tool_call", (event, ctx) => {
 The SDK exports type guards for narrowing tool events by tool name:
 
 ```typescript
-import { isToolCallEventType, isToolResultEventType } from "@gsd/pi-coding-agent";
+import { isToolCallEventType, isToolResultEventType } from "@loop24/pi-coding-agent";
 
 // Built-in tools narrow automatically
 if (isToolCallEventType("bash", event)) {
@@ -430,15 +430,15 @@ if (isToolResultEventType<"my_tool", MyDetails>("my_tool", event)) {
 
 | Type | Import | Description |
 |------|--------|-------------|
-| `ExtensionAPI` | `@gsd/pi-coding-agent` | The `pi` object |
-| `ExtensionContext` | `@gsd/pi-coding-agent` | Context for event handlers |
-| `ExtensionCommandContext` | `@gsd/pi-coding-agent` | Extended context for command handlers |
-| `ExtensionUIContext` | `@gsd/pi-coding-agent` | UI methods on `ctx.ui` |
-| `ToolDefinition` | `@gsd/pi-coding-agent` | Tool registration shape |
-| `AgentToolResult` | `@gsd/pi-coding-agent` | Tool execution result |
-| `ProviderConfig` | `@gsd/pi-coding-agent` | Provider registration config |
-| `ExtensionFactory` | `@gsd/pi-coding-agent` | `(pi: ExtensionAPI) => void \| Promise<void>` |
-| `ContextUsage` | `@gsd/pi-coding-agent` | `{ tokens, contextWindow, percent }` |
-| `AgentAbortOrigin` | `@gsd/pi-agent-core` | `"session-transition" \| "user" \| "timeout" \| "unknown"` |
-| `ThinkingLevel` | `@gsd/pi-agent-core` | `"off" \| "low" \| "medium" \| "high" \| "xhigh"` |
+| `ExtensionAPI` | `@loop24/pi-coding-agent` | The `pi` object |
+| `ExtensionContext` | `@loop24/pi-coding-agent` | Context for event handlers |
+| `ExtensionCommandContext` | `@loop24/pi-coding-agent` | Extended context for command handlers |
+| `ExtensionUIContext` | `@loop24/pi-coding-agent` | UI methods on `ctx.ui` |
+| `ToolDefinition` | `@loop24/pi-coding-agent` | Tool registration shape |
+| `AgentToolResult` | `@loop24/pi-coding-agent` | Tool execution result |
+| `ProviderConfig` | `@loop24/pi-coding-agent` | Provider registration config |
+| `ExtensionFactory` | `@loop24/pi-coding-agent` | `(pi: ExtensionAPI) => void \| Promise<void>` |
+| `ContextUsage` | `@loop24/pi-coding-agent` | `{ tokens, contextWindow, percent }` |
+| `AgentAbortOrigin` | `@loop24/pi-agent-core` | `"session-transition" \| "user" \| "timeout" \| "unknown"` |
+| `ThinkingLevel` | `@loop24/pi-agent-core` | `"off" \| "low" \| "medium" \| "high" \| "xhigh"` |
 | `TSchema` | `@sinclair/typebox` | TypeBox schema type for tool parameters |

@@ -26,13 +26,13 @@ Turn the swarm delivery spec into an executable hardening plan for the current U
 
 The repo already has the main UOK spine:
 
-- `src/resources/extensions/gsd/uok/contracts.ts` - turn, gate, audit, graph contracts.
-- `src/resources/extensions/gsd/uok/kernel.ts` - UOK entrypoint and emergency legacy fallback routing.
-- `src/resources/extensions/gsd/uok/gate-runner.ts` - unified gate runner and retry matrix.
-- `src/resources/extensions/gsd/uok/execution-graph.ts` - shared graph scheduler primitives.
-- `src/resources/extensions/gsd/uok/gitops.ts` - turn git transaction projection.
-- `src/resources/extensions/gsd/uok/audit.ts` - append-only audit envelope.
-- `src/resources/extensions/gsd/uok/plan-v2.ts` - compile-to-unit-graph path.
+- `src/resources/extensions/workflow/uok/contracts.ts` - turn, gate, audit, graph contracts.
+- `src/resources/extensions/workflow/uok/kernel.ts` - UOK entrypoint and emergency legacy fallback routing.
+- `src/resources/extensions/workflow/uok/gate-runner.ts` - unified gate runner and retry matrix.
+- `src/resources/extensions/workflow/uok/execution-graph.ts` - shared graph scheduler primitives.
+- `src/resources/extensions/workflow/uok/gitops.ts` - turn git transaction projection.
+- `src/resources/extensions/workflow/uok/audit.ts` - append-only audit envelope.
+- `src/resources/extensions/workflow/uok/plan-v2.ts` - compile-to-unit-graph path.
 - `src/resources/extensions/github-sync/*` - product-owned GitHub issue, PR, milestone, and generated routine surface.
 
 The swarm work should harden the edges around these modules, add missing source-of-truth artifacts, and prove the behavior with targeted tests and release reports.
@@ -115,11 +115,11 @@ Only the hub merges lane PRs into `integration/uok-swarm`. Lane PRs target the i
 
 Primary files:
 
-- `src/resources/extensions/gsd/uok/contracts.ts`
-- `src/resources/extensions/gsd/uok/execution-graph.ts`
-- `src/resources/extensions/gsd/workflow-engine.ts`
-- `src/resources/extensions/gsd/engine-types.ts`
-- `src/resources/extensions/gsd/auto/loop.ts`
+- `src/resources/extensions/workflow/uok/contracts.ts`
+- `src/resources/extensions/workflow/uok/execution-graph.ts`
+- `src/resources/extensions/workflow/workflow-engine.ts`
+- `src/resources/extensions/workflow/engine-types.ts`
+- `src/resources/extensions/workflow/auto/loop.ts`
 
 Deliverables:
 
@@ -136,18 +136,18 @@ Deliverables:
 
 Tests:
 
-- Extend `src/resources/extensions/gsd/tests/uok-contracts.test.ts`.
-- Extend `src/resources/extensions/gsd/tests/uok-execution-graph.test.ts`.
-- Add or extend a query/explainability test near `src/resources/extensions/gsd/tests/active-milestone-id-guard.test.ts` or `src/resources/extensions/gsd/tests/dev-engine-wrapper.test.ts`.
+- Extend `src/resources/extensions/workflow/tests/uok-contracts.test.ts`.
+- Extend `src/resources/extensions/workflow/tests/uok-execution-graph.test.ts`.
+- Add or extend a query/explainability test near `src/resources/extensions/workflow/tests/active-milestone-id-guard.test.ts` or `src/resources/extensions/workflow/tests/dev-engine-wrapper.test.ts`.
 
 ### 1B. State Transition Matrix
 
 Primary files:
 
-- `src/resources/extensions/gsd/state.ts`
-- `src/resources/extensions/gsd/auto/phases.ts`
-- `src/resources/extensions/gsd/tools/*.ts`
-- new source artifact under `src/resources/extensions/gsd/state-transition-matrix.*`
+- `src/resources/extensions/workflow/state.ts`
+- `src/resources/extensions/workflow/auto/phases.ts`
+- `src/resources/extensions/workflow/tools/*.ts`
+- new source artifact under `src/resources/extensions/workflow/state-transition-matrix.*`
 
 Deliverables:
 
@@ -163,20 +163,20 @@ Deliverables:
 
 Tests:
 
-- Extend `src/resources/extensions/gsd/tests/state-machine-full-walkthrough.test.ts`.
-- Extend `src/resources/extensions/gsd/tests/state-derivation-parity.test.ts`.
+- Extend `src/resources/extensions/workflow/tests/state-machine-full-walkthrough.test.ts`.
+- Extend `src/resources/extensions/workflow/tests/state-derivation-parity.test.ts`.
 - Add a matrix coverage test.
 
 ### 1C. Single Writer Contract
 
 Primary files:
 
-- `src/resources/extensions/gsd/uok/contracts.ts`
-- `src/resources/extensions/gsd/uok/audit.ts`
-- `src/resources/extensions/gsd/uok/gitops.ts`
-- `src/resources/extensions/gsd/bootstrap/write-gate.ts`
-- `src/resources/extensions/gsd/sync-lock.ts`
-- `src/resources/extensions/gsd/atomic-write.ts`
+- `src/resources/extensions/workflow/uok/contracts.ts`
+- `src/resources/extensions/workflow/uok/audit.ts`
+- `src/resources/extensions/workflow/uok/gitops.ts`
+- `src/resources/extensions/workflow/bootstrap/write-gate.ts`
+- `src/resources/extensions/workflow/sync-lock.ts`
+- `src/resources/extensions/workflow/atomic-write.ts`
 
 Deliverables:
 
@@ -187,9 +187,9 @@ Deliverables:
 
 Tests:
 
-- Extend `src/resources/extensions/gsd/tests/write-gate.test.ts`.
-- Extend `src/resources/extensions/gsd/tests/uok-audit-unified.test.ts`.
-- Extend `src/resources/extensions/gsd/tests/uok-gitops-turn-action.test.ts`.
+- Extend `src/resources/extensions/workflow/tests/write-gate.test.ts`.
+- Extend `src/resources/extensions/workflow/tests/uok-audit-unified.test.ts`.
+- Extend `src/resources/extensions/workflow/tests/uok-gitops-turn-action.test.ts`.
 - Add a concurrent write rejection or deterministic queue test.
 
 ### Phase 1 Exit Criteria
@@ -202,7 +202,7 @@ Tests:
 
 - `npm run typecheck:extensions`
 - Targeted UOK and state tests:
-  - `node --import ./src/resources/extensions/gsd/tests/resolve-ts.mjs --experimental-strip-types --test src/resources/extensions/gsd/tests/uok-contracts.test.ts src/resources/extensions/gsd/tests/uok-execution-graph.test.ts src/resources/extensions/gsd/tests/state-machine-full-walkthrough.test.ts src/resources/extensions/gsd/tests/write-gate.test.ts`
+  - `node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experimental-strip-types --test src/resources/extensions/workflow/tests/uok-contracts.test.ts src/resources/extensions/workflow/tests/uok-execution-graph.test.ts src/resources/extensions/workflow/tests/state-machine-full-walkthrough.test.ts src/resources/extensions/workflow/tests/write-gate.test.ts`
 
 ## Phase 2: Lane Implementation
 
@@ -225,10 +225,10 @@ Done criteria:
 
 Suggested tests:
 
-- `src/resources/extensions/gsd/tests/custom-workflow-engine.test.ts`
-- `src/resources/extensions/gsd/tests/workflow-dispatch.test.ts`
-- `src/resources/extensions/gsd/tests/uok-execution-graph.test.ts`
-- `src/resources/extensions/gsd/tests/dispatch-missing-task-plans.test.ts`
+- `src/resources/extensions/workflow/tests/custom-workflow-engine.test.ts`
+- `src/resources/extensions/workflow/tests/workflow-dispatch.test.ts`
+- `src/resources/extensions/workflow/tests/uok-execution-graph.test.ts`
+- `src/resources/extensions/workflow/tests/dispatch-missing-task-plans.test.ts`
 
 ### Lane B: State Machine
 
@@ -247,10 +247,10 @@ Done criteria:
 
 Suggested tests:
 
-- `src/resources/extensions/gsd/tests/state-machine-full-walkthrough.test.ts`
-- `src/resources/extensions/gsd/tests/crash-recovery.test.ts`
-- `src/resources/extensions/gsd/tests/derive-state-db-disk-reconcile.test.ts`
-- `src/resources/extensions/gsd/tests/recovery-attempts-reset.test.ts`
+- `src/resources/extensions/workflow/tests/state-machine-full-walkthrough.test.ts`
+- `src/resources/extensions/workflow/tests/crash-recovery.test.ts`
+- `src/resources/extensions/workflow/tests/derive-state-db-disk-reconcile.test.ts`
+- `src/resources/extensions/workflow/tests/recovery-attempts-reset.test.ts`
 
 ### Lane C: Single Writer
 
@@ -270,10 +270,10 @@ Done criteria:
 
 Suggested tests:
 
-- `src/resources/extensions/gsd/tests/write-gate.test.ts`
-- `src/resources/extensions/gsd/tests/stale-lockfile-recovery.test.ts`
-- `src/resources/extensions/gsd/tests/uok-audit-unified.test.ts`
-- `src/resources/extensions/gsd/tests/uok-gitops-wiring.test.ts`
+- `src/resources/extensions/workflow/tests/write-gate.test.ts`
+- `src/resources/extensions/workflow/tests/stale-lockfile-recovery.test.ts`
+- `src/resources/extensions/workflow/tests/uok-audit-unified.test.ts`
+- `src/resources/extensions/workflow/tests/uok-gitops-wiring.test.ts`
 
 ### Lane D: UOK Control Planes
 
@@ -293,10 +293,10 @@ Done criteria:
 
 Suggested tests:
 
-- `src/resources/extensions/gsd/tests/uok-flags.test.ts`
-- `src/resources/extensions/gsd/tests/uok-kernel-path.test.ts`
-- `src/resources/extensions/gsd/tests/uok-model-policy.test.ts`
-- `src/resources/extensions/gsd/tests/uok-plan-v2-wiring.test.ts`
+- `src/resources/extensions/workflow/tests/uok-flags.test.ts`
+- `src/resources/extensions/workflow/tests/uok-kernel-path.test.ts`
+- `src/resources/extensions/workflow/tests/uok-model-policy.test.ts`
+- `src/resources/extensions/workflow/tests/uok-plan-v2-wiring.test.ts`
 
 ### Lane E: GitHub Routines
 
@@ -378,9 +378,9 @@ Suggested tests:
    - parity report
    - rollback drill evidence
 3. Require maintainer review for:
-   - `src/resources/extensions/gsd/uok/**`
-   - `src/resources/extensions/gsd/state*`
-   - `src/resources/extensions/gsd/auto/**`
+   - `src/resources/extensions/workflow/uok/**`
+   - `src/resources/extensions/workflow/state*`
+   - `src/resources/extensions/workflow/auto/**`
    - `src/resources/extensions/github-sync/**`
 4. Confirm docs explain emergency fallback:
    - preference flag
@@ -442,7 +442,7 @@ git fetch origin
 # Review and test a lane branch.
 git checkout lane/<name>
 npm run typecheck:extensions
-node --import ./src/resources/extensions/gsd/tests/resolve-ts.mjs --experimental-strip-types --test <lane-targeted-tests>
+node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experimental-strip-types --test <lane-targeted-tests>
 
 # Merge to integration branch. Hub only.
 git checkout integration/uok-swarm
@@ -458,30 +458,30 @@ git push origin integration/uok-swarm
 
 ```bash
 # Workflow engine lane
-node --import ./src/resources/extensions/gsd/tests/resolve-ts.mjs --experimental-strip-types --test \
-  src/resources/extensions/gsd/tests/uok-contracts.test.ts \
-  src/resources/extensions/gsd/tests/uok-execution-graph.test.ts \
-  src/resources/extensions/gsd/tests/custom-workflow-engine.test.ts \
-  src/resources/extensions/gsd/tests/workflow-dispatch.test.ts
+node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experimental-strip-types --test \
+  src/resources/extensions/workflow/tests/uok-contracts.test.ts \
+  src/resources/extensions/workflow/tests/uok-execution-graph.test.ts \
+  src/resources/extensions/workflow/tests/custom-workflow-engine.test.ts \
+  src/resources/extensions/workflow/tests/workflow-dispatch.test.ts
 
 # State machine lane
-node --import ./src/resources/extensions/gsd/tests/resolve-ts.mjs --experimental-strip-types --test \
-  src/resources/extensions/gsd/tests/state-machine-full-walkthrough.test.ts \
-  src/resources/extensions/gsd/tests/state-derivation-parity.test.ts \
-  src/resources/extensions/gsd/tests/crash-recovery.test.ts \
-  src/resources/extensions/gsd/tests/derive-state-db-disk-reconcile.test.ts
+node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experimental-strip-types --test \
+  src/resources/extensions/workflow/tests/state-machine-full-walkthrough.test.ts \
+  src/resources/extensions/workflow/tests/state-derivation-parity.test.ts \
+  src/resources/extensions/workflow/tests/crash-recovery.test.ts \
+  src/resources/extensions/workflow/tests/derive-state-db-disk-reconcile.test.ts
 
 # Single writer lane
-node --import ./src/resources/extensions/gsd/tests/resolve-ts.mjs --experimental-strip-types --test \
-  src/resources/extensions/gsd/tests/write-gate.test.ts \
-  src/resources/extensions/gsd/tests/stale-lockfile-recovery.test.ts \
-  src/resources/extensions/gsd/tests/uok-audit-unified.test.ts \
-  src/resources/extensions/gsd/tests/uok-gitops-turn-action.test.ts
+node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experimental-strip-types --test \
+  src/resources/extensions/workflow/tests/write-gate.test.ts \
+  src/resources/extensions/workflow/tests/stale-lockfile-recovery.test.ts \
+  src/resources/extensions/workflow/tests/uok-audit-unified.test.ts \
+  src/resources/extensions/workflow/tests/uok-gitops-turn-action.test.ts
 
 # UOK control planes lane
-node --import ./src/resources/extensions/gsd/tests/resolve-ts.mjs --experimental-strip-types --test \
-  src/resources/extensions/gsd/tests/uok-flags.test.ts \
-  src/resources/extensions/gsd/tests/uok-kernel-path.test.ts \
-  src/resources/extensions/gsd/tests/uok-model-policy.test.ts \
-  src/resources/extensions/gsd/tests/uok-plan-v2-wiring.test.ts
+node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experimental-strip-types --test \
+  src/resources/extensions/workflow/tests/uok-flags.test.ts \
+  src/resources/extensions/workflow/tests/uok-kernel-path.test.ts \
+  src/resources/extensions/workflow/tests/uok-model-policy.test.ts \
+  src/resources/extensions/workflow/tests/uok-plan-v2-wiring.test.ts
 ```

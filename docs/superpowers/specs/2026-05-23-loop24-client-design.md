@@ -230,7 +230,7 @@ export const BRAND_NAME: string = pkg.piConfig?.brandName || "LOOP24";
 
 | Surface | Before (gsd-pi) | After (LOOP24) |
 |---|---|---|
-| Extension directory | `src/resources/extensions/gsd/` | `src/resources/extensions/workflow/` (renamed once, neutral name) |
+| Extension directory | `src/resources/extensions/workflow/` | `src/resources/extensions/workflow/` (renamed once, neutral name) |
 | Slash command registration | `"gsd-auto"`, `"gsd-status"` | `` `${COMMAND_NAMESPACE}-auto` ``, `` `${COMMAND_NAMESPACE}-status` `` |
 | Command shape | `/gsd auto` (space-separated subcommand) | `/loop24 auto` (same pattern, namespace is the top-level command) |
 | Prompts referencing "GSD" | hardcoded `"GSD"` strings in prompt files | `${BRAND_NAME}` template variables read from a small `strings.ts` |
@@ -496,7 +496,7 @@ These do not block the design but should be answered before the relevant impleme
 
 ### Directories renamed
 
-- `src/resources/extensions/gsd/` → `src/resources/extensions/workflow/`
+- `src/resources/extensions/workflow/` → `src/resources/extensions/workflow/`
 
 ### Directories dropped
 

@@ -43,7 +43,7 @@ mkdir -p ~/.gsd/agent/extensions/my-extension
 ### 3. Create `index.ts`
 
 ```typescript
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 
 export default function (pi: ExtensionAPI) {
@@ -91,10 +91,10 @@ The entry point must be `index.ts` and must use a default export that receives `
 
 | Package | Purpose |
 |---------|---------|
-| `@gsd/pi-coding-agent` | `ExtensionAPI`, `ExtensionContext`, event types, utilities |
+| `@loop24/pi-coding-agent` | `ExtensionAPI`, `ExtensionContext`, event types, utilities |
 | `@sinclair/typebox` | Schema definitions for tool parameters (`Type.Object`, `Type.String`, etc.) |
-| `@gsd/pi-ai` | `StringEnum` (required for string enum parameters) |
-| `@gsd/pi-tui` | TUI components (`Text`, `Box`, `SelectList`, etc.) |
+| `@loop24/pi-ai` | `StringEnum` (required for string enum parameters) |
+| `@loop24/pi-tui` | TUI components (`Text`, `Box`, `SelectList`, etc.) |
 | Node.js built-ins | `node:fs`, `node:path`, `node:child_process`, etc. |
 
 ---

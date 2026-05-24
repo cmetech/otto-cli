@@ -10,7 +10,7 @@
 
 ## Context
 
-ADR-015 named the **State Reconciliation Module** as one of four runtime invariant modules and specified `reconcileBeforeDispatch(basePath)` as its Interface. The module landed at `src/resources/extensions/gsd/state-reconciliation.ts` (57 lines) but its current implementation only invalidates the state cache and calls `deriveState`. The Interface returns `repaired: readonly string[]` but the only value ever returned is `["derive-state-cache-invalidated"]` — the cache invalidation itself, dressed up as a repair.
+ADR-015 named the **State Reconciliation Module** as one of four runtime invariant modules and specified `reconcileBeforeDispatch(basePath)` as its Interface. The module landed at `src/resources/extensions/workflow/state-reconciliation.ts` (57 lines) but its current implementation only invalidates the state cache and calls `deriveState`. The Interface returns `repaired: readonly string[]` but the only value ever returned is `["derive-state-cache-invalidated"]` — the cache invalidation itself, dressed up as a repair.
 
 The repair helpers CONTEXT.md names — sketch-flag healing, merge-state reconciliation, PROJECT.md/ROADMAP.md drift, completion-timestamp drift — exist in scattered places, or do not exist at all:
 

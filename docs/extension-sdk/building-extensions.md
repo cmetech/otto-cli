@@ -13,7 +13,7 @@ For manifest configuration, see [manifest-spec.md](manifest-spec.md). For testin
 Every extension exports a default function that receives the `ExtensionAPI` object (`pi`). This function runs once at load time and is where you register all capabilities.
 
 ```typescript
-import type { ExtensionAPI } from "@gsd/pi-coding-agent";
+import type { ExtensionAPI } from "@loop24/pi-coding-agent";
 
 export default function (pi: ExtensionAPI) {
   // Register tools, commands, events, shortcuts here
@@ -30,7 +30,7 @@ Tools appear in the LLM's system prompt and are called autonomously when appropr
 
 ```typescript
 import { Type } from "@sinclair/typebox";
-import { StringEnum } from "@gsd/pi-ai";
+import { StringEnum } from "@loop24/pi-ai";
 
 pi.registerTool({
   name: "my_tool",
@@ -70,8 +70,8 @@ pi.registerTool({
 Tools can customize how they appear in the TUI:
 
 ```typescript
-import { Text } from "@gsd/pi-tui";
-import { keyHint } from "@gsd/pi-coding-agent";
+import { Text } from "@loop24/pi-tui";
+import { keyHint } from "@loop24/pi-coding-agent";
 
 pi.registerTool({
   name: "my_tool",
@@ -109,7 +109,7 @@ Tools **must** truncate output to avoid overwhelming the LLM context. The built-
 import {
   truncateHead, truncateTail, formatSize,
   DEFAULT_MAX_BYTES, DEFAULT_MAX_LINES,
-} from "@gsd/pi-coding-agent";
+} from "@loop24/pi-coding-agent";
 
 async execute(toolCallId, params, signal, onUpdate, ctx) {
   const output = await runCommand();
@@ -427,7 +427,7 @@ ctx.ui.setToolsExpanded(true);
 For complex UI, `ctx.ui.custom()` temporarily replaces the editor with your component:
 
 ```typescript
-import { matchesKey, Key, truncateToWidth } from "@gsd/pi-tui";
+import { matchesKey, Key, truncateToWidth } from "@loop24/pi-tui";
 
 const result = await ctx.ui.custom<string | null>((tui, theme, keybindings, done) => {
   return {
@@ -477,7 +477,7 @@ const result = await ctx.ui.custom<string | null>(
 ### Keyboard Input
 
 ```typescript
-import { matchesKey, Key } from "@gsd/pi-tui";
+import { matchesKey, Key } from "@loop24/pi-tui";
 
 handleInput(data: string) {
   if (matchesKey(data, Key.up)) { /* arrow up */ }
@@ -507,7 +507,7 @@ handleInput(data: string) {
 
 ### Built-in TUI Components
 
-Import from `@gsd/pi-tui`:
+Import from `@loop24/pi-tui`:
 
 | Component | Purpose |
 |-----------|---------|
@@ -521,7 +521,7 @@ Import from `@gsd/pi-tui`:
 | `SettingsList` | Toggle settings UI |
 | `Input` | Text input field |
 
-Import from `@gsd/pi-coding-agent`:
+Import from `@loop24/pi-coding-agent`:
 
 | Component | Purpose |
 |-----------|---------|
@@ -727,7 +727,7 @@ pi.sendUserMessage("Please analyze the latest changes");
 Register a renderer for your custom message types:
 
 ```typescript
-import { Text } from "@gsd/pi-tui";
+import { Text } from "@loop24/pi-tui";
 
 pi.registerMessageRenderer("my-extension", (message, options, theme) => {
   const { expanded } = options;

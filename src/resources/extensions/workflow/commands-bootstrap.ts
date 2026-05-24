@@ -268,14 +268,3 @@ function getWorkflowArgumentCompletions(prefix: string) {
 
   return null;
 }
-
-export function registerLazyGSDCommand(pi: ExtensionAPI): void {
-  pi.registerCommand(COMMAND_NAMESPACE, {
-    description: "GSD — Get Shit Done",
-    getArgumentCompletions: getWorkflowArgumentCompletions,
-    handler: async (args: string, ctx: ExtensionCommandContext) => {
-      const { dispatchWorkflowCommand } = await importExtensionModule<typeof import("./commands.js")>(import.meta.url, "./commands.js");
-      await dispatchWorkflowCommand(args, ctx, pi);
-    },
-  });
-}

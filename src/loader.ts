@@ -107,9 +107,7 @@ if (process.env.LOOP24_CLEAR_ON_START && process.env.LOOP24_CLEAR_ON_START !== '
 process.env.PI_CLEAR_ON_SHRINK ??= '1'
 
 // Print LOOP24 banner on first launch (before ~/.loop24/ exists).
-// Set LOOP24_FIRST_RUN_BANNER (and legacy GSD_FIRST_RUN_BANNER) so cli.ts and
-// tests skip the duplicate welcome screen.
-// TODO(loop24): collapse to LOOP24_FIRST_RUN_BANNER after sweep
+// Set LOOP24_FIRST_RUN_BANNER so cli.ts and tests skip the duplicate welcome screen.
 if (!existsSync(appRoot)) {
   const yellow = ANSI_BRAND_YELLOW
   const dim    = ANSI_DIM
@@ -127,7 +125,7 @@ if (!existsSync(appRoot)) {
     `  compliant agent for developers ${dim}v${workflowVersion}${reset}\n` +
     `  ${green}Welcome.${reset} Setting up your environment...\n\n`
   )
-  process.env.LOOP24_FIRST_RUN_BANNER = process.env.GSD_FIRST_RUN_BANNER = '1'
+  process.env.LOOP24_FIRST_RUN_BANNER = '1'
 }
 
 // GSD_CODING_AGENT_DIR — tells pi's getAgentDir() to return ~/.loop24/agent/ instead of ~/.pi/agent/

@@ -7,7 +7,7 @@
 
 ## Context
 
-`src/resources/extensions/gsd/auto.ts` currently carries multiple concerns in one place (dispatch, recovery, worktree coordination, health/escalation, locks/journaling, notifications). The module’s interface is broad relative to its implementation details, reducing locality and making failure diagnosis (especially wrong-dispatch and stuck-loop behavior) expensive.
+`src/resources/extensions/workflow/auto.ts` currently carries multiple concerns in one place (dispatch, recovery, worktree coordination, health/escalation, locks/journaling, notifications). The module’s interface is broad relative to its implementation details, reducing locality and making failure diagnosis (especially wrong-dispatch and stuck-loop behavior) expensive.
 
 ## Decision
 
@@ -49,8 +49,8 @@ Keep orchestration control-flow in this module, and move concern-specific behavi
 
 Phase 1 landed in-tree with no behavior switch of the primary auto loop yet:
 
-- Added orchestration contracts: `src/resources/extensions/gsd/auto/contracts.ts`
-- Added orchestration implementation: `src/resources/extensions/gsd/auto/orchestrator.ts`
+- Added orchestration contracts: `src/resources/extensions/workflow/auto/contracts.ts`
+- Added orchestration implementation: `src/resources/extensions/workflow/auto/orchestrator.ts`
 - Added thin wiring in `auto.ts`: `createWiredAutoOrchestrationModule(...)` and lifecycle integration points (`start`, `resume`, `pause`, `stop` hooks)
 - Added runtime observability surfaces:
   - `AutoSession.orchestration`
@@ -62,9 +62,9 @@ Phase 1 landed in-tree with no behavior switch of the primary auto loop yet:
 
 Contract and invariants are covered by dedicated tests:
 
-- `src/resources/extensions/gsd/tests/auto-orchestrator.test.ts`
-- `src/resources/extensions/gsd/tests/auto-runtime-state.test.ts`
-- `src/resources/extensions/gsd/tests/auto-session-encapsulation.test.ts`
+- `src/resources/extensions/workflow/tests/auto-orchestrator.test.ts`
+- `src/resources/extensions/workflow/tests/auto-runtime-state.test.ts`
+- `src/resources/extensions/workflow/tests/auto-session-encapsulation.test.ts`
 
 ## Consequences
 

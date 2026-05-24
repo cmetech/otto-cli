@@ -9,8 +9,8 @@
 
 Worktree handling currently lives in two places:
 
-- `src/resources/extensions/gsd/worktree-resolver.ts` — a class facade that wraps `s.basePath`/`s.originalBasePath` mutation and the merge-or-teardown lifecycle. Constructor takes a 28-field dependency interface (`WorktreeResolverDeps`).
-- `src/resources/extensions/gsd/auto-worktree.ts` — 2,500+ lines of function exports owning worktree create/enter/teardown/merge plus a separate set of state-sync helpers (`syncProjectRootToWorktree`, `syncStateToProjectRoot`, `syncWorktreeStateBack`, etc.).
+- `src/resources/extensions/workflow/worktree-resolver.ts` — a class facade that wraps `s.basePath`/`s.originalBasePath` mutation and the merge-or-teardown lifecycle. Constructor takes a 28-field dependency interface (`WorktreeResolverDeps`).
+- `src/resources/extensions/workflow/auto-worktree.ts` — 2,500+ lines of function exports owning worktree create/enter/teardown/merge plus a separate set of state-sync helpers (`syncProjectRootToWorktree`, `syncStateToProjectRoot`, `syncWorktreeStateBack`, etc.).
 
 The boundary between the two is unclear. `WorktreeResolver` is meant to centralise `s.basePath` mutation, but it delegates lifecycle work back to functions in `auto-worktree.ts` via 28 injected callbacks. Parallel orchestration paths (`parallel-orchestrator.ts`, `slice-parallel-orchestrator.ts`, `parallel-merge.ts`, `auto-post-unit.ts`) bypass `WorktreeResolver` entirely and call `auto-worktree.ts` exports directly. The discipline `WorktreeResolver` enforces (lease claim, no-double-chdir, single owner of `s.basePath` writes) is therefore enforced **only on the single-loop auto path**. A seam respected by one of two callers is not a real seam.
 

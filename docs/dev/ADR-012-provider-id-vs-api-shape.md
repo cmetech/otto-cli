@@ -38,7 +38,7 @@ Use the shared predicates in `packages/pi-ai/src/providers/api-family.ts`:
 - `isGeminiApi(model)` — `google-generative-ai` | `google-gemini-cli` | `google-vertex`
 - `isBedrockApi(model)` — `bedrock-converse-stream`
 
-The helpers are re-exported from `@gsd/pi-ai` for use across the monorepo.
+The helpers are re-exported from `@loop24/pi-ai` for use across the monorepo.
 
 ### When `provider` comparison is still correct
 

@@ -1403,22 +1403,38 @@ unchanged so existing user sessions keep loading.
 
 Total Phase 10: ~750 files, ~3,400 lines touched.
 
+## Phase 11 — Deferred cleanups close-out (tagged: phase-11-deferred-cleanups)
+
+Closes 4 of 6 items from Known Deferred Cleanups (Tasks 1, 2, 5, 6
+completed; Tasks 3 + 4 deferred to a follow-up since they add new
+build-time infrastructure rather than just sweeping residue).
+
+- Task 1: removed dead `registerLazyGSDCommand` function from
+  `src/resources/extensions/workflow/commands-bootstrap.ts:272`.
+- Task 2: removed 3 orphan Rust build scripts from root `package.json`.
+- Task 5: removed legacy `GSD_FIRST_RUN_BANNER` writer from `loader.ts`;
+  updated `session-start-footer.test.ts` to read `LOOP24_FIRST_RUN_BANNER`.
+- Task 6: swept 45 docs/** files for `extensions/gsd/` and `@gsd/`
+  path references → `extensions/workflow/` and `@loop24/`.
+
+Build clean, 80/80 regression pass.
+
+**Deferred to follow-up (added new "Phase 11 Residue" items below):**
+- piConfig CI parity check (Task 3) — adds a new verify script
+- Loop24 Signal Theme JSON→TS generator (Task 4) — adds a build-time
+  generator
+
 ## Known Deferred Cleanups
 
-### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`
-**Location:** `commands-bootstrap.ts:272`
+### 1. Dead Code: `registerLazyGSDCommand` — RESOLVED in Phase 11 Task 1
 
-Function exists but has no callers anywhere in the codebase. Was templated to use `COMMAND_NAMESPACE` during Task 5, but templating dead code has zero functional effect on the user-visible command name. The actual registration is in `commands/index.ts:5`. Left for future cleanup; documenting here so it's not rediscovered and re-templated.
+### 2. Orphan Rust Build Scripts — RESOLVED in Phase 11 Task 2
 
-### 2. Orphan Rust Build Scripts in `package.json`
-**Location:** Root `package.json` scripts section
-
-Three scripts reference the deleted `native/` Rust directory and are never called by any active pipeline:
-- `"build:native": "node native/scripts/build.js"`
-- `"build:native:dev": "node native/scripts/build.js --dev"`
-- `"sync-platform-versions": "node native/scripts/sync-platform-versions.cjs"`
-
-These scripts remain in the file but would fail if invoked. Scheduled for removal in a future cleanup sweep.
+Removed `build:native`, `build:native:dev`, and `sync-platform-versions`
+from root `package.json`. Workspace-internal `packages/native/`
+scripts and the `.github/workflows/npm-publish.yml` reference to
+`sync-platform-versions` remain — pre-existing broken-on-invoke state,
+out of Phase 11 scope.
 
 ### 3. piConfig Triplication: Root `package.json`, `packages/pi-coding-agent/package.json`, AND `pkg/package.json`
 **Locations:** All three files carry a `piConfig` block
@@ -1436,10 +1452,10 @@ Future cleanup: collapse to one source of truth (generate the other two from one
 
 The canonical brand-palette artifact is the JSON file (lives under the extension dir). The runtime registration is an inlined typed const in `themes.ts`. They must be kept in sync manually. The root cause: `pi-coding-agent`'s tsconfig has `rootDir: ./src` constraint, preventing JSON imports from outside the package boundary. Future cleanup: resolve the import boundary or add tooling to generate one from the other.
 
-### 5. GSD_FIRST_RUN_BANNER Env Var Alongside LOOP24_FIRST_RUN_BANNER
-**Location:** `src/loader.ts`
+### 5. GSD_FIRST_RUN_BANNER Env Var — RESOLVED in Phase 11 Task 5
 
-Both `process.env.GSD_FIRST_RUN_BANNER` and `process.env.LOOP24_FIRST_RUN_BANNER` are set at startup. The legacy var is still read by `src/resources/extensions/workflow/tests/session-start-footer.test.ts`. A TODO comment in loader.ts flags this. Future cleanup: update that test to read `LOOP24_FIRST_RUN_BANNER` and remove the legacy var.
+Removed the dual-write in `loader.ts`; `session-start-footer.test.ts`
+now reads/writes `LOOP24_FIRST_RUN_BANNER` exclusively.
 
 ### 6. User-Facing Brand Strings — RESOLVED in Phase 0.5
 
@@ -1528,14 +1544,28 @@ Tasks 4 + 8 + 10.2: ~63 distinct env vars.
 Phase 8 Task 9 applied broadly. `.gsd/` literal paths, customType strings,
 and fork-attribution references intentionally preserved.
 
-### 11. Documentation Files Still Reference Old `extensions/gsd/` Path
-**Scope:** `docs/**`, `*.md`, SKILL.md files (the original deferral)
+### 11. Documentation Files Still Reference Old `extensions/gsd/` Path — RESOLVED in Phase 11 Task 6
 
-Pre-Phase-8 deferral. Documentation files (descriptive, not load-bearing)
-were left with references to the old `extensions/gsd/` path. Some of these
-were fixed in Phase 8 (the create-extension skill's references, the
-workflow tests' compareGolden fixtures). The remainder is mostly in `docs/`
-which is outside Phase 8's `src/`/`packages/`/`scripts/` scope.
+45 docs/** files swept for `extensions/gsd/` → `extensions/workflow/`
+and `@gsd/` → `@loop24/`. `docs/branding/`, `docs/superpowers/plans/`,
+`LICENSE`, `LOOP24-PATCHES.md` intentionally preserved.
+
+### 12. Phase 11 Residue — piConfig CI parity check (Task 3 deferred)
+
+`piConfig` block remains triplicated in root + `packages/pi-coding-agent` +
+`pkg/package.json`. Phase 11 plan recommended adding a
+`scripts/verify-piconfig-parity.cjs` script wired into `prebuild`.
+Deferred since it adds new infrastructure rather than just removing
+residue. **Workaround:** any piConfig edit must update all three files
+in lockstep — drift currently goes undetected until runtime.
+
+### 13. Phase 11 Residue — Loop24 Signal Theme JSON→TS generator (Task 4 deferred)
+
+`loop24.json` (canonical brand palette) and `themes.ts` (runtime const)
+remain manually synced. Phase 11 plan recommended a `prebuild`
+generator that emits `loop24-theme.generated.ts` from the JSON.
+Deferred since it adds new build-time infrastructure. **Workaround:**
+edit JSON and TS in lockstep.
 
 ## Summary of Changes by File Type
 

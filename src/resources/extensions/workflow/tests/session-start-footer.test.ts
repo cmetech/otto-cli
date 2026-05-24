@@ -243,12 +243,12 @@ test("session_start installs the welcome screen as the TUI header", async (t) =>
   const originalWorkflowPkgRoot = process.env.GSD_PKG_ROOT;
   const originalWorkflowBinPath = process.env.GSD_BIN_PATH;
   const originalWorkflowVersion = process.env.GSD_VERSION;
-  const originalFirstRunBanner = process.env.GSD_FIRST_RUN_BANNER;
+  const originalFirstRunBanner = process.env.LOOP24_FIRST_RUN_BANNER;
   process.chdir(dir);
   process.env.GSD_PKG_ROOT = dir;
   process.env.GSD_BIN_PATH = join(dir, "bin", "loader.js");
   process.env.GSD_VERSION = "9.9.9-test";
-  delete process.env.GSD_FIRST_RUN_BANNER;
+  delete process.env.LOOP24_FIRST_RUN_BANNER;
   t.after(() => {
     process.chdir(originalCwd);
     if (originalWorkflowPkgRoot === undefined) delete process.env.GSD_PKG_ROOT;
@@ -257,8 +257,8 @@ test("session_start installs the welcome screen as the TUI header", async (t) =>
     else process.env.GSD_BIN_PATH = originalWorkflowBinPath;
     if (originalWorkflowVersion === undefined) delete process.env.GSD_VERSION;
     else process.env.GSD_VERSION = originalWorkflowVersion;
-    if (originalFirstRunBanner === undefined) delete process.env.GSD_FIRST_RUN_BANNER;
-    else process.env.GSD_FIRST_RUN_BANNER = originalFirstRunBanner;
+    if (originalFirstRunBanner === undefined) delete process.env.LOOP24_FIRST_RUN_BANNER;
+    else process.env.LOOP24_FIRST_RUN_BANNER = originalFirstRunBanner;
     try { rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort */ }
   });
 

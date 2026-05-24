@@ -29,9 +29,9 @@ The previous execution spent too much time migrating web, VS Code, daemon, and o
 **Do now:**
 
 1. Finish only the contract work required to stabilize `src/` runtime fixtures and prevent drift in source-owned RPC/headless/auto behavior.
-2. Move immediately into Phase 2 token/context reduction under `src/resources/extensions/gsd/**`, `src/headless*.ts`, and source-owned prompt/context builders.
+2. Move immediately into Phase 2 token/context reduction under `src/resources/extensions/workflow/**`, `src/headless*.ts`, and source-owned prompt/context builders.
 3. Pull Phase 4 workflow-kernel work ahead of broad app-surface consolidation once prompt lanes and fixtures are stable.
-4. Pull Phase 5 DB split directly after the kernel boundary, because `src/resources/extensions/gsd/gsd-db.ts` and state derivation are core complexity hotspots.
+4. Pull Phase 5 DB split directly after the kernel boundary, because `src/resources/extensions/workflow/gsd-db.ts` and state derivation are core complexity hotspots.
 5. Keep Phase 3 build/test speed scoped to `src` test compile and source verification loops.
 
 **Stop doing for now:**
@@ -46,8 +46,8 @@ The previous execution spent too much time migrating web, VS Code, daemon, and o
 1. Phase 0: complete and keep as the safety gate.
 2. Phase 1A: close `src`-owned contract fixture gaps only.
 3. Phase 2: token and context reduction in `src`.
-4. Phase 4: workflow kernel extraction in `src/resources/extensions/gsd`.
-5. Phase 5: DB split in `src/resources/extensions/gsd`.
+4. Phase 4: workflow kernel extraction in `src/resources/extensions/workflow`.
+5. Phase 5: DB split in `src/resources/extensions/workflow`.
 6. Phase 3: source-scoped build/test speed work, interleaved only when it accelerates the current `src` phase.
 7. Phase 7: process consolidation after runtime simplification.
 8. Phase 8: telemetry-gated cleanup.
@@ -161,15 +161,15 @@ Baseline usage is documented in `docs/dev/refactor-baseline-runbook.md`.
 
 **Owned areas:**
 
-- New `packages/contracts` workspace package named `@gsd-build/contracts`.
+- New `packages/contracts` workspace package named `@loop24-build/contracts`.
 - Runtime RPC protocol types.
-- `@gsd-build/rpc-client` compatibility exports when required by source tests.
+- `@loop24-build/rpc-client` compatibility exports when required by source tests.
 - `src/headless*.ts`, `src/headless-events.ts`, `src/web/bridge-service.ts` only where source-owned runtime fixtures depend on them.
-- `src/resources/extensions/gsd/**` contract fixtures.
+- `src/resources/extensions/workflow/**` contract fixtures.
 
 **Implementation plan:**
 
-1. Create `@gsd-build/contracts` with:
+1. Create `@loop24-build/contracts` with:
    - thinking levels including all currently supported levels
    - RPC command/event/response envelopes
    - session state and session stats
@@ -178,15 +178,15 @@ Baseline usage is documented in `docs/dev/refactor-baseline-runbook.md`.
    - MCP blocker request/response shapes
    - workflow tool registry metadata: canonical name, aliases, schema id, executor id, write policy, audit metadata
 2. Move only stable public DTOs first. Do not move implementation services into the contracts package.
-3. Make runtime RPC and `@gsd-build/rpc-client` import or re-export canonical contracts.
+3. Make runtime RPC and `@loop24-build/rpc-client` import or re-export canonical contracts.
 4. Add golden JSONL fixtures for source-owned runtime/headless/auto behavior.
 5. Stop Phase 1A when `src` fixtures are stable. Defer MCP/web/VS Code/Studio/daemon DTO migration unless required by source tests.
 
 **Implemented so far:**
 
-- Created `packages/contracts` as `@gsd-build/contracts`.
+- Created `packages/contracts` as `@loop24-build/contracts`.
 - Added canonical RPC constants and DTOs for commands, responses, v2 events, session state, session stats, bash results, and extension UI request/response payloads.
-- Migrated runtime RPC and `@gsd-build/rpc-client` to re-export the shared RPC contracts.
+- Migrated runtime RPC and `@loop24-build/rpc-client` to re-export the shared RPC contracts.
 - Added Phase 1 fixture coverage with `src/tests/contracts-rpc-fixtures.test.ts`.
 - Updated the web parity contract test to assert retry state through the shared `RpcSessionState` type instead of reading RPC type source text.
 
@@ -227,9 +227,9 @@ Baseline usage is documented in `docs/dev/refactor-baseline-runbook.md`.
 
 **Owned areas:**
 
-- `src/resources/extensions/gsd/prompts/**`.
-- `src/resources/extensions/gsd/auto-prompts.ts`.
-- `src/resources/extensions/gsd/auto-context.ts` and adjacent source context builders if present.
+- `src/resources/extensions/workflow/prompts/**`.
+- `src/resources/extensions/workflow/auto-prompts.ts`.
+- `src/resources/extensions/workflow/auto-context.ts` and adjacent source context builders if present.
 - Skill filtering and skill catalog rendering under `src`.
 - GSD prompt builders and `UnitContextManifest` under `src`.
 - Context budget enforcement under `src`.
@@ -408,7 +408,7 @@ Baseline usage is documented in `docs/dev/refactor-baseline-runbook.md`.
 
 **Exit gate:** Auto pause/resume/recovery/worktree/milestone tests pass through the facade and pure kernel tests cover dispatch decisions.
 
-**Closeout status (2026-05-04):** Phase 4 SRC-first workflow-kernel extraction is closed. `auto/loop.ts` remains the compatibility facade, while repeated loop responsibilities now sit behind small source-owned adapters for phase/journal/turn reporting, session-lock validation, worker heartbeat, memory pressure, dispatch claims, dispatch ledger settling, sidecar queue dequeue, sidecar/custom-engine iteration data, unit dispatch, request timestamp resolution, iteration completion cleanup, custom verify retry persistence, custom-engine dispatch outcomes, verify outcomes, reconcile handling, and reconcile outcomes. Pure kernel decisions are covered in `src/resources/extensions/gsd/tests/workflow-kernel.test.ts`; side-effect adapters have direct `node:test` coverage; facade behavior is covered by `src/resources/extensions/gsd/tests/auto-loop.test.ts` and `src/resources/extensions/gsd/tests/custom-engine-loop-integration.test.ts`. Latest gate used targeted adapter tests, custom-engine integration, `auto-loop`, `npm run test:changed:src -- --since HEAD~1`, and `npm run baseline:refactor:gate`.
+**Closeout status (2026-05-04):** Phase 4 SRC-first workflow-kernel extraction is closed. `auto/loop.ts` remains the compatibility facade, while repeated loop responsibilities now sit behind small source-owned adapters for phase/journal/turn reporting, session-lock validation, worker heartbeat, memory pressure, dispatch claims, dispatch ledger settling, sidecar queue dequeue, sidecar/custom-engine iteration data, unit dispatch, request timestamp resolution, iteration completion cleanup, custom verify retry persistence, custom-engine dispatch outcomes, verify outcomes, reconcile handling, and reconcile outcomes. Pure kernel decisions are covered in `src/resources/extensions/workflow/tests/workflow-kernel.test.ts`; side-effect adapters have direct `node:test` coverage; facade behavior is covered by `src/resources/extensions/workflow/tests/auto-loop.test.ts` and `src/resources/extensions/workflow/tests/custom-engine-loop-integration.test.ts`. Latest gate used targeted adapter tests, custom-engine integration, `auto-loop`, `npm run test:changed:src -- --since HEAD~1`, and `npm run baseline:refactor:gate`.
 
 ## Phase 5: DB Split Plan
 
@@ -496,7 +496,7 @@ Baseline usage is documented in `docs/dev/refactor-baseline-runbook.md`.
 2. Split web workspace store into store slices while preserving the public hook behavior.
 3. Make web routes and bridge services delegate to shared contracts and services instead of importing deep runtime internals.
 4. Move MCP workflow tool registration toward the shared workflow registry metadata.
-5. Move VS Code DTO parsing to `@gsd-build/contracts`.
+5. Move VS Code DTO parsing to `@loop24-build/contracts`.
 6. Decide Studio role:
    - either wire it to the same contracts
    - or mark it explicitly as prototype/non-runtime until wired
@@ -694,7 +694,7 @@ Baseline usage is documented in `docs/dev/refactor-baseline-runbook.md`.
 | --- | --- | --- |
 | 0 | metrics scripts, test fixtures, docs for baseline command | implementation refactors in auto/DB/web |
 | 1A | `packages/contracts`, source-owned RPC/headless/auto fixtures | prompt builder rewrites that change payload shape |
-| 2 | `src/resources/extensions/gsd/prompts/**`, `src/resources/extensions/gsd/*context*`, skill filtering, GSD prompt/context compiler | workflow kernel side-effect moves |
+| 2 | `src/resources/extensions/workflow/prompts/**`, `src/resources/extensions/workflow/*context*`, skill filtering, GSD prompt/context compiler | workflow kernel side-effect moves |
 | 3 | source build/test scripts and `dist-test` lifecycle | test fixture schema moves from Phase 1A without coordination |
 | 4 | auto-mode kernel/facade/adapters | DB module moves and prompt compiler churn in same files |
 | 5 | DB internals and repositories | workflow kernel changes that depend on DB private functions |

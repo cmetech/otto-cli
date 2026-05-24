@@ -42,7 +42,7 @@ npx skills update
 
 在执行 `gsd init` 时，GSD 会检测项目技术栈并推荐合适的技能包。对于 brownfield 项目，检测是自动的；对于 greenfield 项目，则由用户选择技术栈。
 
-这个精选目录维护在 `src/resources/extensions/gsd/skill-catalog.ts`。每一条目都会把一个技术栈映射到一个 skills.sh 仓库，以及其中的具体技能名称。
+这个精选目录维护在 `src/resources/extensions/workflow/skill-catalog.ts`。每一条目都会把一个技术栈映射到一个 skills.sh 仓库，以及其中的具体技能名称。
 
 #### 可用技能包
 
@@ -78,7 +78,7 @@ npx skills update
 
 ### 维护目录
 
-技能目录定义位于 [`src/resources/extensions/gsd/skill-catalog.ts`](../../../src/resources/extensions/gsd/skill-catalog.ts)。新增或更新一个技能包时：
+技能目录定义位于 [`src/resources/extensions/workflow/skill-catalog.ts`](../../../src/resources/extensions/workflow/skill-catalog.ts)。新增或更新一个技能包时：
 
 1. 在 `SKILL_CATALOG` 数组中新增一个 `SkillPack` 条目，包含 `repo`、`skills` 和匹配条件
 2. 基于语言检测做匹配时，使用 `matchLanguages`（取值来自 `detection.ts` 中的 `LANGUAGE_MAP`）

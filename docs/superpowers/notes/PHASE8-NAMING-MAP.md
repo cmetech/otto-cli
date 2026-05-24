@@ -183,7 +183,7 @@ The 11 vars explicitly listed in the Phase 8 plan, **plus 4 additional env vars 
 
 ## Out of scope (per user's policy decisions in Phase 8)
 
-- **npm workspace scope** `@gsd/pi-coding-agent`, `@gsd/pi-ai`, `@gsd/pi-tui`, `@gsd/pi-agent-core`, `@gsd-build/contracts`, `@gsd-build/rpc-client`, `@gsd-build/mcp-server`, `@gsd-build/daemon` → Phase 9
+- **npm workspace scope** `@loop24/pi-coding-agent`, `@loop24/pi-ai`, `@loop24/pi-tui`, `@loop24/pi-agent-core`, `@loop24-build/contracts`, `@loop24-build/rpc-client`, `@loop24-build/mcp-server`, `@loop24-build/daemon` → Phase 9
 - **customType strings** `"gsd-add-tests"`, `"gsd-dispatch"`, `"gsd-spike"`, `"gsd-build-flow"`, `"gsd-skill-extension"`, … → Phase 10 (needs session-file migration design)
 - **LICENSE attribution** to Lex Christopherson — MIT requires retention
 - **README "Fork attribution" block** — MIT requires reasonably prominent surface

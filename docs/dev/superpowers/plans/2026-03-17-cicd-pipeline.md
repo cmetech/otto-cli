@@ -484,7 +484,7 @@ export class FixtureReplayer {
 }
 ```
 
-Note: This provider implements the core recording/replay data structures and utilities. Wiring it into the `pi-ai` registry as a drop-in `ApiProvider` (via `registerApiProvider()` from `packages/pi-ai/src/api-registry.ts`) requires importing `@gsd/pi-ai` internals, which couples tests to the build output. This integration is deferred to a follow-up task after the pipeline is operational. The current implementation validates fixture format, turn sequencing, and replay correctness independently.
+Note: This provider implements the core recording/replay data structures and utilities. Wiring it into the `pi-ai` registry as a drop-in `ApiProvider` (via `registerApiProvider()` from `packages/pi-ai/src/api-registry.ts`) requires importing `@loop24/pi-ai` internals, which couples tests to the build output. This integration is deferred to a follow-up task after the pipeline is operational. The current implementation validates fixture format, turn sequencing, and replay correctness independently.
 
 - [ ] **Step 2: Verify the file has no syntax errors**
 

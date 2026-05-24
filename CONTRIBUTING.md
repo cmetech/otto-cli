@@ -26,7 +26,7 @@ npm ci                              # Install dependencies — MUST run first
 npm run secret-scan:install-hook    # Install git hooks — run once
 ```
 
-`npm ci` creates workspace symlinks in `node_modules/@gsd/*` and `node_modules/@gsd-build/*` pointing to `packages/`. These are required for builds and tests to resolve packages correctly.
+`npm ci` creates workspace symlinks in `node_modules/@loop24/*` and `node_modules/@loop24-build/*` pointing to `packages/`. These are required for builds and tests to resolve packages correctly.
 
 Run `npm run secret-scan:install-hook` once after cloning. It installs a pre-commit hook that blocks commits containing hardcoded secrets or credentials. Conventional Commits format is validated by CI on push.
 
@@ -37,7 +37,7 @@ npm run build    # Build
 npm test         # Run tests
 ```
 
-If `npm run build` fails after running tests (e.g. `Cannot find module '@gsd/*'` errors), run `npm ci` first to restore workspace symlinks, then try again.
+If `npm run build` fails after running tests (e.g. `Cannot find module '@loop24/*'` errors), run `npm ci` first to restore workspace symlinks, then try again.
 
 ### Before pushing
 
@@ -51,7 +51,7 @@ npm run verify:full   # Optional: verify:pr + integration + e2e (closest to full
 
 Run `verify:fast` on every push; run `verify:pr` before opening or updating a PR that touches `src/`, `packages/`, or tests.
 
-If `verify:pr` fails after running tests (e.g. `Cannot find module '@gsd/*'` errors), run `npm ci` first to restore workspace symlinks, then try again.
+If `verify:pr` fails after running tests (e.g. `Cannot find module '@loop24/*'` errors), run `npm ci` first to restore workspace symlinks, then try again.
 
 ### Cross-platform note
 
@@ -206,7 +206,7 @@ GSD is extension-first. If your feature can be an extension, build it as an exte
 2. **Tests** — at minimum, test tool registration, command handling, and any event hooks. See [Testing](docs/extension-sdk/testing.md).
 3. **State reconstruction** — if your extension has stateful tools, handle `session_start`, `session_switch`, and `session_tree` events. See [Building Extensions](docs/extension-sdk/building-extensions.md#state-management).
 4. **`provides` must be accurate** — every tool, command, hook, and shortcut your extension registers must be listed in the manifest.
-5. **Use `@gsd/pi-coding-agent`** for types, `@sinclair/typebox` for schemas, `@gsd/pi-tui` for UI. Do not import from `@mariozechner/*` (legacy).
+5. **Use `@loop24/pi-coding-agent`** for types, `@sinclair/typebox` for schemas, `@loop24/pi-tui` for UI. Do not import from `@mariozechner/*` (legacy).
 
 ### Promoting community → bundled
 
@@ -229,7 +229,7 @@ The codebase is organized into these areas. All are open to contributions:
 | Agent core        | `packages/pi-agent-core`        | Agent orchestration — RFC required for changes |
 | Coding agent      | `packages/pi-coding-agent`      | The main coding agent                          |
 | MCP server        | `packages/mcp-server`           | Project state tools and MCP protocol           |
-| GSD extension     | `src/resources/extensions/gsd/` | GSD workflow — RFC required for auto-mode      |
+| GSD extension     | `src/resources/extensions/workflow/` | GSD workflow — RFC required for auto-mode      |
 | Other extensions  | `src/resources/extensions/`     | Browser, search, voice, MCP client, etc.       |
 | Native engine     | `native/`                       | Rust N-API modules (grep, git, AST, etc.)      |
 | VS Code extension | `vscode-extension/`             | Chat participant, sidebar, RPC integration     |

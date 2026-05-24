@@ -14,7 +14,7 @@ Non-negotiable rules, common gotchas, and contribution requirements for GSD-2 ex
 
 ```typescript
 // CORRECT
-import { StringEnum } from "@gsd/pi-ai";
+import { StringEnum } from "@loop24/pi-ai";
 const Status = StringEnum(["pending", "active", "done"] as const);
 
 // WRONG — breaks Google Gemini
@@ -23,10 +23,10 @@ const Status = Type.Union([Type.Literal("pending"), Type.Literal("active"), Type
 
 ### 2. Truncate tool output
 
-Large tool output causes context overflow. Enforce a maximum of **50 KB / 2000 lines**. Use the truncation helpers from `@gsd/pi-coding-agent`:
+Large tool output causes context overflow. Enforce a maximum of **50 KB / 2000 lines**. Use the truncation helpers from `@loop24/pi-coding-agent`:
 
 ```typescript
-import { truncateHead, truncateTail } from "@gsd/pi-coding-agent";
+import { truncateHead, truncateTail } from "@loop24/pi-coding-agent";
 
 const output = truncateTail(rawOutput, { maxBytes: 50_000, maxLines: 2000 });
 ```
@@ -40,15 +40,15 @@ Never import theme directly. Use the `theme` parameter provided by `ctx.ui.custo
 ctx.ui.custom((tui, theme, kb, done) => { /* use theme here */ });
 
 // WRONG
-import { theme } from "@gsd/pi-tui";
+import { theme } from "@loop24/pi-tui";
 ```
 
 ### 4. Lines must not exceed `width` in `render()`
 
-Use `truncateToWidth()` from `@gsd/pi-tui` to enforce line width:
+Use `truncateToWidth()` from `@loop24/pi-tui` to enforce line width:
 
 ```typescript
-import { truncateToWidth } from "@gsd/pi-tui";
+import { truncateToWidth } from "@loop24/pi-tui";
 
 render(width: number) {
   return truncateToWidth(this.label, width);

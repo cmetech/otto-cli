@@ -7,7 +7,7 @@ Tools are the most powerful extension capability. They appear in the LLM's syste
 
 ```typescript
 import { Type } from "@sinclair/typebox";
-import { StringEnum } from "@gsd/pi-ai";
+import { StringEnum } from "@loop24/pi-ai";
 
 pi.registerTool({
   name: "my_tool",                    // Unique identifier
@@ -59,10 +59,10 @@ pi.registerTool({
 
 ### ⚠️ Critical: Use StringEnum
 
-For string enum parameters, you **must** use `StringEnum` from `@gsd/pi-ai`. `Type.Union([Type.Literal("a"), Type.Literal("b")])` does NOT work with Google's API.
+For string enum parameters, you **must** use `StringEnum` from `@loop24/pi-ai`. `Type.Union([Type.Literal("a"), Type.Literal("b")])` does NOT work with Google's API.
 
 ```typescript
-import { StringEnum } from "@gsd/pi-ai";
+import { StringEnum } from "@loop24/pi-ai";
 
 // ✅ Correct
 action: StringEnum(["list", "add", "remove"] as const)
@@ -96,7 +96,7 @@ pi.registerCommand("add-tool", {
 import {
   truncateHead, truncateTail, formatSize,
   DEFAULT_MAX_BYTES, DEFAULT_MAX_LINES,
-} from "@gsd/pi-coding-agent";
+} from "@loop24/pi-coding-agent";
 
 async execute(toolCallId, params, signal, onUpdate, ctx) {
   const output = await runCommand();
@@ -127,7 +127,7 @@ pi --no-tools -e ./my-extension.ts
 Built-in tools support pluggable operations for SSH, containers, etc.:
 
 ```typescript
-import { createReadTool, createBashTool } from "@gsd/pi-coding-agent";
+import { createReadTool, createBashTool } from "@loop24/pi-coding-agent";
 
 const remoteBash = createBashTool(cwd, {
   operations: { execute: (cmd) => sshExec(remote, cmd) }

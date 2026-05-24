@@ -36,9 +36,9 @@ Goal: separate business logic from transport registration.
 
 Targets:
 
-- `src/resources/extensions/gsd/bootstrap/db-tools.ts`
-- `src/resources/extensions/gsd/bootstrap/query-tools.ts`
-- `src/resources/extensions/gsd/tools/complete-task.ts`
+- `src/resources/extensions/workflow/bootstrap/db-tools.ts`
+- `src/resources/extensions/workflow/bootstrap/query-tools.ts`
+- `src/resources/extensions/workflow/tools/complete-task.ts`
 - sibling modules used by planning/summary/validation tools
 
 Deliverables:
@@ -95,7 +95,7 @@ Goal: ensure MCP mutations enforce the same rules as native tool calls.
 
 Targets:
 
-- `src/resources/extensions/gsd/bootstrap/write-gate.ts`
+- `src/resources/extensions/workflow/bootstrap/write-gate.ts`
 - any current tool-call gating hooks tied to native runtime only
 - MCP wrapper layer before shared handler invocation
 
@@ -158,7 +158,7 @@ Goal: keep the workflow contract strict while removing transport assumptions fro
 
 Targets:
 
-- `src/resources/extensions/gsd/prompts/execute-task.md`
+- `src/resources/extensions/workflow/prompts/execute-task.md`
 - related planning/discuss prompts that reference tool availability
 - provider and MCP docs
 
@@ -251,16 +251,16 @@ Verification:
 
 High-probability files for the first implementation:
 
-- `src/resources/extensions/gsd/bootstrap/db-tools.ts`
-- `src/resources/extensions/gsd/bootstrap/query-tools.ts`
-- `src/resources/extensions/gsd/bootstrap/write-gate.ts`
-- `src/resources/extensions/gsd/tools/complete-task.ts`
+- `src/resources/extensions/workflow/bootstrap/db-tools.ts`
+- `src/resources/extensions/workflow/bootstrap/query-tools.ts`
+- `src/resources/extensions/workflow/bootstrap/write-gate.ts`
+- `src/resources/extensions/workflow/tools/complete-task.ts`
 - `src/resources/extensions/claude-code-cli/stream-adapter.ts`
 - `src/resources/extensions/claude-code-cli/index.ts`
 - `packages/mcp-server/src/server.ts`
 - `packages/mcp-server/src/session-manager.ts`
 - `packages/mcp-server/README.md`
-- `src/resources/extensions/gsd/prompts/execute-task.md`
+- `src/resources/extensions/workflow/prompts/execute-task.md`
 
 ## Testing Strategy
 

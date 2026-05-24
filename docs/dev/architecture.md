@@ -13,7 +13,7 @@ gsd (CLI binary)
           ├─ app-paths.ts    ~/.gsd/agent/, ~/.gsd/sessions/, auth.json
           ├─ resource-loader.ts  Syncs bundled extensions + agents to ~/.gsd/agent/
           └─ src/resources/
-              ├─ extensions/gsd/    Core GSD extension
+              ├─ extensions/workflow/    Core GSD extension
               ├─ extensions/...     23 supporting extensions
               ├─ agents/            scout, researcher, worker
               ├─ AGENTS.md          Agent routing instructions

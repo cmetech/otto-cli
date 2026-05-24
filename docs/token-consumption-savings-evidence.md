@@ -40,9 +40,9 @@ Run 5 exposed the remaining workflow bucket:
 Targeted commands run in `.worktrees/token-consumption-savings-pr`:
 
 ```bash
-node --import ./src/resources/extensions/gsd/tests/resolve-ts.mjs --experimental-strip-types --test src/resources/extensions/gsd/tests/token-tool-gating.test.ts src/resources/extensions/gsd/tests/system-context-memory.test.ts src/resources/extensions/gsd/tests/prompt-duplication-cuts.test.ts src/resources/extensions/gsd/tests/complete-milestone-excerpt.test.ts src/resources/extensions/gsd/tests/knowledge.test.ts src/resources/extensions/gsd/tests/workflow-protocol-excerpt.test.ts
-node --import ./src/resources/extensions/gsd/tests/resolve-ts.mjs --experimental-strip-types --test vscode-extension/test/rpc-display-contract.test.ts
-node --import ./src/resources/extensions/gsd/tests/resolve-ts.mjs --experimental-strip-types --test packages/pi-agent-core/src/token-audit.test.ts packages/pi-coding-agent/src/core/skill-tool.test.ts packages/pi-coding-agent/src/core/sdk-tool-filter.test.ts
+node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experimental-strip-types --test src/resources/extensions/workflow/tests/token-tool-gating.test.ts src/resources/extensions/workflow/tests/system-context-memory.test.ts src/resources/extensions/workflow/tests/prompt-duplication-cuts.test.ts src/resources/extensions/workflow/tests/complete-milestone-excerpt.test.ts src/resources/extensions/workflow/tests/knowledge.test.ts src/resources/extensions/workflow/tests/workflow-protocol-excerpt.test.ts
+node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experimental-strip-types --test vscode-extension/test/rpc-display-contract.test.ts
+node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experimental-strip-types --test packages/pi-agent-core/src/token-audit.test.ts packages/pi-coding-agent/src/core/skill-tool.test.ts packages/pi-coding-agent/src/core/sdk-tool-filter.test.ts
 npm run test:compile
 node --test dist-test/packages/pi-agent-core/src/token-audit.test.js dist-test/packages/pi-agent-core/src/agent-loop.test.js
 npm run typecheck:extensions

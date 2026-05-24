@@ -45,10 +45,10 @@ Run `npm install` in the extension directory. Imports from `node_modules/` resol
 
 | Package | Purpose |
 |---------|---------|
-| `@gsd/pi-coding-agent` | Extension types (`ExtensionAPI`, `ExtensionContext`, event types, utilities) |
+| `@loop24/pi-coding-agent` | Extension types (`ExtensionAPI`, `ExtensionContext`, event types, utilities) |
 | `@sinclair/typebox` | Schema definitions for tool parameters (`Type.Object`, `Type.String`, etc.) |
-| `@gsd/pi-ai` | AI utilities (`StringEnum` for Google-compatible enums) |
-| `@gsd/pi-tui` | TUI components (`Text`, `Box`, `Container`, `SelectList`, etc.) |
+| `@loop24/pi-ai` | AI utilities (`StringEnum` for Google-compatible enums) |
+| `@loop24/pi-tui` | TUI components (`Text`, `Box`, `Container`, `SelectList`, etc.) |
 | Node.js built-ins | `node:fs`, `node:path`, `node:child_process`, etc. |
 
 ---

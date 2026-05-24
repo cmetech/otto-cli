@@ -21,13 +21,13 @@ Patterns and lessons in `.gsd/KNOWLEDGE.md` are also memory-backed. New pattern/
 | Phase | Scope | Status | Evidence |
 |---|---|---|---|
 | 0 | ADR document | ✅ | This file |
-| 1 | `structuredFields` JSON column on `memories` table | ✅ | Schema present in `src/resources/extensions/gsd/gsd-db.ts` (memories table definition) |
-| 2 | Register `capture_thought`, `memory_query`, `gsd_graph` | ✅ | `src/resources/extensions/gsd/bootstrap/memory-tools.ts` |
-| 3 | Auto-injection of relevant memories at session start | ✅ | `src/resources/extensions/gsd/bootstrap/system-context.ts:213,329` — `loadMemoryBlock` (covered by `src/resources/extensions/gsd/tests/load-memory-block.test.ts`) |
+| 1 | `structuredFields` JSON column on `memories` table | ✅ | Schema present in `src/resources/extensions/workflow/gsd-db.ts` (memories table definition) |
+| 2 | Register `capture_thought`, `memory_query`, `gsd_graph` | ✅ | `src/resources/extensions/workflow/bootstrap/memory-tools.ts` |
+| 3 | Auto-injection of relevant memories at session start | ✅ | `src/resources/extensions/workflow/bootstrap/system-context.ts:213,329` — `loadMemoryBlock` (covered by `src/resources/extensions/workflow/tests/load-memory-block.test.ts`) |
 | 4a | Researcher agent frontmatter updated to include write-capable memory tools (`capture_thought`, `memory_query`, `gsd_graph`) | ✅ | `src/resources/agents/researcher.md:4` |
 | 4b | Scout agent frontmatter intentionally kept read-only — memory tools excluded per scope | ✅ | `src/resources/agents/scout.md:4` (no change; read-only contract preserved) |
-| 5 | Idempotent `decisions → memories` backfill on session start | ✅ | `src/resources/extensions/gsd/memory-backfill.ts` — `backfillDecisionsToMemories`; wired from `system-context.ts:159` |
-| 6 preflight | Cutover gap scanner (read-only, warns on unmigrated rows) | ✅ | `src/resources/extensions/gsd/memory-consolidation-scanner.ts` (PR #5765) |
+| 5 | Idempotent `decisions → memories` backfill on session start | ✅ | `src/resources/extensions/workflow/memory-backfill.ts` — `backfillDecisionsToMemories`; wired from `system-context.ts:159` |
+| 6 preflight | Cutover gap scanner (read-only, warns on unmigrated rows) | ✅ | `src/resources/extensions/workflow/memory-consolidation-scanner.ts` (PR #5765) |
 | 6 cutover | Stop dual-write, memories canonical, `decisions` table read-only | ✅ | Shipped via this PR (#5772) — `db-writer.ts:saveDecisionToDb` no longer calls `db.upsertDecision`. New decisions land only in `memories`. |
 | 6 drop | Schema migration to drop `decisions` table | ⏳ | Outstanding — tracked on #5756. Blocked on this PR baking for one minor version. |
 
@@ -41,16 +41,16 @@ After PR #4469 landed, GSD has **two parallel knowledge persistence surfaces** t
 
 | Surface | Persistence | Auto-injected? | Schema | LLM-callable write | MCP-readable |
 |---|---|---|---|---|---|
-| `decisions` table | DB-backed; `.gsd/DECISIONS.md` is a projection | Yes — `inlineDecisionsFromDb` (`src/resources/extensions/gsd/auto-prompts.ts:336`) | Structured: `scope`, `decision`, `choice`, `rationale`, `made_by`, `revisable` | `gsd_save_decision` | Yes (`gsd_knowledge`, `gsd_save_decision`) |
-| `.gsd/KNOWLEDGE.md` | File-canonical (no DB) | Yes — `loadKnowledgeBlock` (`src/resources/extensions/gsd/bootstrap/system-context.ts`) | Three markdown tables: Rules / Patterns / Lessons | Direct file append (no tool) | Yes (`gsd_knowledge`) |
-| `memories` table | DB-backed (`src/resources/extensions/gsd/bootstrap/memory-tools.ts`) | **No** | Flat: `category` (architecture / convention / gotcha / pattern / preference / environment), `content`, `confidence`, tags | `capture_thought`, `memory_query`, `gsd_graph` | **No** |
+| `decisions` table | DB-backed; `.gsd/DECISIONS.md` is a projection | Yes — `inlineDecisionsFromDb` (`src/resources/extensions/workflow/auto-prompts.ts:336`) | Structured: `scope`, `decision`, `choice`, `rationale`, `made_by`, `revisable` | `gsd_save_decision` | Yes (`gsd_knowledge`, `gsd_save_decision`) |
+| `.gsd/KNOWLEDGE.md` | File-canonical (no DB) | Yes — `loadKnowledgeBlock` (`src/resources/extensions/workflow/bootstrap/system-context.ts`) | Three markdown tables: Rules / Patterns / Lessons | Direct file append (no tool) | Yes (`gsd_knowledge`) |
+| `memories` table | DB-backed (`src/resources/extensions/workflow/bootstrap/memory-tools.ts`) | **No** | Flat: `category` (architecture / convention / gotcha / pattern / preference / environment), `content`, `confidence`, tags | `capture_thought`, `memory_query`, `gsd_graph` | **No** |
 
 A 3-agent parallel audit (Issue #4495) found:
 
-- Zero of 50+ files in `src/resources/extensions/gsd/prompts/` reference `capture_thought` / `memory_query` / `gsd_graph`.
+- Zero of 50+ files in `src/resources/extensions/workflow/prompts/` reference `capture_thought` / `memory_query` / `gsd_graph`.
 - Restrictive agent frontmatter (`src/resources/agents/researcher.md:4`, `src/resources/agents/scout.md:4`) silently excludes the new tools.
 - `packages/mcp-server/src/server.ts:807-816` registers a *different* tool also named `gsd_graph` (project knowledge graph from `.gsd/` artifacts) — name collision with the memory `gsd_graph` (supersedes-edge walker).
-- `src/resources/extensions/gsd/tests/commands-extract-learnings.test.ts:248,268` has #4429 regression guards asserting the extract-learnings prompt does NOT reference `capture_thought` / `gsd_graph`. The guard comments call them "non-existent" — a description that became stale when PR #4469 landed.
+- `src/resources/extensions/workflow/tests/commands-extract-learnings.test.ts:248,268` has #4429 regression guards asserting the extract-learnings prompt does NOT reference `capture_thought` / `gsd_graph`. The guard comments call them "non-existent" — a description that became stale when PR #4469 landed.
 
 The two surfaces are not just redundant; they fragment durable knowledge across different retrieval paths, neither of which is complete on its own.
 
@@ -73,7 +73,7 @@ The two surfaces are not just redundant; they fragment durable knowledge across 
 1. **Phase 0 ADR (this document).**
 2. **Add `structuredFields` JSON column to `memories` table.** Preserves the structured fields `gsd_save_decision` records today (`scope`, `decision`, `choice`, `rationale`, `made_by`, `revisable`) so a row migrated from `decisions` retains schema fidelity. The `capture_thought` tool gains an optional `structuredFields` parameter that mirrors the same shape.
 3. **Register `capture_thought` and `memory_query` in `packages/mcp-server/src/server.ts`.** Resolve the `gsd_graph` name collision by renaming the memory variant to `gsd_memory_graph` (or namespacing similarly). External MCP clients (studio, vscode-extension) gain access to the new surface before any cutover removes their current sources.
-4. **Auto-injection parity in `src/resources/extensions/gsd/bootstrap/system-context.ts`.** Implement `loadMemoryBlock` mirroring `loadKnowledgeBlock`: query top-N highest-confidence and most-reinforced memories scoped to the project, inject on `before_agent_start`. After this lands, `memory_query` becomes a discretionary refinement, not the only path to retrieval.
+4. **Auto-injection parity in `src/resources/extensions/workflow/bootstrap/system-context.ts`.** Implement `loadMemoryBlock` mirroring `loadKnowledgeBlock`: query top-N highest-confidence and most-reinforced memories scoped to the project, inject on `before_agent_start`. After this lands, `memory_query` becomes a discretionary refinement, not the only path to retrieval.
 5. **Backfill `decisions` -> `memories`.** Idempotent migration runs on the next `session_start` after a migration version bump. Each `decisions` row produces a `memories` row with `category = "architecture"`, `content` synthesised from `decision + choice + rationale`, and `structuredFields` populated verbatim. Re-running the migration is a no-op (matched on `structuredFields.sourceDecisionId`).
 6. **Cutover.** Remove KNOWLEDGE.md / DECISIONS.md / `gsd_save_decision` write paths from `buildExtractionStepsBlock`, `execute-task.md`, `complete-slice.md`. Replace with single `capture_thought` calls. Re-render DECISIONS.md and KNOWLEDGE.md from the `memories` table through the projection hooks that own those files. Update remaining #4429 regression tests. Deprecate the `decisions` table (read-only for one minor version, then drop).
 
@@ -91,7 +91,7 @@ Step 6 may land only when **all** of the following are observable on `feat/memor
 - Step 5 backfill is idempotent (rerunnable with no diff) on at least one real `.gsd/gsd.db` that contains historical decisions.
 - The ADR-013 Phase 6 preflight scanner reports zero consolidation gaps at startup and through `/gsd doctor`: active `decisions` rows must have matching `memories.structured_fields.sourceDecisionId` markers, and migrated `KNOWLEDGE.md` rows must have matching `sourceKnowledgeId` markers.
 - MCP `capture_thought` and `memory_query` calls succeed end-to-end from a non-CLI client (studio or vscode integration test).
-- No regression test in `src/resources/extensions/gsd/tests/` is silenced or removed without an explicit rationale comment in the diff.
+- No regression test in `src/resources/extensions/workflow/tests/` is silenced or removed without an explicit rationale comment in the diff.
 - A two-week dual-write bake period elapses with no in-flight project reporting lost decisions or knowledge entries.
 
 ### Rollback plan

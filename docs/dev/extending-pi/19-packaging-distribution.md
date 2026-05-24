@@ -26,7 +26,7 @@ Two separate mechanisms serve different purposes:
 
 ```json
 {
-  "name": "@gsd/extension-breakout",
+  "name": "@loop24/extension-breakout",
   "type": "module",
   "pi": {
     "extensions": ["src/index.ts"]
@@ -72,7 +72,7 @@ If no `pi` manifest exists, pi auto-discovers:
 
 ### Dependencies
 
-- List `@gsd/pi-ai`, `@gsd/pi-coding-agent`, `@gsd/pi-tui`, `@sinclair/typebox` in `peerDependencies` with `"*"` — they're bundled by pi.
+- List `@loop24/pi-ai`, `@loop24/pi-coding-agent`, `@loop24/pi-tui`, `@sinclair/typebox` in `peerDependencies` with `"*"` — they're bundled by pi.
 - Other npm deps go in `dependencies`. Pi runs `npm install` on package installation.
 
 ---

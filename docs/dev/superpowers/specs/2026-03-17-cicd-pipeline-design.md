@@ -80,7 +80,7 @@ The `-dev.` prerelease identifier is distinct from the existing `-next.` convent
 
 ### Native Binary Strategy for Dev Publishes
 
-Dev versions (`@dev` tag) use the native binaries from the most recent stable `build-native.yml` release. The `optionalDependencies` in `package.json` use `>=` ranges, so a `-dev.` version of `gsd-pi` resolves the latest stable `@gsd-build/engine-*` packages from the registry.
+Dev versions (`@dev` tag) use the native binaries from the most recent stable `build-native.yml` release. The `optionalDependencies` in `package.json` use `>=` ranges, so a `-dev.` version of `gsd-pi` resolves the latest stable `@loop24-build/engine-*` packages from the registry.
 
 If a PR modifies Rust native crate code (`native/` directory), the dev publish will bundle stale native binaries. This is acceptable because:
 - Native crate changes are infrequent and always accompanied by a `v*` tag release
@@ -183,11 +183,11 @@ FixtureProvider (intercept layer)
 
 ### Integration Design
 
-The `FixtureProvider` implements the `Provider` interface from `@gsd/pi-ai` (the same interface all 20+ built-in providers implement). It registers itself via environment variable detection at provider initialization:
+The `FixtureProvider` implements the `Provider` interface from `@loop24/pi-ai` (the same interface all 20+ built-in providers implement). It registers itself via environment variable detection at provider initialization:
 
 ```typescript
 // Pseudocode — actual implementation will follow pi-ai patterns
-import type { Provider, StreamingResponse } from "@gsd/pi-ai";
+import type { Provider, StreamingResponse } from "@loop24/pi-ai";
 
 class FixtureProvider implements Provider {
   // In record mode: wraps the real provider, saves responses

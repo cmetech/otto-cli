@@ -13,10 +13,10 @@ GSD vendors four packages from [pi-mono](https://github.com/badlogic/pi-mono) (a
 
 | Package | Role | Current version |
 |---|---|---|
-| `@gsd/pi-agent-core` | Core agent loop and types | 0.57.1 |
-| `@gsd/pi-ai` | Multi-provider LLM API | 0.57.1 |
-| `@gsd/pi-tui` | Terminal UI framework | 0.57.1 |
-| `@gsd/pi-coding-agent` | Coding agent, tools, extension system | 2.74.0 |
+| `@loop24/pi-agent-core` | Core agent loop and types | 0.57.1 |
+| `@loop24/pi-ai` | Multi-provider LLM API | 0.57.1 |
+| `@loop24/pi-tui` | Terminal UI framework | 0.57.1 |
+| `@loop24/pi-coding-agent` | Coding agent, tools, extension system | 2.74.0 |
 
 Vendoring was chosen over npm dependencies to allow GSD to modify the upstream packages freely. However, over time, GSD has written substantial original logic directly inside `pi-coding-agent` — approximately 79 files including:
 
@@ -32,7 +32,7 @@ This GSD-authored code is mixed in with upstream pi code inside the same package
 
 Pi-mono does publish to npm as `@mariozechner/pi-*`. Moving to npm dependencies would eliminate vendoring entirely, but it is blocked by:
 
-1. `@gsd/native` bindings are imported directly inside the vendored pi-tui and pi-coding-agent source — the upstream npm packages do not have these imports
+1. `@loop24/native` bindings are imported directly inside the vendored pi-tui and pi-coding-agent source — the upstream npm packages do not have these imports
 2. ~50 direct source modification commits to the vendored packages since March 2026 would need to be evaluated individually
 3. The upstream extension API (~25 events) is a subset of GSD's extension system (~50+ events) — the delta would need to be re-architected before the move
 
@@ -60,24 +60,24 @@ packages/
 
 ```
 gsd-pi (binary)
-  └── @gsd/agent-modes
-        ├── @gsd/agent-core
-        │     ├── @gsd/pi-coding-agent
-        │     ├── @gsd/pi-agent-core
-        │     └── @gsd/pi-ai
-        └── @gsd/pi-coding-agent
-              ├── @gsd/pi-agent-core
-              ├── @gsd/pi-ai
-              └── @gsd/pi-tui
+  └── @loop24/agent-modes
+        ├── @loop24/agent-core
+        │     ├── @loop24/pi-coding-agent
+        │     ├── @loop24/pi-agent-core
+        │     └── @loop24/pi-ai
+        └── @loop24/pi-coding-agent
+              ├── @loop24/pi-agent-core
+              ├── @loop24/pi-ai
+              └── @loop24/pi-tui
 ```
 
-Arrows point in one direction only. No cycles. The vendored pi packages have no knowledge of `@gsd/agent-core` or `@gsd/agent-modes`.
+Arrows point in one direction only. No cycles. The vendored pi packages have no knowledge of `@loop24/agent-core` or `@loop24/agent-modes`.
 
 ---
 
 ## Package Specifications
 
-### `@gsd/agent-core` (`packages/gsd-agent-core/`)
+### `@loop24/agent-core` (`packages/gsd-agent-core/`)
 
 **Purpose:** GSD's session orchestration layer. Owns the `AgentSession` class, compaction, bash execution, system prompt construction, and the `createAgentSession()` factory that wires everything together.
 
@@ -119,13 +119,13 @@ export { BlobStore } from './blob-store.js'
 | `blob-store.ts` | External binary data management |
 | `export-html/` | Session HTML export |
 
-**Key dependency note:** `agent-session.ts` imports pi types directly (`Agent`, `AgentEvent`, `AgentMessage`, `AgentState`, `AgentTool`, `ThinkingLevel` from `@gsd/pi-agent-core`; `Model`, `Message` from `@gsd/pi-ai`). This is intentional — GSD's session layer is pi-typed, not abstracting over pi. This makes the seam a clear seam, not an abstraction.
+**Key dependency note:** `agent-session.ts` imports pi types directly (`Agent`, `AgentEvent`, `AgentMessage`, `AgentState`, `AgentTool`, `ThinkingLevel` from `@loop24/pi-agent-core`; `Model`, `Message` from `@loop24/pi-ai`). This is intentional — GSD's session layer is pi-typed, not abstracting over pi. This makes the seam a clear seam, not an abstraction.
 
 ---
 
-### `@gsd/agent-modes` (`packages/gsd-agent-modes/`)
+### `@loop24/agent-modes` (`packages/gsd-agent-modes/`)
 
-**Purpose:** GSD's run-mode and CLI layer. Assembles the agent session (from `@gsd/agent-core`) with a specific interface: interactive TUI, headless RPC server, or print output. Contains the `main()` entry point logic invoked by the `gsd` binary.
+**Purpose:** GSD's run-mode and CLI layer. Assembles the agent session (from `@loop24/agent-core`) with a specific interface: interactive TUI, headless RPC server, or print output. Contains the `main()` entry point logic invoked by the `gsd` binary.
 
 **Public API surface (exported from `index.ts`):**
 
@@ -167,26 +167,26 @@ The extension system remains here because it is legitimately pi-typed. Extension
 
 **Required update to extension loader:**
 
-`src/core/extensions/loader.ts` maintains a `STATIC_BUNDLED_MODULES` map of packages that extensions can import at runtime. After the migration, `@gsd/agent-core` and `@gsd/agent-modes` must be added to this map so that extensions importing those packages continue to resolve correctly in compiled Bun binaries:
+`src/core/extensions/loader.ts` maintains a `STATIC_BUNDLED_MODULES` map of packages that extensions can import at runtime. After the migration, `@loop24/agent-core` and `@loop24/agent-modes` must be added to this map so that extensions importing those packages continue to resolve correctly in compiled Bun binaries:
 
 ```typescript
 // Before (current)
 const STATIC_BUNDLED_MODULES = {
-  "@gsd/pi-agent-core": _bundledPiAgentCore,
-  "@gsd/pi-ai": _bundledPiAi,
-  "@gsd/pi-tui": _bundledPiTui,
-  "@gsd/pi-coding-agent": _bundledPiCodingAgent,
+  "@loop24/pi-agent-core": _bundledPiAgentCore,
+  "@loop24/pi-ai": _bundledPiAi,
+  "@loop24/pi-tui": _bundledPiTui,
+  "@loop24/pi-coding-agent": _bundledPiCodingAgent,
   // ...
 }
 
 // After
 const STATIC_BUNDLED_MODULES = {
-  "@gsd/pi-agent-core": _bundledPiAgentCore,
-  "@gsd/pi-ai": _bundledPiAi,
-  "@gsd/pi-tui": _bundledPiTui,
-  "@gsd/pi-coding-agent": _bundledPiCodingAgent,
-  "@gsd/agent-core": _bundledGsdAgentCore,     // NEW
-  "@gsd/agent-modes": _bundledGsdAgentModes,   // NEW
+  "@loop24/pi-agent-core": _bundledPiAgentCore,
+  "@loop24/pi-ai": _bundledPiAi,
+  "@loop24/pi-tui": _bundledPiTui,
+  "@loop24/pi-coding-agent": _bundledPiCodingAgent,
+  "@loop24/agent-core": _bundledGsdAgentCore,     // NEW
+  "@loop24/agent-modes": _bundledGsdAgentModes,   // NEW
   // ...
 }
 ```
@@ -199,7 +199,7 @@ const STATIC_BUNDLED_MODULES = {
 2. Copy the upstream source into `packages/pi-agent-core/`, `pi-ai/`, `pi-tui/`, `pi-coding-agent/`
    - Do not touch `packages/gsd-agent-core/` or `packages/gsd-agent-modes/`
 3. Run `tsc --noEmit` (or the build) across the workspace
-4. Fix type errors in `@gsd/agent-core` and `@gsd/agent-modes` only
+4. Fix type errors in `@loop24/agent-core` and `@loop24/agent-modes` only
 5. If upstream changed the extension event API, fix extension system integration in `pi-coding-agent/src/core/extensions/`
 
 Steps 2-5 are scoped to known files. No archaeology required.
@@ -210,9 +210,9 @@ Steps 2-5 are scoped to known files. No archaeology required.
 
 | Issue | Location | Fix |
 |---|---|---|
-| Internal-path import of `AgentSessionEvent` | `src/web/bridge-service.ts` | Import from `@gsd/agent-core` public export |
-| `clearQueue()` not in typed public API | `AgentSession` | Add to public interface in `@gsd/agent-core/index.ts` |
-| `buildSessionContext()` on `SessionManager` | Used by GSD code, not publicly exported | Evaluate: re-export from `@gsd/agent-core` or remove dependency |
+| Internal-path import of `AgentSessionEvent` | `src/web/bridge-service.ts` | Import from `@loop24/agent-core` public export |
+| `clearQueue()` not in typed public API | `AgentSession` | Add to public interface in `@loop24/agent-core/index.ts` |
+| `buildSessionContext()` on `SessionManager` | Used by GSD code, not publicly exported | Evaluate: re-export from `@loop24/agent-core` or remove dependency |
 | Deprecated `session_switch`, `session_fork`, `session_directory` usage | 2+ files in `pi-coding-agent` | Migrate to `session_start` with `reason` field (required for v0.65.0 compat) — can be done as part of or after clean seam work |
 
 ---
@@ -222,9 +222,9 @@ Steps 2-5 are scoped to known files. No archaeology required.
 ### Positive
 
 - Pi updates are scoped: type errors from a pi update surface only in the two new GSD packages, not scattered across mixed source
-- The module system enforces the boundary: a pi file importing `@gsd/agent-core` is a compiler error, not a convention violation
+- The module system enforces the boundary: a pi file importing `@loop24/agent-core` is a compiler error, not a convention violation
 - Phase 2 (moving pi packages to npm) becomes a package.json change rather than a file archaeology project
-- Headless/RPC consumers can depend on `@gsd/agent-core` without pulling in the TUI layer
+- Headless/RPC consumers can depend on `@loop24/agent-core` without pulling in the TUI layer
 
 ### Negative
 
@@ -235,14 +235,14 @@ Steps 2-5 are scoped to known files. No archaeology required.
 ### Neutral
 
 - End-user install experience (`npm install -g @opengsd/gsd-pi@latest`) is unchanged
-- Extension authors see no change — the extension API surface remains in `@gsd/pi-coding-agent`
+- Extension authors see no change — the extension API surface remains in `@loop24/pi-coding-agent`
 - GSD packages continue to use pi types directly — no new abstraction layer
 
 ---
 
 ## Alternatives Considered
 
-### Single `@gsd/agent` package
+### Single `@loop24/agent` package
 
 Move everything into one package instead of two. Simpler dependency graph but creates a large package where session logic and TUI logic share a build unit. Rejected because headless/RPC use cases would pull in the TUI unnecessarily, and the two concerns have meaningfully different consumers.
 
@@ -252,7 +252,7 @@ Add a `src/gsd/` subdirectory inside `pi-coding-agent` to clearly mark GSD files
 
 ### Move to npm dependencies now (Phase 2 first)
 
-Take `@mariozechner/pi-*` from npm and skip vendoring entirely. Blocked by `@gsd/native` imports baked into the vendored source, ~50 direct source modification commits, and the upstream extension API gap. Deferred to Phase 2.
+Take `@mariozechner/pi-*` from npm and skip vendoring entirely. Blocked by `@loop24/native` imports baked into the vendored source, ~50 direct source modification commits, and the upstream extension API gap. Deferred to Phase 2.
 
 ---
 

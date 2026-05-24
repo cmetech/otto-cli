@@ -971,7 +971,7 @@ Quick lookup: which files are part of each system?
 | **AST** | native/crates/ast/*, packages/native/src/ast/ |
 | **Async Jobs** | src/resources/extensions/async-jobs/* |
 | **Auth / OAuth** | pi-ai/src/utils/oauth/*, src/web/web-auth-storage.ts, core/auth-storage.ts, src/pi-migration.ts, aws-auth/index.ts, web/lib/auth.ts |
-| **Auto Engine** | src/resources/extensions/gsd/auto*.ts, gsd/auto-loop.ts, gsd/auto-supervisor.ts, gsd/unit-runtime.ts |
+| **Auto Engine** | src/resources/extensions/workflow/auto*.ts, gsd/auto-loop.ts, gsd/auto-supervisor.ts, gsd/unit-runtime.ts |
 | **Bg Shell** | src/resources/extensions/bg-shell/* |
 | **Browser Tools** | src/resources/extensions/browser-tools/* |
 | **Build System** | scripts/*, native/crates/engine/build.rs |
@@ -986,7 +986,7 @@ Quick lookup: which files are part of each system?
 | **Extension Registry** | src/extension-discovery.ts, src/extension-registry.ts, src/bundled-extension-paths.ts |
 | **Extensions** | pi-coding-agent/src/core/extensions/*, src/resource-loader.ts |
 | **File Search** | native/crates/engine/src/grep.rs, glob.rs, fd.rs, fs_cache.rs, packages/native/src/grep/*, fd/*, core/tools/grep.ts, find.ts |
-| **GSD Workflow** | src/resources/extensions/gsd/* (non-auto), gsd/reports.ts, gsd/notifications.ts, gsd/prompts/*, gsd/workflow-templates/* |
+| **GSD Workflow** | src/resources/extensions/workflow/* (non-auto), gsd/reports.ts, gsd/notifications.ts, gsd/prompts/*, gsd/workflow-templates/* |
 | **Google Search** | src/resources/extensions/google-search/index.ts |
 | **Headless Mode** | src/headless*.ts |
 | **Image Processing** | native/crates/engine/src/image.rs, packages/native/src/image/*, utils/image-*.ts, web/lib/image-utils.ts |

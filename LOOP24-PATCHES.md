@@ -1440,6 +1440,69 @@ Build clean, 80/80 regression pass.
 
 Build clean, 74/74 standing regression + 2/2 theme-highlight pass.
 
+## Phase 12 — Runtime hotfixes (tagged: phase-12-runtime-fixes)
+
+Bugs surfaced by actually running `loop24` after Phase 11. All discovered
+and fixed in one session; standing 74-test regression + build green throughout.
+
+- **`fix(loader)` (27e3ad2):** `src/loader.ts:249` hardcoded the `@gsd`
+  scope in its critical-package validation. Phase 9 renamed the workspace
+  scope to `@loop24`; this line was missed, so every `loop24` invocation
+  checked `node_modules/@gsd/pi-coding-agent` (gone) and aborted with
+  "installation is broken — missing packages". One-char fix → `@loop24`.
+- **`chore(native)` (2e11dc6):** added the 5 `@opengsd/engine-*` platform
+  binaries as `optionalDependencies` (pinned 1.0.2). The fork shipped none,
+  so every startup warned "Native addon not available" and silently used
+  JS fallbacks (slower search/grep, TUI text measurement, fuzzy find, etc.;
+  no fallback at all for syntax highlight / ast-grep / clipboard / image).
+  npm installs only the host-matching slice (~75 MB). Warning gone.
+- **`fix(branding)` (dd6d6b0):** 23 user-facing CLI strings still told users
+  to run `gsd …` / `/gsd …` subcommands that don't exist post-fork
+  (worktree + graph help, the `[gsd]` log prefix in those files). → loop24.
+- **`fix(install)` (0e0bdcc):** the `loop24` extension imports
+  `../../brand-colors.js`; the resource sync copied the extension tree to
+  `~/.loop24/agent/extensions/` but not `brand-colors.js` to the sibling
+  dir, so the extension failed to load (`Cannot find module`). Added the
+  copy in `resource-loader.ts`. Also fixed 2 more stale `[gsd]` prefixes.
+- **`fix(tests)` (b7c8091):** repaired stale `@gsd/` + `../../gsd/` import
+  paths in `extensions/google-search/index.ts` and two extension test files,
+  and removed an orphaned test importing from the deleted `web/` tree. This
+  unblocked the `pretest` gate (`typecheck:extensions` now exits 0; was ~20
+  errors). NOTE: the full `npm test` unit suite hangs at 0% CPU in this
+  environment independent of these changes (pre-existing) — the pretest
+  typecheck + standing 74-regression are the working signals.
+
+## OTTO Branding — Step 1: Display brand name (tagged: otto-step1-display-name)
+
+First of a planned 5-step staged rollout (spec:
+`docs/superpowers/specs/2026-05-24-otto-branding-step1-display-name.md`,
+plan: `docs/superpowers/plans/2026-05-24-otto-branding-step1-display-name.md`).
+OTTO is becoming the **runtime brand**; `loop24` stays the npm packaging
+identity (`@ericsson/loop24`, `@loop24/*` scope, `piConfig.name`).
+
+Step 1 = the displayed product name only. Changed:
+- **`piConfig.brandName` LOOP24 → OTTO** (3e96f26) — drives `BRAND_NAME`
+  (src/brand.ts, src/help-text.ts): help header, footer badge `● OTTO`,
+  welcome screen, transcript rail.
+- **Banner / ASCII logos → OTTO** (fd347df, 2d5397d) — `banner.txt`
+  (first-run) plus three more hardcoded logos the spec's inventory missed:
+  `welcome-screen.ts` (`LOOP24_LOGO`→`OTTO_LOGO`, the one shown every
+  launch), `logo.ts` (postinstall/onboarding), and the watch-dashboard
+  `header-renderer.ts` (which still spelled the pre-fork **`GSD`** in art
+  AND labels — wide/stacked/ultra-narrow variants).
+- **Log prefixes → `[otto]`** (13e816d, bce78f5, aa095c5) — flipped the
+  `[loop24]` prefix and swept **59 stale `[gsd]` prefixes** across 14 files
+  (web-mode, cli, workflow bootstrap, session-lock, mcp-server, etc.).
+- **`config.test.ts`** brandName assertion updated LOOP24 → OTTO (aa095c5).
+
+**Deferred to steps 2–5 (intentionally still loop24):** binary command
+name (`otto` replaces `loop24` — step 2), `/loop24` slash namespace
+(step 3), `~/.otto/` config dir + migration (step 4), `OTTO_*` env vars
+(step 5). Interim state is intentional: the name reads OTTO, but help text
+still shows `loop24 auto`, `/loop24`, `~/.loop24/`.
+
+Build clean, standing 74-test regression 74/74, user-confirmed visual result.
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` — RESOLVED in Phase 11 Task 1

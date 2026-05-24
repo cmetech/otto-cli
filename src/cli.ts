@@ -79,18 +79,18 @@ function exitIfManagedResourcesAreNewer(currentAgentDir: string): void {
  */
 function printNonTtyErrorAndExit(missing: string | undefined, includeWebHint: boolean): never {
   const suffix = missing ? ` but ${missing} not a TTY` : ''
-  process.stderr.write(`[loop24] Error: Interactive mode requires a terminal (TTY)${suffix}.\n`)
-  process.stderr.write('[loop24] Non-interactive alternatives:\n')
-  process.stderr.write('[loop24]   loop24 auto                       Auto-mode (pipeable, no TUI)\n')
-  process.stderr.write('[loop24]   loop24 --print "your message"     Single-shot prompt\n')
+  process.stderr.write(`[otto] Error: Interactive mode requires a terminal (TTY)${suffix}.\n`)
+  process.stderr.write('[otto] Non-interactive alternatives:\n')
+  process.stderr.write('[otto]   loop24 auto                       Auto-mode (pipeable, no TUI)\n')
+  process.stderr.write('[otto]   loop24 --print "your message"     Single-shot prompt\n')
   if (includeWebHint) {
-    process.stderr.write('[loop24]   loop24 --web [path]               Browser-only web mode\n')
+    process.stderr.write('[otto]   loop24 --web [path]               Browser-only web mode\n')
   }
-  process.stderr.write('[loop24]   loop24 --mode rpc                 JSON-RPC over stdin/stdout\n')
-  process.stderr.write('[loop24]   loop24 --mode mcp                 MCP server over stdin/stdout\n')
-  process.stderr.write('[loop24]   loop24 --mode text "message"      Text output mode\n')
+  process.stderr.write('[otto]   loop24 --mode rpc                 JSON-RPC over stdin/stdout\n')
+  process.stderr.write('[otto]   loop24 --mode mcp                 MCP server over stdin/stdout\n')
+  process.stderr.write('[otto]   loop24 --mode text "message"      Text output mode\n')
   if (includeWebHint) {
-    process.stderr.write('[loop24]   loop24 headless                   Auto-mode without TUI\n')
+    process.stderr.write('[otto]   loop24 headless                   Auto-mode without TUI\n')
   }
   process.exit(1)
 }
@@ -103,7 +103,7 @@ function printExtensionErrors(errors: ReadonlyArray<{ error: string }>): void {
   for (const err of errors) {
     const isConflict = err.error.includes('supersedes') || err.error.includes('conflicts with')
     const prefix = isConflict ? 'Extension conflict' : 'Extension load error'
-    process.stderr.write(`[loop24] ${prefix}: ${err.error}\n`)
+    process.stderr.write(`[otto] ${prefix}: ${err.error}\n`)
   }
 }
 
@@ -115,7 +115,7 @@ function printExtensionErrors(errors: ReadonlyArray<{ error: string }>): void {
 function printExtensionWarnings(warnings: ReadonlyArray<{ message: string }> | undefined): void {
   if (!warnings) return
   for (const w of warnings) {
-    process.stderr.write(`[loop24] Extension warning: ${w.message}\n`)
+    process.stderr.write(`[otto] Extension warning: ${w.message}\n`)
   }
 }
 
@@ -258,7 +258,7 @@ if (cliFlags.messages[0] === 'graph') {
       await writeGraph(workflowRoot, graph)
       process.stdout.write(`Graph built: ${graph.nodes.length} nodes, ${graph.edges.length} edges\n`)
     } catch (err) {
-      process.stderr.write(`[loop24] graph build failed: ${err instanceof Error ? err.message : String(err)}\n`)
+      process.stderr.write(`[otto] graph build failed: ${err instanceof Error ? err.message : String(err)}\n`)
       process.exit(1)
     }
   } else if (sub === 'status') {

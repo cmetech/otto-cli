@@ -141,10 +141,10 @@ export function showWorktreeStatusBanner(basePath: string): void {
 
   const names = withChanges.map((worktree) => chalk.cyan(worktree.name)).join(', ')
   process.stderr.write(
-    chalk.dim('[loop24] ') +
+    chalk.dim('[otto] ') +
     chalk.yellow(`${withChanges.length} worktree${withChanges.length === 1 ? '' : 's'} with unmerged changes: `) +
     names + '\n' +
-    chalk.dim('[loop24] ') +
+    chalk.dim('[otto] ') +
     chalk.dim('Resume: loop24 -w <name>  |  Merge: loop24 worktree merge <name>  |  List: loop24 worktree list\n\n'),
   )
 }

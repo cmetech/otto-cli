@@ -81,6 +81,13 @@ The user reviews this map BEFORE Tasks 2-10 execute. Changes/redirects to specif
 
 ## 4. Constants / error codes
 
+**Reclassification (2026-05-24, Task 7 audit):** 15 names initially listed
+here were found during Task 7 spot-check to be used as `process.env.X`
+reads, not module-level constants. They have been moved to Section 5
+(env vars) where they get LOOP24_X canonical + GSD_X fallback treatment.
+The 23 names below are confirmed module-level constants (0
+`process.env.X` references).
+
 | Old | New | Files | Notes |
 |---|---|---|---|
 | `MISSING_GSD_MARKER` | `MISSING_WORKFLOW_MARKER` | 4 | `MISSING_WORKFLOW_MARKER` free (0 hits). |
@@ -94,33 +101,20 @@ The user reviews this map BEFORE Tasks 2-10 execute. Changes/redirects to specif
 | `GSD_LOCK_HELD` | `LOCK_HELD` | 2 | `LOCK_HELD` free (0 hits). |
 | `GSD_ALLOWED` | `ALLOWED` | 1 | `ALLOWED` free (0 hits). |
 | `GSD_STALE_STATE` | `STALE_STATE` | 6 | `STALE_STATE` free (0 hits). |
-| `GSD_MILESTONE_LOCK` | `MILESTONE_LOCK` | 14 | `MILESTONE_LOCK` free (0 hits). |
-| `GSD_PARALLEL_WORKER` | `PARALLEL_WORKER` | 11 | `PARALLEL_WORKER` free (0 hits). |
-| `GSD_WORKFLOW_EXECUTORS_MODULE` | `WORKFLOW_EXECUTORS_MODULE` | 8 | `WORKFLOW_EXECUTORS_MODULE` free (0 hits). |
-| `GSD_WORKFLOW_WRITE_GATE_MODULE` | `WORKFLOW_WRITE_GATE_MODULE` | 9 | `WORKFLOW_WRITE_GATE_MODULE` free (0 hits). |
-| `GSD_PERSIST_WRITE_GATE_STATE` | `PERSIST_WRITE_GATE_STATE` | 8 | `PERSIST_WRITE_GATE_STATE` free (0 hits). |
-| `GSD_SLICE_LOCK` | `SLICE_LOCK` | 3 | `SLICE_LOCK` free (0 hits). |
-| `GSD_ENGINE_BYPASS` | `ENGINE_BYPASS` | 3 | `ENGINE_BYPASS` free (0 hits). |
 | `GSD_LOGO` | `LOGO` | 2 | `LOGO` free (0 hits). |
 | `GSD_ROOT_FILES` | `ROOT_FILES` | 2 | `ROOT_FILES` free (0 hits). |
 | `GSD_ROOT_TTL_MS` | `ROOT_TTL_MS` | 1 | `ROOT_TTL_MS` free (0 hits). |
 | `GSD_SHORTCUTS` | `SHORTCUTS` | 2 | `SHORTCUTS` free (0 hits). |
-| `GSD_ALLOWED_COMMAND_PREFIXES` | `ALLOWED_COMMAND_PREFIXES` | 3 | `ALLOWED_COMMAND_PREFIXES` free (0 hits). |
-| `GSD_BUNDLED_EXTENSION_PATHS` | `BUNDLED_EXTENSION_PATHS` | 3 | `BUNDLED_EXTENSION_PATHS` free (0 hits). |
 | `GSD_RUNTIME_PATTERNS` | `RUNTIME_PATTERNS` | 4 | `RUNTIME_PATTERNS` free (0 hits). |
 | `GSD_NUMBERED_VARIANT_RE` | `NUMBERED_VARIANT_RE` | 1 | `NUMBERED_VARIANT_RE` free (0 hits). |
 | `GSD_DIR_RE` | `DIR_RE` | 1 | `DIR_RE` free (0 hits). |
 | `GSD_SNAPSHOT_PREFIX` | `SNAPSHOT_PREFIX` | 1 | `SNAPSHOT_PREFIX` free (0 hits). |
 | `GSD_STATUS_KEYS` | `STATUS_KEYS` | 1 | `STATUS_KEYS` free (0 hits). |
 | `GSD_WIDGET_KEYS` | `WIDGET_KEYS` | 1 | `WIDGET_KEYS` free (0 hits). |
-| `GSD_WORKTREE` | `WORKFLOW_WORKTREE` | 2 | `WORKTREE` has 2 hits as a string fragment in system-context.ts; `WORKFLOW_WORKTREE` is code-identifier-free (0 hits). |
-| `GSD_CLI_WORKTREE` | `CLI_WORKTREE` | 2 | `CLI_WORKTREE` free (0 hits). |
-| `GSD_CLI_WORKTREE_BASE` | `CLI_WORKTREE_BASE` | 2 | `CLI_WORKTREE_BASE` free (0 hits). |
 | `GSD_DAEMON_CONFIG` | `DAEMON_CONFIG` | 2 | `DAEMON_CONFIG` free (0 hits). |
-| `GSD_STARTUP_TIMING` | `STARTUP_TIMING` | 3 | `STARTUP_TIMING` free (0 hits). |
-| `GSD_SHOW_TOKEN_COST` | `SHOW_TOKEN_COST` | 2 | `SHOW_TOKEN_COST` free (0 hits). |
-| `GSD_VERBOSE` | `VERBOSE` | 2 | `VERBOSE` free (0 hits). |
 | `GSD_PHASE_INACTIVE` | `PHASE_INACTIVE` | 1 | `PHASE_INACTIVE` free (0 hits). |
+
+**Reclassified to Section 5 (env vars):** `GSD_MILESTONE_LOCK`, `GSD_PARALLEL_WORKER`, `GSD_WORKFLOW_EXECUTORS_MODULE`, `GSD_WORKFLOW_WRITE_GATE_MODULE`, `GSD_PERSIST_WRITE_GATE_STATE`, `GSD_SLICE_LOCK`, `GSD_ENGINE_BYPASS`, `GSD_ALLOWED_COMMAND_PREFIXES`, `GSD_BUNDLED_EXTENSION_PATHS`, `GSD_WORKTREE`, `GSD_CLI_WORKTREE`, `GSD_CLI_WORKTREE_BASE`, `GSD_STARTUP_TIMING`, `GSD_SHOW_TOKEN_COST`, `GSD_VERBOSE`.
 
 ## 5. Env vars (LOOP24_X canonical + GSD_X fallback)
 
@@ -143,6 +137,23 @@ The 11 vars explicitly listed in the Phase 8 plan, **plus 4 additional env vars 
 | `GSD_WORKFLOW_PROJECT_ROOT` | `LOOP24_WORKFLOW_PROJECT_ROOT` | 47 | 1 | **Added 2026-05-24.** Confirmed env var: set in workflow-mcp.ts:216 (`GSD_WORKFLOW_PROJECT_ROOT: projectRoot`) and read at :235-236. Used in MCP server env spreads. `LOOP24_WORKFLOW_PROJECT_ROOT` free (0 existing hits). |
 | `GSD_ENABLE_NATIVE_GSD_GIT` | `LOOP24_ENABLE_NATIVE_GIT` | 3 | 0 | **Added 2026-05-24.** Confirmed env var: `process.env.GSD_ENABLE_NATIVE_GSD_GIT === "1"` in native-git-bridge.ts:19. Feature flag for native git path. Inner duplicate `GSD` dropped; "native" already qualifies the feature. `LOOP24_ENABLE_NATIVE_GIT` free (0 existing hits). |
 | `GSD_ENABLE_NATIVE_GSD_PARSER` | `LOOP24_ENABLE_NATIVE_PARSER` | 1 | 0 | **Added 2026-05-24.** Confirmed env var: `process.env.GSD_ENABLE_NATIVE_GSD_PARSER === "1"` in native-parser-bridge.ts:11. Feature flag for native parser path. `LOOP24_ENABLE_NATIVE_PARSER` free (0 existing hits). |
+| `GSD_MILESTONE_LOCK` | `LOOP24_MILESTONE_LOCK` | 34 | many | **Reclassified 2026-05-24** from Section 4 during Task 7 audit. Used directly via `process.env.GSD_MILESTONE_LOCK`. Parallel-worker coordination env. `LOOP24_MILESTONE_LOCK` free. |
+| `GSD_PARALLEL_WORKER` | `LOOP24_PARALLEL_WORKER` | 40 | many | **Reclassified 2026-05-24.** Parallel-worker mode flag. `LOOP24_PARALLEL_WORKER` free. |
+| `GSD_WORKFLOW_EXECUTORS_MODULE` | `LOOP24_WORKFLOW_EXECUTORS_MODULE` | 10 | many | **Reclassified 2026-05-24.** Module-path override env. `LOOP24_WORKFLOW_EXECUTORS_MODULE` free. |
+| `GSD_WORKFLOW_WRITE_GATE_MODULE` | `LOOP24_WORKFLOW_WRITE_GATE_MODULE` | 4 | many | **Reclassified 2026-05-24.** Module-path override env. `LOOP24_WORKFLOW_WRITE_GATE_MODULE` free. |
+| `GSD_PERSIST_WRITE_GATE_STATE` | `LOOP24_PERSIST_WRITE_GATE_STATE` | 20 | many | **Reclassified 2026-05-24.** Write-gate persistence flag. `LOOP24_PERSIST_WRITE_GATE_STATE` free. |
+| `GSD_SLICE_LOCK` | `LOOP24_SLICE_LOCK` | 11 | many | **Reclassified 2026-05-24.** Parallel-worker slice-lock env. `LOOP24_SLICE_LOCK` free. |
+| `GSD_ENGINE_BYPASS` | `LOOP24_ENGINE_BYPASS` | 6 | many | **Reclassified 2026-05-24.** Engine bypass flag. `LOOP24_ENGINE_BYPASS` free. |
+| `GSD_ALLOWED_COMMAND_PREFIXES` | `LOOP24_ALLOWED_COMMAND_PREFIXES` | 6 | many | **Reclassified 2026-05-24.** Allowed-prefixes override env. `LOOP24_ALLOWED_COMMAND_PREFIXES` free. |
+| `GSD_BUNDLED_EXTENSION_PATHS` | `LOOP24_BUNDLED_EXTENSION_PATHS` | 5 | many | **Reclassified 2026-05-24.** Bundled-extension-paths override env. `LOOP24_BUNDLED_EXTENSION_PATHS` free. |
+| `GSD_WORKTREE` | `LOOP24_WORKTREE` | 5 | many | **Reclassified 2026-05-24.** Worktree-mode env. `LOOP24_WORKTREE` free. |
+| `GSD_CLI_WORKTREE` | `LOOP24_CLI_WORKTREE` | 5 | many | **Reclassified 2026-05-24.** CLI worktree path env. `LOOP24_CLI_WORKTREE` free. |
+| `GSD_CLI_WORKTREE_BASE` | `LOOP24_CLI_WORKTREE_BASE` | 5 | many | **Reclassified 2026-05-24.** CLI worktree base path env. `LOOP24_CLI_WORKTREE_BASE` free. |
+| `GSD_STARTUP_TIMING` | `LOOP24_STARTUP_TIMING` | 2 | 0 | **Reclassified 2026-05-24.** Startup timing diagnostic flag (also has `PI_TIMING` alias). `LOOP24_STARTUP_TIMING` free. |
+| `GSD_SHOW_TOKEN_COST` | `LOOP24_SHOW_TOKEN_COST` | 2 | many | **Reclassified 2026-05-24.** Token cost UI toggle. `LOOP24_SHOW_TOKEN_COST` free. |
+| `GSD_VERBOSE` | `LOOP24_VERBOSE` | 1 | 0 | **Reclassified 2026-05-24.** Verbose logging flag. `LOOP24_VERBOSE` free. |
+
+**Section 5 total: 30 env vars** (15 original from plan + 15 added 2026-05-24).
 
 ---
 

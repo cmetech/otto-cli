@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Verifies GSD session hook widget and footer lifecycle behavior.
 
 /**

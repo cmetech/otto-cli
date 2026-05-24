@@ -57,7 +57,7 @@ GSD aligns its Claude import flow to that model.
 
 ---
 
-## Where GSD looks
+## Where the agent looks
 
 For Claude plugin and marketplace material, GSD prefers Claude-managed locations first:
 

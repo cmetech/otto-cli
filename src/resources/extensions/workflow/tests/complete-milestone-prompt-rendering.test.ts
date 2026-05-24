@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Verifies the complete milestone prompt renders required completion and verification guardrails.
 
 import test from "node:test";

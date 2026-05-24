@@ -1,4 +1,4 @@
-// GSD-2 + src/resources/extensions/workflow/tests/select-resumable-milestone.test.ts
+// the agent + src/resources/extensions/workflow/tests/select-resumable-milestone.test.ts
 // Regression: bootstrap must rederive `currentMilestoneId` from an unmerged
 // completed milestone branch when in-memory state was lost across a process
 // restart (#5538-followup).

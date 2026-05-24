@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Tests packaged workflow tools exposed by the GSD MCP server.
 
 import { describe, it } from "node:test";

@@ -12,7 +12,7 @@
 ## Step 1: Determine Scope and Placement
 
 Ask the user:
-- **Global** (`~/.pi/agent/extensions/`) — Available in all GSD sessions
+- **Global** (`~/.pi/agent/extensions/`) — Available in all workflow sessions
 - **Project-local** (`.gsd/extensions/`) — Available only in this project
 
 ## Step 2: Determine Extension Capabilities
@@ -150,7 +150,7 @@ gsd -e ./path/to/my-extension.ts
 ```
 
 Verify:
-- Extension loads without errors (check GSD startup output)
+- Extension loads without errors (check agent startup output)
 - Tools appear when LLM is asked to use them
 - Commands respond to `/mycommand`
 - Event hooks trigger at expected points

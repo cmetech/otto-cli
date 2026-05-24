@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Tests for adaptive TUI mode selection and command-center layout rendering.
 
 import assert from "node:assert/strict";
@@ -63,6 +63,6 @@ describe("AdaptiveLayoutComponent", () => {
 		assert.ok(plain.some((line) => line.includes("Tools")), "tools row should render");
 		assert.ok(!plain.some((line) => line.includes("signals")), "old signals title should not render");
 		assert.ok(!plain.some((line) => line.includes("inspector")), "old inspector title should not render");
-		assert.ok(!plain.some((line) => /\bAUTO\b/.test(line)), "command center should not imply GSD auto-mode");
+		assert.ok(!plain.some((line) => /\bAUTO\b/.test(line)), "command center should not imply auto-mode");
 	});
 });

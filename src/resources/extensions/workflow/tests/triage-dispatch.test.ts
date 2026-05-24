@@ -1,4 +1,4 @@
-// GSD-2 — Triage and quick-task dispatch behavior tests.
+// the agent — Triage and quick-task dispatch behavior tests.
 
 import test from "node:test";
 import assert from "node:assert/strict";

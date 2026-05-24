@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Tests for the shared GSD pull request evidence generator.
 
 import test from "node:test";

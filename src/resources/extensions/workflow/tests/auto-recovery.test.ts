@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Tests auto-mode artifact verification and recovery behavior.
 import test, { afterEach } from "node:test";
 import assert from "node:assert/strict";

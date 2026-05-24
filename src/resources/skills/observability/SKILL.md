@@ -8,7 +8,7 @@ Instrument code so that a cold-start agent can understand what happened by readi
 </objective>
 
 <context>
-GSD-2's `VISION.md` lists "agent-first observability" as a principle, and the system prompt calls it out: "A future version of you will land in this codebase with no memory… you add observability because you're the one who'll need it at 3am." GSD-2 already exemplifies this — `activity/*.jsonl`, `journal/*.jsonl`, `metrics.json`, `doctor-history.jsonl` — but new code doesn't get that treatment automatically.
+the agent's `VISION.md` lists "agent-first observability" as a principle, and the system prompt calls it out: "A future version of you will land in this codebase with no memory… you add observability because you're the one who'll need it at 3am." the agent already exemplifies this — `activity/*.jsonl`, `journal/*.jsonl`, `metrics.json`, `doctor-history.jsonl` — but new code doesn't get that treatment automatically.
 
 This skill is the thinking process for adding it. Not "add logs everywhere" — add the *right* signals at the *right* decision points.
 

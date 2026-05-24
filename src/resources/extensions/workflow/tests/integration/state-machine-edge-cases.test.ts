@@ -15,7 +15,7 @@
  *    replan loop cap)
  */
 
-// GSD State Machine Edge Case Tests
+// Workflow State Machine Edge Case Tests
 
 import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";

@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: the agent
 // File Purpose: Regression tests for canonical issue triage label normalization.
 
 import assert from "node:assert/strict";

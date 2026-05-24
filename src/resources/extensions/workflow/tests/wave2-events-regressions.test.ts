@@ -1,4 +1,4 @@
-// GSD State Machine — Wave 2 Event Log Regression Tests
+// Workflow State Machine — Wave 2 Event Log Regression Tests
 // Validates fixes for appendEvent isolation, entity replay handlers,
 // and post-reconcile cache invalidation.
 

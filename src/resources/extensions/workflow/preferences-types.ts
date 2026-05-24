@@ -424,7 +424,7 @@ export interface WorkflowPreferences {
   reactive_execution?: ReactiveExecutionConfig;
   /** Parallel quality gate evaluation during slice planning. Disabled by default. */
   gate_evaluation?: GateEvaluationConfig;
-  /** GitHub sync configuration. Opt-in: syncs GSD events to GitHub Issues, Milestones, and PRs. */
+  /** GitHub sync configuration. Opt-in: syncs workflow events to GitHub Issues, Milestones, and PRs. */
   github?: GitHubSyncConfig;
   /** OpenAI service tier preference. "priority" = 2x cost, faster. "flex" = 0.5x cost, slower. Only affects gpt-5.4 models. */
   service_tier?: "priority" | "flex";

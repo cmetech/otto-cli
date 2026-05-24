@@ -2,11 +2,11 @@
 
 MCP server exposing GSD orchestration tools for Claude Code, Cursor, and other MCP-compatible clients.
 
-Start GSD auto-mode sessions, poll progress, resolve blockers, and retrieve results — all through the [Model Context Protocol](https://modelcontextprotocol.io/).
+Start auto-mode sessions, poll progress, resolve blockers, and retrieve results — all through the [Model Context Protocol](https://modelcontextprotocol.io/).
 
 This package now exposes two tool surfaces:
 
-- session/read tools for starting and inspecting GSD sessions
+- session/read tools for starting and inspecting workflow sessions
 - MCP-native interactive tools for structured user input
 - headless-safe workflow tools for planning, completion, validation, reassessment, metadata persistence, and journal reads
 
@@ -139,7 +139,7 @@ If the executor bridge cannot be loaded, workflow mutation calls will fail with 
 
 ### `gsd_execute`
 
-Start a GSD auto-mode session for a project directory.
+Start a auto-mode session for a project directory.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|

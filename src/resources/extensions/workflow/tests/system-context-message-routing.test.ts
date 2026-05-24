@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Regression coverage for volatile system-context message routing.
 
 import { describe, test } from "node:test";

@@ -15,7 +15,7 @@ export function registerScheduleWakeupTool(pi: ExtensionAPI): void {
     name: "ScheduleWakeup",
     label: "Schedule Wakeup",
     description:
-      "In GSD auto-mode, pause the current unit and continue the same session after a delay. " +
+      "In auto-mode, pause the current unit and continue the same session after a delay. " +
       "Use this for long external processes that need polling without ending the unit as no-artifact.",
     promptSnippet: "Schedule a same-session auto-mode wakeup after a delay.",
     promptGuidelines: [
@@ -44,7 +44,7 @@ export function registerScheduleWakeupTool(pi: ExtensionAPI): void {
 
       if (!dash.active || !currentUnit) {
         return {
-          content: [{ type: "text", text: "ScheduleWakeup is only available during an active GSD auto-mode unit." }],
+          content: [{ type: "text", text: "ScheduleWakeup is only available during an active auto-mode unit." }],
           details: { operation: "schedule_wakeup", error: "auto_mode_inactive" },
           isError: true,
         };

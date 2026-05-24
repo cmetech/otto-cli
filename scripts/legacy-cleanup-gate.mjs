@@ -83,7 +83,7 @@ export function evaluateLegacyCleanupGate(report) {
 
 export function renderLegacyCleanupGateSummary(result) {
   const lines = [
-    "GSD-2 Legacy Cleanup Gate",
+    "the agent Legacy Cleanup Gate",
     `Snapshot: ${result.ts || "unknown"}`,
     `Status: ${result.ok ? "PASS" : "BLOCK"}`,
     "",

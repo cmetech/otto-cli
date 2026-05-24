@@ -307,12 +307,12 @@ function validateExtensionManifest(pkg: unknown, opts: { extensionId?: string; a
 
   // Check gsd.extension === true (strict)
   if (typeof pkg !== "object" || pkg === null) {
-    errors.push({ code: "MISSING_WORKFLOW_MARKER", message: 'package.json must declare "gsd": { "extension": true } to be recognized as a GSD extension.', field: "gsd.extension" });
+    errors.push({ code: "MISSING_WORKFLOW_MARKER", message: 'package.json must declare "gsd": { "extension": true } to be recognized as a Workflow extension.', field: "gsd.extension" });
   } else {
     const obj = pkg as Record<string, unknown>;
     const gsd = obj.gsd;
     if (typeof gsd !== "object" || gsd === null || (gsd as Record<string, unknown>).extension !== true) {
-      errors.push({ code: "MISSING_WORKFLOW_MARKER", message: 'package.json must declare "gsd": { "extension": true } to be recognized as a GSD extension.', field: "gsd.extension" });
+      errors.push({ code: "MISSING_WORKFLOW_MARKER", message: 'package.json must declare "gsd": { "extension": true } to be recognized as a Workflow extension.', field: "gsd.extension" });
     }
   }
 

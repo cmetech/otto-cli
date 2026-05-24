@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: the agent
 // File Purpose: Regression tests for duplicate issue suggestion policy.
 
 import assert from "node:assert/strict";

@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Verifies the milestone planning prompt renders compact required guidance.
 
 import test from "node:test";

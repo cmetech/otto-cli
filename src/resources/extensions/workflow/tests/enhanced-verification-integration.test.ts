@@ -1,12 +1,12 @@
 /**
  * enhanced-verification-integration.test.ts — Integration tests for enhanced verification.
  *
- * Exercises all 7 enhanced verification checks against GSD-2's actual source files.
+ * Exercises all 7 enhanced verification checks against the agent's actual source files.
  * This proves:
  *   - R012: No false positives on production code
  *   - R013: Speed targets met (<2000ms pre-execution, <1000ms post-execution per task)
  *
- * The test constructs realistic TaskRow fixtures that reference real GSD source files,
+ * The test constructs realistic TaskRow fixtures that reference real Workflow extension source files,
  * then runs both pre-execution and post-execution checks against them.
  */
 
@@ -31,7 +31,7 @@ import type { TaskRow } from "../db.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Path to the GSD extension source directory (relative to test file)
+// Path to the Workflow extension source directory (relative to test file)
 const GSD_SRC_DIR = join(__dirname, "..");
 
 // Speed targets from R013
@@ -81,7 +81,7 @@ function createTask(overrides: Partial<TaskRow> = {}): TaskRow {
 
 // ─── Real GSD Source Files for Testing ───────────────────────────────────────
 
-// These are actual GSD extension source files that exist in the codebase
+// These are actual Workflow extension source files that exist in the codebase
 const REAL_GSD_FILES = [
   "db.ts",
   "auto-verification.ts",
@@ -114,7 +114,7 @@ describe("Enhanced Verification Integration Tests", () => {
 
   describe("Pre-Execution Checks on Real GSD Code", () => {
     test("runs pre-execution checks on realistic tasks referencing real files", async () => {
-      // Simulate tasks that reference real GSD source files
+      // Simulate tasks that reference real Workflow extension source files
       const tasks: TaskRow[] = [
         createTask({
           id: "T01",
@@ -247,7 +247,7 @@ Read the types from src/resources/extensions/workflow/types.ts and use them.
   });
 
   describe("Post-Execution Checks on Real GSD Code", () => {
-    test("runs post-execution checks on real GSD source files", () => {
+    test("runs post-execution checks on real Workflow extension source files", () => {
       // Simulate a completed task that modified real files
       const completedTask = createTask({
         id: "T01",
@@ -458,7 +458,7 @@ import { runPostExecutionChecks } from "./post-execution-checks.ts";
     });
 
     test("handles large number of files without timeout", () => {
-      // Use all available GSD source files to stress test
+      // Use all available Workflow extension source files to stress test
       const allWorkflowFiles = REAL_GSD_FILES.map((f) => join(GSD_SRC_DIR, f));
 
       const task = createTask({

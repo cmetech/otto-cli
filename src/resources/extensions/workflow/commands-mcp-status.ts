@@ -392,9 +392,9 @@ export async function handleMcpStatus(
     "  status           Show all MCP server statuses (default)\n" +
     "  check <server>   Detailed status for a specific server\n" +
     "  test <server>    Verify MCP handshake and tools/list\n" +
-    "  enable <server>  Enable a local GSD-managed server\n" +
-    "  disable <server> Disable a local GSD-managed server\n" +
-    "  delete <server> --confirm  Delete a local GSD-managed server\n" +
+    "  enable <server>  Enable a local workflow-managed server\n" +
+    "  disable <server> Disable a local workflow-managed server\n" +
+    "  delete <server> --confirm  Delete a local workflow-managed server\n" +
     "  import <server> [as <name>] Copy a discovered server to .gsd/mcp.json\n" +
     "  init [dir]       Write .mcp.json for the local GSD workflow MCP server",
     "warning",

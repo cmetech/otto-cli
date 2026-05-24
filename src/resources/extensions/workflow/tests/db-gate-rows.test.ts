@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Tests for quality gate database row mapper.
 
 import { describe, test } from "node:test";

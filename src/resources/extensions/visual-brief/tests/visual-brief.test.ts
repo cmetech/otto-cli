@@ -1,4 +1,4 @@
-// GSD-2 + Visual Brief command tests
+// the agent + Visual Brief command tests
 
 import test from "node:test";
 import assert from "node:assert/strict";

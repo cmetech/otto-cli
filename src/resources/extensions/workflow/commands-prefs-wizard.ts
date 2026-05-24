@@ -1605,7 +1605,7 @@ export async function handlePrefsWizard(
       `── Save & Exit ──`,
     ];
 
-    const raw = await ctx.ui.select("GSD Preferences", options);
+    const raw = await ctx.ui.select("Workflow Preferences", options);
     const choice = typeof raw === "string" ? raw : "";
     if (!choice || choice.includes("Save & Exit")) break;
 

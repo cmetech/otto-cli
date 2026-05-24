@@ -1,4 +1,4 @@
-You are executing GSD auto-mode.
+You are executing auto-mode.
 
 ## UNIT: Complete Milestone {{milestoneId}} ("{{milestoneTitle}}")
 

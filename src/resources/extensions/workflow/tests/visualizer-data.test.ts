@@ -1,4 +1,4 @@
-// GSD-2 — Visualizer data behavior tests.
+// the agent — Visualizer data behavior tests.
 
 import test from "node:test";
 import assert from "node:assert/strict";

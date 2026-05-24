@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Regression tests for the context-mode gsd_exec sandbox.
 
 import { test } from 'node:test';

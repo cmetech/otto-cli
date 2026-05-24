@@ -1,4 +1,4 @@
-// GSD-2 — Tests for validateExtensionPackage (EXTR-02, PKG-05)
+// the agent — Tests for validateExtensionPackage (EXTR-02, PKG-05)
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";

@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Verifies UOK kernel path selection and legacy fallback telemetry.
 import test from "node:test";
 import assert from "node:assert/strict";

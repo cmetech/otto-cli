@@ -640,7 +640,7 @@ export async function timeCommand(root, spec) {
 
 export function renderSummary(report) {
   const lines = [
-    "GSD-2 Refactor Baseline",
+    "the agent Refactor Baseline",
     `Generated: ${report.generatedAt}`,
     `Root: ${report.root}`,
     `Schema version: ${report.schemaVersion}`,

@@ -63,7 +63,7 @@ describe("guided-flow STATE.md rebuild (#3475)", () => {
 
     // Write a STALE STATE.md pointing to wrong milestone
     writeFile(base, "STATE.md", [
-      "# GSD State",
+      "# Workflow State",
       "",
       "**Active Milestone:** M008: Old Queued",
       "**Active Slice:** None",
@@ -112,7 +112,7 @@ describe("guided-flow STATE.md rebuild (#3475)", () => {
     openDatabase(":memory:");
 
     writeFile(base, "milestones/M001/M001-CONTEXT.md", "# M001: Planned\n");
-    writeFile(base, "STATE.md", "# GSD State\n\n**Active Milestone:** M001: Planned\n");
+    writeFile(base, "STATE.md", "# Workflow State\n\n**Active Milestone:** M001: Planned\n");
     writeFile(base, "state-manifest.json", JSON.stringify({
       version: 1,
       exported_at: new Date().toISOString(),

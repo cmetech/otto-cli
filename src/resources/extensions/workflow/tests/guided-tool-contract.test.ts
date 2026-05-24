@@ -1,4 +1,4 @@
-// GSD-2 — Guided Unit Tool Contract tests.
+// the agent — Guided Unit Tool Contract tests.
 // Verifies guided workflow turns use manifest tool policy without auto-mode state.
 
 import test from "node:test";

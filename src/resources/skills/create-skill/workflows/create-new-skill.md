@@ -15,7 +15,7 @@
 **Ask the user:**
 "Should this skill be global or project-local?"
 
-1. **Global** (`~/.agents/skills/`) — Available in all GSD sessions
+1. **Global** (`~/.agents/skills/`) — Available in all workflow sessions
 2. **Project-local** (`.agents/skills/`) — Available only in this project
 
 ## Step 2: Adaptive Requirements Gathering

@@ -712,7 +712,7 @@ async function handleMerge(
       addedFiles: formatFiles(diffSummary.added),
       modifiedFiles: formatFiles(diffSummary.modified),
       removedFiles: formatFiles(diffSummary.removed),
-      workflowDiff: workflowDiff || "(no GSD artifact changes)",
+      workflowDiff: workflowDiff || "(no Workflow artifact changes)",
       codeDiff: codeDiff || "(no code changes)",
     });
 
@@ -727,7 +727,7 @@ async function handleMerge(
     );
 
     ctx.ui.notify(
-      `${CLR.ok("✓")} Merge helper started for ${CLR.name(name)} ${CLR.muted(`(${codeChanges} code + ${workflowChanges} GSD artifact change${totalChanges === 1 ? "" : "s"})`)}`,
+      `${CLR.ok("✓")} Merge helper started for ${CLR.name(name)} ${CLR.muted(`(${codeChanges} code + ${workflowChanges} Workflow artifact change${totalChanges === 1 ? "" : "s"})`)}`,
       "info",
     );
   } catch (error) {

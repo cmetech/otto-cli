@@ -36,7 +36,7 @@ const FIXTURE_PROJECT_MD = `# Project
 
 ## What This Is
 
-Headless proof test project. A minimal fixture used to validate GSD auto-mode via RPC.
+Headless proof test project. A minimal fixture used to validate auto-mode via RPC.
 
 ## Core Value
 
@@ -59,7 +59,7 @@ None.
 - [ ] M001: Headless Proof — Create a test file to prove the agent loop works
 `;
 
-const FIXTURE_STATE_MD = `# GSD State
+const FIXTURE_STATE_MD = `# Workflow State
 
 **Active Milestone:** M001 — Headless Proof
 **Active Slice:** S01 — Create Test File
@@ -86,7 +86,7 @@ const FIXTURE_CONTEXT_MD = `# M001: Headless Proof — Context
 
 ## Project Description
 
-A minimal test project for validating GSD auto-mode in headless/RPC mode.
+A minimal test project for validating auto-mode in headless/RPC mode.
 
 ## Why This Milestone
 

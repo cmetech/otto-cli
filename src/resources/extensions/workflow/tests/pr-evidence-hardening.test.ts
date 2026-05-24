@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Hardening tests for buildPrEvidence — HTML-comment stripping, fake commit-trailer removal, and per-item length capping.
 
 import test from "node:test";

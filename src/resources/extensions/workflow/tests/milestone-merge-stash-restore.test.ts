@@ -1,4 +1,4 @@
-// GSD-2 + src/resources/extensions/workflow/tests/milestone-merge-stash-restore.test.ts
+// the agent + src/resources/extensions/workflow/tests/milestone-merge-stash-restore.test.ts
 // Regression: postflight stash pop must run even when mergeAndExit throws.
 
 import test from "node:test";

@@ -1,4 +1,4 @@
-// GSD-2 + packages/pi-coding-agent/src/modes/interactive/interactive-mode-lifecycle.test.ts - InteractiveMode lifecycle regression coverage.
+// the agent + packages/pi-coding-agent/src/modes/interactive/interactive-mode-lifecycle.test.ts - InteractiveMode lifecycle regression coverage.
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";

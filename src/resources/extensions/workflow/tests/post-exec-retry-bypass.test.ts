@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Tests for post-execution retry bypass and verification gate failure handling.
 /**
  * post-exec-retry-bypass.test.ts — Tests for post-execution blocking failure retry bypass.
@@ -106,7 +106,7 @@ function writePreferences(prefs: Record<string, unknown>): void {
 ${yamlLines.join("\n")}
 ---
 
-# GSD Preferences
+# Workflow Preferences
 `;
   writeFileSync(join(tempDir, ".gsd", "PREFERENCES.md"), prefsContent);
   invalidateAllCaches();

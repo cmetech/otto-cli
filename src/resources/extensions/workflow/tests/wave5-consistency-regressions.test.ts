@@ -1,4 +1,4 @@
-// GSD State Machine — Wave 5 Consistency Regression Tests
+// Workflow State Machine — Wave 5 Consistency Regression Tests
 // Validates isClosedStatus usage in projections, upsertDecision seq preservation,
 // event schema versioning, and replay round-trip with mixed cmd formats.
 

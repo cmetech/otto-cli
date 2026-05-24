@@ -1,4 +1,4 @@
-// GSD-2 + src/resources/extensions/workflow/tests/fast-forward-reused-milestone-branch.test.ts
+// the agent + src/resources/extensions/workflow/tests/fast-forward-reused-milestone-branch.test.ts
 // Regression: when createAutoWorktree reuses an existing milestone branch,
 // it must be fast-forwarded onto integration so the next milestone forks
 // from up-to-date code (#5538-followup).

@@ -412,7 +412,7 @@ export function formatContext(milestoneId: string): string {
  */
 export function formatState(milestones: WorkflowMilestone[]): string {
   const lines: string[] = [];
-  lines.push('# GSD State');
+  lines.push('# Workflow State');
   lines.push('');
   lines.push('<!-- Auto-generated. Updated by deriveState(). -->');
   lines.push('');

@@ -1,7 +1,7 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Unit tests for workflow template registry loading, matching, and display.
 //
-// GSD Workflow Templates — Unit Tests
+// Workflow Templates — Unit Tests
 //
 // Tests registry loading, template resolution, auto-detection, and listing.
 

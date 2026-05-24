@@ -1,4 +1,4 @@
-// GSD-2 — Smart entry routing behavior tests.
+// the agent — Smart entry routing behavior tests.
 // Verifies guided wizard choices resolve to the correct execution path.
 
 import test from "node:test";

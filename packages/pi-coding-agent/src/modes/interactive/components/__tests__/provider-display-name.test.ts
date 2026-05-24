@@ -1,4 +1,4 @@
-// GSD-2 — Provider display name + auth badge tests
+// the agent — Provider display name + auth badge tests
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { providerAuthBadge, providerDisplayName } from "../model-selector.js";

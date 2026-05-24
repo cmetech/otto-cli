@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Verifies the guided project discussion prompt renders its core interview and persistence contracts.
 
 import test from "node:test";

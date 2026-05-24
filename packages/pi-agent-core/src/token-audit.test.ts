@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Tests for provider-boundary token payload audit helpers.
 
 import assert from "node:assert/strict";

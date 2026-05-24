@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Tests for host-owned auto-mode verification verdict policy.
 
 import test from "node:test";

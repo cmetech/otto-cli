@@ -1,4 +1,4 @@
-// GSD-2 + Regression tests for auto-mode discuss-milestone write-gate deadlock (#4973)
+// the agent + Regression tests for auto-mode discuss-milestone write-gate deadlock (#4973)
 //
 // The depth-verification write-gate in write-gate.ts:415-443 blocks
 // gsd_summary_save({artifact_type:"CONTEXT"}) until markDepthVerified() is

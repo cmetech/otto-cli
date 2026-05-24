@@ -41,7 +41,7 @@ export function checkInstallDiscriminator(pkg: unknown): ValidationError | null 
   if (typeof pkg !== 'object' || pkg === null) {
     return {
       code: 'MISSING_WORKFLOW_MARKER',
-      message: 'package.json must declare "gsd": { "extension": true } to be recognized as a GSD extension.',
+      message: 'package.json must declare "gsd": { "extension": true } to be recognized as a Workflow extension.',
       field: 'gsd.extension',
     }
   }
@@ -52,7 +52,7 @@ export function checkInstallDiscriminator(pkg: unknown): ValidationError | null 
   if (typeof gsd !== 'object' || gsd === null) {
     return {
       code: 'MISSING_WORKFLOW_MARKER',
-      message: 'package.json must declare "gsd": { "extension": true } to be recognized as a GSD extension.',
+      message: 'package.json must declare "gsd": { "extension": true } to be recognized as a Workflow extension.',
       field: 'gsd.extension',
     }
   }
@@ -61,7 +61,7 @@ export function checkInstallDiscriminator(pkg: unknown): ValidationError | null 
   if (workflowObj.extension !== true) {
     return {
       code: 'MISSING_WORKFLOW_MARKER',
-      message: 'package.json must declare "gsd": { "extension": true } to be recognized as a GSD extension.',
+      message: 'package.json must declare "gsd": { "extension": true } to be recognized as a Workflow extension.',
       field: 'gsd.extension',
     }
   }

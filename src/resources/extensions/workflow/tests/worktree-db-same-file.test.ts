@@ -1,4 +1,4 @@
-// GSD-2 — Worktree DB same-file reconciliation regression tests.
+// the agent — Worktree DB same-file reconciliation regression tests.
 
 import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";

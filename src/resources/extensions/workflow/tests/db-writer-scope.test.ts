@@ -1,4 +1,4 @@
-// GSD-2 + db-writer saveArtifactToDbByScope: workspace-contract path routing tests
+// the agent + db-writer saveArtifactToDbByScope: workspace-contract path routing tests
 
 import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";

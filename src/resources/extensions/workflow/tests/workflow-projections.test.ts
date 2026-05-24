@@ -251,7 +251,7 @@ test('workflow-projections: renderStateProjection does not clobber non-empty STA
   openDatabase(':memory:');
   try {
     mkdirSync(workflowDir, { recursive: true });
-    writeFileSync(statePath, '# GSD State\n\n**Active Milestone:** M001: Existing\n');
+    writeFileSync(statePath, '# Workflow State\n\n**Active Milestone:** M001: Existing\n');
     writeFileSync(join(workflowDir, 'state-manifest.json'), JSON.stringify({
       version: 1,
       exported_at: new Date().toISOString(),
@@ -294,7 +294,7 @@ test('workflow-projections: renderStateProjection rewrites empty STATE.md when m
     await renderStateProjection(base);
 
     const content = readFileSync(statePath, 'utf-8');
-    assert.ok(content.includes('# GSD State'));
+    assert.ok(content.includes('# Workflow State'));
     assert.ok(content.includes('**Active Milestone:** None'));
   } finally {
     closeDatabase();
@@ -309,12 +309,12 @@ test('workflow-projections: renderStateProjection rewrites non-empty STATE.md wh
   openDatabase(':memory:');
   try {
     mkdirSync(workflowDir, { recursive: true });
-    writeFileSync(statePath, '# GSD State\n\n**Active Milestone:** M001: Existing\n');
+    writeFileSync(statePath, '# Workflow State\n\n**Active Milestone:** M001: Existing\n');
 
     await renderStateProjection(base);
 
     const content = readFileSync(statePath, 'utf-8');
-    assert.ok(content.includes('# GSD State'));
+    assert.ok(content.includes('# Workflow State'));
     assert.ok(content.includes('**Active Milestone:** None'));
     assert.ok(!content.includes('M001: Existing'));
   } finally {
@@ -330,13 +330,13 @@ test('workflow-projections: renderStateProjection rewrites non-empty STATE.md wh
   openDatabase(':memory:');
   try {
     mkdirSync(workflowDir, { recursive: true });
-    writeFileSync(statePath, '# GSD State\n\n**Active Milestone:** M001: Existing\n');
+    writeFileSync(statePath, '# Workflow State\n\n**Active Milestone:** M001: Existing\n');
     writeFileSync(join(workflowDir, 'state-manifest.json'), '{not json');
 
     await renderStateProjection(base);
 
     const content = readFileSync(statePath, 'utf-8');
-    assert.ok(content.includes('# GSD State'));
+    assert.ok(content.includes('# Workflow State'));
     assert.ok(content.includes('**Active Milestone:** None'));
     assert.ok(!content.includes('M001: Existing'));
   } finally {
@@ -352,7 +352,7 @@ test('workflow-projections: renderStateProjection rewrites non-empty STATE.md wh
   openDatabase(':memory:');
   try {
     mkdirSync(workflowDir, { recursive: true });
-    writeFileSync(statePath, '# GSD State\n\n**Active Milestone:** M001: Existing\n');
+    writeFileSync(statePath, '# Workflow State\n\n**Active Milestone:** M001: Existing\n');
     writeFileSync(join(workflowDir, 'state-manifest.json'), JSON.stringify({
       version: 1,
       exported_at: new Date().toISOString(),
@@ -366,7 +366,7 @@ test('workflow-projections: renderStateProjection rewrites non-empty STATE.md wh
     await renderStateProjection(base);
 
     const content = readFileSync(statePath, 'utf-8');
-    assert.ok(content.includes('# GSD State'));
+    assert.ok(content.includes('# Workflow State'));
     assert.ok(content.includes('**Active Milestone:** None'));
     assert.ok(!content.includes('M001: Existing'));
   } finally {

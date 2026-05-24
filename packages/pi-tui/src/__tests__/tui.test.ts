@@ -1,4 +1,4 @@
-// GSD-2 + packages/pi-tui/src/__tests__/tui.test.ts - Regression coverage for the TUI renderer and container lifecycle.
+// the agent + packages/pi-tui/src/__tests__/tui.test.ts - Regression coverage for the TUI renderer and container lifecycle.
 
 import assert from "node:assert/strict";
 import * as fs from "node:fs";

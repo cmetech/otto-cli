@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Contract tests for browser workflow action derivation.
 import test from "node:test";
 import assert from "node:assert/strict";

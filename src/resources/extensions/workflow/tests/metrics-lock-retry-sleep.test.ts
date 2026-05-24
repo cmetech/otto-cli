@@ -1,4 +1,4 @@
-// GSD-2 + metrics-lock-retry-sleep.test.ts: verify sleep between lock acquire retries (M3 follow-up)
+// the agent + metrics-lock-retry-sleep.test.ts: verify sleep between lock acquire retries (M3 follow-up)
 /**
  * Verifies that acquireLock sleeps between non-stale-evicting retries:
  *

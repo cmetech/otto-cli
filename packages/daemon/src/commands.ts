@@ -25,7 +25,7 @@ export function buildCommands(): RESTPostAPIChatInputApplicationCommandsJSONBody
   return [
     new SlashCommandBuilder()
       .setName('gsd-status')
-      .setDescription('Show status of all active GSD sessions')
+      .setDescription('Show status of all active workflow sessions')
       .toJSON(),
     new SlashCommandBuilder()
       .setName('gsd-start')

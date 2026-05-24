@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Verifies canonical and alias DB tool registration plus legacy alias telemetry.
 
 import { test } from 'node:test';

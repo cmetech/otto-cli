@@ -1,4 +1,4 @@
-// GSD-2 + prefs-wizard-coverage.test.ts - Behavioral coverage for preferences wizard persistence.
+// the agent + prefs-wizard-coverage.test.ts - Behavioral coverage for preferences wizard persistence.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -190,7 +190,7 @@ test("models wizard offers discovered models for enabled providers", async () =>
       notify() {},
       select: async (label: string, options: string[]) => {
         const choice = choices.shift();
-        if (!choice && label === "GSD Preferences") return "── Save & Exit ──";
+        if (!choice && label === "Workflow Preferences") return "── Save & Exit ──";
         if (!choice && options.includes("(keep current)")) return "(keep current)";
         if (!choice && options.includes("Done")) return "Done";
         assert.ok(choice, `Unexpected prompt: ${label}`);

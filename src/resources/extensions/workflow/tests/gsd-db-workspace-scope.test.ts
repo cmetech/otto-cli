@@ -1,4 +1,4 @@
-// GSD-2 + gsd-db workspace-scoped connection cache tests
+// the agent + gsd-db workspace-scoped connection cache tests
 
 import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";

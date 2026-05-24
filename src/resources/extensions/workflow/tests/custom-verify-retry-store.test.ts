@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Unit tests for custom workflow verification retry persistence.
 
 import assert from "node:assert/strict";

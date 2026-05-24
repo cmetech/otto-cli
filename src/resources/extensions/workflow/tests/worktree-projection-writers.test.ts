@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Regression tests for workflow artifact writers in milestone worktrees.
 
 import test from "node:test";

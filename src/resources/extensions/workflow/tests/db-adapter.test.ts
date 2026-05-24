@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Unit tests for the normalized SQLite adapter wrapper.
 
 import assert from "node:assert/strict";

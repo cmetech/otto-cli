@@ -259,7 +259,7 @@ Today the agent must infer correctness from prose and heuristics. That is weaker
 ## What it enables
 
 - deterministic verification
-- clean GSD artifact generation
+- clean Workflow artifact generation
 - structured failure reporting
 - simpler agent reasoning
 - less repeated browser inspection
@@ -1100,7 +1100,7 @@ Write a markdown or JSON artifact summarizing:
 - outcome
 - diagnostics
 
-This is especially useful for GSD artifacts.
+This is especially useful for Workflow artifacts.
 
 ---
 
@@ -1266,7 +1266,7 @@ The most important changes are:
 If these are implemented well, browser-tools can become not just a useful extension, but a foundational AI-native capability for both:
 
 - **agentic browser use across the web**
-- **automatic verification inside GSD workflows**
+- **automatic verification inside the agent workflows**
 
 ---
 

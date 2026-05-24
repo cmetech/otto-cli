@@ -1,4 +1,4 @@
-// GSD-2 + packages/pi-coding-agent/src/modes/interactive/components/user-message-selector.test.ts - User message selector width regression coverage.
+// the agent + packages/pi-coding-agent/src/modes/interactive/components/user-message-selector.test.ts - User message selector width regression coverage.
 
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";

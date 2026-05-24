@@ -1,4 +1,4 @@
-// GSD-2 + src/resources/extensions/workflow/tests/parallel-orchestrator-fast-forward.test.ts
+// the agent + src/resources/extensions/workflow/tests/parallel-orchestrator-fast-forward.test.ts
 // Regression: parallel-orchestrator's `_createMilestoneWorktree` must
 // fast-forward a reused milestone branch onto integration before creating
 // the worktree, matching the behavior added to the auto-mode path in

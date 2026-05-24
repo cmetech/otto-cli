@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Auto-loop execution, dispatch, recovery, and cancellation regression tests.
 
 import test, { mock } from "node:test";

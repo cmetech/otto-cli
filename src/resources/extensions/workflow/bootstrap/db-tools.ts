@@ -348,7 +348,7 @@ export function registerDbTools(pi: ExtensionAPI): void {
     description:
       "Save a summary, research, context, or assessment artifact to the GSD database and write it to disk. " +
       "Computes the file path from milestone/slice/task IDs automatically.",
-    promptSnippet: "Save a GSD artifact (summary/research/context/assessment) to DB and disk",
+    promptSnippet: "Save a Workflow artifact (summary/research/context/assessment) to DB and disk",
     promptGuidelines: [
       "Use gsd_summary_save to persist structured artifacts (SUMMARY, RESEARCH, CONTEXT, ASSESSMENT, CONTEXT-DRAFT, PROJECT, PROJECT-DRAFT, REQUIREMENTS, REQUIREMENTS-DRAFT).",
       "milestone_id is required for milestone/slice/task artifacts. Omit milestone_id only for root-level PROJECT/PROJECT-DRAFT/REQUIREMENTS/REQUIREMENTS-DRAFT.",

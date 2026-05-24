@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Visual contract tests for compact GSD status notification cards.
 
 import test from "node:test";

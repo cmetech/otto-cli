@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Dispatcher regression tests for validation-blocked milestones.
 
 import test from "node:test";

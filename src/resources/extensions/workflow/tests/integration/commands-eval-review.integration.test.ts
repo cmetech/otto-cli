@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Integration tests for the /gsd eval-review helper chain.
 /**
  * Integration test for `/gsd eval-review` .

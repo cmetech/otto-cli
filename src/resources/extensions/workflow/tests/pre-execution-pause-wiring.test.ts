@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Integration tests for pre-execution check retry and pause wiring.
 /**
  * pre-execution-pause-wiring.test.ts — Integration tests for pre-execution check → retry/pause wiring.
@@ -163,7 +163,7 @@ function writePreferences(prefs: Record<string, unknown>): void {
 ${yamlLines.join("\n")}
 ---
 
-# GSD Preferences
+# Workflow Preferences
 `;
   writeFileSync(join(tempDir, ".gsd", "PREFERENCES.md"), prefsContent);
   // Invalidate caches so the new preferences file is found

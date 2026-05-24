@@ -341,7 +341,7 @@ export async function handleMigrate(
       `Legacy source archived at ${execution.legacyArchive.archivePath}`,
       `Migration audit written at ${execution.audit.migrationPath}`,
       "",
-      "The agent can now review the migrated output against GSD-2 standards —",
+      "The agent can now review the migrated output against the agent standards —",
       "checking structure, content quality, deriveState() round-trip, and",
       "requirement statuses. The review is read-only by default.",
     ],

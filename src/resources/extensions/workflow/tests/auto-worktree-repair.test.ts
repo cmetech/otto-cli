@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Regression tests for safe auto-mode milestone worktree repair.
 
 import test from "node:test";

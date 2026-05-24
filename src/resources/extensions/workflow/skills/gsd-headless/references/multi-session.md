@@ -1,10 +1,10 @@
 # Multi-Session Orchestration
 
-How to run and monitor multiple concurrent GSD sessions.
+How to run and monitor multiple concurrent workflow sessions.
 
 ## Architecture
 
-GSD uses **file-based IPC** — no sockets or ports. All coordination happens through JSON files in `.gsd/parallel/`.
+the agent uses **file-based IPC** — no sockets or ports. All coordination happens through JSON files in `.gsd/parallel/`.
 
 ```
 .gsd/parallel/

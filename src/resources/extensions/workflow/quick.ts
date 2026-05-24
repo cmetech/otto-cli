@@ -96,7 +96,7 @@ export function buildQuickCommitInstruction(basePath: string, root: string): str
     return [
       "Commit repo changes atomically, but do not stage or commit `.gsd/quick/...`:",
       "   - `.gsd/` resolves outside this git repository, so Git cannot stage quick-task summary files from the project repo.",
-      "   - Write the quick summary file directly at the requested path; that file is persisted by GSD external state.",
+      "   - Write the quick summary file directly at the requested path; that file is persisted by the workflow external state.",
       "   - Stage and commit only implementation/test/docs files that live inside the repository.",
       "   - If the task only writes quick-task research/summary files and no repository files changed, do not run `git commit`; report that there was nothing in the project repo to commit.",
     ].join("\n");

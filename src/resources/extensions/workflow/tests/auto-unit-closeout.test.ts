@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Regression tests for auto-unit closeout activity classification.
 
 import test from "node:test";

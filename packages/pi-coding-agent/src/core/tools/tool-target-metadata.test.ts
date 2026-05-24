@@ -1,4 +1,4 @@
-// GSD-2 - Behavior coverage for tool target metadata.
+// the agent - Behavior coverage for tool target metadata.
 
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";

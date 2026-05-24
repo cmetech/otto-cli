@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Stop-auto worktree exit strategy regression tests.
 /**
  * stop-auto-merge-back.test.ts — Regression test for #5576.

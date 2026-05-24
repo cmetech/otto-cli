@@ -341,7 +341,7 @@ export function renderSummaryProjection(basePath: string, milestoneId: string, s
  */
 export function renderStateContent(state: WorkflowDbState): string {
   const lines: string[] = [];
-  lines.push("# GSD State", "");
+  lines.push("# Workflow State", "");
 
   const activeSlice = state.activeSlice
     ? `${state.activeSlice.id}: ${stripIdPrefix(state.activeSlice.title, state.activeSlice.id)}`

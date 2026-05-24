@@ -1,4 +1,4 @@
-// GSD-2 — Guided workflow dispatch project-root tests.
+// the agent — Guided workflow dispatch project-root tests.
 // Verifies smart entry dispatch uses the explicit project root instead of cwd.
 
 import test from "node:test";

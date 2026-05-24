@@ -124,7 +124,7 @@ interface ForensicReport {
 const DEDUP_PROMPT_SECTION = `
 ## Pre-Investigation: Duplicate Check (REQUIRED)
 
-Before reading GSD source code or performing deep analysis, you MUST search for existing issues and PRs that may already address this bug. This avoids wasting tokens on already-fixed bugs.
+Before reading Workflow extension source code or performing deep analysis, you MUST search for existing issues and PRs that may already address this bug. This avoids wasting tokens on already-fixed bugs.
 
 ### Search Steps
 

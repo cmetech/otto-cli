@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Behavior tests for auto-mode project-root environment cleanup.
 import test from "node:test";
 import assert from "node:assert/strict";

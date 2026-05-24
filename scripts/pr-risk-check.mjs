@@ -32,7 +32,7 @@ const RISK_TIERS = {
     'Auto Engine', 'MCP Server/Client', 'Native/Rust Tools',
   ],
   high: [
-    'GSD Workflow', 'Tool System', 'AI Providers', 'Extension Registry',
+    'Workflow', 'Tool System', 'AI Providers', 'Extension Registry',
     'Session Management', 'Extensions', 'Modes', 'Event System',
     'Node.js Bindings', 'Compaction',
   ],
@@ -69,7 +69,7 @@ const SYSTEM_CHECKS = {
   'Auto Engine':       'validate auto-mode trigger conditions and loop termination',
   'MCP Server/Client': 'confirm no breaking changes to RPC/MCP protocol compatibility',
   'Native/Rust Tools': 'run native tool smoke tests and check FFI boundary safety',
-  'GSD Workflow':      'verify GSD workflow state transitions end-to-end',
+  'Workflow':      'verify GSD workflow state transitions end-to-end',
   'Tool System':       'verify tool call and response contracts are unchanged',
   'AI Providers':      'confirm provider API contract and error handling are intact',
   'Extension Registry':'check extension registration and lifecycle hooks',

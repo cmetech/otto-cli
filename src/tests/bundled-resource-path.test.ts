@@ -30,7 +30,7 @@ test("complete dist/resources is selected when expected roots exist", () => {
   assert.equal(result, join(pkg, "dist", "resources"));
 });
 
-test("GSD extension module resolution falls back to source when dist module is missing", () => {
+test("Workflow extension module resolution falls back to source when dist module is missing", () => {
   const pkg = "/pkg";
   const fakeImportUrl = `file://${join(pkg, "src", "worktree-cli.ts")}`;
   const existing = new Set([
@@ -47,7 +47,7 @@ test("GSD extension module resolution falls back to source when dist module is m
   assert.equal(result, join(pkg, "src", "resources", "extensions", "gsd", "worktree-root.ts"));
 });
 
-test("GSD extension module resolution uses compiled dist module when available", () => {
+test("Workflow extension module resolution uses compiled dist module when available", () => {
   const pkg = "/pkg";
   const fakeImportUrl = `file://${join(pkg, "src", "worktree-cli.ts")}`;
   const existing = new Set([

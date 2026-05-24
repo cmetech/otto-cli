@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Verifies the headless discussion prompt renders compact required guidance.
 
 import test from "node:test";
@@ -25,7 +25,7 @@ test("discuss-headless prompt renders compact investigation and audit guidance",
     contextPath: ".gsd/milestones/M001/M001-CONTEXT.md",
     commitInstruction: "Commit the created milestone artifacts.",
     multiMilestoneCommitInstruction: "Commit the created milestone artifacts.",
-    inlinedTemplates: "## Template\n\nUse standard GSD artifacts.",
+    inlinedTemplates: "## Template\n\nUse standard Workflow artifacts.",
   });
 
   assert.match(prompt, /Investigate before making decisions:/);

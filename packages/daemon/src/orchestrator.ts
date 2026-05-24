@@ -93,7 +93,7 @@ const TOOLS: Tool[] = [
   },
   {
     name: 'start_session',
-    description: 'Start a new GSD auto-mode session for a project. Provide the absolute project path. Optionally provide a command to run instead of the default "/gsd auto".',
+    description: 'Start a new auto-mode session for a project. Provide the absolute project path. Optionally provide a command to run instead of the default "/gsd auto".',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -105,7 +105,7 @@ const TOOLS: Tool[] = [
   },
   {
     name: 'get_status',
-    description: 'Get the current status of all active GSD sessions. Shows project name, status, duration, and cost for each.',
+    description: 'Get the current status of all active workflow sessions. Shows project name, status, duration, and cost for each.',
     input_schema: {
       type: 'object' as const,
       properties: {},

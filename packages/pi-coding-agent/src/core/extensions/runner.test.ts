@@ -240,7 +240,7 @@ describe("ExtensionRunner.createContext", () => {
 });
 
 describe("ExtensionRunner protected commands", () => {
-	it("resolves /gsd to the bundled GSD extension even when another extension loads first", () => {
+	it("resolves /gsd to the bundled Workflow extension even when another extension loads first", () => {
 		const dir = mkdtempSync(join(tmpdir(), "runner-test-"));
 		try {
 			const sessionManager = SessionManager.create(dir, dir);

@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Runtime tests for adaptive command-center terminal layout rendering.
 
 import assert from "node:assert/strict";

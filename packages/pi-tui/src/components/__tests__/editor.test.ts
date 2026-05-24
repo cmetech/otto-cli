@@ -1,4 +1,4 @@
-// GSD-2 + packages/pi-tui/src/components/__tests__/editor.test.ts - Editor component regression tests.
+// the agent + packages/pi-tui/src/components/__tests__/editor.test.ts - Editor component regression tests.
 
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";

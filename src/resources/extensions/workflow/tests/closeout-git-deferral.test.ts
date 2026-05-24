@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Tests closeout git action deferral policy for auto-mode units.
 
 import test from "node:test";

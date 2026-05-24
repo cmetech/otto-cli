@@ -53,7 +53,7 @@ export const BUNDLED_SKILL_TRIGGERS: Array<{ trigger: string; skill: string }> =
   { trigger: "Block completion claims until verification evidence has been produced in this message", skill: "verify-before-complete" },
   { trigger: "Create a Model Context Protocol (MCP) server — tool design, error handling, Inspector testing, evals", skill: "create-mcp-server" },
   { trigger: "Write documentation, proposals, specs, RFCs, or READMEs for a fresh reader", skill: "write-docs" },
-  { trigger: "Post-mortem a failed GSD auto-mode run using .gsd/activity, .gsd/journal, and .gsd/metrics.json", skill: "forensics" },
+  { trigger: "Post-mortem a failed auto-mode run using .gsd/activity, .gsd/journal, and .gsd/metrics.json", skill: "forensics" },
   { trigger: "Prepare a clean cross-session handoff — continue.md + summary updates (pause/resume work)", skill: "handoff" },
   { trigger: "Security review with STRIDE threat modeling and exploit-scenario reporting", skill: "security-review" },
   { trigger: "HTTP/REST/GraphQL API design — verbs, status codes, pagination, errors, idempotency, versioning", skill: "api-design" },
@@ -67,7 +67,7 @@ export const BUNDLED_SKILL_TRIGGERS: Array<{ trigger: string; skill: string }> =
   { trigger: "Review UI code for Web Interface Guidelines compliance — UX, design, and accessibility patterns", skill: "web-design-guidelines" },
   { trigger: "UI/UX patterns reference — animations, CSS, typography, prefetching, icons (file:line findings)", skill: "userinterface-wiki" },
   { trigger: "Author or refine a GSD skill — SKILL.md structure, frontmatter, and best practices", skill: "create-skill" },
-  { trigger: "Create or debug a GSD extension — tools, commands, event hooks, custom TUI, providers", skill: "create-extension" },
+  { trigger: "Create or debug a Workflow extension — tools, commands, event hooks, custom TUI, providers", skill: "create-extension" },
   { trigger: "Author a YAML workflow definition — steps, triggers, and templates", skill: "create-workflow" },
   { trigger: "Deep code optimization audit — perf anti-patterns, memory leaks, algorithmic complexity, bundle size, I/O, caching, dead code (parallel pattern-based hunt)", skill: "code-optimizer" },
 ];

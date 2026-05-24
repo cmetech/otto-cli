@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Browser slash command parity tests for built-in and GSD command routing.
 import test from "node:test"
 import assert from "node:assert/strict"

@@ -1,4 +1,4 @@
-// GSD State Machine — Wave 4 Write Safety Regression Tests
+// Workflow State Machine — Wave 4 Write Safety Regression Tests
 // Validates randomized tmp suffix in json-persistence and atomic writes.
 
 import { describe, test } from "node:test";

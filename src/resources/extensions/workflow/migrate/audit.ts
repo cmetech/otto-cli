@@ -88,7 +88,7 @@ export async function archiveLegacyPlanningDirectory(
     sourcePath,
     archivePath: relToGsd(targetRoot, archivePath),
     strategy: "full-source-copy",
-    note: "Full .planning source copied so legacy content without a GSD-2 field is not lost.",
+    note: "Full .planning source copied so legacy content without a the agent field is not lost.",
   };
 
   await saveFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);

@@ -9,7 +9,7 @@
  * Findings reference: #3161 (state machine validation report)
  */
 
-// GSD State Machine Live Validation (#3161)
+// Workflow State Machine Live Validation (#3161)
 
 
 

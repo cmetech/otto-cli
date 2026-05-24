@@ -1,4 +1,4 @@
-// GSD State Machine Regression Tests — Completion Hierarchy & State Derivation (#3161)
+// Workflow State Machine Regression Tests — Completion Hierarchy & State Derivation (#3161)
 
 import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";

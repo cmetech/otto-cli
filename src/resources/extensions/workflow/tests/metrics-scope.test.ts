@@ -1,4 +1,4 @@
-// GSD-2 + metrics-scope.test.ts: tests for scope-aware metrics variants (C6)
+// the agent + metrics-scope.test.ts: tests for scope-aware metrics variants (C6)
 
 import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";

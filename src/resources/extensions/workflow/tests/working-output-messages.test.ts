@@ -1,4 +1,4 @@
-// GSD-2 + src/resources/extensions/workflow/tests/working-output-messages.test.ts - Regression coverage for user-facing working-state message quality.
+// the agent + src/resources/extensions/workflow/tests/working-output-messages.test.ts - Regression coverage for user-facing working-state message quality.
 
 import test from "node:test";
 import assert from "node:assert/strict";

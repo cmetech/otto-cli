@@ -895,7 +895,7 @@ export async function createMcpServer(
   // -----------------------------------------------------------------------
   server.tool(
     'gsd_execute',
-    'Start a GSD auto-mode session for a project directory. Returns a sessionId for tracking.',
+    'Start a auto-mode session for a project directory. Returns a sessionId for tracking.',
     {
       projectDir: z.string().describe('Absolute path to the project directory'),
       command: z.string().optional().describe('Command to send (default: "/gsd auto")'),

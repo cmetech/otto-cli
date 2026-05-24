@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Closeout git recovery regression tests.
 
 import test from "node:test";

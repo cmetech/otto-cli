@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Verifies the queue prompt renders compact discussion and write-gate guidance.
 
 import test from "node:test";

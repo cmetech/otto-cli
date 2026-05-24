@@ -35,7 +35,7 @@ function writeFixture(base: string, relPath: string, content: string): void {
 
 function makeProjectWithArtifacts(projectDir: string): void {
   writeFixture(projectDir, '.gsd/STATE.md', [
-    '# GSD State',
+    '# Workflow State',
     '',
     '**Active Milestone:** M001: Auth System',
     '**Active Slice:** S01: Login flow',

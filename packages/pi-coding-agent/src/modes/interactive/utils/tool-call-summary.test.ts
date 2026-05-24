@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Compact tool-call summary regression tests.
 
 import assert from "node:assert/strict";

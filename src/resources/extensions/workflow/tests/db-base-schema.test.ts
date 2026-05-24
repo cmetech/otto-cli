@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Tests for base GSD database schema DDL helper.
 
 import { describe, test } from "node:test";

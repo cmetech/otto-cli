@@ -1,5 +1,5 @@
-// Project/App: GSD-2
-// File Purpose: Verifies GSD planning prompt placeholder rendering and DB-backed tool guidance.
+// Project/App: LOOP24
+// File Purpose: Verifies planning prompt placeholder rendering and DB-backed tool guidance.
 
 import test from "node:test";
 import assert from "node:assert/strict";

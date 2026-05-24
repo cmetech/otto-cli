@@ -1,4 +1,4 @@
-// Behavioural contract for GSD extension bootstrap isolation (#4168, #4172).
+// Behavioural contract for Workflow extension bootstrap isolation (#4168, #4172).
 //
 // Guarantee: the `/gsd` slash command must be registered on pi even if the
 // full bootstrap (shortcuts, tools, hooks, ecosystem) throws during import or

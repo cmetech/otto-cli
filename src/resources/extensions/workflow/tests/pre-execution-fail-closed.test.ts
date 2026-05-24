@@ -116,7 +116,7 @@ function writePreferences(prefs: Record<string, unknown>): void {
 ${yamlLines.join("\n")}
 ---
 
-# GSD Preferences
+# Workflow Preferences
 `;
   writeFileSync(join(tempDir, ".gsd", "PREFERENCES.md"), prefsContent);
   invalidateAllCaches();

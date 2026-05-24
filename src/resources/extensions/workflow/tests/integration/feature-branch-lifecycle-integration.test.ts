@@ -73,7 +73,7 @@ function createFeatureBranchRepo(featureBranch: string): string {
 
   // Initial commit on main
   writeFileSync(join(dir, "README.md"), "# project\n");
-  // Mirror production: GSD runtime dirs are gitignored so autoCommitDirtyState
+  // Mirror production: agent runtime dirs are gitignored so autoCommitDirtyState
   // doesn't pick up the worktrees directory as dirty state (#1127 fix).
   writeFileSync(join(dir, ".gitignore"), ".gsd/worktrees/\n");
   mkdirSync(join(dir, ".gsd"), { recursive: true });

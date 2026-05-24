@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: System context memory gating regression tests.
 
 import test from "node:test";

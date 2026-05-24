@@ -1,4 +1,4 @@
-// GSD State Machine — Wave 1 Critical Regression Tests
+// Workflow State Machine — Wave 1 Critical Regression Tests
 // Validates fixes for event log format mismatch, skipped milestone status,
 // dead code removal, and replan disk-file fallback.
 

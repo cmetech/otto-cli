@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Integration tests for UAT mode extraction, dispatch, and prompt contracts.
 
 import { describe, test } from 'node:test';

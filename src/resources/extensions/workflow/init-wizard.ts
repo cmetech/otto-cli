@@ -87,7 +87,7 @@ export async function showProjectInit(
   if (!signals.isGitRepo) {
     const gitChoice = await showNextAction(ctx, {
       title: "GSD — Project Setup",
-      summary: ["This folder is not a git repository. GSD uses git for version control and isolation."],
+      summary: ["This folder is not a git repository. the agent uses git for version control and isolation."],
       actions: [
         { id: "init_git", label: "Initialize git", description: "Create a git repo in this folder", recommended: true },
         { id: "skip_git", label: "Skip", description: "Continue without git (limited functionality)" },
@@ -496,7 +496,7 @@ async function customizeAdvancedPrefs(
   const profileChoice = await showNextAction(ctx, {
     title: "Token usage profile",
     summary: [
-      "Controls how much context GSD uses per task.",
+      "Controls how much context the agent uses per task.",
       "Budget: cheaper, faster. Quality: thorough, more expensive.",
     ],
     actions: [
@@ -618,7 +618,7 @@ function buildContextSeed(signals: ProjectSignals): string | null {
 
   lines.push("# Project Context");
   lines.push("");
-  lines.push("Auto-detected by GSD init wizard. Edit or expand as needed.");
+  lines.push("Auto-detected by the workflow init wizard. Edit or expand as needed.");
   lines.push("");
 
   if (signals.primaryLanguage) {

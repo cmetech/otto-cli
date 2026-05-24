@@ -134,7 +134,7 @@ export function createWorktreeSafetyModule(
         return {
           ok: true,
           kind: "not-required",
-          reason: "planning-only Units may write GSD artifacts without a source worktree",
+          reason: "planning-only Units may write Workflow artifacts without a source worktree",
         };
       }
 

@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Unit tests for best-effort auto-mode dispatch ledger helpers.
 
 import assert from "node:assert/strict";

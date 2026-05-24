@@ -1,4 +1,4 @@
-// GSD State Machine — Wave 3 Session Regression Tests
+// Workflow State Machine — Wave 3 Session Regression Tests
 // Validates tri-state hasImplementationArtifacts and AutoSession.consecutiveCompleteBootstraps.
 
 import { describe, test } from "node:test";

@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: the agent
 // File Purpose: Regression tests for the prompt-context debug log summarizer.
 
 const assert = require("node:assert/strict");

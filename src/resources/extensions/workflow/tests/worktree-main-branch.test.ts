@@ -1,4 +1,4 @@
-// GSD-2 — Auto-worktree main branch preference regression tests.
+// the agent — Auto-worktree main branch preference regression tests.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";

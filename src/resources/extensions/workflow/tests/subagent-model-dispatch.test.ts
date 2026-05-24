@@ -1,4 +1,4 @@
-// GSD-2 — Subagent model dispatch behavior tests.
+// the agent — Subagent model dispatch behavior tests.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -93,7 +93,7 @@ test("buildReactiveExecutePrompt injects subagent model when provided", async (t
   assert.match(prompt, /model: "claude-opus-4-6"/);
   assert.match(prompt, /Lane: \*\*execution lane\*\*\./);
   assert.match(prompt, /## Context Mode/);
-  assert.doesNotMatch(prompt, /You are executing GSD auto-mode\./);
+  assert.doesNotMatch(prompt, /You are executing auto-mode\./);
 });
 
 test("buildReactiveExecutePrompt omits model instruction when subagentModel is omitted", async (t) => {

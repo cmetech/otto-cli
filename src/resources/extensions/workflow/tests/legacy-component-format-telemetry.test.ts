@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Verifies telemetry for legacy component formats.
 
 import test from "node:test";

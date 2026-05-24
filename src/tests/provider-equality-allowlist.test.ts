@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: LOOP24
 // File Purpose: Provider equality guardrail tests for ADR-012.
 // gsd-2: provider-equality guardrail test (ADR-012)
 //

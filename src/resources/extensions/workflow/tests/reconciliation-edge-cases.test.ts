@@ -1,4 +1,4 @@
-// GSD State Machine Regression Tests — Event Replay & Reconciliation (#3161)
+// Workflow State Machine Regression Tests — Event Replay & Reconciliation (#3161)
 
 import { describe, test, afterEach } from "node:test";
 import assert from "node:assert/strict";

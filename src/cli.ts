@@ -103,7 +103,7 @@ function printExtensionErrors(errors: ReadonlyArray<{ error: string }>): void {
   for (const err of errors) {
     const isConflict = err.error.includes('supersedes') || err.error.includes('conflicts with')
     const prefix = isConflict ? 'Extension conflict' : 'Extension load error'
-    process.stderr.write(`[gsd] ${prefix}: ${err.error}\n`)
+    process.stderr.write(`[loop24] ${prefix}: ${err.error}\n`)
   }
 }
 
@@ -115,7 +115,7 @@ function printExtensionErrors(errors: ReadonlyArray<{ error: string }>): void {
 function printExtensionWarnings(warnings: ReadonlyArray<{ message: string }> | undefined): void {
   if (!warnings) return
   for (const w of warnings) {
-    process.stderr.write(`[gsd] Extension warning: ${w.message}\n`)
+    process.stderr.write(`[loop24] Extension warning: ${w.message}\n`)
   }
 }
 

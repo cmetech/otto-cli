@@ -634,6 +634,15 @@ export function initResources(agentDir: string, skillsDir: string = join(homedir
     try { copyFileSync(workflowSrc, join(agentDir, 'WORKFLOW.md')) } catch { /* non-fatal */ }
   }
 
+  // The loop24 extension imports ../../brand-colors.js, which in the bundled
+  // resources tree resolves to dist/resources/brand-colors.js but in the
+  // installed layout would resolve to agentDir/brand-colors.js — copy it so
+  // that path resolves at extension load.
+  const brandColorsSrc = join(resourcesDir, 'brand-colors.js')
+  if (existsSync(brandColorsSrc)) {
+    try { copyFileSync(brandColorsSrc, join(agentDir, 'brand-colors.js')) } catch { /* non-fatal */ }
+  }
+
   // Ensure all newly copied files are owner-writable so the next run can
   // overwrite them (covers extensions, agents, and skills in one walk).
   makeTreeWritable(agentDir)

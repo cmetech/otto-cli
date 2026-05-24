@@ -3,6 +3,7 @@
 import { fileURLToPath } from 'url'
 import { dirname, resolve, join, relative, delimiter } from 'path'
 import { existsSync, readFileSync, readdirSync, statSync, mkdirSync, symlinkSync, cpSync } from 'fs'
+import { ANSI_BRAND_YELLOW, ANSI_BRAND_GREEN, ANSI_DIM, ANSI_RESET } from './brand-colors.js'
 
 // Fast-path: handle --version/-v and --help/-h before importing any heavy
 // dependencies. This avoids loading the entire pi-coding-agent barrel import
@@ -110,10 +111,10 @@ process.env.PI_CLEAR_ON_SHRINK ??= '1'
 // tests skip the duplicate welcome screen.
 // TODO(loop24): collapse to LOOP24_FIRST_RUN_BANNER after sweep
 if (!existsSync(appRoot)) {
-  const yellow = '\x1b[38;2;250;210;45m'    // brand primary #FAD22D
-  const dim    = '\x1b[2m'
-  const green  = '\x1b[38;2;63;206;142m'    // brand green #3FCE8E
-  const reset  = '\x1b[0m'
+  const yellow = ANSI_BRAND_YELLOW
+  const dim    = ANSI_DIM
+  const green  = ANSI_BRAND_GREEN
+  const reset  = ANSI_RESET
 
   let banner = ''
   try {

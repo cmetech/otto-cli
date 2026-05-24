@@ -16,6 +16,7 @@
 
 import { existsSync } from 'node:fs'
 import { BRAND_NAME, COMMAND_NAMESPACE } from './brand.js'
+import { ANSI_BRAND_YELLOW, ANSI_RESET } from './brand-colors.js'
 import {
   loadConfig,
   saveConfig,
@@ -186,7 +187,7 @@ export async function runLoop24Wizard(opts?: WizardOptions): Promise<Loop24Confi
     return null
   }
 
-  const brandYellow = (s: string) => `\x1b[38;2;250;210;45m${s}\x1b[0m`
+  const brandYellow = (s: string) => `${ANSI_BRAND_YELLOW}${s}${ANSI_RESET}`
   const dim = chalk ? (s: string) => chalk.dim(s) : (s: string) => s
   const green = chalk ? (s: string) => chalk.green(s) : (s: string) => s
   const red = chalk ? (s: string) => chalk.red(s) : (s: string) => s
@@ -281,7 +282,7 @@ export async function selectConfigSection(): Promise<"gateway" | "langflow" | "l
     return null
   }
 
-  const brandYellow = (s: string) => `\x1b[38;2;250;210;45m${s}\x1b[0m`
+  const brandYellow = (s: string) => `${ANSI_BRAND_YELLOW}${s}${ANSI_RESET}`
   p.intro(brandYellow(`${BRAND_NAME} — configure`))
 
   const choice = await p.select({

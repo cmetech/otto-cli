@@ -25,11 +25,14 @@ BIN_DIR="$DEFAULT_BIN_DIR"
 SKIP_WIZARD=0
 
 # ── Colors (best-effort — disabled if not a TTY) ─────────────────────────────
+# Canonical brand palette lives in src/brand-colors.ts. Bash can't import TS,
+# so these ANSI escapes are duplicated here. Keep in sync — the hex comment
+# next to each line makes drift obvious in a diff.
 if [ -t 1 ]; then
-  C_BRAND=$'\033[38;2;250;210;45m'  # LOOP24 yellow
-  C_OK=$'\033[38;2;63;206;142m'
-  C_WARN=$'\033[38;2;255;140;10m'
-  C_ERR=$'\033[38;2;255;91;91m'
+  C_BRAND=$'\033[38;2;250;210;45m'  # #FAD22D — brand yellow
+  C_OK=$'\033[38;2;63;206;142m'     # #3FCE8E — brand green
+  C_WARN=$'\033[38;2;255;140;10m'   # #FF8C0A — brand orange
+  C_ERR=$'\033[38;2;255;91;91m'     # #FF5B5B — brand red
   C_DIM=$'\033[2m'
   C_RESET=$'\033[0m'
 else

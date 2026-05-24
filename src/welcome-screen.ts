@@ -15,6 +15,7 @@ import os from 'node:os'
 import chalk from 'chalk'
 import stripAnsi from 'strip-ansi'
 import { BRAND_NAME, BRAND_TAGLINE, COMMAND_NAMESPACE, CONFIG_DIR_NAME } from './brand.js'
+import { BRAND_YELLOW_HEX } from './brand-colors.js'
 
 const LOOP24_LOGO: readonly string[] = [
   '██╗      ██████╗  ██████╗ ██████╗ ██████╗ ██╗  ██╗',
@@ -182,10 +183,10 @@ export function buildWelcomeScreenLines(opts: WelcomeScreenOptions): string[] {
   // content line is plain text, so terminal selection copies cleanly.
   const out: string[] = ['']
   for (let i = 0; i < LOOP24_LOGO.length; i++) {
-    const logo = rpad(chalk.hex('#FAD22D')(LOOP24_LOGO[i]), logoWidth)
+    const logo = rpad(chalk.hex(BRAND_YELLOW_HEX)(LOOP24_LOGO[i]), logoWidth)
     out.push('  ' + clampVisible(`${logo}${divider}${panelRows[i] ?? ''}`, termWidth - 2))
   }
-  out.push(chalk.hex('#FAD22D')('─'.repeat(Math.max(0, termWidth))))
+  out.push(chalk.hex(BRAND_YELLOW_HEX)('─'.repeat(Math.max(0, termWidth))))
   out.push('')
 
   return out.map((line) => clampVisible(line, termWidth))

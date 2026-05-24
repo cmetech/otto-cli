@@ -16,6 +16,7 @@ import type { ExtensionAPI, ExtensionCommandContext } from "@gsd/pi-coding-agent
 import { LangFlowClient } from "./clients/langflow.js";
 import { loadFlowTriggers } from "./commands/flow-triggers/_loader.js";
 import type { FlowTrigger, FlowTriggerInput } from "./commands/flow-triggers/_schema.js";
+import { ANSI_BRAND_YELLOW, ANSI_BRAND_GREEN, ANSI_DIM, ANSI_RESET } from "../../brand-colors.js";
 import { registerLoop24Tools } from "./tools/_loader.js";
 import { registerBuildFlowCommand } from "./commands/build-flow/command.js";
 import { registerPromptEngineerCommand } from "./commands/prompt-engineer/command.js";
@@ -96,10 +97,10 @@ function buildHandler(trigger: FlowTrigger): (args: string, ctx: ExtensionComman
 
 export default function Loop24(pi: ExtensionAPI): void {
   pi.on("session_start", async () => {
-    const yellow = '\x1b[38;2;250;210;45m';
-    const green  = '\x1b[38;2;63;206;142m';
-    const dim    = '\x1b[2m';
-    const reset  = '\x1b[0m';
+    const yellow = ANSI_BRAND_YELLOW;
+    const green  = ANSI_BRAND_GREEN;
+    const dim    = ANSI_DIM;
+    const reset  = ANSI_RESET;
 
     // ── Gateway connection probe (preserved from Phase 1 Task 6) ──
     const gwUrl = process.env.LOOP24_GATEWAY_URL?.trim();

@@ -495,6 +495,93 @@ should then appear in the TUI autocomplete as expected.
   protection list is effectively dead. Leave for now — removing it is
   the kind of cleanup that might break a sibling tool's expectations.
 
+## Cleanup B — Brand color centralization (tagged: cleanup-b-brand-colors)
+
+Collapses scattered inline hex literals + ANSI escapes into a single source
+of truth. Changing a brand color now requires editing ONE file
+(`src/brand-colors.ts`); a `prebuild` step mirrors it into the resources
+tree for extensions to consume; `scripts/install.sh` (bash, can't import
+TS) keeps its own mirror with hex comments next to each ANSI code so drift
+is visible in diffs.
+
+### Why this needed cleanup
+
+Before this commit, the brand palette was hardcoded inline across 5 source
+files plus the install script — 6+ places to edit for a palette swap. The
+2026-05-24 audit (see `docs/npm-registry-options.md` predecessor
+conversation) flagged this as the bigger rebrand-friction blocker than the
+piConfig triplication.
+
+### src/brand-colors.ts (NEW)
+Canonical palette. Exports `BRAND_*_HEX` constants (10 colors), pre-computed
+`ANSI_BRAND_*` 24-bit foreground escapes, `ANSI_RESET`, `ANSI_DIM`, and a
+small `brandWrap(ansi, text)` helper (chalk replacement for the
+loader-fast path that can't import chalk). No runtime parsing, no fs reads
+— safe to import from `src/loader.ts` and other early-boot files.
+
+### src/resources/brand-colors.ts (AUTO-GENERATED MIRROR)
+TypeScript's two compile contexts (`tsconfig.json`: rootDir=src + excludes
+resources; `tsconfig.resources.json`: rootDir=src/resources) prevent files
+in either tree from importing across the boundary. The pragmatic fix: keep
+ONE canonical file (`src/brand-colors.ts`) and auto-mirror it into the
+resources tree at `prebuild` time.
+
+The mirror file gets a header explaining where to edit instead. If
+something inside `src/resources/extensions/*` needs to import brand colors,
+it uses the mirror.
+
+### scripts/sync-brand-colors.mjs (NEW)
+~30-line Node script that copies `src/brand-colors.ts` → `src/resources/brand-colors.ts`
+with a "DO NOT EDIT" header. Wired into `prebuild` so `npm run build` keeps
+the mirror current automatically. Also available as `npm run sync-brand-colors`
+for non-build invocation.
+
+### package.json (MODIFIED)
+- Added `prebuild` script that runs `sync-brand-colors.mjs`
+- Added `sync-brand-colors` script alias
+
+### 5 source files migrated from inline hex to imports
+
+| File | Before | After |
+|---|---|---|
+| `src/loader.ts` | 4 inline ANSI escapes for banner colors | imports `ANSI_BRAND_YELLOW`, `ANSI_BRAND_GREEN`, `ANSI_DIM`, `ANSI_RESET` |
+| `src/welcome-screen.ts` | 2× `chalk.hex('#FAD22D')` | imports `BRAND_YELLOW_HEX`, uses `chalk.hex(BRAND_YELLOW_HEX)` |
+| `src/onboarding.ts` | inline brand-yellow ANSI escape | imports `ANSI_BRAND_YELLOW`, `ANSI_RESET` |
+| `src/loop24-wizard.ts` | 2× inline brand-yellow ANSI escapes | imports `ANSI_BRAND_YELLOW`, `ANSI_RESET` |
+| `src/resources/extensions/loop24/index.ts` | 4 inline ANSI escapes (gateway/langflow probe) | imports from `../../brand-colors.js` (the auto-synced mirror) |
+
+### scripts/install.sh (MODIFIED)
+Bash can't import TypeScript. The 4 brand ANSI escapes stay inline but each
+line gets a hex comment annotation (`# #FAD22D — brand yellow`) and the
+block has a header comment naming `src/brand-colors.ts` as the canonical
+source. Drift between bash and TS is now visible in a diff because the hex
+strings are spelled out.
+
+### Out-of-palette colors left in place (not blocking)
+`src/welcome-screen.ts` still has two non-brand inline hex literals:
+- `#dce4f2` (line 169) — light off-white used by `value()` panel labels
+- `#8db7ff` (line 170) — light blue used by `accent()` panel header
+
+These look like inherited gsd-pi colors that don't appear in the LOOP24
+brand palette (`loop24.json`). Future cleanup: replace with `BRAND_WHITE_HEX`
+and `BRAND_YELLOW_HEX` respectively, OR add them to `brand-colors.ts` as
+"panel/utility" colors. Flagged here for the eventual full-brand-audit pass.
+
+### Still in two places (documented, not fixed by this cleanup)
+The TUI theme palette is dual-tracked between `src/resources/extensions/loop24/theme/loop24.json`
+(canonical JSON consumed by the TUI theme system) and
+`packages/pi-coding-agent/src/modes/interactive/theme/themes.ts:loop24`
+(inlined TypeScript const). They must stay in sync manually because the
+workspace package's tsconfig has `rootDir:./src` and can't reach the
+JSON file. Tracked as Known Deferred Cleanups item 4 — separate problem
+from this scattered-hex issue.
+
+### Net result
+Edit `src/brand-colors.ts`, run `npm run build`, every visual surface
+inside the TypeScript codebase updates. The bash install script and the
+TUI theme palette (`loop24.json` + `themes.ts`) remain manual sync points,
+each with explicit drift-visible comments.
+
 ## Phase 7 — Public npm publish prep (tagged: phase-7-npm-publish-prep)
 
 Prepares the package for `npm publish` to `@ericsson/loop24` on the public

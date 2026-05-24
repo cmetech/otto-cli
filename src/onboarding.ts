@@ -16,6 +16,7 @@ import { dirname, join } from 'node:path'
 import type { AuthStorage } from '@gsd/pi-coding-agent'
 import { renderLogo } from './logo.js'
 import { BRAND_NAME, COMMAND_NAMESPACE } from './brand.js'
+import { ANSI_BRAND_YELLOW, ANSI_RESET } from './brand-colors.js'
 import { agentDir } from './app-paths.js'
 import { isClaudeCliReady } from './claude-cli-check.js'
 import {
@@ -300,8 +301,8 @@ export async function runOnboarding(
 
   // ── Intro ─────────────────────────────────────────────────────────────────
   if (opts.showIntro !== false) {
-    // Brand yellow #FAD22D via 24-bit ANSI — picocolors has no rgb helper.
-    const brandYellow = (s: string) => `\x1b[38;2;250;210;45m${s}\x1b[0m`
+    // Brand yellow via 24-bit ANSI — picocolors has no rgb helper.
+    const brandYellow = (s: string) => `${ANSI_BRAND_YELLOW}${s}${ANSI_RESET}`
     process.stderr.write(renderLogo(brandYellow))
     p.intro(pc.bold(`Welcome to ${BRAND_NAME} — let's get you set up`))
   }

@@ -32,7 +32,7 @@ export interface BeforeAgentStartEventResult {
 }
 
 import type { GSDActiveUnit, GSDState, Phase } from "../types.js";
-import { isGSDActive, getCurrentPhase } from "../../shared/phase-state.js";
+import { isAgentActive, getCurrentPhase } from "../../shared/phase-state.js";
 import { logWarning } from "../workflow-logger.js";
 
 // ─── Public Interface ───────────────────────────────────────────────────
@@ -73,7 +73,7 @@ export function mapAutoLoopPhase(raw: string): Phase | null {
 
 function resolvePhase(state: GSDState | null): Phase | null {
   if (!state) return null;
-  if (isGSDActive()) {
+  if (isAgentActive()) {
     const raw = getCurrentPhase();
     if (raw != null) {
       const mapped = AUTO_LOOP_PHASE_MAP[raw];
@@ -141,7 +141,7 @@ export function _resetSnapshot(): void {
  * Uses `satisfies GSDExtensionAPI` (NOT `as`) so TypeScript catches drift
  * when pi adds new ExtensionAPI methods.
  */
-export function createGSDExtensionAPI(
+export function createWorkflowExtensionAPI(
   pi: ExtensionAPI,
   sharedHandlers: GSDEcosystemBeforeAgentStartHandler[],
 ): GSDExtensionAPI {

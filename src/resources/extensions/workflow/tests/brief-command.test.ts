@@ -3,7 +3,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { GSD_COMMAND_DESCRIPTION, getGsdArgumentCompletions } from "../commands/catalog.ts";
+import { GSD_COMMAND_DESCRIPTION, getWorkflowArgumentCompletions } from "../commands/catalog.ts";
 import { handleCoreCommand, showHelp } from "../commands/handlers/core.ts";
 import { VISUAL_BRIEF_USAGE } from "../../visual-brief/prompts.ts";
 
@@ -33,7 +33,7 @@ function createMockPi() {
 test("/gsd brief appears in the command description and top-level completions", () => {
   assert.match(GSD_COMMAND_DESCRIPTION, /brief/);
 
-  const completions = getGsdArgumentCompletions("br");
+  const completions = getWorkflowArgumentCompletions("br");
   const entry = completions.find((completion) => completion.value === "brief");
 
   assert.ok(entry, "brief should appear in top-level completions");
@@ -41,14 +41,14 @@ test("/gsd brief appears in the command description and top-level completions", 
 });
 
 test("/gsd brief exposes Visual Brief mode completions", () => {
-  const completions = getGsdArgumentCompletions("brief d");
+  const completions = getWorkflowArgumentCompletions("brief d");
 
   assert.ok(
     completions.some((completion) => completion.value === "brief diagram"),
     "diagram should be suggested as a /gsd brief mode",
   );
   assert.ok(
-    getGsdArgumentCompletions("brief ").some((completion) => completion.value === "brief diff"),
+    getWorkflowArgumentCompletions("brief ").some((completion) => completion.value === "brief diff"),
     "diff should be suggested after /gsd brief",
   );
 });

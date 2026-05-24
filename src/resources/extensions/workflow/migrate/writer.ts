@@ -1,7 +1,7 @@
 // Directory Writer — Format Functions & Directory Orchestrator
 // Format functions: pure string-returning functions that serialize types into the exact markdown
 // format that the parsers expect (parseRoadmap, parsePlan, parseSummary, parseRequirementCounts).
-// writeGSDDirectory: orchestrator that writes a complete .gsd directory tree from a GSDProject.
+// writeAgentDirectory: orchestrator that writes a complete .gsd directory tree from a GSDProject.
 
 import { join } from 'node:path';
 import { saveFile } from '../files.js';
@@ -17,7 +17,7 @@ import type {
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
-/** Result of writeGSDDirectory — lists all files that were written. */
+/** Result of writeAgentDirectory — lists all files that were written. */
 export interface WrittenFiles {
   /** Absolute paths of all files written */
   paths: string[];
@@ -436,7 +436,7 @@ export function formatState(milestones: GSDMilestone[]): string {
  *
  * Skips research/summary files when null (does not write empty stubs).
  */
-export async function writeGSDDirectory(
+export async function writeAgentDirectory(
   project: GSDProject,
   targetPath: string,
 ): Promise<WrittenFiles> {

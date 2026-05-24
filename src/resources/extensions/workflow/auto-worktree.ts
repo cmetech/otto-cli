@@ -48,7 +48,7 @@ import {
   nudgeGitBranchCache,
 } from "./worktree.js";
 import {
-  isGsdWorktreePath,
+  isWorktreePath,
   normalizeWorktreePathForCompare,
   resolveWorktreeProjectRoot,
 } from "./worktree-root.js";
@@ -1471,8 +1471,8 @@ export function teardownAutoWorktree(
  * still works after process restart when module state has been reset.
  */
 export function isInAutoWorktree(basePath: string): boolean {
-  const targetPath = isGsdWorktreePath(basePath) ? basePath : process.cwd();
-  if (!isGsdWorktreePath(targetPath)) return false;
+  const targetPath = isWorktreePath(basePath) ? basePath : process.cwd();
+  if (!isWorktreePath(targetPath)) return false;
 
   const storedBase = getAutoWorktreeOriginalBase();
   const projectRoot = resolveWorktreeProjectRoot(basePath, storedBase);
@@ -1614,7 +1614,7 @@ export function getActiveAutoWorktreeContext(): {
   if (!ws) return null;
   const originalBase = ws.projectRoot;
   const cwd = process.cwd();
-  if (!isGsdWorktreePath(cwd)) return null;
+  if (!isWorktreePath(cwd)) return null;
   const cwdProjectRoot = resolveWorktreeProjectRoot(cwd, originalBase);
   if (
     normalizeWorktreePathForCompare(cwdProjectRoot) !==

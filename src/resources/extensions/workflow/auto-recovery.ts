@@ -49,7 +49,7 @@ import { classifyMilestoneSummaryContent } from "./milestone-summary-classifier.
 import { hasVerdict } from "./verdict-parser.js";
 import { validateArtifact } from "./schemas/validate.js";
 import { getProjectResearchStatus } from "./project-research-policy.js";
-import { isGsdWorktreePath } from "./worktree-root.js";
+import { isWorktreePath } from "./worktree-root.js";
 import { resolveCanonicalMilestoneRoot } from "./worktree-manager.js";
 
 // Re-export so existing consumers of auto-recovery.ts keep working.
@@ -62,7 +62,7 @@ export {
 // ─── Artifact Resolution & Verification ───────────────────────────────────────
 
 export function diagnoseWorktreeIntegrityFailure(basePath: string): string | null {
-  if (!isGsdWorktreePath(basePath)) return null;
+  if (!isWorktreePath(basePath)) return null;
   if (!existsSync(basePath)) {
     return `Worktree integrity failure: ${basePath} does not exist. Repair or recreate the worktree before retrying.`;
   }

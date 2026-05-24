@@ -36,7 +36,7 @@ function emitVisibleCommandBlock(
   ctx.ui.notify(message, "warning");
 }
 
-export async function handleGSDCommand(
+export async function dispatchWorkflowCommand(
   args: string,
   ctx: ExtensionCommandContext,
   pi: ExtensionAPI,

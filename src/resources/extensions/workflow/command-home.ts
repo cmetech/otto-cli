@@ -46,7 +46,7 @@ function disabled(description: string, reason: string): string {
   return `Unavailable: ${reason}. ${description}`;
 }
 
-export function buildGsdHomeModel(state: GSDState): GsdHomeModel {
+export function buildHomeModel(state: GSDState): GsdHomeModel {
   const blocked = isBlocked(state);
   const complete = state.phase === "complete";
   const hasActiveWork = Boolean(state.activeMilestone);
@@ -168,7 +168,7 @@ export async function showGsdHome(
   basePath: string,
 ): Promise<void> {
   const state = await deriveState(basePath);
-  const model = buildGsdHomeModel(state);
+  const model = buildHomeModel(state);
 
   if (!ctx.hasUI || process.env.GSD_HEADLESS === "1") {
     ctx.ui.notify(formatHomeText(model), "info");

@@ -82,7 +82,7 @@ import {
 import { detectRogueFileWrites } from "../../auto-post-unit.ts";
 
 // ── Doctor ────────────────────────────────────────────────────────────────
-import { runGSDDoctor } from "../../doctor.ts";
+import { runDoctor } from "../../doctor.ts";
 
 // ── Undo/reset ────────────────────────────────────────────────────────────
 import { handleUndoTask, handleResetSlice } from "../../undo.ts";
@@ -378,7 +378,7 @@ test("full lifecycle: migration through completion through doctor", async (t) =>
     assert.ok(dbState.registry.length > 0, "DB registry should have entries");
 
     // ── (h) Doctor zero-fix (R009) ───────────────────────────────────
-    const doctorReport = await runGSDDoctor(base, {
+    const doctorReport = await runDoctor(base, {
       fix: false,
       isolationMode: "none",
     });

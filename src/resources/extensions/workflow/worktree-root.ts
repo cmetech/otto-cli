@@ -42,7 +42,7 @@ export function findWorktreeSegment(normalizedPath: string): WorktreeSegment | n
   return null;
 }
 
-export function isGsdWorktreePath(path: string): boolean {
+export function isWorktreePath(path: string): boolean {
   return findWorktreeSegment(path.replaceAll("\\", "/")) !== null;
 }
 
@@ -62,7 +62,7 @@ export function resolveWorktreeProjectRoot(
   if (explicitOriginal) return resolveProjectRootFromPath(explicitOriginal);
 
   const envProjectRoot = process.env.GSD_PROJECT_ROOT?.trim();
-  if (envProjectRoot && isGsdWorktreePath(basePath)) {
+  if (envProjectRoot && isWorktreePath(basePath)) {
     return resolveProjectRootFromPath(envProjectRoot);
   }
 
@@ -103,7 +103,7 @@ function resolveNearestBootstrappedGsdRoot(path: string): string | null {
 
     for (let i = 0; i < 30; i++) {
       if (normalizeWorktreePathForCompare(dir) === externalStateParent) return null;
-      if (hasGsdBootstrapArtifacts(join(dir, ".gsd"))) return dir;
+      if (hasWorkflowBootstrapArtifacts(join(dir, ".gsd"))) return dir;
 
       const gitPath = join(dir, ".git");
       if (existsSync(gitPath)) return null;
@@ -118,7 +118,7 @@ function resolveNearestBootstrappedGsdRoot(path: string): string | null {
   return null;
 }
 
-function hasGsdBootstrapArtifacts(gsdPath: string): boolean {
+function hasWorkflowBootstrapArtifacts(gsdPath: string): boolean {
   return existsSync(gsdPath) &&
     (existsSync(join(gsdPath, "PREFERENCES.md")) ||
       existsSync(join(gsdPath, "preferences.md")) ||

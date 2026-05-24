@@ -23,7 +23,7 @@ import {
 } from "../../native-git-bridge.js";
 import type { GSDState } from "../../types.js";
 import { logError, logWarning } from "../../workflow-logger.js";
-import { isGsdWorktreePath } from "../../worktree-root.js";
+import { isWorktreePath } from "../../worktree-root.js";
 import type { DriftContext, DriftHandler, DriftRecord } from "../types.js";
 
 export type MergeReconcileResult = "clean" | "reconciled" | "blocked";
@@ -108,7 +108,7 @@ function resolveGitDir(basePath: string): string {
   } catch (err) {
     const message = getErrorMessage(err);
     logWarning("recovery", `gitdir resolution failed: ${message}`);
-    if (isGsdWorktreePath(basePath)) {
+    if (isWorktreePath(basePath)) {
       throw new Error(
         `Worktree integrity failure: ${basePath} is not a valid git worktree (git rev-parse failed: ${message.split("\n")[0]}). Repair or recreate the worktree before retrying.`,
       );

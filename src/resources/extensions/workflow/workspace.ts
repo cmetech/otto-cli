@@ -2,7 +2,7 @@
 
 import { join, resolve } from "node:path";
 import { type GsdPathContract, resolveGsdPathContract, normalizeRealPath } from "./paths.js";
-import { isGsdWorktreePath, resolveWorktreeProjectRoot } from "./worktree-root.js";
+import { isWorktreePath, resolveWorktreeProjectRoot } from "./worktree-root.js";
 
 export type GsdWorkspaceMode = "project" | "worktree";
 
@@ -38,7 +38,7 @@ function tryRealpath(p: string): string {
  */
 export function createWorkspace(rawBasePath: string): GsdWorkspace {
   const resolvedBase = resolve(rawBasePath);
-  const isWorktree = isGsdWorktreePath(resolvedBase);
+  const isWorktree = isWorktreePath(resolvedBase);
 
   const projectRootRaw = resolveWorktreeProjectRoot(resolvedBase);
   const projectRoot = tryRealpath(resolve(projectRootRaw));

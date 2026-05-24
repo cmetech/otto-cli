@@ -102,7 +102,7 @@ function getAutoModeFiles(): string[] {
   return files;
 }
 
-function getGsdSourceFiles(): string[] {
+function getSourceFiles(): string[] {
   const files: string[] = [];
 
   function walk(dir: string): void {
@@ -188,7 +188,7 @@ describe("workflow-logger coverage (#3348)", () => {
   test("no empty catch blocks remain in migrated files", () => {
     // Combine auto-mode files + explicitly migrated files
     const autoFiles = getAutoModeFiles();
-    const allFiles = getGsdSourceFiles();
+    const allFiles = getSourceFiles();
     const migratedPaths = new Set(autoFiles);
     for (const file of allFiles) {
       const rel = relative(gsdDir, file);
@@ -220,7 +220,7 @@ describe("workflow-logger coverage (#3348)", () => {
   });
 
   test("catch blocks use workflow-logger instead of raw stderr/console", () => {
-    const files = getGsdSourceFiles();
+    const files = getSourceFiles();
     assert.ok(files.length > 0, "should find GSD source files");
 
     const violations: string[] = [];

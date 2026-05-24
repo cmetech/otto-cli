@@ -20,7 +20,7 @@ import {
   parsePlanningDirectory,
   transformToGSD,
   generatePreview,
-  writeGSDDirectory,
+  writeAgentDirectory,
 } from "./index.js";
 
 import type { MigrationPreview, WrittenFiles } from "./writer.js";
@@ -129,7 +129,7 @@ export async function executeMigrationWrite(
   const backup = prepareMigrationTarget(targetRoot);
 
   try {
-    const written = await writeGSDDirectory(project, targetRoot);
+    const written = await writeAgentDirectory(project, targetRoot);
     const legacyArchive = await archiveLegacyPlanningDirectory(sourcePath, targetRoot);
     const imported = await importWrittenMigrationToDb(targetRoot, preview);
     const verification = await verifyMigrationProjection(targetRoot, preview);

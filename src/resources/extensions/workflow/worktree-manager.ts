@@ -44,7 +44,7 @@ import {
 } from "./native-git-bridge.js";
 import { emitCanonicalRootRedirect } from "./worktree-telemetry.js";
 import {
-  isGsdWorktreePath,
+  isWorktreePath,
   normalizeWorktreePathForCompare,
   resolveWorktreeProjectRoot,
 } from "./worktree-root.js";
@@ -97,7 +97,7 @@ function normalizePathForComparison(path: string): string {
 function normalizeBasePathForWorktreeOps(basePath: string): string {
   const resolved = resolveWorktreeProjectRoot(basePath);
   if (
-    isGsdWorktreePath(basePath) &&
+    isWorktreePath(basePath) &&
     normalizeWorktreePathForCompare(resolved) === normalizeWorktreePathForCompare(basePath)
   ) {
     throw new GSDError(

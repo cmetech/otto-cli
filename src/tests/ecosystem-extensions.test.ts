@@ -7,7 +7,7 @@ import { test } from "node:test";
 
 import {
   _resetSnapshot,
-  createGSDExtensionAPI,
+  createWorkflowExtensionAPI,
   type GSDEcosystemBeforeAgentStartHandler,
   getSnapshotActiveUnit,
   getSnapshotPhase,
@@ -101,10 +101,10 @@ test("mapAutoLoopPhase returns null for unknown keys (does not default)", () => 
   assert.notEqual(mapAutoLoopPhase("not-a-real-phase"), "executing");
 });
 
-test("createGSDExtensionAPI intercepts before_agent_start", () => {
+test("createWorkflowExtensionAPI intercepts before_agent_start", () => {
   const { pi, onCalls } = buildPiStub();
   const shared: GSDEcosystemBeforeAgentStartHandler[] = [];
-  const api = createGSDExtensionAPI(pi, shared);
+  const api = createWorkflowExtensionAPI(pi, shared);
 
   const handler: GSDEcosystemBeforeAgentStartHandler = async () => undefined;
   api.on("before_agent_start", handler);
@@ -114,10 +114,10 @@ test("createGSDExtensionAPI intercepts before_agent_start", () => {
   assert.equal(onCalls.length, 0, "pi.on should NOT be invoked for before_agent_start");
 });
 
-test("createGSDExtensionAPI delegates non-intercepted events to pi.on", () => {
+test("createWorkflowExtensionAPI delegates non-intercepted events to pi.on", () => {
   const { pi, onCalls } = buildPiStub();
   const shared: GSDEcosystemBeforeAgentStartHandler[] = [];
-  const api = createGSDExtensionAPI(pi, shared);
+  const api = createWorkflowExtensionAPI(pi, shared);
 
   const handler = (): void => {};
   api.on("session_start", handler);
@@ -131,7 +131,7 @@ test("createGSDExtensionAPI delegates non-intercepted events to pi.on", () => {
 test("getPhase / getActiveUnit read from module snapshot", () => {
   _resetSnapshot();
   const { pi } = buildPiStub();
-  const api = createGSDExtensionAPI(pi, []);
+  const api = createWorkflowExtensionAPI(pi, []);
 
   // Initial state: nothing loaded
   assert.equal(api.getPhase(), null);
@@ -156,7 +156,7 @@ test("getPhase / getActiveUnit read from module snapshot", () => {
 test("getActiveUnit returns null when state has no active triple", () => {
   _resetSnapshot();
   const { pi } = buildPiStub();
-  const api = createGSDExtensionAPI(pi, []);
+  const api = createWorkflowExtensionAPI(pi, []);
 
   updateSnapshot(buildState({ activeTask: null }));
   assert.equal(api.getActiveUnit(), null);
@@ -180,7 +180,7 @@ test("wrapper key-drift guard: every ExtensionAPI method is delegated", () => {
   // runtime test catches a different failure: a method becoming a no-op
   // on the wrapper because the wrapper key doesn't exist.
   const { pi } = buildPiStub();
-  const api = createGSDExtensionAPI(pi, []);
+  const api = createWorkflowExtensionAPI(pi, []);
 
   const expectedKeys = [
     "on",

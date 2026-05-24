@@ -12,7 +12,7 @@ import { getAgentDir } from "@gsd/pi-coding-agent";
 
 import { logWarning } from "../workflow-logger.js";
 import {
-  createGSDExtensionAPI,
+  createWorkflowExtensionAPI,
   type GSDEcosystemBeforeAgentStartHandler,
   type GSDExtensionAPI,
 } from "./extension-api.js";
@@ -122,7 +122,7 @@ async function _loadEcosystemExtensionsImpl(
 
   // The wrapper api is built once per loader run and shared by all extensions
   // so they all read from the same module-level snapshot.
-  const api: GSDExtensionAPI = createGSDExtensionAPI(pi, sharedHandlers);
+  const api: GSDExtensionAPI = createWorkflowExtensionAPI(pi, sharedHandlers);
 
   for (const entry of entries) {
     await _loadOne(extDir, realExtDir, entry, api);

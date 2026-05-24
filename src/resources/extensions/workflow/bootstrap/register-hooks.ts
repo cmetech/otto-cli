@@ -190,9 +190,9 @@ const AUTO_UNIT_SCOPED_TOOLS: Record<string, readonly string[]> = {
 const WORKFLOW_GSD_TOOL_NAMES = [
   ...MINIMAL_GSD_TOOL_NAMES,
   ...Object.values(AUTO_UNIT_SCOPED_TOOLS).flat(),
-].filter(isGsdManagedTool);
+].filter(isManagedTool);
 
-function isGsdManagedTool(name: string): boolean {
+function isManagedTool(name: string): boolean {
   return name.startsWith("gsd_") || name === "memory_query" || name === "capture_thought" || name === "gsd_graph";
 }
 
@@ -229,7 +229,7 @@ function resolveScopedToolNames(
 }
 
 export function buildMinimalGsdToolSet(activeToolNames: readonly string[]): string[] {
-  const preserved = activeToolNames.filter((name) => !isGsdManagedTool(name));
+  const preserved = activeToolNames.filter((name) => !isManagedTool(name));
   const minimal = resolveScopedToolNames(activeToolNames, MINIMAL_GSD_TOOL_NAMES);
   return [...new Set([...preserved, ...minimal])];
 }

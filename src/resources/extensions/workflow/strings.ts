@@ -5,7 +5,7 @@ import { BRAND_NAME, COMMAND_NAMESPACE, CONFIG_DIR_NAME } from "@gsd/pi-coding-a
 // package.json updates every prompt and help message in one place.
 //
 // Internal identifiers (customType strings like "gsd-add-tests", error codes
-// like "MISSING_GSD_MARKER", function names like registerGSDCommand) are
+// like "MISSING_GSD_MARKER", function names like registerWorkflowCommand) are
 // NOT routed through here — they're not user-visible.
 
 export const BRAND = BRAND_NAME;                          // "LOOP24"

@@ -8,7 +8,7 @@ import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { runGSDDoctor } from "../doctor.ts";
+import { runDoctor } from "../doctor.ts";
 import { createWorktree, worktreePath } from "../worktree-manager.ts";
 
 function runGit(args: string[], cwd: string): string {
@@ -46,7 +46,7 @@ test("doctor fix recreates an empty registered milestone worktree", async (t) =>
   assert.ok(existsSync(join(wtPath, ".git")), "test setup keeps registered worktree marker");
   assert.equal(existsSync(join(wtPath, "package.json")), false, "test setup removes project content");
 
-  const report = await runGSDDoctor(base, {
+  const report = await runDoctor(base, {
     fix: true,
     fixLevel: "all",
     isolationMode: "worktree",

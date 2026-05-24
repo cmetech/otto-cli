@@ -85,7 +85,7 @@ export function clearCurrentPhase(): void {
 }
 
 /** Returns true if auto-mode is currently active. */
-export function isGSDActive(): boolean {
+export function isAgentActive(): boolean {
 	return _active;
 }
 

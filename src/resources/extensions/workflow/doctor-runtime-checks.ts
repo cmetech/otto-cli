@@ -10,7 +10,7 @@ import { nativeIsRepo, nativeForEachRef, nativeUpdateRef } from "./native-git-br
 import { readCrashLock, isLockProcessAlive, clearStaleWorkerLock } from "./crash-recovery.js";
 import { getActiveAutoWorkers } from "./db/auto-workers.js";
 import { normalizeRealPath } from "./paths.js";
-import { ensureGitignore, isGsdGitignored } from "./gitignore.js";
+import { ensureGitignore, isGitignored } from "./gitignore.js";
 import { readAllSessionStatuses, isSessionStale, removeSessionStatus } from "./session-status-io.js";
 import { recoverFailedMigration } from "./migrate-external.js";
 import { splitCompletedKey } from "./forensics.js";
@@ -493,7 +493,7 @@ export async function checkRuntimeHealth(
         // When `.gsd` is a symlink AND not gitignored, `git add -A -- :!.loop24/...`
         // pathspecs fail with "beyond a symbolic link". Without self-heal this
         // silently drops new user files during auto-commit.
-        if (nativeIsRepo(basePath) && !isGsdGitignored(basePath)) {
+        if (nativeIsRepo(basePath) && !isGitignored(basePath)) {
           issues.push({
             severity: "warning",
             code: "symlinked_gsd_unignored",

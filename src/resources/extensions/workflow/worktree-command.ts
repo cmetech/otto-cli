@@ -592,13 +592,13 @@ async function handleMerge(
     for (const s of numstat) { totalAdded += s.added; totalRemoved += s.removed; }
 
     // Split files into code vs workflow files for the preview
-    const isGSD = (f: string) => f.startsWith(".gsd/");
-    const codeChanges = diffSummary.added.filter(f => !isGSD(f)).length
-      + diffSummary.modified.filter(f => !isGSD(f)).length
-      + diffSummary.removed.filter(f => !isGSD(f)).length;
-    const gsdChanges = diffSummary.added.filter(isGSD).length
-      + diffSummary.modified.filter(isGSD).length
-      + diffSummary.removed.filter(isGSD).length;
+    const isAgent = (f: string) => f.startsWith(".gsd/");
+    const codeChanges = diffSummary.added.filter(f => !isAgent(f)).length
+      + diffSummary.modified.filter(f => !isAgent(f)).length
+      + diffSummary.removed.filter(f => !isAgent(f)).length;
+    const gsdChanges = diffSummary.added.filter(isAgent).length
+      + diffSummary.modified.filter(isAgent).length
+      + diffSummary.removed.filter(isAgent).length;
 
     // Format a file line with +/- stats
     const formatFileLine = (prefix: string, file: string): string => {

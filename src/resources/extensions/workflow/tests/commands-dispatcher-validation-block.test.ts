@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 
-import { handleGSDCommand } from "../commands/dispatcher.ts";
+import { dispatchWorkflowCommand } from "../commands/dispatcher.ts";
 import {
   closeDatabase,
   insertAssessment,
@@ -110,7 +110,7 @@ test("dispatcher blocks bare /gsd while milestone validation needs attention", a
     const { ctx, calls, widgets, statuses } = makeMockCtx(base);
     const { pi, messages } = makeMockPi();
 
-    await handleGSDCommand("", ctx, pi);
+    await dispatchWorkflowCommand("", ctx, pi);
 
     assert.equal(calls.length, 0);
     assert.equal(messages.length, 1);
@@ -145,7 +145,7 @@ test("dispatcher blocks workflow-advancing aliases while validation is blocked",
       const { ctx, calls } = makeMockCtx(base);
       const { pi, messages } = makeMockPi();
 
-      await handleGSDCommand(command, ctx, pi);
+      await dispatchWorkflowCommand(command, ctx, pi);
 
       assert.equal(calls.length, 0, command);
       assert.equal(messages.length, 1, command);
@@ -165,7 +165,7 @@ test("dispatcher still allows recovery commands while validation is blocked", as
     seedValidationBlockedMilestone(base);
     const { ctx, calls } = makeMockCtx(base);
 
-    await handleGSDCommand("help", ctx, {} as any);
+    await dispatchWorkflowCommand("help", ctx, {} as any);
 
     assert.equal(calls.length, 1);
     assert.equal(calls[0].kind, "info");

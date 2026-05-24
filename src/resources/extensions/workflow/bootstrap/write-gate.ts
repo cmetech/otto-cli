@@ -7,7 +7,7 @@ import { minimatch } from "minimatch";
 import { getIsolationMode } from "../preferences.js";
 import { compileSubagentPermissionContract, type ToolsPolicy } from "../unit-context-manifest.js";
 import { logWarning } from "../workflow-logger.js";
-import { isGsdWorktreePath, resolveWorktreeProjectRoot } from "../worktree-root.js";
+import { isWorktreePath, resolveWorktreeProjectRoot } from "../worktree-root.js";
 
 /**
  * Regex matching milestone CONTEXT.md file names in both legacy M001
@@ -1038,7 +1038,7 @@ export function shouldBlockWorktreeWrite(
 
   // Auto is live and the caller is operating inside a worktree path —
   // host tool's write happens in worktree context; let it through.
-  if (isAutoLive && isGsdWorktreePath(effectiveBasePath)) return { block: false };
+  if (isAutoLive && isWorktreePath(effectiveBasePath)) return { block: false };
 
   // Block. Provide enough context that the agent can self-correct.
   const displayTarget = isPathContained(realTarget, realRoot)

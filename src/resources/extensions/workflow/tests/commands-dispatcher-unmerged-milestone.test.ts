@@ -6,7 +6,7 @@ import assert from "node:assert/strict";
 import { dirname, join } from "node:path";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
-import { handleGSDCommand } from "../commands/dispatcher.ts";
+import { dispatchWorkflowCommand } from "../commands/dispatcher.ts";
 import {
   closeDatabase,
   insertMilestone,
@@ -117,7 +117,7 @@ test("dispatcher blocks bare /gsd when a completed milestone branch is unmerged"
     const { ctx, calls, widgets, statuses } = makeMockCtx(base);
     const { pi, messages } = makeMockPi();
 
-    await handleGSDCommand("", ctx, pi);
+    await dispatchWorkflowCommand("", ctx, pi);
 
     assert.equal(calls.length, 0);
     assert.equal(messages.length, 1);
@@ -146,7 +146,7 @@ test("dispatcher blocks workflow-advancing commands while completed branch is un
       const { ctx, calls } = makeMockCtx(base);
       const { pi, messages } = makeMockPi();
 
-      await handleGSDCommand(command, ctx, pi);
+      await dispatchWorkflowCommand(command, ctx, pi);
 
       assert.equal(calls.length, 0, command);
       assert.equal(messages.length, 1, command);
@@ -167,7 +167,7 @@ test("dispatcher recovers a completed unmerged milestone through complete-milest
     const { ctx, calls } = makeMockCtx(base);
     const { pi, messages } = makeMockPi();
 
-    await handleGSDCommand("dispatch complete-milestone M008", ctx, pi);
+    await dispatchWorkflowCommand("dispatch complete-milestone M008", ctx, pi);
 
     assert.equal(messages.length, 0);
     assert.ok(

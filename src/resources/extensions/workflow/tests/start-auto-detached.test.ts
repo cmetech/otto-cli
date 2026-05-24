@@ -11,14 +11,14 @@ import {
 
 const gsdDir = resolve(import.meta.dirname, "..");
 
-function readGsdFile(relativePath: string): string {
+function readAgentFile(relativePath: string): string {
   return readFileSync(resolve(gsdDir, relativePath), "utf-8");
 }
 
 test("command entrypoints use startAutoDetached instead of awaiting startAuto (#3733)", () => {
-  const autoHandlerSrc = readGsdFile("commands/handlers/auto.ts");
-  const workflowHandlerSrc = readGsdFile("commands/handlers/workflow.ts");
-  const guidedFlowSrc = readGsdFile("guided-flow.ts");
+  const autoHandlerSrc = readAgentFile("commands/handlers/auto.ts");
+  const workflowHandlerSrc = readAgentFile("commands/handlers/workflow.ts");
+  const guidedFlowSrc = readAgentFile("guided-flow.ts");
 
   assert.ok(
     !autoHandlerSrc.includes("await startAuto("),
@@ -48,7 +48,7 @@ test("command entrypoints use startAutoDetached instead of awaiting startAuto (#
 });
 
 test("bare /gsd stays in the foreground home flow (#5125 regression)", () => {
-  const autoHandlerSrc = readGsdFile("commands/handlers/auto.ts");
+  const autoHandlerSrc = readAgentFile("commands/handlers/auto.ts");
   const bareCommandBranch = autoHandlerSrc.slice(
     autoHandlerSrc.indexOf('if (trimmed === "")'),
   );
@@ -86,8 +86,8 @@ test("guided execute uses auto step bootstrap when worktree isolation is enabled
 });
 
 test("auto bootstrap validates blocked directories before touching .gsd migration state", () => {
-  const autoSrc = readGsdFile("auto.ts");
-  const autoStartSrc = readGsdFile("auto-start.ts");
+  const autoSrc = readAgentFile("auto.ts");
+  const autoStartSrc = readAgentFile("auto-start.ts");
 
   const startAutoIdx = autoSrc.indexOf("export async function startAuto(");
   const startAutoBody = autoSrc.slice(startAutoIdx);
@@ -127,8 +127,8 @@ test("auto bootstrap validates blocked directories before touching .gsd migratio
 });
 
 test("fresh start registers the auto worker before bootstrap enters worktree flow (#5405)", () => {
-  const autoSrc = readGsdFile("auto.ts");
-  const autoStartSrc = readGsdFile("auto-start.ts");
+  const autoSrc = readAgentFile("auto.ts");
+  const autoStartSrc = readAgentFile("auto-start.ts");
   const startAutoIdx = autoSrc.indexOf("export async function startAuto(");
   const startAutoBody = autoSrc.slice(startAutoIdx);
   const bootstrapIdx = autoStartSrc.indexOf("export async function bootstrapAutoSession(");
@@ -174,7 +174,7 @@ test("fresh start registers the auto worker before bootstrap enters worktree flo
 });
 
 test("startAutoDetached reports failures asynchronously (#3733)", () => {
-  const autoSrc = readGsdFile("auto.ts");
+  const autoSrc = readAgentFile("auto.ts");
 
   assert.ok(
     autoSrc.includes("export function startAutoDetached"),
@@ -233,8 +233,8 @@ test("detached auto-start keeps a ref'ed handle until the run settles", async ()
 });
 
 test("detached auto-start preserves milestone lock across pause/stop cleanup (#3733)", () => {
-  const autoSrc = readGsdFile("auto.ts");
-  const sessionSrc = readGsdFile("auto/session.ts");
+  const autoSrc = readAgentFile("auto.ts");
+  const sessionSrc = readAgentFile("auto/session.ts");
 
   assert.ok(
     autoSrc.includes("milestoneLock?: string | null"),
@@ -301,7 +301,7 @@ test("discussion auto-start waits for the current command context to become idle
 });
 
 test("resume path only hard-exits on blocked stop, not blocked pause (#6154)", () => {
-  const autoSrc = readGsdFile("auto.ts");
+  const autoSrc = readAgentFile("auto.ts");
   const startAutoIdx = autoSrc.indexOf("export async function startAuto(");
   const startAutoBody = autoSrc.slice(startAutoIdx);
   const resumeSectionIdx = startAutoBody.indexOf("if (s.paused) {");
@@ -322,7 +322,7 @@ test("resume path only hard-exits on blocked stop, not blocked pause (#6154)", (
 });
 
 test("prepareForUnit skips worktree safety when isolation is not worktree (#6154)", () => {
-  const autoSrc = readGsdFile("auto.ts");
+  const autoSrc = readAgentFile("auto.ts");
   const prepareForUnitIdx = autoSrc.indexOf("async prepareForUnit(unitType, unitId) {");
   const prepareForUnitBody = autoSrc.slice(prepareForUnitIdx, autoSrc.indexOf("async syncAfterUnit() {}", prepareForUnitIdx));
 

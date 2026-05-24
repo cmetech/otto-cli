@@ -1,9 +1,9 @@
-export { registerGSDCommand } from "./commands/index.js";
+export { registerWorkflowCommand } from "./commands/index.js";
 
-export async function handleGSDCommand(
-  ...args: Parameters<typeof import("./commands/dispatcher.js").handleGSDCommand>
+export async function dispatchWorkflowCommand(
+  ...args: Parameters<typeof import("./commands/dispatcher.js").dispatchWorkflowCommand>
 ) {
-  const { handleGSDCommand: dispatch } = await import("./commands/dispatcher.js");
+  const { dispatchWorkflowCommand: dispatch } = await import("./commands/dispatcher.js");
   return dispatch(...args);
 }
 

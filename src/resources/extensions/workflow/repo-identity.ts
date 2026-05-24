@@ -373,7 +373,7 @@ export function cleanNumberedGsdVariants(projectPath: string): string[] {
  * The marker is gitignored by ensureGitignore(). Non-fatal: failure to write
  * the marker must never block project setup.
  */
-function writeGsdIdMarker(projectPath: string, identity: string): void {
+function writeIdMarker(projectPath: string, identity: string): void {
   try {
     const markerPath = join(projectPath, ".gsd-id");
     // Only write if content differs to avoid unnecessary disk writes.
@@ -392,7 +392,7 @@ function writeGsdIdMarker(projectPath: string, identity: string): void {
  * Read the `.gsd-id` marker from the project root.
  * Returns the identity hash, or null if the marker doesn't exist or is unreadable.
  */
-function readGsdIdMarker(projectPath: string): string | null {
+function readIdMarker(projectPath: string): string | null {
   try {
     const markerPath = join(projectPath, ".gsd-id");
     if (!existsSync(markerPath)) return null;
@@ -432,7 +432,7 @@ function resolveExternalPathWithRecovery(projectPath: string): { path: string; i
   const computedId = repoIdentity(projectPath);
   const computedPath = join(base, "projects", computedId);
   const computedHasState = hasProjectState(computedPath);
-  const markerId = readGsdIdMarker(projectPath);
+  const markerId = readIdMarker(projectPath);
   const markerPath = markerId ? join(base, "projects", markerId) : null;
   const markerHasState = markerPath ? hasProjectState(markerPath) : false;
 
@@ -511,7 +511,7 @@ export function ensureGsdSymlink(projectPath: string): string {
   // Only write for the project root (not subdirectories or worktrees that
   // delegate to a parent .gsd).
   if (!isInsideWorktree(projectPath)) {
-    writeGsdIdMarker(projectPath, identity);
+    writeIdMarker(projectPath, identity);
   }
 
   return result;

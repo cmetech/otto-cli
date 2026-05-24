@@ -5,7 +5,7 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { resolveLocalBinaryPath } from "../../packages/pi-coding-agent/src/core/lsp/config.ts";
 import { encodeCwd } from "../resources/extensions/subagent/isolation.ts";
-import { buildGsdClientSpawnPlan } from "../../vscode-extension/src/gsd-client-spawn.ts";
+import { buildClientSpawnPlan } from "../../vscode-extension/src/gsd-client-spawn.ts";
 
 function makeTempDir(prefix: string): string {
 	const dir = path.join(
@@ -55,7 +55,7 @@ test("encodeCwd produces a filesystem-safe token for Windows paths", () => {
 });
 
 test("VS Code RPC launch plan uses shell mode for Windows command shims", () => {
-	const plan = buildGsdClientSpawnPlan("gsd.cmd", "C:\\repo", { PATH: "C:\\Windows\\System32" }, "win32");
+	const plan = buildClientSpawnPlan("gsd.cmd", "C:\\repo", { PATH: "C:\\Windows\\System32" }, "win32");
 	assert.equal(plan.command, "gsd.cmd");
 	assert.deepEqual(plan.args, ["--mode", "rpc"]);
 	assert.equal(plan.options.cwd, "C:\\repo");

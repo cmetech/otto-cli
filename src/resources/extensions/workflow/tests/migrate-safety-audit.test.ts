@@ -20,7 +20,7 @@ import {
   verifyMigrationProjection,
 } from "../migrate/audit.ts";
 import { assertMigrationDbReadiness, executeMigrationWrite, importWrittenMigrationToDb } from "../migrate/command.ts";
-import { writeGSDDirectory } from "../migrate/writer.ts";
+import { writeAgentDirectory } from "../migrate/writer.ts";
 import { closeDatabase, getArtifact } from "../db.ts";
 import type { GSDProject } from "../migrate/types.ts";
 
@@ -231,7 +231,7 @@ test("assertMigrationDbReadiness fails loud when deriveState cannot see migrated
   try {
     const project = projectFixture();
     const preview = generatePreview(project);
-    await writeGSDDirectory(project, base);
+    await writeAgentDirectory(project, base);
 
     await assert.rejects(
       () => assertMigrationDbReadiness(base, preview),
@@ -247,7 +247,7 @@ test("verifyMigrationProjection fails when DB hierarchy diverges from preview", 
   try {
     const project = projectFixture();
     const preview = generatePreview(project);
-    await writeGSDDirectory(project, base);
+    await writeAgentDirectory(project, base);
     await importWrittenMigrationToDb(base, preview);
 
     await assert.rejects(

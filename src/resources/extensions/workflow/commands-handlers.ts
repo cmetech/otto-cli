@@ -18,7 +18,7 @@ import {
   formatDoctorIssuesForPrompt,
   formatDoctorReport,
   formatDoctorReportJson,
-  runGSDDoctor,
+  runDoctor,
   selectDoctorScope,
   filterDoctorIssues,
 } from "./doctor.js";
@@ -126,7 +126,7 @@ export async function handleDoctor(args: string, ctx: ExtensionCommandContext, p
   const effectiveScope = mode === "audit" ? requestedScope : scope;
   const { ensureDbOpen } = await import("./bootstrap/dynamic-tools.js");
   await ensureDbOpen(projectRoot());
-  const report = await runGSDDoctor(projectRoot(), {
+  const report = await runDoctor(projectRoot(), {
     fix: mode === "fix" || mode === "heal" || dryRun || fixFlag,
     dryRun,
     scope: effectiveScope,

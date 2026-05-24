@@ -12,7 +12,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { runGSDDoctor } from "../../doctor.ts";
+import { runDoctor } from "../../doctor.ts";
 
 function makeTmp(name: string): string {
   const dir = join(tmpdir(), `doctor-roadmap-summary-${name}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
@@ -64,7 +64,7 @@ test("fixLevel:task — roadmap checkbox is never toggled by doctor (reconciliat
 
   buildScaffold(tmp);
 
-  const report = await runGSDDoctor(tmp, { fix: true, fixLevel: "task" });
+  const report = await runDoctor(tmp, { fix: true, fixLevel: "task" });
 
   // Roadmap must remain unchecked — doctor no longer touches checkboxes
   const roadmapContent = readFileSync(join(tmp, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), "utf8");
@@ -84,7 +84,7 @@ test("fixLevel:all — roadmap checkbox is never toggled by doctor (reconciliati
 
   buildScaffold(tmp);
 
-  const report = await runGSDDoctor(tmp, { fix: true });
+  const report = await runDoctor(tmp, { fix: true });
 
   // Even at fixLevel:all, doctor no longer creates stubs or toggles checkboxes
   const roadmapContent = readFileSync(join(tmp, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), "utf8");
@@ -103,8 +103,8 @@ test("consecutive doctor runs produce no reconciliation codes", async (t) => {
 
   buildScaffold(tmp);
 
-  await runGSDDoctor(tmp, { fix: true, fixLevel: "task" });
-  const report2 = await runGSDDoctor(tmp, { fix: true, fixLevel: "task" });
+  await runDoctor(tmp, { fix: true, fixLevel: "task" });
+  const report2 = await runDoctor(tmp, { fix: true, fixLevel: "task" });
 
   const REMOVED_CODES = [
     "task_done_missing_summary",

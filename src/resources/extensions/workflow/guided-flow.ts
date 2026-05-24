@@ -47,7 +47,7 @@ import { ensureGitignore, ensurePreferences, untrackRuntimeFiles } from "./gitig
 import { getIsolationMode, loadEffectiveGSDPreferences } from "./preferences.js";
 import { resolveUokFlags } from "./uok/flags.js";
 import { ensurePlanV2Graph, isMissingFinalizedContextResult } from "./uok/plan-v2.js";
-import { detectProjectState, hasGsdBootstrapArtifacts } from "./detection.js";
+import { detectProjectState, hasWorkflowBootstrapArtifacts } from "./detection.js";
 import { isFutureMilestoneStatus } from "./status-guards.js";
 import { showProjectInit, offerMigration } from "./init-wizard.js";
 import { validateDirectory } from "./validate-directory.js";
@@ -2084,7 +2084,7 @@ export async function showSmartEntry(
   // A zombie .loop24/ state (symlink exists but missing PREFERENCES.md and
   // milestones/) must trigger the init wizard, not skip it (#2942).
   const gsdPath = gsdRoot(basePath);
-  const hasBootstrapArtifacts = hasGsdBootstrapArtifacts(gsdPath);
+  const hasBootstrapArtifacts = hasWorkflowBootstrapArtifacts(gsdPath);
   let skipGitBootstrap = false;
 
   if (!hasBootstrapArtifacts) {

@@ -1,17 +1,17 @@
 import { COMMAND_NAMESPACE, type ExtensionAPI, type ExtensionCommandContext } from "@gsd/pi-coding-agent";
 
-import { GSD_COMMAND_DESCRIPTION, getGsdArgumentCompletions } from "./catalog.js";
+import { GSD_COMMAND_DESCRIPTION, getWorkflowArgumentCompletions } from "./catalog.js";
 
-export function registerGSDCommand(pi: ExtensionAPI): void {
+export function registerWorkflowCommand(pi: ExtensionAPI): void {
   pi.registerCommand(COMMAND_NAMESPACE, {
     description: GSD_COMMAND_DESCRIPTION,
-    getArgumentCompletions: getGsdArgumentCompletions,
+    getArgumentCompletions: getWorkflowArgumentCompletions,
     handler: async (args: string, ctx: ExtensionCommandContext) => {
-      const { handleGSDCommand } = await import("./dispatcher.js");
+      const { dispatchWorkflowCommand } = await import("./dispatcher.js");
       const { setStderrLoggingEnabled } = await import("../workflow-logger.js");
       const previousStderrSetting = setStderrLoggingEnabled(false);
       try {
-        await handleGSDCommand(args, ctx, pi);
+        await dispatchWorkflowCommand(args, ctx, pi);
       } finally {
         setStderrLoggingEnabled(previousStderrSetting);
       }

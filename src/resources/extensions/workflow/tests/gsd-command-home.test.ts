@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { buildGsdHomeModel, showGsdHome } from "../command-home.ts";
+import { buildHomeModel, showGsdHome } from "../command-home.ts";
 import type { GSDState } from "../types.ts";
 
 function baseState(overrides: Partial<GSDState> = {}): GSDState {
@@ -30,14 +30,14 @@ function baseState(overrides: Partial<GSDState> = {}): GSDState {
   };
 }
 
-function action(model: ReturnType<typeof buildGsdHomeModel>, id: string) {
+function action(model: ReturnType<typeof buildHomeModel>, id: string) {
   const match = model.actions.find((candidate) => candidate.id === id);
   assert.ok(match, `missing action ${id}`);
   return match;
 }
 
 test("/gsd home keeps the stable five user-intent choices", () => {
-  const model = buildGsdHomeModel(baseState());
+  const model = buildHomeModel(baseState());
 
   assert.deepEqual(
     model.actions.map((candidate) => candidate.label),
@@ -52,7 +52,7 @@ test("/gsd home keeps the stable five user-intent choices", () => {
 });
 
 test("/gsd home recommends step mode for active unblocked work", () => {
-  const model = buildGsdHomeModel(baseState());
+  const model = buildHomeModel(baseState());
 
   assert.equal(action(model, "continue_step").recommended, true);
   assert.equal(action(model, "continue_step").enabled, true);
@@ -61,7 +61,7 @@ test("/gsd home recommends step mode for active unblocked work", () => {
 });
 
 test("/gsd home makes blockers the top state and disables advancing choices", () => {
-  const model = buildGsdHomeModel(baseState({
+  const model = buildHomeModel(baseState({
     phase: "blocked",
     blockers: ["Milestone M001 is blocked because milestone validation returned needs-attention."],
     nextAction: "Resolve validation before proceeding.",
@@ -75,7 +75,7 @@ test("/gsd home makes blockers the top state and disables advancing choices", ()
 });
 
 test("/gsd home recommends start/configure after all milestones complete", () => {
-  const model = buildGsdHomeModel(baseState({
+  const model = buildHomeModel(baseState({
     activeMilestone: null,
     activeSlice: null,
     activeTask: null,

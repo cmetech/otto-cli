@@ -17,7 +17,7 @@ import {
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { getGsdArgumentCompletions, TOP_LEVEL_SUBCOMMANDS } from "../commands/catalog.ts";
+import { getWorkflowArgumentCompletions, TOP_LEVEL_SUBCOMMANDS } from "../commands/catalog.ts";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -106,8 +106,8 @@ describe("workflow catalog registration", () => {
     assert.match(entry!.desc, /session model/i);
   });
 
-  it("getGsdArgumentCompletions('m') includes model", () => {
-    const completions = getGsdArgumentCompletions("m");
+  it("getWorkflowArgumentCompletions('m') includes model", () => {
+    const completions = getWorkflowArgumentCompletions("m");
     const labels = completions.map((c: any) => c.label);
     assert.ok(labels.includes("model"), "should include model completion");
   });
@@ -119,8 +119,8 @@ describe("workflow catalog registration", () => {
     assert.ok(entry!.desc.includes("run"), "description should mention run");
   });
 
-  it("getGsdArgumentCompletions('workflow ') returns the full subcommand set", () => {
-    const completions = getGsdArgumentCompletions("workflow ");
+  it("getWorkflowArgumentCompletions('workflow ') returns the full subcommand set", () => {
+    const completions = getWorkflowArgumentCompletions("workflow ");
     const labels = completions.map((c: any) => c.label);
     for (const sub of [
       "new", "run", "list", "info", "install", "uninstall", "validate", "pause", "resume",
@@ -130,15 +130,15 @@ describe("workflow catalog registration", () => {
     assert.equal(labels.length, 9, "should have exactly 9 subcommands");
   });
 
-  it("getGsdArgumentCompletions('workflow r') filters to run and resume", () => {
-    const completions = getGsdArgumentCompletions("workflow r");
+  it("getWorkflowArgumentCompletions('workflow r') filters to run and resume", () => {
+    const completions = getWorkflowArgumentCompletions("workflow r");
     const labels = completions.map((c: any) => c.label);
     assert.ok(labels.includes("run"), "should include run");
     assert.ok(labels.includes("resume"), "should include resume");
     assert.ok(!labels.includes("list"), "should not include list");
   });
 
-  it("getGsdArgumentCompletions('workflow run ') returns definition names", () => {
+  it("getWorkflowArgumentCompletions('workflow run ') returns definition names", () => {
     const base = makeTmpBase();
     writeDefinition(base, "deploy-pipeline", SIMPLE_DEF);
     writeDefinition(base, "test-suite", SIMPLE_DEF);
@@ -146,31 +146,31 @@ describe("workflow catalog registration", () => {
     // Change cwd so the completion scanner can find `.gsd/workflow-defs/`
     process.chdir(base);
 
-    const completions = getGsdArgumentCompletions("workflow run ");
+    const completions = getWorkflowArgumentCompletions("workflow run ");
     const labels = completions.map((c: any) => c.label);
     assert.ok(labels.includes("deploy-pipeline"), "should include deploy-pipeline");
     assert.ok(labels.includes("test-suite"), "should include test-suite");
   });
 
-  it("getGsdArgumentCompletions('workflow validate ') returns definition names", () => {
+  it("getWorkflowArgumentCompletions('workflow validate ') returns definition names", () => {
     const base = makeTmpBase();
     writeDefinition(base, "my-workflow", SIMPLE_DEF);
 
     process.chdir(base);
 
-    const completions = getGsdArgumentCompletions("workflow validate ");
+    const completions = getWorkflowArgumentCompletions("workflow validate ");
     const labels = completions.map((c: any) => c.label);
     assert.ok(labels.includes("my-workflow"), "should include my-workflow");
   });
 
-  it("getGsdArgumentCompletions('workflow run d') filters by prefix", () => {
+  it("getWorkflowArgumentCompletions('workflow run d') filters by prefix", () => {
     const base = makeTmpBase();
     writeDefinition(base, "deploy-pipeline", SIMPLE_DEF);
     writeDefinition(base, "test-suite", SIMPLE_DEF);
 
     process.chdir(base);
 
-    const completions = getGsdArgumentCompletions("workflow run d");
+    const completions = getWorkflowArgumentCompletions("workflow run d");
     const labels = completions.map((c: any) => c.label);
     assert.ok(labels.includes("deploy-pipeline"), "should include deploy-pipeline");
     assert.ok(!labels.includes("test-suite"), "should not include test-suite");

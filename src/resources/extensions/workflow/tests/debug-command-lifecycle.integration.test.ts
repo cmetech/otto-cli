@@ -4,7 +4,7 @@ import { existsSync, mkdtempSync, mkdirSync, readdirSync, rmSync, writeFileSync 
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { handleGSDCommand } from "../commands/dispatcher.ts";
+import { dispatchWorkflowCommand } from "../commands/dispatcher.ts";
 import { handleDebug } from "../commands-debug.ts";
 import {
   createDebugSession,
@@ -73,17 +73,17 @@ test("/gsd debug lifecycle integration covers start/list/status/continue across 
   try {
     const ctx = createMockCtx();
 
-    await handleGSDCommand("debug API returns 500 on checkout", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug API returns 500 on checkout", ctx as any, {} as any);
     const firstStarted = lastNotification(ctx);
     assert.equal(firstStarted.level, "info");
     assert.match(firstStarted.message, /Debug session started: api-returns-500-on-checkout/);
 
-    await handleGSDCommand("debug API returns 500 on checkout", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug API returns 500 on checkout", ctx as any, {} as any);
     const secondStarted = lastNotification(ctx);
     assert.equal(secondStarted.level, "info");
     assert.match(secondStarted.message, /Debug session started: api-returns-500-on-checkout-2/);
 
-    await handleGSDCommand("debug Checkout retries spin forever", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug Checkout retries spin forever", ctx as any, {} as any);
     const thirdStarted = lastNotification(ctx);
     assert.equal(thirdStarted.level, "info");
     assert.match(thirdStarted.message, /Debug session started: checkout-retries-spin-forever/);
@@ -96,7 +96,7 @@ test("/gsd debug lifecycle integration covers start/list/status/continue across 
       "checkout-retries-spin-forever.json",
     ]);
 
-    await handleGSDCommand("debug list", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug list", ctx as any, {} as any);
     const listed = lastNotification(ctx);
     assert.equal(listed.level, "info");
     assert.match(listed.message, /Debug sessions:/);
@@ -105,7 +105,7 @@ test("/gsd debug lifecycle integration covers start/list/status/continue across 
     assert.match(listed.message, /checkout-retries-spin-forever/);
     assert.match(listed.message, /mode=debug status=active phase=queued/);
 
-    await handleGSDCommand("debug status api-returns-500-on-checkout", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug status api-returns-500-on-checkout", ctx as any, {} as any);
     const statusBeforeContinue = lastNotification(ctx);
     assert.equal(statusBeforeContinue.level, "info");
     assert.match(statusBeforeContinue.message, /^Debug session status: api-returns-500-on-checkout/m);
@@ -114,14 +114,14 @@ test("/gsd debug lifecycle integration covers start/list/status/continue across 
     assert.match(statusBeforeContinue.message, /^phase=queued$/m);
     assert.match(statusBeforeContinue.message, /^updated=\d{4}-\d{2}-\d{2}T/m);
 
-    await handleGSDCommand("debug continue api-returns-500-on-checkout-2", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug continue api-returns-500-on-checkout-2", ctx as any, {} as any);
     const resumed = lastNotification(ctx);
     assert.equal(resumed.level, "info");
     assert.match(resumed.message, /Resumed debug session: api-returns-500-on-checkout-2/);
     assert.match(resumed.message, /status=active/);
     assert.match(resumed.message, /phase=continued/);
 
-    await handleGSDCommand("debug status api-returns-500-on-checkout-2", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug status api-returns-500-on-checkout-2", ctx as any, {} as any);
     const statusAfterContinue = lastNotification(ctx);
     assert.equal(statusAfterContinue.level, "info");
     assert.match(statusAfterContinue.message, /^phase=continued$/m);
@@ -140,18 +140,18 @@ test("/gsd debug lifecycle integration handles invalid slugs and malformed artif
   try {
     const ctx = createMockCtx();
 
-    await handleGSDCommand("debug Sync bug in checkout", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug Sync bug in checkout", ctx as any, {} as any);
     const started = lastNotification(ctx);
     assert.equal(started.level, "info");
     assert.match(started.message, /Debug session started: sync-bug-in-checkout/);
 
-    await handleGSDCommand("debug status no-such-session", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug status no-such-session", ctx as any, {} as any);
     const missingStatus = lastNotification(ctx);
     assert.equal(missingStatus.level, "warning");
     assert.match(missingStatus.message, /Unknown debug session slug 'no-such-session'/);
     assert.match(missingStatus.message, /Run \/gsd debug list/);
 
-    await handleGSDCommand("debug continue no-such-session", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug continue no-such-session", ctx as any, {} as any);
     const missingContinue = lastNotification(ctx);
     assert.equal(missingContinue.level, "warning");
     assert.match(missingContinue.message, /Unknown debug session slug 'no-such-session'/);
@@ -159,20 +159,20 @@ test("/gsd debug lifecycle integration handles invalid slugs and malformed artif
     const brokenArtifactPath = debugSessionArtifactPath(base, "broken-session");
     writeFileSync(brokenArtifactPath, "{ definitely-not-valid-json", "utf-8");
 
-    await handleGSDCommand("debug status broken-session", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug status broken-session", ctx as any, {} as any);
     const corruptedStatus = lastNotification(ctx);
     assert.equal(corruptedStatus.level, "warning");
     assert.match(corruptedStatus.message, /Unable to load debug session 'broken-session'/);
     assert.match(corruptedStatus.message, /Try \/gsd debug --diagnose broken-session/);
 
-    await handleGSDCommand("debug list", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug list", ctx as any, {} as any);
     const listed = lastNotification(ctx);
     assert.equal(listed.level, "info");
     assert.match(listed.message, /Malformed artifacts: 1/);
     assert.match(listed.message, /broken-session\.json/);
     assert.match(listed.message, /Run \/gsd debug --diagnose for remediation guidance/);
 
-    await handleGSDCommand("debug --diagnose", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug --diagnose", ctx as any, {} as any);
     const diagnosed = lastNotification(ctx);
     assert.equal(diagnosed.level, "warning");
     assert.match(diagnosed.message, /Debug session diagnostics:/);
@@ -196,13 +196,13 @@ test("/gsd debug lifecycle integration keeps session artifacts isolated from deb
     mkdirSync(debugDir, { recursive: true });
     writeFileSync(join(debugDir, "payment-timeout.log"), "log seed\n", "utf-8");
 
-    await handleGSDCommand("debug Payment timeout", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug Payment timeout", ctx as any, {} as any);
     const firstStarted = lastNotification(ctx);
     assert.equal(firstStarted.level, "info");
     assert.match(firstStarted.message, /Debug session started: payment-timeout/);
 
     // Existing .log files must not reserve slug suffixes for session artifacts.
-    await handleGSDCommand("debug Payment timeout", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug Payment timeout", ctx as any, {} as any);
     const secondStarted = lastNotification(ctx);
     assert.equal(secondStarted.level, "info");
     assert.match(secondStarted.message, /Debug session started: payment-timeout-2/);
@@ -211,14 +211,14 @@ test("/gsd debug lifecycle integration keeps session artifacts isolated from deb
     assert.equal(existsSync(join(base, ".gsd", "debug", "sessions", "payment-timeout.json")), true);
     assert.equal(existsSync(join(base, ".gsd", "debug", "sessions", "payment-timeout-2.json")), true);
 
-    await handleGSDCommand("logs debug", ctx as any, {} as any);
+    await dispatchWorkflowCommand("logs debug", ctx as any, {} as any);
     const logsListed = lastNotification(ctx);
     assert.equal(logsListed.level, "info");
     assert.match(logsListed.message, /Debug Logs \(\.gsd\/debug\/\):/);
     assert.match(logsListed.message, /payment-timeout\.log/);
     assert.doesNotMatch(logsListed.message, /payment-timeout\.json/);
 
-    await handleGSDCommand("debug list", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug list", ctx as any, {} as any);
     const sessionsListed = lastNotification(ctx);
     assert.equal(sessionsListed.level, "info");
     assert.match(sessionsListed.message, /payment-timeout/);
@@ -312,7 +312,7 @@ test("/gsd debug --diagnose (zero-arg) with no pi still reports malformed artifa
     writeFileSync(join(sessionsDir, "broken-b.json"), "null", "utf-8");
 
     // Zero-arg --diagnose via dispatcher (no pi) — dispatch should NOT fire.
-    await handleGSDCommand("debug --diagnose", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug --diagnose", ctx as any, {} as any);
 
     const n = lastNotification(ctx);
     assert.equal(n.level, "warning");
@@ -364,23 +364,23 @@ test("/gsd debug negative: multiple sessions with similar slugs — status and c
   try {
     const ctx = createMockCtx();
 
-    await handleGSDCommand("debug Login token expires", ctx as any, {} as any);
-    await handleGSDCommand("debug Login token expires too fast", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug Login token expires", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug Login token expires too fast", ctx as any, {} as any);
 
     // list to confirm two distinct slugs exist.
-    await handleGSDCommand("debug list", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug list", ctx as any, {} as any);
     const listed = lastNotification(ctx);
     assert.match(listed.message, /login-token-expires\b/);
     assert.match(listed.message, /login-token-expires-too-fast\b/);
 
     // status on base slug must not accidentally describe the suffixed one.
-    await handleGSDCommand("debug status login-token-expires", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug status login-token-expires", ctx as any, {} as any);
     const baseStatus = lastNotification(ctx);
     assert.match(baseStatus.message, /^Debug session status: login-token-expires$/m);
     assert.doesNotMatch(baseStatus.message, /login-token-expires-too-fast/);
 
     // status on suffixed slug must describe that one.
-    await handleGSDCommand("debug status login-token-expires-too-fast", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug status login-token-expires-too-fast", ctx as any, {} as any);
     const suffixedStatus = lastNotification(ctx);
     assert.match(suffixedStatus.message, /^Debug session status: login-token-expires-too-fast$/m);
   } finally {
@@ -771,14 +771,14 @@ test("/gsd debug S05: full happy-path lifecycle — start → list → status �
     const { calls, pi } = createMockPiWithDispatch();
 
     // 1. Start session
-    await handleGSDCommand("debug Widget fails on mobile", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug Widget fails on mobile", ctx as any, {} as any);
     const started = lastNotification(ctx);
     assert.equal(started.level, "info");
     assert.match(started.message, /Debug session started: widget-fails-on-mobile/);
     const slug = "widget-fails-on-mobile";
 
     // 2. List shows the new session
-    await handleGSDCommand("debug list", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug list", ctx as any, {} as any);
     const listed = lastNotification(ctx);
     assert.equal(listed.level, "info");
     assert.match(listed.message, /Debug sessions:/);
@@ -786,7 +786,7 @@ test("/gsd debug S05: full happy-path lifecycle — start → list → status �
     assert.match(listed.message, /mode=debug status=active phase=queued/);
 
     // 3. Status shows expected fields
-    await handleGSDCommand(`debug status ${slug}`, ctx as any, {} as any);
+    await dispatchWorkflowCommand(`debug status ${slug}`, ctx as any, {} as any);
     const status = lastNotification(ctx);
     assert.equal(status.level, "info");
     assert.match(status.message, new RegExp(`^Debug session status: ${slug}`, "m"));
@@ -850,7 +850,7 @@ test("/gsd debug S05: diagnose-only full lifecycle — start → status(mode=dia
     const slug = "memory-leak-in-worker-pool";
 
     // 2. Status shows mode=diagnose
-    await handleGSDCommand(`debug status ${slug}`, ctx as any, {} as any);
+    await dispatchWorkflowCommand(`debug status ${slug}`, ctx as any, {} as any);
     const status = lastNotification(ctx);
     assert.equal(status.level, "info");
     assert.match(status.message, /^mode=diagnose$/m);
@@ -1035,14 +1035,14 @@ test("/gsd debug S05: multi-session concurrent lifecycle — 3 sessions continue
   try {
     const ctx = createMockCtx();
 
-    // Start 3 sessions via handleGSDCommand
-    await handleGSDCommand("debug Auth token expires silently", ctx as any, {} as any);
+    // Start 3 sessions via dispatchWorkflowCommand
+    await dispatchWorkflowCommand("debug Auth token expires silently", ctx as any, {} as any);
     assert.match(lastNotification(ctx).message, /Debug session started: auth-token-expires-silently/);
 
-    await handleGSDCommand("debug Cache misses on cold start", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug Cache misses on cold start", ctx as any, {} as any);
     assert.match(lastNotification(ctx).message, /Debug session started: cache-misses-on-cold-start/);
 
-    await handleGSDCommand("debug Payment webhook drops under load", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug Payment webhook drops under load", ctx as any, {} as any);
     assert.match(lastNotification(ctx).message, /Debug session started: payment-webhook-drops-under-load/);
 
     // Continue each session separately with its own dispatch mock
@@ -1067,7 +1067,7 @@ test("/gsd debug S05: multi-session concurrent lifecycle — 3 sessions continue
     assert.doesNotMatch(calls3[0].payload.content, /auth-token-expires-silently/);
 
     // debug list must show all 3 as phase=continued
-    await handleGSDCommand("debug list", ctx as any, {} as any);
+    await dispatchWorkflowCommand("debug list", ctx as any, {} as any);
     const listed = lastNotification(ctx);
     assert.equal(listed.level, "info");
     assert.match(listed.message, /auth-token-expires-silently/);
@@ -1089,8 +1089,8 @@ test("/gsd debug S05: resolved session blocks continue via dispatcher route — 
     const ctx = createMockCtx();
     const { calls, pi } = createMockPiWithDispatch();
 
-    // Start session via handleGSDCommand (dispatcher route)
-    await handleGSDCommand("debug Stale lock file blocks deploy", ctx as any, {} as any);
+    // Start session via dispatchWorkflowCommand (dispatcher route)
+    await dispatchWorkflowCommand("debug Stale lock file blocks deploy", ctx as any, {} as any);
     const started = lastNotification(ctx);
     assert.equal(started.level, "info");
     assert.match(started.message, /Debug session started: stale-lock-file-blocks-deploy/);
@@ -1099,8 +1099,8 @@ test("/gsd debug S05: resolved session blocks continue via dispatcher route — 
     // Mark as resolved via store API
     updateDebugSession(base, slug, { status: "resolved" });
 
-    // Attempt continue via dispatcher route (handleGSDCommand, not handleDebug directly)
-    await handleGSDCommand(`debug continue ${slug}`, ctx as any, pi as any);
+    // Attempt continue via dispatcher route (dispatchWorkflowCommand, not handleDebug directly)
+    await dispatchWorkflowCommand(`debug continue ${slug}`, ctx as any, pi as any);
 
     const warned = lastNotification(ctx);
     assert.equal(warned.level, "warning");

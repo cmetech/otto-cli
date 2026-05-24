@@ -135,7 +135,7 @@ describe("project-discovery", () => {
     const b = results.find(r => r.name === "project-b");
     assert.ok(b, "project-b not found");
     assert.equal(b.kind, "empty-gsd");
-    assert.equal(b.signals.hasGsdFolder, true);
+    assert.equal(b.signals.hasAgentFolder, true);
   });
 
   test("project-c is detected as brownfield with hasCargo signal", () => {

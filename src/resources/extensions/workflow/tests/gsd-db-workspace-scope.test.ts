@@ -30,7 +30,7 @@ import {
  */
 function makeProjectDir(): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-db-ws-scope-")));
-  // hasGsdBootstrapArtifacts checks for .gsd/milestones or .gsd/PREFERENCES.md
+  // hasWorkflowBootstrapArtifacts checks for .gsd/milestones or .gsd/PREFERENCES.md
   mkdirSync(join(dir, ".gsd", "milestones"), { recursive: true });
   return dir;
 }

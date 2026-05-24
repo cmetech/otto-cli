@@ -35,7 +35,7 @@ function makeContext(
   };
 }
 
-function setGsdHeadless(t: { after: (fn: () => void) => void }): void {
+function setHeadless(t: { after: (fn: () => void) => void }): void {
   const previous = process.env.GSD_HEADLESS;
   process.env.GSD_HEADLESS = "1";
   t.after(() => {
@@ -76,7 +76,7 @@ test("auto-dispatch uses discuss-headless prompt when GSD_HEADLESS is set", asyn
   const tmp = mkdtempSync(join(tmpdir(), "gsd-discuss-milestone-headless-"));
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
 
-  setGsdHeadless(t);
+  setHeadless(t);
 
   const result = await resolveDispatch(makeContext(tmp, "pre-planning", "true"));
 
@@ -90,7 +90,7 @@ test("auto-dispatch uses discuss-headless prompt for needs-discussion when GSD_H
   const tmp = mkdtempSync(join(tmpdir(), "gsd-discuss-milestone-headless-"));
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
 
-  setGsdHeadless(t);
+  setHeadless(t);
 
   const result = await resolveDispatch(makeContext(tmp, "needs-discussion", "true"));
 
@@ -104,7 +104,7 @@ test("auto-dispatch uses discuss-headless prompt for executing when GSD_HEADLESS
   const tmp = mkdtempSync(join(tmpdir(), "gsd-discuss-milestone-headless-"));
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
 
-  setGsdHeadless(t);
+  setHeadless(t);
 
   const result = await resolveDispatch(makeContext(tmp, "executing", "true"));
 

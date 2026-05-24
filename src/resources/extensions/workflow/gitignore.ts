@@ -119,7 +119,7 @@ const BASELINE_PATTERNS = [
  *   - `.gsd` is not listed in any active ignore rule
  *   - Not a git repo or git is unavailable
  */
-export function isGsdGitignored(basePath: string): boolean {
+export function isGitignored(basePath: string): boolean {
   // Check both `.gsd` and `.loop24/` because `.loop24/` in .gitignore (trailing
   // slash = directory-only pattern) only matches the directory form. Using
   // both paths covers all gitignore pattern variants.

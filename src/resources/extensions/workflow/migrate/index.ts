@@ -4,7 +4,7 @@ export { handleMigrate } from './command.js';
 export { parsePlanningDirectory } from './parser.js';
 export { validatePlanningDirectory } from './validator.js';
 export { transformToGSD } from './transformer.js';
-export { writeGSDDirectory } from './writer.js';
+export { writeAgentDirectory } from './writer.js';
 export { resolveMigrationPaths, assertMigrationHasSlices } from './safety.js';
 export { archiveLegacyPlanningDirectory, verifyMigrationProjection } from './audit.js';
 export type { WrittenFiles, MigrationPreview } from './writer.js';

@@ -17,7 +17,7 @@ import {
   checkMarkdownHierarchyAgainstDb,
   countMarkdownHierarchy,
 } from "../migration-auto-check.ts";
-import { writeGSDDirectory } from "../migrate/writer.ts";
+import { writeAgentDirectory } from "../migrate/writer.ts";
 import type { GSDProject } from "../migrate/types.ts";
 
 function makeBase(): string {
@@ -75,7 +75,7 @@ function projectFixture(): GSDProject {
 test("migration auto-check preserves empty DB and reports explicit recovery", async () => {
   const base = makeBase();
   try {
-    await writeGSDDirectory(projectFixture(), base);
+    await writeAgentDirectory(projectFixture(), base);
     assert.deepEqual(countMarkdownHierarchy(base), { milestones: 1, slices: 1, tasks: 1 });
 
     assert.equal(await ensureDbOpen(base), true);
@@ -97,7 +97,7 @@ test("migration auto-check preserves empty DB and reports explicit recovery", as
 test("migration auto-check preserves DB on hierarchy count mismatch", async () => {
   const base = makeBase();
   try {
-    await writeGSDDirectory(projectFixture(), base);
+    await writeAgentDirectory(projectFixture(), base);
     assert.equal(await ensureDbOpen(base), true);
     insertMilestone({ id: "M001", title: "Legacy Milestone", status: "active" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Legacy Slice", status: "pending", risk: "medium", depends: [], demo: "Legacy slice demo", sequence: 1 });
@@ -118,7 +118,7 @@ test("migration auto-check preserves DB on hierarchy count mismatch", async () =
 test("migration auto-check leaves matching DB hierarchy alone", async () => {
   const base = makeBase();
   try {
-    await writeGSDDirectory(projectFixture(), base);
+    await writeAgentDirectory(projectFixture(), base);
     assert.equal(await ensureDbOpen(base), true);
     insertMilestone({ id: "M001", title: "Legacy Milestone", status: "active" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Legacy Slice", status: "pending", risk: "medium", depends: [], demo: "Legacy slice demo", sequence: 1 });

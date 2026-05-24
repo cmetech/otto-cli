@@ -11,7 +11,7 @@ import {
 	deactivateGSD,
 	setCurrentPhase,
 	clearCurrentPhase,
-	isGSDActive,
+	isAgentActive,
 	getCurrentPhase,
 } from "../phase-state.js";
 
@@ -21,11 +21,11 @@ describe("gsd-phase-state", () => {
 	});
 
 	it("tracks active/inactive state", () => {
-		assert.equal(isGSDActive(), false);
+		assert.equal(isAgentActive(), false);
 		activateGSD();
-		assert.equal(isGSDActive(), true);
+		assert.equal(isAgentActive(), true);
 		deactivateGSD();
-		assert.equal(isGSDActive(), false);
+		assert.equal(isAgentActive(), false);
 	});
 
 	it("tracks the current phase when active", () => {

@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 
 import { COMMAND_NAMESPACE } from "@gsd/pi-coding-agent";
 
-import { registerGSDCommand } from "../commands.ts";
-import { handleGSDCommand } from "../commands/dispatcher.ts";
+import { registerWorkflowCommand } from "../commands.ts";
+import { dispatchWorkflowCommand } from "../commands/dispatcher.ts";
 import { slashCommand } from "../strings.ts";
 
 function createMockPi() {
@@ -37,10 +37,10 @@ function createMockCtx() {
 
 test("/gsd description includes discuss", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
-  assert.ok(gsd, `registerGSDCommand should register /${COMMAND_NAMESPACE}`);
+  assert.ok(gsd, `registerWorkflowCommand should register /${COMMAND_NAMESPACE}`);
   assert.ok(
     gsd.description.includes("discuss"),
     "description should include discuss",
@@ -49,7 +49,7 @@ test("/gsd description includes discuss", () => {
 
 test("/gsd description includes debug", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
   assert.ok(gsd.description.includes("debug"), "description should include debug");
@@ -57,7 +57,7 @@ test("/gsd description includes debug", () => {
 
 test("/gsd next completions include --debug", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("next ");
@@ -67,7 +67,7 @@ test("/gsd next completions include --debug", () => {
 
 test("/gsd debug completions include list|status|continue|--diagnose", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("debug ");
@@ -79,7 +79,7 @@ test("/gsd debug completions include list|status|continue|--diagnose", () => {
 
 test("/gsd widget completions include full|small|min|off", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("widget ");
@@ -91,7 +91,7 @@ test("/gsd widget completions include full|small|min|off", () => {
 
 test("/gsd logs completions still include debug after adding /gsd debug", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("logs ");
@@ -102,7 +102,7 @@ test("/gsd logs completions still include debug after adding /gsd debug", () => 
 test("/gsd help full includes /gsd debug command", async () => {
   const ctx = createMockCtx();
 
-  await handleGSDCommand("help full", ctx as any, {} as any);
+  await dispatchWorkflowCommand("help full", ctx as any, {} as any);
 
   const helpText = ctx.notifications.map((n) => n.message).join("\n");
   // Escape regex special chars in the slashCommand reference so this works for any namespace.
@@ -113,7 +113,7 @@ test("/gsd help full includes /gsd debug command", async () => {
 test(`bare ${slashCommand("skip")} shows usage and does not fall through to unknown-command warning`, async () => {
   const ctx = createMockCtx();
 
-  await handleGSDCommand("skip", ctx as any, {} as any);
+  await dispatchWorkflowCommand("skip", ctx as any, {} as any);
 
   const skipUsage = `Usage: ${slashCommand("skip")} <unit-id>`;
   assert.ok(
@@ -141,7 +141,7 @@ test("direct loop verbs do not fall through to unknown-command warning", async (
 
   for (const verb of loopVerbs) {
     const ctx = createMockCtx();
-    await handleGSDCommand(verb, ctx as any, {} as any);
+    await dispatchWorkflowCommand(verb, ctx as any, {} as any);
     const unknownPrefix = `Unknown: ${slashCommand(verb)}`;
     assert.ok(
       !ctx.notifications.some((n) => n.message.startsWith(unknownPrefix)),

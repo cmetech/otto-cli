@@ -1293,7 +1293,7 @@ export function hasProjectFileInAncestor(
  * `existsFn` is injectable so tests can run deterministically; defaults to
  * `fs.existsSync`.
  */
-export function hasGsdBootstrapArtifacts(
+export function hasWorkflowBootstrapArtifacts(
   gsdPath: string,
   existsFn: (p: string) => boolean = existsSync,
 ): boolean {

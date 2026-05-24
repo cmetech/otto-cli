@@ -115,7 +115,7 @@ function readZeroDelimitedPaths(output: string): string[] {
   return output.split("\0").filter(Boolean);
 }
 
-function isGsdOwnedPath(path: string): boolean {
+function isOwnedPath(path: string): boolean {
   return path === ".gsd" || path.startsWith(".gsd/");
 }
 
@@ -483,7 +483,7 @@ export function postflightPopStash(
     // If either is null, fall through to `git stash apply` as the safe default.
     if (trackedPaths !== null && untrackedPaths !== null) {
       const stashPaths = [...trackedPaths, ...untrackedPaths];
-      if (stashPaths.length > 0 && stashPaths.every((path) => isGsdOwnedPath(path))) {
+      if (stashPaths.length > 0 && stashPaths.every((path) => isOwnedPath(path))) {
         let dropped = true;
         try {
           execFileSync("git", ["stash", "drop", stashRef], {

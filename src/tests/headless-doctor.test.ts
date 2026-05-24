@@ -6,12 +6,12 @@
 // Before this fix, the headless dispatcher had no `doctor` case — the
 // only path the live-regression test could reach (`gsd headless doctor`)
 // fell through to RPC dispatch and tried to launch a TUI subprocess.
-// Now the dispatcher invokes runGSDDoctor directly (mirrors the existing
+// Now the dispatcher invokes runDoctor directly (mirrors the existing
 // `query` shape), and the resulting report from a stale-lock fixture
 // carries the "lock" keyword and stale PID the live-regression
 // assertion checks for.
 //
-// This test exercises the runGSDDoctor + formatDoctorReport pipeline
+// This test exercises the runDoctor + formatDoctorReport pipeline
 // the headless case wires up — covering the behavior end-to-end without
 // having to spawn a child process. The dispatch wiring itself is one
 // branch in headless.ts (verified by `npm run build:core`); the
@@ -24,7 +24,7 @@ import { mkdtempSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { runGSDDoctor } from "../resources/extensions/workflow/doctor.ts";
+import { runDoctor } from "../resources/extensions/workflow/doctor.ts";
 import {
   formatDoctorReport,
   formatDoctorReportJson,
@@ -68,14 +68,14 @@ function makeStaleLockFixture(): string {
   return base;
 }
 
-test("#4929: runGSDDoctor + formatDoctorReport surface 'lock' + stale PID for stale auto.lock", async (t) => {
+test("#4929: runDoctor + formatDoctorReport surface 'lock' + stale PID for stale auto.lock", async (t) => {
   const base = makeStaleLockFixture();
   t.after(() => {
     closeDatabase();
     rmSync(base, { recursive: true, force: true });
   });
 
-  const report = await runGSDDoctor(base);
+  const report = await runDoctor(base);
   const out = formatDoctorReport(report);
   const lower = out.toLowerCase();
 
@@ -103,7 +103,7 @@ test("#4929: formatDoctorReportJson preserves the stale-lock issue + PID for --j
     rmSync(base, { recursive: true, force: true });
   });
 
-  const report = await runGSDDoctor(base);
+  const report = await runDoctor(base);
   const json = formatDoctorReportJson(report);
   const parsed = JSON.parse(json);
 

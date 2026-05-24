@@ -453,7 +453,7 @@ function resolveProjectRootForCompletion(basePath: string): string {
   return candidate;
 }
 
-export function getGsdArgumentCompletions(prefix: string) {
+export function getWorkflowArgumentCompletions(prefix: string) {
   const hasTrailingSpace = prefix.endsWith(" ");
   const parts = prefix.trim().split(/\s+/);
   if (hasTrailingSpace && parts.length >= 1) {

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { COMMAND_NAMESPACE } from "@gsd/pi-coding-agent";
 
-import { registerGSDCommand } from "../commands.ts";
+import { registerWorkflowCommand } from "../commands.ts";
 import { handleOpsCommand } from "../commands/handlers/ops.ts";
 
 function createMockPi() {
@@ -36,10 +36,10 @@ function createMockCtx() {
 
 test("/gsd update appears in subcommand completions", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
-  assert.ok(gsd, `registerGSDCommand should register /${COMMAND_NAMESPACE}`);
+  assert.ok(gsd, `registerWorkflowCommand should register /${COMMAND_NAMESPACE}`);
 
   const completions = gsd.getArgumentCompletions("update");
   const updateEntry = completions.find((c: any) => c.value === "update");
@@ -49,10 +49,10 @@ test("/gsd update appears in subcommand completions", () => {
 
 test("/gsd upgrade appears in subcommand completions", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
-  assert.ok(gsd, `registerGSDCommand should register /${COMMAND_NAMESPACE}`);
+  assert.ok(gsd, `registerWorkflowCommand should register /${COMMAND_NAMESPACE}`);
 
   const completions = gsd.getArgumentCompletions("upgrade");
   const upgradeEntry = completions.find((c: any) => c.value === "upgrade");
@@ -62,7 +62,7 @@ test("/gsd upgrade appears in subcommand completions", () => {
 
 test("/gsd update appears in help description", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
   assert.ok(gsd?.description?.includes("update"), "description should mention update");
@@ -70,7 +70,7 @@ test("/gsd update appears in help description", () => {
 
 test("/gsd upgrade appears in help description", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
   assert.ok(gsd?.description?.includes("upgrade"), "description should mention upgrade");
@@ -78,7 +78,7 @@ test("/gsd upgrade appears in help description", () => {
 
 test("/gsd update is listed in completions with correct description", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("");
@@ -118,7 +118,7 @@ test("/gsd upgrade routes through the update handler", async () => {
 
 test("/gsd upgrade is listed in completions with correct description", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("");
@@ -132,7 +132,7 @@ test("/gsd upgrade is listed in completions with correct description", () => {
 
 test("/gsd codebase appears in top-level completions", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
   const completions = gsd.getArgumentCompletions("code");
@@ -143,7 +143,7 @@ test("/gsd codebase appears in top-level completions", () => {
 
 test("/gsd codebase appears in help description", () => {
   const pi = createMockPi();
-  registerGSDCommand(pi as any);
+  registerWorkflowCommand(pi as any);
 
   const gsd = pi.commands.get(COMMAND_NAMESPACE);
   assert.ok(gsd?.description?.includes("codebase"), "description should mention codebase");

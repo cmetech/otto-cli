@@ -69,7 +69,7 @@ test("buildCategorySummaries({}) reports models as not configured without throwi
 
 // ─── Model resolvers tolerate missing/partial preference shapes ────────────
 
-function withGsdHome(content: string | null, fn: () => void): void {
+function withHome(content: string | null, fn: () => void): void {
   const oldHome = process.env.GSD_HOME;
   const home = mkdtempSync(join(tmpdir(), "gsd-prefs-missing-"));
   try {
@@ -86,31 +86,31 @@ function withGsdHome(content: string | null, fn: () => void): void {
 }
 
 test("resolveModelWithFallbacksForUnit returns undefined when no preferences file exists", () => {
-  withGsdHome(null, () => {
+  withHome(null, () => {
     assert.equal(resolveModelWithFallbacksForUnit("execute-task"), undefined);
   });
 });
 
 test("resolveModelWithFallbacksForUnit returns undefined when preferences omit models", () => {
-  withGsdHome("---\nmode: solo\n---\n", () => {
+  withHome("---\nmode: solo\n---\n", () => {
     assert.equal(resolveModelWithFallbacksForUnit("execute-task"), undefined);
   });
 });
 
 test("resolveDefaultSessionModel returns undefined when no preferences file exists", () => {
-  withGsdHome(null, () => {
+  withHome(null, () => {
     assert.equal(resolveDefaultSessionModel("anthropic"), undefined);
   });
 });
 
 test("resolveDefaultSessionModel returns undefined when preferences omit models", () => {
-  withGsdHome("---\nmode: solo\n---\n", () => {
+  withHome("---\nmode: solo\n---\n", () => {
     assert.equal(resolveDefaultSessionModel("anthropic"), undefined);
   });
 });
 
 test("readModelFromPreferences returns 'default' when preferences omit models", () => {
-  withGsdHome("---\nmode: solo\n---\n", () => {
+  withHome("---\nmode: solo\n---\n", () => {
     assert.equal(readModelFromPreferences(), "default");
   });
 });

@@ -19,7 +19,7 @@ import { isParked, getParkedReason } from "./milestone-actions.js";
 import { getMilestoneSlices, isDbAvailable } from "./db.js";
 import { buildExistingMilestonesContext } from "./guided-flow-queue.js";
 import { loadPrompt } from "./prompt-loader.js";
-import { isGsdGitignored } from "./gitignore.js";
+import { isGitignored } from "./gitignore.js";
 import { currentDirectoryRoot } from "./commands/context.js";
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────
@@ -55,7 +55,7 @@ export async function handleRethink(
   const rethinkData = buildRethinkData(basePath, milestoneIds, state, queueOrder);
   const existingMilestonesContext = await buildExistingMilestonesContext(basePath, milestoneIds, state);
 
-  const commitInstruction = isGsdGitignored(basePath)
+  const commitInstruction = isGitignored(basePath)
     ? "Do not commit planning artifacts — .gsd/ is gitignored in this project."
     : 'After changes, run `git add .gsd/ && git commit -m "docs(gsd): rethink milestone plan"` to persist (rethink runs interactively outside auto-mode, so no system auto-commit)';
 

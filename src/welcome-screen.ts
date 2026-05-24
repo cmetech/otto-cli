@@ -33,7 +33,7 @@ interface GsdState {
   nextAction?: string
 }
 
-function readGsdState(): GsdState | undefined {
+function readAgentState(): GsdState | undefined {
   try {
     const raw = readFileSync(join(process.cwd(), CONFIG_DIR_NAME, 'STATE.md'), 'utf-8')
     const state: GsdState = {}
@@ -147,7 +147,7 @@ export function buildWelcomeScreenLines(opts: WelcomeScreenOptions): string[] {
   // "Welcome back" context lines — project state if available, else hint.
   // Intentionally avoids data already shown in the footer (model, provider,
   // pwd, branch).
-  const state = readGsdState()
+  const state = readAgentState()
   let projectText = `No active ${BRAND_NAME} project`
   let commandText = `/${COMMAND_NAMESPACE} start`
   let modeText = 'manual'

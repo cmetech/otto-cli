@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { runGSDDoctor } from "../../doctor.ts";
+import { runDoctor } from "../../doctor.ts";
 
 function makeTmp(name: string): string {
   const dir = join(tmpdir(), `atomic-closeout-${name}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
@@ -56,7 +56,7 @@ completed_at: 2026-01-01
 Done.
 `);
 
-  const report = await runGSDDoctor(base, { fix: true });
+  const report = await runDoctor(base, { fix: true });
   // Doctor should not produce any task_done_missing_summary issue (code removed)
   const hasOldCode = report.issues.some(i =>
     i.code === "task_done_missing_summary" as any ||

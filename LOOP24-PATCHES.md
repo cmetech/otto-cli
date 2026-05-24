@@ -495,6 +495,90 @@ should then appear in the TUI autocomplete as expected.
   protection list is effectively dead. Leave for now — removing it is
   the kind of cleanup that might break a sibling tool's expectations.
 
+## Phase 5 — Prompt engineer command (tagged: phase-5-prompt-engineer)
+
+Per design spec §6.4 — the "smallest piece" in the LOOP24 roadmap. Ships
+`/loop24 prompt-engineer <description>` — a one-shot LLM call that turns a
+rough developer request into a polished prompt suitable for handing to a
+coding agent.
+
+### src/resources/extensions/loop24/commands/prompt-engineer/_template.ts (NEW)
+Exports `PROMPT_ENGINEER_SYSTEM` — opinionated system prompt that instructs
+the model to polish a rough description into a structured coding-task prompt
+(goal sentence, files involved, success criteria, constraints, tactical
+approach, ask-clarifying-questions ending). Explicitly forbids preamble so
+the handler can write the response verbatim to stdout. 2 sanity tests.
+
+### src/resources/extensions/loop24/commands/prompt-engineer/_storage.ts (NEW)
+`savePromptHistory({description, polished, modelId, baseDir?})` writes
+`<baseDir>/<YYYY-MM-DD>-<slug>.md` atomically (tmp + rename, mode 0600).
+Default baseDir: `~/.loop24/prompts/`. Slug is kebab-cased ASCII (NFKD →
+strip combining diacritics → alnum + hyphen) truncated at word boundaries
+to ≤50 chars; falls back to `"prompt"` for input with no slug-able chars.
+Same-day same-slug collisions get a UTC time suffix (then a numeric suffix
+on sub-second collisions). 7 TDD tests.
+
+### src/resources/extensions/loop24/commands/prompt-engineer/command.ts (NEW)
+`registerPromptEngineerCommand(pi)` — registers `/loop24 prompt-engineer`.
+Handler:
+  1. Usage hint on empty args
+  2. Direct `@anthropic-ai/sdk` call (`messages.create`, max_tokens 4096)
+  3. Honors `LOOP24_GATEWAY_URL` (gateway mode, optional `LOOP24_GATEWAY_TOKEN`
+     Bearer via SDK's `authToken` field) or `ANTHROPIC_API_KEY` (direct mode);
+     fails clear if neither configured
+  4. Model defaults to `claude-haiku-4-5-20251001`; override with
+     `LOOP24_PROMPT_ENGINEER_MODEL`
+  5. Prints polished prompt to stdout (the deliverable)
+  6. Saves a copy via `savePromptHistory()`; surfaces save path to stderr;
+     save failures are non-fatal — stdout output is already delivered
+
+Uses `TextBlock` from `@anthropic-ai/sdk/resources/messages/messages.js` for
+the content-block predicate (SDK's `TextBlock` has a required `citations`
+field that an inline shape can't satisfy).
+
+No TDD on the handler — LLM call is the integration boundary; template +
+storage are fully TDD-covered.
+
+### src/resources/extensions/loop24/index.ts (MODIFIED)
+Added `registerPromptEngineerCommand(pi)` call between the Phase 4
+`registerBuildFlowCommand(pi)` and the Phase 3 `loadFlowTriggers(...)` block.
+Docblock updated to mention Phase 5.
+
+### src/resources/extensions/loop24/extension-manifest.json (MODIFIED)
+Version 0.2.0 → 0.3.0. Description updated to mention Phase 5.
+`provides.commands` extends to `["build-flow", "prompt-engineer"]`.
+
+### src/headless.ts (MODIFIED — incidental fix surfaced by live smoke)
+Two hardcoded `/gsd` literals templated via `COMMAND_NAMESPACE`:
+  - `buildHeadlessSlashCommand()` at line 95 (emitted `/gsd <cmd>` for every
+    headless invocation visible in `[headless] Running ...` messages)
+  - Auto-mode chaining at line 1002 (sent literal `/gsd auto` after milestone
+    creation)
+Both now use ``/${COMMAND_NAMESPACE} `` template literals.
+
+### New env vars
+- `LOOP24_PROMPT_ENGINEER_MODEL` — optional override for the model used by
+  `/loop24 prompt-engineer`. Defaults to `claude-haiku-4-5-20251001`.
+
+### Tests added
+`prompt-engineer-template.test.ts` (2), `prompt-engineer-storage.test.ts` (7)
+= **9 new tests**, all passing. Full regression at end of Task 4: **63/63 pass**.
+
+### Deferred / out-of-scope (controller decision)
+- `/loop24 prompts list` and `/loop24 prompts show <id>` — browse via
+  `ls ~/.loop24/prompts/` and `cat ...` until a list command lands.
+
+### Architectural limitation surfaced
+`loop24 headless <cmd> <args>` dispatches via the workflow extension's
+command catalog. Extension-registered commands like `loop24__build-flow`
+(Phase 4) and `prompt-engineer` (Phase 5) are NOT reachable through that
+path — headless falls through to `/gsd quick <args>` for any unrecognized
+command name. The commands ARE registered (confirmed via
+`LOOP24_DEBUG_EXTENSIONS=1`) and work in the interactive TUI; the headless
+gap is pre-existing (Phase 4's build-flow has the same issue) and out of
+Phase 5 scope. Fixing it requires extending headless's dispatch table to
+consult `pi.registeredCommands`, not just the workflow catalog.
+
 ## Phase 0.6 — Residue sweep (tagged: phase-0.6-residue-sweep)
 
 Cleanup pass on user-visible `/gsd` and `"GSD"` string literals that escaped

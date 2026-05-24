@@ -36,37 +36,58 @@ These lean into the *research worker*, *analysis*, and *knowledge* axes.
 
 ---
 
-## Top 5 Recommendations
+## Round 3 — The mascot pivot: OTTER
 
-Picked for balance across both axes (automation + research), pronounceability, logo-ability, and how cleanly the plain-English meaning carries the brand before the backronym is even read.
+After rounds 1 and 2, the conversation surfaced **OTTER** — the strongest candidate by a wide margin and a clear sibling to the existing **OSCAR** product.
 
-### 1. OTTO — *Orchestrated Task & Tooling Operator*
-**Why:** Only candidate where the *shape of the word* reinforces the *shape of the product* (palindrome ↔ loop). Reads as "auto" → automation for free. Warm, monogrammable, low-collision in dev tooling.
-**Flavor:** Automation / loop.
-**Risk:** Slightly more "executor" than "researcher" — may under-sell the research side.
+### Why OTTER lands
 
-### 2. SAGE — *Scholarly Agent Guiding Engineers*
-**Why:** The dictionary meaning ("a wise advisor who has studied deeply") *is* the product pitch. Covers both coding and research gracefully — rare in this list. Four-letter, monosyllabic, easy logo.
-**Flavor:** Research / wisdom.
-**Risk:** "Sage" is a common product name in enterprise software (SAP/Sage, etc.) — check trademark space.
+- **Pairs naturally with OSCAR.** Two-syllable, ends in `-R`, anglo, named-teammate feel. OSCAR + OTTER reads like a roster, not a coincidence.
+- **Otters are the only non-primate mammal that habitually uses tools.** They carry a favorite rock in a pouch under one armpit and crack shells with it. That is *literally* the product: a worker that carries and wields tools (kiro-cli, Langflow) to crack open coding and research problems.
+- **Otters raft together by holding paws so they don't drift apart.** Direct visual + semantic line to *loop24* — connection, the loop holds.
+- **Otters anchor themselves in kelp to sleep without drifting.** Maps to "runs locally on your laptop, doesn't drift to the cloud."
+- **Personality:** clever, playful, persistent, dexterous. A distinctive brand voice rather than another generic capable-assistant tone.
 
-### 3. IRIS — *Investigative Research & Iteration Synthesizer*
-**Why:** Greek goddess of messages maps perfectly to "routes calls through kiro-cli, dispatches to Langflow." "Iris" = aperture → observation. Built-in visual metaphor (concentric arcs = loop + aperture).
-**Flavor:** Research + routing.
-**Risk:** "IRIS" is heavily used as an acronym across academia and government.
+### OTTER backronym options
 
-### 4. ECHO — *Engineered Coding Helper & Orchestrator*
-**Why:** An echo *loops* — strongest semantic tie to *loop24* in the entire list. Implies the assistant relays your intent through kiro → Langflow → back. Visually obvious logo (concentric arcs).
-**Flavor:** Automation / loop / routing.
-**Risk:** Amazon owns significant mindshare on "Echo." Internal codename is safer than public brand.
+| # | Expansion | Notes |
+|---|-----------|-------|
+| 1 | **O**rchestrating **T**ools, **T**asks, **E**xecution & **R**esearch | **Recommended.** Covers all four product pillars in one breath. Reads as a natural sentence. |
+| 2 | **O**rchestrated **T**ask & **T**ooling **E**xecution **R**untime | More technical / engineering-flavored. Good for architecture docs. |
+| 3 | **O**bservational **T**ool-using **T**ask & **E**xecution **R**outer | Leans into research/observation + the kiro routing angle. |
+| 4 | **O**pen **T**ooling, **T**asks, **E**xecution & **R**esearch | Signals openness/extensibility (the Langflow plugin angle). |
+| 5 | **O**rchestrated **T**ask-**T**uned **E**ngineering **R**esearcher | Strongest "researcher" framing — least automation-flavored. |
 
-### 5. ADA — *Analytical Discovery Assistant*
-**Why:** Heritage pick. Honors the first programmer, who was also a *research* mathematician — perfect dual signal for a coding + research worker. Three letters, monogrammable.
-**Flavor:** Research / heritage.
-**Risk:** The Ada programming language exists; cultural collision is mild but present.
+---
+
+## Final Recommendation
+
+**OTTER — *Orchestrating Tools, Tasks, Execution & Research***
+
+The four nouns map cleanly to the product's four pillars:
+- **Tools** → kiro-cli, MCP servers, language tooling
+- **Tasks** → user-issued coding/research jobs
+- **Execution** → local-laptop runtime
+- **Research** → investigation, analysis, synthesis
+
+OSCAR + OTTER becomes a coherent product family. The mascot gives the brand a personality that pure-acronym names (OTTO, SAGE, IRIS, ECHO, ADA) can't match, and the tool-using behavior is a near-perfect product metaphor.
+
+---
+
+## Previously shortlisted (also considered)
+
+Kept here for reference and as a fallback bench if OTTER hits a trademark or naming snag.
+
+| Name | Backronym | Flavor | Note |
+|------|-----------|--------|------|
+| OTTO | Orchestrated Task & Tooling Operator | Automation / loop | Palindrome mirrors loop. Strong runner-up if OTTER is blocked. |
+| SAGE | Scholarly Agent Guiding Engineers | Research / wisdom | Dictionary meaning *is* the pitch. Check trademark (SAP/Sage). |
+| IRIS | Investigative Research & Iteration Synthesizer | Research + routing | Messenger goddess + aperture. Heavily used acronym in gov/academia. |
+| ECHO | Engineered Coding Helper & Orchestrator | Automation / loop | Loop semantics. Amazon Echo mindshare collision. |
+| ADA | Analytical Discovery Assistant | Research / heritage | Ada Lovelace heritage. Ada-language cultural overlap. |
 
 ---
 
 ## Suggested next step
 
-Lock in a name → draft a one-line tagline + 1-paragraph brand blurb → commission/generate the logo. Logo generation prompts for each top-5 candidate live in [`LOGO-PROMPTS.md`](./LOGO-PROMPTS.md).
+Lock in **OTTER** + backronym #1 → draft tagline + 1-paragraph brand blurb → commission/generate the logo. Logo prompts for OTTER (three concept directions) plus the previously shortlisted five live in [`LOGO-PROMPTS.md`](./LOGO-PROMPTS.md).

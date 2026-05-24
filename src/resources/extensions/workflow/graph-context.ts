@@ -9,6 +9,7 @@
 import { logWarning } from "./workflow-logger.js";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { CONFIG_DIR_NAME } from "./strings.js";
 
 interface GraphNode {
   id: string;
@@ -193,7 +194,7 @@ export async function inlineGraphSubgraph(
 
     const sections: string[] = [
       `### Knowledge Graph Context (term: "${term}")`,
-      `Source: \`.gsd/graphs/graph.json\``,
+      `Source: \`${CONFIG_DIR_NAME}/graphs/graph.json\``,
       staleAnnotation,
       "",
       `**Nodes (${result.nodes.length}):**`,

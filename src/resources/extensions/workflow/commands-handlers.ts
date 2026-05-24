@@ -35,7 +35,7 @@ import {
   restoreGsdWorkflowTools,
   scopeGsdWorkflowToolsForDispatch,
 } from "./bootstrap/register-hooks.js";
-import { BRAND, slashCommand } from "./strings.js";
+import { BRAND, CONFIG_DIR_NAME, slashCommand } from "./strings.js";
 
 const UPDATE_REGISTRY_URL = "https://registry.npmjs.org/@opengsd%2fgsd-pi/latest";
 const UPDATE_FETCH_TIMEOUT_MS = 5000;
@@ -310,7 +310,7 @@ export async function handleSteer(change: string, ctx: ExtensionCommandContext, 
   const targetPath = wtPath ?? basePath;
   await appendOverride(targetPath, change, appliedAt);
 
-  const overrideLoc = wtPath ? "worktree `.gsd/OVERRIDES.md`" : "`.gsd/OVERRIDES.md`";
+  const overrideLoc = wtPath ? `worktree \`${CONFIG_DIR_NAME}/OVERRIDES.md\`` : `\`${CONFIG_DIR_NAME}/OVERRIDES.md\``;
 
   if (isAutoActive()) {
     pi.sendMessage({

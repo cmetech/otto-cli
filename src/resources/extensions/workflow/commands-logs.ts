@@ -11,6 +11,7 @@
  */
 
 import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
+import { CONFIG_DIR_NAME } from "./strings.js";
 import { existsSync, readdirSync, readFileSync, statSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { gsdRoot } from "./paths.js";
@@ -296,7 +297,7 @@ async function handleLogsList(basePath: string, ctx: ExtensionCommandContext): P
   const lines: string[] = [];
 
   if (activities.length > 0) {
-    lines.push("Activity Logs (.gsd/activity/):");
+    lines.push(`Activity Logs (${CONFIG_DIR_NAME}/activity/):`);
     lines.push("  #   Unit Type         Unit ID              Size    Age");
     lines.push("  " + "─".repeat(70));
 
@@ -320,7 +321,7 @@ async function handleLogsList(basePath: string, ctx: ExtensionCommandContext): P
 
   if (debugLogs.length > 0) {
     lines.push("");
-    lines.push("Debug Logs (.gsd/debug/):");
+    lines.push(`Debug Logs (${CONFIG_DIR_NAME}/debug/):`);
     for (let i = 0; i < debugLogs.length; i++) {
       const d = debugLogs[i];
       const size = formatSize(d.size).padStart(7, " ");
@@ -425,7 +426,7 @@ async function handleLogsDebug(basePath: string, ctx: ExtensionCommandContext, i
 
   if (idx === undefined) {
     // List debug logs
-    const lines: string[] = ["Debug Logs (.gsd/debug/):", ""];
+    const lines: string[] = [`Debug Logs (${CONFIG_DIR_NAME}/debug/):`, ""];
     for (let i = 0; i < debugLogs.length; i++) {
       const d = debugLogs[i];
       lines.push(`  ${i + 1}. ${d.filename}  ${formatSize(d.size)}  ${formatAge(d.mtime)}`);

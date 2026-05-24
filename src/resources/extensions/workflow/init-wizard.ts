@@ -19,7 +19,7 @@ import { runSkillInstallStep } from "./skill-catalog.js";
 import { generateCodebaseMap, writeCodebaseMap } from "./codebase-generator.js";
 import { handlePrefsWizard, writePreferencesFile } from "./commands-prefs-wizard.js";
 import { loadEffectiveGSDPreferences } from "./preferences.js";
-import { BRAND } from "./strings.js";
+import { BRAND, slashCommand } from "./strings.js";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -92,7 +92,7 @@ export async function showProjectInit(
         { id: "init_git", label: "Initialize git", description: "Create a git repo in this folder", recommended: true },
         { id: "skip_git", label: "Skip", description: "Continue without git (limited functionality)" },
       ],
-      notYetMessage: "Run /gsd init when ready.",
+      notYetMessage: `Run ${slashCommand("init")} when ready.`,
     });
 
     if (gitChoice === "not_yet") return { completed: false, bootstrapped: false };
@@ -125,7 +125,7 @@ export async function showProjectInit(
         description: "Multiple contributors — branch-based, PR-friendly workflow",
       },
     ],
-    notYetMessage: "Run /gsd init when ready.",
+    notYetMessage: `Run ${slashCommand("init")} when ready.`,
   });
 
   if (modeChoice === "not_yet") return { completed: false, bootstrapped: false };
@@ -153,7 +153,7 @@ export async function showProjectInit(
         { id: "accept", label: "Use these commands", description: "Accept auto-detected commands", recommended: true },
         { id: "skip", label: "Skip verification", description: "Don't verify after changes" },
       ],
-      notYetMessage: "Run /gsd init when ready.",
+      notYetMessage: `Run ${slashCommand("init")} when ready.`,
     });
 
     if (verifyChoice === "not_yet") return { completed: false, bootstrapped: false };
@@ -172,7 +172,7 @@ export async function showProjectInit(
       { id: "accept", label: "Accept defaults", description: "Use standard git settings", recommended: true },
       { id: "customize", label: "Customize", description: "Change git settings" },
     ],
-    notYetMessage: "Run /gsd init when ready.",
+    notYetMessage: `Run ${slashCommand("init")} when ready.`,
   });
 
   if (gitChoice === "not_yet") return { completed: false, bootstrapped: false };
@@ -192,13 +192,13 @@ export async function showProjectInit(
       '  - "Always write tests for new code"',
       '  - "This is a monorepo, only touch packages/api"',
       "",
-      "You can always add more later via /gsd prefs project.",
+      `You can always add more later via ${slashCommand("prefs project")}.`,
     ],
     actions: [
       { id: "skip", label: "Skip for now", description: "No special instructions", recommended: true },
       { id: "add", label: "Add instructions", description: "Enter project-specific rules" },
     ],
-    notYetMessage: "Run /gsd init when ready.",
+    notYetMessage: `Run ${slashCommand("init")} when ready.`,
   });
 
   if (instructionChoice === "not_yet") return { completed: false, bootstrapped: false };
@@ -229,7 +229,7 @@ export async function showProjectInit(
       { id: "accept", label: "Accept defaults", description: "Use standard settings", recommended: true },
       { id: "customize", label: "Customize", description: "Change advanced settings" },
     ],
-    notYetMessage: "Run /gsd init when ready.",
+    notYetMessage: `Run ${slashCommand("init")} when ready.`,
   });
 
   if (advancedChoice === "not_yet") return { completed: false, bootstrapped: false };
@@ -257,13 +257,13 @@ export async function showProjectInit(
       "Open the full preferences wizard now? It includes models, timeouts,",
       "budget, notifications, and skills — all pre-filled with your answers.",
       "",
-      "Skip if you just want sensible defaults; you can always run /gsd prefs project later.",
+      `Skip if you just want sensible defaults; you can always run ${slashCommand("prefs project")} later.`,
     ],
     actions: [
       { id: "skip", label: "Skip — use defaults", description: "Save preferences and continue", recommended: true },
       { id: "review", label: "Open full wizard", description: "Tweak any category before saving" },
     ],
-    notYetMessage: "Run /gsd init when ready.",
+    notYetMessage: `Run ${slashCommand("init")} when ready.`,
   });
 
   if (reviewChoice === "not_yet") {
@@ -395,7 +395,7 @@ export async function offerMigration(
         description: "Ignore .planning/ and create new .gsd/",
       },
     ],
-    notYetMessage: "Run /gsd init when ready.",
+    notYetMessage: `Run ${slashCommand("init")} when ready.`,
   });
 
   if (choice === "not_yet") return "cancel";
@@ -440,7 +440,7 @@ export async function handleReinit(
         description: "Keep everything as-is",
       },
     ],
-    notYetMessage: "Run /gsd init when ready.",
+    notYetMessage: `Run ${slashCommand("init")} when ready.`,
   });
 
   if (choice === "prefs") {
@@ -602,7 +602,7 @@ function buildInitPreferencesBody(): string {
     "",
     "# GSD Project Preferences",
     "",
-    "Generated by `/gsd init`. Edit directly or use `/gsd prefs project` to modify.",
+    `Generated by \`${slashCommand("init")}\`. Edit directly or use \`${slashCommand("prefs project")}\` to modify.`,
     "",
     "See `~/.gsd/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation.",
     "",

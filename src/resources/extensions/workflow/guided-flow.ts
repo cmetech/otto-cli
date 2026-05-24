@@ -114,6 +114,7 @@ import {
   resolveActiveTaskChoiceRoute,
   type ActiveTaskChoice,
 } from "./smart-entry-routing.js";
+import { slashCommand } from "./strings.js";
 
 export { resolveGuidedExecuteLaunchMode } from "./smart-entry-routing.js";
 
@@ -234,7 +235,7 @@ function runPlanV2Gate(
     }
     const reason = compiled.reason ?? "plan-v2 compilation failed";
     ctx.ui.notify(
-      `Plan gate failed-closed: ${reason}. Complete plan/discuss artifacts before execution.\n\nIf this keeps happening, try: /gsd doctor heal`,
+      `Plan gate failed-closed: ${reason}. Complete plan/discuss artifacts before execution.\n\nIf this keeps happening, try: ${slashCommand("doctor heal")}`,
       "error",
     );
     return "block";
@@ -307,7 +308,7 @@ const LEGACY_DEEP_SETUP_PSEUDO_MILESTONE_DIRS = new Set([
 ]);
 const FOREGROUND_DEEP_SETUP_QUESTION_POLICY = `## Foreground Deep Setup Question Policy
 
-This stage is running inside the foreground \`/gsd new-project --deep\` interview. Ask user questions in plain chat only.
+This stage is running inside the foreground \`${slashCommand("new-project")} --deep\` interview. Ask user questions in plain chat only.
 
 - Do NOT call \`ask_user_questions\`, \`AskUserQuestion\`, or ToolSearch to discover user-input tools.
 - Ask one focused round, then stop and wait for the user's normal chat response.`;
@@ -2279,7 +2280,7 @@ export async function showSmartEntry(
           if (entries.length > 0) {
             ctx.ui.notify(
               `Milestone directory has ${entries.length} entries but none were recognized as milestones. ` +
-              `This may indicate a corrupted state or wrong working directory. Run \`/gsd doctor\` to diagnose.`,
+              `This may indicate a corrupted state or wrong working directory. Run \`${slashCommand("doctor")}\` to diagnose.`,
               "warning",
             );
             return;

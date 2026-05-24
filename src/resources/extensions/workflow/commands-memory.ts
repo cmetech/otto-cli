@@ -30,6 +30,7 @@ import {
 } from "./memory-store.js";
 import { _getAdapter, isDbAvailable } from "./gsd-db.js";
 import { createMemoryRelation, listRelationsFor } from "./memory-relations.js";
+import { slashCommand } from "./strings.js";
 
 // ─── Arg parsing ────────────────────────────────────────────────────────────
 
@@ -158,7 +159,7 @@ export async function handleMemory(
 
 function usage(): string {
   return [
-    "Usage: /gsd memory <subcommand>",
+    `Usage: ${slashCommand("memory")} <subcommand>`,
     "  list                    list recent active memories",
     "  show <MEM###>           print one memory",
     "  forget <MEM###>         supersede a memory",
@@ -201,7 +202,7 @@ function handleList(ctx: ExtensionCommandContext): void {
 
 function handleShow(ctx: ExtensionCommandContext, id: string | undefined): void {
   if (!id) {
-    ctx.ui.notify("Usage: /gsd memory show <MEM###>", "warning");
+    ctx.ui.notify(`Usage: ${slashCommand("memory show")} <MEM###>`, "warning");
     return;
   }
   const adapter = _getAdapter();
@@ -236,7 +237,7 @@ function handleShow(ctx: ExtensionCommandContext, id: string | undefined): void 
 
 function handleForget(ctx: ExtensionCommandContext, id: string | undefined): void {
   if (!id) {
-    ctx.ui.notify("Usage: /gsd memory forget <MEM###>", "warning");
+    ctx.ui.notify(`Usage: ${slashCommand("memory forget")} <MEM###>`, "warning");
     return;
   }
   const ok = supersedeMemory(id, "CAP_EXCEEDED");
@@ -316,7 +317,7 @@ function handleStats(ctx: ExtensionCommandContext): void {
 
 function handleExport(ctx: ExtensionCommandContext, target: string | undefined): void {
   if (!target) {
-    ctx.ui.notify("Usage: /gsd memory export <path.json>", "warning");
+    ctx.ui.notify(`Usage: ${slashCommand("memory export")} <path.json>`, "warning");
     return;
   }
   try {
@@ -378,7 +379,7 @@ interface ExportedRelation {
 
 function handleImport(ctx: ExtensionCommandContext, target: string | undefined): void {
   if (!target) {
-    ctx.ui.notify("Usage: /gsd memory import <path.json>", "warning");
+    ctx.ui.notify(`Usage: ${slashCommand("memory import")} <path.json>`, "warning");
     return;
   }
   try {
@@ -430,7 +431,7 @@ function handleDecay(ctx: ExtensionCommandContext): void {
 function handleCap(ctx: ExtensionCommandContext, arg: string | undefined): void {
   const max = arg ? Number.parseInt(arg, 10) : 50;
   if (!Number.isFinite(max) || max < 1) {
-    ctx.ui.notify("Usage: /gsd memory cap <max>  (default 50)", "warning");
+    ctx.ui.notify(`Usage: ${slashCommand("memory cap")} <max>  (default 50)`, "warning");
     return;
   }
   enforceMemoryCap(max);
@@ -440,7 +441,7 @@ function handleCap(ctx: ExtensionCommandContext, arg: string | undefined): void 
 function handleSources(ctx: ExtensionCommandContext): void {
   const sources = listMemorySources(30);
   if (sources.length === 0) {
-    ctx.ui.notify("No memory sources yet. Use `/gsd memory ingest <path|url>` to add one.", "info");
+    ctx.ui.notify(`No memory sources yet. Use \`${slashCommand("memory ingest")} <path|url>\` to add one.`, "info");
     return;
   }
   const lines = sources.map(
@@ -453,7 +454,7 @@ function handleSources(ctx: ExtensionCommandContext): void {
 async function handleNote(ctx: ExtensionCommandContext, args: MemoryCmdArgs): Promise<void> {
   const text = args.positional.join(" ").trim();
   if (!text) {
-    ctx.ui.notify('Usage: /gsd memory note "your note"', "warning");
+    ctx.ui.notify(`Usage: ${slashCommand("memory note")} "your note"`, "warning");
     return;
   }
   try {
@@ -471,7 +472,7 @@ async function handleNote(ctx: ExtensionCommandContext, args: MemoryCmdArgs): Pr
 async function handleIngest(ctx: ExtensionCommandContext, args: MemoryCmdArgs): Promise<void> {
   const target = args.positional[0];
   if (!target) {
-    ctx.ui.notify("Usage: /gsd memory ingest <path|url> [--tag a,b] [--scope project|global]", "warning");
+    ctx.ui.notify(`Usage: ${slashCommand("memory ingest")} <path|url> [--tag a,b] [--scope project|global]`, "warning");
     return;
   }
   try {
@@ -483,7 +484,7 @@ async function handleIngest(ctx: ExtensionCommandContext, args: MemoryCmdArgs): 
     if (args.extract && result.sourceId) {
       // TODO (P3): dispatch agent turn to extract memories once source is stored.
       ctx.ui.notify(
-        `(Dispatching extraction turn — use \`/gsd memory extract ${result.sourceId}\` to trigger manually.)`,
+        `(Dispatching extraction turn — use \`${slashCommand("memory extract")} ${result.sourceId}\` to trigger manually.)`,
         "info",
       );
     }
@@ -498,7 +499,7 @@ function handleExtractSource(
   id: string | undefined,
 ): void {
   if (!id) {
-    ctx.ui.notify("Usage: /gsd memory extract <SRC-xxx>", "warning");
+    ctx.ui.notify(`Usage: ${slashCommand("memory extract")} <SRC-xxx>`, "warning");
     return;
   }
   const source = getMemorySource(id);

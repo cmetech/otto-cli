@@ -76,6 +76,7 @@ import {
   isInAutoWorktree,
   teardownAutoWorktree,
 } from "./auto-worktree.js";
+import { slashCommand } from "./strings.js";
 
 const recentWorktreeMergeFailures = new Map<string, number>();
 const MERGE_FAILURE_DEDUPE_MS = 60_000;
@@ -1074,7 +1075,7 @@ function _mergeWorktreeModeImpl(
     // retry /gsd dispatch complete-milestone or merge manually once the
     // underlying issue is fixed (#1668, #1891).
     notify(
-      `Milestone merge failed: ${msg}. Your worktree and milestone branch are preserved — retry with \`/gsd dispatch complete-milestone\` or merge manually.`,
+      `Milestone merge failed: ${msg}. Your worktree and milestone branch are preserved — retry with \`${slashCommand("dispatch complete-milestone")}\` or merge manually.`,
       "warning",
     );
 

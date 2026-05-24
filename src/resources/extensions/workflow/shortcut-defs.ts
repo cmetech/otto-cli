@@ -1,6 +1,7 @@
 // Canonical GSD shortcut definitions used by registration, help text, and overlays.
 
 import { formatShortcut } from "./files.js";
+import { slashCommand } from "./strings.js";
 
 export type GSDShortcutId = "dashboard" | "notifications" | "parallel";
 
@@ -16,19 +17,19 @@ export const GSD_SHORTCUTS: Record<GSDShortcutId, GSDShortcutDef> = {
   dashboard: {
     key: "g",
     action: "Open GSD dashboard",
-    command: "/gsd status",
+    command: slashCommand("status"),
     hasFallback: true,
   },
   notifications: {
     key: "n",
     action: "Open notification history",
-    command: "/gsd notifications",
+    command: slashCommand("notifications"),
     hasFallback: true,
   },
   parallel: {
     key: "p",
     action: "Open parallel worker monitor",
-    command: "/gsd parallel watch",
+    command: slashCommand("parallel watch"),
     hasFallback: false, // Ctrl+Shift+P conflicts with cycleModelBackward
   },
 };

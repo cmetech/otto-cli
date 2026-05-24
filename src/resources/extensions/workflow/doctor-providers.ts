@@ -18,6 +18,7 @@ import { getEnvApiKey } from "@gsd/pi-ai";
 import { loadEffectiveGSDPreferences } from "./preferences.js";
 import { getAuthPath, PROVIDER_REGISTRY, type ProviderCategory } from "./key-manager.js";
 import { homedir } from "node:os";
+import { slashCommand } from "./strings.js";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -334,8 +335,8 @@ function checkLlmProviders(): ProviderCheckResult[] {
         detail: providerId === "anthropic-vertex"
           ? "Set ANTHROPIC_VERTEX_PROJECT_ID and authenticate with Google ADC"
           : info?.hasOAuth
-          ? `Run /gsd keys to authenticate`
-          : `Set ${envVar} or run /gsd keys`,
+          ? `Run ${slashCommand("keys")} to authenticate`
+          : `Set ${envVar} or run ${slashCommand("keys")}`,
         required: true,
       });
     } else if (lookup.backedOff) {
@@ -392,7 +393,7 @@ function checkRemoteQuestionsProvider(): ProviderCheckResult | null {
         category: "remote",
         status: "warning",
         message: `${label} — channel configured but token not found`,
-        detail: info?.envVar ? `Set ${info.envVar} or run /gsd keys` : `Run /gsd keys to configure`,
+        detail: info?.envVar ? `Set ${info.envVar} or run ${slashCommand("keys")}` : `Run ${slashCommand("keys")} to configure`,
         required: true,
       };
     }

@@ -11,7 +11,7 @@
  */
 
 import type { ExtensionCommandContext } from "@gsd/pi-coding-agent";
-import { CONFIG_DIR_NAME } from "./strings.js";
+import { CONFIG_DIR_NAME, slashCommand } from "./strings.js";
 import { existsSync, readdirSync, readFileSync, statSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { gsdRoot } from "./paths.js";
@@ -316,7 +316,7 @@ async function handleLogsList(basePath: string, ctx: ExtensionCommandContext): P
       lines.push(`  ... and ${activities.length - 15} older entries`);
     }
     lines.push("");
-    lines.push("  View details: /gsd logs <#>");
+    lines.push(`  View details: ${slashCommand("logs")} <#>`);
   }
 
   if (debugLogs.length > 0) {
@@ -329,7 +329,7 @@ async function handleLogsList(basePath: string, ctx: ExtensionCommandContext): P
       lines.push(`  ${i + 1}. ${d.filename}  ${size}  ${age}`);
     }
     lines.push("");
-    lines.push("  View details: /gsd logs debug <#>");
+    lines.push(`  View details: ${slashCommand("logs debug")} <#>`);
   }
 
   // Metrics summary
@@ -349,7 +349,7 @@ async function handleLogsList(basePath: string, ctx: ExtensionCommandContext): P
   }
 
   lines.push("");
-  lines.push("Tip: Enable debug logging with GSD_DEBUG=1 before /gsd auto");
+  lines.push(`Tip: Enable debug logging with GSD_DEBUG=1 before ${slashCommand("auto")}`);
 
   ctx.ui.notify(lines.join("\n"), "info");
 }
@@ -359,7 +359,7 @@ async function handleLogsShow(basePath: string, ctx: ExtensionCommandContext, se
   const entry = activities.find(e => e.seq === seq);
 
   if (!entry) {
-    ctx.ui.notify(`Activity log #${seq} not found. Run /gsd logs to see available logs.`, "warning");
+    ctx.ui.notify(`Activity log #${seq} not found. Run ${slashCommand("logs")} to see available logs.`, "warning");
     return;
   }
 
@@ -432,7 +432,7 @@ async function handleLogsDebug(basePath: string, ctx: ExtensionCommandContext, i
       lines.push(`  ${i + 1}. ${d.filename}  ${formatSize(d.size)}  ${formatAge(d.mtime)}`);
     }
     lines.push("");
-    lines.push("View details: /gsd logs debug <#>");
+    lines.push(`View details: ${slashCommand("logs debug")} <#>`);
     ctx.ui.notify(lines.join("\n"), "info");
     return;
   }

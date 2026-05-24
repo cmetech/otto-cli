@@ -43,6 +43,7 @@ import {
 import { logWarning } from "./workflow-logger.js";
 import { formattedShortcutPair } from "./shortcut-defs.js";
 import { readUnitRuntimeRecord, type AutoUnitRuntimeRecord } from "./unit-runtime.js";
+import { BRAND, slashCommand } from "./strings.js";
 
 const ACTIVE_SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"] as const;
 
@@ -138,7 +139,7 @@ export function buildPhaseHandoffOutcome(input: {
     detail,
     unitLabel: `${unitVerb(input.unitType)} ${input.unitId}`,
     nextAction: "Preparing the next phase. Review this handoff while the next session starts.",
-    commands: ["/gsd status for overview", "/gsd visualize to inspect", "/gsd notifications for history"],
+    commands: [`${slashCommand("status")} for overview`, `${slashCommand("visualize")} to inspect`, `${slashCommand("notifications")} for history`],
   };
 }
 
@@ -775,7 +776,7 @@ export function updateProgressWidget(
         }
 
         const headerLeft = [
-          `${pad}${spinner} ${theme.fg("accent", theme.bold("GSD"))}`,
+          `${pad}${spinner} ${theme.fg("accent", theme.bold(BRAND))}`,
           theme.fg("success", modeTag),
           theme.fg(stateColor, activeState),
           ...healthParts,
@@ -966,7 +967,7 @@ export function updateProgressWidget(
         lines.push("");
         // Step-mode guidance — shown above keyboard hints when auto is paused
         if (accessors.isStepMode()) {
-          lines.push(`${pad}${theme.fg("accent", "→")} ${theme.fg("dim", "/gsd next to advance one step  ·  /gsd status for overview")}`);
+          lines.push(`${pad}${theme.fg("accent", "→")} ${theme.fg("dim", `${slashCommand("next")} to advance one step  ·  ${slashCommand("status")} for overview`)}`);
         }
 
         // Hints line
@@ -1102,8 +1103,8 @@ export function setCompletionProgressWidget(
         ? "Review the roll-up, then start a new milestone when ready."
         : "Review the roll-up, inspect status, or continue to the next milestone.";
       const commands = snapshot.allMilestonesComplete
-        ? ["/gsd status for overview", "/gsd visualize to inspect", "/gsd notifications for history", "/gsd start for new work"]
-        : ["/gsd status for overview", "/gsd visualize to inspect", "/gsd notifications for history", "/gsd auto for next milestone"];
+        ? [`${slashCommand("status")} for overview`, `${slashCommand("visualize")} to inspect`, `${slashCommand("notifications")} for history`, `${slashCommand("start")} for new work`]
+        : [`${slashCommand("status")} for overview`, `${slashCommand("visualize")} to inspect`, `${slashCommand("notifications")} for history`, `${slashCommand("auto")} for next milestone`];
       add(`${theme.fg("success", "Next")} ${theme.fg("text", nextAction)}`);
       add(theme.fg("dim", commands.join("  ·  ")));
 
@@ -1142,7 +1143,7 @@ export function setAutoOutcomeWidget(
       const maxLines = 7;
       const lines: string[] = [];
       const elapsed = snapshot.startedAt ? formatAutoElapsed(snapshot.startedAt) : "";
-      const heading = `${theme.fg(color, icon)} ${theme.fg("accent", theme.bold("GSD"))} ${theme.fg("text", snapshot.title)}`;
+      const heading = `${theme.fg(color, icon)} ${theme.fg("accent", theme.bold(BRAND))} ${theme.fg("text", snapshot.title)}`;
       // Elapsed rides inline after the title on the header rule.
       const title = elapsed ? `${heading}  ${theme.fg("dim", elapsed)}` : heading;
       const commands = snapshot.commands?.filter(Boolean) ?? [];

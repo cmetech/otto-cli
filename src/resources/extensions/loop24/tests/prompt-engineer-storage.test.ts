@@ -45,7 +45,7 @@ test("savePromptHistory writes a markdown file with description + polished + met
     assert.match(body, /Refactor the auth module/);
     assert.match(body, /## Goal\nRefactor the auth module/);
     assert.match(body, /claude-haiku-4-5-20251001/);
-    assert.match(body, /\/loop24 prompt-engineer/);
+    assert.match(body, /\/otto prompt-engineer/);
   });
 });
 

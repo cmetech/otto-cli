@@ -66,8 +66,8 @@ test('renders LOOP24 project state or fallback hint', (t) => {
 
 test('renders command hints', () => {
   const out = strip(capture({ version: '1.0.0' }))
-  assert.ok(out.includes('/loop24 to begin'), 'hint line missing')
-  assert.ok(out.includes('/loop24 start'), 'primary command missing')
+  assert.ok(out.includes('/otto to begin'), 'hint line missing')
+  assert.ok(out.includes('/otto start'), 'primary command missing')
 })
 
 test('skips when not a TTY', (t) => {

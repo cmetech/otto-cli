@@ -495,6 +495,138 @@ should then appear in the TUI autocomplete as expected.
   protection list is effectively dead. Leave for now — removing it is
   the kind of cleanup that might break a sibling tool's expectations.
 
+## Phase 7 — Public npm publish prep (tagged: phase-7-npm-publish-prep)
+
+Prepares the package for `npm publish` to `@ericsson/loop24` on the public
+registry. The actual publish is a manual user step gated on:
+
+1. Claiming the `@ericsson` org on npmjs.com
+2. `npm login --scope=@ericsson --auth-type=web`
+3. `npm publish --access public` from the repo root
+
+Mirrors `@opengsd/gsd-pi`'s tarball pattern (`files`-array bundling of the
+whole workspace; no `bundledDependencies`; postinstall handles install-time
+wiring). Inspected gsd-pi's published tarball before deciding the shape —
+49MB / 9663 files; our equivalent lands at 11.6MB / 6951 files (smaller
+because Phase 0 dropped `web/`, `vscode-extension/`, `studio/`, `native/`).
+
+### scripts/install.js (MODIFIED)
+The npx entry point. When someone runs `npx @ericsson/loop24`, this script
+fires. Previously hardcoded to tell users to install `@opengsd/gsd-pi` —
+catastrophic for a forked publish. Templated all user-visible literals:
+
+- New top-of-file constants block reads `name`, `piConfig.brandName`,
+  `piConfig.commandNamespace` from `package.json` (joins the existing
+  version-read block); reasonable fallbacks (`@ericsson/loop24` /
+  `LOOP24` / `loop24`) if parse fails.
+- ASCII GSD banner replaced with a one-line `${BRAND} v${version}` text
+  banner — install script runs once during npx, doesn't need to mirror
+  the runtime banner exactly.
+- 8 `@opengsd/gsd-pi` literals (help text, spinner labels, `npm install`
+  commands in `installGlobally()` and `installLocally()`, error
+  remediation strings) all flow through `${PKG_NAME}`.
+- `User-Agent: 'gsd-pi-installer'` (2 sites, RTK download fetches) now
+  `\`${CMD}-installer\``.
+- `bin = 'gsd'` and `.bin/gsd` path → `bin = CMD`.
+- Final "Run: gsd" message → `Run: ${CMD}`.
+- Internal env vars (`GSD_HOME`, `GSD_SKIP_RTK_INSTALL`,
+  `GSD_RTK_DISABLED`) intentionally untouched per Known Deferred
+  Cleanups item 7 (breaking change for users who knew them from gsd-pi).
+- Top-of-file JSDoc reframed to describe `@ericsson/loop24` invocation.
+- 19 edits total.
+
+### package.json (MODIFIED)
+- `name`: `@loop24/client` → `@ericsson/loop24`
+- `description`: rewritten as public registry blurb:
+  "Terminal-based developer chat assistant. Permanent hard fork of gsd-pi
+   with LangFlow flow triggers, a flow builder, and optional gateway
+   routing for compliance environments."
+- `keywords`: added (ai, agent, cli, terminal, langflow, anthropic,
+  claude, compliance, developer-tools)
+- `repository.url`, `homepage`, `bugs.url`: placeholder GitHub URLs
+  (`PLACEHOLDER-cmetech/loop24-client`) — grep-able by the `PLACEHOLDER-`
+  prefix; final URLs land when the public GitHub repo is created (user
+  opted to "publish from local; sort GitHub later")
+- `files`: removed orphan `dist/web` entry (Phase 0 dropped the web/
+  source); added explicit `LICENSE` entry (npm auto-includes LICENSE
+  but explicit is clearer)
+- `prepublishOnly`: simplified from the inherited gsd-pi chain.
+  Dropped `sync-platform-versions` (references deleted `native/scripts/`
+  per Known Deferred Cleanups item 2) and `validate-pack` (hardcodes
+  `@opengsd/gsd-pi` at line 155 — needs Phase 7.1 fix before re-enabling).
+  Remaining chain: `sync-pkg-version && verify:version-sync &&
+  prepublish-check && build && typecheck:extensions`. Fast enough.
+- piConfig untouched (still `loop24`/`LOOP24`). Independent of npm
+  package name.
+
+### README.md (MODIFIED)
+- New top-of-file fork attribution block citing `open-gsd/gsd-pi` and
+  MIT license
+- Overview reframed: "internal compliance proxy" → "optional gateway
+  routing for compliance environments". First bullet now opens with
+  "Optionally routes…"
+- Status: removed "internal release" language; reframed as "early release.
+  Install via npm or clone the repo."
+- Quickstart: `npm install -g @ericsson/loop24` is now the **primary**
+  install path. Clone+install.sh moved to "Install from source
+  (contributors)" subsection.
+
+### LOOP24-PATCHES.md (AUDIT — one edit)
+Audited for public-leak risks. Found one: line 695 (Phase 4 section)
+referenced a specific internal gitlab path. Generalized to "the upstream
+langflow-flow-builder Claude Code skill (source location depends on local
+checkout)". No embedded credentials, no other identifying internal-host
+references. `localhost:7860` (default LangFlow port) is fine — that's a
+public default, not internal.
+
+### Verification (Task 5 — `npm pack` dry-run + local install)
+- Tarball: `ericsson-loop24-1.0.1.tgz` — 11.6 MB packed, 54 MB unpacked,
+  6951 files
+- Tarball does NOT include `.git/`, `.env`, `.planning/`,
+  `docs/superpowers/`, or `node_modules` at the root (only nested
+  `packages/daemon/node_modules/` which is **intentional** — daemon
+  pins `@anthropic-ai/sdk ^0.52.0` while root needs `^0.90.0`,
+  incompatible majors)
+- Local install in `mktemp -d`: completes in ~18s, creates symlink
+  `node_modules/.bin/loop24 → @ericsson/loop24/dist/loader.js`
+- `loop24 --version` → `1.0.1`
+- `loop24 --help` → `LOOP24 v1.0.1 — compliant agent for developers`
+
+### Manual publish protocol (when @ericsson org is claimed)
+
+```bash
+# 1. One-time setup
+npm login --scope=@ericsson --auth-type=web
+
+# 2. Bump version (1.0.1 → 1.1.0 for first public LOOP24 release)
+npm version minor --no-git-tag-version
+
+# 3. Dry-run
+npm publish --dry-run --access public
+
+# 4. Publish
+npm publish --access public
+
+# 5. Verify
+sleep 10
+npm view @ericsson/loop24
+npx @ericsson/loop24 --version
+```
+
+### Deferred follow-ups
+- Real GitHub repository (replace `PLACEHOLDER-cmetech/loop24-client` in
+  `package.json`)
+- CI publish workflow (currently manual `npm publish`)
+- Fix `scripts/validate-pack.js:155` hardcoded `@opengsd/gsd-pi` so
+  `validate-pack` can be re-enabled in `prepublishOnly` for production
+  publishes
+- Republishing `@gsd/*` workspace packages under `@ericsson/*` scope —
+  gsd-pi proved this is unnecessary (workspace pkgs ship as files
+  inside the tarball)
+- npm 2FA / automation tokens
+- Version-bump automation
+- Public CHANGELOG generation
+
 ## Phase 6 — Install script + docs (tagged: phase-6-install-docs)
 
 Phase 1 distribution per design spec §7: clone + install.sh + symlink +
@@ -692,7 +824,7 @@ LangFlow JSON flow generator backed by seven typed Pi tools (TypeBox parameter
 schemas) wrapping bundled Python scripts.
 
 ### src/resources/extensions/loop24/tools/scripts/ (NEW — 7 files)
-Verbatim copy from `~/Projects/repos/gitlab.rosetta.ericssondevops.com/loop_24/.claude/skills/langflow-flow-builder/scripts/`:
+Verbatim copy from the upstream `langflow-flow-builder` Claude Code skill (source location depends on local checkout):
 `refresh_component_catalog.py`, `normalize_component_catalog.py`,
 `check_catalog_health.py`, `inspect_component.py`, `validate_flow.sh`,
 `import_flow.py`, `smoke_test_flow.py`. All marked executable.

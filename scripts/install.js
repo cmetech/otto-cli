@@ -3,13 +3,13 @@
 /**
  * GSD Interactive Installer
  *
- * Entry point for `npx @opengsd/gsd-pi` or `npx @opengsd/gsd-pi@latest`.
+ * Entry point for `npx @ericsson/loop24` or `npx @ericsson/loop24@latest`.
  * When invoked directly (not as a postinstall hook), runs the visual
  * installer with full terminal access — banner, spinners, progress.
  *
- * If GSD is already installed and the user runs `gsd`, this script
- * is NOT invoked — the normal loader.js handles that via the "gsd" bin.
- * This script only fires for `npx @opengsd/gsd-pi` (the package name bin).
+ * If loop24 is already installed and the user runs `loop24`, this script
+ * is NOT invoked — the normal loader.js handles that via the "loop24" bin.
+ * This script only fires for `npx @ericsson/loop24` (the package name bin).
  */
 
 import { execSync, spawnSync, exec as execCb } from 'child_process'
@@ -24,8 +24,8 @@ import { createInterface } from 'readline'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-// packageRoot is always relative to this script — it's the @opengsd/gsd-pi package directory.
-// This is correct whether running as postinstall (inside node_modules/@opengsd/gsd-pi) or
+// packageRoot is always relative to this script — it's the installed npm package directory.
+// This is correct whether running as postinstall (inside node_modules/<pkg>) or
 // via npx (inside a transient cache), since __dirname resolves to the script's location.
 const IS_POSTINSTALL = !!process.env.npm_lifecycle_event
 const packageRoot = resolve(__dirname, '..')
@@ -51,6 +51,18 @@ try {
   gsdVersion = pkg.version || '0.0.0'
 } catch { /* ignore */ }
 
+// ── Brand strings (templated from package.json so the published @ericsson/loop24
+// ── package self-describes correctly without hard-coding gsd-pi names) ────────
+let PKG_NAME = '@ericsson/loop24'
+let BRAND = 'LOOP24'
+let CMD = 'loop24'
+try {
+  const pkg = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf-8'))
+  PKG_NAME = pkg.name || PKG_NAME
+  BRAND = pkg.piConfig?.brandName || BRAND
+  CMD = pkg.piConfig?.commandNamespace || CMD
+} catch { /* ignore — defaults are reasonable */ }
+
 if (HAS_VERSION) {
   process.stdout.write(gsdVersion + '\n')
   process.exit(0)
@@ -58,11 +70,11 @@ if (HAS_VERSION) {
 
 if (HAS_HELP) {
   process.stdout.write(`
-  ${c.bold}GSD Installer${c.reset} ${c.dim}v${gsdVersion}${c.reset}
+  ${c.bold}${BRAND} Installer${c.reset} ${c.dim}v${gsdVersion}${c.reset}
 
   ${c.yellow}Usage:${c.reset}
-    npx @opengsd/gsd-pi@latest          Install GSD globally (recommended)
-    npx @opengsd/gsd-pi@latest --local  Install GSD to current project
+    npx ${PKG_NAME}@latest          Install ${BRAND} globally (recommended)
+    npx ${PKG_NAME}@latest --local  Install ${BRAND} to current project
 
   ${c.yellow}Options:${c.reset}
     ${c.cyan}--local${c.reset}     Install to current directory instead of globally
@@ -112,16 +124,7 @@ function stopSpinner() {
 // ── Output helpers ─────────────────────────────────────────────────────────
 
 function printBanner() {
-  process.stdout.write(`
-${c.cyan}   ██████╗ ███████╗██████╗
-  ██╔════╝ ██╔════╝██╔══██╗
-  ██║  ███╗███████╗██║  ██║
-  ██║   ██║╚════██║██║  ██║
-  ╚██████╔╝███████║██████╔╝
-   ╚═════╝ ╚══════╝╚═════╝${c.reset}
-
-  ${c.bold}Get Shit Done${c.reset} ${c.dim}v${gsdVersion}${c.reset}
-`)
+  process.stdout.write(`\n  ${c.bold}${BRAND}${c.reset} ${c.dim}v${gsdVersion}${c.reset}\n  ${c.dim}compliant agent for developers${c.reset}\n\n`)
 }
 
 function printStep(label, detail) {
@@ -166,11 +169,11 @@ const managedBinaryPath = join(managedBinDir, platform() === 'win32' ? 'rtk.exe'
 // ── Step: npm install -g ───────────────────────────────────────────────────
 
 async function installGlobally() {
-  startSpinner('Installing @opengsd/gsd-pi globally...             ')
+  startSpinner(`Installing ${PKG_NAME} globally...             `)
   try {
     const result = await new Promise((res) => {
       execCb(
-        `npm install -g @opengsd/gsd-pi@${gsdVersion}`,
+        `npm install -g ${PKG_NAME}@${gsdVersion}`,
         { timeout: 300_000 },
         (error, stdout, stderr) => {
           res({ ok: !error, stdout: stdout || '', stderr: stderr || '', error })
@@ -185,11 +188,11 @@ async function installGlobally() {
         .filter(l => !l.includes('npm warn') && !l.includes('npm WARN') && l.trim())
         .slice(-3)
         .join('; ')
-      printFail('Global install failed', meaningful || 'run npm install -g @opengsd/gsd-pi manually')
+      printFail('Global install failed', meaningful || `run npm install -g ${PKG_NAME} manually`)
       return false
     }
 
-    printStep('Installed globally', 'npm install -g @opengsd/gsd-pi')
+    printStep('Installed globally', `npm install -g ${PKG_NAME}`)
     return true
   } catch (err) {
     stopSpinner()
@@ -199,11 +202,11 @@ async function installGlobally() {
 }
 
 async function installLocally() {
-  startSpinner('Installing @opengsd/gsd-pi locally...              ')
+  startSpinner(`Installing ${PKG_NAME} locally...              `)
   try {
     const result = await new Promise((res) => {
       execCb(
-        `npm install @opengsd/gsd-pi@${gsdVersion}`,
+        `npm install ${PKG_NAME}@${gsdVersion}`,
         { cwd: process.cwd(), timeout: 300_000 },
         (error, stdout, stderr) => {
           res({ ok: !error, stdout: stdout || '', stderr: stderr || '', error })
@@ -218,11 +221,11 @@ async function installLocally() {
         .filter(l => !l.includes('npm warn') && !l.includes('npm WARN') && l.trim())
         .slice(-3)
         .join('; ')
-      printFail('Local install failed', meaningful || 'run npm install @opengsd/gsd-pi manually')
+      printFail('Local install failed', meaningful || `run npm install ${PKG_NAME} manually`)
       return false
     }
 
-    printStep('Installed locally', 'npm install @opengsd/gsd-pi')
+    printStep('Installed locally', `npm install ${PKG_NAME}`)
     return true
   } catch (err) {
     stopSpinner()
@@ -297,7 +300,7 @@ function sha256File(filePath) {
 }
 
 async function downloadToFile(url, destination) {
-  const response = await fetch(url, { headers: { 'User-Agent': 'gsd-pi-installer' } })
+  const response = await fetch(url, { headers: { 'User-Agent': `${CMD}-installer` } })
   if (!response.ok) throw new Error(`download failed (${response.status})`)
   if (!response.body) throw new Error('no response body')
   const output = createWriteStream(destination)
@@ -358,7 +361,7 @@ async function installRtk() {
 
   try {
     const checksumsResponse = await fetch(`${releaseBase}/checksums.txt`, {
-      headers: { 'User-Agent': 'gsd-pi-installer' },
+      headers: { 'User-Agent': `${CMD}-installer` },
     })
     if (!checksumsResponse.ok) throw new Error(`checksums fetch failed (${checksumsResponse.status})`)
 
@@ -452,9 +455,9 @@ function linkWorkspacePackages() {
 // ── Step: Verify installation ──────────────────────────────────────────────
 
 function verifyInstall(local) {
-  let bin = 'gsd'
+  let bin = CMD
   if (local) {
-    const localBin = resolve(process.cwd(), 'node_modules', '.bin', 'gsd')
+    const localBin = resolve(process.cwd(), 'node_modules', '.bin', CMD)
     if (existsSync(localBin)) {
       bin = localBin
     } else if (platform() === 'win32' && existsSync(localBin + '.cmd')) {
@@ -519,8 +522,8 @@ if (IS_POSTINSTALL) {
   // Verify
   const version = verifyInstall(isLocal)
   if (version) {
-    printStep('Verified', `gsd v${version}`)
+    printStep('Verified', `${CMD} v${version}`)
   }
 }
 
-process.stdout.write(`\n  ${c.green}Ready.${c.reset} Run: ${c.bold}gsd${c.reset}\n\n`)
+process.stdout.write(`\n  ${c.green}Ready.${c.reset} Run: ${c.bold}${CMD}${c.reset}\n\n`)

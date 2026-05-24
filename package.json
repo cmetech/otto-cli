@@ -1,15 +1,26 @@
 {
-  "name": "@loop24/client",
+  "name": "@ericsson/loop24",
   "version": "1.0.1",
-  "description": "GSD Pi local-first coding agent",
+  "description": "Terminal-based developer chat assistant. Permanent hard fork of gsd-pi with LangFlow flow triggers, a flow builder, and optional gateway routing for compliance environments.",
+  "keywords": [
+    "ai",
+    "agent",
+    "cli",
+    "terminal",
+    "langflow",
+    "anthropic",
+    "claude",
+    "compliance",
+    "developer-tools"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/open-gsd/gsd-pi.git"
+    "url": "git+https://github.com/PLACEHOLDER-cmetech/loop24-client.git"
   },
-  "homepage": "https://github.com/open-gsd/gsd-pi#readme",
+  "homepage": "https://github.com/PLACEHOLDER-cmetech/loop24-client#readme",
   "bugs": {
-    "url": "https://github.com/open-gsd/gsd-pi/issues"
+    "url": "https://github.com/PLACEHOLDER-cmetech/loop24-client/issues"
   },
   "type": "module",
   "workspaces": [
@@ -21,7 +32,6 @@
   },
   "files": [
     "dist",
-    "dist/web",
     "packages",
     "pkg",
     "src/resources",
@@ -31,7 +41,8 @@
     "scripts/ensure-workspace-builds.cjs",
     "scripts/lib/workspace-manifest.cjs",
     "package.json",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "piConfig": {
     "_comment": "DUPLICATED in packages/pi-coding-agent/package.json — getPackageDir() walks up from __dirname and finds the workspace pkg first, so the workspace piConfig wins at runtime. Keep both in sync.",
@@ -110,7 +121,7 @@
     "release:update-changelog": "node scripts/update-changelog.mjs",
     "docker:build-runtime": "docker build --target runtime -t ghcr.io/open-gsd/gsd-pi .",
     "docker:build-builder": "docker build --target builder -t ghcr.io/open-gsd/gsd-ci-builder .",
-    "prepublishOnly": "npm run sync-pkg-version && npm run sync-platform-versions && npm run verify:version-sync && node scripts/prepublish-check.mjs && npm run build && npm run typecheck:extensions && npm run validate-pack",
+    "prepublishOnly": "npm run sync-pkg-version && npm run verify:version-sync && node scripts/prepublish-check.mjs && npm run build && npm run typecheck:extensions",
     "test:live-regression": "node --experimental-strip-types tests/live-regression/run.ts",
     "test:e2e": "node --experimental-strip-types --test --test-concurrency=1 \"tests/e2e/*.e2e.test.ts\"",
     "test:e2e:windows-smoke": "node --experimental-strip-types --test tests/e2e/sanity.e2e.test.ts tests/e2e/migration.e2e.test.ts tests/e2e/native-abi.e2e.test.ts",

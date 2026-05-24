@@ -1,10 +1,12 @@
-<!-- LOOP24 — local developer chat assistant with gateway compliance + LangFlow integration -->
+<!-- LOOP24 — terminal-based developer chat assistant with LangFlow integration -->
 
 # LOOP24
 
-LOOP24 is a terminal-based chat assistant for developers. It is a permanent hard fork of [gsd-pi](https://github.com/open-gsd/gsd-pi) that:
+> **Fork attribution.** LOOP24 is a permanent hard fork of [open-gsd/gsd-pi](https://github.com/open-gsd/gsd-pi) by Lex Christopherson, used under the MIT License. See [`LICENSE`](LICENSE).
 
-- Routes every LLM token through `loop24-gateway` (your internal compliance proxy) when configured.
+LOOP24 is a terminal-based chat assistant for developers:
+
+- Optionally routes every LLM token through a gateway URL (`LOOP24_GATEWAY_URL`) — useful in compliance environments where direct provider access is restricted. Falls back to direct Anthropic when no gateway is configured.
 - Keeps local tool execution (filesystem, bash, git) on the developer's laptop.
 - Adds a `loop24` extension hosting custom commands — LangFlow flow triggers, a flow builder, and a prompt engineer.
 - Re-brands the terminal UI with the Loop24 visual identity (yellow primary, brand block banner).
@@ -13,21 +15,30 @@ LOOP24 is **not** trying to be a general-purpose AI assistant. It is a developer
 
 ## Status
 
-v0.x — internal release. Distribution is git clone + install script (Phase 1). An internal npm registry (`@loop24/client`) is planned but not yet active.
+v0.x — early release. Install via npm or clone the repo. The CLI is functional but the public registry presence is new — please file issues if you hit anything.
 
 ## Quickstart
 
-Requires **Node ≥22** and **git** on PATH.
+Requires **Node ≥22** on PATH.
+
+### Install from npm (recommended)
 
 ```bash
-git clone <your-internal-host>/loop24-client.git
+npm install -g @ericsson/loop24
+loop24
+```
+
+### Install from source (contributors)
+
+```bash
+git clone <github-repo>/loop24-client.git
 cd loop24-client
 ./scripts/install.sh
 ```
 
 This installs dependencies, builds the binary, symlinks `loop24` into `~/.local/bin/`, and offers to launch the first-run config wizard so you can point LOOP24 at your gateway and (optionally) LangFlow.
 
-After install:
+After install (either path):
 
 ```bash
 loop24            # interactive TUI

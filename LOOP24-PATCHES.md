@@ -1199,6 +1199,157 @@ regression tests + `loop24-debug` smoke), but the multi-tool agent loop
 that actually generates the flow JSON has not been exercised live in this
 session.
 
+## Phase 8 — GSD identifier + content-file erasure (tagged: phase-8-gsd-identifier-erasure)
+
+Picks up where Cleanup C left off: filename renames, TypeScript identifier
+renames, env-var compat shims, and the remaining content-file content sweep.
+Cleanup C focused on comments/JSDoc as a low-risk first pass; Phase 8
+absorbs the higher-risk runtime touchpoints.
+
+### Scope (user-approved policy)
+
+- **Filenames:** drop the `gsd-` prefix from internal TypeScript files; rename
+  the bundled `GSD-WORKFLOW.md` content file; rename the `create-gsd-extension`
+  skill directory; rename `packages/native/src/gsd-parser/` directory.
+- **Identifiers:** drop `GSD`/`Gsd` from function names, type names, and
+  module-level constants. Resolve collisions with pre-existing names by
+  prefixing `Workflow` (e.g., `GSDState` → `WorkflowDbState` not `State`,
+  because `State` collides; `Project` was pervasive so `GSDProject` →
+  `WorkflowProject`).
+- **Env vars:** introduce `LOOP24_X` as canonical with `GSD_X` as fallback.
+  Production code reads `LOOP24_X ?? GSD_X` and setters write both. Tests
+  continue using `GSD_X` directly; the compat shim keeps them green.
+- **Content files:** brand-neutral sweep of the 14 Cleanup-C-residue files
+  (`WORKFLOW.md`, workflow prompts, preferences-reference, decompose-into-slices
+  SKILL, create-extension SKILL, forensics SKILL, native parser JSDoc).
+
+### What was done (commits in order)
+
+- **Task 1** (`a459679`, `378de28`, `d7c62f4`): produced
+  `docs/superpowers/notes/PHASE8-NAMING-MAP.md` — full audit of every GSD
+  identifier in `src/`/`packages/` with proposed new names and pre-flight
+  collision checks. Three rounds of map updates during execution captured
+  mid-flight discoveries (see "Mid-flight discoveries" below).
+- **Task 2** (`ef0cf73`): 8 TS file renames (`gsd-phase-state.ts` →
+  `phase-state.ts`, `gsd-db.ts` → `db.ts`, `gsd-home.ts` → `home.ts`, plus
+  5 more) with 348 importer updates via quote-bounded extension-anchored perl.
+- **Task 3** (`2f790c2`): `packages/native/src/gsd-parser/` → `parser/`
+  with 2 importer updates (barrel `index.ts` + subpath in `package.json`).
+- **Task 4** (`90026dd`): `GSD-WORKFLOW.md` → `WORKFLOW.md` +
+  `LOOP24_WORKFLOW_PATH` env var with `GSD_WORKFLOW_PATH` fallback. 3 production
+  readers updated, 5 production setter files, plus 7 test files' filename
+  literals.
+- **Task 5** (`58417bd`): `create-gsd-extension/` skill dir → `create-extension/`
+  (22 files; preserves history at R090-R100). 4 reference sites updated.
+- **Task 6** (`d45321c`): 23 function identifier renames across 70 files via
+  word-boundary perl. `handleGSDCommand` → `dispatchWorkflowCommand`,
+  `runGSDDoctor` → `runDoctor`, `registerGSDCommand` → `registerWorkflowCommand`,
+  plus 20 more.
+- **Task 7** (`7731226`): 30 type/class identifiers + 23 module-level constants
+  across 167 files. Collision-resolved names: 8 pervasive types get `Workflow*`
+  prefix (`GSDProject` → `WorkflowProject` because `Project` had 508 hits, etc.).
+- **Task 8** (`e3ae047`): `LOOP24_X` canonical + `GSD_X` fallback compat shim
+  for 30 env vars across 56 production files. Pattern: reader sweep with
+  negative lookahead to skip setters; setter sweep with chained assignment
+  (`process.env.LOOP24_X = process.env.GSD_X = expr`); env-spread literals
+  duplicate the key; string-constant env-var-name helpers gain LOOP24_*
+  siblings; Object.prototype.hasOwnProperty checks both keys.
+- **Task 9** (`44c2d8e`): brand-neutral content sweep of the 14 Cleanup-C
+  residue files (~60 GSD mentions removed) plus the 4 source-file strings
+  that generate test-fixture content. 3 PR-body golden fixtures regenerated
+  via `UPDATE_GOLDENS=1`.
+
+### Mid-flight discoveries
+
+The naming map's initial audit was incomplete in two ways that surfaced during
+execution and required map updates:
+
+1. **15 names initially listed as "module constants" in the map's Section 4
+   were actually used as `process.env.X` reads** (e.g., `GSD_MILESTONE_LOCK`,
+   `GSD_PARALLEL_WORKER`, `GSD_WORKFLOW_EXECUTORS_MODULE`,
+   `GSD_PERSIST_WRITE_GATE_STATE`, `GSD_STARTUP_TIMING`, `GSD_VERBOSE`, etc.).
+   Discovered during Task 7 spot-check. Reclassified to Section 5 (env vars)
+   and absorbed into Task 8's compat-shim treatment. Section 4 shrunk from
+   38 → 23; Section 5 grew from 15 → 30. Committed separately at `d7c62f4`.
+
+2. **22 additional production env vars not in the naming map at all** —
+   discovered during Task 8 inventory pass. These include `GSD_HEADLESS`,
+   `GSD_WEB_HOST`, `GSD_WEB_PORT`, `GSD_WEB_AUTH_TOKEN`, `GSD_WEB_PROJECT_CWD`,
+   `GSD_WORKFLOW_MCP_*`, `GSD_CLI_PATH`, `GSD_DEV_CLI_PATH`, `GSD_PROJECT_ID`,
+   `GSD_AGENT_DIR`, `GSD_CLAUDE_DEBUG`, `GSD_DISABLE_LSPMUX`,
+   `GSD_DISABLE_WORKTREE_WRITE_GUARD`, `GSD_ENABLE_NATIVE_TUI_HIGHLIGHT`,
+   `GSD_FAKE_LLM_TRANSCRIPT`, `GSD_FETCH_ALLOWED_URLS`, `GSD_LEGACY_TELEMETRY_FILE`,
+   `GSD_NATIVE_DISABLE`, `GSD_RTK_PATH`, `GSD_SKILL_MANIFEST_STRICT`,
+   `GSD_STATE_DIR`, `GSD_UOK_FORCE_LEGACY`, `GSD_UOK_LEGACY_FALLBACK`,
+   `GSD_WEB_ALLOWED_ORIGINS`, `GSD_WEB_BRIDGE_TUI`, `GSD_WEB_HOST_KIND`,
+   `GSD_WEB_PACKAGE_ROOT`, `GSD_WEB_PROJECT_SESSIONS_DIR`, `GSD_WORKER_MODEL`.
+   These remain GSD_X-only in production code; tracked in "Known Deferred
+   Cleanups" below.
+
+3. **Functions with verb prefixes outside the map's audit pattern.** The
+   inventory grep required a verb prefix from a closed list (`read|write|get|set|create|init|load|save|build|run|dispatch|...`).
+   Function names like `resolveGsdRoot`, `resolveGsdRootFile`, `ensureGsdSymlink`,
+   `syncGsdStateToWorktree`, `resolveGsdPathContract`, `executeGsdExec` use
+   verbs (`resolve`, `ensure`, `sync`, `execute`) that weren't in the list and
+   were missed. These are still GSD-prefixed; tracked in "Known Deferred
+   Cleanups".
+
+### Out of scope (per plan)
+
+- **npm workspace scope** `@gsd/pi-coding-agent`, `@gsd/pi-ai`, `@gsd/pi-tui`,
+  `@gsd/pi-agent-core`, `@gsd-build/contracts`, `@gsd-build/rpc-client`,
+  `@gsd-build/mcp-server`, `@gsd-build/daemon` → Phase 9 (916 references;
+  biggest by raw count).
+- **customType protocol strings** `"gsd-add-tests"`, `"gsd-dispatch"`,
+  `"gsd-spike"`, etc. → Phase 10 (would break forward compatibility on
+  persisted session files without migration logic).
+- **`.gsd/` runtime directory references** (1,695 hits) → Phase 10
+  (operational; coordinated with customType strings since both shape persisted
+  artifacts the runtime reads on restart).
+- **LICENSE attribution** to Lex Christopherson — MIT requires retention.
+- **README "Fork attribution" block** — MIT requires reasonably prominent
+  surface.
+- **LOOP24-PATCHES.md** — the file's purpose is to document the fork.
+- **Commit history** — destructive to rewrite, breaks tags.
+- **`GSD-Task:` commit trailer** — operational metadata parsed by
+  `auto-recovery.ts` and asserted in 5+ tests; renaming requires coordinated
+  writer/parser/test changes that exceed Task 9's content-sweep scope.
+- **`docs/branding/`** — user-owned working area.
+
+### Verification results
+
+- **Build:** `npm run build` clean (exit 0) after every task.
+- **Standing regression:** 74/74 pass throughout (the plan's 65-test set
+  has grown to 74 since plan was written).
+- **Workflow-extension supplemental set:** 65/67 pass — the 2 failing tests
+  (`derive-state-db: DB-unavailable runtime does not derive...` and
+  `derive-state-db: needs-attention with all slices done returns blocked`)
+  hardcode `/gsd migrate` and `/gsd park` slash-command literals in their
+  assertions. Both pre-date Phase 8 (introduced in fork-import commit
+  `bb6da93`); the strings broke when `COMMAND_NAMESPACE` was changed to
+  `"loop24"` in an earlier phase. NOT caused by Phase 8 renames.
+- **`typecheck:extensions`:** 3 pre-existing stale import paths
+  (`commit-linking.test.ts`, `remote-answer-normalization.test.ts`,
+  `milestone-status-authoritative.test.ts` reference deleted
+  `gsd/` extension paths from a pre-Phase-8 rename). NOT caused by Phase 8.
+
+### Why a compat shim instead of a hard rename for env vars
+
+Hard rename would require updating every external script and configuration
+that exports `GSD_*` env vars. The compat shim lets external setters
+(shell aliases, systemd units, CI pipelines, user dotfiles) keep using
+`GSD_X` while internal code reads `LOOP24_X` first. Later cleanup can drop
+the `GSD_X` fallback once external surfaces are migrated.
+
+### Diff summary across Phase 8
+
+- Tasks 2-9 commits: 770 files changed, ~1900 line edits net.
+- Identifier renames: 76 distinct names (23 functions, 30 types, 23 constants).
+- Env-var compat shims: 30 vars (15 from plan + 4 added Task 1 + 11 reclassified Task 7).
+- File renames: 31 files (8 TS + 22 skill-dir + 1 markdown).
+- Directory renames: 2 (`gsd-parser/`, `create-gsd-extension/`).
+- Content-file sweeps: 14 files.
+
 ## Known Deferred Cleanups
 
 ### 1. Dead Code: `registerLazyGSDCommand` in `src/resources/extensions/workflow/commands-bootstrap.ts`
@@ -1254,23 +1405,86 @@ dev-workflow-engine.ts, doctor-format.ts, commands-inspect.ts) is listed
 in the "Phase 0.5 residue" subsection above and remains for a future
 Phase 0.6 cleanup sweep.
 
-### 7. Internal References Intentionally NOT Changed
-**Scope:** Function names, type names, internal identifiers
+### 7. Internal References Intentionally NOT Changed — PARTIALLY RESOLVED in Phase 8
 
-The following internal identifiers were deliberately left unchanged because they are **not user-visible**. Refactoring them is out of Phase 0 scope:
-- Function names: `registerGSDCommand`, `handleGSDCommand`, etc.
-- Custom type strings: `"gsd-add-tests"`, `"gsd-spike"`, etc.
-- Error codes: `"MISSING_GSD_MARKER"`, etc.
-- Type/interface names: `GSDState`, `GSDConfig`, etc.
-- Internal env vars: `GSD_PKG_ROOT`, `GSD_CODING_AGENT_DIR`.
-- npm workspace prefix: `@gsd/` (e.g., `@gsd/pi-coding-agent`, `@gsd/pi-tui`).
+The original deferral list:
+- ~~Function names: `registerGSDCommand`, `handleGSDCommand`, etc.~~ — DONE in Phase 8 Task 6 (23 functions renamed).
+- Custom type strings: `"gsd-add-tests"`, `"gsd-spike"`, etc. — STILL DEFERRED to Phase 10 (persisted session-file forward compatibility).
+- ~~Error codes: `"MISSING_GSD_MARKER"`, etc.~~ — DONE in Phase 8 Task 7 (renamed to `MISSING_WORKFLOW_MARKER` + 22 other constants).
+- ~~Type/interface names: `GSDState`, `GSDConfig`, etc.~~ — DONE in Phase 8 Task 7 (30 type renames).
+- Internal env vars: `GSD_PKG_ROOT`, `GSD_CODING_AGENT_DIR`. — RESOLVED in Phase 8 Task 8 via `LOOP24_X` canonical + `GSD_X` fallback compat shim (30 env vars; the GSD_X writes/reads remain in code as the fallback side of the shim).
+- npm workspace prefix: `@gsd/` (`@gsd/pi-coding-agent`, `@gsd/pi-tui`, `@gsd-build/*`). — STILL DEFERRED to Phase 9 (916 references; biggest by raw count).
 
-Updating these would be a large refactor touching every internal data structure and type definition. A future Phase 1 or 2 task can address this if branding consistency becomes a priority.
+### 8. Phase 8 Residue — Identifiers Missed by the Naming-Map Audit
 
-### 8. Documentation Files Still Reference Old `extensions/gsd/` Path
-**Scope:** `docs/**`, `*.md`, SKILL.md files
+The Phase 8 naming map's identifier grep used a closed verb prefix list
+(`read|write|get|set|create|init|load|save|build|run|dispatch|format|parse|validate|resolve|extract|sanitize|notify|emit|with|is|has`).
+Functions with verbs outside that list were missed. Discovered post-execution
+during the Task 10 residue audit:
 
-Documentation files (descriptive, not load-bearing) were deliberately left with references to the old `extensions/gsd/` path. These describe the workflow extension and don't affect runtime behavior. Scheduled for a documentation-only cleanup task.
+- `resolveGsdRoot` (~80 hits)
+- `resolveGsdRootFile` (~73 hits)
+- `resolveGsdPathContract` (~41 hits)
+- `ensureGsdSymlink` (~56 hits)
+- `syncGsdStateToWorktree` (~42 hits; already marked deprecated)
+- `executeGsdExec` (~39 hits)
+- `relGsdRootFile` (~37 hits)
+- `loadEffectiveGSDPreferences` (count unknown; surfaced during Task 8 setter audit)
+- Plus likely a few more
+
+Local variable names holding GSD-home paths (`originalGsdHome`, `tempGsdHome`,
+`previousGsdHome`, `savedGsdHome`, `providedGsdHome`) appear in test scaffolding
+and are scope-local — not in scope for identifier erasure, but they read as
+brand mentions in code reviews.
+
+Future cleanup: re-run the inventory grep with an open-ended verb pattern
+(`\b[a-z][a-zA-Z]*Gsd[A-Z][A-Za-z0-9]*`) and apply the same word-boundary
+sweep used in Task 6.
+
+### 9. Phase 8 Residue — 22 Additional Production Env Vars Not in the Naming Map
+
+The naming map's Section 5 (env vars) captured 30 vars after mid-flight
+expansion. Task 8's production-grep audit discovered 22 more `process.env.GSD_*`
+references not covered by the map:
+
+```
+GSD_HEADLESS, GSD_WEB_HOST, GSD_WEB_PORT, GSD_WEB_AUTH_TOKEN,
+GSD_WEB_PROJECT_CWD, GSD_WEB_PROJECT_SESSIONS_DIR, GSD_WEB_PACKAGE_ROOT,
+GSD_WEB_HOST_KIND, GSD_WEB_ALLOWED_ORIGINS, GSD_WEB_BRIDGE_TUI,
+GSD_WORKFLOW_MCP_ARGS, GSD_WORKFLOW_MCP_COMMAND, GSD_WORKFLOW_MCP_CWD,
+GSD_WORKFLOW_MCP_ENV, GSD_WORKFLOW_MCP_NAME, GSD_CLI_PATH, GSD_DEV_CLI_PATH,
+GSD_PROJECT_ID, GSD_AGENT_DIR, GSD_CLAUDE_DEBUG, GSD_DISABLE_LSPMUX,
+GSD_DISABLE_WORKTREE_WRITE_GUARD, GSD_ENABLE_NATIVE_TUI_HIGHLIGHT,
+GSD_FAKE_LLM_TRANSCRIPT, GSD_FETCH_ALLOWED_URLS, GSD_LEGACY_TELEMETRY_FILE,
+GSD_NATIVE_DISABLE, GSD_RTK_PATH, GSD_SKILL_MANIFEST_STRICT, GSD_STATE_DIR,
+GSD_UOK_FORCE_LEGACY, GSD_UOK_LEGACY_FALLBACK, GSD_WORKER_MODEL
+```
+
+These remain `GSD_X`-only in production code; they work but lack the LOOP24_X
+canonical alias the Phase 8 compat shim provides for the other 30. Future
+cleanup: apply the same Task-8 perl sweep + manual setter dual-write pattern
+to this set. No behavior change required, just naming consistency.
+
+### 10. Workflow Prompt Files — Broader GSD Brand Sweep
+**Scope:** `src/resources/extensions/workflow/prompts/*.md` (~25 files)
+
+Phase 8 Task 9 swept only the 14 Cleanup-C-residue files. The broader
+`prompts/` directory has additional brand mentions across ~25 prompt files
+that are read by the LLM during workflow operations. These are LLM-facing
+content (not user-facing UI text), and changing them has subtle behavioral
+implications (the LLM's interpretation of "GSD" as a system identifier vs
+its generic equivalent). Recommended approach: brand-neutral sweep with
+manual review per prompt, treating it as content-policy work rather than
+mechanical refactor.
+
+### 11. Documentation Files Still Reference Old `extensions/gsd/` Path
+**Scope:** `docs/**`, `*.md`, SKILL.md files (the original deferral)
+
+Pre-Phase-8 deferral. Documentation files (descriptive, not load-bearing)
+were left with references to the old `extensions/gsd/` path. Some of these
+were fixed in Phase 8 (the create-extension skill's references, the
+workflow tests' compareGolden fixtures). The remainder is mostly in `docs/`
+which is outside Phase 8's `src/`/`packages/`/`scripts/` scope.
 
 ## Summary of Changes by File Type
 

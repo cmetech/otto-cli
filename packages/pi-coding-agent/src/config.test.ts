@@ -11,7 +11,7 @@ test("CONFIG_DIR_NAME reads piConfig.configDir from package.json", () => {
 });
 
 test("COMMAND_NAMESPACE reads piConfig.commandNamespace from package.json", () => {
-  assert.equal(COMMAND_NAMESPACE, "loop24");
+  assert.equal(COMMAND_NAMESPACE, "otto");
 });
 
 test("BRAND_NAME reads piConfig.brandName from package.json", () => {

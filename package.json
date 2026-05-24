@@ -28,7 +28,7 @@
     "extensions/*"
   ],
   "bin": {
-    "loop24": "dist/loader.js"
+    "otto": "dist/loader.js"
   },
   "files": [
     "dist",
@@ -48,7 +48,7 @@
     "_comment": "CANONICAL source for piConfig. Auto-synced to packages/pi-coding-agent/package.json and pkg/package.json by scripts/sync-piconfig.mjs (runs on `prebuild`). To rebrand: edit this block, run `npm run build` (or `npm run sync-piconfig`).",
     "name": "loop24",
     "configDir": ".loop24",
-    "commandNamespace": "loop24",
+    "commandNamespace": "otto",
     "brandName": "OTTO"
   },
   "engines": {

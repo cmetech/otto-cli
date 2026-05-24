@@ -35,11 +35,11 @@ function strip(s: string): string {
   return s.replace(/\x1b\[[0-9;]*m/g, '')
 }
 
-test('renders LOOP24 block logo', () => {
+test('renders OTTO block logo', () => {
   const out = strip(capture({ version: '1.0.0' }))
-  assert.ok(out.includes('██╗      ██████╗  ██████╗ ██████╗ ██████╗ ██╗  ██╗'), 'logo top row missing')
-  assert.ok(out.includes('██║     ██║   ██║██║   ██║██████╔╝ █████╔╝███████║'), 'logo middle row missing')
-  assert.ok(out.includes('███████╗╚██████╔╝╚██████╔╝██║     ███████╗     ██║'), 'logo bottom row missing')
+  assert.ok(out.includes(' ██████╗ ████████╗████████╗ ██████╗'), 'logo top row missing')
+  assert.ok(out.includes('██╔═══██╗╚══██╔══╝╚══██╔══╝██╔═══██╗'), 'logo middle row missing')
+  assert.ok(out.includes(' ╚═════╝    ╚═╝      ╚═╝    ╚═════╝'), 'logo bottom row missing')
 })
 
 test('renders version and title', () => {
@@ -48,7 +48,7 @@ test('renders version and title', () => {
   assert.ok(out.includes('Project Console'), 'command-center title missing')
 })
 
-test('renders LOOP24 project state or fallback hint', (t) => {
+test('renders OTTO project state or fallback hint', (t) => {
   const tmp = mkdtempSync(join(tmpdir(), 'loop24-welcome-fallback-'))
   const origCwd = process.cwd()
   process.chdir(tmp)
@@ -59,7 +59,7 @@ test('renders LOOP24 project state or fallback hint', (t) => {
 
   const out = strip(capture({ version: '1.0.0', modelName: 'claude-opus-4-6', provider: 'Anthropic' }))
   assert.ok(
-    out.includes('No active LOOP24 project') || /Active\s+M\d+/.test(out),
+    out.includes('No active OTTO project') || /Active\s+M\d+/.test(out),
     'welcome should show project state lines or the no-project fallback',
   )
 })
@@ -155,16 +155,16 @@ test('Project row does not truncate short milestone text', (t) => {
   assert.ok(!projectLine!.includes('…'), 'short title should not be truncated')
 })
 
-test('command-center renders one LOOP24 block logo with a full-width closing rule', (t) => {
+test('command-center renders one OTTO block logo with a full-width closing rule', (t) => {
   const origColumns = process.stderr.columns
   ;(process.stderr as any).columns = 250
   t.after(() => { ;(process.stderr as any).columns = origColumns })
 
   const out = strip(capture({ version: '1.0.0' }))
   const lines = out.split('\n')
-  assert.equal(lines.filter(l => l.includes('██╗      ██████╗  ██████╗ ██████╗ ██████╗ ██╗  ██╗')).length, 1, 'expected one LOOP24 logo top row')
-  assert.equal(lines.filter(l => l.includes('██║     ██║   ██║██║   ██║██████╔╝ █████╔╝███████║')).length, 1, 'expected one LOOP24 logo middle row')
-  assert.equal(lines.filter(l => l.includes('███████╗╚██████╔╝╚██████╔╝██║     ███████╗     ██║')).length, 1, 'expected one LOOP24 logo bottom row')
+  assert.equal(lines.filter(l => l.includes(' ██████╗ ████████╗████████╗ ██████╗')).length, 1, 'expected one OTTO logo top row')
+  assert.equal(lines.filter(l => l.includes('██╔═══██╗╚══██╔══╝╚══██╔══╝██╔═══██╗')).length, 1, 'expected one OTTO logo middle row')
+  assert.equal(lines.filter(l => l.includes(' ╚═════╝    ╚═╝      ╚═╝    ╚═════╝')).length, 1, 'expected one OTTO logo bottom row')
   const ruleLines = lines.filter(l => /^─+$/.test(l.trim()))
   assert.equal(ruleLines.length, 1, 'expected exactly one closing rule line')
   assert.equal(ruleLines[0].trim().length, 249, `rule should be 249 chars wide, got ${ruleLines[0].trim().length}`)
@@ -173,7 +173,7 @@ test('command-center renders one LOOP24 block logo with a full-width closing rul
 test('narrow terminal falls back to simple text', () => {
   const lines = buildWelcomeScreenLines({ version: '1.0.0', width: 60 })
   const out = strip(lines.join('\n'))
-  assert.ok(out.includes('LOOP24 v1.0.0'), 'narrow fallback should include brand and version')
+  assert.ok(out.includes('OTTO v1.0.0'), 'narrow fallback should include brand and version')
   assert.ok(!out.includes('██'), 'narrow fallback should not include block logo')
 })
 

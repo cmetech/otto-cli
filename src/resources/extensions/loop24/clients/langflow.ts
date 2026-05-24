@@ -88,6 +88,38 @@ export class LangFlowClient {
     };
   }
 
+  /**
+   * Import a flow into LangFlow by POSTing its JSON definition.
+   * Endpoint: POST /api/v1/flows/  (JSON body — distinct from the
+   * /api/v1/flows/upload/ multipart endpoint used by the bundled
+   * import_flow.py script).
+   *
+   * Throws on non-2xx with status + response body in the error message.
+   * Returns the parsed JSON response (typically the created flow record
+   * with its newly-assigned id).
+   */
+  async importFlow(payload: unknown, timeoutMsOverride?: number): Promise<unknown> {
+    const timeoutMs = timeoutMsOverride ?? this.opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    const res = await this._fetch(
+      `${this.opts.baseUrl}/api/v1/flows/`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      },
+      timeoutMs,
+    );
+    const bodyText = await res.text();
+    if (!res.ok) {
+      throw new Error(`langflow import: ${res.status} ${res.statusText} — ${bodyText.slice(0, 500)}`);
+    }
+    try {
+      return JSON.parse(bodyText);
+    } catch {
+      throw new Error(`langflow import: response was not JSON — ${bodyText.slice(0, 200)}`);
+    }
+  }
+
   private async _fetch(
     url: string,
     init: RequestInit,

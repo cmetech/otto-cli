@@ -13,12 +13,12 @@ import { splashPalette } from "./splash-palette.js";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const LOGO: readonly string[] = [
-  "   ██████╗ ███████╗██████╗ ",
-  "  ██╔════╝ ██╔════╝██╔══██╗",
-  "  ██║  ███╗███████╗██║  ██║",
-  "  ██║   ██║╚════██║██║  ██║",
-  "  ╚██████╔╝███████║██████╔╝",
-  "   ╚═════╝ ╚══════╝╚═════╝ ",
+  " ██████╗ ████████╗████████╗ ██████╗",
+  "██╔═══██╗╚══██╔══╝╚══██╔══╝██╔═══██╗",
+  "██║   ██║   ██║      ██║   ██║   ██║",
+  "██║   ██║   ██║      ██║   ██║   ██║",
+  "╚██████╔╝   ██║      ██║   ╚██████╔╝",
+  " ╚═════╝    ╚═╝      ╚═╝    ╚═════╝",
 ];
 
 /** Label column width for Model/Provider/Directory/Branch rows. */
@@ -258,7 +258,7 @@ export function renderHeaderLines(data: HeaderData, width: number): string[] {
   const mcpRow = formatMcpRow(data.mcpServers, Math.max(1, panelWidth - 9)) || color("none configured", colors.dim);
   const panelLines = [
     rightAlign(
-      `${color("GSD", colors.accent)} ${bold(color("Project Console", colors.text))}`,
+      `${color("OTTO", colors.accent)} ${bold(color("Project Console", colors.text))}`,
       color("idle", colors.muted),
       panelWidth,
     ),
@@ -306,13 +306,13 @@ export function renderHeaderLines(data: HeaderData, width: number): string[] {
 function renderStackedHeader(data: HeaderData, width: number): string[] {
   const outerWidth = Math.max(0, width);
   if (outerWidth < 3) {
-    return [color(truncateToWidth("GSD", outerWidth, ""), colors.accent)];
+    return [color(truncateToWidth("OTTO", outerWidth, ""), colors.accent)];
   }
   const innerWidth = Math.max(0, outerWidth - PANEL_INDENT.length);
   const lines: string[] = [];
 
   // Title
-  lines.push(panelLine(`${color("GSD", colors.accent)} ${bold(color("Project Console", colors.text))}`, outerWidth));
+  lines.push(panelLine(`${color("OTTO", colors.accent)} ${bold(color("Project Console", colors.text))}`, outerWidth));
 
   // Info
   lines.push(panelLine(formatInfoLine("Project", data.directory, innerWidth), outerWidth));

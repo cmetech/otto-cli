@@ -17,13 +17,13 @@ import stripAnsi from 'strip-ansi'
 import { BRAND_NAME, BRAND_TAGLINE, COMMAND_NAMESPACE, CONFIG_DIR_NAME } from './brand.js'
 import { BRAND_YELLOW_HEX } from './brand-colors.js'
 
-const LOOP24_LOGO: readonly string[] = [
-  '██╗      ██████╗  ██████╗ ██████╗ ██████╗ ██╗  ██╗',
-  '██║     ██╔═══██╗██╔═══██╗██╔══██╗╚════██╗██║  ██║',
-  '██║     ██║   ██║██║   ██║██████╔╝ █████╔╝███████║',
-  '██║     ██║   ██║██║   ██║██╔═══╝ ██╔═══╝ ╚════██║',
-  '███████╗╚██████╔╝╚██████╔╝██║     ███████╗     ██║',
-  '╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚══════╝     ╚═╝',
+const OTTO_LOGO: readonly string[] = [
+  ' ██████╗ ████████╗████████╗ ██████╗',
+  '██╔═══██╗╚══██╔══╝╚══██╔══╝██╔═══██╗',
+  '██║   ██║   ██║      ██║   ██║   ██║',
+  '██║   ██║   ██║      ██║   ██║   ██║',
+  '╚██████╔╝   ██║      ██║   ╚██████╔╝',
+  ' ╚═════╝    ╚═╝      ╚═╝    ╚═════╝',
 ]
 
 interface WorkflowState {
@@ -135,7 +135,7 @@ export function buildWelcomeScreenLines(opts: WelcomeScreenOptions): string[] {
   if (remoteChannel)                  toolParts.push(`${remoteChannel.charAt(0).toUpperCase() + remoteChannel.slice(1)} ✓`)
 
   const innerWidth = Math.max(1, termWidth - 2)
-  const logoWidth = Math.max(...LOOP24_LOGO.map((line) => visLen(line)))
+  const logoWidth = Math.max(...OTTO_LOGO.map((line) => visLen(line)))
   // Plain spaces, not a `│` divider — a vertical bar would be dragged into
   // every copied logo row.
   const divider = '   '
@@ -182,8 +182,8 @@ export function buildWelcomeScreenLines(opts: WelcomeScreenOptions): string[] {
   // No outer box: logo + panel are indented, with a single closing rule. Every
   // content line is plain text, so terminal selection copies cleanly.
   const out: string[] = ['']
-  for (let i = 0; i < LOOP24_LOGO.length; i++) {
-    const logo = rpad(chalk.hex(BRAND_YELLOW_HEX)(LOOP24_LOGO[i]), logoWidth)
+  for (let i = 0; i < OTTO_LOGO.length; i++) {
+    const logo = rpad(chalk.hex(BRAND_YELLOW_HEX)(OTTO_LOGO[i]), logoWidth)
     out.push('  ' + clampVisible(`${logo}${divider}${panelRows[i] ?? ''}`, termWidth - 2))
   }
   out.push(chalk.hex(BRAND_YELLOW_HEX)('─'.repeat(Math.max(0, termWidth))))

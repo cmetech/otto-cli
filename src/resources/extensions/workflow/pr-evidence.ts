@@ -113,7 +113,7 @@ export function buildPrEvidence(input: PrEvidenceInput): PrEvidence {
   const linkedIssueRaw = input.linkedIssue ? sanitizeIssueRef(input.linkedIssue).trim() : "";
   const linkedIssue = linkedIssueRaw || "Not specified. Add an issue link before marking this PR ready if CONTRIBUTING.md requires one.";
   const why = (input.why ? sanitizeUserContent(input.why).trim() : "") || `${capitalize(subjectKind)} work is complete and ready for review.`;
-  const how = (input.how ? sanitizeUserContent(input.how).trim() : "") || "Generated from GSD evidence and local workflow artifacts.";
+  const how = (input.how ? sanitizeUserContent(input.how).trim() : "") || "Generated from workflow evidence and local workflow artifacts.";
   const title = `${changeType}: ${subjectTitle}`;
 
   const sections: string[] = [

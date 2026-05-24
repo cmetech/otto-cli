@@ -1,4 +1,4 @@
-Debug GSD itself. Trace the symptom to root cause in current source and produce a filing-ready GitHub issue with file:line references and a concrete fix suggestion.
+Debug the workflow extension itself. Trace the symptom to root cause in current source and produce a filing-ready GitHub issue with file:line references and a concrete fix suggestion.
 
 ## User's Problem
 
@@ -8,9 +8,9 @@ Debug GSD itself. Trace the symptom to root cause in current source and produce 
 
 {{forensicData}}
 
-## GSD Source Location
+## Source Location
 
-GSD extension source: `{{gsdSourceDir}}`
+Workflow extension source: `{{gsdSourceDir}}`
 
 ### Source Map by Domain
 
@@ -110,13 +110,13 @@ cat > "$ISSUE_BODY_FILE" << 'GSD_ISSUE_BODY'
 [1-2 sentence summary]
 
 ## Root Cause
-[Specific file:line in GSD source, with code snippet showing the bug]
+[Specific file:line in Workflow extension source, with code snippet showing the bug]
 
 ## Expected Behavior
 [What the code should do instead — concrete fix suggestion]
 
 ## Environment
-- GSD version: [from report]
+- Agent version: [from report]
 - Model: [from report]
 - Unit: [type/id that failed]
 
@@ -148,7 +148,7 @@ Before creating the issue, you MUST:
 - Replace all absolute paths with relative paths
 - Remove any API keys, tokens, or credentials
 - Remove any environment variable values
-- Do not include user project code — only GSD structure (tool names, file names, error messages)
+- Do not include user project code — only agent structure (tool names, file names, error messages)
 
 ## Report Saved
 

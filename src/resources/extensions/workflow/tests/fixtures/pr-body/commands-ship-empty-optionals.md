@@ -2,7 +2,7 @@
 
 **What:** Ship milestone M001 - Authentication
 **Why:** Milestone work is complete and ready for review.
-**How:** Generated from GSD evidence and local workflow artifacts.
+**How:** Generated from workflow evidence and local workflow artifacts.
 
 ## What
 
@@ -14,7 +14,7 @@ Milestone work is complete and ready for review.
 
 ## How
 
-Generated from GSD evidence and local workflow artifacts.
+Generated from workflow evidence and local workflow artifacts.
 
 ## Linked Issue
 

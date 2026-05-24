@@ -187,7 +187,7 @@ function generatePRContent(basePath: string, milestoneId: string, milestoneTitle
     metrics,
     testsRun: ["Run `npm run verify:pr` before marking this PR ready."],
     rollbackNotes: ["Revert the merge commit or close the PR before merge if review finds a regression."],
-    how: "Generated from GSD milestone slice summaries, roadmap status, and local metrics.",
+    how: "Generated from milestone slice summaries, roadmap status, and local metrics.",
   });
 }
 

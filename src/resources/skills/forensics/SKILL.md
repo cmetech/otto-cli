@@ -1,14 +1,14 @@
 ---
 name: forensics
-description: Post-mortem a failed GSD auto-mode run. Traces from symptom to root cause using `.gsd/activity/*.jsonl`, `.gsd/journal/YYYY-MM-DD.jsonl`, `.gsd/metrics.json`, and `.gsd/auto.lock`. Produces a filing-ready bug report with file:line references and a concrete fix suggestion. Use when asked to "forensics", "post-mortem", "why did auto-mode fail", "trace the stuck loop", "debug the crash", after `/gsd forensics` is invoked, or when a session ended in an unexpected terminal state. Reads existing artifacts — does NOT re-run anything.
+description: Post-mortem a failed auto-mode run. Traces from symptom to root cause using `.gsd/activity/*.jsonl`, `.gsd/journal/YYYY-MM-DD.jsonl`, `.gsd/metrics.json`, and `.gsd/auto.lock`. Produces a filing-ready bug report with file:line references and a concrete fix suggestion. Use when asked to "forensics", "post-mortem", "why did auto-mode fail", "trace the stuck loop", "debug the crash", after `/gsd forensics` is invoked, or when a session ended in an unexpected terminal state. Reads existing artifacts — does NOT re-run anything.
 ---
 
 <objective>
-Turn scattered GSD runtime artifacts into one coherent cause chain. The deliverable is a GitHub-issue-ready report that names the file and line where the bug lives, cites the evidence, and proposes a fix. Forensics is archaeology, not re-run — no modifying state, no triggering commands, just reading the paper trail.
+Turn scattered agent runtime artifacts into one coherent cause chain. The deliverable is a GitHub-issue-ready report that names the file and line where the bug lives, cites the evidence, and proposes a fix. Forensics is archaeology, not re-run — no modifying state, no triggering commands, just reading the paper trail.
 </objective>
 
 <context>
-GSD persists a lot of runtime evidence under `.gsd/`:
+the workflow persists a lot of runtime evidence under `.gsd/`:
 
 - `activity/{seq}-{unitType}-{unitId}.jsonl` — full tool-call and message stream per unit
 - `journal/YYYY-MM-DD.jsonl` — iteration-level events. Orchestrator path emits `orchestrator-*` events (`orchestrator-dispatch-match`, `orchestrator-guard-block`, `orchestrator-terminal`, etc.); legacy loop events (`dispatch-match`, `stuck-detected`, `guard-block`, `unit-start/end`, `terminal`) can still appear on non-orchestrator paths.

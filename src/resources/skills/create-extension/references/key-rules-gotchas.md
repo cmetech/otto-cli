@@ -1,5 +1,5 @@
 <overview>
-Non-negotiable rules and common gotchas when building GSD extensions.
+Non-negotiable rules and common gotchas when building Workflow extensions.
 </overview>
 
 <must_follow>
@@ -22,11 +22,11 @@ Non-negotiable rules and common gotchas when building GSD extensions.
 - Overlay components are **disposed when closed** — create fresh instances each time
 - Treat `ctx.reload()` as terminal — code after runs from pre-reload version
 - Check `ctx.hasUI` before dialog methods (false in print/JSON mode)
-- Extension errors are logged but don't crash GSD — tool_call handler errors fail-safe (block the tool)
+- Extension errors are logged but don't crash the agent — tool_call handler errors fail-safe (block the tool)
 </common_patterns>
 
 <gsd_paths>
-**GSD extension paths (community/user-installed extensions):**
+**Workflow extension paths (community/user-installed extensions):**
 - Global: `~/.pi/agent/extensions/*.ts`
 - Global (subdir): `~/.pi/agent/extensions/*/index.ts`
 - Project-local: `.gsd/extensions/*.ts`

@@ -1,13 +1,13 @@
 ---
 name: create-extension
-description: Create, debug, and iterate on GSD extensions (TypeScript modules that add tools, commands, event hooks, custom UI, and providers to GSD). Use when asked to build an extension, add a tool the LLM can call, register a slash command, hook into GSD events, create custom TUI components, or modify GSD behavior. Triggers on "create extension", "build extension", "add a tool", "register command", "hook into gsd", "custom tool", "gsd plugin", "gsd extension".
+description: Create, debug, and iterate on Workflow extensions (TypeScript modules that add tools, commands, event hooks, custom UI, and providers to GSD). Use when asked to build an extension, add a tool the LLM can call, register a slash command, hook into workflow events, create custom TUI components, or modify agent behavior. Triggers on "create extension", "build extension", "add a tool", "register command", "hook into workflow", "custom tool", "gsd plugin", "gsd extension".
 ---
 
 <essential_principles>
 
-**Extensions are TypeScript modules** that hook into GSD's runtime (built on pi). They export a default function receiving `ExtensionAPI` and use it to subscribe to events, register tools/commands/shortcuts, and interact with the session.
+**Extensions are TypeScript modules** that hook into the agent's runtime (built on pi). They export a default function receiving `ExtensionAPI` and use it to subscribe to events, register tools/commands/shortcuts, and interact with the session.
 
-**GSD extension paths (community/user-installed extensions):**
+**Workflow extension paths (community/user-installed extensions):**
 - Global: `~/.pi/agent/extensions/*.ts` or `~/.pi/agent/extensions/*/index.ts`
 - Project-local: `.gsd/extensions/*.ts` or `.gsd/extensions/*/index.ts`
 
@@ -67,7 +67,7 @@ All domain knowledge in `references/`:
 **Infrastructure:** model-provider-management.md, remote-execution-overrides.md, packaging-distribution.md, mode-behavior.md
 **Spec:** `docs/extension-sdk/manifest-spec.md` — manifest format, tiers, validation
 **Testing:** `docs/extension-sdk/testing.md` — mock patterns, test conventions
-**SDK:** `docs/extension-sdk/` — the authoritative GSD-2 extension guide
+**SDK:** `docs/extension-sdk/` — the authoritative extension guide
 **Gotchas:** key-rules-gotchas.md
 </reference_index>
 
@@ -83,7 +83,7 @@ All domain knowledge in `references/`:
 Extension is complete when:
 - `extension-manifest.json` exists with accurate `provides` listing all registered tools/commands/hooks/shortcuts
 - TypeScript compiles without errors (jiti handles this at runtime)
-- Extension loads on GSD startup or `/reload` without errors
+- Extension loads on agent startup or `/reload` without errors
 - Tools appear in the LLM's system prompt and are callable
 - Commands respond to `/command` input
 - Event hooks fire at the expected lifecycle points

@@ -1,5 +1,5 @@
 /**
- * GSD file parser — native Rust implementation.
+ * Workflow file parser — native Rust implementation.
  *
  * Parses `.loop24/` directory markdown files containing YAML-like frontmatter
  * and structured sections. Replaces the JS regex-based parser for

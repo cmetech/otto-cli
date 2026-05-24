@@ -1,8 +1,8 @@
-# GSD Workflow — Manual Bootstrap Protocol
+# Workflow — Manual Bootstrap Protocol
 
-> This document teaches you how to operate the GSD planning methodology manually using files on disk.
+> This document teaches you how to operate the planning methodology manually using files on disk.
 >
-> **When to read this:** At the start of any session working on GSD-managed work, or when loaded by `/gsd`.
+> **When to read this:** At the start of any session working on workflow-managed work, or when loaded by `/loop24`.
 >
 > **After reading this, always read `.gsd/STATE.md` to find out what's next.**
 > If the milestone has a `M###-CONTEXT.md`, read that too. If the active slice has an `S##-CONTEXT.md`, read that as well — these files contain project-specific decisions, reference paths, and implementation guidance that this generic methodology doc does not.
@@ -45,7 +45,7 @@ All artifacts live in `.gsd/` at the project root:
 .gsd/
   STATE.md                                  # Dashboard — always read first (derived cache; runtime, gitignored)
   DECISIONS.md                              # Append-only decisions register
-  CODEBASE.md                               # Generated codebase map cache (auto-refreshed by GSD)
+  CODEBASE.md                               # Generated codebase map cache (auto-refreshed by the agent)
   milestones/
     M001/
       M001-ROADMAP.md                       # Milestone plan (checkboxes = state)
@@ -194,7 +194,7 @@ Critical wiring between artifacts:
 ### `STATE.md`
 
 ```markdown
-# GSD State
+# Workflow State
 
 **Active Milestone:** M001 — Title
 **Active Slice:** S02 — Slice Title
@@ -551,7 +551,7 @@ If files disagree, **pause and surface to the user**:
 
 ## Git Strategy: Sequential Commits with Optional Milestone Isolation
 
-**Principle:** GSD keeps work atomic and recoverable. By default, work happens on the current branch. If `git.isolation` is set to `worktree` or `branch`, a milestone branch is used and merged back to the recorded integration branch when the milestone completes. The user never runs a git command — the agent handles everything.
+**Principle:** The workflow keeps work atomic and recoverable. By default, work happens on the current branch. If `git.isolation` is set to `worktree` or `branch`, a milestone branch is used and merged back to the recorded integration branch when the milestone completes. The user never runs a git command — the agent handles everything.
 
 ### Isolation Modes
 

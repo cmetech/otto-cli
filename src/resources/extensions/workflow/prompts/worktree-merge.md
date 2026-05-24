@@ -35,7 +35,7 @@ The worktree may contain code, milestones, roadmaps, plans, research, decisions,
 {{codeDiff}}
 ```
 
-### GSD Artifact Diff
+### Workflow Artifact Diff
 
 ```diff
 {{gsdDiff}}
@@ -55,7 +55,7 @@ Classify each changed file.
 - **Config changes** — package.json, tsconfig, build config, etc.
 - **Deleted files** — removed source/config.
 
-**GSD artifact changes:**
+**workflow artifact changes:**
 - **New milestones** — new M###/ directories with roadmaps.
 - **New slices/tasks** — planning artifacts inside existing milestones.
 - **Updated roadmaps** — changed M###-ROADMAP.md files.
@@ -121,5 +121,5 @@ git branch -D {{worktreeBranch}}
 
 - Never silently discard changes from either branch.
 - When in doubt, show both versions and ask.
-- Preserve GSD artifact formatting: frontmatter, sections, checkbox states.
+- Preserve workflow artifact formatting: frontmatter, sections, checkbox states.
 - If new milestone IDs conflict with main, flag immediately.

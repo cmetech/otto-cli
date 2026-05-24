@@ -13,8 +13,8 @@ see the [README](../README.md).
 ### Optional (per feature)
 | Need it for | Tool | Notes |
 |---|---|---|
-| `/loop24 build-flow` | **Python 3** | Bundled scripts run via `python3` on PATH. Override with `LOOP24_PYTHON_BIN` if your interpreter lives elsewhere. The scripts depend on the `requests` PyPI package — install with `pip install requests`. |
-| `/loop24 build-flow` (full schema validation) | **lfx** CLI | Optional. Without it, `loop24__validate_flow` falls back to JSON-syntax-only validation. |
+| `/otto build-flow` | **Python 3** | Bundled scripts run via `python3` on PATH. Override with `LOOP24_PYTHON_BIN` if your interpreter lives elsewhere. The scripts depend on the `requests` PyPI package — install with `pip install requests`. |
+| `/otto build-flow` (full schema validation) | **lfx** CLI | Optional. Without it, `loop24__validate_flow` falls back to JSON-syntax-only validation. |
 | `/loop24 <flow-name>` triggers | **LangFlow** | Local LangFlow at `http://127.0.0.1:7860` (override via `LANGFLOW_SERVER_URL`). API key in `LANGFLOW_API_KEY` if your instance requires auth. |
 | Compliance routing | **loop24-gateway** | Internal Anthropic-shaped proxy. Set `LOOP24_GATEWAY_URL` + (optionally) `LOOP24_GATEWAY_TOKEN`. |
 | LLM access without gateway | **Anthropic API key** | `ANTHROPIC_API_KEY` env var. |
@@ -33,11 +33,11 @@ cd loop24-client
 `scripts/install.sh` will:
 
 1. Verify Node ≥22 + git are on PATH.
-2. Warn if Python 3 is missing (only needed by `/loop24 build-flow`).
+2. Warn if Python 3 is missing (only needed by `/otto build-flow`).
 3. Run `npm install` and `npm run build`.
-4. Symlink `dist/loader.js` → `~/.local/bin/loop24`.
+4. Symlink `dist/loader.js` → `~/.local/bin/otto`.
 5. Print PATH advice if `~/.local/bin` isn't on your PATH.
-6. Offer to launch `loop24 config all` so you can point LOOP24 at your gateway and LangFlow.
+6. Offer to launch `otto config all` so you can point LOOP24 at your gateway and LangFlow.
 
 The script is **idempotent** — safe to re-run on an existing install. It will rebuild and refresh the symlink.
 
@@ -54,7 +54,7 @@ cd loop24-client
 npm install
 npm run build
 mkdir -p ~/.local/bin
-ln -sfn "$PWD/dist/loader.js" ~/.local/bin/loop24
+ln -sfn "$PWD/dist/loader.js" ~/.local/bin/otto
 ```
 
 Then add `~/.local/bin` to your PATH if needed:
@@ -67,13 +67,13 @@ source ~/.zshrc
 Verify:
 
 ```bash
-loop24 --version
+otto --version
 ```
 
 Then run the first-run wizard:
 
 ```bash
-loop24 config all
+otto config all
 ```
 
 ## Update
@@ -93,7 +93,7 @@ git pull
 Remove the symlink and the workspace:
 
 ```bash
-rm -f ~/.local/bin/loop24
+rm -f ~/.local/bin/otto
 rm -rf ~/Projects/repos/local/loop24-client     # adjust to your clone path
 ```
 
@@ -117,7 +117,7 @@ nvm install 22 && nvm use 22 && nvm alias default 22
 ### Build fails with TypeScript errors
 LOOP24 builds with `--experimental-strip-types`. If you see strip-types errors, your Node may not support this flag (Node ≥22 should). Verify `node -v` is `v22` or higher.
 
-### "loop24: command not found" after install
+### "otto: command not found" after install
 Check that `~/.local/bin` is on your PATH:
 ```bash
 echo $PATH | tr ':' '\n' | grep .local/bin
@@ -125,21 +125,21 @@ echo $PATH | tr ':' '\n' | grep .local/bin
 If empty, add it (see "Manual install" above).
 
 ### Banner appears but LLM calls fail with "no API key"
-Run `loop24 config llm` (or `loop24 config all`) to configure Anthropic credentials or a gateway URL. Env vars also work:
+Run `otto config llm` (or `otto config all`) to configure Anthropic credentials or a gateway URL. Env vars also work:
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
 # or
 export LOOP24_GATEWAY_URL=http://127.0.0.1:8080/v1
 ```
 
-### `/loop24 build-flow` tools all return "exit 127"
+### `/otto build-flow` tools all return "exit 127"
 Python 3 is missing on PATH. Install it (`brew install python` on macOS, your distro's `python3` package on Linux) or set `LOOP24_PYTHON_BIN` to your interpreter path. The Python scripts also need `requests` — `pip install requests`.
 
 ### LangFlow banner says "offline"
-Either LangFlow isn't running, or it's at a non-default URL. Start it (`langflow run`), then either set `LANGFLOW_SERVER_URL` or re-run `loop24 config langflow` to update the saved config.
+Either LangFlow isn't running, or it's at a non-default URL. Start it (`langflow run`), then either set `LANGFLOW_SERVER_URL` or re-run `otto config langflow` to update the saved config.
 
-### Headless mode says "command not found" for `/loop24 build-flow` or `/loop24 prompt-engineer`
-These commands work in the interactive TUI but are not routed by `loop24 headless` (pre-existing gap — see LOOP24-PATCHES.md Phase 5 architectural limitation). Use the interactive TUI for these specific commands.
+### Headless mode says "command not found" for `/otto build-flow` or `/otto prompt-engineer`
+These commands work in the interactive TUI but are not routed by `otto headless` (pre-existing gap — see LOOP24-PATCHES.md Phase 5 architectural limitation). Use the interactive TUI for these specific commands.
 
 ## See also
 

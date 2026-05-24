@@ -6,8 +6,8 @@
 #   ./scripts/install.sh
 #
 # Verifies Node ≥22 + git, runs `npm install` + `npm run build`, symlinks
-# `dist/loader.js` to `~/.local/bin/loop24`, prints PATH advice if needed,
-# and offers to launch `loop24 config` for first-run setup.
+# `dist/loader.js` to `~/.local/bin/otto`, prints PATH advice if needed,
+# and offers to launch `otto config` for first-run setup.
 #
 # Idempotent: safe to re-run on an existing install (rebuilds + refreshes
 # the symlink).
@@ -19,7 +19,7 @@
 
 set -eu
 
-PROG_NAME="loop24"
+PROG_NAME="otto"
 DEFAULT_BIN_DIR="$HOME/.local/bin"
 BIN_DIR="$DEFAULT_BIN_DIR"
 SKIP_WIZARD=0
@@ -75,7 +75,7 @@ if [ ! -f "$REPO_ROOT/package.json" ]; then
   exit 1
 fi
 
-if ! grep -q '"@loop24/client"' "$REPO_ROOT/package.json"; then
+if ! grep -q '"@ericsson/loop24"' "$REPO_ROOT/package.json"; then
   err "package.json at $REPO_ROOT does not look like loop24-client — refusing to install."
   exit 1
 fi
@@ -113,7 +113,7 @@ ok "npm: $(npm -v)"
 if command -v python3 >/dev/null 2>&1; then
   ok "python3: $(python3 --version 2>&1 | head -1)"
 else
-  warn "python3 not on PATH — /loop24 build-flow tools will require it (see docs/INSTALL.md)."
+  warn "python3 not on PATH — /otto build-flow tools will require it (see docs/INSTALL.md)."
 fi
 
 # ── npm install ──────────────────────────────────────────────────────────────
@@ -158,20 +158,20 @@ esac
 # ── Wizard offer ────────────────────────────────────────────────────────────
 echo
 if [ "$SKIP_WIZARD" -eq 1 ]; then
-  note "Skipping config wizard (--no-wizard). Run 'loop24 config' when ready."
+  note "Skipping config wizard (--no-wizard). Run 'otto config' when ready."
 elif [ ! -t 0 ] || [ ! -t 1 ]; then
   note "Non-interactive shell detected — skipping config wizard."
-  note "Run 'loop24 config' to set up gateway / LangFlow / LLM auth."
+  note "Run 'otto config' to set up gateway / LangFlow / LLM auth."
 else
   printf "Run the first-run config wizard now? [Y/n] "
   read -r ANSWER
   case "$ANSWER" in
     [Nn]|[Nn][Oo])
-      note "Skipped. Run 'loop24 config' when ready."
+      note "Skipped. Run 'otto config' when ready."
       ;;
     *)
       echo
-      "$SYMLINK_TARGET" config all || warn "Wizard exited non-zero — re-run with 'loop24 config' to retry."
+      "$SYMLINK_TARGET" config all || warn "Wizard exited non-zero — re-run with 'otto config' to retry."
       ;;
   esac
 fi
@@ -182,6 +182,6 @@ printf "%s%s installed.%s Type %s%s%s to launch.\n" \
   "$C_BRAND" "LOOP24" "$C_RESET" "$C_BRAND" "$PROG_NAME" "$C_RESET"
 echo
 note "Next steps:"
-note "  - Quick start:  loop24 --help"
-note "  - Re-configure: loop24 config [gateway|langflow|llm|all]"
+note "  - Quick start:  otto --help"
+note "  - Re-configure: otto config [gateway|langflow|llm|all]"
 note "  - Docs:         docs/INSTALL.md, LOOP24-PATCHES.md"

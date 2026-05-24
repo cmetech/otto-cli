@@ -75,7 +75,7 @@ Requires **Node ≥22** on PATH.
 
 ```bash
 npm install -g @ericsson/loop24
-loop24
+otto
 ```
 
 ### Install from source (contributors)
@@ -86,14 +86,14 @@ cd loop24-client
 ./scripts/install.sh
 ```
 
-The install script installs dependencies, builds the binary, symlinks `loop24` into `~/.local/bin/`, and offers to launch the first-run config wizard so you can point OTTER at your gateway and (optionally) at Langflow.
+The install script installs dependencies, builds the binary, symlinks `otto` into `~/.local/bin/`, and offers to launch the first-run config wizard so you can point OTTER at your gateway and (optionally) at Langflow.
 
 After install (either path):
 
 ```bash
-loop24            # interactive TUI
-loop24 --help     # subcommands
-loop24 config     # re-run any part of the config wizard
+otto            # interactive TUI
+otto --help     # subcommands
+otto config     # re-run any part of the config wizard
 ```
 
 See [`docs/INSTALL.md`](docs/INSTALL.md) for prerequisites, manual install, uninstall, and troubleshooting.
@@ -115,8 +115,8 @@ OTTER classifies each user ask into one of four task types, shown as chips in th
 
 | Command | Purpose |
 |---|---|
-| `/loop24 build-flow <description>` | Generate a Langflow flow JSON from a natural-language description |
-| `/loop24 prompt-engineer <task>` | Polish a rough task description into a structured prompt for a coding agent |
+| `/otto build-flow <description>` | Generate a Langflow flow JSON from a natural-language description |
+| `/otto prompt-engineer <task>` | Polish a rough task description into a structured prompt for a coding agent |
 | `/loop24 <flow-name>` | Trigger any Langflow flow declared in `extensions/loop24/commands/flow-triggers/*.yaml` |
 | `/loop24 plan`, `/loop24 quick`, etc. | Multi-step workflow commands inherited from upstream — software-engineering recipes |
 
@@ -136,9 +136,9 @@ OTTER reads from `~/.loop24/config.json` (created by the first-run wizard) with 
 | `LANGFLOW_API_KEY` | Langflow API key (`x-api-key` header) | (none) |
 | `ANTHROPIC_API_KEY` | Direct Anthropic key when no gateway is configured | (none) |
 | `LOOP24_PYTHON_BIN` | Python 3 interpreter for build-flow tools | `python3` on PATH |
-| `LOOP24_PROMPT_ENGINEER_MODEL` | Model for `/loop24 prompt-engineer` | `claude-haiku-4-5-20251001` |
+| `LOOP24_PROMPT_ENGINEER_MODEL` | Model for `/otto prompt-engineer` | `claude-haiku-4-5-20251001` |
 
-Env vars always win over the config file. Run `loop24 config` to interactively set any subset (`gateway`, `langflow`, `llm`, or `all`).
+Env vars always win over the config file. Run `otto config` to interactively set any subset (`gateway`, `langflow`, `llm`, or `all`).
 
 ---
 

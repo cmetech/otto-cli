@@ -23,7 +23,7 @@ LEFT — PERSONAS (yellow), three stacked tiles with silhouette icons:
 "Project Manager" — "Summarize this week's open tickets."
 Caption: "Three roles. One entrypoint." Marker ① on the outbound arrow.
 
-CENTER — USER'S LAPTOP (large dashed-border container labeled "User's laptop — single binary install"). Four components in a 2×2 sub-grid inside the boundary:
+CENTER — USER'S LAPTOP (large dashed-border container labeled "User's laptop"). Four components in a 2×2 sub-grid inside the boundary:
 
 Top-left: OTTER (otter brown) — stylized laptop with the OTTER mascot on the keyboard deck, holding a terminal-prompt tile (">_"). Label: "OTTER — Orchestrating Tools, Tasks, Execution & Research." Below: four task chips — "Code" · "Research" · "Ops" · "Automate."
 

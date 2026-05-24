@@ -70,6 +70,7 @@ if (firstArg === '--help' || firstArg === '-h') {
 }
 
 import { agentDir, appRoot } from './app-paths.js'
+import { migrateLegacyConfigDir } from './migrate-config-dir.js'
 import { applyRtkProcessEnv } from './rtk-shared.js'
 import { serializeBundledExtensionPaths } from './bundled-extension-paths.js'
 import { resolveBundledResourcesDirFromPackageRoot } from './bundled-resource-path.js'
@@ -106,7 +107,12 @@ if (process.env.LOOP24_CLEAR_ON_START && process.env.LOOP24_CLEAR_ON_START !== '
 // override with PI_CLEAR_ON_SHRINK=0 in their shell.
 process.env.PI_CLEAR_ON_SHRINK ??= '1'
 
-// Print LOOP24 banner on first launch (before ~/.loop24/ exists).
+// One-time copy migration of the legacy ~/.loop24 config dir → ~/.otto (OTTO
+// config-dir rebrand). Runs before the first-launch banner check so existing
+// users who get migrated are not mistaken for first-run.
+migrateLegacyConfigDir(appRoot)
+
+// Print OTTO banner on first launch (before ~/.otto/ exists).
 // Set LOOP24_FIRST_RUN_BANNER so cli.ts and tests skip the duplicate welcome screen.
 if (!existsSync(appRoot)) {
   const yellow = ANSI_BRAND_YELLOW
@@ -128,15 +134,15 @@ if (!existsSync(appRoot)) {
   process.env.LOOP24_FIRST_RUN_BANNER = '1'
 }
 
-// GSD_CODING_AGENT_DIR — tells pi's getAgentDir() to return ~/.loop24/agent/ instead of ~/.pi/agent/
+// GSD_CODING_AGENT_DIR — tells pi's getAgentDir() to return ~/.otto/agent/ instead of ~/.pi/agent/
 process.env.LOOP24_CODING_AGENT_DIR = process.env.GSD_CODING_AGENT_DIR = agentDir
 
 // GSD_PKG_ROOT — absolute path to @ericsson/loop24 package root. Used by deployed extensions
 // (e.g. auto.ts resume path) to import modules like resource-loader.js that live
-// in the package tree, not in the deployed ~/.loop24/agent/ tree.
+// in the package tree, not in the deployed ~/.otto/agent/ tree.
 process.env.LOOP24_PKG_ROOT = process.env.GSD_PKG_ROOT = workflowRoot
 
-// RTK environment — make ~/.loop24/agent/bin visible to all child-process paths,
+// RTK environment — make ~/.otto/agent/bin visible to all child-process paths,
 // not just the bash tool, and force-disable RTK telemetry for managed use.
 applyRtkProcessEnv(process.env)
 
@@ -174,7 +180,7 @@ process.env.GSD_WORKFLOW_PATH = workflowPath
 
 // GSD_BUNDLED_EXTENSION_PATHS — dynamically discovered bundled extension entry points.
 // Uses the shared discoverExtensionEntryPaths() to scan the bundled resources
-// directory, then remaps discovered paths to agentDir (~/.loop24/agent/extensions/)
+// directory, then remaps discovered paths to agentDir (~/.otto/agent/extensions/)
 // where initResources() will sync them.
 const bundledExtDir = join(resourcesDir, 'extensions')
 const agentExtDir = join(agentDir, 'extensions')

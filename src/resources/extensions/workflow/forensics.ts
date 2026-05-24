@@ -9,6 +9,7 @@
  */
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import { CONFIG_DIR_NAME } from "@loop24/pi-coding-agent";
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -67,7 +68,7 @@ interface ActivityLogMeta {
 }
 
 /**
- * Summary of .loop24/journal/ data for forensic investigation.
+ * Summary of .gsd/journal/ data for forensic investigation.
  *
  * To avoid loading huge journal histories into memory, only the most recent
  * daily files are fully parsed. Older files are line-counted for totals.
@@ -169,7 +170,7 @@ async function writeForensicsDedupPref(ctx: ExtensionCommandContext, enabled: bo
 
   const frontmatter = serializePreferencesToFrontmatter(prefs);
   const raw = existsSync(prefsPath) ? readFileSync(prefsPath, "utf-8") : "";
-  let body = "\n# GSD Skill Preferences\n\nSee `~/.loop24/agent/extensions/workflow/docs/preferences-reference.md` for full field documentation and examples.\n";
+  let body = `\n# GSD Skill Preferences\n\nSee \`~/${CONFIG_DIR_NAME}/agent/extensions/workflow/docs/preferences-reference.md\` for full field documentation and examples.\n`;
   const start = raw.startsWith("---\n") ? 4 : raw.startsWith("---\r\n") ? 5 : -1;
   if (start !== -1) {
     const closingIdx = raw.indexOf("\n---", start);
@@ -241,7 +242,7 @@ export async function handleForensics(
   const report = await buildForensicReport(basePath);
   const savedPath = saveForensicReport(basePath, report, problemDescription);
 
-  // Derive workflow source dir for prompt — fall back to ~/.loop24/agent/extensions/workflow/
+  // Derive workflow source dir for prompt — fall back to ~/.otto/agent/extensions/workflow/
   // when import.meta.url resolves to the npm-global install path (Windows).
   let workflowSourceDir = dirname(fileURLToPath(import.meta.url));
   if (!existsSync(join(workflowSourceDir, "prompts"))) {
@@ -328,7 +329,7 @@ export async function buildForensicReport(basePath: string): Promise<ForensicRep
   }
 
   // 8. version — use GSD_VERSION env var set by the loader at startup.
-  // Extensions run from ~/.loop24/agent/extensions/workflow/ at runtime, so path-traversal
+  // Extensions run from ~/.otto/agent/extensions/workflow/ at runtime, so path-traversal
   // from import.meta.url would resolve to ~/package.json (wrong on every system).
   const workflowVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || "unknown";
 

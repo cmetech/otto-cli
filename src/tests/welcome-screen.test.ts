@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { buildWelcomeScreenLines, printWelcomeScreen } from '../welcome-screen.ts'
+import { CONFIG_DIR_NAME } from '../brand.js'
 
 function capture(opts: Parameters<typeof printWelcomeScreen>[0]): string {
   const chunks: string[] = []
@@ -105,9 +106,9 @@ test('omits remote channel when not provided', () => {
 
 test('Project row truncates with ellipsis when milestone text overflows panel width', (t) => {
   const tmp = mkdtempSync(join(tmpdir(), 'loop24-welcome-test-'))
-  mkdirSync(join(tmp, '.loop24'))
+  mkdirSync(join(tmp, CONFIG_DIR_NAME))
   writeFileSync(
-    join(tmp, '.loop24', 'STATE.md'),
+    join(tmp, CONFIG_DIR_NAME, 'STATE.md'),
     [
       '**Active Milestone:** M001: Todo App – Core add/complete/delete with localStorage persistence and offline sync support',
       '**Phase:** evaluating-gates',
@@ -135,8 +136,8 @@ test('Project row truncates with ellipsis when milestone text overflows panel wi
 
 test('Project row does not truncate short milestone text', (t) => {
   const tmp = mkdtempSync(join(tmpdir(), 'loop24-welcome-test-'))
-  mkdirSync(join(tmp, '.loop24'))
-  writeFileSync(join(tmp, '.loop24', 'STATE.md'), '**Active Milestone:** M001: Short title\n')
+  mkdirSync(join(tmp, CONFIG_DIR_NAME))
+  writeFileSync(join(tmp, CONFIG_DIR_NAME, 'STATE.md'), '**Active Milestone:** M001: Short title\n')
   const origCwd = process.cwd()
   process.chdir(tmp)
   const origColumns = (process.stderr as any).columns

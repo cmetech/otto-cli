@@ -4,7 +4,7 @@
  * One-shot LLM call. Takes a rough developer task description, returns a
  * polished prompt suitable for handing to a coding agent. Prints the
  * polished prompt to stdout (the deliverable) and saves a copy to
- * ~/.loop24/prompts/<YYYY-MM-DD>-<slug>.md (user-scoped history).
+ * ~/.otto/prompts/<YYYY-MM-DD>-<slug>.md (user-scoped history).
  *
  * Compliance: honors LOOP24_GATEWAY_URL when set so all LLM traffic exits
  * through the LOOP24 gateway. Without a gateway, requires ANTHROPIC_API_KEY.
@@ -25,7 +25,7 @@ Examples:
   /otto prompt-engineer add caching to the search endpoint
   /otto prompt-engineer refactor auth module to remove session tokens
 
-Output: polished prompt printed to stdout; copy saved to ~/.loop24/prompts/.`;
+Output: polished prompt printed to stdout; copy saved to ~/.otto/prompts/.`;
 
 const DEFAULT_MODEL = "claude-haiku-4-5-20251001";
 const MAX_TOKENS = 4096;

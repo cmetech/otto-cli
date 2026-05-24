@@ -7,7 +7,7 @@ test("APP_NAME reads piConfig.name from package.json", () => {
 });
 
 test("CONFIG_DIR_NAME reads piConfig.configDir from package.json", () => {
-  assert.equal(CONFIG_DIR_NAME, ".loop24");
+  assert.equal(CONFIG_DIR_NAME, ".otto");
 });
 
 test("COMMAND_NAMESPACE reads piConfig.commandNamespace from package.json", () => {

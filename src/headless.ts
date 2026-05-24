@@ -324,7 +324,7 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
     }
   }
 
-  // For new-milestone, load context and bootstrap .loop24/ before spawning RPC child
+  // For new-milestone, load context and bootstrap .gsd/ before spawning RPC child
   if (isNewMilestone) {
     if (!options.context && !options.contextText) {
       process.stderr.write('[headless] Error: new-milestone requires --context <file> or --context-text <text>\n')
@@ -339,11 +339,11 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
       process.exit(1)
     }
 
-    // Bootstrap .loop24/ if needed
+    // Bootstrap .gsd/ if needed
     const workflowDir = join(process.cwd(), '.gsd')
     if (!existsSync(workflowDir)) {
       if (!options.json) {
-        process.stderr.write('[headless] Bootstrapping .loop24/ project structure...\n')
+        process.stderr.write('[headless] Bootstrapping .gsd/ project structure...\n')
       }
       bootstrapWorkflowProject(process.cwd())
     }
@@ -354,11 +354,11 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
     writeFileSync(join(runtimeDir, 'headless-context.md'), contextContent, 'utf-8')
   }
 
-  // Validate .loop24/ directory (skip for new-milestone since we just bootstrapped it)
+  // Validate .gsd/ directory (skip for new-milestone since we just bootstrapped it)
   const workflowDir = join(process.cwd(), '.gsd')
   if (!isNewMilestone && !existsSync(workflowDir)) {
-    process.stderr.write('[headless] Error: No .loop24/ directory found in current directory.\n')
-    process.stderr.write("[headless] Run 'gsd' interactively first to initialize a project.\n")
+    process.stderr.write('[headless] Error: No .gsd/ directory found in current directory.\n')
+    process.stderr.write("[headless] Run 'otto' interactively first to initialize a project.\n")
     process.exit(1)
   }
 

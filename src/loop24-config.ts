@@ -1,7 +1,7 @@
 /**
  * LOOP24 services config — gateway + langflow.
  *
- * Synchronous read/write of ~/.loop24/config.json. Mirrors src/brand.ts's
+ * Synchronous read/write of ~/.otto/config.json. Mirrors src/brand.ts's
  * loader-safe pattern: no compiled-module imports, no top-level await, no
  * parameter-property constructors. This module is transitively imported by
  * brand.ts so it runs on the --version / --help fast path.
@@ -18,6 +18,7 @@
 import { readFileSync, writeFileSync, mkdirSync, renameSync } from "node:fs"
 import { homedir } from "node:os"
 import { dirname, join } from "node:path"
+import { CONFIG_DIR_NAME } from "./piconfig.js"
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
@@ -49,12 +50,13 @@ export const DEFAULT_CONFIG: Loop24Config = {
 // ─── Paths ────────────────────────────────────────────────────────────────────
 
 /**
- * Resolve ~/.loop24/config.json. Honors LOOP24_HOME (test override) and
- * falls back to homedir(). Matches the convention used by src/app-paths.ts.
+ * Resolve <configDir>/config.json (e.g. ~/.otto/config.json). Honors LOOP24_HOME
+ * (test override) and falls back to homedir(). The dir name comes from the
+ * single piConfig reader, so a rebrand needs no change here.
  */
 export function configPath(): string {
   const root = process.env.LOOP24_HOME || homedir()
-  return join(root, ".loop24", "config.json")
+  return join(root, CONFIG_DIR_NAME, "config.json")
 }
 
 // ─── Read ─────────────────────────────────────────────────────────────────────

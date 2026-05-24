@@ -1,21 +1,12 @@
-// Brand strings are read from package.json piConfig at module load.
-// Mirrors loader.ts's strategy — no compiled-module imports — so this stays
-// fast for the loader's --help fast-path which runs before heavy imports.
-import { fileURLToPath } from 'url'
-import { dirname, resolve, join } from 'path'
-import { readFileSync } from 'fs'
-
-const helpRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-let BRAND = 'LOOP24'
-let CMD = 'loop24'
-let CONFIG_DIR = '.loop24'
-let TAGLINE = 'compliant agent for developers'
-try {
-  const pkg = JSON.parse(readFileSync(join(helpRoot, 'package.json'), 'utf-8'))
-  BRAND = pkg.piConfig?.brandName || BRAND
-  CMD = pkg.piConfig?.commandNamespace || CMD
-  CONFIG_DIR = pkg.piConfig?.configDir || CONFIG_DIR
-} catch { /* fall back to defaults above */ }
+// Brand strings come from the single piConfig reader (src/piconfig.ts), which
+// uses only Node builtins — no compiled-module import — so this stays fast for
+// the loader's --help fast-path which runs before heavy imports.
+import {
+  BRAND_NAME as BRAND,
+  COMMAND_NAMESPACE as CMD,
+  CONFIG_DIR_NAME as CONFIG_DIR,
+  BRAND_TAGLINE as TAGLINE,
+} from './piconfig.js'
 
 const SUBCOMMAND_HELP: Record<string, string> = {
   config: [

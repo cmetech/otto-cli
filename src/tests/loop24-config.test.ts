@@ -11,6 +11,7 @@ import {
   configPath,
   type Loop24Config,
 } from "../loop24-config.js"
+import { CONFIG_DIR_NAME } from "../piconfig.js"
 
 let tmpHome: string
 const ORIGINAL_HOME = process.env.HOME
@@ -34,9 +35,9 @@ afterEach(() => {
   else delete process.env.LOOP24_HOME
 })
 
-test("configPath returns ~/.loop24/config.json under LOOP24_HOME override", () => {
+test("configPath returns <configDir>/config.json under LOOP24_HOME override", () => {
   const p = configPath()
-  assert.equal(p, join(tmpHome, ".loop24", "config.json"))
+  assert.equal(p, join(tmpHome, CONFIG_DIR_NAME, "config.json"))
 })
 
 test("loadConfig returns DEFAULT_CONFIG when no file exists", () => {
@@ -46,7 +47,7 @@ test("loadConfig returns DEFAULT_CONFIG when no file exists", () => {
 
 test("loadConfig returns DEFAULT_CONFIG (with warn) when file is invalid JSON", () => {
   const p = configPath()
-  mkdirSync(join(tmpHome, ".loop24"), { recursive: true })
+  mkdirSync(join(tmpHome, CONFIG_DIR_NAME), { recursive: true })
   writeFileSync(p, "{ not valid json", { mode: 0o600 })
   // No assertion on warn output here — non-throwing is the contract
   const cfg = loadConfig()
@@ -93,8 +94,8 @@ test("saveConfig writes the file with mode 0600", () => {
 })
 
 test("saveConfig creates the parent directory if missing", () => {
-  // tmpHome has no .loop24 yet
-  const dir = join(tmpHome, ".loop24")
+  // tmpHome has no config dir yet
+  const dir = join(tmpHome, CONFIG_DIR_NAME)
   assert.ok(!existsSync(dir), "parent dir does not exist yet")
   saveConfig({
     gateway: { url: "http://x:1/v1", token: null },

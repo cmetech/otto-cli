@@ -14,7 +14,7 @@ import { migratePiCredentials } from './pi-migration.js'
 import { shouldRunOnboarding, runOnboarding } from './onboarding.js'
 import { runLoop24Wizard, shouldRunLoop24Wizard, selectConfigSection } from './loop24-wizard.js'
 import { applyConfigToEnv, configPath } from './loop24-config.js'
-import { COMMAND_NAMESPACE } from './brand.js'
+import { COMMAND_NAMESPACE, CONFIG_DIR_NAME } from './brand.js'
 import chalk from 'chalk'
 import { checkForUpdates } from './update-check.js'
 import { shouldBypassManagedResourceMismatchGate } from './cli-policy.js'
@@ -350,7 +350,7 @@ const isSubcommandExemptFromEarlyTtyCheck = subcommandsExemptFromEarlyTtyCheck.h
 // gateway env var is in place. Same message used by the early-exit guard
 // (piped/non-TTY) and the wizard else-if branch (--mode rpc/mcp/text).
 const MISSING_CONFIG_WARN =
-  `[${COMMAND_NAMESPACE}] No ~/.loop24/config.json yet. ` +
+  `[${COMMAND_NAMESPACE}] No ~/${CONFIG_DIR_NAME}/config.json yet. ` +
   `Run "${COMMAND_NAMESPACE} config" to configure, or set LOOP24_GATEWAY_URL / LANGFLOW_SERVER_URL.\n`
 
 if (!process.stdin.isTTY && !isPrintMode && !isSubcommandExemptFromEarlyTtyCheck && !cliFlags.listModels && !cliFlags.web) {
@@ -524,7 +524,7 @@ if (cliFlags.messages[0] === 'headless') {
   await ensureRtkBootstrap()
   // Sync bundled resources before headless runs (#3471). Without this,
   // headless-query loads from src/resources/ while auto/interactive load
-  // from ~/.loop24/agent/extensions/ — different extension copies diverge.
+  // from ~/.otto/agent/extensions/ — different extension copies diverge.
   initResources(agentDir)
   const { runHeadless, parseHeadlessArgs } = await import('./headless.js')
   await runHeadless(parseHeadlessArgs(process.argv))
@@ -625,7 +625,7 @@ applySecurityOverrides(settingsManager)
 markStartup('SettingsManager.create')
 
 // LOOP24 services first-run wizard (gateway + langflow). Runs once when
-// ~/.loop24/config.json is missing — populates the file via clack prompts
+// ~/.otto/config.json is missing — populates the file via clack prompts
 // and persists with mode 0600. Env vars still win at runtime, so CI is
 // unaffected.
 if (shouldRunLoop24Wizard({ isPrint: isPrintMode, isTTY: !!process.stdin.isTTY })) {
@@ -867,7 +867,7 @@ const cwd = process.cwd()
 const projectSessionsDir = getProjectSessionsDir(cwd)
 
 // Migrate legacy flat sessions: before per-directory scoping, all .jsonl session
-// files lived directly in ~/.loop24/sessions/. Move them into the correct per-cwd
+// files lived directly in ~/.otto/sessions/. Move them into the correct per-cwd
 // subdirectory so /resume can find them.
 migrateLegacyFlatSessions(sessionsDir, projectSessionsDir)
 

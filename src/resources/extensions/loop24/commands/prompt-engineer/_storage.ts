@@ -1,18 +1,19 @@
 /**
  * Prompt-engineer history storage.
  *
- * Saves each polished prompt to ~/.loop24/prompts/<YYYY-MM-DD>-<slug>.md
- * atomically (tmp + rename). Collision-safe: same-day same-slug appends a
- * UTC time suffix.
+ * Saves each polished prompt to <configDir>/prompts/<YYYY-MM-DD>-<slug>.md
+ * (e.g. ~/.otto/prompts) atomically (tmp + rename). Collision-safe: same-day
+ * same-slug appends a UTC time suffix.
  *
- * Default baseDir: ~/.loop24/prompts. Tests inject a temp dir via the
- * baseDir option.
+ * Default baseDir derives from the brand config dir. Tests inject a temp dir
+ * via the baseDir option.
  */
 
 import { writeFile, mkdir, rename } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
+import { CONFIG_DIR_NAME } from "@loop24/pi-coding-agent";
 
 export interface SavePromptHistoryOptions {
   description: string;
@@ -42,7 +43,7 @@ export function slugify(text: string): string {
 }
 
 function defaultBaseDir(): string {
-  return join(homedir(), ".loop24", "prompts");
+  return join(homedir(), CONFIG_DIR_NAME, "prompts");
 }
 
 function todayUtcDate(): string {

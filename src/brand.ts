@@ -1,49 +1,19 @@
 /**
- * Shared brand strings.
- *
- * Reads piConfig from package.json synchronously at module load — mirrors
- * src/help-text.ts and src/app-paths.ts so we don't import any compiled
- * @loop24/pi-coding-agent module (this file may be pulled in early by the
- * onboarding/welcome paths).
+ * Shared brand strings, re-exported from the single piConfig reader
+ * (src/piconfig.ts). This module additionally wires the LOOP24 services-config
+ * side effect and the optional gateway env reads. It avoids importing any
+ * compiled @loop24/pi-coding-agent module because it may be pulled in early by
+ * the onboarding/welcome paths.
  */
 // Load LOOP24 services config first — its module-load side effect populates
-// process.env from ~/.loop24/config.json for any env var that is unset.
+// process.env from ~/.otto/config.json for any env var that is unset.
 // This ensures the LOOP24_GATEWAY_URL read below picks up config-file values
 // when no env override is in place.
 import './loop24-config.js'
-import { fileURLToPath } from 'node:url'
-import { dirname, join, resolve } from 'node:path'
-import { readFileSync } from 'node:fs'
+// Brand strings come from the single piConfig reader (src/piconfig.ts).
+import { BRAND_NAME, COMMAND_NAMESPACE, CONFIG_DIR_NAME, BRAND_TAGLINE } from './piconfig.js'
 
-const _here = dirname(fileURLToPath(import.meta.url))
-const _pkgRoot = resolve(_here, '..')
-
-let _brand = 'LOOP24'
-let _command = 'loop24'
-let _configDir = '.loop24'
-let _tagline = 'compliant agent for developers'
-
-try {
-  const pkg = JSON.parse(readFileSync(join(_pkgRoot, 'package.json'), 'utf-8')) as {
-    piConfig?: {
-      brandName?: string
-      commandNamespace?: string
-      configDir?: string
-      tagline?: string
-    }
-  }
-  if (pkg.piConfig?.brandName) _brand = pkg.piConfig.brandName
-  if (pkg.piConfig?.commandNamespace) _command = pkg.piConfig.commandNamespace
-  if (pkg.piConfig?.configDir) _configDir = pkg.piConfig.configDir
-  if (pkg.piConfig?.tagline) _tagline = pkg.piConfig.tagline
-} catch {
-  /* fall back to defaults above */
-}
-
-export const BRAND_NAME = _brand
-export const COMMAND_NAMESPACE = _command
-export const CONFIG_DIR_NAME = _configDir
-export const BRAND_TAGLINE = _tagline
+export { BRAND_NAME, COMMAND_NAMESPACE, CONFIG_DIR_NAME, BRAND_TAGLINE }
 
 /**
  * Optional gateway routing for LLM traffic. When LOOP24_GATEWAY_URL is set,
@@ -52,7 +22,7 @@ export const BRAND_TAGLINE = _tagline
  * without persisting to the user's config dir.
  *
  * In Phase 1 these are env-var only. Phase 2b's first-run wizard adds
- * persistent storage under ~/.loop24/config.json.
+ * persistent storage under ~/.otto/config.json.
  */
 export const LOOP24_GATEWAY_URL: string | undefined = process.env.LOOP24_GATEWAY_URL?.trim() || undefined
 export const LOOP24_GATEWAY_TOKEN: string | undefined = process.env.LOOP24_GATEWAY_TOKEN?.trim() || undefined

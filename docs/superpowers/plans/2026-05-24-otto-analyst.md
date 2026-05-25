@@ -140,16 +140,18 @@ git commit -m "feat(analyst): add getDeliverablesDir() config resolver"
 
 ### Task 2: Add the DuckDB dependency
 
+OTTO ships as a standard npm package (`@ericsson/loop24`, `bin: otto → dist/loader.js`) — **not** a self-contained bundle — and its `files` array excludes `node_modules`. So runtime `dependencies` are resolved by the **user's** `npm install -g`, for their platform. `@duckdb/node-api` follows the same platform-specific-native pattern OTTO already uses for `@opengsd/engine-*`/`fsevents`/`koffi`: DuckDB publishes `@duckdb/node-bindings-<platform>` packages that npm auto-selects per OS/arch — no compiler, no GitHub download. So it "comes with OTTO" automatically, **provided** it is a real `dependency` (below) and the publish registry carries the platform bindings (Task 12).
+
 **Files:**
 - Modify: `package.json` (dependencies)
 
-- [ ] **Step 1: Install**
+- [ ] **Step 1: Install as a runtime dependency (not devDependency)**
 
 Run:
 ```bash
-npm install @duckdb/node-api@^1.2.0
+npm install --save @duckdb/node-api@^1.2.0
 ```
-Expected: `@duckdb/node-api` appears in `package.json` dependencies; prebuilt native binary installs without a compiler.
+Expected: `@duckdb/node-api` appears under `"dependencies"` (NOT `devDependencies`) in `package.json` — the analyst extension is bundled and runs in prod. Its `@duckdb/node-bindings-*` platform packages install as optional deps without a compiler.
 
 - [ ] **Step 2: Verify it loads**
 
@@ -159,11 +161,19 @@ node --input-type=module -e "import('@duckdb/node-api').then(m=>{const i=m.DuckD
 ```
 Expected: prints `function`.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: Record the platform bindings to verify at publish (for Task 12)**
+
+Run (lists which DuckDB binding packages npm pulled for this platform — the full set across platforms must be mirror-published before OTTO ships):
+```bash
+node -e "const l=require('./package-lock.json'); console.log(Object.keys(l.packages||{}).filter(k=>k.includes('@duckdb/node-bindings')))"
+```
+Expected: prints the binding package(s), e.g. `node_modules/@duckdb/node-bindings-darwin-arm64`. Note the family name `@duckdb/node-bindings-*` — Task 12 verifies all target-platform variants are resolvable on the publish registry.
+
+- [ ] **Step 4: Commit**
 
 ```bash
 git add package.json package-lock.json
-git commit -m "build(analyst): add @duckdb/node-api dependency"
+git commit -m "build(analyst): add @duckdb/node-api runtime dependency"
 ```
 
 ---
@@ -1804,6 +1814,7 @@ git commit -m "test(analyst): end-to-end ingest→analyze→deliver with resume"
 **Files:**
 - Modify: `package.json` (`test:integration` glob to include analyst tests)
 - Verify: extension auto-discovery + resource copy
+- Verify/extend: `scripts/verify-native-platform-packages.mjs` (DuckDB platform bindings present on the publish registry)
 
 - [ ] **Step 1: Add analyst tests to the integration glob**
 
@@ -1847,11 +1858,43 @@ node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experim
 ```
 Expected: all PASS.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6: Ensure DuckDB platform bindings ship to end users (distribution gate)**
+
+OTTO installs as a plain npm package, so `@duckdb/node-api` reaches end users via their `npm install` — **but only if every target platform's `@duckdb/node-bindings-*` is resolvable on the publish registry** (the same concern `verify-native-platform-packages.mjs` already enforces for `@opengsd/engine-*`). DuckDB publishes these to the public registry; the risk is an enterprise **private mirror** (the `@ericsson/` scope implies one) missing a platform variant — a mac user installs fine, a Windows user fails.
+
+Extend `scripts/verify-native-platform-packages.mjs` to also check the DuckDB bindings. After the existing `@opengsd/engine-*` loop, add:
+
+```js
+// DuckDB native bindings — third-party-published, but must be resolvable on the
+// publish registry/mirror for every platform OTTO supports.
+const DUCKDB_BINDINGS = [
+  "@duckdb/node-bindings-darwin-arm64",
+  "@duckdb/node-bindings-darwin-x64",
+  "@duckdb/node-bindings-linux-arm64",
+  "@duckdb/node-bindings-linux-x64",
+  "@duckdb/node-bindings-win32-x64",
+];
+for (const name of DUCKDB_BINDINGS) {
+  const result = spawnSync("npm", ["view", name, "version"], { encoding: "utf8", shell: process.platform === "win32" });
+  if (result.status === 0 && result.stdout.trim()) {
+    process.stdout.write(`verified ${name}: ${result.stdout.trim()}\n`);
+  } else {
+    missing.push(name);
+  }
+}
+```
+
+Run the gate:
+```bash
+npm run verify:native-platform-packages
+```
+Expected: prints `verified @duckdb/node-bindings-*` for each platform and passes. If a binding is missing on a private mirror, publish/mirror it before shipping OTTO. *(Confirm the exact binding package names against the installed `@duckdb/node-api` version — list them via the Task 2, Step 3 command — and adjust the array to match.)*
+
+- [ ] **Step 7: Commit**
 
 ```bash
-git add package.json
-git commit -m "build(analyst): register analyst extension tests in the integration suite"
+git add package.json scripts/verify-native-platform-packages.mjs
+git commit -m "build(analyst): register analyst tests + verify DuckDB platform bindings at publish"
 ```
 
 ---
@@ -1908,6 +1951,7 @@ Ask for an intentionally long analysis (or temporarily lower `BACKGROUND_THRESHO
 - On-disk-state resume → Tasks 3 (persistence test), 11 (integration), 13 (manual).
 - **Security model (LLM-generated SQL):** engine lockdown → Task 3 (secure-config + SECURITY test: `read_csv`/`INSTALL`/`COPY`/`SET` all reject); isolated privileged ingest → Task 4 (`ingest.ts` two-instance + `loadRows`); path policy (allowed-root **and** confirm) → Task 4 (`path-policy.ts`) + Task 9 (ingest tool confirm-flow test) + Task 10 (`getAllowedRoots`); timeout/interrupt → Task 5 (timeout test). Deferred parity: credential vault, worker-isolation for TS cells (see Security model section).
 - Error handling (SQL errors as results, not throws) → Task 5; ingest rejects bad types/remote paths → Task 4.
+- **Distribution:** DuckDB reaches end users via the normal npm install (runtime `dependency`, Task 2) — OTTO is not a self-contained bundle; the native binary auto-resolves per platform like the existing `@opengsd/engine-*`. Publish-registry/private-mirror coverage of all `@duckdb/node-bindings-*` platforms is gated in Task 12, Step 6.
 - Testing strategy → Tasks 3–11 unit/integration; 13 golden path.
 
 **Gap found & resolved:** the spec lists **Excel** ingest. DuckDB's excel reader needs the `excel` extension (`INSTALL excel; LOAD excel;`) which adds runtime/network setup risk and conflicts with the locked-down posture (extensions disabled). **Decision:** MVP ships CSV/Parquet/JSON; Excel is a follow-up handled inside the *privileged* read instance only (extend `READERS` + scoped `INSTALL excel` in the in-memory reader, never in the session instance). Recorded as a conscious cut.

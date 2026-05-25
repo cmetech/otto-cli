@@ -74,6 +74,7 @@ Thumbs.db
 *.log
 
 # Local scratch files
+.worktrees/
 preflight-script.ts
 RELEASE-GUIDE.md
 TODOS.md

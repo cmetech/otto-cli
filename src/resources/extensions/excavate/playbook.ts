@@ -24,7 +24,7 @@ export function buildPlaybook({ target, workspace, skillPaths }: PlaybookInput):
 ## Stage 0 — Workspace init (run directly with bash)
 \`\`\`bash
 WS="${workspace}"
-mkdir -p "$WS"/raw/source "$WS"/raw/synthesis "$WS"/raw/specs/modules "$WS"/raw/specs/journeys "$WS"/raw/specs/contracts "$WS"/provenance
+mkdir -p "$WS"/raw/source "$WS"/raw/synthesis "$WS"/raw/specs/modules "$WS"/raw/specs/journeys "$WS"/raw/specs/contracts "$WS"/raw/specs/test-vectors "$WS"/raw/specs/validation/acceptance-criteria "$WS"/provenance
 cd "$WS" && git init -q && printf '%s\\n' '.gitignore' > .gitignore 2>/dev/null || true
 \`\`\`
 Write \`$WS/workspace.json\` with { target: "${target}", created_at: <now>, tier: "raw", stages: [] }. Commit: \`[init] workspace for ${target}\`.
@@ -45,9 +45,15 @@ Then dispatch (parallel):
 - ROLE contract-extractor → Read \`${skillPaths["excavate-spec-writing"]}\`. Extract CLI flags, env vars, config keys to \`${workspace}/raw/specs/contracts/\`.
 Commit after the batch.
 
-## Stage 4 — Light verification
-Dispatch ROLE verifier → Read \`${skillPaths["excavate-validation"]}\`. Read all specs in \`${workspace}/raw/specs/\`; check provenance coverage (every claim cited) and cross-spec consistency. Write \`${workspace}/raw/specs/verification-report.md\` with a PASS/FAIL line and any gaps. (No remediation loop — report only.) Commit.
+## Stage 4 — Test vectors & acceptance criteria (parallel, ≤4)
+Dispatch in parallel:
+- ROLE test-vector-generator → Read \`${skillPaths["excavate-validation"]}\`. From the module specs in \`${workspace}/raw/specs/modules/\` and contracts in \`${workspace}/raw/specs/contracts/\`, write concrete test vectors to \`${workspace}/raw/specs/test-vectors/\`: CLI invocation → expected output (and exit code), function input → output pairs, and error-condition cases. Each vector carries a \`<!-- cite: file:Lx-Ly -->\` citation. Vectors MUST be concrete input/output, never abstract descriptions.
+- ROLE acceptance-criteria-writer → Read \`${skillPaths["excavate-validation"]}\`. From the module specs in \`${workspace}/raw/specs/modules/\`, write Given/When/Then acceptance criteria to \`${workspace}/raw/specs/validation/acceptance-criteria/\`: each criterion has an \`AC-{DOMAIN}-{NNN}\` ID, a priority (P0–P2), and a verification method.
+Commit after the batch: \`[stage-4] test vectors + acceptance criteria\`.
 
-## Stage 5 — Summary
-Print: target, workspace, modules documented, total spec files, verification PASS/FAIL. Tell the user the specs are at \`${workspace}/raw/specs/\` with grep-able \`<!-- cite: -->\` provenance. STOP.`;
+## Stage 5 — Verification
+Dispatch ROLE verifier → Read \`${skillPaths["excavate-validation"]}\`. Read all specs in \`${workspace}/raw/specs/\`; check: (a) provenance coverage — every claim cited; (b) cross-spec consistency; (c) every P0 module has ≥1 test vector and ≥1 acceptance criterion; (d) test vectors contain concrete input/output (not abstract descriptions); (e) acceptance criteria have valid \`AC-{DOMAIN}-{NNN}\` IDs, Given/When/Then structure, and a verification method. Write \`${workspace}/raw/specs/verification-report.md\` with a PASS/FAIL line and any gaps. (No remediation loop — report only.) Commit.
+
+## Stage 6 — Summary
+Print: target, workspace, modules documented, total spec files, test-vector count, acceptance-criterion count, verification PASS/FAIL. Tell the user the specs are at \`${workspace}/raw/specs/\` with grep-able \`<!-- cite: -->\` provenance. STOP.`;
 }

@@ -30,4 +30,11 @@ describe("buildPlaybook", () => {
     assert.match(playbook, /contracts/i);
     assert.match(playbook, /verification-report/i);
   });
+  it("includes the L4 test-vectors + acceptance-criteria stage", () => {
+    assert.match(playbook, /raw\/specs\/test-vectors/);
+    assert.match(playbook, /raw\/specs\/validation\/acceptance-criteria/);
+    assert.match(playbook, /test-vector-generator/);
+    assert.match(playbook, /acceptance-criteria-writer/);
+    assert.match(playbook, /AC-\{DOMAIN\}-\{NNN\}/);
+  });
 });

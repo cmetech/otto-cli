@@ -1,5 +1,5 @@
 {
-  "name": "@ericsson/loop24",
+  "name": "@cmetech/otto",
   "version": "1.0.1",
   "description": "Terminal-based developer chat assistant. Permanent hard fork of gsd-pi with LangFlow flow triggers, a flow builder, and optional gateway routing for compliance environments.",
   "keywords": [

@@ -103,7 +103,7 @@ digraph gate_evaluation {
 }
 ```
 
-### Spec Gate (after specs are written)
+### Gate 1 — Spec Gate (after specs are written)
 
 - [ ] Zero contradictions between specs
 - [ ] All crypto claims and constants verified against source (not assumed)
@@ -112,7 +112,7 @@ digraph gate_evaluation {
 - [ ] All modules have specs
 - [ ] Zero uncited behavioral claims in output candidates
 
-### Acceptance-Criteria Gate (after ACs are written)
+### Gate 2 — AC Gate (after L4 — test vectors and acceptance criteria)
 
 - [ ] Zero implementation leakage in specs
 - [ ] Zero P0 completeness gaps
@@ -121,6 +121,24 @@ digraph gate_evaluation {
 - [ ] All ACs are testable
 - [ ] All modules have ACs
 - [ ] Gap report reviewed
+
+### Remediation Loop
+
+Gates are blocking. When a gate's verdict is FAIL, the orchestrator dispatches
+remediation workers — one per offending file named in the report — and re-runs the
+gate. Each remediation worker fixes ONLY the findings named for its file; it does
+not rewrite specs that already pass. The loop runs up to **3 rounds** per gate. If
+the gate still FAILs after the 3rd round, its verdict becomes **BLOCKED**: the
+pipeline stops, later stages do not run, and the run summary leads with the
+unresolved findings. A blocked Gate 1 means test-vector generation and Gate 2
+never run.
+
+### Gate Report Format
+
+Every gate writes a report whose first line is the verdict — one of `PASS`,
+`FAIL`, or `BLOCKED`. Each failing criterion is a finding that names the offending
+file(s) and states what must change to pass. The report ends with a quantitative
+summary (criteria checked, findings, coverage %).
 
 ### Implementation Leakage Definition
 

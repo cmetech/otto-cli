@@ -253,20 +253,45 @@ makes reaching for them the default).
 
 ## 9. Error handling & safety
 
-- **Execution gates:** every cell passes through `execution-policy` — same
-  allow/deny posture as bash. The threat model is the user's own data on their own
-  laptop, so the gate (not a hard sandbox) is the appropriate control.
-- **Worker crash / OOM:** caught by the host, surfaced as `CellResult.error`;
-  `reset()` restarts the worker. The DuckDB file is intact → **no data loss**.
-- **Timeouts:** cell `≈ 2 × estMs` with `progress()` heartbeat; abort via
-  `AbortSignal`. Background jobs cancellable via `cancel_job` / `/jobs`.
-- **Ingest failures:** bad/locked/oversized file → structured error with the
-  DuckDB message surfaced; partial loads roll back the table.
-- **Deliverable integrity:** `metadata.json` is zod-validated on read; a corrupt
-  record raises on load rather than round-tripping bad data.
-- **Secrets:** none required for the MVP (local files). When the vault lands
-  (deferred), secrets inject as env vars into the worker, never into code the
-  model sees.
+The SQL is **LLM-generated from prompts**, and ingested data can carry
+prompt-injection. DuckDB is **not** a sandbox by default (raw SQL can read/write
+files, reach the network via `httpfs`, install extensions, `ATTACH` databases),
+so defense is at the **engine level**, not the `execution-policy` shell gate
+(which understands bash commands, not SQL semantics, and would not catch any of
+this):
+
+- **Locked-down session engine:** the DuckDB instance that runs LLM cells is
+  created with `enable_external_access=false`, `allow_community_extensions=false`,
+  `allow_unsigned_extensions=false`, `lock_configuration=true` (SQL can't
+  re-enable), plus `memory_limit`/`threads`/`max_temp_directory_size`. This
+  neutralizes file/network/extension/attach at the engine — no blocklist to
+  bypass.
+- **Isolated privileged ingest:** because `enable_external_access` is fixed at
+  instance creation, file reading happens in a **separate short-lived in-memory
+  instance** (external access on) that runs **only our fixed reader** on a
+  **validated path** — never LLM SQL. Rows are bulk-loaded into the locked
+  session instance through JS, so the cell-running engine never touches the
+  filesystem.
+- **Path policy (both controls):** `classifyIngestPath()` rejects remote-looking
+  paths (`://`) and non-files, **allows** files within allowed roots (cwd +
+  configured data dirs), and **requires user confirmation** (`ctx.ui.confirm`)
+  for files outside them. Fails closed (no UI → declined).
+- **Timeout + interrupt:** cells honor an `AbortSignal` and a hard per-cell
+  timeout via `connection.interrupt()` (best-effort; hard kill arrives with the
+  deferred worker backend). Background jobs cancellable via `cancel_job` / `/jobs`.
+- **SQL errors as results:** a failing cell returns `CellResult.error` rather than
+  throwing, so the model can self-correct.
+- **Deliverable integrity:** `metadata.json` is typebox-validated on read; a
+  corrupt record raises on load rather than round-tripping bad data.
+- **Secrets:** none required for the MVP (local files only). When the vault lands
+  (deferred), adopt Anton's pattern — secrets injected as env vars, never into
+  code the model sees.
+
+> **Alignment with Anton:** Anton runs arbitrary Python in a venv with **no**
+> capability sandbox (relying on env isolation + an optional OS firewall +
+> credential vault). For the SQL MVP, OTTO is **stronger** on capability lockdown.
+> Two deferred parity items: the credential vault, and worker-level isolation when
+> TS cells arrive (which re-introduce Anton's arbitrary-code threat model).
 
 ---
 

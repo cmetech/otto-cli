@@ -221,3 +221,35 @@ The goal is specs you'd trust enough to implement from. Apply judgment, not arit
 - **Too many assumptions:** Dispatch additional intelligence-gathering workers. Try a different angle on the source.
 - **Claims lack corroboration:** Check if other sources have evidence. A claim from source alone is `inferred`; the same claim confirmed by docs becomes `confirmed`.
 - **Uncited claims in output:** Hard failure — blocked until resolved. Trace each uncited claim back to its originating worker and require a citation.
+
+## Test Vector Examples
+
+Test vectors are concrete input/output pairs an implementer can run to confirm a
+rebuild matches. Always concrete — never "should handle X correctly".
+
+### CLI invocation → expected output
+```
+$ greet --shout Ada
+HELLO, ADA!
+exit: 0
+```
+<!-- cite: cli.mjs:L5-L11 -->
+
+### Function input → output
+```
+greet("Ada", { shout: false })  → "Hello, Ada!"
+greet("Ada", { shout: true })   → "HELLO, ADA!"
+greet("",    {})                 → "Hello, !"
+```
+<!-- cite: greet.mjs:L3-L4 -->
+
+### Error / edge condition
+```
+$ greet --name
+(no value after --name → retains previous name; exit 0, prints "Hello, world!")
+```
+<!-- cite: args.mjs:L6-L14 -->
+
+Each vector pairs a concrete input with the exact expected output (and exit code
+for CLI cases) and carries a provenance citation. Every P0 acceptance criterion
+must have at least one corresponding test vector.

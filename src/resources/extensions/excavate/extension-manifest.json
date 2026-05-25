@@ -1,0 +1,9 @@
+{
+  "id": "excavate",
+  "name": "Excavate",
+  "version": "1.0.0",
+  "description": "Reverse-engineer a codebase into provenance-cited behavioral specs",
+  "tier": "bundled",
+  "requires": { "platform": ">=2.29.0" },
+  "provides": { "commands": ["excavate"] }
+}

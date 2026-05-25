@@ -11,7 +11,9 @@ export interface DashboardInput {
 
 /** Produce a single self-contained HTML page that renders an ECharts chart. */
 export function renderDashboard(input: DashboardInput): string {
-	const optionJson = JSON.stringify(input.option);
+	const optionJson = JSON.stringify(input.option, (_key, value) =>
+		typeof value === "bigint" ? Number(value) : value,
+	);
 	const safeTitle = escapeHtml(input.title);
 	return `<!doctype html>
 <html lang="en">

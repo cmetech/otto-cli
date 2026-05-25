@@ -236,6 +236,11 @@ export function getSessionsDir(): string {
 	return join(getAgentDir(), "sessions");
 }
 
+/** Get path to deliverables directory */
+export function getDeliverablesDir(): string {
+	return join(getAgentDir(), "deliverables");
+}
+
 /** Get path to content-addressed blob store directory */
 export function getBlobsDir(): string {
 	return join(getAgentDir(), "blobs");

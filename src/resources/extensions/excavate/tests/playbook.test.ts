@@ -28,7 +28,7 @@ describe("buildPlaybook", () => {
     assert.match(playbook, /module-map/i);
     assert.match(playbook, /journeys/i);
     assert.match(playbook, /contracts/i);
-    assert.match(playbook, /verification-report/i);
+    assert.match(playbook, /gate-1-report/i);
   });
   it("includes the L4 test-vectors + acceptance-criteria stage", () => {
     assert.match(playbook, /raw\/specs\/test-vectors/);
@@ -36,5 +36,20 @@ describe("buildPlaybook", () => {
     assert.match(playbook, /test-vector-generator/);
     assert.match(playbook, /acceptance-criteria-writer/);
     assert.match(playbook, /AC-\{DOMAIN\}-\{NNN\}/);
+  });
+  it("runs two blocking gates with remediation loops", () => {
+    assert.match(playbook, /Gate 1/);
+    assert.match(playbook, /Gate 2/);
+    assert.match(playbook, /raw\/specs\/gate-1-report\.md/);
+    assert.match(playbook, /raw\/specs\/gate-2-report\.md/);
+    assert.match(playbook, /spec-remediator/);
+    assert.match(playbook, /ac-remediator/);
+    assert.match(playbook, /3 remediation rounds/i);
+    assert.match(playbook, /BLOCKED/);
+    assert.match(playbook, /contradiction/i);
+    assert.match(playbook, /implementation leakage/i);
+    // Gate 1 precedes the test-vector stage; Gate 2 follows it.
+    assert.ok(playbook.indexOf("Gate 1") < playbook.indexOf("test-vector-generator"));
+    assert.ok(playbook.indexOf("test-vector-generator") < playbook.indexOf("Gate 2"));
   });
 });

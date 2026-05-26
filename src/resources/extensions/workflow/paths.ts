@@ -426,6 +426,62 @@ export function workflowRoot(basePath: string): string {
   return result;
 }
 
+/**
+ * Like `workflowRoot()` but returns null instead of throwing or falling back to
+ * a creation-default path. Use this everywhere a "project may not exist" check
+ * is appropriate (boot path, /gsd command guards).
+ *
+ * Detection order at each ancestor level walked:
+ *   1. <dir>/.otto/workflow/    (post-rebrand canonical)
+ *   2. <dir>/.gsd/              (legacy)
+ *
+ * Returns null when no marker is found anywhere in the ancestor walk (bounded
+ * by git root if inside a git repo, or by filesystem root otherwise). A
+ * directory whose only .otto/ content is user-config (no workflow/ subdir) is
+ * NOT treated as a project — the walk continues upward.
+ */
+export function workflowRootOrNull(basePath: string): string | null {
+  let cursor: string;
+  try {
+    cursor = realpathSync.native(basePath);
+  } catch {
+    cursor = resolve(basePath);
+  }
+
+  let boundary = "/";
+  try {
+    const out = spawnSync("git", ["rev-parse", "--show-toplevel"], {
+      cwd: cursor,
+      encoding: "utf-8",
+    });
+    if (out.status === 0) {
+      const r = out.stdout.trim();
+      if (r) {
+        try {
+          boundary = realpathSync.native(r);
+        } catch {
+          boundary = resolve(r);
+        }
+      }
+    }
+  } catch {
+    // git not available — walk to filesystem root
+  }
+
+  while (true) {
+    const ottoWorkflow = join(cursor, ".otto", "workflow");
+    if (existsSync(ottoWorkflow)) return normalizeRealPath(ottoWorkflow);
+
+    const gsd = join(cursor, ".gsd");
+    if (existsSync(gsd)) return normalizeRealPath(gsd);
+
+    if (cursor === boundary) return null;
+    const parent = dirname(cursor);
+    if (parent === cursor) return null;
+    cursor = parent;
+  }
+}
+
 function assertNotGlobalWorkflowHome(basePath: string, result: string): void {
   const norm = (p: string): string => {
     let r: string;

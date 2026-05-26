@@ -1,4 +1,4 @@
-// Project/App: Open GSD
+// Project/App: OTTO
 // File Purpose: Shared helpers for syncing and verifying release version surfaces.
 const fs = require("node:fs");
 const path = require("node:path");
@@ -23,6 +23,14 @@ const PLATFORM_PACKAGE_DIRS = [
   "native/npm/linux-x64-gnu",
   "native/npm/win32-x64-msvc",
 ];
+
+const PLATFORM_PACKAGE_NAMES = new Map([
+  ["native/npm/darwin-arm64", "@cmetech/otto-engine-darwin-arm64"],
+  ["native/npm/darwin-x64", "@cmetech/otto-engine-darwin-x64"],
+  ["native/npm/linux-arm64-gnu", "@cmetech/otto-engine-linux-arm64-gnu"],
+  ["native/npm/linux-x64-gnu", "@cmetech/otto-engine-linux-x64-gnu"],
+  ["native/npm/win32-x64-msvc", "@cmetech/otto-engine-win32-x64-msvc"],
+]);
 
 const INTERNAL_PACKAGE_NAMES = new Set([
   "@otto-build/contracts",
@@ -104,11 +112,10 @@ function syncNativeCargoVersion(root, version) {
 }
 
 function syncVersionSurfaces(root, version, options = {}) {
+  const rootPkgPath = path.join(root, "package.json");
+  const rootPkg = readJson(rootPkgPath);
   if (options.updateRoot !== false) {
-    const rootPkgPath = path.join(root, "package.json");
-    const rootPkg = readJson(rootPkgPath);
     rootPkg.version = version;
-    writeJson(rootPkgPath, rootPkg);
   }
 
   for (const packageDir of RELEASE_WORKSPACE_PACKAGE_DIRS) {
@@ -117,8 +124,14 @@ function syncVersionSurfaces(root, version, options = {}) {
 
   for (const packageDir of PLATFORM_PACKAGE_DIRS) {
     setPackageVersion(root, packageDir, version);
+    const packageName = PLATFORM_PACKAGE_NAMES.get(packageDir);
+    if (packageName) {
+      rootPkg.optionalDependencies = rootPkg.optionalDependencies || {};
+      rootPkg.optionalDependencies[packageName] = version;
+    }
   }
 
+  writeJson(rootPkgPath, rootPkg);
   setPackageVersion(root, "pkg", version);
   syncNativeCargoVersion(root, version);
 }
@@ -195,6 +208,13 @@ function verifyVersionSync(root) {
   }
   for (const packageDir of PLATFORM_PACKAGE_DIRS) {
     verifyPackage(root, packageDir, expectedVersion, issues);
+  }
+  const rootPkg = readJson(path.join(root, "package.json"));
+  for (const packageName of PLATFORM_PACKAGE_NAMES.values()) {
+    const range = rootPkg.optionalDependencies?.[packageName];
+    if (range !== expectedVersion) {
+      issues.push(`package.json optionalDependencies.${packageName} is ${range}, expected ${expectedVersion}`);
+    }
   }
   verifyPackage(root, "pkg", expectedVersion, issues);
   verifyLockfile(root, expectedVersion, issues);

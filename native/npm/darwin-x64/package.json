@@ -1,6 +1,6 @@
 {
   "name": "@cmetech/otto-engine-darwin-x64",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "OTTO native engine binary for darwin-x64",
   "os": [
     "darwin"

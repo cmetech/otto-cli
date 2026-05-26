@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Project/App: Open GSD
+// Project/App: OTTO
 // File Purpose: Command-line guard for release version surface alignment.
 const path = require("node:path");
 const { verifyVersionSync } = require("./lib/version-sync.cjs");

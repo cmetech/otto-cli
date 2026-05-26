@@ -1,5 +1,5 @@
 /**
- * commands-workflow-custom.test.ts — Tests for `/gsd workflow` subcommands
+ * commands-workflow-custom.test.ts — Tests for `/otto workflow` subcommands
  * and catalog completions.
  *
  * Uses real temp directories with actual definition YAML files.
@@ -74,7 +74,7 @@ function createMockPi() {
 
 /** Write a minimal valid workflow definition YAML to the expected location. */
 function writeDefinition(basePath: string, name: string, content: string): void {
-  const defsDir = join(basePath, ".gsd", "workflow-defs");
+  const defsDir = join(basePath, ".otto/workflow", "workflow-defs");
   mkdirSync(defsDir, { recursive: true });
   writeFileSync(join(defsDir, `${name}.yaml`), content, "utf-8");
 }
@@ -143,7 +143,7 @@ describe("workflow catalog registration", () => {
     writeDefinition(base, "deploy-pipeline", SIMPLE_DEF);
     writeDefinition(base, "test-suite", SIMPLE_DEF);
 
-    // Change cwd so the completion scanner can find `.gsd/workflow-defs/`
+    // Change cwd so the completion scanner can find `.otto/workflow/workflow-defs/`
     process.chdir(base);
 
     const completions = getWorkflowArgumentCompletions("workflow run ");
@@ -192,7 +192,7 @@ describe("workflow command handler", () => {
     return { handled, notifications: ctx.notifications };
   }
 
-  it("bare '/gsd workflow' lists plugins grouped by mode", async () => {
+  it("bare '/otto workflow' lists plugins grouped by mode", async () => {
     const { handled, notifications } = await callHandler("workflow");
     assert.ok(handled, "should be handled");
     assert.ok(
@@ -201,7 +201,7 @@ describe("workflow command handler", () => {
     );
   });
 
-  it("'/gsd workflow new' shows skill invocation message", async () => {
+  it("'/otto workflow new' shows skill invocation message", async () => {
     const { handled, notifications } = await callHandler("workflow new");
     assert.ok(handled, "should be handled");
     assert.ok(
@@ -210,7 +210,7 @@ describe("workflow command handler", () => {
     );
   });
 
-  it("'/gsd workflow run' without name shows usage warning", async () => {
+  it("'/otto workflow run' without name shows usage warning", async () => {
     const { handled, notifications } = await callHandler("workflow run");
     assert.ok(handled, "should be handled");
     assert.ok(
@@ -233,7 +233,7 @@ describe("workflow command handler", () => {
     );
   });
 
-  it("'/gsd workflow run nonexistent' shows error for missing definition", async () => {
+  it("'/otto workflow run nonexistent' shows error for missing definition", async () => {
     const { handled, notifications } = await callHandler("workflow run nonexistent-def-12345");
     assert.ok(handled, "should be handled");
     assert.ok(
@@ -242,7 +242,7 @@ describe("workflow command handler", () => {
     );
   });
 
-  it("'/gsd workflow validate' without name shows usage warning", async () => {
+  it("'/otto workflow validate' without name shows usage warning", async () => {
     const { handled, notifications } = await callHandler("workflow validate");
     assert.ok(handled, "should be handled");
     assert.ok(
@@ -251,7 +251,7 @@ describe("workflow command handler", () => {
     );
   });
 
-  it("'/gsd workflow validate nonexistent' shows definition not found", async () => {
+  it("'/otto workflow validate nonexistent' shows definition not found", async () => {
     const { handled, notifications } = await callHandler("workflow validate nonexistent-def-12345");
     assert.ok(handled, "should be handled");
     assert.ok(
@@ -260,7 +260,7 @@ describe("workflow command handler", () => {
     );
   });
 
-  it("'/gsd workflow pause' without custom engine shows warning", async () => {
+  it("'/otto workflow pause' without custom engine shows warning", async () => {
     const { handled, notifications } = await callHandler("workflow pause");
     assert.ok(handled, "should be handled");
     assert.ok(
@@ -269,7 +269,7 @@ describe("workflow command handler", () => {
     );
   });
 
-  it("'/gsd workflow resume' without custom engine shows warning", async () => {
+  it("'/otto workflow resume' without custom engine shows warning", async () => {
     const { handled, notifications } = await callHandler("workflow resume");
     assert.ok(handled, "should be handled");
     assert.ok(
@@ -278,7 +278,7 @@ describe("workflow command handler", () => {
     );
   });
 
-  it("'/gsd workflow unknown-sub' shows unknown subcommand", async () => {
+  it("'/otto workflow unknown-sub' shows unknown subcommand", async () => {
     const { handled, notifications } = await callHandler("workflow blurble");
     assert.ok(handled, "should be handled");
     assert.ok(
@@ -287,7 +287,7 @@ describe("workflow command handler", () => {
     );
   });
 
-  it("'/gsd workflow list' with no runs shows empty message", async () => {
+  it("'/otto workflow list' with no runs shows empty message", async () => {
     const { handled, notifications } = await callHandler("workflow list");
     assert.ok(handled, "should be handled");
     assert.ok(

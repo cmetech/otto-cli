@@ -1,6 +1,6 @@
 // Compaction Snapshot — writes a ≤2 KB markdown digest of durable
 // project state before the session context is compacted. On resume, an
-// agent can `gsd_resume` (or Read .gsd/last-snapshot.md) to re-orient
+// agent can `otto_resume` (or Read .otto/workflow/last-snapshot.md) to re-orient
 // without re-deriving the same memories.
 //
 // Inspired by mksglu/context-mode. Independent implementation.
@@ -45,7 +45,7 @@ export function buildSnapshot(sources: SnapshotSources, opts: BuildSnapshotOptio
   const maxExec = opts.maxExec ?? 5;
 
   const lines: string[] = [];
-  lines.push(`# GSD context snapshot (${sources.generatedAt.toISOString()})`);
+  lines.push(`# OTTO context snapshot (${sources.generatedAt.toISOString()})`);
   lines.push("");
 
   if (sources.activeContext && sources.activeContext.trim().length > 0) {
@@ -65,7 +65,7 @@ export function buildSnapshot(sources: SnapshotSources, opts: BuildSnapshotOptio
 
   const exec = sources.execHistory.slice(0, maxExec);
   if (exec.length > 0) {
-    lines.push("## Recent gsd_exec runs");
+    lines.push("## Recent otto_exec runs");
     for (const entry of exec) {
       const status = entry.timed_out
         ? "timeout"
@@ -125,7 +125,7 @@ export function writeCompactionSnapshot(
     },
     opts,
   );
-  const workflowDir = resolve(baseDir, ".gsd");
+  const workflowDir = resolve(baseDir, ".otto/workflow");
   if (!existsSync(workflowDir)) mkdirSync(workflowDir, { recursive: true });
   const path = resolve(workflowDir, SNAPSHOT_FILENAME);
   const finalContent = `${content}\n`;
@@ -139,7 +139,7 @@ export function writeCompactionSnapshot(
 }
 
 export function readCompactionSnapshot(baseDir: string): string | null {
-  const path = resolve(baseDir, ".gsd", SNAPSHOT_FILENAME);
+  const path = resolve(baseDir, ".otto/workflow", SNAPSHOT_FILENAME);
   if (!existsSync(path)) return null;
   try {
     return readFileSync(path, "utf-8");

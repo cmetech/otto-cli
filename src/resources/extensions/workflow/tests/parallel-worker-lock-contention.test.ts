@@ -44,59 +44,59 @@ describe("parallel-worker-lock-contention (#2184)", () => {
   const savedEnv: Record<string, string | undefined> = {};
 
   beforeEach(() => {
-    savedEnv.GSD_PARALLEL_WORKER = process.env.GSD_PARALLEL_WORKER;
-    savedEnv.GSD_MILESTONE_LOCK = process.env.GSD_MILESTONE_LOCK;
+    savedEnv.OTTO_PARALLEL_WORKER = process.env.OTTO_PARALLEL_WORKER;
+    savedEnv.OTTO_MILESTONE_LOCK = process.env.OTTO_MILESTONE_LOCK;
   });
 
   afterEach(() => {
-    if (savedEnv.GSD_PARALLEL_WORKER === undefined) {
-      delete process.env.GSD_PARALLEL_WORKER;
+    if (savedEnv.OTTO_PARALLEL_WORKER === undefined) {
+      delete process.env.OTTO_PARALLEL_WORKER;
     } else {
-      process.env.GSD_PARALLEL_WORKER = savedEnv.GSD_PARALLEL_WORKER;
+      process.env.OTTO_PARALLEL_WORKER = savedEnv.OTTO_PARALLEL_WORKER;
     }
-    if (savedEnv.GSD_MILESTONE_LOCK === undefined) {
-      delete process.env.GSD_MILESTONE_LOCK;
+    if (savedEnv.OTTO_MILESTONE_LOCK === undefined) {
+      delete process.env.OTTO_MILESTONE_LOCK;
     } else {
-      process.env.GSD_MILESTONE_LOCK = savedEnv.GSD_MILESTONE_LOCK;
+      process.env.OTTO_MILESTONE_LOCK = savedEnv.OTTO_MILESTONE_LOCK;
     }
   });
 
   // ─── Bug 1a: effectiveLockFile returns per-milestone name ────────────────
   test("Bug 1a: effectiveLockFile returns auto.lock without parallel env", () => {
-    delete process.env.GSD_PARALLEL_WORKER;
-    delete process.env.GSD_MILESTONE_LOCK;
+    delete process.env.OTTO_PARALLEL_WORKER;
+    delete process.env.OTTO_MILESTONE_LOCK;
     assert.equal(effectiveLockFile(), "auto.lock");
   });
 
   test("Bug 1a: effectiveLockFile returns auto-<MID>.lock in parallel mode", () => {
-    process.env.GSD_PARALLEL_WORKER = "1";
-    process.env.GSD_MILESTONE_LOCK = "M003";
+    process.env.OTTO_PARALLEL_WORKER = "1";
+    process.env.OTTO_MILESTONE_LOCK = "M003";
     assert.equal(effectiveLockFile(), "auto-M003.lock");
   });
 
   // ─── Bug 1b: effectiveLockTarget returns per-milestone directory ─────────
   test("Bug 1b: effectiveLockTarget returns workflowDir without parallel env", () => {
-    delete process.env.GSD_PARALLEL_WORKER;
-    const workflowDir = "/tmp/test/.gsd";
+    delete process.env.OTTO_PARALLEL_WORKER;
+    const workflowDir = "/tmp/test/.otto/workflow";
     assert.equal(effectiveLockTarget(workflowDir), workflowDir);
   });
 
   test("Bug 1b: effectiveLockTarget returns parallel/<MID> in parallel mode", () => {
-    process.env.GSD_PARALLEL_WORKER = "1";
-    process.env.GSD_MILESTONE_LOCK = "M003";
-    const workflowDir = "/tmp/test/.gsd";
+    process.env.OTTO_PARALLEL_WORKER = "1";
+    process.env.OTTO_MILESTONE_LOCK = "M003";
+    const workflowDir = "/tmp/test/.otto/workflow";
     assert.equal(effectiveLockTarget(workflowDir), join(workflowDir, "parallel", "M003"));
   });
 
   // ─── Bug 1c: Two parallel workers acquire independent locks ──────────────
   test("Bug 1c: parallel workers use per-milestone lock files, not shared auto.lock", () => {
     const base = mkdtempSync(join(tmpdir(), "gsd-parallel-lock-"));
-    mkdirSync(join(base, ".gsd"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
 
     try {
       // Simulate worker for M001
-      process.env.GSD_PARALLEL_WORKER = "1";
-      process.env.GSD_MILESTONE_LOCK = "M001";
+      process.env.OTTO_PARALLEL_WORKER = "1";
+      process.env.OTTO_MILESTONE_LOCK = "M001";
 
       const r1 = acquireSessionLock(base);
       assert.ok(r1.acquired, "M001 worker acquires lock");
@@ -119,8 +119,8 @@ describe("parallel-worker-lock-contention (#2184)", () => {
       // After release, per-milestone lock file should be cleaned
       assert.ok(!existsSync(m001LockFile), "auto-M001.lock cleaned after release");
     } finally {
-      delete process.env.GSD_PARALLEL_WORKER;
-      delete process.env.GSD_MILESTONE_LOCK;
+      delete process.env.OTTO_PARALLEL_WORKER;
+      delete process.env.OTTO_MILESTONE_LOCK;
       rmSync(base, { recursive: true, force: true });
     }
   });
@@ -128,11 +128,11 @@ describe("parallel-worker-lock-contention (#2184)", () => {
   // ─── Bug 1d: crash-recovery uses per-milestone lock file ─────────────────
   test("Bug 1d: crash-recovery writeLock/readCrashLock uses per-milestone lock in parallel mode", () => {
     const base = mkdtempSync(join(tmpdir(), "gsd-parallel-crash-"));
-    mkdirSync(join(base, ".gsd"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
 
     try {
-      process.env.GSD_PARALLEL_WORKER = "1";
-      process.env.GSD_MILESTONE_LOCK = "M002";
+      process.env.OTTO_PARALLEL_WORKER = "1";
+      process.env.OTTO_MILESTONE_LOCK = "M002";
 
       writeLock(base, "execute-task", "M002/S01/T01");
 
@@ -147,14 +147,14 @@ describe("parallel-worker-lock-contention (#2184)", () => {
       clearLock(base);
       assert.ok(!existsSync(lockFile), "clearLock removes per-milestone lock");
     } finally {
-      delete process.env.GSD_PARALLEL_WORKER;
-      delete process.env.GSD_MILESTONE_LOCK;
+      delete process.env.OTTO_PARALLEL_WORKER;
+      delete process.env.OTTO_MILESTONE_LOCK;
       rmSync(base, { recursive: true, force: true });
     }
   });
 
   // ─── Bug 3: syncProjectRootToWorktree skips same-path symlinks ───────────
-  test("Bug 3: syncProjectRootToWorktree skips when .gsd resolves to same path (symlink)", () => {
+  test("Bug 3: syncProjectRootToWorktree skips when .otto/workflow resolves to same path (symlink)", () => {
     const base = mkdtempSync(join(tmpdir(), "gsd-symlink-sync-"));
     const externalGsd = join(base, "external-gsd");
     const projectRoot = join(base, "project");
@@ -171,9 +171,11 @@ describe("parallel-worker-lock-contention (#2184)", () => {
       "# Roadmap",
     );
 
-    // Symlink both project and worktree .gsd to the same external directory
-    symlinkSync(externalGsd, join(projectRoot, ".gsd"));
-    symlinkSync(externalGsd, join(worktreePath, ".gsd"));
+    // Symlink both project and worktree .otto/workflow to the same external directory
+    mkdirSync(join(projectRoot, ".otto"), { recursive: true });
+    mkdirSync(join(worktreePath, ".otto"), { recursive: true });
+    symlinkSync(externalGsd, join(projectRoot, ".otto/workflow"));
+    symlinkSync(externalGsd, join(worktreePath, ".otto/workflow"));
 
     try {
       // This should NOT throw ERR_FS_CP_EINVAL — it should skip silently
@@ -199,16 +201,16 @@ describe("parallel-worker-lock-contention (#2184)", () => {
   });
 
   // ─── Bug 3b: sync still works when paths are different ───────────────────
-  test("Bug 3b: syncProjectRootToWorktree copies when .gsd paths are different", () => {
+  test("Bug 3b: syncProjectRootToWorktree copies when .otto/workflow paths are different", () => {
     const base = mkdtempSync(join(tmpdir(), "gsd-diff-sync-"));
     const projectRoot = join(base, "project");
     const worktreePath = join(base, "worktree");
 
-    mkdirSync(join(projectRoot, ".gsd", "milestones", "M001"), { recursive: true });
-    mkdirSync(join(worktreePath, ".gsd", "milestones"), { recursive: true });
+    mkdirSync(join(projectRoot, ".otto/workflow", "milestones", "M001"), { recursive: true });
+    mkdirSync(join(worktreePath, ".otto/workflow", "milestones"), { recursive: true });
 
     writeFileSync(
-      join(projectRoot, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+      join(projectRoot, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
       "# Roadmap content",
     );
 
@@ -216,7 +218,7 @@ describe("parallel-worker-lock-contention (#2184)", () => {
       syncProjectRootToWorktree(projectRoot, worktreePath, "M001");
 
       // The roadmap should have been copied
-      const copied = join(worktreePath, ".gsd", "milestones", "M001", "M001-ROADMAP.md");
+      const copied = join(worktreePath, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md");
       assert.ok(existsSync(copied), "milestone roadmap copied to worktree");
       assert.equal(readFileSync(copied, "utf-8"), "# Roadmap content");
     } finally {

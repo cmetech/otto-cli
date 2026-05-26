@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Runtime counters for telemetry-gated legacy compatibility paths.
 
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -37,7 +37,7 @@ const warnedCounters = new Set<LegacyTelemetryCounter>();
 const DIAGNOSTICS: Record<LegacyTelemetryCounter, string> = {
   "legacy.workflowEngineUsed": "Deprecated workflow engine path used; prefer auto-milestone workflow templates before removing legacy engines.",
   "legacy.uokFallbackUsed": "Deprecated UOK fallback path used; resolve UOK kernel blockers before removing parity fallback wrappers.",
-  "legacy.mcpAliasUsed": "Deprecated MCP alias tool used; update callers to the canonical gsd_* tool name before alias removal.",
+  "legacy.mcpAliasUsed": "Deprecated MCP alias tool used; update callers to the canonical otto_* tool name before alias removal.",
   "legacy.componentFormatUsed": "Deprecated component format loaded; migrate skills/agents to component.yaml before removing legacy loaders.",
   "legacy.providerDefaultUsed": "Provider-specific default fallback used without an explicit available model; configure provider-aware model preferences before removing defaults.",
 };
@@ -84,7 +84,7 @@ function emitLegacyDiagnostic(counter: LegacyTelemetryCounter): void {
 }
 
 function persistLegacyTelemetry(): void {
-  const outputPath = (process.env.LOOP24_LEGACY_TELEMETRY_FILE ?? process.env.GSD_LEGACY_TELEMETRY_FILE)?.trim();
+  const outputPath = (process.env.OTTO_LEGACY_TELEMETRY_FILE ?? process.env.OTTO_LEGACY_TELEMETRY_FILE)?.trim();
   if (!outputPath) return;
 
   try {

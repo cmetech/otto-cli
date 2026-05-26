@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Shared Context Mode tool result helpers.
 
 export interface ToolExecutionResult {
@@ -7,7 +7,7 @@ export interface ToolExecutionResult {
   isError?: boolean;
 }
 
-export type ContextModeToolName = "gsd_exec" | "gsd_exec_search" | "gsd_resume";
+export type ContextModeToolName = "otto_exec" | "otto_exec_search" | "otto_resume";
 
 export function contextModeDisabledResult(operation: ContextModeToolName): ToolExecutionResult {
   return {

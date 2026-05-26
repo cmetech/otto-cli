@@ -1,4 +1,4 @@
-// LOOP24 — Shared interview round UI widget
+// OTTO — Shared interview round UI widget
 /**
  * Shared interview round UI widget.
  *
@@ -26,8 +26,8 @@
  *   Esc          exit confirmation
  */
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
-import { getMarkdownTheme, type Theme } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
+import { getMarkdownTheme, type Theme } from "@otto/pi-coding-agent";
 import {
 	Editor,
 	Key,
@@ -35,7 +35,7 @@ import {
 	matchesKey,
 	truncateToWidth,
 	type TUI,
-} from "@loop24/pi-tui";
+} from "@otto/pi-tui";
 import { mergeSideBySide } from "./layout-utils.js";
 import { makeUI, INDENT } from "./ui.js";
 

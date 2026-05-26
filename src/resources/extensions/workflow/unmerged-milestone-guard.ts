@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Block new workflow entry when completed milestone branches are still unmerged.
 
 import {
@@ -37,12 +37,12 @@ const ALLOWED_COMMANDS = new Set([
 ]);
 
 function isRuntimePath(path: string): boolean {
-  return path === ".gsd" || path.startsWith(".gsd/");
+  return path === ".otto/workflow" || path.startsWith(".otto/workflow/");
 }
 
 function formatCommandLabel(attemptedCommand: string): string {
   const trimmed = attemptedCommand.trim();
-  return trimmed ? `/gsd ${trimmed}` : "/gsd";
+  return trimmed ? `/otto ${trimmed}` : "/otto";
 }
 
 function resolveIntegrationBranch(base: string, milestoneId: string): string | null {
@@ -135,8 +135,8 @@ export function formatUnmergedMilestoneBlockMessage(
     blocker.dirtyOverlap.length > 0
       ? "  1. Commit, stash, or discard the overlapping project-root files."
       : "  1. Review the unmerged milestone branch.",
-    `  2. Run /gsd dispatch complete-milestone ${blocker.milestoneId} to complete the preserved milestone merge.`,
-    `  3. After ${blocker.milestoneId} is merged, run /gsd again.`,
+    `  2. Run /otto dispatch complete-milestone ${blocker.milestoneId} to complete the preserved milestone merge.`,
+    `  3. After ${blocker.milestoneId} is merged, run /otto again.`,
   ].join("\n");
 }
 

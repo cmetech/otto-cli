@@ -1,11 +1,11 @@
 {
-  "name": "@loop24-build/contracts",
+  "name": "@otto-build/contracts",
   "version": "1.0.1",
   "description": "Shared public contracts for GSD workspace boundaries",
   "license": "MIT",
   "gsd": {
     "linkable": true,
-    "scope": "@loop24-build",
+    "scope": "@otto-build",
     "name": "contracts"
   },
   "repository": {

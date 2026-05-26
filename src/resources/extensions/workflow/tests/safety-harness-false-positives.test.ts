@@ -144,14 +144,14 @@ test("safety-harness-bug2-race: bash evidence survives mid-unit reset between to
   assert.ok(bash[0].outputSnippet.includes("found"), "output snippet captured");
 });
 
-test("safety-harness: gsd_exec counts as execution evidence", () => {
+test("safety-harness: otto_exec counts as execution evidence", () => {
   resetEvidence();
 
-  recordToolCall("tc-exec-1", "gsd_exec", { command: "grep -n render index.html" });
-  recordToolResult("tc-exec-1", "gsd_exec", "Command exited with code 0\n1:render\n", false);
+  recordToolCall("tc-exec-1", "otto_exec", { command: "grep -n render index.html" });
+  recordToolResult("tc-exec-1", "otto_exec", "Command exited with code 0\n1:render\n", false);
 
   const bash = getEvidence().filter((e): e is BashEvidence => e.kind === "bash");
-  assert.equal(bash.length, 1, "gsd_exec must be tracked as execution evidence");
+  assert.equal(bash.length, 1, "otto_exec must be tracked as execution evidence");
   assert.equal(bash[0].command, "grep -n render index.html");
   assert.equal(bash[0].exitCode, 0);
 });

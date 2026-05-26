@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Checks persisted Phase 8 legacy telemetry before cleanup deletions.
 
 import { readFile } from "node:fs/promises";
@@ -13,7 +13,7 @@ export const LEGACY_COUNTERS = [
 
 export function parseArgs(argv = process.argv.slice(2), env = process.env) {
   const opts = {
-    file: env.GSD_LEGACY_TELEMETRY_FILE ?? "",
+    file: env.OTTO_LEGACY_TELEMETRY_FILE ?? "",
     json: false,
   };
 
@@ -38,7 +38,7 @@ export function parseArgs(argv = process.argv.slice(2), env = process.env) {
   }
 
   if (!opts.file.trim()) {
-    throw new Error("No telemetry file provided. Pass --file or set GSD_LEGACY_TELEMETRY_FILE.");
+    throw new Error("No telemetry file provided. Pass --file or set OTTO_LEGACY_TELEMETRY_FILE.");
   }
   return opts;
 }

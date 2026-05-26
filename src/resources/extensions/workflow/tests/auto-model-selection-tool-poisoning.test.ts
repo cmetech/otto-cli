@@ -37,17 +37,17 @@ import {
 import {
   registerToolCompatibility,
   resetToolCompatibilityRegistry,
-} from "@loop24/pi-coding-agent";
+} from "@otto/pi-coding-agent";
 
 function makeTempProject(): { dir: string; cleanup: () => void; restoreEnv: () => void } {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const dir = mkdtempSync(join(tmpdir(), "gsd-policy-poison-"));
   const home = mkdtempSync(join(tmpdir(), "gsd-policy-home-"));
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   // Empty PREFERENCES so default uok.model_policy.enabled = true applies.
-  writeFileSync(join(dir, ".gsd", "PREFERENCES.md"), "---\n---\n", "utf-8");
-  process.env.GSD_HOME = home;
+  writeFileSync(join(dir, ".otto/workflow", "PREFERENCES.md"), "---\n---\n", "utf-8");
+  process.env.OTTO_HOME = home;
   process.chdir(dir);
   return {
     dir,
@@ -57,8 +57,8 @@ function makeTempProject(): { dir: string; cleanup: () => void; restoreEnv: () =
     },
     restoreEnv: () => {
       process.chdir(originalCwd);
-      if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-      else process.env.GSD_HOME = originalWorkflowHome;
+      if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+      else process.env.OTTO_HOME = originalWorkflowHome;
     },
   };
 }
@@ -135,7 +135,7 @@ test("vacuous-truth (a): unit type with empty workflow-required tools → dispat
     // returns a non-undefined modelConfig — only then does selectAndApplyModel
     // run the policy filter we want to exercise.
     writeFileSync(
-      join(env.dir, ".gsd", "PREFERENCES.md"),
+      join(env.dir, ".otto/workflow", "PREFERENCES.md"),
       ["---", "dynamic_routing:", "  enabled: true", "  tier_models:", "    heavy: anthropic/claude-sonnet-4-6", "---"].join("\n"),
       "utf-8",
     );
@@ -170,14 +170,14 @@ test("vacuous-truth (a): unit type with empty workflow-required tools → dispat
 test("vacuous-truth (b): non-empty workflow tool requirement that the model carries → dispatch succeeds", async () => {
   const env = makeTempProject();
   try {
-    // gate-evaluate has tool requirement ["gsd_save_gate_result"]; if the
+    // gate-evaluate has tool requirement ["otto_save_gate_result"]; if the
     // model's API can carry it, policy must still allow dispatch. Counter-test
     // to (a): proves the path with a non-empty requirement isn't denying
     // legitimate dispatches.
     const availableModels = [
       { id: "claude-sonnet-4-6", provider: "anthropic", api: "anthropic-messages" },
     ];
-    const pi = makeRecordingPi(["gsd_save_gate_result"]);
+    const pi = makeRecordingPi(["otto_save_gate_result"]);
     clearToolBaseline(pi as unknown as object);
 
     const result = await selectAndApplyModel(
@@ -219,7 +219,7 @@ test("cross-unit poisoning: prior unit narrowing must not deny next unit's eligi
     ];
     // The baseline contains a synthetic "thinking_partner" that openai-completions
     // does not support.
-    const pi = makeRecordingPi(["gsd_save_gate_result", "thinking_partner"]);
+    const pi = makeRecordingPi(["otto_save_gate_result", "thinking_partner"]);
     clearToolBaseline(pi as unknown as object);
 
     // Unit-N: dispatch on openai/openai-narrow.  Soft adjustToolSet will narrow
@@ -243,7 +243,7 @@ test("cross-unit poisoning: prior unit narrowing must not deny next unit's eligi
     // Unit-N+1: now dispatch with claude-wide.  If active-tool snapshot were
     // still the policy required-set, the previous narrowing wouldn't matter
     // (anthropic-messages can carry both tools), so we instead simulate the
-    // 4959 path: a second unit whose workflow requires "gsd_save_gate_result"
+    // 4959 path: a second unit whose workflow requires "otto_save_gate_result"
     // (small) — must succeed reaching pi.setModel for claude-wide.
     const beforeCount = pi.__calls.filter(c => c.kind === "setModel").length;
     await selectAndApplyModel(
@@ -271,7 +271,7 @@ test("cross-unit poisoning: prior unit narrowing must not deny next unit's eligi
 // Exercises the real `getRequiredWorkflowToolsForAutoUnit` →
 // `filterToolsForProvider` path that #4959 was about — existing 3b test used
 // cross-provider denial which never hit this path.
-// Registers `gsd_plan_slice` as `producesImages: true`, then offers only an
+// Registers `otto_plan_slice` as `producesImages: true`, then offers only an
 // `ollama-chat` candidate (which has `imageToolResults: false`) — the
 // workflow-required tool is incompatible with the candidate's API, so the
 // policy filter denies the model with a `tool policy denied (...)` reason.
@@ -280,13 +280,13 @@ test("genuinely-impossible (a): workflow tool incompatible with candidate API �
   try {
     // Register the workflow tool as image-producing for the duration of this
     // test. afterEach() resets the registry below.
-    registerToolCompatibility("gsd_plan_slice", { producesImages: true });
+    registerToolCompatibility("otto_plan_slice", { producesImages: true });
 
     // PREFERENCES needs tier_models so resolvePreferredModelConfig returns a
     // non-undefined modelConfig — without that, selectAndApplyModel skips the
     // entire policy block and we never reach the tool-compat denial path.
     writeFileSync(
-      join(env.dir, ".gsd", "PREFERENCES.md"),
+      join(env.dir, ".otto/workflow", "PREFERENCES.md"),
       ["---", "dynamic_routing:", "  enabled: true", "  tier_models:", "    heavy: ollama/ollama-llama-3", "---"].join("\n"),
       "utf-8",
     );
@@ -294,7 +294,7 @@ test("genuinely-impossible (a): workflow tool incompatible with candidate API �
     const availableModels = [
       { id: "ollama-llama-3", provider: "ollama", api: "ollama-chat" },
     ];
-    const pi = makeRecordingPi(["gsd_plan_slice"]);
+    const pi = makeRecordingPi(["otto_plan_slice"]);
     clearToolBaseline(pi as unknown as object);
 
     const ctx = makeCtx(availableModels);
@@ -324,7 +324,7 @@ test("genuinely-impossible (a): workflow tool incompatible with candidate API �
     const err = thrown as ModelPolicyDispatchBlockedError;
     assert.equal(err.unitType, "plan-slice");
     assert.match(err.message, /tool policy denied/, "throw must surface the tool-compatibility deny reason");
-    assert.match(err.message, /gsd_plan_slice/, "throw must name the incompatible tool");
+    assert.match(err.message, /otto_plan_slice/, "throw must name the incompatible tool");
     assert.match(err.message, /ollama-chat/, "throw must name the api for which the tool was filtered");
   } finally {
     resetToolCompatibilityRegistry();
@@ -337,13 +337,13 @@ test("genuinely-impossible (a): workflow tool incompatible with candidate API �
 test("genuinely-impossible (b): cross-provider routing disabled + provider mismatch → typed error", async () => {
   const env = makeTempProject();
   try {
-    // Use plan-slice (workflow-required: ["gsd_plan_slice"]) but pretend no
+    // Use plan-slice (workflow-required: ["otto_plan_slice"]) but pretend no
     // candidate model can carry it.  The simplest way: provide a model whose
     // api is a fictitious "no-tools" string — `filterToolsForProvider` returns
     // every tool as filtered for an unknown api with toolCalling=false, OR we
     // can pick a real api that also denies the tool.  We use an api that
     // exists but has known incompatibility — no such case is portable, so we
-    // fall back to a model whose api is recognized to deny `gsd_plan_slice`.
+    // fall back to a model whose api is recognized to deny `otto_plan_slice`.
     //
     // Pragmatic approach: monkey the policy via `allowCrossProvider=false` +
     // a single candidate model on a *different* provider than current, which
@@ -362,7 +362,7 @@ test("genuinely-impossible (b): cross-provider routing disabled + provider misma
     // Set dynamic_routing.cross_provider=false via PREFERENCES so the policy
     // disables cross-provider routing.
     writeFileSync(
-      join(env.dir, ".gsd", "PREFERENCES.md"),
+      join(env.dir, ".otto/workflow", "PREFERENCES.md"),
       ["---", "dynamic_routing:", "  enabled: true", "  cross_provider: false", "  tier_models:", "    heavy: other-provider/other-model", "---"].join("\n"),
       "utf-8",
     );
@@ -403,7 +403,7 @@ test("restore baseline: setActiveTools(BASELINE) called between units before nex
     const availableModels = [
       { id: "claude-sonnet-4-6", provider: "anthropic", api: "anthropic-messages" },
     ];
-    const baselineTools = ["gsd_save_gate_result", "tool_a", "tool_b"];
+    const baselineTools = ["otto_save_gate_result", "tool_a", "tool_b"];
     const pi = makeRecordingPi(baselineTools);
     clearToolBaseline(pi as unknown as object);
 
@@ -422,7 +422,7 @@ test("restore baseline: setActiveTools(BASELINE) called between units before nex
     );
 
     // Simulate a downstream caller narrowing the tool set (post-unit poisoning).
-    pi.setActiveTools(["gsd_save_gate_result"]);
+    pi.setActiveTools(["otto_save_gate_result"]);
     const callsBeforeU2 = pi.__calls.length;
 
     // Second call should restore the baseline before reading anything.
@@ -462,7 +462,7 @@ test("error carries deny reason fragment from applyModelPolicyFilter", async () 
   const env = makeTempProject();
   try {
     writeFileSync(
-      join(env.dir, ".gsd", "PREFERENCES.md"),
+      join(env.dir, ".otto/workflow", "PREFERENCES.md"),
       ["---", "dynamic_routing:", "  enabled: true", "  cross_provider: false", "  tier_models:", "    heavy: other-provider/other-model", "---"].join("\n"),
       "utf-8",
     );
@@ -512,7 +512,7 @@ test("error carries deny reason fragment from applyModelPolicyFilter", async () 
 // ─── 6. Lifecycle: clearToolBaseline forces recapture (#4959) ─────
 //
 // The WeakMap baseline is keyed per `pi` instance, but auto sessions are NOT
-// 1:1 with `pi` instances — a single `pi` can host multiple `/gsd auto` runs
+// 1:1 with `pi` instances — a single `pi` can host multiple `/otto auto` runs
 // separated by stops, manual tool edits, or extension toggles.  Without
 // `clearToolBaseline(pi)` at session boundaries, the SECOND auto run on the
 // same `pi` would silently restore the FIRST run's snapshot and undo whatever
@@ -542,7 +542,7 @@ test("lifecycle: clearToolBaseline forces recapture; subsequent runs respect int
       true,
     );
 
-    // ── Simulate `/gsd auto` stop + intervening user tool edit ──
+    // ── Simulate `/otto auto` stop + intervening user tool edit ──
     // (auto.ts calls clearToolBaseline in stopAuto; the user then mutates
     // tools while auto is paused.)
     clearToolBaseline(pi as unknown as object);
@@ -628,7 +628,7 @@ test("cross-mode (#4965): isAutoMode=false does NOT restore baseline even when o
     const availableModels = [
       { id: "claude-sonnet-4-6", provider: "anthropic", api: "anthropic-messages" },
     ];
-    const baselineTools = ["gsd_save_gate_result", "tool_a", "tool_b"];
+    const baselineTools = ["otto_save_gate_result", "tool_a", "tool_b"];
     const pi = makeRecordingPi(baselineTools);
     clearToolBaseline(pi as unknown as object);
 
@@ -690,7 +690,7 @@ test("cross-mode (#4965): auto → guided → auto preserves the original auto-e
     const availableModels = [
       { id: "claude-sonnet-4-6", provider: "anthropic", api: "anthropic-messages" },
     ];
-    const baselineTools = ["gsd_save_gate_result", "tool_a", "tool_b"];
+    const baselineTools = ["otto_save_gate_result", "tool_a", "tool_b"];
     const pi = makeRecordingPi(baselineTools);
     clearToolBaseline(pi as unknown as object);
 

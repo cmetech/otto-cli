@@ -39,10 +39,10 @@ export type MergeOrder = "sequential" | "by-completion";
 /**
  * Check whether a milestone is complete by querying the canonical project DB.
  * Uses a subprocess to avoid disrupting the global DB singleton.
- * Returns true when milestones.status = 'complete' in project gsd.db.
+ * Returns true when milestones.status = 'complete' in project otto.db.
  */
 export function isMilestoneCompleteInProjectDb(basePath: string, mid: string): boolean {
-  const workRoot = join(basePath, ".gsd", "worktrees", mid);
+  const workRoot = join(basePath, ".otto/workflow", "worktrees", mid);
   const dbPath = resolveWorkflowPathContract(workRoot, basePath).projectDb;
   if (!existsSync(dbPath)) return false;
 
@@ -65,7 +65,7 @@ export function isMilestoneCompleteInProjectDb(basePath: string, mid: string): b
  */
 function discoverDbCompletedMilestones(basePath: string): Set<string> {
   const completed = new Set<string>();
-  const worktreeDir = join(basePath, ".gsd", "worktrees");
+  const worktreeDir = join(basePath, ".otto/workflow", "worktrees");
   try {
     for (const entry of readdirSync(worktreeDir)) {
       if (entry.startsWith("M") && isMilestoneCompleteInProjectDb(basePath, entry)) {
@@ -120,7 +120,7 @@ export function determineMergeOrder(
         title: mid,
         pid: 0,
         process: null,
-        worktreePath: basePath ? join(basePath, ".gsd", "worktrees", mid) : "",
+        worktreePath: basePath ? join(basePath, ".otto/workflow", "worktrees", mid) : "",
         startedAt: 0,
         state: "stopped",
         cost: 0,
@@ -260,7 +260,7 @@ export function formatMergeResults(results: MergeResult[]): string {
       for (const f of r.conflictFiles) {
         lines.push(`  - \`${f}\``);
       }
-      lines.push(`  Resolve conflicts manually and run \`/gsd parallel merge ${r.milestoneId}\` to retry.`);
+      lines.push(`  Resolve conflicts manually and run \`/otto parallel merge ${r.milestoneId}\` to retry.`);
     } else {
       lines.push(`- **${r.milestoneId}** — failed: ${r.error}`);
     }

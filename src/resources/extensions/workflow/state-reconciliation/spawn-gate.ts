@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-017 #5707 caller-closure helper. Parent processes that
 // spawn auto-loop workers must reconcile before spawn — otherwise each
 // worker independently detects+repairs the same drift, racing on shared

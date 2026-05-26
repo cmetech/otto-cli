@@ -4,7 +4,7 @@
 // `gsd headless recover` available to non-TTY callers (CI, automation, the
 // live-regression suite). The headless dispatcher previously had no
 // `recover` case — the only path was the interactive slash-command
-// (`/gsd recover`), which is gated behind a TTY check (src/cli.ts
+// (`/otto recover`), which is gated behind a TTY check (src/cli.ts
 // printNonTtyErrorAndExit) and rejected piped invocations.
 //
 // The headless wiring composes ensureDbOpen + clearEngineHierarchy +
@@ -40,7 +40,7 @@ import { invalidateStateCache } from "../resources/extensions/workflow/state.ts"
 
 function makeMarkdownFixture(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-headless-recover-"));
-  const mDir = join(base, ".gsd", "milestones", "M001");
+  const mDir = join(base, ".otto/workflow", "milestones", "M001");
   const sDir = join(mDir, "slices", "S01");
   mkdirSync(join(sDir, "tasks"), { recursive: true });
 
@@ -83,7 +83,7 @@ test("headless recover: imports markdown hierarchy into authoritative DB", async
   });
 
   const opened = await ensureDbOpen(base);
-  assert.ok(opened, "ensureDbOpen should succeed when .gsd/ exists");
+  assert.ok(opened, "ensureDbOpen should succeed when .otto/workflow/ exists");
   assert.ok(isDbAvailable(), "DB should be open after ensureDbOpen");
 
   const counts = transaction(() => {

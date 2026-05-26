@@ -1,5 +1,5 @@
-// LOOP24 + src/resources/extensions/workflow/orphan-stash-audit.ts
-// Startup sweep for orphaned gsd-preflight-stash entries left behind by
+// OTTO + src/resources/extensions/workflow/orphan-stash-audit.ts
+// Startup sweep for orphaned otto-preflight-stash entries left behind by
 // interrupted milestone merges (#5538-followup).
 
 import { execFileSync } from "node:child_process";
@@ -34,7 +34,7 @@ function _isAlreadyRestoredApplyError(err: unknown): boolean {
 export { _isAlreadyRestoredApplyError };
 
 /**
- * Audit `git stash list` for orphaned `gsd-preflight-stash:M00x:*` entries.
+ * Audit `git stash list` for orphaned `otto-preflight-stash:M00x:*` entries.
  *
  * The matching merge code in `phases.ts` previously skipped the postflight
  * pop whenever `mergeAndExit` threw, leaking the user's pre-merge working
@@ -70,7 +70,7 @@ export function auditOrphanedPreflightStashes(
     return result;
   }
 
-  const MARKER_RE = /\bgsd-preflight-stash:([A-Za-z0-9_-]+):/;
+  const MARKER_RE = /\botto-preflight-stash:([A-Za-z0-9_-]+):/;
   for (const line of listOutput.split("\n")) {
     const sep = line.indexOf("\x00");
     if (sep < 0) continue;

@@ -1,4 +1,4 @@
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { checkRemoteAutoSession, isAutoActive, isAutoPaused, stopAutoRemote } from "../auto.js";
 import { validateDirectory } from "../validate-directory.js";
@@ -91,7 +91,7 @@ export async function guardRemoteSession(
 
   // In RPC/web bridge mode, interactive TUI prompts (showNextAction) block
   // forever because there is no terminal to answer them. Notify and bail.
-  if ((process.env.LOOP24_WEB_BRIDGE_TUI ?? process.env.GSD_WEB_BRIDGE_TUI) === "1") {
+  if (process.env.OTTO_WEB_BRIDGE_TUI === "1") {
     ctx.ui.notify(
       `Another auto-mode session (PID ${remote.pid}) is running on this project (${unitLabel}). ` +
       `Stop it first with ${slashCommand("stop")}, or use ${slashCommand("steer")} to redirect it.`,

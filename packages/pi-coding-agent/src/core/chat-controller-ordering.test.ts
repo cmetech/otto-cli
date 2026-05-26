@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for streamed interactive chat ordering.
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -100,7 +100,7 @@ function createHost() {
 }
 
 function installTheme() {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -219,7 +219,7 @@ test("chat-controller skips empty GPT reasoning blocks before tool-only turns", 
 });
 
 test("chat-controller renders serverToolUse before trailing text matching content[] index order", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -232,7 +232,7 @@ test("chat-controller renders serverToolUse before trailing text matching conten
 	const serverToolUse = {
 		type: "serverToolUse",
 		id: toolId,
-		name: "mcp__gsd-workflow__secure_env_collect",
+		name: "mcp__otto-workflow__secure_env_collect",
 		input: { projectDir: "/tmp/project", keys: [{ key: "SECURE_PASSWORD" }], destination: "dotenv" },
 	};
 
@@ -288,7 +288,7 @@ test("chat-controller renders serverToolUse before trailing text matching conten
 });
 
 test("chat-controller replays final message_end content when result adds unstreamed trailing text", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -346,7 +346,7 @@ test("chat-controller replays final message_end content when result adds unstrea
 });
 
 test("chat-controller keeps pre-tool prose visible until post-tool prose arrives, then prunes it", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -437,7 +437,7 @@ test("chat-controller keeps pre-tool prose visible until post-tool prose arrives
 });
 
 test("chat-controller keeps pre-tool thinking visible for claude-code MCP turns without post-tool prose", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -504,7 +504,7 @@ test("chat-controller keeps pre-tool thinking visible for claude-code MCP turns 
 });
 
 test("chat-controller keeps pre-tool question text for claude-code MCP when post-tool prose exists", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -587,7 +587,7 @@ test("chat-controller keeps pre-tool question text for claude-code MCP when post
 });
 
 test("chat-controller prunes orphaned provisional text after claude-code sub-turn shrink when MCP tools appear", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -688,7 +688,7 @@ test("chat-controller prunes orphaned provisional text after claude-code sub-tur
 });
 
 test("chat-controller prunes orphans from multiple sub-turn shrinks before MCP post-tool prose", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -820,7 +820,7 @@ test("chat-controller prunes orphans from multiple sub-turn shrinks before MCP p
 });
 
 test("chat-controller pins latest assistant text above editor when tool calls are present", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -874,7 +874,7 @@ test("chat-controller pins latest assistant text above editor when tool calls ar
 });
 
 test("chat-controller clears pinned zone when a new assistant message starts", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -924,7 +924,7 @@ test("chat-controller clears pinned zone when a new assistant message starts", a
 });
 
 test("chat-controller clears pinned zone when the agent turn ends", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -972,7 +972,7 @@ test("chat-controller clears pinned zone when the agent turn ends", async () => 
 });
 
 test("chat-controller clears pinned zone when assistant message ends", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -1022,7 +1022,7 @@ test("chat-controller clears pinned zone when assistant message ends", async () 
 });
 
 test("chat-controller does not pin when there are no tool calls", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -1053,7 +1053,7 @@ test("chat-controller does not pin when there are no tool calls", async () => {
 });
 
 test("chat-controller rolls up only contiguous low-signal tool runs on message_end", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -1106,7 +1106,7 @@ test("chat-controller rolls up only contiguous low-signal tool runs on message_e
 });
 
 test("chat-controller rolls up low-signal direct tool execution events on agent_end", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -1148,7 +1148,7 @@ test("chat-controller rolls up low-signal direct tool execution events on agent_
 // Expected chatContainer order: textRun(A), toolExec(T1), textRun(B), toolExec(T2), textRun(C)
 // Each AssistantMessageComponent must render ONLY its own text — no duplication after message_end.
 test("chat-controller renders interleaved text and tool blocks in content[] index order (#4144)", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -1261,7 +1261,7 @@ test("chat-controller renders interleaved text and tool blocks in content[] inde
 });
 
 test("chat-controller does not duplicate text when content is [text, tool, text] (interleaved stream)", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -1341,7 +1341,7 @@ test("chat-controller does not duplicate text when content is [text, tool, text]
 // sub-turn children must stay frozen; new sub-turn segments must append after
 // them, and the pinned "Latest Output" mirror must re-evaluate for the new sub-turn.
 test("chat-controller freezes prior sub-turn and appends new segments when content shrinks", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,
@@ -1443,7 +1443,7 @@ test("chat-controller freezes prior sub-turn and appends new segments when conte
 // pinned "Latest Output" mirror can display text from the new sub-turn instead
 // of staying frozen on a stale snapshot (the "bottom green stays" symptom).
 test("chat-controller updates pinned zone after sub-turn shrink", async () => {
-	(globalThis as any)[Symbol.for("@loop24/pi-coding-agent:theme")] = {
+	(globalThis as any)[Symbol.for("@otto/pi-coding-agent:theme")] = {
 		fg: (_key: string, text: string) => text,
 		bg: (_key: string, text: string) => text,
 		bold: (text: string) => text,

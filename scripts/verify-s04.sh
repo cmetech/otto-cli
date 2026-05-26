@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # S04 verification — npm pack tarball install smoke test
-# Checks: dist integrity, GSD_BUNDLED_EXTENSION_PATHS, prepublishOnly,
+# Checks: dist integrity, OTTO_BUNDLED_EXTENSION_PATHS, prepublishOnly,
 #         npm pack dry-run, tarball install, binary exists, launch (no extension
 #         errors, "gsd" branding), ~/.gsd/ untouched, non-TTY warning/no exit 1.
 
@@ -38,20 +38,20 @@ else
 fi
 
 # ----------------------------------------------------------------
-# Check 2 — GSD_BUNDLED_EXTENSION_PATHS does NOT reference src/resources
+# Check 2 — OTTO_BUNDLED_EXTENSION_PATHS does NOT reference src/resources
 # ----------------------------------------------------------------
 # The variable must be present and must use agentDir-based paths only.
-paths_line=$(grep "GSD_BUNDLED_EXTENSION_PATHS" dist/loader.js | grep -v "src/resources" | head -1)
+paths_line=$(grep "OTTO_BUNDLED_EXTENSION_PATHS" dist/loader.js | grep -v "src/resources" | head -1)
 if [ -n "$paths_line" ]; then
   # Double-check: none of the actual join() lines (not comments) reference src/resources.
   # We look only at lines containing join( to avoid matching comment lines like "NOT src/resources".
-  if grep -A 15 "GSD_BUNDLED_EXTENSION_PATHS" dist/loader.js | grep "join(" | grep -q "src/resources"; then
-    fail "2 — GSD_BUNDLED_EXTENSION_PATHS still references src/resources path(s)"
+  if grep -A 15 "OTTO_BUNDLED_EXTENSION_PATHS" dist/loader.js | grep "join(" | grep -q "src/resources"; then
+    fail "2 — OTTO_BUNDLED_EXTENSION_PATHS still references src/resources path(s)"
   else
-    pass "2 — GSD_BUNDLED_EXTENSION_PATHS uses agentDir-based paths (no src/resources)"
+    pass "2 — OTTO_BUNDLED_EXTENSION_PATHS uses agentDir-based paths (no src/resources)"
   fi
 else
-  fail "2 — GSD_BUNDLED_EXTENSION_PATHS line not found or still references src/resources"
+  fail "2 — OTTO_BUNDLED_EXTENSION_PATHS line not found or still references src/resources"
 fi
 
 echo ""

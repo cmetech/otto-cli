@@ -5,7 +5,7 @@ name: refactor
 version: 1
 mode: markdown-phase
 requires_project: false
-artifact_dir: .gsd/workflows/refactors/
+artifact_dir: .otto/workflow/workflows/refactors/
 </template_meta>
 
 <purpose>

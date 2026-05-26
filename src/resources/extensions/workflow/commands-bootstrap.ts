@@ -1,12 +1,12 @@
-import { importExtensionModule, type ExtensionAPI, type ExtensionCommandContext, COMMAND_NAMESPACE } from "@loop24/pi-coding-agent";
+import { importExtensionModule, type ExtensionAPI, type ExtensionCommandContext, COMMAND_NAMESPACE } from "@otto/pi-coding-agent";
 import { VISUAL_BRIEF_MODES } from "../visual-brief/prompts.js";
 
 const TOP_LEVEL_SUBCOMMANDS = [
   { cmd: "help", desc: "Categorized command reference with descriptions" },
-  { cmd: "next", desc: "Explicit step mode (same as /gsd)" },
+  { cmd: "next", desc: "Explicit step mode (same as /otto)" },
   { cmd: "auto", desc: "Autonomous mode — research, plan, execute, commit, repeat" },
   { cmd: "stop", desc: "Stop auto mode gracefully" },
-  { cmd: "pause", desc: "Pause auto-mode (preserves state, /gsd auto to resume)" },
+  { cmd: "pause", desc: "Pause auto-mode (preserves state, /otto auto to resume)" },
   { cmd: "status", desc: "Progress dashboard" },
   { cmd: "visualize", desc: "Open workflow visualizer" },
   { cmd: "brief", desc: "Generate a visual HTML brief" },
@@ -34,7 +34,7 @@ const TOP_LEVEL_SUBCOMMANDS = [
   { cmd: "forensics", desc: "Examine execution logs" },
   { cmd: "init", desc: "Project init wizard" },
   { cmd: "setup", desc: "Global setup status and configuration" },
-  { cmd: "migrate", desc: "Migrate a v1 .planning directory to .gsd format" },
+  { cmd: "migrate", desc: "Migrate a v1 .planning directory to .otto/workflow format" },
   { cmd: "remote", desc: "Control remote auto-mode" },
   { cmd: "steer", desc: "Hard-steer plan documents during execution" },
   { cmd: "inspect", desc: "Show SQLite DB diagnostics" },
@@ -44,7 +44,7 @@ const TOP_LEVEL_SUBCOMMANDS = [
   { cmd: "parallel", desc: "Parallel milestone orchestration" },
   { cmd: "park", desc: "Park a milestone" },
   { cmd: "unpark", desc: "Reactivate a parked milestone" },
-  { cmd: "update", desc: "Update GSD to the latest version" },
+  { cmd: "update", desc: "Update OTTO to the latest version" },
   { cmd: "upgrade", desc: "Alias for update; installs the latest @cmetech/otto package" },
   { cmd: "start", desc: "Start a workflow template" },
   { cmd: "templates", desc: "List available workflow templates" },
@@ -215,7 +215,7 @@ function getWorkflowArgumentCompletions(prefix: string) {
       { cmd: "refactor", desc: "Inventory, plan waves, migrate, verify" },
       { cmd: "security-audit", desc: "Scan, triage, remediate, re-scan" },
       { cmd: "dep-upgrade", desc: "Assess, upgrade, fix breaks, verify" },
-      { cmd: "full-project", desc: "Complete GSD workflow with full ceremony" },
+      { cmd: "full-project", desc: "Complete OTTO workflow with full ceremony" },
       { cmd: "resume", desc: "Resume an in-progress workflow" },
       { cmd: "--list", desc: "List all available templates" },
       { cmd: "--dry-run", desc: "Preview workflow without executing" },

@@ -47,7 +47,7 @@ function createTempRepo(t: { after: (fn: () => void) => void }): string {
   git(["config", "user.email", "test@test.com"], dir);
   git(["config", "user.name", "Test"], dir);
   writeFileSync(join(dir, "README.md"), "# test\n");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   git(["add", "."], dir);
   git(["commit", "-m", "init"], dir);
   git(["branch", "-M", "main"], dir);
@@ -71,7 +71,7 @@ describe("getAutoWorktreeOriginalBase() is realpath-normalised", () => {
   test("returns canonical realpath even when called from a realpath-resolved dir", (t) => {
     const tempDir = createTempRepo(t);
     // tempDir is already realpathSync()-resolved by createTempRepo
-    const msDir = join(tempDir, ".gsd", "milestones", "M001");
+    const msDir = join(tempDir, ".otto/workflow", "milestones", "M001");
     mkdirSync(msDir, { recursive: true });
     writeFileSync(join(msDir, "CONTEXT.md"), "# M001\n");
     git(["add", "."], tempDir);

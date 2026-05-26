@@ -8,7 +8,7 @@ import type { Roadmap, BoundaryMapEntry, RoadmapSliceEntry, RiskLevel } from './
 
 // Issue #453: auto-mode post-turn reconciliation must stay on the stable JS path
 // unless the native parser is explicitly requested.
-const NATIVE_GSD_PARSER_ENABLED = (process.env.LOOP24_ENABLE_NATIVE_PARSER ?? process.env.GSD_ENABLE_NATIVE_GSD_PARSER) === "1";
+const NATIVE_OTTO_PARSER_ENABLED = (process.env.OTTO_ENABLE_NATIVE_PARSER ?? process.env.OTTO_ENABLE_NATIVE_OTTO_PARSER) === "1";
 
 let nativeModule: {
   parseFrontmatter: (content: string) => { metadata: string; body: string };
@@ -33,12 +33,12 @@ let loadAttempted = false;
 function loadNative(): typeof nativeModule {
   if (loadAttempted) return nativeModule;
   loadAttempted = true;
-  if (!NATIVE_GSD_PARSER_ENABLED) return nativeModule;
+  if (!NATIVE_OTTO_PARSER_ENABLED) return nativeModule;
 
   try {
     // Dynamic import to avoid hard dependency - fails gracefully if native module not built
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require('@loop24/native');
+    const mod = require('@otto/native');
     if (mod.parseFrontmatter && mod.extractSection && mod.batchParseWorkflowFiles) {
       nativeModule = mod;
     }
@@ -121,7 +121,7 @@ export interface BatchParsedFile {
 }
 
 /**
- * Batch-parse all .md files in a .gsd/ directory tree using the native parser.
+ * Batch-parse all .md files in a .otto/workflow/ directory tree using the native parser.
  * Returns null if native module unavailable.
  */
 export function nativeBatchParseWorkflowFiles(directory: string): BatchParsedFile[] | null {
@@ -154,7 +154,7 @@ export interface WorkflowTreeEntry {
 }
 
 /**
- * Native-backed directory tree scan of a .gsd/ directory.
+ * Native-backed directory tree scan of a .otto/workflow/ directory.
  * Returns a flat list of all entries, or null if native module unavailable.
  */
 export function nativeScanWorkflowTree(directory: string): WorkflowTreeEntry[] | null {

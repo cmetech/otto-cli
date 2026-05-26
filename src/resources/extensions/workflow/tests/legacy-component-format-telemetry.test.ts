@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Verifies telemetry for legacy component formats.
 
 import test from "node:test";

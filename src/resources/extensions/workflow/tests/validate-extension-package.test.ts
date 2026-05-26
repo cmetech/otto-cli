@@ -25,7 +25,7 @@ function writeIndexTs(dir: string, content = "export default function() {}"): vo
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 test("validateExtensionPackage: valid package returns { valid: true }", (t) => {
-  // EXTR-02: gsd.extension: true, peerDependencies, pi.extensions
+  // EXTR-02: otto.extension: true, peerDependencies, pi.extensions
   const dir = makeTempDir();
   t.after(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -33,9 +33,9 @@ test("validateExtensionPackage: valid package returns { valid: true }", (t) => {
   writePackageJson(dir, {
     name: "@gsd-extensions/test",
     version: "1.0.0",
-    gsd: { extension: true },
+    otto: { extension: true },
     pi: { extensions: ["./index.ts"] },
-    peerDependencies: { "@loop24/pi-coding-agent": "*" },
+    peerDependencies: { "@otto/pi-coding-agent": "*" },
     dependencies: { "some-lib": "^1.0.0" },
   });
 
@@ -44,7 +44,7 @@ test("validateExtensionPackage: valid package returns { valid: true }", (t) => {
   assert.deepEqual(result.errors, []);
 });
 
-test("validateExtensionPackage: missing gsd.extension marker returns error", (t) => {
+test("validateExtensionPackage: missing otto.extension marker returns error", (t) => {
   const dir = makeTempDir();
   t.after(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -53,12 +53,12 @@ test("validateExtensionPackage: missing gsd.extension marker returns error", (t)
     name: "@gsd-extensions/test",
     version: "1.0.0",
     pi: { extensions: ["./index.ts"] },
-    peerDependencies: { "@loop24/pi-coding-agent": "*" },
+    peerDependencies: { "@otto/pi-coding-agent": "*" },
   });
 
   const result = validateExtensionPackage(dir);
   assert.equal(result.valid, false);
-  assert.ok(result.errors.some(e => e.includes("gsd")), `Expected error about gsd, got: ${JSON.stringify(result.errors)}`);
+  assert.ok(result.errors.some(e => e.includes("otto")), `Expected error about otto, got: ${JSON.stringify(result.errors)}`);
 });
 
 test("validateExtensionPackage: missing pi.extensions returns error", (t) => {
@@ -69,8 +69,8 @@ test("validateExtensionPackage: missing pi.extensions returns error", (t) => {
   writePackageJson(dir, {
     name: "@gsd-extensions/test",
     version: "1.0.0",
-    gsd: { extension: true },
-    peerDependencies: { "@loop24/pi-coding-agent": "*" },
+    otto: { extension: true },
+    peerDependencies: { "@otto/pi-coding-agent": "*" },
   });
 
   const result = validateExtensionPackage(dir);
@@ -86,9 +86,9 @@ test("validateExtensionPackage: pi.extensions entry path not found returns error
   writePackageJson(dir, {
     name: "@gsd-extensions/test",
     version: "1.0.0",
-    gsd: { extension: true },
+    otto: { extension: true },
     pi: { extensions: ["./index.ts"] },
-    peerDependencies: { "@loop24/pi-coding-agent": "*" },
+    peerDependencies: { "@otto/pi-coding-agent": "*" },
   });
 
   const result = validateExtensionPackage(dir);
@@ -96,7 +96,7 @@ test("validateExtensionPackage: pi.extensions entry path not found returns error
   assert.ok(result.errors.some(e => e.includes("index.ts")), `Expected error about index.ts, got: ${JSON.stringify(result.errors)}`);
 });
 
-test("validateExtensionPackage: @loop24/* in dependencies (not peerDependencies) returns error", (t) => {
+test("validateExtensionPackage: @otto/* in dependencies (not peerDependencies) returns error", (t) => {
   const dir = makeTempDir();
   t.after(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -104,17 +104,17 @@ test("validateExtensionPackage: @loop24/* in dependencies (not peerDependencies)
   writePackageJson(dir, {
     name: "@gsd-extensions/test",
     version: "1.0.0",
-    gsd: { extension: true },
+    otto: { extension: true },
     pi: { extensions: ["./index.ts"] },
-    dependencies: { "@loop24/pi-coding-agent": "^2.0.0" },
+    dependencies: { "@otto/pi-coding-agent": "^2.0.0" },
   });
 
   const result = validateExtensionPackage(dir);
   assert.equal(result.valid, false);
-  assert.ok(result.errors.some(e => e.includes("@loop24/pi-coding-agent")), `Expected error about @loop24/ dep, got: ${JSON.stringify(result.errors)}`);
+  assert.ok(result.errors.some(e => e.includes("@otto/pi-coding-agent")), `Expected error about @otto/ dep, got: ${JSON.stringify(result.errors)}`);
 });
 
-test("validateExtensionPackage: @loop24/* in devDependencies returns error", (t) => {
+test("validateExtensionPackage: @otto/* in devDependencies returns error", (t) => {
   const dir = makeTempDir();
   t.after(() => rmSync(dir, { recursive: true, force: true }));
 
@@ -122,17 +122,17 @@ test("validateExtensionPackage: @loop24/* in devDependencies returns error", (t)
   writePackageJson(dir, {
     name: "@gsd-extensions/test",
     version: "1.0.0",
-    gsd: { extension: true },
+    otto: { extension: true },
     pi: { extensions: ["./index.ts"] },
-    peerDependencies: { "@loop24/pi-coding-agent": "*" },
-    devDependencies: { "@loop24/pi-tui": "^2.0.0" },
+    peerDependencies: { "@otto/pi-coding-agent": "*" },
+    devDependencies: { "@otto/pi-tui": "^2.0.0" },
   });
 
   const result = validateExtensionPackage(dir);
   assert.equal(result.valid, false);
   assert.ok(
-    result.errors.some(e => e.includes("@loop24/pi-tui") && e.includes("devDependencies")),
-    `Expected error about @loop24/ in devDependencies, got: ${JSON.stringify(result.errors)}`,
+    result.errors.some(e => e.includes("@otto/pi-tui") && e.includes("devDependencies")),
+    `Expected error about @otto/ in devDependencies, got: ${JSON.stringify(result.errors)}`,
   );
 });
 

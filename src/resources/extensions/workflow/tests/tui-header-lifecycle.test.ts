@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for the TUI header lifecycle fixes —
 // header is suppressed (zero lines) when auto-mode activates, the wizard
 // step status badge is cleared, the NEXT-mode footer hint renders when
@@ -10,10 +10,11 @@ import assert from "node:assert/strict";
 import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { visibleWidth } from "@loop24/pi-tui";
+import { visibleWidth } from "@otto/pi-tui";
 
 import { setCompletionProgressWidget, updateProgressWidget } from "../auto-dashboard.ts";
 import type { WorkflowDbState } from "../types.ts";
+import { slashCommand } from "../strings.ts";
 
 interface CapturedSetHeader {
   factory: ((tui: unknown, theme: unknown) => { render(width: number): string[]; invalidate(): void }) | undefined;
@@ -60,7 +61,7 @@ function assertLinesFit(lines: string[], width: number): void {
 
 test("updateProgressWidget installs an EMPTY-rendering header (not undefined) — addresses codex P1 finding that setHeader(undefined) restores the built-in logo+instructions header", (t) => {
   const dir = makeTempDir("empty-header");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   t.after(() => cleanup(dir));
 
   const captured: CapturedSetHeader = { factory: undefined };
@@ -95,7 +96,7 @@ test("updateProgressWidget installs an EMPTY-rendering header (not undefined) �
 
 test("updateProgressWidget clears the gsd-step wizard badge when auto-mode activates", (t) => {
   const dir = makeTempDir("step-badge");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   t.after(() => cleanup(dir));
 
   const statusCalls: Array<[string, string | undefined]> = [];
@@ -123,7 +124,7 @@ test("updateProgressWidget clears the gsd-step wizard badge when auto-mode activ
 
 test("updateProgressWidget gracefully no-ops when ctx.ui lacks setHeader/setStatus (RPC mode)", (t) => {
   const dir = makeTempDir("rpc-mode");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   t.after(() => cleanup(dir));
 
   // ctx.ui without setHeader / setStatus — must not throw.
@@ -143,9 +144,9 @@ test("updateProgressWidget gracefully no-ops when ctx.ui lacks setHeader/setStat
 
 // ── NEXT-mode footer guidance ───────────────────────────────────────────
 
-test("auto-dashboard widget render output includes /gsd next guidance when isStepMode is true", (t) => {
+test("auto-dashboard widget render output includes /otto next guidance when isStepMode is true", (t) => {
   const dir = makeTempDir("step-hint");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   t.after(() => cleanup(dir));
 
   let widgetFactory: ((tui: unknown, theme: unknown) => any) | undefined;
@@ -173,17 +174,16 @@ test("auto-dashboard widget render output includes /gsd next guidance when isSte
     bold: (text: string) => text,
   };
   const component = widgetFactory!(fakeTui, fakeTheme);
+  t.after(() => component.dispose?.());
   const lines = component.render(120);
 
-  const hasStepHint = lines.some((line: string) => line.includes("/gsd next to advance one step"));
+  const hasStepHint = lines.some((line: string) => line.includes(`${slashCommand("next")} to advance one step`));
   assert.ok(hasStepHint, `expected step-mode hint in render output; got:\n${lines.join("\n")}`);
-
-  if (component.dispose) component.dispose();
 });
 
-test("auto-dashboard widget render output omits /gsd next guidance when isStepMode is false", (t) => {
+test("auto-dashboard widget render output omits /otto next guidance when isStepMode is false", (t) => {
   const dir = makeTempDir("no-step-hint");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   t.after(() => cleanup(dir));
 
   let widgetFactory: ((tui: unknown, theme: unknown) => any) | undefined;
@@ -211,17 +211,16 @@ test("auto-dashboard widget render output omits /gsd next guidance when isStepMo
     bold: (text: string) => text,
   };
   const component = widgetFactory!(fakeTui, fakeTheme);
+  t.after(() => component.dispose?.());
   const lines = component.render(120);
 
-  const hasStepHint = lines.some((line: string) => line.includes("/gsd next to advance one step"));
+  const hasStepHint = lines.some((line: string) => line.includes(`${slashCommand("next")} to advance one step`));
   assert.equal(hasStepHint, false, "step-mode hint must NOT appear when isStepMode is false");
-
-  if (component.dispose) component.dispose();
 });
 
 test("auto-dashboard widget render output fits common terminal widths", (t) => {
   const dir = makeTempDir("width-safe");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   t.after(() => cleanup(dir));
 
   let widgetFactory: ((tui: unknown, theme: unknown) => any) | undefined;
@@ -262,7 +261,7 @@ test("auto-dashboard widget render output fits common terminal widths", (t) => {
 
 test("completion dashboard keeps final milestone roll-up in the progress widget", (t) => {
   const dir = makeTempDir("completion-widget");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   t.after(() => cleanup(dir));
 
   let widgetFactory: ((tui: unknown, theme: unknown) => any) | undefined;
@@ -307,6 +306,7 @@ test("completion dashboard keeps final milestone roll-up in the progress widget"
     bold: (text: string) => text,
   };
   const component = widgetFactory!(fakeTui, fakeTheme);
+  t.after(() => component.dispose?.());
   const output = component.render(140).join("\n");
 
   assert.match(output, /Milestone M003 roll-up/);
@@ -318,13 +318,11 @@ test("completion dashboard keeps final milestone roll-up in the progress widget"
   assert.match(output, /Users can see what shipped/);
   assert.match(output, /Keep completion closeout/);
   assert.match(output, /Verification/);
-  assert.match(output, /Files: src\/resources\/extensions\/gsd\/auto-dashboard\.ts/);
+  assert.match(output, /Files: src\/resources\/extensions\/workflow\/auto-dashboard\.ts/);
   assert.match(output, /Run totals 3\/3 slices/);
   assert.match(output, /100% cache hit/);
   assert.match(output, /\$21\.29/);
   assert.match(output, /1\.0M tokens/);
   assert.match(output, /8 units/);
   assert.doesNotMatch(output, /COMPLETE-MILESTONE/);
-
-  if (component.dispose) component.dispose();
 });

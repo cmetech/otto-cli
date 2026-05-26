@@ -1,7 +1,7 @@
 /**
  * Directory Validation — Safeguards against running in dangerous directories.
  *
- * Prevents the agent from creating .gsd/ structures in system paths, home directories,
+ * Prevents the agent from creating .otto/workflow/ structures in system paths, home directories,
  * or other locations where writing project scaffolding would be harmful.
  */
 
@@ -22,7 +22,7 @@ export interface DirectoryValidationResult {
 
 // ─── Blocked Paths ──────────────────────────────────────────────────────────────
 
-/** Paths where GSD must never create .gsd/ — no override possible. */
+/** Paths where OTTO must never create .otto/workflow/ — no override possible. */
 const UNIX_BLOCKED_PATHS = new Set([
   "/",
   "/bin",
@@ -119,7 +119,7 @@ export function validateDirectory(dirPath: string): DirectoryValidationResult {
     return {
       safe: false,
       severity: "blocked",
-      reason: `Refusing to run in system directory: ${normalized}. GSD must be run inside a project directory.`,
+      reason: `Refusing to run in system directory: ${normalized}. OTTO must be run inside a project directory.`,
     };
   }
 
@@ -135,7 +135,7 @@ export function validateDirectory(dirPath: string): DirectoryValidationResult {
     return {
       safe: false,
       severity: "blocked",
-      reason: `Refusing to run in your home directory (${normalized}). GSD must be run inside a project directory, not $HOME.`,
+      reason: `Refusing to run in your home directory (${normalized}). OTTO must be run inside a project directory, not $HOME.`,
     };
   }
 
@@ -162,7 +162,7 @@ export function validateDirectory(dirPath: string): DirectoryValidationResult {
       return {
         safe: false,
         severity: "warning",
-        reason: `This directory has ${entries.length} entries, which suggests it may not be a project directory. Are you sure you want to initialize GSD here?`,
+        reason: `This directory has ${entries.length} entries, which suggests it may not be a project directory. Are you sure you want to initialize OTTO here?`,
       };
     }
   } catch {

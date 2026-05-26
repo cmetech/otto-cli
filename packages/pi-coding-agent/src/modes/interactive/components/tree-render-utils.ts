@@ -1,7 +1,7 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Shared tree and selector row rendering utilities.
 
-import { truncateToWidth } from "@loop24/pi-tui";
+import { truncateToWidth } from "@otto/pi-tui";
 import { theme } from "../theme/theme.js";
 
 // ── Tree connector characters ────────────────────────────────────────

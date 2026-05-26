@@ -317,7 +317,7 @@ export function parseRoadmap(content: string): ParsedRoadmap {
   }
 
   // Format B: "## Slice Overview" table format emitted by workflow-projections
-  // (gsd_plan_milestone). Used as a fallback when format A produced nothing,
+  // (otto_plan_milestone). Used as a fallback when format A produced nothing,
   // so a roadmap that contains both H3 and table sections is parsed once.
   if (slices.length === 0) {
     const overviewBody = sections["Slice Overview"] ?? "";

@@ -11,8 +11,8 @@ test("resume refreshes managed resources and opens DB before state rebuild", asy
 
   await refreshResumeResourcesAndDb("/tmp/project", {
     env: {
-      GSD_CODING_AGENT_DIR: "/tmp/agent",
-      GSD_PKG_ROOT: "/tmp/pkg",
+      OTTO_CODING_AGENT_DIR: "/tmp/agent",
+      OTTO_PKG_ROOT: "/tmp/pkg",
     } as NodeJS.ProcessEnv,
     importModule: async (specifier: string) => {
       calls.push(`import:${specifier}`);

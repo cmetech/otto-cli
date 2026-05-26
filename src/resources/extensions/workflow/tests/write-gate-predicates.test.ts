@@ -38,10 +38,10 @@ test('shouldBlockQueueExecution: queue active → block write to user source', (
   assert.ok(r.reason);
 });
 
-test('shouldBlockQueueExecution: queue active → allow write to .gsd/ path', (t) => {
+test('shouldBlockQueueExecution: queue active → allow write to .otto/workflow/ path', (t) => {
   t.after(() => clearDiscussionFlowState(process.cwd()));
   setQueuePhaseActive(true, process.cwd());
-  const r = shouldBlockQueueExecution('write', '.gsd/milestones/M001/M001-CONTEXT.md', true);
+  const r = shouldBlockQueueExecution('write', '.otto/workflow/milestones/M001/M001-CONTEXT.md', true);
   assert.strictEqual(r.block, false);
 });
 
@@ -128,7 +128,7 @@ test('shouldBlockPendingGateBash: pending gate → block read-only bash (git log
 
 test('shouldBlockContextWrite: non-write tool → allow', (t) => {
   t.after(() => clearDiscussionFlowState(process.cwd()));
-  const r = shouldBlockContextWrite('read', '.gsd/milestones/M001/M001-CONTEXT.md', 'M001');
+  const r = shouldBlockContextWrite('read', '.otto/workflow/milestones/M001/M001-CONTEXT.md', 'M001');
   assert.strictEqual(r.block, false);
 });
 
@@ -140,7 +140,7 @@ test('shouldBlockContextWrite: write to non-CONTEXT file → allow', (t) => {
 
 test('shouldBlockContextWrite: write to CONTEXT.md without verification → block', (t) => {
   t.after(() => clearDiscussionFlowState(process.cwd()));
-  const r = shouldBlockContextWrite('write', '.gsd/milestones/M007/M007-CONTEXT.md', 'M007');
+  const r = shouldBlockContextWrite('write', '.otto/workflow/milestones/M007/M007-CONTEXT.md', 'M007');
   assert.strictEqual(r.block, true);
   assert.ok(r.reason);
 });
@@ -148,7 +148,7 @@ test('shouldBlockContextWrite: write to CONTEXT.md without verification → bloc
 test('shouldBlockContextWrite: write to CONTEXT.md after verification → allow', (t) => {
   t.after(() => clearDiscussionFlowState(process.cwd()));
   markDepthVerified('M008');
-  const r = shouldBlockContextWrite('write', '.gsd/milestones/M008/M008-CONTEXT.md', 'M008');
+  const r = shouldBlockContextWrite('write', '.otto/workflow/milestones/M008/M008-CONTEXT.md', 'M008');
   assert.strictEqual(r.block, false);
 });
 

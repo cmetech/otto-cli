@@ -1,7 +1,7 @@
 // View renderers for the workflow visualizer overlay.
 
-import type { Theme } from "@loop24/pi-coding-agent";
-import { truncateToWidth, visibleWidth } from "@loop24/pi-tui";
+import type { Theme } from "@otto/pi-coding-agent";
+import { truncateToWidth, visibleWidth } from "@otto/pi-tui";
 import type { VisualizerData, VisualizerMilestone, SliceVerification, VisualizerSliceActivity, VisualizerStats, VisualizerSliceRef } from "./visualizer-data.js";
 import { formatCost, formatTokenCount, classifyUnitPhase } from "./metrics.js";
 import { formatDuration, padRight, joinColumns, sparkline, STATUS_GLYPH, STATUS_COLOR } from "../shared/mod.js";
@@ -1222,7 +1222,7 @@ export function renderHealthView(
         : "all healthy";
     lines.push(`  ${th.fg("text", String(total))} skills tracked  ·  ${th.fg(issueColor, issueTag)}`);
     if (topIssue) lines.push(`  ${th.fg("warning", "⚠")} ${th.fg("dim", topIssue)}`);
-    lines.push(`  ${th.fg("dim", "→ /gsd skill-health for full report")}`);
+    lines.push(`  ${th.fg("dim", "→ /otto skill-health for full report")}`);
   }
 
   return lines;

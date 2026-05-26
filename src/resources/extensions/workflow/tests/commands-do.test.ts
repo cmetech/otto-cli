@@ -72,49 +72,49 @@ function matchRoute(input: string): MatchResult | null {
 
 // ─── Tests ──────────────────────────────────────────────────────────────
 
-test("/gsd do: routes 'show me progress' to status", () => {
+test("/otto do: routes 'show me progress' to status", () => {
   const match = matchRoute("show me progress");
   assert.ok(match);
   assert.equal(match.command, "status");
 });
 
-test("/gsd do: routes 'run autonomously' to auto", () => {
+test("/otto do: routes 'run autonomously' to auto", () => {
   const match = matchRoute("run autonomously");
   assert.ok(match);
   assert.equal(match.command, "auto");
 });
 
-test("/gsd do: routes 'clean up old branches' to cleanup", () => {
+test("/otto do: routes 'clean up old branches' to cleanup", () => {
   const match = matchRoute("clean up old branches");
   assert.ok(match);
   assert.equal(match.command, "cleanup");
   assert.equal(match.remainingArgs, "old branches");
 });
 
-test("/gsd do: routes 'create pr for milestone' to ship", () => {
+test("/otto do: routes 'create pr for milestone' to ship", () => {
   const match = matchRoute("create pr for milestone");
   assert.ok(match);
   assert.equal(match.command, "ship");
 });
 
-test("/gsd do: routes 'add tests for S03' to add-tests", () => {
+test("/otto do: routes 'add tests for S03' to add-tests", () => {
   const match = matchRoute("add tests for S03");
   assert.ok(match);
   assert.equal(match.command, "add-tests");
 });
 
-test("/gsd do: routes 'what is next' to next", () => {
+test("/otto do: routes 'what is next' to next", () => {
   const match = matchRoute("what's next");
   assert.ok(match);
   assert.equal(match.command, "next");
 });
 
-test("/gsd do: returns null for unrecognized input", () => {
+test("/otto do: returns null for unrecognized input", () => {
   const match = matchRoute("florbinate the gizmo");
   assert.equal(match, null);
 });
 
-test("/gsd do: prefers longer keyword match", () => {
+test("/otto do: prefers longer keyword match", () => {
   // "check health" (12 chars) should beat "health" (6 chars)
   const match = matchRoute("check health of the system");
   assert.ok(match);
@@ -122,39 +122,39 @@ test("/gsd do: prefers longer keyword match", () => {
   assert.ok(match.score >= 12);
 });
 
-test("/gsd do: routes debug troubleshooting intent to debug", () => {
+test("/otto do: routes debug troubleshooting intent to debug", () => {
   const match = matchRoute("debug this flaky oauth callback");
   assert.ok(match);
   assert.equal(match.command, "debug");
 });
 
-test("/gsd do: keeps 'debug logs' routed to logs (longer keyword wins)", () => {
+test("/otto do: keeps 'debug logs' routed to logs (longer keyword wins)", () => {
   const match = matchRoute("show me debug logs for today");
   assert.ok(match);
   assert.equal(match.command, "logs");
 });
 
-test("/gsd do: routes 'session report' to session-report", () => {
+test("/otto do: routes 'session report' to session-report", () => {
   const match = matchRoute("show me the session report");
   assert.ok(match);
   assert.equal(match.command, "session-report");
 });
 
-test("/gsd do: routes 'diagnose issue' to debug (not doctor)", () => {
+test("/otto do: routes 'diagnose issue' to debug (not doctor)", () => {
   // 'diagnose issue' is an explicit keyword on the debug route to distinguish
-  // session-level issue diagnosis from /gsd doctor health checks.
+  // session-level issue diagnosis from /otto doctor health checks.
   const match = matchRoute("diagnose issue with oauth callback");
   assert.ok(match);
   assert.equal(match.command, "debug");
 });
 
-test("/gsd do: routes 'investigate flaky test' to debug", () => {
+test("/otto do: routes 'investigate flaky test' to debug", () => {
   const match = matchRoute("investigate flaky test in CI");
   assert.ok(match);
   assert.equal(match.command, "debug");
 });
 
-test("/gsd do: 'debug logs' keyword wins over bare 'debug' (longer keyword precedence)", () => {
+test("/otto do: 'debug logs' keyword wins over bare 'debug' (longer keyword precedence)", () => {
   // 'debug logs' (10 chars) > 'debug' (5 chars)
   const logsMatch = matchRoute("debug logs for the last run");
   assert.ok(logsMatch);
@@ -167,7 +167,7 @@ test("/gsd do: 'debug logs' keyword wins over bare 'debug' (longer keyword prece
   assert.equal(debugMatch.command, "debug");
 });
 
-test("/gsd do: 'diagnose' alone routes to doctor (health check), not debug", () => {
+test("/otto do: 'diagnose' alone routes to doctor (health check), not debug", () => {
   // 'diagnose' maps to the doctor route; 'diagnose issue' maps to debug.
   const match = matchRoute("diagnose my project");
   assert.ok(match);

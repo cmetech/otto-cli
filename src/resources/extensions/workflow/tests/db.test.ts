@@ -1,4 +1,4 @@
-// GSD Extension - Database regression tests.
+// OTTO Extension - Database regression tests.
 
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -365,11 +365,11 @@ describe('gsd-db', () => {
 
   test('gsd-db: detects WSL DrvFs mount paths for conservative pragmas', () => {
     withPlatform('linux', () => {
-      assert.equal(_isLikelyWslDrvFsPathForTest('/mnt/d/code/project/.gsd/gsd.db'), true);
-      assert.equal(_isLikelyWslDrvFsPathForTest('/tmp/gsd.db'), false);
+      assert.equal(_isLikelyWslDrvFsPathForTest('/mnt/d/code/project/.otto/workflow/otto.db'), true);
+      assert.equal(_isLikelyWslDrvFsPathForTest('/tmp/otto.db'), false);
     });
     withPlatform('darwin', () => {
-      assert.equal(_isLikelyWslDrvFsPathForTest('/mnt/d/code/project/.gsd/gsd.db'), false);
+      assert.equal(_isLikelyWslDrvFsPathForTest('/mnt/d/code/project/.otto/workflow/otto.db'), false);
     });
   });
 

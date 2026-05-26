@@ -1,7 +1,7 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: User message selector for branching from prior user turns.
 
-import { type Component, Container, getEditorKeybindings, Spacer, Text, truncateToWidth } from "@loop24/pi-tui";
+import { type Component, Container, getEditorKeybindings, Spacer, Text, truncateToWidth } from "@otto/pi-tui";
 import { theme } from "../theme/theme.js";
 import { DynamicBorder } from "./dynamic-border.js";
 import { selectorFooter } from "./keybinding-hints.js";

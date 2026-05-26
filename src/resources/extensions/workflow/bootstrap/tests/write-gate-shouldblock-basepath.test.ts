@@ -42,16 +42,16 @@ describe("write-gate shouldBlock readers respect explicit basePath", () => {
   before(() => {
     baseDirA = makeTempDir();
     baseDirB = makeTempDir();
-    prevPersist = process.env.GSD_PERSIST_WRITE_GATE_STATE;
-    process.env.GSD_PERSIST_WRITE_GATE_STATE = "1";
+    prevPersist = process.env.OTTO_PERSIST_WRITE_GATE_STATE;
+    process.env.OTTO_PERSIST_WRITE_GATE_STATE = "1";
   });
 
   after(() => {
     process.chdir(originalCwd);
     if (prevPersist === undefined) {
-      delete process.env.GSD_PERSIST_WRITE_GATE_STATE;
+      delete process.env.OTTO_PERSIST_WRITE_GATE_STATE;
     } else {
-      process.env.GSD_PERSIST_WRITE_GATE_STATE = prevPersist;
+      process.env.OTTO_PERSIST_WRITE_GATE_STATE = prevPersist;
     }
     rmSync(baseDirA, { recursive: true, force: true });
     rmSync(baseDirB, { recursive: true, force: true });
@@ -64,7 +64,7 @@ describe("write-gate shouldBlock readers respect explicit basePath", () => {
     markDepthVerified("M001", baseDirA);
     process.chdir(baseDirB);
 
-    const contextPath = join(baseDirA, ".gsd", "milestones", "M001", "M001-CONTEXT.md");
+    const contextPath = join(baseDirA, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md");
     const result = shouldBlockContextWrite("write", contextPath, "M001", undefined, baseDirA);
 
     assert.equal(result.block, false, "explicit basePath should resolve to baseDirA's verified state");
@@ -77,7 +77,7 @@ describe("write-gate shouldBlock readers respect explicit basePath", () => {
     markDepthVerified("M001", baseDirA);
     process.chdir(baseDirB);
 
-    const contextPath = join(baseDirA, ".gsd", "milestones", "M001", "M001-CONTEXT.md");
+    const contextPath = join(baseDirA, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md");
     const result = shouldBlockContextWrite("write", contextPath, "M001");
 
     assert.equal(result.block, true, "default-to-cwd path resolves to baseDirB and misses baseDirA state");

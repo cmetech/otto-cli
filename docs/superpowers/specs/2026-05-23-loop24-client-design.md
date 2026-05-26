@@ -200,7 +200,7 @@ Stored as `src/resources/extensions/loop24/branding/banner.txt`. The meta strip 
 
 ### Problem
 
-gsd-pi hard-codes "gsd" throughout the workflow extension: command names (`/gsd auto`, `/gsd status`), prompt templates ("Use the GSD planning system to…"), file names (`.gsd.db`), and the extension directory itself. LOOP24 needs to ship without any "gsd" in user-visible places, and the namespace should be configurable in **one** place so we never repeat this renaming exercise.
+gsd-pi hard-codes "gsd" throughout the workflow extension: command names (`/gsd auto`, `/gsd status`), prompt templates ("Use the GSD planning system to…"), file names (`.otto.db`), and the extension directory itself. LOOP24 needs to ship without any "gsd" in user-visible places, and the namespace should be configurable in **one** place so we never repeat this renaming exercise.
 
 ### Solution
 
@@ -234,7 +234,7 @@ export const BRAND_NAME: string = pkg.piConfig?.brandName || "LOOP24";
 | Slash command registration | `"gsd-auto"`, `"gsd-status"` | `` `${COMMAND_NAMESPACE}-auto` ``, `` `${COMMAND_NAMESPACE}-status` `` |
 | Command shape | `/gsd auto` (space-separated subcommand) | `/loop24 auto` (same pattern, namespace is the top-level command) |
 | Prompts referencing "GSD" | hardcoded `"GSD"` strings in prompt files | `${BRAND_NAME}` template variables read from a small `strings.ts` |
-| State db filename | `.gsd.db` | `` `.${COMMAND_NAMESPACE}.db` `` → `.loop24.db` |
+| State db filename | `.otto.db` | `` `.${COMMAND_NAMESPACE}.db` `` → `.loop24.db` |
 | User-facing config dir | `~/.gsd/` | `~/.loop24/` (already handled via `CONFIG_DIR_NAME`) |
 | Persistent planning dir | `.planning/` | **unchanged** — name is already generic; renaming adds nothing |
 

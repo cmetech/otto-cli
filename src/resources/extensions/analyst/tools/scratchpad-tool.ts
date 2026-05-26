@@ -1,4 +1,4 @@
-import type { ToolDefinition } from "@loop24/pi-coding-agent";
+import type { ToolDefinition } from "@otto/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 import type { AsyncJobManager } from "../../async-jobs/job-manager.js";
 import type { CellResult, ScratchpadRuntime } from "../runtime.js";

@@ -28,12 +28,12 @@ const { assertEq, assertTrue, report } = createTestContext();
 
 function createFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-slice-reconcile-"));
-  mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
   return base;
 }
 
 function writeFile(base: string, relativePath: string, content: string): void {
-  const full = join(base, ".gsd", relativePath);
+  const full = join(base, ".otto/workflow", relativePath);
   mkdirSync(join(full, ".."), { recursive: true });
   writeFileSync(full, content);
 }
@@ -71,7 +71,7 @@ async function testMissingSlicesCauseBlock(): Promise<void> {
   console.log("\n--- Test: missing DB slices are not imported from ROADMAP.md ---");
 
   const base = createFixtureBase();
-  const dbPath = join(base, ".gsd", "gsd.db");
+  const dbPath = join(base, ".otto/workflow", "otto.db");
 
   try {
     openDatabase(dbPath);
@@ -109,7 +109,7 @@ async function testSliceReconciliationIdempotent(): Promise<void> {
   console.log("\n--- Test: disk-only slices remain absent on repeated derives ---");
 
   const base = createFixtureBase();
-  const dbPath = join(base, ".gsd", "gsd.db");
+  const dbPath = join(base, ".otto/workflow", "otto.db");
 
   try {
     openDatabase(dbPath);
@@ -147,7 +147,7 @@ async function testNoRoadmapSkipsReconciliation(): Promise<void> {
   console.log("\n--- Test: no ROADMAP file skips slice reconciliation ---");
 
   const base = createFixtureBase();
-  const dbPath = join(base, ".gsd", "gsd.db");
+  const dbPath = join(base, ".otto/workflow", "otto.db");
 
   try {
     openDatabase(dbPath);

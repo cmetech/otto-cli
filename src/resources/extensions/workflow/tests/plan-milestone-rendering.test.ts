@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Verifies the milestone planning prompt renders compact required guidance.
 
 import test from "node:test";
@@ -8,14 +8,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 test("plan-milestone prompt renders compact DB-backed planning guidance", async (t) => {
-  const previousWorkflowHome = process.env.GSD_HOME;
-  const providedWorkflowHome = process.env.GSD_TEST_HOME;
+  const previousWorkflowHome = process.env.OTTO_HOME;
+  const providedWorkflowHome = process.env.OTTO_TEST_HOME;
   const isolatedHome = providedWorkflowHome ?? mkdtempSync(join(tmpdir(), "gsd-plan-milestone-render-"));
-  const fixtureRoot = process.env.GSD_TEST_WORKSPACE_ROOT ?? process.cwd();
-  process.env.GSD_HOME = isolatedHome;
+  const fixtureRoot = process.env.OTTO_TEST_WORKSPACE_ROOT ?? process.cwd();
+  process.env.OTTO_HOME = isolatedHome;
   t.after(() => {
-    if (previousWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousWorkflowHome;
+    if (previousWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = previousWorkflowHome;
     if (!providedWorkflowHome) rmSync(isolatedHome, { recursive: true, force: true });
   });
 
@@ -25,17 +25,17 @@ test("plan-milestone prompt renders compact DB-backed planning guidance", async 
     milestoneTitle: "Reduce prompt cost",
     workingDirectory: fixtureRoot,
     inlinedContext: "## Roadmap\n\nUse the roadmap template.",
-    outputPath: ".gsd/milestones/M001/M001-ROADMAP.md",
+    outputPath: ".otto/workflow/milestones/M001/M001-ROADMAP.md",
     skillDiscoveryMode: "filtered",
     skillDiscoveryInstructions: "Use only relevant skills.",
     sourceFilePaths: "- src/resources/extensions/workflow/prompts/plan-milestone.md",
-    researchOutputPath: ".gsd/milestones/M001/M001-RESEARCH.md",
-    secretsOutputPath: ".gsd/milestones/M001/SECRETS.md",
+    researchOutputPath: ".otto/workflow/milestones/M001/M001-RESEARCH.md",
+    secretsOutputPath: ".otto/workflow/milestones/M001/SECRETS.md",
   });
 
   assert.match(prompt, /Explore First, Then Decompose/);
-  assert.match(prompt, /Call `gsd_plan_milestone`/);
-  assert.match(prompt, /call `gsd_decision_save`/);
+  assert.match(prompt, /Call `otto_plan_milestone`/);
+  assert.match(prompt, /call `otto_decision_save`/);
   assert.match(prompt, /Every relevant Active requirement must end as mapped/);
   assert.match(prompt, /Risk-first means proof-first/);
   assert.match(prompt, /Progressive Planning \(ADR-011\)/);

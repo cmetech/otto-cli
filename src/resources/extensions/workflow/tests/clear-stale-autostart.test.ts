@@ -1,7 +1,7 @@
 /**
  * clear-stale-autostart.test.ts — #3667
  *
- * Pending auto-start entries carry a createdAt timestamp so later /gsd
+ * Pending auto-start entries carry a createdAt timestamp so later /otto
  * invocations can distinguish an in-flight discussion from a stale one.
  */
 
@@ -37,7 +37,7 @@ describe("clear stale pending auto-start (#3667)", () => {
   test("setPendingAutoStart defaults createdAt to Date.now()", (t) => {
     const base = realpathSync(mkdtempSync(join(tmpdir(), "gsd-pending-autostart-")));
     t.after(() => rmSync(base, { recursive: true, force: true }));
-    mkdirSync(join(base, ".gsd"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
     const before = Date.now();
 
     setPendingAutoStart(base, pendingInput(base, "M001"));
@@ -51,7 +51,7 @@ describe("clear stale pending auto-start (#3667)", () => {
   test("setPendingAutoStart preserves explicit createdAt for stale-entry checks", (t) => {
     const base = realpathSync(mkdtempSync(join(tmpdir(), "gsd-pending-autostart-old-")));
     t.after(() => rmSync(base, { recursive: true, force: true }));
-    mkdirSync(join(base, ".gsd"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
 
     setPendingAutoStart(base, { ...pendingInput(base, "M001"), createdAt: 123 });
 

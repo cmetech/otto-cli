@@ -11,7 +11,7 @@
  */
 
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
-import type { RpcExtensionUIRequest, SdkAgentEvent } from '@loop24-build/contracts';
+import type { RpcExtensionUIRequest, SdkAgentEvent } from '@otto-build/contracts';
 import type { FormattedEvent, PendingBlocker } from './types.js';
 
 // ---------------------------------------------------------------------------

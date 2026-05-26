@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for safe auto-mode milestone worktree repair.
 
 import test from "node:test";
@@ -16,7 +16,7 @@ import type { WorktreeSafetyResult } from "../worktree-safety.ts";
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-auto-wt-repair-"));
-  mkdirSync(join(base, ".gsd", "worktrees"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "worktrees"), { recursive: true });
   return base;
 }
 
@@ -35,7 +35,7 @@ test("repair target accepts a missing expected milestone worktree", () => {
 
     assert.equal(result.ok, true);
     if (result.ok) {
-      assert.equal(result.expectedPath, join(base, ".gsd", "worktrees", "M001"));
+      assert.equal(result.expectedPath, join(base, ".otto/workflow", "worktrees", "M001"));
     }
   } finally {
     cleanup(base);
@@ -44,9 +44,9 @@ test("repair target accepts a missing expected milestone worktree", () => {
 
 test("repair target accepts a stale metadata-only worktree directory", () => {
   const base = makeBase();
-  const expected = join(base, ".gsd", "worktrees", "M001");
+  const expected = join(base, ".otto/workflow", "worktrees", "M001");
   try {
-    mkdirSync(join(expected, ".gsd"), { recursive: true });
+    mkdirSync(join(expected, ".otto/workflow"), { recursive: true });
 
     const result = assessAutoWorktreeRepairTarget({
       projectRoot: base,
@@ -62,7 +62,7 @@ test("repair target accepts a stale metadata-only worktree directory", () => {
 
 test("repair target rejects stale worktree directories with source content", () => {
   const base = makeBase();
-  const expected = join(base, ".gsd", "worktrees", "M001");
+  const expected = join(base, ".otto/workflow", "worktrees", "M001");
   try {
     mkdirSync(expected, { recursive: true });
     writeFileSync(join(expected, "index.html"), "<main></main>\n", "utf-8");
@@ -75,7 +75,7 @@ test("repair target rejects stale worktree directories with source content", () 
 
     assert.equal(result.ok, false);
     if (!result.ok) {
-      assert.match(result.reason, /non-GSD content/);
+      assert.match(result.reason, /non-OTTO content/);
     }
   } finally {
     cleanup(base);
@@ -84,7 +84,7 @@ test("repair target rejects stale worktree directories with source content", () 
 
 test("repair target rejects invalid-root drift from an unrelated worktree", () => {
   const base = makeBase();
-  const otherWorktree = join(base, ".gsd", "worktrees", "M000");
+  const otherWorktree = join(base, ".otto/workflow", "worktrees", "M000");
   try {
     mkdirSync(otherWorktree, { recursive: true });
 
@@ -105,7 +105,7 @@ test("repair target rejects invalid-root drift from an unrelated worktree", () =
 
 test("repair reruns validation after recreating a recoverable invalid-root", async () => {
   const base = makeBase();
-  const expected = join(base, ".gsd", "worktrees", "M001");
+  const expected = join(base, ".otto/workflow", "worktrees", "M001");
   const failure: WorktreeSafetyResult = {
     ok: false,
     kind: "invalid-root",
@@ -145,7 +145,7 @@ test("repair reruns validation after recreating a recoverable invalid-root", asy
 
 test("repair does not enter when the stale target contains source files", async () => {
   const base = makeBase();
-  const expected = join(base, ".gsd", "worktrees", "M001");
+  const expected = join(base, ".otto/workflow", "worktrees", "M001");
   const failure: WorktreeSafetyResult = {
     ok: false,
     kind: "invalid-root",
@@ -175,7 +175,7 @@ test("repair does not enter when the stale target contains source files", async 
     assert.equal(enterCalls, 0);
     assert.equal(result.repaired, false);
     assert.equal(result.result, failure);
-    assert.match(result.repairReason ?? "", /non-GSD content/);
+    assert.match(result.repairReason ?? "", /non-OTTO content/);
   } finally {
     cleanup(base);
   }
@@ -192,7 +192,7 @@ test("paused metadata path resolves to the expected worktree while paused at pro
       baseIsAutoWorktree: false,
     });
 
-    assert.equal(result, join(base, ".gsd", "worktrees", "M001"));
+    assert.equal(result, join(base, ".otto/workflow", "worktrees", "M001"));
   } finally {
     cleanup(base);
   }

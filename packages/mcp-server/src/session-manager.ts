@@ -8,8 +8,8 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve, join, delimiter } from 'node:path';
-import { RpcClient } from '@loop24-build/rpc-client';
-import type { SdkAgentEvent, RpcInitResult, RpcCostUpdateEvent, RpcExtensionUIRequest } from '@loop24-build/contracts';
+import { RpcClient } from '@otto-build/rpc-client';
+import type { SdkAgentEvent, RpcInitResult, RpcCostUpdateEvent, RpcExtensionUIRequest } from '@otto-build/contracts';
 import type {
   ManagedSession,
   ExecuteOptions,
@@ -88,7 +88,7 @@ export class SessionManager {
    *
    * Rejects if a session already exists for this projectDir.
    * Creates an RpcClient, starts the process, performs the v2 init handshake,
-   * wires event tracking, and sends '/loop24 auto' to begin execution.
+   * wires event tracking, and sends '/otto auto' to begin execution.
    */
   async startSession(projectDir: string, options: ExecuteOptions = {}): Promise<string> {
     if (!projectDir || projectDir.trim() === '') {
@@ -160,7 +160,7 @@ export class SessionManager {
       });
 
       // Kick off auto-mode
-      const command = options.command ?? '/gsd auto';
+      const command = options.command ?? '/otto auto';
       await client.prompt(command);
 
       return session.sessionId;
@@ -228,7 +228,7 @@ export class SessionManager {
   /**
    * Cancel a session looked up by project directory.
    *
-   * This is the fallback path for interactive sessions (started via `/loop24 auto`
+   * This is the fallback path for interactive sessions (started via `/otto auto`
    * in the terminal) and sessions from a restarted MCP server that have no
    * registered sessionId. The sessions map is keyed by projectDir, so this
    * lookup always succeeds for any tracked session regardless of sessionId.
@@ -246,7 +246,7 @@ export class SessionManager {
   }
 
   private async stopDetachedAutoProcess(projectDir: string): Promise<boolean> {
-    const lockPath = join(projectDir, '.gsd', 'auto.lock');
+    const lockPath = join(projectDir, '.otto', 'workflow', 'auto.lock');
     if (!existsSync(lockPath)) return false;
     try {
       const lockData = JSON.parse(readFileSync(lockPath, 'utf-8')) as { pid?: number };
@@ -321,12 +321,12 @@ export class SessionManager {
   /**
    * Resolve the CLI path.
    *
-   * 1. GSD_CLI_PATH env var (highest priority)
+   * 1. OTTO_CLI_PATH env var (highest priority)
    * 2. PATH lookup → resolve to the actual gsd executable/shim
    */
   static resolveCLIPath(): string {
     // Check env var first
-    const envPath = process.env['GSD_CLI_PATH'];
+    const envPath = process.env['OTTO_CLI_PATH'];
     if (envPath) return resolve(envPath);
 
     const workflowBin = findExecutableOnPath('gsd');
@@ -335,7 +335,7 @@ export class SessionManager {
     }
 
     throw new Error(
-      'Cannot find GSD CLI. Set GSD_CLI_PATH environment variable or ensure `gsd` is in PATH.'
+      'Cannot find OTTO CLI. Set OTTO_CLI_PATH environment variable or ensure `gsd` is in PATH.'
     );
   }
 

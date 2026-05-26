@@ -1,4 +1,4 @@
-// @loop24-build/mcp-server — Behaviour tests for secure_env_collect MCP tool
+// @otto-build/mcp-server — Behaviour tests for secure_env_collect MCP tool
 //
 // Drives `secureEnvCollectHandler` directly with a fake `elicitInput`
 // function. No mock McpServer, no DI seam on `createMcpServer` — the

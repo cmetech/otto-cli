@@ -3,7 +3,7 @@
  *
  * Verifies precedence (project > global > bundled), both YAML and markdown
  * formats, mode defaults, invalid-file handling, and legacy compat with
- * `.gsd/workflow-defs/`.
+ * `.otto/workflow/workflow-defs/`.
  */
 
 import { describe, it, afterEach, beforeEach } from "node:test";
@@ -36,16 +36,16 @@ function makeTmpBase(): string {
 }
 
 beforeEach(() => {
-  savedWorkflowHome = process.env.GSD_HOME;
+  savedWorkflowHome = process.env.OTTO_HOME;
   const fakeHome = makeTmpBase();
-  process.env.GSD_HOME = fakeHome;
+  process.env.OTTO_HOME = fakeHome;
 });
 
 afterEach(() => {
   if (savedWorkflowHome === undefined) {
-    delete process.env.GSD_HOME;
+    delete process.env.OTTO_HOME;
   } else {
-    process.env.GSD_HOME = savedWorkflowHome;
+    process.env.OTTO_HOME = savedWorkflowHome;
   }
   for (const d of tmpDirs) {
     try { rmSync(d, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }); } catch { /* non-fatal */ }
@@ -59,19 +59,19 @@ function writeFile(path: string, content: string): void {
 }
 
 function writeProjectPlugin(basePath: string, filename: string, content: string): void {
-  const dir = join(basePath, ".gsd", "workflows");
+  const dir = join(basePath, ".otto/workflow", "workflows");
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, filename), content, "utf-8");
 }
 
 function writeGlobalPlugin(filename: string, content: string): void {
-  const dir = join(process.env.GSD_HOME!, "workflows");
+  const dir = join(process.env.OTTO_HOME!, "workflows");
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, filename), content, "utf-8");
 }
 
 function writeLegacyDef(basePath: string, filename: string, content: string): void {
-  const dir = join(basePath, ".gsd", "workflow-defs");
+  const dir = join(basePath, ".otto/workflow", "workflow-defs");
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, filename), content, "utf-8");
 }
@@ -103,7 +103,7 @@ const SIMPLE_MD = `# Sample MD Plugin
 name: sample-md
 version: 1
 mode: markdown-phase
-artifact_dir: .gsd/workflows/samples/
+artifact_dir: .otto/workflow/workflows/samples/
 </template_meta>
 
 <phases>
@@ -153,7 +153,7 @@ describe("discoverPlugins: precedence", () => {
     const plugins = discoverPlugins(base);
     const bugfix = plugins.get("bugfix")!;
     assert.equal(bugfix.source, "project");
-    assert.ok(bugfix.path.includes(".gsd/workflows/bugfix.md"));
+    assert.ok(bugfix.path.includes(".otto/workflow/workflows/bugfix.md"));
   });
 
   it("global overrides bundled when project is absent", () => {
@@ -230,11 +230,11 @@ describe("discoverPlugins: error handling", () => {
     }
   });
 
-  it("ignores subdirectories under .gsd/workflows/ (artifact dirs)", () => {
+  it("ignores subdirectories under .otto/workflow/workflows/ (artifact dirs)", () => {
     const base = makeTmpBase();
-    // Create a subdir — simulates `/gsd start bugfix` artifact dir
-    mkdirSync(join(base, ".gsd", "workflows", "bugfixes", "250101-1-slug"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "workflows", "bugfixes", "250101-1-slug", "STATE.json"), "{}", "utf-8");
+    // Create a subdir — simulates `/otto start bugfix` artifact dir
+    mkdirSync(join(base, ".otto/workflow", "workflows", "bugfixes", "250101-1-slug"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "workflows", "bugfixes", "250101-1-slug", "STATE.json"), "{}", "utf-8");
     const plugins = discoverPlugins(base);
     assert.ok(!plugins.has("bugfixes"), "should not pick up subdir as a plugin");
   });
@@ -266,7 +266,7 @@ describe("resolvePlugin", () => {
 
 // ─── Legacy fallback ─────────────────────────────────────────────────────
 
-describe("discoverPlugins: legacy .gsd/workflow-defs/", () => {
+describe("discoverPlugins: legacy .otto/workflow/workflow-defs/", () => {
   it("still discovers legacy YAML definitions", () => {
     const base = makeTmpBase();
     writeLegacyDef(base, "legacy.yaml", SIMPLE_YAML);
@@ -275,13 +275,13 @@ describe("discoverPlugins: legacy .gsd/workflow-defs/", () => {
     assert.equal(plugins.get("legacy")!.format, "yaml");
   });
 
-  it("new .gsd/workflows/ overrides legacy .gsd/workflow-defs/", () => {
+  it("new .otto/workflow/workflows/ overrides legacy .otto/workflow/workflow-defs/", () => {
     const base = makeTmpBase();
     writeLegacyDef(base, "dup.yaml", SIMPLE_YAML);
     writeProjectPlugin(base, "dup.yaml", SIMPLE_YAML);
     const plugins = discoverPlugins(base);
     const p = plugins.get("dup")!;
-    assert.ok(p.path.includes(".gsd/workflows/dup.yaml"));
+    assert.ok(p.path.includes(".otto/workflow/workflows/dup.yaml"));
   });
 });
 

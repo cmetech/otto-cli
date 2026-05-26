@@ -45,7 +45,7 @@ interface BaselineStore {
 let cachedSummary: { at: number; binaryPath: string; summary: RtkGainSummary | null } | null = null;
 
 function getRuntimeDir(basePath: string): string {
-  return join(basePath, ".gsd", "runtime");
+  return join(basePath, ".otto/workflow", "runtime");
 }
 
 function getBaselinesPath(basePath: string): string {

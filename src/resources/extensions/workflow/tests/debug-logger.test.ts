@@ -20,7 +20,7 @@ import {
 
 function createTempWorkflowDir(): string {
   const tmp = mkdtempSync(join(tmpdir(), 'gsd-debug-test-'));
-  mkdirSync(join(tmp, '.gsd'), { recursive: true });
+  mkdirSync(join(tmp, '.otto/workflow'), { recursive: true });
   return tmp;
 }
 
@@ -39,7 +39,7 @@ test('enableDebug creates log file and sets enabled', () => {
   assert.ok(logPath, 'log path should be set');
   // Normalize path separators for Windows compatibility
   const normalized = logPath!.replace(/\\/g, '/');
-  assert.ok(normalized.includes('.gsd/debug/debug-'), 'log path should be in .gsd/debug/');
+  assert.ok(normalized.includes('.otto/workflow/debug/debug-'), 'log path should be in .otto/workflow/debug/');
   assert.ok(logPath!.endsWith('.log'), 'log path should end with .log');
 
   disableDebug();
@@ -156,7 +156,7 @@ test('writeDebugSummary includes all counters and disables debug', () => {
 
 test('auto-prunes old debug logs', () => {
   const tmp = createTempWorkflowDir();
-  const debugDir = join(tmp, '.gsd', 'debug');
+  const debugDir = join(tmp, '.otto/workflow', 'debug');
   mkdirSync(debugDir, { recursive: true });
 
   // Create 6 old log files

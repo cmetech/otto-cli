@@ -1,4 +1,4 @@
-// GSD Extension — workflow-projections unit tests
+// OTTO Extension — workflow-projections unit tests
 // Tests the pure rendering functions plus DB-backed projection recovery.
 
 import test from 'node:test';
@@ -191,8 +191,8 @@ test('workflow-projections: multiple tasks rendered in order', () => {
 // slice PLAN and silently dropped task plans.
 test('workflow-projections: regenerateIfMissing PLAN restores slice plan and task plan files', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projections-'));
-  const dbPath = join(base, '.gsd', 'gsd.db');
-  mkdirSync(join(base, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'tasks'), { recursive: true });
+  const dbPath = join(base, '.otto/workflow', 'otto.db');
+  mkdirSync(join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'tasks'), { recursive: true });
   openDatabase(dbPath);
   clearParseCache();
   clearPathCache();
@@ -226,9 +226,9 @@ test('workflow-projections: regenerateIfMissing PLAN restores slice plan and tas
       planning: { description: 'Do the second thing.', estimate: '2h' },
     });
 
-    const slicePlanPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
-    const t1PlanPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'tasks', 'T01-PLAN.md');
-    const t2PlanPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'tasks', 'T02-PLAN.md');
+    const slicePlanPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
+    const t1PlanPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'tasks', 'T01-PLAN.md');
+    const t2PlanPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'tasks', 'T02-PLAN.md');
 
     assert.ok(!existsSync(slicePlanPath), 'precondition: slice plan absent');
 
@@ -246,7 +246,7 @@ test('workflow-projections: regenerateIfMissing PLAN restores slice plan and tas
 
 test('workflow-projections: renderStateProjection does not clobber non-empty STATE.md when manifest has milestones', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projection-stale-'));
-  const workflowDir = join(base, '.gsd');
+  const workflowDir = join(base, '.otto/workflow');
   const statePath = join(workflowDir, 'STATE.md');
   openDatabase(':memory:');
   try {
@@ -275,7 +275,7 @@ test('workflow-projections: renderStateProjection does not clobber non-empty STA
 
 test('workflow-projections: renderStateProjection rewrites empty STATE.md when manifest has milestones', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projection-empty-state-'));
-  const workflowDir = join(base, '.gsd');
+  const workflowDir = join(base, '.otto/workflow');
   const statePath = join(workflowDir, 'STATE.md');
   openDatabase(':memory:');
   try {
@@ -304,7 +304,7 @@ test('workflow-projections: renderStateProjection rewrites empty STATE.md when m
 
 test('workflow-projections: renderStateProjection rewrites non-empty STATE.md when manifest is missing', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projection-missing-manifest-'));
-  const workflowDir = join(base, '.gsd');
+  const workflowDir = join(base, '.otto/workflow');
   const statePath = join(workflowDir, 'STATE.md');
   openDatabase(':memory:');
   try {
@@ -325,7 +325,7 @@ test('workflow-projections: renderStateProjection rewrites non-empty STATE.md wh
 
 test('workflow-projections: renderStateProjection rewrites non-empty STATE.md when manifest is malformed', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projection-malformed-manifest-'));
-  const workflowDir = join(base, '.gsd');
+  const workflowDir = join(base, '.otto/workflow');
   const statePath = join(workflowDir, 'STATE.md');
   openDatabase(':memory:');
   try {
@@ -347,7 +347,7 @@ test('workflow-projections: renderStateProjection rewrites non-empty STATE.md wh
 
 test('workflow-projections: renderStateProjection rewrites non-empty STATE.md when manifest milestones is not an array', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projection-non-array-milestones-'));
-  const workflowDir = join(base, '.gsd');
+  const workflowDir = join(base, '.otto/workflow');
   const statePath = join(workflowDir, 'STATE.md');
   openDatabase(':memory:');
   try {
@@ -377,7 +377,7 @@ test('workflow-projections: renderStateProjection rewrites non-empty STATE.md wh
 
 test('workflow-projections: renderStateProjection writes active milestone from DB when manifest matches', async () => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-projection-db-milestone-'));
-  const workflowDir = join(base, '.gsd');
+  const workflowDir = join(base, '.otto/workflow');
   const statePath = join(workflowDir, 'STATE.md');
   openDatabase(':memory:');
   try {

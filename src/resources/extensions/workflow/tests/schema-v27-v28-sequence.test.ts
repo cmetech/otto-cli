@@ -40,7 +40,7 @@ test("SCHEMA_VERSION constant is at least 28 (V28 migration committed)", () => {
 
 test("fresh-install DB has artifacts.content_hash column (V27)", () => {
   const base = makeTmp();
-  const dbPath = path.join(base, "gsd.db");
+  const dbPath = path.join(base, "otto.db");
   try {
     openDatabase(dbPath);
     const db = _getAdapter()!;
@@ -57,7 +57,7 @@ test("fresh-install DB has artifacts.content_hash column (V27)", () => {
 
 test("fresh-install DB has memories.last_hit_at column (V28)", () => {
   const base = makeTmp();
-  const dbPath = path.join(base, "gsd.db");
+  const dbPath = path.join(base, "otto.db");
   try {
     openDatabase(dbPath);
     const db = _getAdapter()!;
@@ -74,7 +74,7 @@ test("fresh-install DB has memories.last_hit_at column (V28)", () => {
 
 test("fresh-install DB stamps SCHEMA_VERSION (≥28) in schema_version table", () => {
   const base = makeTmp();
-  const dbPath = path.join(base, "gsd.db");
+  const dbPath = path.join(base, "otto.db");
   try {
     openDatabase(dbPath);
     const db = _getAdapter()!;
@@ -88,7 +88,7 @@ test("fresh-install DB stamps SCHEMA_VERSION (≥28) in schema_version table", (
 
 test("insertArtifact populates content_hash with SHA-256 of full_content (V27 write-path)", () => {
   const base = makeTmp();
-  const dbPath = path.join(base, "gsd.db");
+  const dbPath = path.join(base, "otto.db");
   try {
     openDatabase(dbPath);
     insertArtifact({
@@ -116,7 +116,7 @@ test("insertArtifact populates content_hash with SHA-256 of full_content (V27 wr
 
 test("incrementMemoryHitCount sets last_hit_at alongside hit_count (V28 write-path)", () => {
   const base = makeTmp();
-  const dbPath = path.join(base, "gsd.db");
+  const dbPath = path.join(base, "otto.db");
   try {
     openDatabase(dbPath);
 

@@ -14,8 +14,8 @@ import { openDatabase, closeDatabase, insertMilestone, insertSlice } from "../db
 
 function setupRepo(): string {
   const repo = mkdtempSync(join(tmpdir(), "gsd-dispatch-guard-4663-"));
-  mkdirSync(join(repo, ".gsd"), { recursive: true });
-  openDatabase(join(repo, ".gsd", "gsd.db"));
+  mkdirSync(join(repo, ".otto/workflow"), { recursive: true });
+  openDatabase(join(repo, ".otto/workflow", "otto.db"));
   return repo;
 }
 
@@ -28,8 +28,8 @@ test("#4663: dispatch guard blocks when prior milestone has failure SUMMARY but 
   const repo = setupRepo();
   t.after(() => teardownRepo(repo));
 
-  mkdirSync(join(repo, ".gsd", "milestones", "M002"), { recursive: true });
-  mkdirSync(join(repo, ".gsd", "milestones", "M003"), { recursive: true });
+  mkdirSync(join(repo, ".otto/workflow", "milestones", "M002"), { recursive: true });
+  mkdirSync(join(repo, ".otto/workflow", "milestones", "M003"), { recursive: true });
 
   // M002: DB says active with a pending slice, but a failure SUMMARY exists on disk.
   insertMilestone({ id: "M002", title: "Previous", status: "active" });
@@ -38,10 +38,10 @@ test("#4663: dispatch guard blocks when prior milestone has failure SUMMARY but 
   insertMilestone({ id: "M003", title: "Current", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M003", title: "First", status: "pending", depends: [] });
 
-  writeFileSync(join(repo, ".gsd", "milestones", "M002", "M002-ROADMAP.md"), "# M002\n");
-  writeFileSync(join(repo, ".gsd", "milestones", "M003", "M003-ROADMAP.md"), "# M003\n");
+  writeFileSync(join(repo, ".otto/workflow", "milestones", "M002", "M002-ROADMAP.md"), "# M002\n");
+  writeFileSync(join(repo, ".otto/workflow", "milestones", "M003", "M003-ROADMAP.md"), "# M003\n");
   writeFileSync(
-    join(repo, ".gsd", "milestones", "M002", "M002-SUMMARY.md"),
+    join(repo, ".otto/workflow", "milestones", "M002", "M002-SUMMARY.md"),
     "# M002 Summary\nverification FAILED — not complete.\n",
   );
 
@@ -57,8 +57,8 @@ test("#4663: dispatch guard allows dispatch when prior milestone has SUMMARY and
   const repo = setupRepo();
   t.after(() => teardownRepo(repo));
 
-  mkdirSync(join(repo, ".gsd", "milestones", "M002"), { recursive: true });
-  mkdirSync(join(repo, ".gsd", "milestones", "M003"), { recursive: true });
+  mkdirSync(join(repo, ".otto/workflow", "milestones", "M002"), { recursive: true });
+  mkdirSync(join(repo, ".otto/workflow", "milestones", "M003"), { recursive: true });
 
   insertMilestone({ id: "M002", title: "Previous", status: "complete" });
   insertSlice({ id: "S01", milestoneId: "M002", title: "Done", status: "complete", depends: [] });
@@ -66,9 +66,9 @@ test("#4663: dispatch guard allows dispatch when prior milestone has SUMMARY and
   insertMilestone({ id: "M003", title: "Current", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M003", title: "First", status: "pending", depends: [] });
 
-  writeFileSync(join(repo, ".gsd", "milestones", "M002", "M002-ROADMAP.md"), "# M002\n");
-  writeFileSync(join(repo, ".gsd", "milestones", "M003", "M003-ROADMAP.md"), "# M003\n");
-  writeFileSync(join(repo, ".gsd", "milestones", "M002", "M002-SUMMARY.md"), "# M002 Summary\nDone.\n");
+  writeFileSync(join(repo, ".otto/workflow", "milestones", "M002", "M002-ROADMAP.md"), "# M002\n");
+  writeFileSync(join(repo, ".otto/workflow", "milestones", "M003", "M003-ROADMAP.md"), "# M003\n");
+  writeFileSync(join(repo, ".otto/workflow", "milestones", "M002", "M002-SUMMARY.md"), "# M002 Summary\nDone.\n");
 
   assert.equal(
     getPriorSliceCompletionBlocker(repo, "main", "plan-slice", "M003/S01"),

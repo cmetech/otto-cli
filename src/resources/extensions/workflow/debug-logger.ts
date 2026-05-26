@@ -34,7 +34,7 @@ const MAX_DEBUG_LOGS = 5;
 
 /**
  * Enable debug logging. Creates the log file and prunes old logs.
- * Can be activated via `--debug` flag or `GSD_DEBUG=1` env var.
+ * Can be activated via `--debug` flag or `OTTO_DEBUG=1` env var.
  */
 export function enableDebug(basePath: string): void {
   const debugDir = join(workflowRoot(basePath), 'debug');

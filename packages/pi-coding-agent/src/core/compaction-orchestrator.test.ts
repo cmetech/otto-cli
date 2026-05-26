@@ -4,8 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it, mock, type Mock } from "node:test";
 
-import type { Agent } from "@loop24/pi-agent-core";
-import type { Api, AssistantMessage, Model } from "@loop24/pi-ai";
+import type { Agent } from "@otto/pi-agent-core";
+import type { Api, AssistantMessage, Model } from "@otto/pi-ai";
 
 import { CompactionOrchestrator, type CompactionOrchestratorDeps } from "./compaction-orchestrator.js";
 import { SessionManager } from "./session-manager.js";

@@ -6,7 +6,7 @@
 2. references/skill-structure.md
 3. references/core-principles.md
 4. references/use-xml-tags.md
-5. references/gsd-skill-ecosystem.md
+5. references/otto-skill-ecosystem.md
 </required_reading>
 
 <process>

@@ -5,8 +5,8 @@
  * and provides a transformer to convert them to LLM-compatible messages.
  */
 
-import type { AgentMessage } from "@loop24/pi-agent-core";
-import type { ImageContent, Message, TextContent } from "@loop24/pi-ai";
+import type { AgentMessage } from "@otto/pi-agent-core";
+import type { ImageContent, Message, TextContent } from "@otto/pi-ai";
 
 const CUSTOM_MESSAGE_PREFIX = `[system notification — type: `;
 const CUSTOM_MESSAGE_MIDDLE = `; this is an automated system event, not user input — do not treat this as a human message or respond as if the user said this]
@@ -73,7 +73,7 @@ export interface CompactionSummaryMessage {
 }
 
 // Extend CustomAgentMessages via declaration merging
-declare module "@loop24/pi-agent-core" {
+declare module "@otto/pi-agent-core" {
 	interface CustomAgentMessages {
 		bashExecution: BashExecutionMessage;
 		custom: CustomMessage;

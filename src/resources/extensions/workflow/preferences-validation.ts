@@ -678,7 +678,7 @@ export function validatePreferences(preferences: WorkflowPreferences): {
     }
   }
 
-  // ─── Context Mode (gsd_exec sandbox) ────────────────────────────────────
+  // ─── Context Mode (otto_exec sandbox) ────────────────────────────────────
   if (preferences.context_mode !== undefined) {
     if (typeof preferences.context_mode === "object" && preferences.context_mode !== null) {
       const cmode = preferences.context_mode as unknown as Record<string, unknown>;
@@ -1002,7 +1002,7 @@ export function validatePreferences(preferences: WorkflowPreferences): {
       }
     }
     if (g.commit_docs !== undefined) {
-      warnings.push("git.commit_docs is deprecated — .gsd/ is managed externally and always gitignored. Remove this setting.");
+      warnings.push("git.commit_docs is deprecated — .otto/workflow/ is managed externally and always gitignored. Remove this setting.");
     }
     if (g.manage_gitignore !== undefined) {
       if (typeof g.manage_gitignore === "boolean") git.manage_gitignore = g.manage_gitignore;

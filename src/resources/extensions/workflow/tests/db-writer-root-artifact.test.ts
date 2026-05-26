@@ -25,18 +25,18 @@ import { openDatabase, closeDatabase } from "../db.ts";
 
 function makeProjectDir(): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-dbwriter-root-")));
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   return dir;
 }
 
-// ─── Suite 1: saveArtifactToDb with undefined milestone_id writes to .gsd/ root, not milestones/ ──
+// ─── Suite 1: saveArtifactToDb with undefined milestone_id writes to .otto/workflow/ root, not milestones/ ──
 
-describe("saveArtifactToDb: root artifact (no milestone_id) routes to workspace .gsd root", () => {
+describe("saveArtifactToDb: root artifact (no milestone_id) routes to workspace .otto/workflow root", () => {
   let tmp: string;
 
   beforeEach(() => {
     tmp = makeProjectDir();
-    openDatabase(join(tmp, ".gsd", "gsd.db"));
+    openDatabase(join(tmp, ".otto/workflow", "otto.db"));
   });
 
   afterEach(() => {
@@ -44,7 +44,7 @@ describe("saveArtifactToDb: root artifact (no milestone_id) routes to workspace 
     rmSync(tmp, { recursive: true, force: true });
   });
 
-  test("opts.milestone_id = undefined writes artifact at .gsd/REQUIREMENTS.md, not inside milestones/", async () => {
+  test("opts.milestone_id = undefined writes artifact at .otto/workflow/REQUIREMENTS.md, not inside milestones/", async () => {
     const content = "# Requirements\n\nTest root artifact.\n";
     const opts = {
       path: "REQUIREMENTS.md",
@@ -58,7 +58,7 @@ describe("saveArtifactToDb: root artifact (no milestone_id) routes to workspace 
     const ws = createWorkspace(tmp);
     const expectedPath = resolve(ws.contract.projectGsd, "REQUIREMENTS.md");
 
-    assert.ok(existsSync(expectedPath), "root artifact written at .gsd/REQUIREMENTS.md");
+    assert.ok(existsSync(expectedPath), "root artifact written at .otto/workflow/REQUIREMENTS.md");
     assert.equal(readFileSync(expectedPath, "utf-8"), content, "content matches");
 
     // Must NOT be inside milestones/ — the latent trap being fixed
@@ -66,7 +66,7 @@ describe("saveArtifactToDb: root artifact (no milestone_id) routes to workspace 
     assert.ok(!existsSync(wrongPath), "artifact NOT written inside milestones/");
   });
 
-  test("opts.milestone_id = null writes artifact at .gsd/ root", async () => {
+  test("opts.milestone_id = null writes artifact at .otto/workflow/ root", async () => {
     const content = "# Project\n\nRoot project doc.\n";
     const opts = {
       path: "PROJECT.md",
@@ -80,7 +80,7 @@ describe("saveArtifactToDb: root artifact (no milestone_id) routes to workspace 
     const ws = createWorkspace(tmp);
     const expectedPath = resolve(ws.contract.projectGsd, "PROJECT.md");
 
-    assert.ok(existsSync(expectedPath), "PROJECT.md written at .gsd/PROJECT.md");
+    assert.ok(existsSync(expectedPath), "PROJECT.md written at .otto/workflow/PROJECT.md");
     assert.equal(readFileSync(expectedPath, "utf-8"), content, "content matches");
   });
 
@@ -101,8 +101,8 @@ describe("saveArtifactToDb: root artifact (no milestone_id) routes to workspace 
     assert.ok(existsSync(canonicalPath), "file at contract.projectGsd/KNOWLEDGE.md");
     assert.equal(
       canonicalPath,
-      join(ws.projectRoot, ".gsd", "KNOWLEDGE.md"),
-      "contract.projectGsd-based path equals projectRoot/.gsd/KNOWLEDGE.md",
+      join(ws.projectRoot, ".otto/workflow", "KNOWLEDGE.md"),
+      "contract.projectGsd-based path equals projectRoot/.otto/workflow/KNOWLEDGE.md",
     );
   });
 });
@@ -114,7 +114,7 @@ describe("saveArtifactToDb: milestone_id present routes to milestones/ (no regre
 
   beforeEach(() => {
     tmp = makeProjectDir();
-    openDatabase(join(tmp, ".gsd", "gsd.db"));
+    openDatabase(join(tmp, ".otto/workflow", "otto.db"));
   });
 
   afterEach(() => {
@@ -122,7 +122,7 @@ describe("saveArtifactToDb: milestone_id present routes to milestones/ (no regre
     rmSync(tmp, { recursive: true, force: true });
   });
 
-  test("milestone_id = 'M001' writes to .gsd/milestones/M001/...", async () => {
+  test("milestone_id = 'M001' writes to .otto/workflow/milestones/M001/...", async () => {
     const relPath = "milestones/M001/M001-CONTEXT.md";
     const content = "# M001 Context\n";
     const opts = {
@@ -149,7 +149,7 @@ describe("saveArtifactToDbByScope: empty milestoneId throws defensive error", ()
 
   beforeEach(() => {
     tmp = makeProjectDir();
-    openDatabase(join(tmp, ".gsd", "gsd.db"));
+    openDatabase(join(tmp, ".otto/workflow", "otto.db"));
   });
 
   afterEach(() => {
@@ -186,12 +186,12 @@ describe("saveArtifactToDbByScope: empty milestoneId throws defensive error", ()
 
 // ─── Suite 4: saveArtifactToDbForWorkspace writes at contract.projectGsd, not milestones/ ──
 
-describe("saveArtifactToDbForWorkspace: writes directly to .gsd root via workspace contract", () => {
+describe("saveArtifactToDbForWorkspace: writes directly to .otto/workflow root via workspace contract", () => {
   let tmp: string;
 
   beforeEach(() => {
     tmp = makeProjectDir();
-    openDatabase(join(tmp, ".gsd", "gsd.db"));
+    openDatabase(join(tmp, ".otto/workflow", "otto.db"));
   });
 
   afterEach(() => {

@@ -22,7 +22,7 @@ import {
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-leases-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -34,7 +34,7 @@ function cleanup(base: string): void {
 test("first claim returns ok=true with token=1", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
 
   const w1 = registerAutoWorker({ projectRootRealpath: base });
@@ -54,7 +54,7 @@ test("first claim returns ok=true with token=1", (t) => {
 test("second claim by different worker is rejected while lease is held", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
 
   const w1 = registerAutoWorker({ projectRootRealpath: base });
@@ -73,7 +73,7 @@ test("second claim by different worker is rejected while lease is held", (t) => 
 test("releaseMilestoneLease frees the lease for takeover", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
 
   const w1 = registerAutoWorker({ projectRootRealpath: base });
@@ -97,7 +97,7 @@ test("releaseMilestoneLease frees the lease for takeover", (t) => {
 test("expired lease (TTL passed) allows takeover with token+1", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
 
   const w1 = registerAutoWorker({ projectRootRealpath: base });
@@ -124,7 +124,7 @@ test("expired lease (TTL passed) allows takeover with token+1", (t) => {
 test("refreshMilestoneLease only succeeds with the matching fencing token", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
 
   const w1 = registerAutoWorker({ projectRootRealpath: base });
@@ -142,7 +142,7 @@ test("refreshMilestoneLease only succeeds with the matching fencing token", (t) 
 test("claimMilestoneLease rethrows foreign-key failures instead of treating them as lease contention", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
 
   assert.throws(

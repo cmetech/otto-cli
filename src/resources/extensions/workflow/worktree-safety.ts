@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Worktree Safety module contract for validating source-writing Unit roots.
 
 import { existsSync, lstatSync, type Stats } from "node:fs";
@@ -159,7 +159,7 @@ export function createWorktreeSafetyModule(
       const unitRoot = resolve(input.unitRoot);
       const isolationMode = input.isolationMode ?? "worktree";
       const expectedRoot = isolationMode === "worktree"
-        ? join(projectRoot, ".gsd", "worktrees", milestoneId)
+        ? join(projectRoot, ".otto/workflow", "worktrees", milestoneId)
         : projectRoot;
       if (!samePath(unitRoot, expectedRoot)) {
         return failure(
@@ -209,7 +209,7 @@ export function createWorktreeSafetyModule(
         return failure(
           "worktree-git-marker-not-file",
           `Worktree root ${unitRoot} has a .git directory, not a registered worktree .git file.`,
-          "Use a registered GSD worktree instead of a copied or nested repository.",
+          "Use a registered OTTO worktree instead of a copied or nested repository.",
           { gitMarker },
         );
       }

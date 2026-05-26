@@ -1,4 +1,4 @@
-import type { ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionContext } from "@otto/pi-coding-agent";
 
 import {
   type EnsureProjectWorkflowMcpConfigResult,
@@ -52,7 +52,7 @@ export function prepareWorkflowMcpForProject(
     return result;
   } catch (err) {
     ctx.ui?.notify?.(
-      `Claude Code MCP prep failed: ${err instanceof Error ? err.message : String(err)}. Detected Claude Code model but no workflow MCP. Please run /gsd mcp init . from your project root.`,
+      `Claude Code MCP prep failed: ${err instanceof Error ? err.message : String(err)}. Detected Claude Code model but no workflow MCP. Please run /otto mcp init . from your project root.`,
       "warning",
     );
     return null;

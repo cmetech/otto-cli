@@ -13,7 +13,7 @@ import { resolveMilestoneFile, clearPathCache } from "../paths.ts";
 
 function mkBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-4648-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   return base;
 }
 
@@ -25,7 +25,7 @@ describe("#4648 stale dirListCache", () => {
       assert.equal(resolveMilestoneFile(base, "M001", "CONTEXT"), null);
 
       writeFileSync(
-        join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+        join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
         "# M001 Context\n",
       );
 
@@ -47,7 +47,7 @@ describe("#4648 stale dirListCache", () => {
       assert.equal(resolveMilestoneFile(base, "M001", "CONTEXT"), null);
 
       writeFileSync(
-        join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+        join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
         "# M001 Context\n",
       );
 

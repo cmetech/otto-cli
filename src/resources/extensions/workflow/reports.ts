@@ -1,17 +1,17 @@
 /**
  * Reports Registry
  *
- * Manages .gsd/reports/ — the persistent progression log of HTML snapshots.
+ * Manages .otto/workflow/reports/ — the persistent progression log of HTML snapshots.
  *
  * Layout:
- *   .gsd/reports/
+ *   .otto/workflow/reports/
  *     reports.json          lightweight metadata index (never re-parses HTML)
  *     index.html            auto-regenerated on every new snapshot
  *     M001-20260101T120000.html    per-milestone snapshot
  *     final-20260201T090000.html   full-project final snapshot
  *
  * Auto-triggered: after each milestone completion (when auto_report: true).
- * Manual: /loop24 report --html
+ * Manual: /otto report --html
  */
 
 import { readFileSync, mkdirSync, existsSync } from 'node:fs';
@@ -110,7 +110,7 @@ export interface WriteReportSnapshotArgs {
 }
 
 /**
- * Write a report snapshot to .gsd/reports/, update reports.json, regenerate index.html.
+ * Write a report snapshot to .otto/workflow/reports/, update reports.json, regenerate index.html.
  * Returns the path of the written report file.
  */
 export function writeReportSnapshot(args: WriteReportSnapshotArgs): string {
@@ -278,14 +278,14 @@ function buildIndexHtml(index: ReportsIndex): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GSD Reports — ${esc(projectName)}</title>
+<title>OTTO Reports — ${esc(projectName)}</title>
 <style>${INDEX_CSS}</style>
 </head>
 <body>
 <header>
   <div class="hdr-inner">
     <div class="branding">
-      <span class="logo">GSD</span>
+      <span class="logo">OTTO</span>
       <span class="ver">v${esc(workflowVersion)}</span>
     </div>
     <div class="hdr-meta">
@@ -318,14 +318,14 @@ function buildIndexHtml(index: ReportsIndex): string {
       <h2>Progression <span class="sec-count">${entries.length}</span></h2>
       ${sorted.length > 0
         ? `<div class="cards-grid">${cardHtml}</div>`
-        : '<p class="empty">No reports generated yet. Run <code>/gsd report --html</code> or enable <code>auto_report: true</code>.</p>'}
+        : '<p class="empty">No reports generated yet. Run <code>/otto report --html</code> or enable <code>auto_report: true</code>.</p>'}
     </section>
   </main>
 </div>
 
 <footer>
   <div class="ftr-inner">
-    <span class="ftr-brand">GSD v${esc(workflowVersion)}</span>
+    <span class="ftr-brand">OTTO v${esc(workflowVersion)}</span>
     <span class="ftr-sep">—</span>
     <span>${esc(projectName)}</span>
     <span class="ftr-sep">—</span>

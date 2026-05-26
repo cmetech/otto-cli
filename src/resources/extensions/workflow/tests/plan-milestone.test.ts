@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for DB-backed milestone planning.
 
 import test from 'node:test';
@@ -13,7 +13,7 @@ import { parseRoadmap } from '../parsers-legacy.ts';
 
 function makeTmpBase(): string {
   const base = mkdtempSync(join(tmpdir(), 'gsd-plan-milestone-'));
-  mkdirSync(join(base, '.gsd', 'milestones', 'M001'), { recursive: true });
+  mkdirSync(join(base, '.otto/workflow', 'milestones', 'M001'), { recursive: true });
   return base;
 }
 
@@ -72,7 +72,7 @@ function validParams() {
 
 test('handlePlanMilestone writes milestone and slice planning state and renders roadmap', async () => {
   const base = makeTmpBase();
-  const dbPath = join(base, '.gsd', 'gsd.db');
+  const dbPath = join(base, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
 
   try {
@@ -91,7 +91,7 @@ test('handlePlanMilestone writes milestone and slice planning state and renders 
     assert.equal(slices[0]?.goal, 'Wire the handler.');
     assert.equal(slices[1]?.depends[0], 'S01');
 
-    const roadmapPath = join(base, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md');
+    const roadmapPath = join(base, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md');
     assert.ok(existsSync(roadmapPath), 'roadmap should be rendered to disk');
     const roadmap = readFileSync(roadmapPath, 'utf-8');
     assert.match(roadmap, /# M001: DB-backed planning/);
@@ -106,7 +106,7 @@ test('handlePlanMilestone writes milestone and slice planning state and renders 
 
 test('handlePlanMilestone rejects invalid payloads', async () => {
   const base = makeTmpBase();
-  const dbPath = join(base, '.gsd', 'gsd.db');
+  const dbPath = join(base, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
 
   try {
@@ -121,7 +121,7 @@ test('handlePlanMilestone rejects invalid payloads', async () => {
 
 test('handlePlanMilestone rejects delimiter characters in milestone and slice titles', async () => {
   const base = makeTmpBase();
-  const dbPath = join(base, '.gsd', 'gsd.db');
+  const dbPath = join(base, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
 
   try {
@@ -147,18 +147,18 @@ test('handlePlanMilestone rejects delimiter characters in milestone and slice ti
 
 test('handlePlanMilestone surfaces render failures and does not clear parse-visible state on failure', async () => {
   const base = makeTmpBase();
-  const dbPath = join(base, '.gsd', 'gsd.db');
+  const dbPath = join(base, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
 
   try {
-    const fallbackRoadmapPath = join(base, '.gsd', 'milestones', 'MISSING', 'MISSING-ROADMAP.md');
+    const fallbackRoadmapPath = join(base, '.otto/workflow', 'milestones', 'MISSING', 'MISSING-ROADMAP.md');
     mkdirSync(fallbackRoadmapPath, { recursive: true });
 
     const result = await handlePlanMilestone({ ...validParams(), milestoneId: 'MISSING' }, base);
     assert.ok('error' in result);
     assert.match(result.error, /render failed:/);
 
-    const existingRoadmapPath = join(base, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md');
+    const existingRoadmapPath = join(base, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md');
     writeFileSync(existingRoadmapPath, '# M001: Cached roadmap\n\n**Vision:** old value\n\n## Slices\n\n', 'utf-8');
     const cachedAfter = parseRoadmap(readFileSync(existingRoadmapPath, 'utf-8'));
     assert.equal(cachedAfter.vision, 'old value');
@@ -169,11 +169,11 @@ test('handlePlanMilestone surfaces render failures and does not clear parse-visi
 
 test('handlePlanMilestone clears parse-visible roadmap state after successful render', async () => {
   const base = makeTmpBase();
-  const dbPath = join(base, '.gsd', 'gsd.db');
+  const dbPath = join(base, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
 
   try {
-    const roadmapPath = join(base, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md');
+    const roadmapPath = join(base, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md');
     writeFileSync(roadmapPath, '# M001: Cached roadmap\n\n**Vision:** old value\n\n## Slices\n\n', 'utf-8');
 
     const cachedBefore = parseRoadmap(readFileSync(roadmapPath, 'utf-8'));
@@ -193,7 +193,7 @@ test('handlePlanMilestone clears parse-visible roadmap state after successful re
 
 test('handlePlanMilestone reruns idempotently and updates existing planning state', async () => {
   const base = makeTmpBase();
-  const dbPath = join(base, '.gsd', 'gsd.db');
+  const dbPath = join(base, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
 
   try {
@@ -228,7 +228,7 @@ test('handlePlanMilestone reruns idempotently and updates existing planning stat
 
 test('handlePlanMilestone preserves completed slice status on re-plan (#2558)', async () => {
   const base = makeTmpBase();
-  const dbPath = join(base, '.gsd', 'gsd.db');
+  const dbPath = join(base, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
 
   try {
@@ -258,7 +258,7 @@ test('handlePlanMilestone preserves completed slice status on re-plan (#2558)', 
 
 test('plan-milestone re-plan preserves completed status and updates slice fields (#2558)', async () => {
   const base = makeTmpBase();
-  const dbPath = join(base, '.gsd', 'gsd.db');
+  const dbPath = join(base, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
 
   try {
@@ -299,12 +299,12 @@ test('plan-milestone re-plan preserves completed status and updates slice fields
 
 test('handlePlanMilestone promotes pre-existing queued milestone to active (#3022)', async () => {
   const base = makeTmpBase();
-  const dbPath = join(base, '.gsd', 'gsd.db');
+  const dbPath = join(base, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
 
   try {
     // Simulate ensureMilestoneDbRow: pre-create row with status "queued"
-    // (this is what gsd_milestone_generate_id does)
+    // (this is what otto_milestone_generate_id does)
     insertMilestone({ id: 'M001', status: 'queued' });
 
     const before = getMilestone('M001');
@@ -324,8 +324,8 @@ test('handlePlanMilestone promotes pre-existing queued milestone to active (#302
 
 test('handlePlanMilestone updates depends_on when a queued milestone row already exists', async () => {
   const base = makeTmpBase();
-  mkdirSync(join(base, '.gsd', 'milestones', 'M002'), { recursive: true });
-  const dbPath = join(base, '.gsd', 'gsd.db');
+  mkdirSync(join(base, '.otto/workflow', 'milestones', 'M002'), { recursive: true });
+  const dbPath = join(base, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
 
   try {

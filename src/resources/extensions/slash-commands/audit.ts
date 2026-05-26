@@ -1,4 +1,4 @@
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { mkdirSync } from "node:fs";
 
 export default function auditCommand(pi: ExtensionAPI) {

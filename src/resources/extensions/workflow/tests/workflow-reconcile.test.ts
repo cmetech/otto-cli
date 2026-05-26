@@ -69,14 +69,14 @@ test("resolveConflict(pick=main) rewrites the worktree log durably", () => {
   resolveConflict(main, worktree, "milestone:M001", "main");
 
   assert.equal(listConflicts(main).length, 0, "conflict file should be cleared after resolving main");
-  const conflictsPath = join(main, ".gsd", "CONFLICTS.md");
+  const conflictsPath = join(main, ".otto/workflow", "CONFLICTS.md");
   assert.equal(
     existsSync(conflictsPath),
     false,
     "CONFLICTS.md should be removed after the last conflict is resolved",
   );
 
-  const wtEvents = readEvents(join(worktree, ".gsd", "event-log.jsonl"));
+  const wtEvents = readEvents(join(worktree, ".otto/workflow", "event-log.jsonl"));
   assert.ok(
     wtEvents.some((e) => e.cmd === "plan_milestone" && e.params.title === "Main Choice"),
     "worktree log should be rewritten to the main-side resolution",

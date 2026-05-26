@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-017 unregistered-milestone drift handler. Detects
 // milestones whose on-disk directory has meaningful content (ROADMAP/
 // CONTEXT/SUMMARY) but no DB row, then fails closed with an explicit recovery
@@ -55,7 +55,7 @@ export function repairUnregisteredMilestone(
 ): void {
   throw new Error(
     `Milestone ${record.milestoneId} exists only as markdown projection. ` +
-      "Runtime reconciliation will not import markdown into the authoritative DB; run explicit GSD recovery/migration if this markdown should repopulate the database.",
+      "Runtime reconciliation will not import markdown into the authoritative DB; run explicit OTTO recovery/migration if this markdown should repopulate the database.",
   );
 }
 

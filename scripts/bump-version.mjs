@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Release version bump entry point.
 /**
  * Bump version in package.json, then sync platform packages and pkg/package.json.
  * Usage: node scripts/bump-version.mjs <new-version>
  */
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { execSync } from "child_process";
 import { fileURLToPath } from "url";
@@ -37,10 +37,3 @@ console.log(`[bump-version] release version surfaces synced to ${newVersion}`);
 //    --package-lock-only updates the lockfile in-place without touching node_modules.
 execSync("npm install --package-lock-only --ignore-scripts", { cwd: root, stdio: "inherit" });
 console.log(`[bump-version] package-lock.json regenerated at ${newVersion}`);
-
-// 4. Regenerate web/package-lock.json if the web app is present.
-const webDir = resolve(root, "web");
-if (existsSync(webDir)) {
-  execSync("npm install --package-lock-only --ignore-scripts", { cwd: webDir, stdio: "inherit" });
-  console.log(`[bump-version] web/package-lock.json regenerated`);
-}

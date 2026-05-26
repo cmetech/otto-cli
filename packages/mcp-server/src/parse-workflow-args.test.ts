@@ -31,8 +31,8 @@ describe("parseWorkflowArgs sole-worktree fallback", () => {
   it("routes writes to the lone auto-worktree when milestoneId is omitted", () => {
     const project = realpathSync(mkdtempSync(join(tmpdir(), "gsd-mcp-wt-")));
     try {
-      mkdirSync(join(project, ".gsd"), { recursive: true });
-      const wt = join(project, ".gsd", "worktrees", "M001");
+      mkdirSync(join(project, ".otto", "workflow"), { recursive: true });
+      const wt = join(project, ".otto", "workflow", "worktrees", "M001");
       mkdirSync(wt, { recursive: true });
       writeFileSync(join(wt, ".git"), "gitdir: /fake/path/to/git\n");
 
@@ -46,9 +46,9 @@ describe("parseWorkflowArgs sole-worktree fallback", () => {
   it("stays at project root when multiple worktrees exist (ambiguous)", () => {
     const project = realpathSync(mkdtempSync(join(tmpdir(), "gsd-mcp-wt-multi-")));
     try {
-      mkdirSync(join(project, ".gsd"), { recursive: true });
+      mkdirSync(join(project, ".otto", "workflow"), { recursive: true });
       for (const id of ["M001", "M002"]) {
-        const wt = join(project, ".gsd", "worktrees", id);
+        const wt = join(project, ".otto", "workflow", "worktrees", id);
         mkdirSync(wt, { recursive: true });
         writeFileSync(join(wt, ".git"), "gitdir: /fake/git\n");
       }
@@ -63,8 +63,8 @@ describe("parseWorkflowArgs sole-worktree fallback", () => {
   it("uses the explicit milestone worktree when milestoneId is provided", () => {
     const project = realpathSync(mkdtempSync(join(tmpdir(), "gsd-mcp-wt-explicit-")));
     try {
-      mkdirSync(join(project, ".gsd"), { recursive: true });
-      const wt = join(project, ".gsd", "worktrees", "M042");
+      mkdirSync(join(project, ".otto", "workflow"), { recursive: true });
+      const wt = join(project, ".otto", "workflow", "worktrees", "M042");
       mkdirSync(wt, { recursive: true });
       writeFileSync(join(wt, ".git"), "gitdir: /fake/git\n");
 

@@ -3,7 +3,7 @@
  *
  * The legacy (pre-migration) fallback in verifyExpectedArtifact previously
  * accepted either a heading match (### T01 --) or a checked checkbox as proof
- * that gsd_complete_task ran. A heading alone does not prove completion —
+ * that otto_complete_task ran. A heading alone does not prove completion —
  * it could result from a rogue write.
  *
  * These tests exercise verifyExpectedArtifact directly for execute-task units
@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 import { verifyExpectedArtifact } from "../auto-recovery.ts";
 import { closeDatabase, insertMilestone, insertSlice, insertTask, isDbAvailable, openDatabase } from "../db.ts";
 
-/** Scaffold .gsd/milestones/M001/slices/S01/ with tasks/ and a T01-SUMMARY.md. */
+/** Scaffold .otto/workflow/milestones/M001/slices/S01/ with tasks/ and a T01-SUMMARY.md. */
 function scaffoldProject(t: { after: (fn: () => void) => void }): {
   base: string;
   planPath: string;
@@ -32,7 +32,7 @@ function scaffoldProject(t: { after: (fn: () => void) => void }): {
     rmSync(base, { recursive: true, force: true });
   });
 
-  const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+  const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
   mkdirSync(join(sliceDir, "tasks"), { recursive: true });
   // Summary file must exist so verifyExpectedArtifact reaches the legacy branch
   writeFileSync(join(sliceDir, "tasks", "T01-SUMMARY.md"), "# T01 summary\n");
@@ -155,7 +155,7 @@ test("#3607: execute-task legacy branch — wrong task id in checkbox does not m
 test("execute-task DB lag branch — pending DB status can verify from checked plan plus summary", (t) => {
   closeDatabase();
   const { base, planPath } = scaffoldProject(t);
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   assert.equal(isDbAvailable(), true, "DB must be open to hit the DB-lag branch");
 
   insertMilestone({ id: "M001", title: "Milestone", status: "active" });
@@ -181,7 +181,7 @@ test("execute-task DB lag branch — pending DB status can verify from checked p
 test("execute-task DB lag branch — summary without checked plan still fails", (t) => {
   closeDatabase();
   const { base, planPath } = scaffoldProject(t);
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   insertMilestone({ id: "M001", title: "Milestone", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice", status: "pending" });

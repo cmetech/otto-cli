@@ -39,7 +39,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       heavy-code-changed: ${{ steps.classify.outputs.heavy-code-changed }}
-      web-changed: ${{ steps.classify.outputs.web-changed }}
       portability-changed: ${{ steps.classify.outputs.portability-changed }}
       windows-e2e-changed: ${{ steps.classify.outputs.windows-e2e-changed }}
       docker-changed: ${{ steps.classify.outputs.docker-changed }}
@@ -95,16 +94,6 @@ jobs:
 
       - name: Build core
         run: npm run build:core
-
-      - name: Install web host dependencies
-        run: npm --prefix web ci
-
-      - uses: ./.github/actions/cache-nextjs
-
-      # validate-pack requires dist/web/standalone/server.js in the tarball (package.json files).
-      - name: Build web host
-        run: npm run build:web-host
-
       - name: Pack build artifacts
         run: bash scripts/ci-pack-build-artifacts.sh
 
@@ -224,12 +213,6 @@ jobs:
         run: npm ci
 
       - uses: ./.github/actions/restore-ci-build-artifacts
-
-      - name: Install web host dependencies
-        run: npm --prefix web ci
-
-      - uses: ./.github/actions/cache-nextjs
-
       - name: Run integration tests
         run: npm run test:integration
 
@@ -338,7 +321,6 @@ jobs:
           --experimental-strip-types --test
           src/tests/windows-portability.test.ts
           src/resources/extensions/workflow/tests/validate-directory.test.ts
-          src/tests/integration/web-mode-windows-hide.test.ts
 
       - name: Run Windows e2e smoke suite (non-blocking)
         id: windows-smoke-e2e

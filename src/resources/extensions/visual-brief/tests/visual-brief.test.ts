@@ -4,7 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readManifest } from "@loop24/pi-coding-agent";
+import { readManifest } from "@otto/pi-coding-agent";
 import {
 	createVisualBriefArtifactPolicy,
 	formatArtifactPolicy,
@@ -88,14 +88,14 @@ test("builds a provider-neutral prompt with output instructions", () => {
 	assert.ok(prompt.indexOf("Gather evidence before writing the page") < prompt.indexOf("Write the HTML file"));
 });
 
-test("generated prompts require the shared GSD HTML shell", () => {
+test("generated prompts require the shared OTTO HTML shell", () => {
 	const request = parseVisualBriefArgs("diff");
 	assert.ok(request, "diff request should parse");
 
 	const prompt = buildVisualBriefPrompt(request, { outputDir: "/tmp/visual-brief" });
 
 	assert.match(prompt, /## Required HTML shell/);
-	assert.match(prompt, /<span class="logo">GSD<\/span>/);
+	assert.match(prompt, /<span class="logo">OTTO<\/span>/);
 	assert.match(prompt, /<span class="kind-chip">Diff Brief<\/span>/);
 	assert.match(prompt, /{{MAIN_HTML}}/);
 	assert.match(prompt, /{{GENERATED_AT}}/);

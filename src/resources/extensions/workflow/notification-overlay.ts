@@ -1,8 +1,8 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Notification history overlay with severity filtering and width-safe TUI rendering.
 
-import type { Theme } from "@loop24/pi-coding-agent";
-import { truncateToWidth, visibleWidth, matchesKey, Key } from "@loop24/pi-tui";
+import type { Theme } from "@otto/pi-coding-agent";
+import { truncateToWidth, visibleWidth, matchesKey, Key } from "@otto/pi-tui";
 
 import {
   readNotifications,

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Verifies UOK kernel path selection and legacy fallback telemetry.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -6,7 +6,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@otto/pi-coding-agent";
 
 import { runAutoLoopWithUok } from "../uok/kernel.ts";
 import type { AutoSession } from "../auto/session.ts";
@@ -104,7 +104,7 @@ test("runAutoLoopWithUok uses kernel path by default and records uok-kernel pari
     assert.ok(args.calls.kernelDeps);
     assert.notEqual(args.calls.kernelDeps, args.deps);
     assert.ok(args.calls.kernelDeps?.uokObserver);
-    assert.equal(process.env.GSD_UOK_AUDIT_UNIFIED, "0");
+    assert.equal(process.env.OTTO_UOK_AUDIT_UNIFIED, "0");
 
     const events = readParityEvents(basePath);
     assert.equal(events.length, 2);
@@ -148,10 +148,10 @@ test("runAutoLoopWithUok uses legacy path when explicit legacy fallback is enabl
   }
 });
 
-test("runAutoLoopWithUok respects GSD_UOK_FORCE_LEGACY emergency switch", async () => {
+test("runAutoLoopWithUok respects OTTO_UOK_FORCE_LEGACY emergency switch", async () => {
   const basePath = makeBasePath();
-  const previous = process.env.GSD_UOK_FORCE_LEGACY;
-  process.env.GSD_UOK_FORCE_LEGACY = "1";
+  const previous = process.env.OTTO_UOK_FORCE_LEGACY;
+  process.env.OTTO_UOK_FORCE_LEGACY = "1";
   try {
     resetLegacyTelemetry();
     const args = makeArgs(basePath, {
@@ -171,8 +171,8 @@ test("runAutoLoopWithUok respects GSD_UOK_FORCE_LEGACY emergency switch", async 
     assert.equal(getLegacyTelemetry()["legacy.uokFallbackUsed"], 1);
   } finally {
     resetLegacyTelemetry();
-    if (previous === undefined) delete process.env.GSD_UOK_FORCE_LEGACY;
-    else process.env.GSD_UOK_FORCE_LEGACY = previous;
+    if (previous === undefined) delete process.env.OTTO_UOK_FORCE_LEGACY;
+    else process.env.OTTO_UOK_FORCE_LEGACY = previous;
     rmSync(basePath, { recursive: true, force: true });
   }
 });

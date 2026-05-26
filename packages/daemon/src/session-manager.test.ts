@@ -3,7 +3,7 @@
  *
  * Uses the MockRpcClient + TestableSessionManager pattern (K008) to test
  * session lifecycle, event handling, cost tracking, blocker detection,
- * and cleanup without spawning real GSD processes.
+ * and cleanup without spawning real OTTO processes.
  */
 
 import { describe, it, beforeEach, afterEach } from 'node:test';
@@ -160,7 +160,7 @@ class TestableSessionManager extends SessionManager {
       });
 
       // Kick off auto-mode
-      const command = options.command ?? '/gsd auto';
+      const command = options.command ?? '/otto auto';
       await client.prompt(command);
 
       // Emit lifecycle events (matching parent behavior)
@@ -801,11 +801,11 @@ describe('SessionManager', () => {
   it('sends custom command when provided', async () => {
     const { manager } = createManager();
 
-    await manager.startSession({ projectDir: '/tmp/custom-cmd', command: '/gsd quick fix-typo' });
+    await manager.startSession({ projectDir: '/tmp/custom-cmd', command: '/otto quick fix-typo' });
     const client = manager.lastClient!;
 
-    assert.ok(client.prompted.includes('/gsd quick fix-typo'));
-    assert.ok(!client.prompted.includes('/gsd auto'));
+    assert.ok(client.prompted.includes('/otto quick fix-typo'));
+    assert.ok(!client.prompted.includes('/otto auto'));
   });
 
   // ---- getSessionByDir returns session by directory lookup ----

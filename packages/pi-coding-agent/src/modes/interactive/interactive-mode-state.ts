@@ -1,4 +1,4 @@
-import type { ImageContent } from "@loop24/pi-ai";
+import type { ImageContent } from "@otto/pi-ai";
 import type { AgentSessionEvent } from "../../core/agent-session.js";
 
 export interface InteractiveModeStateHost {

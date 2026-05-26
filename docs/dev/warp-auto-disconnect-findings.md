@@ -2,19 +2,19 @@
 
 Date: 2026-04-27
 
-Issue: https://github.com/open-gsd/gsd-pi/issues/5086
+Issue: https://github.com/cmetech/otto-cli/issues/5086
 
 ## Issue
 
-When running GSD auto-mode in Warp.app, the terminal can return to a shell prompt while the GSD task/process keeps running. The visible symptom is a disconnected terminal: the foreground UI is gone, but work continues in the background.
+When running OTTO auto-mode in Warp.app, the terminal can return to a shell prompt while the OTTO task/process keeps running. The visible symptom is a disconnected terminal: the foreground UI is gone, but work continues in the background.
 
 ## Observed Evidence
 
 - In the `a64353464` project, S01 finished at `2026-04-27T16:33:19Z`.
-- GSD immediately dispatched the next unit, `plan-slice-M001-S02`, at `2026-04-27T16:33:21Z`.
+- OTTO immediately dispatched the next unit, `plan-slice-M001-S02`, at `2026-04-27T16:33:21Z`.
 - No new S02 session file was created.
 - The prior session then recorded `Claude Code process aborted by user` at `2026-04-27T16:33:21Z`.
-- A process scan also showed multiple orphaned `gsd` processes with `PPID=1` and `TTY=??`, matching the user's report that the PID/task was still running while the terminal was no longer attached.
+- A process scan also showed multiple orphaned `otto` processes with `PPID=1` and `TTY=??`, matching the user's report that the PID/task was still running while the terminal was no longer attached.
 
 ## Root Cause Hypothesis
 
@@ -26,7 +26,7 @@ However, during the auto-mode handoff, `newSession()` can be called while the pr
 
 ## Secondary Finding
 
-There is also a shell-entry routing risk in `src/cli.ts`: plain `gsd auto` is currently routed through headless mode before the later TTY-aware piped-output gate. If a user launches `gsd auto` directly from a terminal, this path can bypass the interactive TUI lifecycle entirely. This is related but distinct from the observed `agent_end` handoff abort.
+There is also a shell-entry routing risk in `src/cli.ts`: plain `otto auto` is currently routed through headless mode before the later TTY-aware piped-output gate. If a user launches `otto auto` directly from a terminal, this path can bypass the interactive TUI lifecycle entirely. This is related but distinct from the observed `agent_end` handoff abort.
 
 ## Sunday Night PR Review
 
@@ -51,12 +51,12 @@ Added a narrow lifecycle distinction in `AgentSession`:
 
 This keeps the existing #4243 ordering guarantee while preventing auto-mode from aborting a turn that already reached `agent_end`.
 
-Also tightened `src/cli.ts` so `gsd auto` only redirects to headless when stdin or stdout is not a TTY. Terminal launches stay on the interactive path, preserving Warp/iTerm/Terminal foreground ownership.
+Also tightened `src/cli.ts` so `otto auto` only redirects to headless when stdin or stdout is not a TTY. Terminal launches stay on the interactive path, preserving Warp/iTerm/Terminal foreground ownership.
 
 ## Reproduction And Verification
 
 - Added a regression test that simulates `newSession()` being called while an `agent_end` extension handler is in progress.
 - Confirmed the test failed before the fix because `newSession()` called `abort()`.
-- Added a CLI source-level regression test proving terminal `gsd auto` is not unconditionally routed to headless.
+- Added a CLI source-level regression test proving terminal `otto auto` is not unconditionally routed to headless.
 - Confirmed the CLI test failed before the TTY-gated redirect fix.
 - Confirmed both focused suites pass after the fix.

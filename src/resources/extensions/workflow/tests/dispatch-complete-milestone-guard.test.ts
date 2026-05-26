@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for complete-milestone dispatch guards.
 
 /**
@@ -18,9 +18,9 @@ import { closeDatabase, insertMilestone, insertSlice, openDatabase } from "../db
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-complete-dispatch-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
-  writeFileSync(join(base, ".gsd", "milestones", "M001", "ROADMAP.md"), "# M001\n\n## Slices\n\n- [x] **S01**: Done\n");
-  writeFileSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "SUMMARY.md"), "# Summary\n");
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
+  writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "ROADMAP.md"), "# M001\n\n## Slices\n\n- [x] **S01**: Done\n");
+  writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "SUMMARY.md"), "# Summary\n");
   writeFileSync(join(base, "implementation.txt"), "done\n");
   return base;
 }
@@ -71,7 +71,7 @@ describe("completing-milestone dispatch guard (#4324)", () => {
 
   test("skips complete-milestone dispatch when the DB milestone is already closed", async () => {
     base = makeBase();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "complete" });
 
     const result = await rule.match(buildDispatchCtx(base));
@@ -81,7 +81,7 @@ describe("completing-milestone dispatch guard (#4324)", () => {
 
   test("dispatches complete-milestone when the DB milestone is still active", async () => {
     base = makeBase();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
 
     const result = await rule.match(buildDispatchCtx(base));
@@ -93,7 +93,7 @@ describe("completing-milestone dispatch guard (#4324)", () => {
 
   test("resolveDispatch stops complete-milestone when unit is exhausted in-session (#5662)", async () => {
     base = makeBase();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
 
     const ctx = buildDispatchCtx(base);
@@ -108,11 +108,11 @@ describe("completing-milestone dispatch guard (#4324)", () => {
     assert.match(result.reason, /exhausted verification retries this session/i);
   });
 
-  test("dispatches complete-milestone when only .gsd/ files exist in git history (#5097)", async () => {
+  test("dispatches complete-milestone when only .otto/workflow/ files exist in git history (#5097)", async () => {
     base = makeBase();
     rmSync(join(base, "implementation.txt"), { force: true });
     initGitRepo(base);
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\n");
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\n");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
     execFileSync("git", ["commit", "-m", "chore: planning artifacts only"], { cwd: base, stdio: "ignore" });
 
@@ -160,11 +160,11 @@ describe("completing-milestone dispatch guard (#4324)", () => {
 
   test("blocks complete-milestone dispatch when UAT verdict is non-PASS and uat_dispatch is enabled (#6132)", async () => {
     base = makeBase();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
     insertSlice({ milestoneId: "M001", id: "S01", title: "Done", status: "complete" });
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-ASSESSMENT.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-ASSESSMENT.md"),
       "---\nverdict: fail\n---\n\nUAT failed.\n",
     );
 
@@ -178,11 +178,11 @@ describe("completing-milestone dispatch guard (#4324)", () => {
 
   test("blocks complete-milestone dispatch when UAT verdict is missing and uat_dispatch is enabled (#6132)", async () => {
     base = makeBase();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
     insertSlice({ milestoneId: "M001", id: "S01", title: "Done", status: "complete" });
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-ASSESSMENT.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-ASSESSMENT.md"),
       "# UAT\n\nNo verdict yet.\n",
     );
 
@@ -208,7 +208,7 @@ describe("complete phase dispatch guard (#5683)", () => {
 
   test("dispatches complete-milestone when derived state is complete but DB milestone is still open", async () => {
     base = makeBase();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "in_progress" });
 
     const ctx = buildDispatchCtx(base);
@@ -223,7 +223,7 @@ describe("complete phase dispatch guard (#5683)", () => {
 
   test("stops when derived state is complete and DB milestone is closed", async () => {
     base = makeBase();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "complete" });
 
     const ctx = buildDispatchCtx(base);

@@ -1,11 +1,11 @@
-// gsd-2 + Phase C deletion regression: createAutoWorktree no longer copies .gsd/
+// gsd-2 + Phase C deletion regression: createAutoWorktree no longer copies .otto/workflow/
 //
 // Verifies that createAutoWorktree on a project with a real (non-symlinked)
-// .gsd/ does NOT populate .gsd/milestones/ inside the worktree. Pre-Phase-C,
-// copyPlanningArtifacts would mirror the project-root .gsd/ into the
-// worktree-local .gsd/. Phase C deleted that helper because writers in
+// .otto/workflow/ does NOT populate .otto/workflow/milestones/ inside the worktree. Pre-Phase-C,
+// copyPlanningArtifacts would mirror the project-root .otto/workflow/ into the
+// worktree-local .otto/workflow/. Phase C deleted that helper because writers in
 // auto-mode now route through s.canonicalProjectRoot, so the worktree never
-// needs a parallel .gsd/ projection.
+// needs a parallel .otto/workflow/ projection.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -20,10 +20,10 @@ function git(args: string[], cwd: string): void {
   execFileSync("git", args, { cwd, stdio: ["ignore", "pipe", "pipe"] });
 }
 
-test("createAutoWorktree does NOT copy project-root .gsd/milestones into the worktree", (t) => {
+test("createAutoWorktree does NOT copy project-root .otto/workflow/milestones into the worktree", (t) => {
   const base = realpathSync(mkdtempSync(join(tmpdir(), "gsd-no-copy-")));
 
-  // Initialize a real git repo with a real .gsd/ directory containing some
+  // Initialize a real git repo with a real .otto/workflow/ directory containing some
   // planning artifacts that the deleted copyPlanningArtifacts would have
   // mirrored.
   git(["init", "-b", "main"], base);
@@ -33,14 +33,14 @@ test("createAutoWorktree does NOT copy project-root .gsd/milestones into the wor
   git(["add", "README.md"], base);
   git(["commit", "-m", "chore: init"], base);
 
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
     "# M001 Context\n",
     "utf-8",
   );
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     "# M001 Roadmap\n",
     "utf-8",
   );
@@ -51,22 +51,22 @@ test("createAutoWorktree does NOT copy project-root .gsd/milestones into the wor
     try { rmSync(base, { recursive: true, force: true }); } catch { /* noop */ }
   });
 
-  // Phase C invariant: the worktree's .gsd/milestones/M001 must NOT exist
+  // Phase C invariant: the worktree's .otto/workflow/milestones/M001 must NOT exist
   // (no copyPlanningArtifacts), and the project-root version must still be
   // intact (it was the source, not destination).
   assert.equal(
-    existsSync(join(wtPath, ".gsd", "milestones", "M001", "M001-CONTEXT.md")),
+    existsSync(join(wtPath, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md")),
     false,
     "worktree should NOT have a copy of M001-CONTEXT.md (copyPlanningArtifacts deleted)",
   );
   assert.equal(
-    existsSync(join(wtPath, ".gsd", "milestones", "M001", "M001-ROADMAP.md")),
+    existsSync(join(wtPath, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md")),
     false,
     "worktree should NOT have a copy of M001-ROADMAP.md",
   );
   assert.equal(
-    existsSync(join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md")),
+    existsSync(join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md")),
     true,
-    "project-root .gsd/ retains the canonical CONTEXT.md",
+    "project-root .otto/workflow/ retains the canonical CONTEXT.md",
   );
 });

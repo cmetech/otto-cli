@@ -20,7 +20,7 @@ import type { WorkflowPreferences } from "../preferences.ts";
 
 function makeIsolatedBase(): string {
   const base = join(tmpdir(), `gsd-deep-integration-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   return base;
 }
 
@@ -86,7 +86,7 @@ const validProjectMd = [
   "",
   "## Capability Contract",
   "",
-  "See `.gsd/REQUIREMENTS.md`.",
+  "See `.otto/workflow/REQUIREMENTS.md`.",
   "",
   "## Milestone Sequence",
   "",
@@ -129,15 +129,15 @@ const validRequirementsMd = [
 ].join("\n");
 
 function writePreferences(base: string): void {
-  writeFileSync(join(base, ".gsd", "PREFERENCES.md"), capturedPreferencesMd);
+  writeFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), capturedPreferencesMd);
 }
 
 function writeValidProject(base: string): void {
-  writeFileSync(join(base, ".gsd", "PROJECT.md"), validProjectMd);
+  writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), validProjectMd);
 }
 
 function writeValidRequirements(base: string): void {
-  writeFileSync(join(base, ".gsd", "REQUIREMENTS.md"), validRequirementsMd);
+  writeFileSync(join(base, ".otto/workflow", "REQUIREMENTS.md"), validRequirementsMd);
 }
 
 // ─── Regression test for B1: rule ordering bug ────────────────────────────
@@ -156,9 +156,9 @@ test("integration: deep mode + needs-discussion + nothing captured → capture p
       "deep mode in needs-discussion must self-heal preferences before project discovery, not discuss milestone",
     );
   }
-  const prefsContent = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
+  const prefsContent = readFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "utf-8");
   assert.match(prefsContent, /^workflow_prefs_captured:\s*true\s*$/m);
-  assert.ok(existsSync(join(base, ".gsd", "runtime", "research-decision.json")));
+  assert.ok(existsSync(join(base, ".otto/workflow", "runtime", "research-decision.json")));
 });
 
 test("integration: deep mode + pre-planning + nothing captured → capture prefs then discuss-project", async (t) => {
@@ -171,7 +171,7 @@ test("integration: deep mode + pre-planning + nothing captured → capture prefs
   if (result.action === "dispatch") {
     assert.strictEqual(result.unitType, "discuss-project");
   }
-  const prefsContent = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
+  const prefsContent = readFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "utf-8");
   assert.match(prefsContent, /^workflow_prefs_captured:\s*true\s*$/m);
 });
 
@@ -194,7 +194,7 @@ test("integration: deep mode + invalid PROJECT.md → discuss-project, not discu
   t.after(() => { try { rmSync(base, { recursive: true, force: true }); } catch {} });
 
   writePreferences(base);
-  writeFileSync(join(base, ".gsd", "PROJECT.md"), "# Project\n");
+  writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), "# Project\n");
 
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await resolveDispatch(makeCtx(base, prefs, "needs-discussion"));
@@ -225,7 +225,7 @@ test("integration: deep mode + invalid REQUIREMENTS.md → discuss-requirements,
 
   writePreferences(base);
   writeValidProject(base);
-  writeFileSync(join(base, ".gsd", "REQUIREMENTS.md"), "# Requirements\n");
+  writeFileSync(join(base, ".otto/workflow", "REQUIREMENTS.md"), "# Requirements\n");
 
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await resolveDispatch(makeCtx(base, prefs, "needs-discussion"));
@@ -249,7 +249,7 @@ test("integration: deep mode + REQUIREMENTS.md + no research-decision → discus
   if (result.action === "dispatch") {
     assert.strictEqual(result.unitType, "discuss-milestone");
   }
-  const decision = JSON.parse(readFileSync(join(base, ".gsd", "runtime", "research-decision.json"), "utf-8"));
+  const decision = JSON.parse(readFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), "utf-8"));
   assert.equal(decision.decision, "skip");
   assert.equal(decision.reason, "missing-default-repair");
 });
@@ -261,9 +261,9 @@ test("integration: deep mode + decision=research + research files missing → re
   writePreferences(base);
   writeValidProject(base);
   writeValidRequirements(base);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "research-decision.json"),
+    join(base, ".otto/workflow", "runtime", "research-decision.json"),
     JSON.stringify({ decision: "research", source: "research-decision" }),
   );
 
@@ -282,12 +282,12 @@ test("integration: deep mode + research-project marker → stop, not discuss-mil
   writePreferences(base);
   writeValidProject(base);
   writeValidRequirements(base);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "research-decision.json"),
+    join(base, ".otto/workflow", "runtime", "research-decision.json"),
     JSON.stringify({ decision: "research", source: "research-decision" }),
   );
-  writeFileSync(join(base, ".gsd", "runtime", "research-project-inflight"), "{}\n");
+  writeFileSync(join(base, ".otto/workflow", "runtime", "research-project-inflight"), "{}\n");
 
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await resolveDispatch(makeCtx(base, prefs, "needs-discussion"));
@@ -304,16 +304,16 @@ test("integration: deep mode + decision=research + dimension blocker → discuss
   writePreferences(base);
   writeValidProject(base);
   writeValidRequirements(base);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "research-decision.json"),
+    join(base, ".otto/workflow", "runtime", "research-decision.json"),
     JSON.stringify({ decision: "research", source: "research-decision" }),
   );
-  mkdirSync(join(base, ".gsd", "research"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "research"), { recursive: true });
   for (const name of ["STACK.md", "FEATURES.md", "ARCHITECTURE.md"]) {
-    writeFileSync(join(base, ".gsd", "research", name), "# done\n");
+    writeFileSync(join(base, ".otto/workflow", "research", name), "# done\n");
   }
-  writeFileSync(join(base, ".gsd", "research", "PITFALLS-BLOCKER.md"), "# blocker\n");
+  writeFileSync(join(base, ".otto/workflow", "research", "PITFALLS-BLOCKER.md"), "# blocker\n");
 
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await resolveDispatch(makeCtx(base, prefs, "needs-discussion"));
@@ -334,9 +334,9 @@ test("integration: deep mode + decision=skip → falls through to discuss-milest
   writePreferences(base);
   writeValidProject(base);
   writeValidRequirements(base);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "research-decision.json"),
+    join(base, ".otto/workflow", "runtime", "research-decision.json"),
     JSON.stringify({ decision: "skip" }),
   );
 
@@ -359,9 +359,9 @@ test("integration: deep mode + decision=<garbage> repairs to skip and discusses 
   writePreferences(base);
   writeValidProject(base);
   writeValidRequirements(base);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "research-decision.json"),
+    join(base, ".otto/workflow", "runtime", "research-decision.json"),
     JSON.stringify({ decision: "garbage" }),
   );
 
@@ -375,7 +375,7 @@ test("integration: deep mode + decision=<garbage> repairs to skip and discusses 
       "malformed or unrecognized default research markers should repair to skip and advance",
     );
   }
-  const decision = JSON.parse(readFileSync(join(base, ".gsd", "runtime", "research-decision.json"), "utf-8"));
+  const decision = JSON.parse(readFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), "utf-8"));
   assert.equal(decision.decision, "skip");
   assert.equal(decision.reason, "malformed-default-repair");
 });

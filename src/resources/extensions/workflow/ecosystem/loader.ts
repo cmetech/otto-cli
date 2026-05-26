@@ -1,4 +1,4 @@
-// LOOP24 — Ecosystem extension loader for ./.gsd/extensions/
+// OTTO — Ecosystem extension loader for ./.otto/workflow/extensions/
 // Discovers and registers single-file extensions that consume WorkflowExtensionAPI.
 // Trust-gated (mirrors pi's `.pi/extensions/` model) and isolated from pi's
 // own loader chain — handlers run in the agent's own dispatch step, not pi's.
@@ -7,8 +7,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { pathToFileURL } from "node:url";
 
-import type { ExtensionAPI } from "@loop24/pi-coding-agent";
-import { getAgentDir } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI } from "@otto/pi-coding-agent";
+import { getAgentDir } from "@otto/pi-coding-agent";
 
 import { logWarning } from "../workflow-logger.js";
 import {
@@ -43,7 +43,7 @@ let _readyPromise: Promise<void> | null = null;
 let _untrustedWarned = false;
 
 /**
- * Discover and register ecosystem extensions from `./.gsd/extensions/`.
+ * Discover and register ecosystem extensions from `./.otto/workflow/extensions/`.
  * Idempotent: subsequent calls with the same arguments return the same
  * pending promise (no double-load).
  */
@@ -79,7 +79,7 @@ async function _loadEcosystemExtensionsImpl(
   sharedHandlers: EcosystemBeforeAgentStartHandler[],
   cwd: string,
 ): Promise<void> {
-  const extDir = path.join(cwd, ".gsd", "extensions");
+  const extDir = path.join(cwd, ".otto/workflow", "extensions");
   if (!fs.existsSync(extDir)) return;
 
   // Trust gate: refuse to load arbitrary code from untrusted project dirs.
@@ -88,7 +88,7 @@ async function _loadEcosystemExtensionsImpl(
       _untrustedWarned = true;
       logWarning(
         "ecosystem",
-        ".gsd/extensions present but project is not trusted — skipping ecosystem extensions. Run `pi trust` to opt in.",
+        ".otto/workflow/extensions present but project is not trusted — skipping ecosystem extensions. Run `pi trust` to opt in.",
       );
     }
     return;

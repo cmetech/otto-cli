@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Markdown formatters for GitHub sync issues, PR bodies, and comments.
 
 /**

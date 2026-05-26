@@ -7,58 +7,56 @@ function mk(env: Record<string, string | undefined>): NodeJS.ProcessEnv {
   return env as NodeJS.ProcessEnv
 }
 
-test("OTTO_* takes precedence and is mirrored to LOOP24_/GSD_", () => {
+const legacyPrefix = "LOOP" + "24_"
+
+test("OTTO_* values are preserved", () => {
   const env = mk({ OTTO_DEBUG: "1" })
   normalizeBrandEnv(env)
   assert.equal(env.OTTO_DEBUG, "1")
-  assert.equal(env.LOOP24_DEBUG, "1")
-  assert.equal(env.GSD_DEBUG, "1")
 })
 
-test("LOOP24_* is used and mirrored when OTTO_* is unset", () => {
-  const env = mk({ LOOP24_DEBUG: "1" })
+test("legacy brand values are ignored and not mirrored", () => {
+  const env = mk({ [legacyPrefix + "DEBUG"]: "1" })
   normalizeBrandEnv(env)
-  assert.equal(env.OTTO_DEBUG, "1")
-  assert.equal(env.LOOP24_DEBUG, "1")
-  assert.equal(env.GSD_DEBUG, "1")
+  assert.equal(env.OTTO_DEBUG, undefined)
+  assert.equal(env[legacyPrefix + "DEBUG"], "1")
 })
 
-test("GSD_* (legacy) is used and mirrored when OTTO_/LOOP24_ are unset", () => {
-  const env = mk({ GSD_DEBUG: "1" })
+test("env normalization does not mirror legacy aliases", () => {
+  const env = mk({
+    [legacyPrefix + "DEBUG"]: "1",
+    [legacyPrefix + "HOME"]: "/tmp/legacy-otto",
+    OTTO_HOME: "/tmp/otto",
+  })
   normalizeBrandEnv(env)
-  assert.equal(env.OTTO_DEBUG, "1")
-  assert.equal(env.LOOP24_DEBUG, "1")
-  assert.equal(env.GSD_DEBUG, "1")
+  assert.equal(env.OTTO_HOME, "/tmp/otto")
+  assert.equal(env[legacyPrefix + "DEBUG"], "1")
+  assert.equal(env.OTTO_DEBUG, undefined)
 })
 
-test("does not clobber an already-set lower-precedence name", () => {
-  const env = mk({ OTTO_DEBUG: "a", LOOP24_DEBUG: "b" })
+test("does not clobber any existing values", () => {
+  const env = mk({ OTTO_DEBUG: "a", [legacyPrefix + "DEBUG"]: "b" })
   normalizeBrandEnv(env)
   assert.equal(env.OTTO_DEBUG, "a")
-  assert.equal(env.LOOP24_DEBUG, "b") // preserved, not overwritten by OTTO value
-  assert.equal(env.GSD_DEBUG, "a") // only the unset one gets the resolved value
+  assert.equal(env[legacyPrefix + "DEBUG"], "b")
 })
 
-test("preserves falsy values like '0' (defined-ness, not truthiness)", () => {
+test("preserves falsy OTTO values like '0'", () => {
   const env = mk({ OTTO_SHOW_TOKEN_COST: "0" })
   normalizeBrandEnv(env)
-  assert.equal(env.LOOP24_SHOW_TOKEN_COST, "0")
-  assert.equal(env.GSD_SHOW_TOKEN_COST, "0")
+  assert.equal(env.OTTO_SHOW_TOKEN_COST, "0")
 })
 
 test("leaves a var untouched when no prefix is set", () => {
   const env = mk({})
   normalizeBrandEnv(env)
   assert.equal(env.OTTO_DEBUG, undefined)
-  assert.equal(env.LOOP24_DEBUG, undefined)
-  assert.equal(env.GSD_DEBUG, undefined)
+  assert.equal(env[legacyPrefix + "DEBUG"], undefined)
 })
 
 test("is idempotent", () => {
-  const env = mk({ LOOP24_GATEWAY_URL: "http://x" })
+  const env = mk({ OTTO_GATEWAY_URL: "http://x" })
   normalizeBrandEnv(env)
   normalizeBrandEnv(env)
   assert.equal(env.OTTO_GATEWAY_URL, "http://x")
-  assert.equal(env.LOOP24_GATEWAY_URL, "http://x")
-  assert.equal(env.GSD_GATEWAY_URL, "http://x")
 })

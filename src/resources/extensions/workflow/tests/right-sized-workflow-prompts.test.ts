@@ -19,8 +19,8 @@ function git(cwd: string, args: string[]): string {
 function makeRepo(files: Record<string, string>): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-right-size-"));
   git(base, ["init", "-b", "main"]);
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
-  writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"), "# Context\n\nTest milestone.");
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
+  writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"), "# Context\n\nTest milestone.");
   for (const [path, content] of Object.entries(files)) {
     const abs = join(base, path);
     mkdirSync(join(abs, ".."), { recursive: true });
@@ -32,7 +32,7 @@ function makeRepo(files: Record<string, string>): string {
 }
 
 function writeCompleteMilestoneFiles(base: string, validation: string): void {
-  const dir = join(base, ".gsd", "milestones", "M001");
+  const dir = join(base, ".otto/workflow", "milestones", "M001");
   mkdirSync(join(dir, "slices", "S01"), { recursive: true });
   writeFileSync(join(dir, "M001-ROADMAP.md"), "# M001\n\n## Slices\n- [x] **S01: One** `risk:low` `depends:[]`\n  > Done\n");
   writeFileSync(join(dir, "M001-VALIDATION.md"), validation);
@@ -43,9 +43,9 @@ function validationMetadata(): string {
   return [
     "validation_metadata:",
     "  covered_artifacts:",
-    "    - `.gsd/milestones/M001/M001-VALIDATION.md`",
-    "    - `.gsd/milestones/M001/M001-ROADMAP.md`",
-    "    - `.gsd/milestones/M001/slices/S01/S01-SUMMARY.md`",
+    "    - `.otto/workflow/milestones/M001/M001-VALIDATION.md`",
+    "    - `.otto/workflow/milestones/M001/M001-ROADMAP.md`",
+    "    - `.otto/workflow/milestones/M001/slices/S01/S01-SUMMARY.md`",
   ].join("\n");
 }
 
@@ -97,15 +97,15 @@ test("plan-milestone standard prompt keeps project and decisions on-demand", asy
   const base = makeRepo({
     "package.json": "{\"scripts\":{\"test\":\"node --test\"}}\n",
     "src/index.js": "console.log('ok');\n",
-    ".gsd/PROJECT.md": "# Project\n\nPlan broad project body.\n",
-    ".gsd/REQUIREMENTS.md": "# Requirements\n\nPlan requirement body.\n",
-    ".gsd/DECISIONS.md": "# Decisions\n\nPlan decision body.\n",
+    ".otto/workflow/PROJECT.md": "# Project\n\nPlan broad project body.\n",
+    ".otto/workflow/REQUIREMENTS.md": "# Requirements\n\nPlan requirement body.\n",
+    ".otto/workflow/DECISIONS.md": "# Decisions\n\nPlan decision body.\n",
   });
   try {
     const prompt = await buildPlanMilestonePrompt("M001", "Update app", base, "standard");
     assert.match(prompt, /### On-demand Planning Context/);
-    assert.match(prompt, /`\.gsd\/PROJECT\.md`/);
-    assert.match(prompt, /`\.gsd\/DECISIONS\.md`/);
+    assert.match(prompt, /`\.otto\/workflow\/PROJECT\.md`/);
+    assert.match(prompt, /`\.otto\/workflow\/DECISIONS\.md`/);
     assert.match(prompt, /Plan requirement body/);
     assert.doesNotMatch(prompt, /Plan broad project body/);
     assert.doesNotMatch(prompt, /Plan decision body/);
@@ -122,8 +122,8 @@ test("workflow docs no longer contain blanket 4-10 slice guidance", () => {
 });
 
 test("prompt templates carry right-sized planning and closeout mode guidance", () => {
-  const planTemplate = readFileSync(join(process.cwd(), "src", "resources", "extensions", "gsd", "prompts", "plan-milestone.md"), "utf-8");
-  const completeTemplate = readFileSync(join(process.cwd(), "src", "resources", "extensions", "gsd", "prompts", "complete-milestone.md"), "utf-8");
+  const planTemplate = readFileSync(join(process.cwd(), "src", "resources", "extensions", "workflow", "prompts", "plan-milestone.md"), "utf-8");
+  const completeTemplate = readFileSync(join(process.cwd(), "src", "resources", "extensions", "workflow", "prompts", "complete-milestone.md"), "utf-8");
 
   assert.match(planTemplate, /Use 1-10 slices, sized to the work/);
   assert.match(planTemplate, /tiny\/single-file\/static work should usually be one slice/);
@@ -185,8 +185,8 @@ test("complete-milestone prompt does not trust pass validation missing current s
       "# Validation",
       "validation_metadata:",
       "  covered_artifacts:",
-      "    - `.gsd/milestones/M001/M001-VALIDATION.md`",
-      "    - `.gsd/milestones/M001/M001-ROADMAP.md`",
+      "    - `.otto/workflow/milestones/M001/M001-VALIDATION.md`",
+      "    - `.otto/workflow/milestones/M001/M001-ROADMAP.md`",
       "",
       "All checks passed.",
     ].join("\n"));

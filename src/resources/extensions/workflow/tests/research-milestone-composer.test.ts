@@ -18,7 +18,7 @@ import {
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-research-ms-composer-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   return base;
 }
 
@@ -29,7 +29,7 @@ function cleanup(base: string): void {
 }
 
 function seed(base: string, mid: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: mid, title: "Research Test", status: "active", depends_on: [] });
   upsertMilestonePlanning(mid, {
     title: "Research Test",
@@ -56,7 +56,7 @@ test("#4782 phase 3: buildResearchMilestonePrompt emits milestone-context then r
   seed(base, "M001");
 
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
     "# M001 Context\n\nA research test milestone.\n",
   );
 
@@ -85,7 +85,7 @@ test("buildResearchMilestonePrompt keeps broad project docs on-demand", async (t
   invalidateAllCaches();
 
   seed(base, "M001");
-  writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"), "# M001 Context\n");
+  writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"), "# M001 Context\n");
   insertArtifact({
     path: "PROJECT.md",
     artifact_type: "project",
@@ -126,7 +126,7 @@ test("buildResearchMilestonePrompt keeps broad project docs on-demand", async (t
   assert.doesNotMatch(prompt, /Research composer fixture project/);
   assert.doesNotMatch(prompt, /Research composer fixture requirements/);
   assert.doesNotMatch(prompt, /Research composer fixture decisions/);
-  assert.match(prompt, /`\.gsd\/PROJECT\.md`/);
-  assert.match(prompt, /`\.gsd\/REQUIREMENTS\.md`/);
-  assert.match(prompt, /`\.gsd\/DECISIONS\.md`/);
+  assert.match(prompt, /`\.otto\/workflow\/PROJECT\.md`/);
+  assert.match(prompt, /`\.otto\/workflow\/REQUIREMENTS\.md`/);
+  assert.match(prompt, /`\.otto\/workflow\/DECISIONS\.md`/);
 });

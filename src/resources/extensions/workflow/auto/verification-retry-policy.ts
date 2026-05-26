@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Central retry policy for auto-mode verification redispatches.
 
 import { createHash } from "node:crypto";

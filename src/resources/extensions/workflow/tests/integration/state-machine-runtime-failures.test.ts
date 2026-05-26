@@ -86,14 +86,14 @@ function makeTempDir(): string {
 
 function createMinimalFixture(): string {
   const base = makeTempDir();
-  const mDir = join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks");
+  const mDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks");
   mkdirSync(mDir, { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
     "# M001: Runtime Test\n\n## Purpose\nTest runtime failures.\n",
   );
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     [
       "# M001: Runtime Test",
       "",
@@ -116,7 +116,7 @@ function createMinimalFixture(): string {
     ].join("\n"),
   );
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
     [
       "# S01: Feature",
       "",
@@ -509,7 +509,7 @@ describe("filesystem race conditions", () => {
 
   test("ROADMAP deleted during derive cycle → graceful degradation", async () => {
     base = createMinimalFixture();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Active", status: "active" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Feature", status: "in_progress" });
     insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "pending" });
@@ -519,7 +519,7 @@ describe("filesystem race conditions", () => {
     assert.equal(state1.phase, "executing");
 
     // Delete ROADMAP mid-flow
-    const roadmapPath = join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md");
+    const roadmapPath = join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md");
     unlinkSync(roadmapPath);
 
     invalidateAllCaches();
@@ -530,10 +530,10 @@ describe("filesystem race conditions", () => {
 
   test("CONTEXT deleted during derive → falls back gracefully", async () => {
     base = createMinimalFixture();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Active", status: "active" });
 
-    const contextPath = join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md");
+    const contextPath = join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md");
     unlinkSync(contextPath);
 
     invalidateAllCaches();
@@ -544,13 +544,13 @@ describe("filesystem race conditions", () => {
 
   test("entire slice directory deleted → derive produces valid state", async () => {
     base = createMinimalFixture();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Active", status: "active" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Feature", status: "in_progress" });
     insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "pending" });
 
     // Delete entire S01 directory
-    rmSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true, force: true });
+    rmSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true, force: true });
 
     invalidateAllCaches();
     const state = await deriveStateFromDb(base);
@@ -560,23 +560,23 @@ describe("filesystem race conditions", () => {
 
   test("task PLAN file deleted between dispatch and execution → recovery dispatch", async () => {
     base = createMinimalFixture();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Active", status: "active" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Feature", status: "in_progress" });
     insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "pending" });
 
     // Delete T01-PLAN.md
-    const planPath = join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-PLAN.md");
+    const planPath = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-PLAN.md");
     unlinkSync(planPath);
 
     // Also write milestone RESEARCH so research-slice rule doesn't fire first
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "M001-RESEARCH.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "M001-RESEARCH.md"),
       "# Research\nDone.\n",
     );
     // Write slice RESEARCH so research-slice rule for non-S01 doesn't fire
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-RESEARCH.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-RESEARCH.md"),
       "# S01 Research\nDone.\n",
     );
 
@@ -609,11 +609,11 @@ describe("filesystem race conditions", () => {
 
   test("worktree directory disappearance: isGhostMilestone still works", () => {
     const tmpBase = makeTempDir();
-    const mDir = join(tmpBase, ".gsd", "milestones", "M001");
+    const mDir = join(tmpBase, ".otto/workflow", "milestones", "M001");
     mkdirSync(mDir, { recursive: true });
 
     // Create worktree dir then delete it (simulates external deletion)
-    const wtDir = join(tmpBase, ".gsd", "worktrees", "M001");
+    const wtDir = join(tmpBase, ".otto/workflow", "worktrees", "M001");
     mkdirSync(wtDir, { recursive: true });
 
     // With worktree → not a ghost
@@ -754,7 +754,7 @@ describe("state consistency under DB mutations", () => {
 
   test("rapid DB mutations produce consistent deriveStateFromDb results", async () => {
     base = createMinimalFixture();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Active", status: "active" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Feature", status: "in_progress" });
     insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "pending" });
@@ -785,7 +785,7 @@ describe("state consistency under DB mutations", () => {
 
   test("DB milestone status change is reflected after cache invalidation", async () => {
     base = createMinimalFixture();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Active", status: "active" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Feature", status: "complete" });
     insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "complete" });
@@ -799,7 +799,7 @@ describe("state consistency under DB mutations", () => {
     updateMilestoneStatus("M001", "complete", new Date().toISOString());
     // Write SUMMARY to make it truly complete
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"),
       "# M001 Summary\nDone.\n",
     );
 
@@ -811,7 +811,7 @@ describe("state consistency under DB mutations", () => {
 
   test("deriveState is idempotent: same inputs produce same outputs", async () => {
     base = createMinimalFixture();
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Active", status: "active" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Feature", status: "in_progress" });
     insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "pending" });

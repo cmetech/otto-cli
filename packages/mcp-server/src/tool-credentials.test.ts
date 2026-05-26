@@ -78,14 +78,14 @@ describe("tool credentials", () => {
     }
   });
 
-  it("resolves auth.json from GSD_CODING_AGENT_DIR", () => {
+  it("resolves auth.json from OTTO_CODING_AGENT_DIR", () => {
     const tempRoot = mkdtempSync(join(tmpdir(), "gsd-mcp-agent-dir-"));
     const agentDir = join(tempRoot, "agent");
     mkdirSync(agentDir, { recursive: true });
 
     try {
       assert.equal(
-        resolveAuthPath({ GSD_CODING_AGENT_DIR: agentDir }),
+        resolveAuthPath({ OTTO_CODING_AGENT_DIR: agentDir }),
         join(agentDir, "auth.json"),
       );
     } finally {

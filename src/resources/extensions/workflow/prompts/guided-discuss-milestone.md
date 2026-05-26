@@ -1,6 +1,6 @@
 **Working directory:** `{{workingDirectory}}`. All file reads, writes, and shell commands MUST operate relative to this directory. Do NOT `cd` to any other directory.
 
-Discuss milestone {{milestoneId}} ("{{milestoneTitle}}"). Identify real gray areas, ask about them, then write `{{milestoneId}}-CONTEXT.md` in the milestone directory with the **Context** template below. If a `GSD Skill Preferences` block exists, use it to choose skills; artifact rules still apply.
+Discuss milestone {{milestoneId}} ("{{milestoneTitle}}"). Identify real gray areas, ask about them, then write `{{milestoneId}}-CONTEXT.md` in the milestone directory with the **Context** template below. If a `OTTO Skill Preferences` block exists, use it to choose skills; artifact rules still apply.
 
 **Structured questions available: {{structuredQuestionsAvailable}}**
 
@@ -14,7 +14,7 @@ Discuss milestone {{milestoneId}} ("{{milestoneTitle}}"). Identify real gray are
 
 ### Read project shape
 
-Before asking, read `.gsd/PROJECT.md` and find `## Project Shape` -> `**Complexity:**`. Use `simple` or `complex`; default to `complex` if missing, stale, or unclear.
+Before asking, read `.otto/workflow/PROJECT.md` and find `## Project Shape` -> `**Complexity:**`. Use `simple` or `complex`; default to `complex` if missing, stale, or unclear.
 
 - `simple`: 1-2 plain-text rounds; skip parallel-research investigation; use `ask_user_questions` only for concrete alternatives.
 - `complex`: investigate first, use 3-4-option structured questions, and expect multiple rounds.
@@ -51,7 +51,7 @@ After each answer, investigate only new unknowns, then ask the next round.
 
 After each answer round, decide whether the context would be strong enough.
 
-- **Incremental persistence:** After every 2 question rounds, silently save `{{milestoneId}}-CONTEXT-DRAFT.md` via `gsd_summary_save` with `artifact_type: "CONTEXT-DRAFT"`. Do NOT mention this save to the user. The final context overwrites it.
+- **Incremental persistence:** After every 2 question rounds, silently save `{{milestoneId}}-CONTEXT-DRAFT.md` via `otto_summary_save` with `artifact_type: "CONTEXT-DRAFT"`. Do NOT mention this save to the user. The final context overwrites it.
 - If not ready, investigate new unknowns and continue. Do **not** ask a meta "ready to wrap up?" question after every round.
 - Use one wrap-up prompt only when the depth checklist is satisfied or the user wants to stop.
 - **If `{{structuredQuestionsAvailable}}` is `true` and you need that wrap-up prompt:** use `ask_user_questions` with options:
@@ -111,6 +111,6 @@ Once the user confirms depth:
 
 1. Use the **Context** output template below
 2. `mkdir -p` the milestone directory if needed
-3. Call `gsd_summary_save` with `milestone_id: {{milestoneId}}`, `artifact_type: "CONTEXT"`, and full context markdown as `content`; the tool writes the file and persists to DB. Preserve the user's terminology, emphasis, and framing; downstream agents rely on this file.
+3. Call `otto_summary_save` with `milestone_id: {{milestoneId}}`, `artifact_type: "CONTEXT"`, and full context markdown as `content`; the tool writes the file and persists to DB. Preserve the user's terminology, emphasis, and framing; downstream agents rely on this file.
 4. {{commitInstruction}}
 5. Say exactly: `"{{milestoneId}} context written."` — nothing else.

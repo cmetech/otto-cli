@@ -82,6 +82,6 @@ describe("checkoutBranchWithStashGuard", () => {
     const branch = git(["branch", "--show-current"], repo).trim();
     assert.equal(branch, "milestone/B");
     const stashList = git(["stash", "list"], repo).trim();
-    assert.match(stashList, /gsd: checkout stash/);
+    assert.match(stashList, /otto: checkout stash/);
   });
 });

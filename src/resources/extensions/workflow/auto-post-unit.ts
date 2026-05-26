@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Auto-mode post-unit git, verification, projection, and hook processing.
 /**
  * Post-unit processing for auto-loop — auto-commit, doctor run,
@@ -13,7 +13,7 @@
  * Extracted from the pre-loop agent_end handler in auto.ts.
  */
 
-import type { ExtensionContext, ExtensionAPI } from "@loop24/pi-coding-agent";
+import type { ExtensionContext, ExtensionAPI } from "@otto/pi-coding-agent";
 import { deriveState } from "./state.js";
 import { logWarning, logError } from "./workflow-logger.js";
 import { loadFile, parseSummary, resolveAllOverrides } from "./files.js";
@@ -146,7 +146,7 @@ function hasIncompleteMilestoneSlice(milestoneId: string): boolean {
 }
 
 function hasRoadmapReassessmentArtifact(basePath: string, milestoneId: string): boolean {
-  const slicesDir = join(basePath, ".gsd", "milestones", milestoneId, "slices");
+  const slicesDir = join(basePath, ".otto/workflow", "milestones", milestoneId, "slices");
   if (!existsSync(slicesDir)) return false;
 
   try {
@@ -162,7 +162,7 @@ function hasRoadmapReassessmentArtifact(basePath: string, milestoneId: string): 
 
 function unitActivityMentionsTool(basePath: string, unitType: string, unitId: string, toolName: string): boolean {
   const safeUnitId = unitId.replace(/\//g, "-");
-  const activityDir = join(basePath, ".gsd", "activity");
+  const activityDir = join(basePath, ".otto/workflow", "activity");
   if (!existsSync(activityDir)) return false;
 
   try {
@@ -218,7 +218,7 @@ function formatPreExecutionRetryContext(input: {
 
 const COMPLETE_MILESTONE_DB_SETTLE_MS = 1500;
 const COMPLETE_MILESTONE_DB_SETTLE_POLL_MS = 100;
-const GIT_ACTION_FAILURE_LOG_REL_PATH = ".gsd/git-action-failures.log";
+const GIT_ACTION_FAILURE_LOG_REL_PATH = ".otto/workflow/git-action-failures.log";
 const DEFAULT_PER_UNIT_COST_CAP_USD = 5.0;
 const MAX_PRE_EXEC_RETRIES = 2;
 
@@ -283,7 +283,7 @@ async function hasArtifactCostGuardAdvancedPastUnit(
 
 function persistGitActionFailure(basePath: string, action: TurnGitActionMode, message: string): string {
   const logPath = join(basePath, GIT_ACTION_FAILURE_LOG_REL_PATH);
-  const logDir = join(basePath, ".gsd");
+  const logDir = join(basePath, ".otto/workflow");
   const timestamp = new Date().toISOString();
   const body = message.trim() || "unknown git failure";
   const entry = `[${timestamp}] action=${action}\n${body}\n\n`;
@@ -442,7 +442,7 @@ export function _shouldDispatchQuickTaskForTest(
 function isExecutionToolName(name: unknown): boolean {
   if (typeof name !== "string") return false;
   const normalized = name.trim().toLowerCase();
-  return normalized === "bash" || normalized === "gsd_exec";
+  return normalized === "bash" || normalized === "otto_exec";
 }
 
 export function _hasExecutionToolCallsInSessionForTest(entries: readonly unknown[]): boolean {
@@ -467,7 +467,7 @@ export function shouldDeferCloseoutGitAction(unitType: string): boolean {
   return unitType === "execute-task";
 }
 
-/** Unit types that only touch `.gsd/` internal state files (no code changes).
+/** Unit types that only touch `.otto/workflow/` internal state files (no code changes).
  *  Auto-commit is skipped for these — their state files are picked up by the
  *  next actual task commit via `smartStage()`. */
 const LIFECYCLE_ONLY_UNITS = new Set([
@@ -618,7 +618,7 @@ function buildStepCompleteCallout(
 ): string {
   const isTask = currentUnit?.type === "execute-task";
   const completedLabel = currentUnit ? `${unitVerb(currentUnit.type)} ${currentUnit.id}` : "Step complete";
-  return formatConnectedStepStack(`✓ GSD ${isTask ? "Task" : "Step"} Complete`, completedLabel);
+  return formatConnectedStepStack(`✓ OTTO ${isTask ? "Task" : "Step"} Complete`, completedLabel);
 }
 
 export const STEP_COMPLETE_FALLBACK_MESSAGE = buildStepCompleteCallout();
@@ -654,7 +654,7 @@ export function buildStepCompleteOutcome(
     detail: `Next: ${next.label}.`,
     unitLabel: currentUnit ? `${unitVerb(currentUnit.type)} ${currentUnit.id}` : null,
     nextAction: "Advance one step, or resume automatic mode.",
-    commands: ["/gsd next", "/gsd auto", "/gsd status for overview"],
+    commands: ["/otto next", "/otto auto", "/otto status for overview"],
   };
 }
 
@@ -687,7 +687,7 @@ export function setStepCompleteFallbackSurface(
     detail: "State refresh failed after the unit completed.",
     unitLabel: currentUnit ? `${unitVerb(currentUnit.type)} ${currentUnit.id}` : null,
     nextAction: "Inspect state, then advance one step or resume automatic mode.",
-    commands: ["/gsd status for overview", "/gsd next", "/gsd auto"],
+    commands: ["/otto status for overview", "/otto next", "/otto auto"],
   });
   return buildStepCompleteCallout(currentUnit);
 }
@@ -740,7 +740,7 @@ function artifactValidationKind(unitType: string): "project" | "requirements" | 
   return null;
 }
 
-const TASK_COMPLETION_TOOL_NAMES = new Set(["gsd_task_complete", "gsd_complete_task"]);
+const TASK_COMPLETION_TOOL_NAMES = new Set(["otto_task_complete", "otto_complete_task"]);
 
 function hasTaskCompletionToolCall(agentEndMessages?: unknown[] | null): boolean {
   if (!Array.isArray(agentEndMessages)) return false;
@@ -780,7 +780,7 @@ function describeArtifactVerificationFailure(
   const relPath = relative(basePath, artifactPath);
   if (!existsSync(artifactPath)) {
     const completionToolHint = unitType === "execute-task" && !hasTaskCompletionToolCall(agentEndMessages)
-      ? " No completion tool call detected (`gsd_task_complete`/alias)."
+      ? " No completion tool call detected (`otto_task_complete`/alias)."
       : "";
     return `Artifact verification failed: ${relPath} was not found on disk after unit execution${expected ? ` (${expected})` : ""}.${completionToolHint}`;
   }
@@ -1057,7 +1057,7 @@ export async function postUnitPreVerification(pctx: PostUnitContext, opts?: PreV
   const { s, ctx, pi, stopAuto, pauseAuto } = pctx;
 
   // ── Parallel worker signal check ──
-  const milestoneLock = (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK);
+  const milestoneLock = (process.env.OTTO_MILESTONE_LOCK ?? process.env.OTTO_MILESTONE_LOCK);
   if (milestoneLock) {
     const signal = consumeSignal(s.basePath, milestoneLock);
     if (signal) {
@@ -1247,7 +1247,7 @@ export async function postUnitPreVerification(pctx: PostUnitContext, opts?: PreV
           if (err instanceof MergeConflictError) {
             ctx.ui.notify(
               `slice-cadence merge conflict in ${sid}: ${err.conflictedFiles.join(", ")}. ` +
-              `Resolve manually on main and run \`/gsd auto\` to resume.`,
+              `Resolve manually on main and run \`/otto auto\` to resume.`,
               "error",
             );
             // Stop auto AND signal the outer postUnit flow to exit early.
@@ -1520,21 +1520,21 @@ export async function postUnitPreVerification(pctx: PostUnitContext, opts?: PreV
         !triggerArtifactVerified &&
         s.currentUnit.type === "validate-milestone" &&
         (
-          agentEndMessagesIncludeSuccessfulToolResult(opts?.agentEndMessages, "gsd_reassess_roadmap") ||
-          agentEndMessagesIncludeToolCall(opts?.agentEndMessages, "gsd_reassess_roadmap") ||
-          agentEndMessagesMentionTool(opts?.agentEndMessages, "gsd_reassess_roadmap") ||
-          unitActivityMentionsTool(s.basePath, s.currentUnit.type, s.currentUnit.id, "gsd_reassess_roadmap") ||
-          unitActivityMentionsTool(s.canonicalProjectRoot, s.currentUnit.type, s.currentUnit.id, "gsd_reassess_roadmap") ||
+          agentEndMessagesIncludeSuccessfulToolResult(opts?.agentEndMessages, "otto_reassess_roadmap") ||
+          agentEndMessagesIncludeToolCall(opts?.agentEndMessages, "otto_reassess_roadmap") ||
+          agentEndMessagesMentionTool(opts?.agentEndMessages, "otto_reassess_roadmap") ||
+          unitActivityMentionsTool(s.basePath, s.currentUnit.type, s.currentUnit.id, "otto_reassess_roadmap") ||
+          unitActivityMentionsTool(s.canonicalProjectRoot, s.currentUnit.type, s.currentUnit.id, "otto_reassess_roadmap") ||
           hasRoadmapReassessmentArtifact(s.basePath, parseUnitId(s.currentUnit.id).milestone) ||
           hasRoadmapReassessmentArtifact(s.canonicalProjectRoot, parseUnitId(s.currentUnit.id).milestone)
         )
       ) {
         const { milestone: mid } = parseUnitId(s.currentUnit.id);
         if (mid && (
-          agentEndMessagesIncludeSuccessfulToolResult(opts?.agentEndMessages, "gsd_reassess_roadmap") ||
-          agentEndMessagesMentionTool(opts?.agentEndMessages, "gsd_reassess_roadmap") ||
-          unitActivityMentionsTool(s.basePath, s.currentUnit.type, s.currentUnit.id, "gsd_reassess_roadmap") ||
-          unitActivityMentionsTool(s.canonicalProjectRoot, s.currentUnit.type, s.currentUnit.id, "gsd_reassess_roadmap") ||
+          agentEndMessagesIncludeSuccessfulToolResult(opts?.agentEndMessages, "otto_reassess_roadmap") ||
+          agentEndMessagesMentionTool(opts?.agentEndMessages, "otto_reassess_roadmap") ||
+          unitActivityMentionsTool(s.basePath, s.currentUnit.type, s.currentUnit.id, "otto_reassess_roadmap") ||
+          unitActivityMentionsTool(s.canonicalProjectRoot, s.currentUnit.type, s.currentUnit.id, "otto_reassess_roadmap") ||
           hasIncompleteMilestoneSlice(mid) ||
           hasRoadmapReassessmentArtifact(s.basePath, mid) ||
           hasRoadmapReassessmentArtifact(s.canonicalProjectRoot, mid)
@@ -1556,7 +1556,7 @@ export async function postUnitPreVerification(pctx: PostUnitContext, opts?: PreV
           if (mid && sid) {
             // Phase C: write to the canonical project root (#5236 scope)
             // so non-symlinked worktrees no longer maintain a separate
-            // local .gsd/ projection. copyPlanningArtifacts has been
+            // local .otto/workflow/ projection. copyPlanningArtifacts has been
             // deleted; reads + writes converge at projectRoot.
             const regenerated = await regenerateIfMissing(s.canonicalProjectRoot, mid, sid, "PLAN");
             if (regenerated) {
@@ -1584,21 +1584,21 @@ export async function postUnitPreVerification(pctx: PostUnitContext, opts?: PreV
         !triggerArtifactVerified &&
         s.currentUnit.type === "validate-milestone" &&
         (
-          agentEndMessagesIncludeSuccessfulToolResult(opts?.agentEndMessages, "gsd_reassess_roadmap") ||
-          agentEndMessagesIncludeToolCall(opts?.agentEndMessages, "gsd_reassess_roadmap") ||
-          agentEndMessagesMentionTool(opts?.agentEndMessages, "gsd_reassess_roadmap") ||
-          unitActivityMentionsTool(s.basePath, s.currentUnit.type, s.currentUnit.id, "gsd_reassess_roadmap") ||
-          unitActivityMentionsTool(s.canonicalProjectRoot, s.currentUnit.type, s.currentUnit.id, "gsd_reassess_roadmap") ||
+          agentEndMessagesIncludeSuccessfulToolResult(opts?.agentEndMessages, "otto_reassess_roadmap") ||
+          agentEndMessagesIncludeToolCall(opts?.agentEndMessages, "otto_reassess_roadmap") ||
+          agentEndMessagesMentionTool(opts?.agentEndMessages, "otto_reassess_roadmap") ||
+          unitActivityMentionsTool(s.basePath, s.currentUnit.type, s.currentUnit.id, "otto_reassess_roadmap") ||
+          unitActivityMentionsTool(s.canonicalProjectRoot, s.currentUnit.type, s.currentUnit.id, "otto_reassess_roadmap") ||
           hasRoadmapReassessmentArtifact(s.basePath, parseUnitId(s.currentUnit.id).milestone) ||
           hasRoadmapReassessmentArtifact(s.canonicalProjectRoot, parseUnitId(s.currentUnit.id).milestone)
         )
       ) {
         const { milestone: mid } = parseUnitId(s.currentUnit.id);
         if (mid && (
-          agentEndMessagesIncludeSuccessfulToolResult(opts?.agentEndMessages, "gsd_reassess_roadmap") ||
-          agentEndMessagesMentionTool(opts?.agentEndMessages, "gsd_reassess_roadmap") ||
-          unitActivityMentionsTool(s.basePath, s.currentUnit.type, s.currentUnit.id, "gsd_reassess_roadmap") ||
-          unitActivityMentionsTool(s.canonicalProjectRoot, s.currentUnit.type, s.currentUnit.id, "gsd_reassess_roadmap") ||
+          agentEndMessagesIncludeSuccessfulToolResult(opts?.agentEndMessages, "otto_reassess_roadmap") ||
+          agentEndMessagesMentionTool(opts?.agentEndMessages, "otto_reassess_roadmap") ||
+          unitActivityMentionsTool(s.basePath, s.currentUnit.type, s.currentUnit.id, "otto_reassess_roadmap") ||
+          unitActivityMentionsTool(s.canonicalProjectRoot, s.currentUnit.type, s.currentUnit.id, "otto_reassess_roadmap") ||
           hasIncompleteMilestoneSlice(mid) ||
           hasRoadmapReassessmentArtifact(s.basePath, mid) ||
           hasRoadmapReassessmentArtifact(s.canonicalProjectRoot, mid)
@@ -2018,7 +2018,7 @@ export async function postUnitPostVerification(pctx: PostUnitContext): Promise<"
   }
 
   // ── Pre-execution checks (after plan-slice or ADR-011 refine-slice completes) ──
-  // Both emit the same PLAN.md + task artifacts via gsd_plan_slice, so the
+  // Both emit the same PLAN.md + task artifacts via otto_plan_slice, so the
   // same structural validation applies to both.
   if (
     s.currentUnit &&
@@ -2093,7 +2093,7 @@ export async function postUnitPostVerification(pctx: PostUnitContext): Promise<"
         // Write evidence JSON to slice artifacts directory
         const slicePath = resolveSlicePath(s.canonicalProjectRoot, mid, sid);
         const evidenceFileName = `${sid}-PRE-EXEC-VERIFY.json`;
-        let evidencePath = join(".gsd", "milestones", mid, "slices", sid, evidenceFileName);
+        let evidencePath = join(".otto/workflow", "milestones", mid, "slices", sid, evidenceFileName);
         if (slicePath) {
           writePreExecutionEvidence(result, slicePath, mid, sid);
           evidencePath = relative(s.canonicalProjectRoot, join(slicePath, evidenceFileName)) || evidenceFileName;

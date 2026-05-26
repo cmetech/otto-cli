@@ -48,7 +48,7 @@ const VALID_PROJECT_MD = [
   "",
   "## Capability Contract",
   "",
-  "See `.gsd/REQUIREMENTS.md`.",
+  "See `.otto/workflow/REQUIREMENTS.md`.",
   "",
   "## Milestone Sequence",
   "",
@@ -111,7 +111,7 @@ const TINY_TODO_PROJECT_MD = [
   "",
   "## Capability Contract",
   "",
-  "See `.gsd/REQUIREMENTS.md`.",
+  "See `.otto/workflow/REQUIREMENTS.md`.",
   "",
   "## Milestone Sequence",
   "",
@@ -215,7 +215,7 @@ const TINY_TODO_REQUIREMENTS_MD = [
 
 function makeIsolatedBase(): string {
   const base = join(tmpdir(), `gsd-deep-planning-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   return base;
 }
 
@@ -230,28 +230,28 @@ function makeIsolatedBaseWithCleanup(t: TestContext): string {
 }
 
 function writeValidProject(base: string): void {
-  writeFileSync(join(base, ".gsd", "PROJECT.md"), VALID_PROJECT_MD);
+  writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), VALID_PROJECT_MD);
 }
 
 function writeValidRequirements(base: string): void {
-  writeFileSync(join(base, ".gsd", "REQUIREMENTS.md"), VALID_REQUIREMENTS_MD);
+  writeFileSync(join(base, ".otto/workflow", "REQUIREMENTS.md"), VALID_REQUIREMENTS_MD);
 }
 
 function writeTinyTodoProject(base: string): void {
-  writeFileSync(join(base, ".gsd", "PROJECT.md"), TINY_TODO_PROJECT_MD);
-  writeFileSync(join(base, ".gsd", "REQUIREMENTS.md"), TINY_TODO_REQUIREMENTS_MD);
+  writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), TINY_TODO_PROJECT_MD);
+  writeFileSync(join(base, ".otto/workflow", "REQUIREMENTS.md"), TINY_TODO_REQUIREMENTS_MD);
 }
 
 function writeCapturedDeepPrefs(base: string): void {
   writeFileSync(
-    join(base, ".gsd", "PREFERENCES.md"),
+    join(base, ".otto/workflow", "PREFERENCES.md"),
     "---\nplanning_depth: deep\nworkflow_prefs_captured: true\n---\n",
   );
 }
 
 function writeSkippedProjectResearchDecision(base: string): void {
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
-  writeFileSync(join(base, ".gsd", "runtime", "research-decision.json"), JSON.stringify({ decision: "skip" }));
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
+  writeFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), JSON.stringify({ decision: "skip" }));
 }
 
 function makeCtx(
@@ -300,10 +300,10 @@ test("Deep mode: workflow-preferences captures defaults in-process when PREFEREN
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(WORKFLOW_PREFS_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "workflow prefs are written deterministically, not dispatched to an agent");
-  const content = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
+  const content = readFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "utf-8");
   assert.match(content, /^workflow_prefs_captured:\s*true\s*$/m);
   assert.match(content, /^commit_policy:\s*per-task\s*$/m);
-  assert.ok(existsSync(join(base, ".gsd", "runtime", "research-decision.json")));
+  assert.ok(existsSync(join(base, ".otto/workflow", "runtime", "research-decision.json")));
 });
 
 test("Deep mode: workflow-preferences self-heals PREFERENCES.md when capture marker is missing", async (t) => {
@@ -311,11 +311,11 @@ test("Deep mode: workflow-preferences self-heals PREFERENCES.md when capture mar
 
   // Partial PREFERENCES.md (e.g. only planning_depth set) must not falsely
   // suppress the defaults write — the explicit captured marker is required.
-  writeFileSync(join(base, ".gsd", "PREFERENCES.md"), "---\nplanning_depth: deep\n---\n");
+  writeFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "---\nplanning_depth: deep\n---\n");
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(WORKFLOW_PREFS_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null);
-  const content = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
+  const content = readFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "utf-8");
   assert.match(content, /^workflow_prefs_captured:\s*true\s*$/m);
   assert.match(content, /^branch_model:\s*single\s*$/m);
 });
@@ -323,11 +323,11 @@ test("Deep mode: workflow-preferences self-heals PREFERENCES.md when capture mar
 test("Deep mode: workflow-preferences self-heals malformed frontmatter", async (t) => {
   const base = makeIsolatedBaseWithCleanup(t);
 
-  writeFileSync(join(base, ".gsd", "PREFERENCES.md"), "---\nthis is not valid yaml: [\n---\n");
+  writeFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "---\nthis is not valid yaml: [\n---\n");
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(WORKFLOW_PREFS_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null);
-  const content = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
+  const content = readFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "utf-8");
   assert.match(content, /^workflow_prefs_captured:\s*true\s*$/m);
   assert.ok(content.includes("this is not valid yaml"), "malformed original content is preserved as body");
 });
@@ -336,7 +336,7 @@ test("Deep mode: workflow-preferences does NOT dispatch when PREFERENCES.md has 
   const base = makeIsolatedBaseWithCleanup(t);
 
   writeFileSync(
-    join(base, ".gsd", "PREFERENCES.md"),
+    join(base, ".otto/workflow", "PREFERENCES.md"),
     "---\nplanning_depth: deep\nworkflow_prefs_captured: true\ncommit_policy: per-task\n---\n",
   );
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
@@ -386,7 +386,7 @@ test("Deep mode: discuss-project does NOT dispatch when PROJECT.md already exist
 test("Deep mode: discuss-project DOES dispatch when PROJECT.md exists but is invalid", async (t) => {
   const base = makeIsolatedBaseWithCleanup(t);
 
-  writeFileSync(join(base, ".gsd", "PROJECT.md"), "# Project\n");
+  writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), "# Project\n");
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.ok(result && result.action === "dispatch", "invalid PROJECT.md must re-fire discuss-project");
@@ -457,7 +457,7 @@ test("Deep mode: discuss-requirements DOES dispatch when REQUIREMENTS.md exists 
   const base = makeIsolatedBaseWithCleanup(t);
 
   writeValidProject(base);
-  writeFileSync(join(base, ".gsd", "REQUIREMENTS.md"), "# Requirements\n");
+  writeFileSync(join(base, ".otto/workflow", "REQUIREMENTS.md"), "# Requirements\n");
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(REQUIREMENTS_RULE_NAME).match(makeCtx(base, prefs));
   assert.ok(result && result.action === "dispatch", "invalid REQUIREMENTS.md must re-fire discuss-requirements");
@@ -497,7 +497,7 @@ test("Deep mode: research-decision does NOT dispatch when marker is missing beca
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_DECISION_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null);
-  const decision = JSON.parse(readFileSync(join(base, ".gsd", "runtime", "research-decision.json"), "utf-8"));
+  const decision = JSON.parse(readFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), "utf-8"));
   assert.equal(decision.decision, "skip");
   assert.equal(decision.source, "workflow-preferences");
   assert.equal(decision.reason, "missing-default-repair");
@@ -508,8 +508,8 @@ test("Deep mode: research-decision does NOT dispatch when decision marker exists
 
   writeValidProject(base);
   writeValidRequirements(base);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
-  writeFileSync(join(base, ".gsd", "runtime", "research-decision.json"), JSON.stringify({ decision: "skip" }));
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
+  writeFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), JSON.stringify({ decision: "skip" }));
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_DECISION_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "decision already recorded — fall through");
@@ -521,9 +521,9 @@ function setupReadyForResearchProject(base: string): void {
   writeCapturedDeepPrefs(base);
   writeValidProject(base);
   writeValidRequirements(base);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "research-decision.json"),
+    join(base, ".otto/workflow", "runtime", "research-decision.json"),
     JSON.stringify({ decision: "research", source: "research-decision", decided_at: "2026-04-27T00:00:00Z" }),
   );
 }
@@ -552,8 +552,8 @@ test("Deep mode: research-project does NOT dispatch when user chose 'skip'", asy
 
   writeValidProject(base);
   writeValidRequirements(base);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
-  writeFileSync(join(base, ".gsd", "runtime", "research-decision.json"), JSON.stringify({ decision: "skip" }));
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
+  writeFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), JSON.stringify({ decision: "skip" }));
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.strictEqual(result, null, "skip decision must short-circuit research-project");
@@ -571,7 +571,7 @@ test("Deep mode: research-project DOES dispatch when decision is 'research' and 
     assert.strictEqual(result.unitId, "RESEARCH-PROJECT");
   }
   assert.ok(
-    existsSync(join(base, ".gsd", "runtime", "research-project-inflight")),
+    existsSync(join(base, ".otto/workflow", "runtime", "research-project-inflight")),
     "dispatch must create the in-flight marker before returning",
   );
 });
@@ -581,9 +581,9 @@ test("Deep mode: research-project normalizes legacy workflow-defaulted research 
 
   writeCapturedDeepPrefs(base);
   writeTinyTodoProject(base);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "research-decision.json"),
+    join(base, ".otto/workflow", "runtime", "research-decision.json"),
     JSON.stringify({
       decision: "research",
       decided_at: "2026-04-27T00:00:00Z",
@@ -596,12 +596,12 @@ test("Deep mode: research-project normalizes legacy workflow-defaulted research 
 
   assert.strictEqual(result, null, "tiny project should fall through after rewriting decision to skip");
   assert.equal(
-    existsSync(join(base, ".gsd", "runtime", "research-project-inflight")),
+    existsSync(join(base, ".otto/workflow", "runtime", "research-project-inflight")),
     false,
     "fast path must not claim the research-project in-flight marker",
   );
 
-  const decision = JSON.parse(readFileSync(join(base, ".gsd", "runtime", "research-decision.json"), "utf-8"));
+  const decision = JSON.parse(readFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), "utf-8"));
   assert.equal(decision.decision, "skip");
   assert.equal(decision.source, "workflow-preferences");
   assert.equal(decision.previous_source, "workflow-preferences");
@@ -614,18 +614,18 @@ test("Deep mode gate ignores stale blockers for legacy workflow-defaulted resear
 
   writeCapturedDeepPrefs(base);
   writeTinyTodoProject(base);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "research-decision.json"),
+    join(base, ".otto/workflow", "runtime", "research-decision.json"),
     JSON.stringify({
       decision: "research",
       decided_at: "2026-04-27T00:00:00Z",
       source: "workflow-preferences",
     }),
   );
-  mkdirSync(join(base, ".gsd", "research"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "research"), { recursive: true });
   for (const name of ["STACK", "FEATURES", "ARCHITECTURE", "PITFALLS"]) {
-    writeFileSync(join(base, ".gsd", "research", `${name}-BLOCKER.md`), "# blocked\n");
+    writeFileSync(join(base, ".otto/workflow", "research", `${name}-BLOCKER.md`), "# blocked\n");
   }
 
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
@@ -637,7 +637,7 @@ test("Deep mode gate ignores stale blockers for legacy workflow-defaulted resear
     "workflow-defaulted tiny apps should not get trapped by stale research blockers",
   );
   assert.equal(hasPendingDeepStage(prefs, base), false);
-  const decision = JSON.parse(readFileSync(join(base, ".gsd", "runtime", "research-decision.json"), "utf-8"));
+  const decision = JSON.parse(readFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), "utf-8"));
   assert.equal(decision.decision, "skip");
   assert.equal(decision.source, "workflow-preferences");
   assert.equal(decision.previous_source, "workflow-preferences");
@@ -648,9 +648,9 @@ test("Deep mode: research-project honors explicit research decisions for tiny st
 
   writeCapturedDeepPrefs(base);
   writeTinyTodoProject(base);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "research-decision.json"),
+    join(base, ".otto/workflow", "runtime", "research-decision.json"),
     JSON.stringify({ decision: "research", source: "research-decision", decided_at: "2026-04-27T00:00:00Z" }),
   );
 
@@ -658,7 +658,7 @@ test("Deep mode: research-project honors explicit research decisions for tiny st
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
 
   assert.ok(result && result.action === "dispatch", "explicit user-sourced research should still run");
-  assert.equal(existsSync(join(base, ".gsd", "runtime", "research-project-inflight")), true);
+  assert.equal(existsSync(join(base, ".otto/workflow", "runtime", "research-project-inflight")), true);
 });
 
 test("Deep mode: research-project does not dispatch non-trivial workflow-defaulted research", async (t) => {
@@ -667,9 +667,9 @@ test("Deep mode: research-project does not dispatch non-trivial workflow-default
   writeCapturedDeepPrefs(base);
   writeValidProject(base);
   writeValidRequirements(base);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "research-decision.json"),
+    join(base, ".otto/workflow", "runtime", "research-decision.json"),
     JSON.stringify({
       decision: "research",
       decided_at: "2026-04-27T00:00:00Z",
@@ -681,8 +681,8 @@ test("Deep mode: research-project does not dispatch non-trivial workflow-default
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
 
   assert.equal(result, null);
-  assert.equal(existsSync(join(base, ".gsd", "runtime", "research-project-inflight")), false);
-  const decision = JSON.parse(readFileSync(join(base, ".gsd", "runtime", "research-decision.json"), "utf-8"));
+  assert.equal(existsSync(join(base, ".otto/workflow", "runtime", "research-project-inflight")), false);
+  const decision = JSON.parse(readFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), "utf-8"));
   assert.equal(decision.decision, "skip");
   assert.equal(decision.reason, "legacy-workflow-research-default");
 });
@@ -697,7 +697,7 @@ test("Deep mode: research-project clears in-flight marker when prompt assembly f
 
   setupReadyForResearchProject(base);
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
-  const markerPath = join(base, ".gsd", "runtime", "research-project-inflight");
+  const markerPath = join(base, ".otto/workflow", "runtime", "research-project-inflight");
 
   await assert.rejects(
     () => rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs)),
@@ -710,7 +710,7 @@ test("Deep mode: research-project stops while in-flight marker exists", async (t
   const base = makeIsolatedBaseWithCleanup(t);
 
   setupReadyForResearchProject(base);
-  writeFileSync(join(base, ".gsd", "runtime", "research-project-inflight"), "{}\n");
+  writeFileSync(join(base, ".otto/workflow", "runtime", "research-project-inflight"), "{}\n");
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
   assert.ok(result !== null, "in-flight marker must produce a result");
@@ -725,9 +725,9 @@ test("Deep mode: research-project does NOT dispatch when all 4 research files ex
   const base = makeIsolatedBaseWithCleanup(t);
 
   setupReadyForResearchProject(base);
-  mkdirSync(join(base, ".gsd", "research"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "research"), { recursive: true });
   for (const name of ["STACK.md", "FEATURES.md", "ARCHITECTURE.md", "PITFALLS.md"]) {
-    writeFileSync(join(base, ".gsd", "research", name), "# done\n");
+    writeFileSync(join(base, ".otto/workflow", "research", name), "# done\n");
   }
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
@@ -738,11 +738,11 @@ test("Deep mode: research-project treats a dimension BLOCKER as terminal", async
   const base = makeIsolatedBaseWithCleanup(t);
 
   setupReadyForResearchProject(base);
-  mkdirSync(join(base, ".gsd", "research"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "research"), { recursive: true });
   for (const name of ["STACK.md", "FEATURES.md", "ARCHITECTURE.md"]) {
-    writeFileSync(join(base, ".gsd", "research", name), "# done\n");
+    writeFileSync(join(base, ".otto/workflow", "research", name), "# done\n");
   }
-  writeFileSync(join(base, ".gsd", "research", "PITFALLS-BLOCKER.md"), "# blocker\n");
+  writeFileSync(join(base, ".otto/workflow", "research", "PITFALLS-BLOCKER.md"), "# blocker\n");
 
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
@@ -753,9 +753,9 @@ test("Deep mode: research-project stops when every dimension is only a BLOCKER",
   const base = makeIsolatedBaseWithCleanup(t);
 
   setupReadyForResearchProject(base);
-  mkdirSync(join(base, ".gsd", "research"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "research"), { recursive: true });
   for (const name of ["STACK", "FEATURES", "ARCHITECTURE", "PITFALLS"]) {
-    writeFileSync(join(base, ".gsd", "research", `${name}-BLOCKER.md`), "# blocked\n");
+    writeFileSync(join(base, ".otto/workflow", "research", `${name}-BLOCKER.md`), "# blocked\n");
   }
 
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
@@ -768,8 +768,8 @@ test("Deep mode: research-project stops on global PROJECT-RESEARCH-BLOCKER", asy
   const base = makeIsolatedBaseWithCleanup(t);
 
   setupReadyForResearchProject(base);
-  mkdirSync(join(base, ".gsd", "research"), { recursive: true });
-  writeFileSync(join(base, ".gsd", "research", "PROJECT-RESEARCH-BLOCKER.md"), "# blocked\n");
+  mkdirSync(join(base, ".otto/workflow", "research"), { recursive: true });
+  writeFileSync(join(base, ".otto/workflow", "research", "PROJECT-RESEARCH-BLOCKER.md"), "# blocked\n");
 
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
   const result = await rule(RESEARCH_PROJECT_RULE_NAME).match(makeCtx(base, prefs));
@@ -781,9 +781,9 @@ test("Deep mode: research-project DOES dispatch when only 3 of 4 research files 
   const base = makeIsolatedBaseWithCleanup(t);
 
   setupReadyForResearchProject(base);
-  mkdirSync(join(base, ".gsd", "research"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "research"), { recursive: true });
   for (const name of ["STACK.md", "FEATURES.md", "ARCHITECTURE.md"]) {
-    writeFileSync(join(base, ".gsd", "research", name), "# done\n");
+    writeFileSync(join(base, ".otto/workflow", "research", name), "# done\n");
   }
   // PITFALLS.md missing
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
@@ -833,9 +833,9 @@ test("Deep mode gate reports the earliest missing section", (t) => {
   const base = makeIsolatedBaseWithCleanup(t);
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
 
-  mkdirSync(join(base, ".gsd", "research"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "research"), { recursive: true });
   for (const name of ["STACK.md", "FEATURES.md", "ARCHITECTURE.md", "PITFALLS.md"]) {
-    writeFileSync(join(base, ".gsd", "research", name), "# done\n");
+    writeFileSync(join(base, ".otto/workflow", "research", name), "# done\n");
   }
 
   const gate = getDeepStageGate(prefs, base);
@@ -852,13 +852,13 @@ test("Deep mode gate blocks blocker-only project research", (t) => {
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
 
   writeFileSync(
-    join(base, ".gsd", "PREFERENCES.md"),
+    join(base, ".otto/workflow", "PREFERENCES.md"),
     "---\nplanning_depth: deep\nworkflow_prefs_captured: true\n---\n",
   );
   setupReadyForResearchProject(base);
-  mkdirSync(join(base, ".gsd", "research"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "research"), { recursive: true });
   for (const name of ["STACK", "FEATURES", "ARCHITECTURE", "PITFALLS"]) {
-    writeFileSync(join(base, ".gsd", "research", `${name}-BLOCKER.md`), "# blocked\n");
+    writeFileSync(join(base, ".otto/workflow", "research", `${name}-BLOCKER.md`), "# blocked\n");
   }
 
   const gate = getDeepStageGate(prefs, base);
@@ -874,25 +874,25 @@ test("Deep mode gate passes only after verified project research or explicit ski
   const prefs = { planning_depth: "deep" } as WorkflowPreferences;
 
   writeFileSync(
-    join(researchBase, ".gsd", "PREFERENCES.md"),
+    join(researchBase, ".otto/workflow", "PREFERENCES.md"),
     "---\nplanning_depth: deep\nworkflow_prefs_captured: true\n---\n",
   );
   setupReadyForResearchProject(researchBase);
-  mkdirSync(join(researchBase, ".gsd", "research"), { recursive: true });
+  mkdirSync(join(researchBase, ".otto/workflow", "research"), { recursive: true });
   for (const name of ["STACK.md", "FEATURES.md", "ARCHITECTURE.md", "PITFALLS.md"]) {
-    writeFileSync(join(researchBase, ".gsd", "research", name), "# done\n");
+    writeFileSync(join(researchBase, ".otto/workflow", "research", name), "# done\n");
   }
   assert.equal(getDeepStageGate(prefs, researchBase).status, "complete");
 
   const skipBase = makeIsolatedBaseWithCleanup(t);
   writeFileSync(
-    join(skipBase, ".gsd", "PREFERENCES.md"),
+    join(skipBase, ".otto/workflow", "PREFERENCES.md"),
     "---\nplanning_depth: deep\nworkflow_prefs_captured: true\n---\n",
   );
   writeValidProject(skipBase);
   writeValidRequirements(skipBase);
-  mkdirSync(join(skipBase, ".gsd", "runtime"), { recursive: true });
-  writeFileSync(join(skipBase, ".gsd", "runtime", "research-decision.json"), JSON.stringify({ decision: "skip" }));
+  mkdirSync(join(skipBase, ".otto/workflow", "runtime"), { recursive: true });
+  writeFileSync(join(skipBase, ".otto/workflow", "runtime", "research-decision.json"), JSON.stringify({ decision: "skip" }));
 
   assert.equal(getDeepStageGate(prefs, skipBase).status, "complete");
 });

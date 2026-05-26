@@ -1,9 +1,9 @@
-// LOOP24 + Durable subagent run status, tracking names, and result artifact store.
+// OTTO + Durable subagent run status, tracking names, and result artifact store.
 
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { randomInt } from "node:crypto";
-import { getAgentDir } from "@loop24/pi-coding-agent";
+import { getAgentDir } from "@otto/pi-coding-agent";
 
 export type SubagentRunMode = "single" | "parallel" | "chain";
 export type SubagentRunStatus = "queued" | "running" | "succeeded" | "failed" | "interrupted";

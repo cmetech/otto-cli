@@ -265,8 +265,8 @@ test("setAutoOutcomeWidget renders a durable next-action handoff", () => {
       title: "Auto-mode paused",
       detail: "Paused by user request.",
       unitLabel: "researching M005/S01",
-      nextAction: "Type to steer, or run /gsd auto to resume.",
-      commands: ["/gsd auto", "/gsd status for overview"],
+      nextAction: "Type to steer, or run /otto auto to resume.",
+      commands: ["/otto auto", "/otto status for overview"],
       startedAt: Date.now() - 2_000,
     },
   );
@@ -280,7 +280,7 @@ test("setAutoOutcomeWidget renders a durable next-action handoff", () => {
   assert.match(output, /Auto-mode paused/);
   assert.match(output, /Paused by user request/);
   assert.match(output, /researching M005\/S01/);
-  assert.match(output, /\/gsd auto/);
+  assert.match(output, /\/otto auto/);
 });
 
 test("setCompletionProgressWidget keeps terminal all-complete handoff in progress slot", () => {
@@ -326,7 +326,7 @@ test("setCompletionProgressWidget keeps terminal all-complete handoff in progres
   const output = component.render(120).join("\n");
   assert.match(output, /All milestones complete/);
   assert.match(output, /Review the roll-up/);
-  assert.doesNotMatch(output, /\/gsd auto to resume/);
+  assert.doesNotMatch(output, /\/otto auto to resume/);
 });
 
 test("buildPhaseHandoffOutcome summarizes the last phase result", () => {
@@ -508,7 +508,7 @@ test("RTK savings label formats the dashboard footer text", () => {
 
 test("updateProgressWidget refreshes slice progress cache immediately", (t) => {
   const dir = makeTempDir("progress-cache");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
 
   t.after(() => {
     closeDatabase();
@@ -516,7 +516,7 @@ test("updateProgressWidget refreshes slice progress cache immediately", (t) => {
     cleanup(dir);
   });
 
-  openDatabase(join(dir, ".gsd", "gsd.db"));
+  openDatabase(join(dir, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Milestone", status: "active" });
   insertSlice({ milestoneId: "M001", id: "S01", title: "Done", status: "complete", sequence: 1 });
   insertSlice({ milestoneId: "M001", id: "S02", title: "Active", status: "pending", sequence: 2 });
@@ -563,7 +563,7 @@ test("updateProgressWidget refreshes slice progress cache immediately", (t) => {
 
 test("updateProgressWidget full mode keeps footer-owned signals out of auto deck", (t) => {
   const dir = makeTempDir("command-deck");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   let widget: { render(width: number): string[]; dispose?: () => void } | null = null;
 
   t.after(() => {
@@ -616,7 +616,7 @@ test("updateProgressWidget full mode keeps footer-owned signals out of auto deck
   assert.ok(installedWidget, "progress widget should be installed");
   const rendered = installedWidget.render(120).join("\n");
 
-  assert.match(rendered, /[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]\s+GSD\s+·\s+AUTO\s+·\s+running/);
+  assert.match(rendered, /[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]\s+OTTO\s+·\s+AUTO\s+·\s+running/);
   assert.doesNotMatch(rendered.split("\n")[1] ?? "", /M004\/S01\/T01/);
   assert.match(rendered, /Budget Tracking/);
   assert.match(rendered, /T01: Add repeat column via idempotent ALTER TABLE/);
@@ -628,7 +628,7 @@ test("updateProgressWidget full mode keeps footer-owned signals out of auto deck
 
 test("updateProgressWidget shows provider-waiting state consistently for auto and next modes", (t) => {
   const dir = makeTempDir("auto-next-dashboard");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   const widgets: Array<{ render(width: number): string[]; dispose?: () => void }> = [];
 
   t.after(() => {
@@ -684,8 +684,8 @@ test("updateProgressWidget shows provider-waiting state consistently for auto an
   const autoRendered = renderDashboard(false);
   const nextRendered = renderDashboard(true);
 
-  assert.match(autoRendered, /GSD\s+·\s+AUTO\s+·\s+running/);
-  assert.match(nextRendered, /GSD\s+·\s+NEXT\s+·\s+running/);
+  assert.match(autoRendered, /OTTO\s+·\s+AUTO\s+·\s+running/);
+  assert.match(nextRendered, /OTTO\s+·\s+NEXT\s+·\s+running/);
   assert.doesNotMatch(autoRendered.split("\n")[1] ?? "", /completing M003\/S01/);
   assert.doesNotMatch(nextRendered.split("\n")[1] ?? "", /completing M003\/S01/);
   assert.doesNotMatch(autoRendered, /waiting on provider.*Waiting on provider/i);
@@ -740,7 +740,7 @@ test("last commit refresh still returns commit info for a valid git repo", (t) =
   mkdirSync(dir, { recursive: true });
 
   execFileSync("git", ["init", "-b", "main"], { cwd: dir, stdio: "pipe" });
-  execFileSync("git", ["config", "user.name", "GSD Test"], { cwd: dir, stdio: "pipe" });
+  execFileSync("git", ["config", "user.name", "OTTO Test"], { cwd: dir, stdio: "pipe" });
   execFileSync("git", ["config", "user.email", "gsd@example.com"], { cwd: dir, stdio: "pipe" });
   writeFileSync(join(dir, "README.md"), "hello\n", "utf-8");
   execFileSync("git", ["add", "README.md"], { cwd: dir, stdio: "pipe" });
@@ -777,11 +777,11 @@ test("extractUatSliceId returns null for invalid formats", () => {
 test("widget mode respects project preference precedence and persists there", (t) => {
   const homeDir = makeTempDir("home");
   const projectDir = makeTempDir("project");
-  const globalPrefsPath = join(homeDir, ".gsd", "preferences.md");
-  const projectPrefsPath = join(projectDir, ".gsd", "preferences.md");
+  const globalPrefsPath = join(homeDir, ".otto/workflow", "preferences.md");
+  const projectPrefsPath = join(projectDir, ".otto/workflow", "preferences.md");
 
-  mkdirSync(join(homeDir, ".gsd"), { recursive: true });
-  mkdirSync(join(projectDir, ".gsd"), { recursive: true });
+  mkdirSync(join(homeDir, ".otto/workflow"), { recursive: true });
+  mkdirSync(join(projectDir, ".otto/workflow"), { recursive: true });
   writeFileSync(globalPrefsPath, "---\nversion: 1\nwidget_mode: off\n---\n", "utf-8");
   writeFileSync(projectPrefsPath, "---\nversion: 1\nwidget_mode: small\n---\n", "utf-8");
 

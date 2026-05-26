@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { setProviderSwitchObserver, type ProviderSwitchReport } from "@loop24/pi-ai";
+import { setProviderSwitchObserver, type ProviderSwitchReport } from "@otto/pi-ai";
 
 import { autoSession } from "../auto-runtime-state.ts";
 import {
@@ -89,7 +89,7 @@ test("non-empty report increments the in-memory counter", () => {
 });
 
 test("end-to-end: transformMessagesWithReport fires the observer and updates stats + notifications", async () => {
-  const { transformMessagesWithReport } = await import("@loop24/pi-ai");
+  const { transformMessagesWithReport } = await import("@otto/pi-ai");
 
   const { basePath, cleanup } = withTempBasePath();
   try {
@@ -150,7 +150,7 @@ test("end-to-end: transformMessagesWithReport fires the observer and updates sta
 });
 
 test("end-to-end: audit event is emitted when an auto trace is active", async () => {
-  const { transformMessagesWithReport } = await import("@loop24/pi-ai");
+  const { transformMessagesWithReport } = await import("@otto/pi-ai");
 
   const { basePath, cleanup } = withTempBasePath();
   try {
@@ -190,7 +190,7 @@ test("end-to-end: audit event is emitted when an auto trace is active", async ()
 
     transformMessagesWithReport(messages as Parameters<typeof transformMessagesWithReport>[0], targetModel, undefined, "anthropic-messages");
 
-    const auditLogPath = join(basePath, ".gsd", "audit", "events.jsonl");
+    const auditLogPath = join(basePath, ".otto/workflow", "audit", "events.jsonl");
     assert.ok(existsSync(auditLogPath), "audit events file should be created");
     const auditLines = readFileSync(auditLogPath, "utf-8")
       .trim()
@@ -211,7 +211,7 @@ test("end-to-end: audit event is emitted when an auto trace is active", async ()
 });
 
 test("empty report does not bump counter or emit a notification", async () => {
-  const { transformMessagesWithReport } = await import("@loop24/pi-ai");
+  const { transformMessagesWithReport } = await import("@otto/pi-ai");
 
   const { basePath, cleanup } = withTempBasePath();
   try {

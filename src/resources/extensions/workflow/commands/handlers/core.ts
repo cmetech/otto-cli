@@ -1,5 +1,5 @@
-import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@loop24/pi-coding-agent";
-import type { Model } from "@loop24/pi-ai";
+import type { ExtensionAPI, ExtensionCommandContext, ExtensionContext } from "@otto/pi-coding-agent";
+import type { Model } from "@otto/pi-ai";
 import type { WorkflowDbState } from "../../types.js";
 import { createRequire } from "node:module";
 
@@ -17,7 +17,7 @@ import { buildVisualBriefPrompt, parseVisualBriefArgs, VISUAL_BRIEF_USAGE } from
 import { BRAND, CMD, slashCommand } from "../../strings.js";
 
 /**
- * Pad a slash-command reference (e.g. "/loop24 status") to a target visual width
+ * Pad a slash-command reference (e.g. "/otto status") to a target visual width
  * so help-text columns stay aligned regardless of the active command namespace.
  */
 function padSlash(sub: string, targetWidth: number): string {
@@ -27,7 +27,7 @@ function padSlash(sub: string, targetWidth: number): string {
 }
 
 export function showHelp(ctx: ExtensionCommandContext, args = ""): void {
-  // Column width chosen so the longest reference we display (e.g. "/loop24 parallel watch")
+  // Column width chosen so the longest reference we display (e.g. "/otto parallel watch")
   // still leaves at least one space before the description.
   const COL_SHORT = 20; // for the summary block
   const COL_FULL = 22;  // for the wider full block
@@ -69,7 +69,7 @@ export function showHelp(ctx: ExtensionCommandContext, args = ""): void {
     `${p("model")} Switch active session model`,
     `${p("prefs")} Manage preferences (alias for ${slashCommand("setup")} prefs)`,
     `${p("keys")} API key manager (LLM + tool keys)`,
-    `${p("doctor")} Diagnose and repair .gsd/ state`,
+    `${p("doctor")} Diagnose and repair .otto/workflow/ state`,
     `${p("closeout")} Recover failed git closeout actions`,
     "",
     `Use ${slashCommand("help")} full for the complete command reference.`,
@@ -130,7 +130,7 @@ export function showHelp(ctx: ExtensionCommandContext, args = ""): void {
     `${pf("do <text>")} Route freeform text to the right ${BRAND} command`,
     `${pf("session-report")} Show session cost, tokens, and work summary  [--json|--save]`,
     `${pf("backlog")} Manage backlog items  [add|promote|remove|list]`,
-    `${pf("pr-branch")} Create a clean PR branch filtering .gsd/ commits  [--dry-run|--name]`,
+    `${pf("pr-branch")} Create a clean PR branch filtering .otto/workflow/ commits  [--dry-run|--name]`,
     `${pf("add-tests")} Generate tests for completed slices`,
     `${pf("eval-review <sliceId>")} Audit a slice's AI evaluation strategy  [--force|--show]`,
     `${pf("scan")} Rapid codebase assessment  [--focus tech|arch|quality|concerns|tech+arch]`,
@@ -138,7 +138,7 @@ export function showHelp(ctx: ExtensionCommandContext, args = ""): void {
     "SETUP & CONFIGURATION",
     `${pf("onboarding")} Re-run setup wizard  [--resume|--reset|--step <name>]`,
     `${pf("setup")} Configuration hub  [llm|model|search|remote|keys|prefs|onboarding]`,
-    `${pf("init")} Project init wizard — detect, configure, bootstrap .gsd/`,
+    `${pf("init")} Project init wizard — detect, configure, bootstrap .otto/workflow/`,
     `${pf("model")} Switch active session model  [provider/model|model-id]`,
     `${pf("mode")} Set workflow mode (solo/team)  [global|project]`,
     `${pf("prefs")} Manage preferences  [global|project|status|wizard|setup|import-claude]  (alias for ${slashCommand("setup")} prefs)`,
@@ -154,14 +154,14 @@ export function showHelp(ctx: ExtensionCommandContext, args = ""): void {
     `${pf("mcp")} MCP server management  [status|check|test|enable|disable|import|delete|init]`,
     "",
     "MAINTENANCE",
-    `${pf("doctor")} Diagnose and repair .gsd/ state  [audit|fix|heal] [scope]`,
+    `${pf("doctor")} Diagnose and repair .otto/workflow/ state  [audit|fix|heal] [scope]`,
     `${pf("forensics")} Examine execution logs and post-mortem analysis`,
     `${pf("report")} Generate all HTML reports and open browser  [--json|--markdown|--html] [--all]`,
     `${pf("export")} Alias for ${slashCommand("report")}`,
     `${pf("cleanup")} Remove merged branches or snapshots  [branches|snapshots]`,
     `${pf("closeout")} Recover failed git closeout actions  [status|retry|resolve] [unit-id]`,
     `${pf("worktree")} Manage worktrees from the TUI  [list|merge|clean|remove]`,
-    `${pf("migrate")} Migrate .planning/ (v1) to DB-backed .gsd/ with backup + audit`,
+    `${pf("migrate")} Migrate .planning/ (v1) to DB-backed .otto/workflow/ with backup + audit`,
     `${pf("remote")} Control remote auto-mode  [slack|discord|status|disconnect]`,
     `${pf("inspect")} Show SQLite DB diagnostics (schema, row counts, recent entries)`,
     `${pf("update")} Update ${BRAND} to the latest version via npm`,
@@ -252,7 +252,7 @@ export async function handleBrief(args: string, ctx: ExtensionCommandContext, pi
 const briefRequire = createRequire(import.meta.url);
 
 function resolveWorkflowVersion(): string | undefined {
-  const envVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION)?.trim();
+  const envVersion = process.env.OTTO_VERSION?.trim();
   if (envVersion) return envVersion;
   try {
     const pkg = briefRequire("../../../../../../package.json") as { version?: unknown };
@@ -267,8 +267,8 @@ export async function handleSetup(args: string, ctx: ExtensionCommandContext, pi
   const { detectProjectState, hasGlobalSetup } = await import("../../detection.js");
   const { isOnboardingComplete, readOnboardingRecord } = await import("../../onboarding-state.js");
 
-  // Sub-route dispatch — keep redirects but route the canonical work to /gsd
-  // onboarding (single source for wizard steps) and /loop24 keys (single source
+  // Sub-route dispatch — keep redirects but route the canonical work to /otto
+  // onboarding (single source for wizard steps) and /otto keys (single source
   // for credentials).
   if (args === "onboarding" || args === "wizard") {
     const { handleOnboarding } = await import("./onboarding.js");
@@ -438,7 +438,7 @@ async function handleModel(trimmedArgs: string, ctx: ExtensionCommandContext, pi
   if (!trimmed) {
     if (!ctx.hasUI) {
       const current = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : "(none)";
-      ctx.ui.notify(`Current model: ${current}\nUsage: /gsd model <provider/model|model-id>`, "info");
+      ctx.ui.notify(`Current model: ${current}\nUsage: /otto model <provider/model|model-id>`, "info");
       return;
     }
 
@@ -448,7 +448,7 @@ async function handleModel(trimmedArgs: string, ctx: ExtensionCommandContext, pi
   }
 
   if (!targetModel) {
-    ctx.ui.notify(`Model "${trimmed}" not found. Use /gsd model with an exact provider/model or a unique model ID.`, "warning");
+    ctx.ui.notify(`Model "${trimmed}" not found. Use /otto model with an exact provider/model or a unique model ID.`, "warning");
     return;
   }
 
@@ -458,7 +458,7 @@ async function handleModel(trimmedArgs: string, ctx: ExtensionCommandContext, pi
     return;
   }
 
-  // /loop24 model is an explicit per-session pin for the agent dispatches.
+  // /otto model is an explicit per-session pin for the agent dispatches.
   // This is captured at auto bootstrap so it survives internal session
   // switches during /otto auto and /otto next runs.
   const sessionId = ctx.sessionManager?.getSessionId?.();

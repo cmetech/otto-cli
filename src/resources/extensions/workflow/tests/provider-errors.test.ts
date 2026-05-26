@@ -21,7 +21,7 @@ import { _buildCancelledUnitStopReason } from "../auto/phases.ts";
 import { autoSession } from "../auto-runtime-state.ts";
 import { getNextFallbackModel } from "../preferences.ts";
 // Zero-import module — imported by path rather than through the package
-// barrel to avoid pulling the full AgentSession / @loop24/pi-ai dep graph into
+// barrel to avoid pulling the full AgentSession / @otto/pi-ai dep graph into
 // this unit test (see #4837).
 import { RETRYABLE_ERROR_RE } from "../../../../../packages/pi-coding-agent/src/core/retryable-error-regex.ts";
 import { streamOpenAICodexResponses } from "../../../../../packages/pi-ai/src/providers/openai-codex-responses.ts";
@@ -414,11 +414,11 @@ test("pauseAutoForProviderError falls back to indefinite pause when not rate lim
 
 test("isTerminalDeletedWorktreeProviderError matches removed auto-worktree paths only", () => {
   assert.equal(
-    isTerminalDeletedWorktreeProviderError('Path "/Users/dev/.gsd/projects/abc123/worktrees/M005" does not exist'),
+    isTerminalDeletedWorktreeProviderError('Path "/Users/dev/.otto/workflow/projects/abc123/worktrees/M005" does not exist'),
     true,
   );
   assert.equal(
-    isTerminalDeletedWorktreeProviderError('Path "/Users/dev/app/.gsd/worktrees/M005" does not exist'),
+    isTerminalDeletedWorktreeProviderError('Path "/Users/dev/app/.otto/workflow/worktrees/M005" does not exist'),
     true,
   );
   assert.equal(
@@ -426,7 +426,7 @@ test("isTerminalDeletedWorktreeProviderError matches removed auto-worktree paths
     false,
   );
   assert.equal(
-    isTerminalDeletedWorktreeProviderError('Path "/Users/dev/.gsd/projects/abc123/worktrees/M005" failed with EACCES'),
+    isTerminalDeletedWorktreeProviderError('Path "/Users/dev/.otto/workflow/projects/abc123/worktrees/M005" failed with EACCES'),
     false,
   );
 });
@@ -440,7 +440,7 @@ test("suppresses terminal completion deleted-worktree message before it renders"
       message: {
         role: "assistant",
         stopReason: "error",
-        errorMessage: 'Path "/Users/dev/.gsd/projects/abc123/worktrees/M005" does not exist',
+        errorMessage: 'Path "/Users/dev/.otto/workflow/projects/abc123/worktrees/M005" does not exist',
         content: [],
       },
     } as any;
@@ -461,7 +461,7 @@ test("does not suppress deleted-worktree provider errors outside terminal comple
     message: {
       role: "assistant",
       stopReason: "error",
-      errorMessage: 'Path "/Users/dev/.gsd/projects/abc123/worktrees/M005" does not exist',
+      errorMessage: 'Path "/Users/dev/.otto/workflow/projects/abc123/worktrees/M005" does not exist',
       content: [],
     },
   } as any;

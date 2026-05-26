@@ -1,4 +1,4 @@
-// LOOP24 doctor git health checks
+// OTTO doctor git health checks
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, realpathSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -20,7 +20,7 @@ import { resolveWorktreeProjectRoot } from "./worktree-root.js";
 
 /**
  * Returns true if the directory contains only doctor artifacts
- * (e.g. `.gsd/doctor-history.jsonl`). These dirs are created by
+ * (e.g. `.otto/workflow/doctor-history.jsonl`). These dirs are created by
  * appendDoctorHistory() writing to worktree-scoped paths during the audit
  * and should not be flagged as orphaned worktrees (#3105).
  */
@@ -29,9 +29,9 @@ function isDoctorArtifactOnly(dirPath: string): boolean {
     const entries = readdirSync(dirPath);
     // Empty dir — not a doctor artifact, still orphaned
     if (entries.length === 0) return false;
-    // Only a .gsd subdirectory
-    if (entries.length === 1 && entries[0] === ".gsd") {
-      const workflowEntries = readdirSync(join(dirPath, ".gsd"));
+    // Only a .otto/workflow subdirectory
+    if (entries.length === 1 && entries[0] === ".otto/workflow") {
+      const workflowEntries = readdirSync(join(dirPath, ".otto/workflow"));
       return workflowEntries.length <= 1 && workflowEntries.every(e => e === "doctor-history.jsonl");
     }
     return false;
@@ -59,7 +59,7 @@ function isSameOrNestedPath(candidate: string, container: string): boolean {
 function hasProjectContentOnDisk(dirPath: string): boolean {
   try {
     for (const entry of readdirSync(dirPath, { withFileTypes: true })) {
-      if (entry.name === ".git" || entry.name === ".gsd") continue;
+      if (entry.name === ".git" || entry.name === ".otto/workflow") continue;
       if (entry.name === ".DS_Store") continue;
       return true;
     }
@@ -431,7 +431,7 @@ export async function checkGitHealth(
   try {
     const wtDir = worktreesDir(basePath);
     if (existsSync(wtDir)) {
-      // Resolve symlinks and normalize separators so that symlinked .gsd
+      // Resolve symlinks and normalize separators so that symlinked .otto/workflow
       // paths (e.g. ~/.otto/projects/<hash>/worktrees/…) match the paths
       // returned by `git worktree list`.
       const normalizePath = (p: string): string => {
@@ -448,7 +448,7 @@ export async function checkGitHealth(
         } catch { continue; }
         const normalizedFullPath = normalizePath(fullPath);
         if (!registeredPaths.has(normalizedFullPath)) {
-          // Skip directories that only contain doctor artifacts (.gsd/doctor-history.jsonl).
+          // Skip directories that only contain doctor artifacts (.otto/workflow/doctor-history.jsonl).
           // appendDoctorHistory() can recreate these dirs during the audit itself,
           // causing a circular false positive (#3105 Bug 1).
           if (isDoctorArtifactOnly(fullPath)) continue;
@@ -545,7 +545,7 @@ export async function checkGitHealth(
 
   // ── Worktree lifecycle checks ──────────────────────────────────────────
   // Check managed worktrees for: merged branches, stale work, dirty
-  // state, and unpushed commits. Only worktrees under .gsd/worktrees/.
+  // state, and unpushed commits. Only worktrees under .otto/workflow/worktrees/.
   try {
     const healthBasePath = resolveWorktreeProjectRoot(basePath);
     const healthStatuses = getAllWorktreeHealth(healthBasePath);

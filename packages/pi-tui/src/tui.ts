@@ -1,4 +1,4 @@
-// LOOP24 + packages/pi-tui/src/tui.ts - Terminal UI renderer with differential rendering.
+// OTTO + packages/pi-tui/src/tui.ts - Terminal UI renderer with differential rendering.
 /**
  * Minimal TUI implementation with differential rendering
  */

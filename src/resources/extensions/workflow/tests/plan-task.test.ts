@@ -10,7 +10,7 @@ import { parseTaskPlanFile } from '../files.ts';
 
 function makeTmpBase(): string {
   const base = mkdtempSync(join(tmpdir(), 'gsd-plan-task-'));
-  mkdirSync(join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'tasks'), { recursive: true });
+  mkdirSync(join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'tasks'), { recursive: true });
   return base;
 }
 
@@ -42,7 +42,7 @@ function validParams() {
 
 test('handlePlanTask writes planning state and renders task plan', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParent();
@@ -55,7 +55,7 @@ test('handlePlanTask writes planning state and renders task plan', async () => {
     assert.equal(task?.description, 'Implement the DB-backed task planning handler.');
     assert.equal(task?.estimate, '30m');
 
-    const taskPlanPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T02-PLAN.md');
+    const taskPlanPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T02-PLAN.md');
     assert.ok(existsSync(taskPlanPath), 'task plan should be rendered to disk');
     const taskPlan = parseTaskPlanFile(readFileSync(taskPlanPath, 'utf-8'));
     assert.equal(taskPlan.frontmatter.estimated_files, 1);
@@ -67,7 +67,7 @@ test('handlePlanTask writes planning state and renders task plan', async () => {
 
 test('handlePlanTask rejects invalid payloads', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParent();
@@ -81,7 +81,7 @@ test('handlePlanTask rejects invalid payloads', async () => {
 
 test('handlePlanTask explains string IO fields must be arrays', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParent();
@@ -98,7 +98,7 @@ test('handlePlanTask explains string IO fields must be arrays', async () => {
 
 test('handlePlanTask rejects absolute task IO paths outside the active worktree', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParent();
@@ -119,7 +119,7 @@ test('handlePlanTask rejects absolute task IO paths outside the active worktree'
 
 test('handlePlanTask rejects missing parent slice', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     insertMilestone({ id: 'M001', title: 'Milestone', status: 'active' });
@@ -133,12 +133,12 @@ test('handlePlanTask rejects missing parent slice', async () => {
 
 test('handlePlanTask surfaces render failures without changing parse-visible task plan state', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParent();
     insertTask({ id: 'T02', sliceId: 'S02', milestoneId: 'M001', title: 'Cached task', status: 'pending' });
-    const taskPlanPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T02-PLAN.md');
+    const taskPlanPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T02-PLAN.md');
     writeFileSync(taskPlanPath, '---\nestimated_steps: 1\nestimated_files: 1\nskills_used: []\n---\n\n# T02: Cached task\n', 'utf-8');
     rmSync(taskPlanPath, { force: true });
     mkdirSync(taskPlanPath, { recursive: true });
@@ -153,11 +153,11 @@ test('handlePlanTask surfaces render failures without changing parse-visible tas
 
 test('handlePlanTask reruns idempotently and refreshes parse-visible state', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParent();
-    const taskPlanPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T02-PLAN.md');
+    const taskPlanPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T02-PLAN.md');
     writeFileSync(taskPlanPath, '---\nestimated_steps: 1\nestimated_files: 1\nskills_used: []\n---\n\n# T02: Cached task\n', 'utf-8');
 
     const first = await handlePlanTask(validParams(), base);

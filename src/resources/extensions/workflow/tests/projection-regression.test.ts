@@ -1,4 +1,4 @@
-// GSD — projection renderer regression tests
+// OTTO — projection renderer regression tests
 // Verifies that "done" vs "complete" status mismatch doesn't recur.
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 

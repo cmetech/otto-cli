@@ -21,7 +21,7 @@ const RECORD_VERSION = 1
 // rootDir-clean for the resources tsconfig; importing from src/ pulls files
 // outside src/resources and breaks the build.
 const AGENT_DIR =
-  (process.env.LOOP24_CODING_AGENT_DIR ?? process.env.GSD_CODING_AGENT_DIR) ||
+  process.env.OTTO_CODING_AGENT_DIR ||
   join(workflowHome(), "agent")
 const FILE = join(AGENT_DIR, "onboarding.json")
 

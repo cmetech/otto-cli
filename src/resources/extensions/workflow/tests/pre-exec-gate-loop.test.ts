@@ -37,13 +37,13 @@ import { invalidateAllCaches } from "../cache.ts";
 
 function makeTempBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-4551-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
   return base;
 }
 
 function seedPlanningState(base: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test Milestone", status: "active" });
   insertSlice({
     id: "S01",
@@ -58,7 +58,7 @@ function seedPlanningState(base: string): void {
   });
   // Write minimal ROADMAP so state derivation doesn't error
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     "# Roadmap\n",
   );
 }
@@ -163,7 +163,7 @@ test("#4551: dispatch rule injects failure context and clears session field", as
   // Write a RESEARCH file so the dispatch rule skips research-slice and reaches
   // plan-slice (which is the phase we're testing).
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-RESEARCH.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-RESEARCH.md"),
     "# Research\n",
   );
   process.chdir(base);
@@ -224,7 +224,7 @@ test("#4551: dispatch rule does NOT inject stale failure for a different slice",
   // about the prompt meaningful (we can check it's a plan-slice prompt without
   // the fix section rather than a research-slice prompt without it).
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-RESEARCH.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-RESEARCH.md"),
     "# Research\n",
   );
   process.chdir(base);

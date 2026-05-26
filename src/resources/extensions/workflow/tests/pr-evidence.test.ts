@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Tests for the shared GSD pull request evidence generator.
+// Project/App: OTTO
+// File Purpose: Tests for the shared OTTO pull request evidence generator.
 
 import test from "node:test";
 import assert from "node:assert/strict";

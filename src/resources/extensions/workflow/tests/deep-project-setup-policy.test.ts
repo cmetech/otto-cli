@@ -23,36 +23,36 @@ const validRequirements = readFileSync(
 
 function makeBase(): string {
   const base = join(tmpdir(), `gsd-deep-policy-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
 function writeReadyProject(base: string): void {
   writeFileSync(
-    join(base, ".gsd", "PREFERENCES.md"),
+    join(base, ".otto/workflow", "PREFERENCES.md"),
     "---\nplanning_depth: deep\nworkflow_prefs_captured: true\n---\n",
   );
-  writeFileSync(join(base, ".gsd", "PROJECT.md"), validProject);
-  writeFileSync(join(base, ".gsd", "REQUIREMENTS.md"), validRequirements);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), validProject);
+  writeFileSync(join(base, ".otto/workflow", "REQUIREMENTS.md"), validRequirements);
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
 }
 
 function writeDecision(base: string, value: Record<string, unknown> | string): void {
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "research-decision.json"),
+    join(base, ".otto/workflow", "runtime", "research-decision.json"),
     typeof value === "string" ? value : JSON.stringify(value),
   );
 }
 
 function readDecision(base: string): Record<string, unknown> {
-  return JSON.parse(readFileSync(join(base, ".gsd", "runtime", "research-decision.json"), "utf-8"));
+  return JSON.parse(readFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), "utf-8"));
 }
 
 function writeAllDimensionBlockers(base: string): void {
-  mkdirSync(join(base, ".gsd", "research"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "research"), { recursive: true });
   for (const dimension of ["STACK", "FEATURES", "ARCHITECTURE", "PITFALLS"]) {
-    writeFileSync(join(base, ".gsd", "research", `${dimension}-BLOCKER.md`), "# blocked\n");
+    writeFileSync(join(base, ".otto/workflow", "research", `${dimension}-BLOCKER.md`), "# blocked\n");
   }
 }
 
@@ -127,14 +127,14 @@ test("deep setup policy: explicit research can dispatch, block, or complete", ()
 
     writeReadyProject(completeBase);
     writeDecision(completeBase, { decision: "research", source: "research-decision" });
-    mkdirSync(join(completeBase, ".gsd", "research"), { recursive: true });
+    mkdirSync(join(completeBase, ".otto/workflow", "research"), { recursive: true });
     for (const name of ["STACK.md", "FEATURES.md", "ARCHITECTURE.md"]) {
-      writeFileSync(join(completeBase, ".gsd", "research", name), "# done\n");
+      writeFileSync(join(completeBase, ".otto/workflow", "research", name), "# done\n");
     }
-    writeFileSync(join(completeBase, ".gsd", "research", "PITFALLS-BLOCKER.md"), "# blocked\n");
+    writeFileSync(join(completeBase, ".otto/workflow", "research", "PITFALLS-BLOCKER.md"), "# blocked\n");
     const complete = resolveDeepProjectSetupState(deepPrefs, completeBase);
     assert.deepEqual({ status: complete.status, stage: complete.stage }, { status: "complete", stage: null });
-    assert.equal(existsSync(join(completeBase, ".gsd", "runtime", "research-project-inflight")), false);
+    assert.equal(existsSync(join(completeBase, ".otto/workflow", "runtime", "research-project-inflight")), false);
   } finally {
     rmSync(pendingBase, { recursive: true, force: true });
     rmSync(blockedBase, { recursive: true, force: true });
@@ -149,11 +149,11 @@ test("resolveDeepProjectSetupState: self-heals missing workflow_prefs_captured w
     // PREFERENCES.md missing the captured flag — simulating drift after manual
     // edit / merge conflict / partial write.
     writeFileSync(
-      join(base, ".gsd", "PREFERENCES.md"),
+      join(base, ".otto/workflow", "PREFERENCES.md"),
       "---\nplanning_depth: deep\n---\n",
     );
-    writeFileSync(join(base, ".gsd", "PROJECT.md"), validProject);
-    writeFileSync(join(base, ".gsd", "REQUIREMENTS.md"), validRequirements);
+    writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), validProject);
+    writeFileSync(join(base, ".otto/workflow", "REQUIREMENTS.md"), validRequirements);
     writeDecision(base, {
       decision: "skip",
       decided_at: new Date().toISOString(),
@@ -164,7 +164,7 @@ test("resolveDeepProjectSetupState: self-heals missing workflow_prefs_captured w
     const state = resolveDeepProjectSetupState(deepPrefs, base);
 
     assert.equal(state.status, "complete", "should self-heal to complete, not return pending");
-    const restored = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
+    const restored = readFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "utf-8");
     assert.match(restored, /workflow_prefs_captured:\s*true/, "captured flag should be restored on disk");
   } finally {
     rmSync(base, { recursive: true, force: true });
@@ -176,7 +176,7 @@ test("resolveDeepProjectSetupState: still pending when downstream artifacts are 
   try {
     // PREFERENCES.md missing flag AND PROJECT.md missing — genuine setup-incomplete.
     writeFileSync(
-      join(base, ".gsd", "PREFERENCES.md"),
+      join(base, ".otto/workflow", "PREFERENCES.md"),
       "---\nplanning_depth: deep\n---\n",
     );
     // No PROJECT.md, no REQUIREMENTS.md, no research-decision.json.
@@ -185,7 +185,7 @@ test("resolveDeepProjectSetupState: still pending when downstream artifacts are 
 
     assert.equal(state.status, "pending", "genuine incomplete setup must still pend");
     assert.equal(state.stage, "workflow-preferences", "stage points at the missing flag");
-    const original = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
+    const original = readFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "utf-8");
     assert.doesNotMatch(original, /workflow_prefs_captured:\s*true/, "flag not added when self-heal does not apply");
   } finally {
     rmSync(base, { recursive: true, force: true });

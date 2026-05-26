@@ -21,7 +21,7 @@ import { openDatabase, closeDatabase } from "../db.ts";
 
 function makeProjectDir(): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-dbwriter-scope-")));
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   return dir;
 }
 
@@ -54,8 +54,8 @@ describe("saveArtifactToDbByScope: path parity with legacy saveArtifactToDb", ()
       task_id: "T01",
     };
 
-    // Legacy path: basePath + '.gsd' join
-    const legacyExpectedPath = resolve(tmp1, ".gsd", relPath);
+    // Legacy path: basePath + '.otto/workflow' join
+    const legacyExpectedPath = resolve(tmp1, ".otto/workflow", relPath);
 
     // Scope path: contract.projectGsd
     const ws = createWorkspace(tmp2);
@@ -71,24 +71,24 @@ describe("saveArtifactToDbByScope: path parity with legacy saveArtifactToDb", ()
     );
     assert.equal(
       legacyExpectedPath,
-      resolve(tmp1, ".gsd", relPath),
-      "legacy path must be basePath/.gsd + relPath",
+      resolve(tmp1, ".otto/workflow", relPath),
+      "legacy path must be basePath/.otto/workflow + relPath",
     );
 
     // Open DB for tmp1 and write via legacy
-    const dbPath1 = join(tmp1, ".gsd", "gsd.db");
+    const dbPath1 = join(tmp1, ".otto/workflow", "otto.db");
     openDatabase(dbPath1);
     await saveArtifactToDb(opts, tmp1);
     closeDatabase();
 
     // Open DB for tmp2 and write via scope variant
-    const dbPath2 = join(tmp2, ".gsd", "gsd.db");
+    const dbPath2 = join(tmp2, ".otto/workflow", "otto.db");
     openDatabase(dbPath2);
     await saveArtifactToDbByScope(scope, opts);
     closeDatabase();
 
-    // Both should have written to the correct location under their respective .gsd dirs
-    assert.ok(existsSync(legacyExpectedPath), "legacy: artifact written at basePath/.gsd/relPath");
+    // Both should have written to the correct location under their respective .otto/workflow dirs
+    assert.ok(existsSync(legacyExpectedPath), "legacy: artifact written at basePath/.otto/workflow/relPath");
     assert.ok(existsSync(scopeExpectedPath), "scope: artifact written at contract.projectGsd/relPath");
 
     // Content must match
@@ -111,15 +111,15 @@ describe("saveArtifactToDbByScope: uses contract.projectGsd, not hand-rolled bas
     rmSync(tmp, { recursive: true, force: true });
   });
 
-  test("scope.workspace.contract.projectGsd is used as the .gsd root, not basePath/.gsd", async () => {
+  test("scope.workspace.contract.projectGsd is used as the .otto/workflow root, not basePath/.otto/workflow", async () => {
     const ws = createWorkspace(tmp);
     const scope = scopeMilestone(ws, "M001");
 
-    // The contract.projectGsd must equal the canonical join(projectRoot, '.gsd')
+    // The contract.projectGsd must equal the canonical join(projectRoot, '.otto/workflow')
     assert.equal(
       ws.contract.projectGsd,
-      join(ws.projectRoot, ".gsd"),
-      "contract.projectGsd must equal join(projectRoot, '.gsd')",
+      join(ws.projectRoot, ".otto/workflow"),
+      "contract.projectGsd must equal join(projectRoot, '.otto/workflow')",
     );
 
     // It must NOT be a hand-rolled resolution from an arbitrary basePath string
@@ -138,7 +138,7 @@ describe("saveArtifactToDbByScope: uses contract.projectGsd, not hand-rolled bas
       milestone_id: "M001",
     };
 
-    openDatabase(join(tmp, ".gsd", "gsd.db"));
+    openDatabase(join(tmp, ".otto/workflow", "otto.db"));
     await saveArtifactToDbByScope(scope, opts);
 
     // File must be at contract.projectGsd/relPath
@@ -147,25 +147,25 @@ describe("saveArtifactToDbByScope: uses contract.projectGsd, not hand-rolled bas
     assert.equal(readFileSync(expectedPath, "utf-8"), content, "content matches");
 
     // And must NOT be at some other location
-    const handRolledPath = resolve(tmp, ".gsd", relPath);
+    const handRolledPath = resolve(tmp, ".otto/workflow", relPath);
     // Both should be the same path in project mode (they should agree)
     assert.equal(
       expectedPath,
       handRolledPath,
-      "in project mode, contract.projectGsd resolves same as basePath/.gsd",
+      "in project mode, contract.projectGsd resolves same as basePath/.otto/workflow",
     );
   });
 });
 
-// ─── Suite 3: worktree-mode scope routes to project root's .gsd/ ─────────────
+// ─── Suite 3: worktree-mode scope routes to project root's .otto/workflow/ ─────────────
 
-describe("saveArtifactToDbByScope: worktree scope writes to project root .gsd/", () => {
+describe("saveArtifactToDbByScope: worktree scope writes to project root .otto/workflow/", () => {
   let tmp: string;
 
   beforeEach(() => {
     tmp = realpathSync(mkdtempSync(join(tmpdir(), "gsd-dbwriter-wt-scope-")));
-    // Create project .gsd directory
-    mkdirSync(join(tmp, ".gsd"), { recursive: true });
+    // Create project .otto/workflow directory
+    mkdirSync(join(tmp, ".otto/workflow"), { recursive: true });
   });
 
   afterEach(() => {
@@ -173,10 +173,10 @@ describe("saveArtifactToDbByScope: worktree scope writes to project root .gsd/",
     rmSync(tmp, { recursive: true, force: true });
   });
 
-  test("worktree-mode scope: contract.projectGsd resolves to project root's .gsd/, not worktree .gsd/", async () => {
-    // Construct a worktree path inside the project's .gsd/worktrees/<MID>
-    const worktreePath = join(tmp, ".gsd", "worktrees", "M001");
-    mkdirSync(join(worktreePath, ".gsd"), { recursive: true });
+  test("worktree-mode scope: contract.projectGsd resolves to project root's .otto/workflow/, not worktree .otto/workflow/", async () => {
+    // Construct a worktree path inside the project's .otto/workflow/worktrees/<MID>
+    const worktreePath = join(tmp, ".otto/workflow", "worktrees", "M001");
+    mkdirSync(join(worktreePath, ".otto/workflow"), { recursive: true });
 
     const projectWs = createWorkspace(tmp);
     const worktreeWs = createWorkspace(worktreePath);
@@ -188,18 +188,18 @@ describe("saveArtifactToDbByScope: worktree scope writes to project root .gsd/",
       "worktree workspace must have same projectRoot as project workspace",
     );
 
-    // contract.projectGsd for the worktree workspace must point to the PROJECT root's .gsd/
+    // contract.projectGsd for the worktree workspace must point to the PROJECT root's .otto/workflow/
     assert.equal(
       worktreeWs.contract.projectGsd,
-      join(projectWs.projectRoot, ".gsd"),
-      "worktree contract.projectGsd must equal project root's .gsd/",
+      join(projectWs.projectRoot, ".otto/workflow"),
+      "worktree contract.projectGsd must equal project root's .otto/workflow/",
     );
 
-    // Must NOT be the worktree-local .gsd/
+    // Must NOT be the worktree-local .otto/workflow/
     assert.notEqual(
       worktreeWs.contract.projectGsd,
-      join(worktreePath, ".gsd"),
-      "worktree contract.projectGsd must NOT be the worktree-local .gsd/",
+      join(worktreePath, ".otto/workflow"),
+      "worktree contract.projectGsd must NOT be the worktree-local .otto/workflow/",
     );
 
     // Write via the worktree-mode scope
@@ -213,17 +213,17 @@ describe("saveArtifactToDbByScope: worktree scope writes to project root .gsd/",
       milestone_id: "M001",
     };
 
-    openDatabase(join(tmp, ".gsd", "gsd.db"));
+    openDatabase(join(tmp, ".otto/workflow", "otto.db"));
     await saveArtifactToDbByScope(scope, opts);
 
-    // File must land in the PROJECT root's .gsd/, not in the worktree's .gsd/
+    // File must land in the PROJECT root's .otto/workflow/, not in the worktree's .otto/workflow/
     const projectPath = resolve(projectWs.contract.projectGsd, relPath);
-    const worktreeLocalPath = resolve(worktreePath, ".gsd", relPath);
+    const worktreeLocalPath = resolve(worktreePath, ".otto/workflow", relPath);
 
-    assert.ok(existsSync(projectPath), "artifact written to project root's .gsd/");
+    assert.ok(existsSync(projectPath), "artifact written to project root's .otto/workflow/");
     assert.ok(
       !existsSync(worktreeLocalPath),
-      "artifact must NOT be written to worktree-local .gsd/",
+      "artifact must NOT be written to worktree-local .otto/workflow/",
     );
     assert.equal(readFileSync(projectPath, "utf-8"), content, "content at project root matches");
   });

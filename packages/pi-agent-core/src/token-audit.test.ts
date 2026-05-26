@@ -1,10 +1,10 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for provider-boundary token payload audit helpers.
 
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Type } from "@sinclair/typebox";
-import type { Context } from "@loop24/pi-ai";
+import type { Context } from "@otto/pi-ai";
 import type { AgentMessage } from "./types.js";
 import {
 	buildProviderPayloadAuditSummary,
@@ -137,7 +137,7 @@ test("provider payload audit recognizes Gemini and Bedrock payload shapes", () =
 		config: {
 			tools: [{
 				functionDeclarations: [
-					{ name: "gsd_exec", description: "hidden declaration", parameters: { type: "object" } },
+					{ name: "otto_exec", description: "hidden declaration", parameters: { type: "object" } },
 				],
 			}],
 		},
@@ -146,19 +146,19 @@ test("provider payload audit recognizes Gemini and Bedrock payload shapes", () =
 		messages: [{ role: "user", content: [{ text: "hidden bedrock prompt" }] }],
 		toolConfig: {
 			tools: [
-				{ toolSpec: { name: "gsd_resume", description: "hidden tool", inputSchema: { json: {} } } },
+				{ toolSpec: { name: "otto_resume", description: "hidden tool", inputSchema: { json: {} } } },
 			],
 		},
 	});
 
 	assert.equal(gemini.messageCount, 1);
 	assert.equal(gemini.toolCount, 1);
-	assert.deepEqual(gemini.largestTools.map((tool) => tool.name), ["gsd_exec"]);
+	assert.deepEqual(gemini.largestTools.map((tool) => tool.name), ["otto_exec"]);
 	assert.equal(JSON.stringify(gemini).includes("hidden"), false);
 
 	assert.equal(bedrock.messageCount, 1);
 	assert.equal(bedrock.toolCount, 1);
-	assert.deepEqual(bedrock.largestTools.map((tool) => tool.name), ["gsd_resume"]);
+	assert.deepEqual(bedrock.largestTools.map((tool) => tool.name), ["otto_resume"]);
 	assert.equal(JSON.stringify(bedrock).includes("hidden"), false);
 });
 

@@ -16,7 +16,7 @@ import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { showNextAction } from "../shared/tui.js";
 import type { ProjectSignals, XcodePlatform } from "./detection.js";
 
@@ -642,7 +642,7 @@ export const SKILL_CATALOG: SkillPack[] = [
  * NOT shown directly to users during init (greenfield installs essentials
  * only and defers stack-specific skills).  These mappings are available for:
  *   1. The LLM to install skills after establishing a design
- *   2. The `/loop24 skills` command (explicit user request)
+ *   2. The `/otto skills` command (explicit user request)
  *   3. Re-running brownfield detection after project files are created
  */
 export const GREENFIELD_STACKS: Array<{
@@ -1009,7 +1009,7 @@ export async function runSkillInstallStep(
 
     const totalSkills = toInstall.reduce((n, p) => n + p.skills.length, 0);
     const choice = await showNextAction(ctx, {
-      title: "GSD — Install Skills",
+      title: "OTTO — Install Skills",
       summary: summaryLines,
       actions: [
         {
@@ -1024,7 +1024,7 @@ export async function runSkillInstallStep(
           description: "Install skills later with npx skills add",
         },
       ],
-      notYetMessage: "Run /gsd init when ready.",
+      notYetMessage: "Run /otto init when ready.",
     });
 
     if (choice === "install") {
@@ -1048,9 +1048,9 @@ export async function runSkillInstallStep(
 
     const totalSkills = essentials.reduce((n, p) => n + p.skills.length, 0);
     const choice = await showNextAction(ctx, {
-      title: "GSD — Install Essential Skills",
+      title: "OTTO — Install Essential Skills",
       summary: [
-        "GSD will install essential agent skills (skill discovery, authoring,",
+        "OTTO will install essential agent skills (skill discovery, authoring,",
         "browser automation, document handling).",
         "",
         "Stack-specific skills (React, Swift, Python, etc.) will be recommended",
@@ -1069,7 +1069,7 @@ export async function runSkillInstallStep(
           description: "Install skills later with npx skills add",
         },
       ],
-      notYetMessage: "Run /gsd init when ready.",
+      notYetMessage: "Run /otto init when ready.",
     });
 
     if (choice === "install") {

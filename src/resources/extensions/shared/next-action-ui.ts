@@ -11,7 +11,7 @@
  *      [optional extra content block]
  *
  *   Files written:
- *      .gsd/phases/01-foo/01-RESEARCH.md
+ *      .otto/workflow/phases/01-foo/01-RESEARCH.md
  *
  *   › 1. Plan phase 1           ← recommended, pre-selected
  *        Create PLAN.md files for execution
@@ -41,9 +41,9 @@
  * Pressing Escape also resolves as "not_yet".
  */
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
-import { type Theme } from "@loop24/pi-coding-agent";
-import { Key, matchesKey, type TUI } from "@loop24/pi-tui";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
+import { type Theme } from "@otto/pi-coding-agent";
+import { Key, matchesKey, type TUI } from "@otto/pi-tui";
 import { makeUI } from "./ui.js";
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -219,7 +219,7 @@ export async function showNextAction(
 
 function isInteractiveUIContext(ctx: ExtensionCommandContext): boolean {
 	if (!ctx.hasUI) return false;
-	if ((process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) === "1") return false;
+	if ((process.env.OTTO_HEADLESS ?? process.env.OTTO_HEADLESS) === "1") return false;
 	const uiMode = (ctx.ui as { mode?: string } | undefined)?.mode;
 	if (uiMode === "rpc" || uiMode === "headless") return false;
 	return true;

@@ -1,6 +1,6 @@
-// LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/collapsible-message.ts - Shared collapsible message lifecycle.
+// OTTO + packages/pi-coding-agent/src/modes/interactive/components/collapsible-message.ts - Shared collapsible message lifecycle.
 
-import { Container } from "@loop24/pi-tui";
+import { Container } from "@otto/pi-tui";
 import { RenderCache } from "./render-cache.js";
 
 /**

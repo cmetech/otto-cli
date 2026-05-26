@@ -1,8 +1,8 @@
-// LOOP24 — Headless Recover entrypoint
+// OTTO — Headless Recover entrypoint
 /**
- * Headless Recover — `gsd headless recover`
+ * Headless Recover — `otto headless recover`
  *
- * Non-interactive parallel of the `/loop24 recover` slash command. Clears the
+ * Non-interactive parallel of the `/otto recover` slash command. Clears the
  * milestones / slices / tasks tables and re-imports them from the on-disk
  * markdown projections (ROADMAP.md, PLAN.md, SUMMARY.md, …) via
  * migrateHierarchyToDb. Mutating: this is the one headless subcommand that
@@ -16,7 +16,7 @@
  *
  * Exit codes:
  *   0 — recovery succeeded
- *   1 — `.gsd/` missing, DB could not be opened, or migration threw
+ *   1 — `.otto/workflow/` missing, DB could not be opened, or migration threw
  */
 
 import { createJiti } from '@mariozechner/jiti'
@@ -66,9 +66,9 @@ export interface RecoverResult {
 }
 
 export async function handleRecover(basePath: string): Promise<RecoverResult> {
-  const workflowDir = join(basePath, '.gsd')
+  const workflowDir = join(basePath, '.otto', 'workflow')
   if (!existsSync(workflowDir)) {
-    process.stderr.write(`[headless] recover: no .gsd/ directory at ${basePath}\n`)
+    process.stderr.write(`[headless] recover: no .otto/workflow directory at ${basePath}\n`)
     return { exitCode: 1 }
   }
 
@@ -83,7 +83,7 @@ export async function handleRecover(basePath: string): Promise<RecoverResult> {
 
   const opened = await modules.ensureDbOpen(basePath)
   if (!opened || !modules.isDbAvailable()) {
-    process.stderr.write(`[headless] recover: failed to open or create the GSD database at ${basePath}\n`)
+    process.stderr.write(`[headless] recover: failed to open or create the OTTO database at ${basePath}\n`)
     return { exitCode: 1 }
   }
 

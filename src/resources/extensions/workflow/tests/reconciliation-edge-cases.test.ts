@@ -141,8 +141,8 @@ describe("reconciliation-edge-cases", () => {
   // appendEvent — filesystem creation
   test("appendEvent creates event log if directory does not exist", () => {
     const base = tempDir();
-    // Remove the .gsd directory if it somehow exists — appendEvent should create it.
-    const workflowDir = path.join(base, ".gsd");
+    // Remove the .otto/workflow directory if it somehow exists — appendEvent should create it.
+    const workflowDir = path.join(base, ".otto/workflow");
     if (fs.existsSync(workflowDir)) fs.rmSync(workflowDir, { recursive: true, force: true });
 
     appendEvent(base, {
@@ -152,7 +152,7 @@ describe("reconciliation-edge-cases", () => {
       actor: "agent",
     });
 
-    const logPath = path.join(base, ".gsd", "event-log.jsonl");
+    const logPath = path.join(base, ".otto/workflow", "event-log.jsonl");
     assert.ok(fs.existsSync(logPath), "event-log.jsonl should be created by appendEvent");
 
     const events = readEvents(logPath);

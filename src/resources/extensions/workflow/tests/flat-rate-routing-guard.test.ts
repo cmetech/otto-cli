@@ -37,7 +37,7 @@ describe("flat-rate provider routing guard (#3453)", () => {
 
   test("resolvePreferredModelConfig returns undefined for copilot start model", () => {
     const originalCwd = process.cwd();
-    const originalWorkflowHome = process.env.GSD_HOME;
+    const originalWorkflowHome = process.env.OTTO_HOME;
     const tempProject = mkdtempSync(join(tmpdir(), "gsd-flat-rate-project-"));
     const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-flat-rate-home-"));
 
@@ -46,9 +46,9 @@ describe("flat-rate provider routing guard (#3453)", () => {
     // config from tier_models — it should return undefined so the
     // user's selected model is preserved.
     try {
-      mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+      mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
       writeFileSync(
-        join(tempProject, ".gsd", "PREFERENCES.md"),
+        join(tempProject, ".otto/workflow", "PREFERENCES.md"),
         [
           "---",
           "dynamic_routing:",
@@ -61,7 +61,7 @@ describe("flat-rate provider routing guard (#3453)", () => {
         ].join("\n"),
         "utf-8",
       );
-      process.env.GSD_HOME = tempWorkflowHome;
+      process.env.OTTO_HOME = tempWorkflowHome;
       process.chdir(tempProject);
 
       const result = resolvePreferredModelConfig("execute-task", {
@@ -75,8 +75,8 @@ describe("flat-rate provider routing guard (#3453)", () => {
       assert.equal(result, undefined, "Should not create routing config for copilot");
     } finally {
       process.chdir(originalCwd);
-      if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-      else process.env.GSD_HOME = originalWorkflowHome;
+      if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+      else process.env.OTTO_HOME = originalWorkflowHome;
       rmSync(tempProject, { recursive: true, force: true });
       rmSync(tempWorkflowHome, { recursive: true, force: true });
     }
@@ -224,23 +224,23 @@ describe("buildFlatRateContext()", () => {
 describe("flat-rate routing opt-in (#4386)", () => {
   function withPrefs(prefsYaml: string, fn: () => void): void {
     const originalCwd = process.cwd();
-    const originalWorkflowHome = process.env.GSD_HOME;
+    const originalWorkflowHome = process.env.OTTO_HOME;
     const tempProject = mkdtempSync(join(tmpdir(), "gsd-4386-project-"));
     const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-4386-home-"));
     try {
-      mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+      mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
       writeFileSync(
-        join(tempProject, ".gsd", "PREFERENCES.md"),
+        join(tempProject, ".otto/workflow", "PREFERENCES.md"),
         ["---", "version: 1", prefsYaml, "---"].join("\n"),
         "utf-8",
       );
-      process.env.GSD_HOME = tempWorkflowHome;
+      process.env.OTTO_HOME = tempWorkflowHome;
       process.chdir(tempProject);
       fn();
     } finally {
       process.chdir(originalCwd);
-      if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-      else process.env.GSD_HOME = originalWorkflowHome;
+      if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+      else process.env.OTTO_HOME = originalWorkflowHome;
       rmSync(tempProject, { recursive: true, force: true });
       rmSync(tempWorkflowHome, { recursive: true, force: true });
     }

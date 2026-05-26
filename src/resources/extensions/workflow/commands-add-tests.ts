@@ -1,11 +1,11 @@
 /**
- * Command — /loop24 add-tests
+ * Command — /otto add-tests
  *
  * Generates tests for a completed slice by dispatching an LLM prompt
  * with implementation context (summaries, changed files, test patterns).
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -105,7 +105,7 @@ export async function handleAddTests(
   const targetId = args.trim() || findLastCompletedSlice(basePath, milestoneId);
   if (!targetId) {
     ctx.ui.notify(
-      "No completed slices found. Specify a slice ID: /gsd add-tests S03",
+      "No completed slices found. Specify a slice ID: /otto add-tests S03",
       "warning",
     );
     return;

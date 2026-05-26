@@ -2,7 +2,7 @@
 
 **Status:** In progress  
 **Date:** 2026-04-24  
-**Source spec:** https://raw.githubusercontent.com/open-gsd/gsd-pi/2540b00211c61daa0574bd3419afec5ceef36ba4/docs/dev/specs/2026-04-24-swarm-delivery-plan-uok.md
+**Source spec:** https://raw.githubusercontent.com/cmetech/otto-cli/2540b00211c61daa0574bd3419afec5ceef36ba4/docs/dev/specs/2026-04-24-swarm-delivery-plan-uok.md
 **Related:** `docs/dev/ADR-009-orchestration-kernel-refactor.md`, `docs/dev/ADR-009-IMPLEMENTATION-PLAN.md`, `docs/dev/proposals/rfc-gitops-branching-strategy.md`
 
 ## Objective
@@ -20,7 +20,7 @@ Turn the swarm delivery spec into an executable hardening plan for the current U
 - Replacing the current UOK modules with a new architecture.
 - Rewriting CLI, web, MCP, or package entrypoints.
 - Changing model/provider auth or compliance behavior outside the policy gate.
-- Enforcing organization-level GitHub branch protection through this repository's own `.github/` files. GitHub routines in this plan belong to GSD's product code and generated workflow surfaces.
+- Enforcing organization-level GitHub branch protection through this repository's own `.github/` files. GitHub routines in this plan belong to OTTO's product code and generated workflow surfaces.
 
 ## Current Baseline
 
@@ -132,7 +132,7 @@ Deliverables:
   - `dependency`
   - `conflict`
   - `retry`
-- Add a query-facing explanation object so `/gsd query` can answer why a unit ran or why it is blocked.
+- Add a query-facing explanation object so `/otto query` can answer why a unit ran or why it is blocked.
 
 Tests:
 

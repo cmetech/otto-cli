@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Workflow template commands for starting, listing, and dispatching workflows.
 
 /**
@@ -8,7 +8,7 @@
  * Resolves templates by name or auto-detection, then dispatches the workflow prompt.
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -247,7 +247,7 @@ export async function handleStart(
     });
 
     pi.sendMessage(
-      { customType: "gsd-workflow-template", content: prompt, display: false },
+      { customType: "otto-workflow-template", content: prompt, display: false },
       { triggerTurn: true },
     );
     return;
@@ -414,10 +414,10 @@ export async function handleStart(
         `Routing to ${slashCommand("init")} for full project setup...`,
         "info",
       );
-      // Trigger /loop24 init by dispatching to the handler
+      // Trigger /otto init by dispatching to the handler
       pi.sendMessage(
         {
-          customType: "gsd-workflow-template",
+          customType: "otto-workflow-template",
           content: `The user wants to start a full project. Run \`${slashCommand("init")}\` to bootstrap the project, then \`${slashCommand("auto")}\` to begin execution.`,
           display: false,
         },
@@ -514,7 +514,7 @@ export async function handleStart(
 
   pi.sendMessage(
     {
-      customType: "gsd-workflow-template",
+      customType: "otto-workflow-template",
       content: prompt,
       display: false,
     },
@@ -567,7 +567,7 @@ export function getTemplateCompletions(prefix: string): Array<{ value: string; l
   }
 }
 
-// ─── Shared markdown-phase dispatcher (used by /loop24 workflow <name>) ────────
+// ─── Shared markdown-phase dispatcher (used by /otto workflow <name>) ────────
 
 /**
  * Dispatch a markdown-phase workflow plugin. Mirrors `handleStart`'s execution
@@ -679,7 +679,7 @@ export function dispatchMarkdownPhasePlugin(
   });
 
   pi.sendMessage(
-    { customType: "gsd-workflow-template", content: prompt, display: false },
+    { customType: "otto-workflow-template", content: prompt, display: false },
     { triggerTurn: true },
   );
 }

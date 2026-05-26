@@ -5,7 +5,7 @@
  * .js files still import '../foo.ts'. This hook redirects those to '.js' so
  * Node can find the compiled output.
  *
- * Also redirects @gsd bare imports to their compiled counterparts in dist-test.
+ * Also redirects @otto bare imports to their compiled counterparts in dist-test.
  */
 
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -26,20 +26,20 @@ process.env.GIT_TEMPLATE_DIR = gitTemplateDir;
 // dist-test root — everything compiled lands here
 const DIST_TEST = new URL('../dist-test/', import.meta.url).href;
 
-// Absolute paths to compiled @loop24/* entry points
-const GSD_ALIASES = {
-  '@loop24/pi-coding-agent': new URL('../dist-test/packages/pi-coding-agent/src/index.js', import.meta.url).href,
-  '@loop24/pi-ai/oauth':     new URL('../dist-test/packages/pi-ai/src/utils/oauth/index.js', import.meta.url).href,
-  '@loop24/pi-ai':           new URL('../dist-test/packages/pi-ai/src/index.js', import.meta.url).href,
-  '@loop24/pi-agent-core':   new URL('../dist-test/packages/pi-agent-core/src/index.js', import.meta.url).href,
-  '@loop24/pi-tui':          new URL('../dist-test/packages/pi-tui/src/index.js', import.meta.url).href,
-  '@loop24/native':          new URL('../dist-test/packages/native/src/index.js', import.meta.url).href,
+// Absolute paths to compiled @otto/* entry points
+const OTTO_ALIASES = {
+  '@otto/pi-coding-agent': new URL('../dist-test/packages/pi-coding-agent/src/index.js', import.meta.url).href,
+  '@otto/pi-ai/oauth':     new URL('../dist-test/packages/pi-ai/src/utils/oauth/index.js', import.meta.url).href,
+  '@otto/pi-ai':           new URL('../dist-test/packages/pi-ai/src/index.js', import.meta.url).href,
+  '@otto/pi-agent-core':   new URL('../dist-test/packages/pi-agent-core/src/index.js', import.meta.url).href,
+  '@otto/pi-tui':          new URL('../dist-test/packages/pi-tui/src/index.js', import.meta.url).href,
+  '@otto/native':          new URL('../dist-test/packages/native/src/index.js', import.meta.url).href,
 };
 
 export function resolve(specifier, context, nextResolve) {
-  // 1. @loop24/* bare imports → compiled dist-test counterpart
-  if (specifier in GSD_ALIASES) {
-    return nextResolve(GSD_ALIASES[specifier], context);
+  // 1. @otto/* bare imports → compiled dist-test counterpart
+  if (specifier in OTTO_ALIASES) {
+    return nextResolve(OTTO_ALIASES[specifier], context);
   }
 
   // 2. .ts relative imports inside dist-test → .js

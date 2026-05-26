@@ -19,15 +19,15 @@ describe("#4479 — --tools parsing", () => {
 	});
 
 	test("defers unrecognized names as extraToolNames (likely extension/MCP)", () => {
-		const args = parseArgs(["--tools", "read,gsd_complete_task,browser_navigate"]);
+		const args = parseArgs(["--tools", "read,otto_complete_task,browser_navigate"]);
 		assert.deepEqual(args.tools, ["read"]);
-		assert.deepEqual(args.extraToolNames, ["gsd_complete_task", "browser_navigate"]);
+		assert.deepEqual(args.extraToolNames, ["otto_complete_task", "browser_navigate"]);
 	});
 
 	test("normalizes only the built-in match; extras keep original casing", () => {
-		const args = parseArgs(["--tools", "Read,GSD_Complete_Task"]);
+		const args = parseArgs(["--tools", "Read,OTTO_Complete_Task"]);
 		assert.deepEqual(args.tools, ["read"]);
-		assert.deepEqual(args.extraToolNames, ["GSD_Complete_Task"]);
+		assert.deepEqual(args.extraToolNames, ["OTTO_Complete_Task"]);
 	});
 
 	test("filters empty entries from comma-separated list", () => {
@@ -37,8 +37,8 @@ describe("#4479 — --tools parsing", () => {
 	});
 
 	test("only-extension-tools input yields empty tools but populated extras", () => {
-		const args = parseArgs(["--tools", "gsd_complete_task"]);
+		const args = parseArgs(["--tools", "otto_complete_task"]);
 		assert.deepEqual(args.tools, []);
-		assert.deepEqual(args.extraToolNames, ["gsd_complete_task"]);
+		assert.deepEqual(args.extraToolNames, ["otto_complete_task"]);
 	});
 });

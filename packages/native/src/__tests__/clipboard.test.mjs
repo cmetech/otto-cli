@@ -10,8 +10,8 @@ const require = createRequire(import.meta.url);
 const addonDir = path.resolve(__dirname, "..", "..", "..", "..", "native", "addon");
 const platformTag = `${process.platform}-${process.arch}`;
 const candidates = [
-  path.join(addonDir, `gsd_engine.${platformTag}.node`),
-  path.join(addonDir, "gsd_engine.dev.node"),
+  path.join(addonDir, `otto_engine.${platformTag}.node`),
+  path.join(addonDir, "otto_engine.dev.node"),
 ];
 
 let native;
@@ -56,7 +56,7 @@ function skipIfClipboardUnavailable(t, error) {
 describe("native clipboard: copyToClipboard()", () => {
   test("copies text without throwing", (t) => {
     try {
-      native.copyToClipboard("GSD clipboard test");
+      native.copyToClipboard("OTTO clipboard test");
     } catch (error) {
       skipIfClipboardUnavailable(t, error);
     }
@@ -82,7 +82,7 @@ describe("native clipboard: copyToClipboard()", () => {
 describe("native clipboard: readTextFromClipboard()", () => {
   test("reads back text that was copied", (t) => {
     try {
-      const testText = `GSD clipboard roundtrip ${Date.now()}`;
+      const testText = `OTTO clipboard roundtrip ${Date.now()}`;
       native.copyToClipboard(testText);
       const result = native.readTextFromClipboard();
       assert.equal(result, testText);

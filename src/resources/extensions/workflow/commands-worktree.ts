@@ -1,11 +1,11 @@
-// LOOP24 — In-TUI handler for /otto worktree commands (list, merge, clean, remove).
+// OTTO — In-TUI handler for /otto worktree commands (list, merge, clean, remove).
 //
 // Mirrors the CLI subcommands in src/worktree-cli.ts but emits results via
 // ctx.ui.notify() instead of writing colored output to stderr. Reuses the
 // same extension modules (worktree-manager, native-git-bridge, etc.) so the
 // behavior is identical to the CLI surface.
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { existsSync } from "node:fs";
 
 import { projectRoot } from "./commands/context.js";

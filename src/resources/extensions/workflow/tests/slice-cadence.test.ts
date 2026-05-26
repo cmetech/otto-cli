@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Slice-cadence merge and resquash tests.
 /**
  * Tests for slice-cadence collapse — #4765.
@@ -38,7 +38,7 @@ function createRepo(): string {
   git(["add", "."], dir);
   git(["commit", "-m", "init"], dir);
   git(["branch", "-M", "main"], dir);
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   return dir;
 }
 
@@ -128,15 +128,15 @@ describe("mergeSliceToMain", () => {
     assert.equal(subject, "feat: Core API - S01 of M001 (slice-cadence)");
     assert.ok(body.includes("Slice: S01 - Core API"));
     assert.ok(body.includes("Milestone: M001 - Backend foundation"));
-    assert.ok(body.includes("GSD-Slice: S01"));
-    assert.ok(body.includes("GSD-Milestone: M001"));
+    assert.ok(body.includes("OTTO-Slice: S01"));
+    assert.ok(body.includes("OTTO-Milestone: M001"));
   });
 
   test("merges slices to the recorded integration branch", () => {
     git(["checkout", "-b", "develop"], dir);
-    mkdirSync(join(dir, ".gsd", "milestones", "M001"), { recursive: true });
+    mkdirSync(join(dir, ".otto/workflow", "milestones", "M001"), { recursive: true });
     writeFileSync(
-      join(dir, ".gsd", "milestones", "M001", "M001-META.json"),
+      join(dir, ".otto/workflow", "milestones", "M001", "M001-META.json"),
       JSON.stringify({ integrationBranch: "develop" }, null, 2) + "\n",
     );
 
@@ -153,9 +153,9 @@ describe("mergeSliceToMain", () => {
   });
 
   test("advances milestone branch when it is checked out in a worktree", () => {
-    commitFile(dir, ".gitignore", ".gsd/worktrees/\n", "chore: ignore worktrees");
-    const wtPath = join(dir, ".gsd", "worktrees", "M001");
-    mkdirSync(join(dir, ".gsd", "worktrees"), { recursive: true });
+    commitFile(dir, ".gitignore", ".otto/workflow/worktrees/\n", "chore: ignore worktrees");
+    const wtPath = join(dir, ".otto/workflow", "worktrees", "M001");
+    mkdirSync(join(dir, ".otto/workflow", "worktrees"), { recursive: true });
     git(["worktree", "add", "-b", "milestone/M001", wtPath, "main"], dir);
     commitFile(wtPath, "worktree-slice.txt", "slice work\n", "feat: S01 worktree");
 

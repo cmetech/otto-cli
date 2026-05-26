@@ -13,12 +13,12 @@ import { _dispatchWorkflowForTest } from "../guided-flow.ts";
 test("discuss workflow scopes tools for the queued turn and restores the full tool set", async () => {
   const dir = mkdtempSync(join(tmpdir(), "gsd-discuss-tools-"));
   const workflowPath = join(dir, "WORKFLOW.md");
-  const originalWorkflowPath = process.env.GSD_WORKFLOW_PATH;
+  const originalWorkflowPath = process.env.OTTO_WORKFLOW_PATH;
   const originalTools = [
-    "gsd_task_complete",
-    "gsd_summary_save",
+    "otto_task_complete",
+    "otto_summary_save",
     "shell_exec",
-    "gsd_plan_milestone",
+    "otto_plan_milestone",
   ];
   let activeTools = [...originalTools];
   let sentTools: string[] | null = null;
@@ -37,7 +37,7 @@ test("discuss workflow scopes tools for the queued turn and restores the full to
 
   try {
     writeFileSync(workflowPath, "# Workflow\n", "utf-8");
-    process.env.GSD_WORKFLOW_PATH = workflowPath;
+    process.env.OTTO_WORKFLOW_PATH = workflowPath;
 
     await _dispatchWorkflowForTest(
       pi as any,
@@ -47,18 +47,18 @@ test("discuss workflow scopes tools for the queued turn and restores the full to
       "discuss-milestone",
     );
 
-    // The queued discuss-milestone turn keeps only the GSD tools on the
-    // discuss allowlist: gsd_summary_save and gsd_plan_milestone (the latter
+    // The queued discuss-milestone turn keeps only the OTTO tools on the
+    // discuss allowlist: otto_summary_save and otto_plan_milestone (the latter
     // is needed for the discuss.md output phase — see DISCUSS_TOOLS_ALLOWLIST).
-    // gsd_task_complete and the broad shell_exec tool are scoped out.
-    assert.deepEqual(sentTools, ["gsd_summary_save", "gsd_plan_milestone"]);
+    // otto_task_complete and the broad shell_exec tool are scoped out.
+    assert.deepEqual(sentTools, ["otto_summary_save", "otto_plan_milestone"]);
     assert.deepEqual(activeTools, originalTools);
     assert.equal(triggerTurn, true);
   } finally {
     if (originalWorkflowPath === undefined) {
-      delete process.env.GSD_WORKFLOW_PATH;
+      delete process.env.OTTO_WORKFLOW_PATH;
     } else {
-      process.env.GSD_WORKFLOW_PATH = originalWorkflowPath;
+      process.env.OTTO_WORKFLOW_PATH = originalWorkflowPath;
     }
     rmSync(dir, { recursive: true, force: true });
   }

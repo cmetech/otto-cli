@@ -1,4 +1,4 @@
-// LOOP24 — Ollama Extension: Native /api/chat stream provider
+// OTTO — Ollama Extension: Native /api/chat stream provider
 
 /**
  * Implements the "ollama-chat" API provider, streaming responses directly
@@ -25,7 +25,7 @@ import {
 	type ToolCall,
 	type Usage,
 	EventStream,
-} from "@loop24/pi-ai";
+} from "@otto/pi-ai";
 import { chat } from "./ollama-client.js";
 import type {
 	OllamaChatMessage,
@@ -405,7 +405,7 @@ function extractMetrics(chunk: OllamaChatResponse): InferenceMetrics | undefined
 }
 
 // ─── Stream lifecycle helpers ───────────────────────────────────────────────
-// Replicated from openai-shared.ts (not exported from @loop24/pi-ai)
+// Replicated from openai-shared.ts (not exported from @otto/pi-ai)
 
 function buildInitialOutput(model: Model<Api>): AssistantMessage {
 	return {

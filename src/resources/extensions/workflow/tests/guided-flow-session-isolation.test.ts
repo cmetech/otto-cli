@@ -110,7 +110,7 @@ describe("#2985 Bug 4 — getDiscussionMilestoneId must be keyed by basePath", (
 test("checkAutoStartAfterDiscuss ignores missing manifest for single-milestone discuss on established project", () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-auto-start-manifest-"));
   try {
-    const workflowDir = join(base, ".gsd");
+    const workflowDir = join(base, ".otto/workflow");
     const milestoneDir = join(workflowDir, "milestones", "M001");
     mkdirSync(milestoneDir, { recursive: true });
     mkdirSync(join(workflowDir, "milestones", "M002"), { recursive: true });
@@ -142,7 +142,7 @@ test("checkAutoStartAfterDiscuss(basePath) selects the matching pending entry wh
   const projectB = mkdtempSync(join(tmpdir(), "gsd-auto-start-project-b-"));
 
   function writeReadyArtifacts(base: string, milestoneId: string): void {
-    const workflowDir = join(base, ".gsd");
+    const workflowDir = join(base, ".otto/workflow");
     const milestoneDir = join(workflowDir, "milestones", milestoneId);
     mkdirSync(milestoneDir, { recursive: true });
     writeFileSync(join(workflowDir, "PROJECT.md"), `# Project\n\n| ${milestoneId} | Milestone | active |\n`);
@@ -183,7 +183,7 @@ test("checkAutoStartAfterDiscuss can emit ready without scheduling auto-start", 
   let waitForIdleCalls = 0;
   const notifications: string[] = [];
   try {
-    const workflowDir = join(base, ".gsd");
+    const workflowDir = join(base, ".otto/workflow");
     const milestoneDir = join(workflowDir, "milestones", "M001");
     mkdirSync(milestoneDir, { recursive: true });
     writeFileSync(join(workflowDir, "PROJECT.md"), "# Project\n\n| M001 | First milestone | active |\n");

@@ -232,7 +232,7 @@ export async function preDispatchHealthGate(basePath: string): Promise<PreDispat
   // If a stale lock exists, the crash recovery path should handle it,
   // not a new dispatch. This prevents double-dispatch after crashes.
   try {
-    if (existsSync(join(workflowRoot(basePath), "gsd.db"))) {
+    if (existsSync(join(workflowRoot(basePath), "otto.db"))) {
       await ensureDbOpen(basePath);
     }
     const lock = readCrashLock(basePath);
@@ -255,7 +255,7 @@ export async function preDispatchHealthGate(basePath: string): Promise<PreDispat
       );
       if (blockers.length > 0 && unmergedPaths.length > 0) {
         issues.push(
-          `Corrupt git state: ${blockers.join(", ")} with unresolved conflicts. Resolve conflicts manually before running /gsd doctor fix.`,
+          `Corrupt git state: ${blockers.join(", ")} with unresolved conflicts. Resolve conflicts manually before running /otto doctor fix.`,
         );
       } else if (blockers.length > 0) {
         // Try to auto-heal
@@ -263,7 +263,7 @@ export async function preDispatchHealthGate(basePath: string): Promise<PreDispat
           const result = abortAndReset(basePath);
           fixesApplied.push(`pre-dispatch: cleaned merge state (${result.cleaned.join(", ")})`);
         } catch {
-          issues.push(`Corrupt git state: ${blockers.join(", ")}. Run /gsd doctor fix.`);
+          issues.push(`Corrupt git state: ${blockers.join(", ")}. Run /otto doctor fix.`);
         }
       }
     }
@@ -306,7 +306,7 @@ export async function preDispatchHealthGate(basePath: string): Promise<PreDispat
           );
         } else if (resolution.recordedBranch && resolution.status === "missing") {
           issues.push(
-            `${resolution.reason} Restore the branch or update the integration branch before dispatching. Run /gsd doctor for details.`,
+            `${resolution.reason} Restore the branch or update the integration branch before dispatching. Run /otto doctor for details.`,
           );
         }
       }
@@ -369,7 +369,7 @@ export async function preDispatchHealthGate(basePath: string): Promise<PreDispat
   if (issues.length > 0) {
     return {
       proceed: false,
-      reason: `Pre-dispatch health check failed:\n${issues.map(i => `  - ${i}`).join("\n")}\nRun /gsd doctor fix to resolve.`,
+      reason: `Pre-dispatch health check failed:\n${issues.map(i => `  - ${i}`).join("\n")}\nRun /otto doctor fix to resolve.`,
       issues,
       fixesApplied,
     };

@@ -1,4 +1,4 @@
-// LOOP24 — Worktree Lifecycle module: owns milestone entry/exit lifecycle behind a small, typed Interface.
+// OTTO — Worktree Lifecycle module: owns milestone entry/exit lifecycle behind a small, typed Interface.
 /**
  * Worktree Lifecycle module — first-class Module for worktree create/enter/exit/merge.
  *
@@ -973,7 +973,7 @@ function _mergeWorktreeModeImpl(
 
     // Resolve roadmap — try project root first, then worktree path as
     // fallback. The worktree may hold the only copy when state-back
-    // projection silently dropped it or .gsd/ is not symlinked. Without
+    // projection silently dropped it or .otto/workflow/ is not symlinked. Without
     // the fallback, a missing roadmap triggers bare teardown which
     // deletes the branch and orphans all milestone commits (#1573).
     let roadmapPath = resolveMilestoneFile(
@@ -1043,10 +1043,10 @@ function _mergeWorktreeModeImpl(
         "info",
       );
     } else {
-      // #1906 — milestone produced only .gsd/ metadata. Surface
+      // #1906 — milestone produced only .otto/workflow/ metadata. Surface
       // clearly so the user knows the milestone is not truly complete.
       notify(
-        `WARNING: Milestone ${milestoneId} merged to main but contained NO code changes — only .gsd/ metadata files. ` +
+        `WARNING: Milestone ${milestoneId} merged to main but contained NO code changes — only .otto/workflow/ metadata files. ` +
           `The milestone summary may describe planned work that was never implemented. ` +
           `Review the milestone output and re-run if code is missing.`,
         "warning",
@@ -1072,7 +1072,7 @@ function _mergeWorktreeModeImpl(
     emitWorktreeMergeFailedOnce(originalBasePath || worktreeBasePath, milestoneId, err);
     // Surface a clear, actionable error. Worktree and milestone branch
     // are intentionally preserved — nothing has been deleted. User can
-    // retry /loop24 dispatch complete-milestone or merge manually once the
+    // retry /otto dispatch complete-milestone or merge manually once the
     // underlying issue is fixed (#1668, #1891).
     notify(
       `Milestone merge failed: ${msg}. Your worktree and milestone branch are preserved — retry with \`${slashCommand("dispatch complete-milestone")}\` or merge manually.`,
@@ -1147,7 +1147,7 @@ function _mergeBranchModeImpl(
             ? checkoutErr.message
             : String(checkoutErr);
         notify(
-          `Cannot merge milestone ${milestoneId}: working tree is on ${currentBranch} and checkout to ${milestoneBranch} failed (${checkoutMsg}). Resolve manually and run /gsd auto to resume.`,
+          `Cannot merge milestone ${milestoneId}: working tree is on ${currentBranch} and checkout to ${milestoneBranch} failed (${checkoutMsg}). Resolve manually and run /otto auto to resume.`,
           "error",
         );
         throw new UserNotifiedError(checkoutMsg, checkoutErr);
@@ -1157,7 +1157,7 @@ function _mergeBranchModeImpl(
       if (reverify !== milestoneBranch) {
         const reverifyMsg = `branch checkout to ${milestoneBranch} reported success but current branch is ${reverify}`;
         notify(
-          `Cannot merge milestone ${milestoneId}: ${reverifyMsg}. Resolve manually and run /gsd auto to resume.`,
+          `Cannot merge milestone ${milestoneId}: ${reverifyMsg}. Resolve manually and run /otto auto to resume.`,
           "error",
         );
         throw new UserNotifiedError(reverifyMsg);
@@ -1199,7 +1199,7 @@ function _mergeBranchModeImpl(
       );
     } else {
       notify(
-        `WARNING: Milestone ${milestoneId} merged (branch mode) but contained NO code changes — only .gsd/ metadata. ` +
+        `WARNING: Milestone ${milestoneId} merged (branch mode) but contained NO code changes — only .otto/workflow/ metadata. ` +
           `Review the milestone output and re-run if code is missing.`,
         "warning",
       );

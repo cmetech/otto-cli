@@ -20,17 +20,17 @@ describe("dispatcher DB-authoritative planning boundary", () => {
 
   beforeEach(() => {
     base = mkdtempSync(join(tmpdir(), "gsd-dispatcher-planning-"));
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "S01"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "CONTEXT.md"), "# M001\n");
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "ROADMAP.md"), [
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "S01"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "CONTEXT.md"), "# M001\n");
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "ROADMAP.md"), [
       "## Slices",
       "- [ ] **S01: Build** `risk:low` `depends:[]`",
     ].join("\n"));
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "S01", "PLAN.md"), [
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "S01", "PLAN.md"), [
       "## Tasks",
       "- [ ] **T01: Projection-only task**",
     ].join("\n"));
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
   });
 
   afterEach(() => {

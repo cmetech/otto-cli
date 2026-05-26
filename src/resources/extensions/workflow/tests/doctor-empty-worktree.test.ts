@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for doctor repair of empty milestone worktrees.
 
 import test from "node:test";

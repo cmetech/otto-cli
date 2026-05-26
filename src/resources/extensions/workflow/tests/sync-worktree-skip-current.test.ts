@@ -16,11 +16,11 @@ describe("syncWorktreeStateBack does not copy worktree milestone projections", (
     const main = join(root, "main");
     const worktree = join(root, "worktree");
     try {
-      mkdirSync(join(main, ".gsd", "milestones"), { recursive: true });
-      mkdirSync(join(worktree, ".gsd", "milestones", "M001"), { recursive: true });
-      writeFileSync(join(worktree, ".gsd", "metrics.json"), "{}\n", "utf-8");
+      mkdirSync(join(main, ".otto/workflow", "milestones"), { recursive: true });
+      mkdirSync(join(worktree, ".otto/workflow", "milestones", "M001"), { recursive: true });
+      writeFileSync(join(worktree, ".otto/workflow", "metrics.json"), "{}\n", "utf-8");
       writeFileSync(
-        join(worktree, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+        join(worktree, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
         "# M001: Worktree-only projection\n",
         "utf-8",
       );
@@ -28,9 +28,9 @@ describe("syncWorktreeStateBack does not copy worktree milestone projections", (
       const result = syncWorktreeStateBack(main, worktree, "M001");
 
       assert.deepEqual(result.synced, ["metrics.json"]);
-      assert.equal(existsSync(join(main, ".gsd", "metrics.json")), true);
+      assert.equal(existsSync(join(main, ".otto/workflow", "metrics.json")), true);
       assert.equal(
-        existsSync(join(main, ".gsd", "milestones", "M001", "M001-ROADMAP.md")),
+        existsSync(join(main, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md")),
         false,
       );
     } finally {

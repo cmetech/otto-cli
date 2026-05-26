@@ -151,13 +151,13 @@ test("uok contracts normalize legacy records without losing payload fields", () 
 
 test("uok audit emission writes DB as authoritative before jsonl projection", (t) => {
   const basePath = mkdtempSync(join(tmpdir(), "gsd-uok-db-audit-"));
-  mkdirSync(join(basePath, ".gsd"), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow"), { recursive: true });
   t.after(() => {
     closeDatabase();
     rmSync(basePath, { recursive: true, force: true });
   });
 
-  assert.equal(openDatabase(join(basePath, ".gsd", "gsd.db")), true);
+  assert.equal(openDatabase(join(basePath, ".otto/workflow", "otto.db")), true);
   emitUokAuditEvent(
     basePath,
     buildAuditEnvelope({
@@ -175,13 +175,13 @@ test("uok audit emission writes DB as authoritative before jsonl projection", (t
   assert.ok(row, "DB audit row should be written");
   assert.equal(JSON.parse(row.payload_json).contractVersion, CURRENT_UOK_CONTRACT_VERSION);
 
-  const projection = readFileSync(join(basePath, ".gsd", "audit", "events.jsonl"), "utf-8");
+  const projection = readFileSync(join(basePath, ".otto/workflow", "audit", "events.jsonl"), "utf-8");
   assert.ok(projection.includes("trace-db"), "jsonl projection should still be written");
 });
 
 test("uok timeline prefers DB records over jsonl projection when DB is available", (t) => {
   const basePath = mkdtempSync(join(tmpdir(), "gsd-uok-timeline-"));
-  const auditDir = join(basePath, ".gsd", "audit");
+  const auditDir = join(basePath, ".otto/workflow", "audit");
   mkdirSync(auditDir, { recursive: true });
   writeFileSync(
     join(auditDir, "events.jsonl"),
@@ -201,7 +201,7 @@ test("uok timeline prefers DB records over jsonl projection when DB is available
     rmSync(basePath, { recursive: true, force: true });
   });
 
-  assert.equal(openDatabase(join(basePath, ".gsd", "gsd.db")), true);
+  assert.equal(openDatabase(join(basePath, ".otto/workflow", "otto.db")), true);
   emitUokAuditEvent(
     basePath,
     buildAuditEnvelope({
@@ -234,7 +234,7 @@ test("uok writer records serialize sequence metadata", () => {
     sequence: { traceId: token.traceId, turnId: token.turnId, sequence: 7 },
     category: "audit",
     operation: "append",
-    path: ".gsd/audit/events.jsonl",
+    path: ".otto/workflow/audit/events.jsonl",
     ts: new Date().toISOString(),
   };
 

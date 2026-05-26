@@ -18,7 +18,7 @@ import { createWorkspace, scopeMilestone } from "../workspace.ts";
 
 function makeProjectDir(): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-ws-test-")));
-  mkdirSync(join(dir, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow", "milestones"), { recursive: true });
   return dir;
 }
 
@@ -43,8 +43,8 @@ describe("createWorkspace", () => {
   });
 
   test("from a worktree path produces mode=worktree, worktreeRoot=realpath, projectRoot=realpath of project", () => {
-    // Construct a worktree path: <projectDir>/.gsd/worktrees/M001
-    const worktreePath = join(projectDir, ".gsd", "worktrees", "M001");
+    // Construct a worktree path: <projectDir>/.otto/workflow/worktrees/M001
+    const worktreePath = join(projectDir, ".otto/workflow", "worktrees", "M001");
     mkdirSync(worktreePath, { recursive: true });
 
     const ws = createWorkspace(worktreePath);
@@ -177,7 +177,7 @@ describe("createWorkspace: contract.projectGsd is realpath-canonicalized when ba
 
     // contract.projectGsd must start with the canonical project root —
     // not with the symlink path. If the bug is present, contract.projectGsd
-    // would be linkPath + "/.gsd" instead of canonicalProjectRoot + "/.gsd".
+    // would be linkPath + "/.otto/workflow" instead of canonicalProjectRoot + "/.otto/workflow".
     assert.ok(
       ws.contract.projectGsd.startsWith(canonicalProjectRoot),
       `contract.projectGsd ("${ws.contract.projectGsd}") must be under the realpath'd projectRoot ("${canonicalProjectRoot}"), not the symlink path`,

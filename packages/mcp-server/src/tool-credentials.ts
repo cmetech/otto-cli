@@ -61,9 +61,9 @@ function getStoredApiKey(data: AuthStorageData, providerId: string): string | un
 }
 
 export function resolveAuthPath(env: NodeJS.ProcessEnv = process.env): string {
-  const agentDir = env.GSD_CODING_AGENT_DIR?.trim();
+  const agentDir = env.OTTO_CODING_AGENT_DIR?.trim();
   if (agentDir) return join(expandHome(agentDir), "auth.json");
-  return join(homedir(), ".gsd", "agent", "auth.json");
+  return join(homedir(), ".otto", "workflow", "agent", "auth.json");
 }
 
 export function loadStoredCredentialEnvKeys(options: {

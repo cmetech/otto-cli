@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { assertSafeDirectory } from "./validate-directory.js";
 import { detectWorkflowMcpLaunchConfig } from "./workflow-mcp.js";
 
-export const GSD_WORKFLOW_MCP_SERVER_NAME = "gsd-workflow";
+export const OTTO_WORKFLOW_MCP_SERVER_NAME = "otto-workflow";
 
 export interface ProjectMcpServerConfig {
   command?: string;
@@ -28,7 +28,7 @@ interface McpConfigFile {
 }
 
 export function resolveBundledWorkflowCliPath(env: NodeJS.ProcessEnv = process.env): string | null {
-  const explicit = env.GSD_CLI_PATH?.trim() || env.GSD_BIN_PATH?.trim();
+  const explicit = env.OTTO_CLI_PATH?.trim() || env.OTTO_BIN_PATH?.trim();
   if (explicit) return explicit;
 
   const candidates = [
@@ -52,12 +52,12 @@ export function buildProjectWorkflowMcpServerConfig(
   const workflowCliPath = resolveBundledWorkflowCliPath(env);
   const launch = detectWorkflowMcpLaunchConfig(resolvedProjectRoot, {
     ...env,
-    ...(workflowCliPath ? { GSD_CLI_PATH: workflowCliPath, GSD_BIN_PATH: workflowCliPath } : {}),
+    ...(workflowCliPath ? { OTTO_CLI_PATH: workflowCliPath, OTTO_BIN_PATH: workflowCliPath } : {}),
   });
 
   if (!launch) {
     throw new Error(
-      "Unable to resolve the GSD workflow MCP server. Build this checkout or install gsd-mcp-server on PATH.",
+      "Unable to resolve the OTTO workflow MCP server. Build this checkout or install gsd-mcp-server on PATH.",
     );
   }
 
@@ -96,19 +96,19 @@ export function ensureProjectWorkflowMcpConfig(
   const previousServers = existing.mcpServers ?? {};
   const nextServers = {
     ...previousServers,
-    [GSD_WORKFLOW_MCP_SERVER_NAME]: desiredServer,
+    [OTTO_WORKFLOW_MCP_SERVER_NAME]: desiredServer,
   };
 
   const alreadyPresent = existsSync(configPath);
   const unchanged =
-    JSON.stringify(previousServers[GSD_WORKFLOW_MCP_SERVER_NAME] ?? null)
+    JSON.stringify(previousServers[OTTO_WORKFLOW_MCP_SERVER_NAME] ?? null)
       === JSON.stringify(desiredServer)
     && existing.mcpServers !== undefined;
 
   if (unchanged) {
     return {
       configPath,
-      serverName: GSD_WORKFLOW_MCP_SERVER_NAME,
+      serverName: OTTO_WORKFLOW_MCP_SERVER_NAME,
       status: "unchanged",
     };
   }
@@ -122,7 +122,7 @@ export function ensureProjectWorkflowMcpConfig(
 
   return {
     configPath,
-    serverName: GSD_WORKFLOW_MCP_SERVER_NAME,
+    serverName: OTTO_WORKFLOW_MCP_SERVER_NAME,
     status: alreadyPresent ? "updated" : "created",
   };
 }

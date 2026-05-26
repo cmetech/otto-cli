@@ -29,7 +29,7 @@ import { syncProjectRootToWorktree } from "../auto-worktree.ts";
 
 function createBase(name: string): string {
   const base = mkdtempSync(join(tmpdir(), `gsd-wt-1886-${name}-`));
-  mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
   return base;
 }
 
@@ -50,12 +50,12 @@ test("#1886: worktree VALIDATION.md is not overwritten by project root sync", (t
   registerBases(t, mainBase, wtBase);
 
   // Project root has an older CONTEXT but no VALIDATION
-  const prM004 = join(mainBase, ".gsd", "milestones", "M004");
+  const prM004 = join(mainBase, ".otto/workflow", "milestones", "M004");
   mkdirSync(prM004, { recursive: true });
   writeFileSync(join(prM004, "M004-CONTEXT.md"), "# old context");
 
   // Worktree has CONTEXT + VALIDATION (written by validate-milestone)
-  const wtM004 = join(wtBase, ".gsd", "milestones", "M004");
+  const wtM004 = join(wtBase, ".otto/workflow", "milestones", "M004");
   mkdirSync(wtM004, { recursive: true });
   writeFileSync(join(wtM004, "M004-CONTEXT.md"), "# worktree context");
   writeFileSync(
@@ -86,7 +86,7 @@ test("#1886: missing worktree files are still copied from project root", (t) => 
   const wtBase = createBase("wt");
   registerBases(t, mainBase, wtBase);
 
-  const prM004 = join(mainBase, ".gsd", "milestones", "M004");
+  const prM004 = join(mainBase, ".otto/workflow", "milestones", "M004");
   mkdirSync(prM004, { recursive: true });
   writeFileSync(join(prM004, "M004-CONTEXT.md"), "# from project root");
   writeFileSync(join(prM004, "M004-ROADMAP.md"), "# roadmap");
@@ -94,11 +94,11 @@ test("#1886: missing worktree files are still copied from project root", (t) => 
   syncProjectRootToWorktree(mainBase, wtBase, "M004");
 
   assert.ok(
-    existsSync(join(wtBase, ".gsd", "milestones", "M004", "M004-CONTEXT.md")),
+    existsSync(join(wtBase, ".otto/workflow", "milestones", "M004", "M004-CONTEXT.md")),
     "missing CONTEXT.md copied from project root",
   );
   assert.ok(
-    existsSync(join(wtBase, ".gsd", "milestones", "M004", "M004-ROADMAP.md")),
+    existsSync(join(wtBase, ".otto/workflow", "milestones", "M004", "M004-ROADMAP.md")),
     "missing ROADMAP.md copied from project root",
   );
 });
@@ -109,18 +109,18 @@ test("#1886: completed-units.json is forward-synced to worktree", (t) => {
   registerBases(t, mainBase, wtBase);
 
   writeFileSync(
-    join(mainBase, ".gsd", "completed-units.json"),
+    join(mainBase, ".otto/workflow", "completed-units.json"),
     JSON.stringify(["validate-milestone/M004"]),
   );
   writeFileSync(
-    join(wtBase, ".gsd", "completed-units.json"),
+    join(wtBase, ".otto/workflow", "completed-units.json"),
     JSON.stringify([]),
   );
 
   syncProjectRootToWorktree(mainBase, wtBase, "M004");
 
   const wtCompleted = JSON.parse(
-    readFileSync(join(wtBase, ".gsd", "completed-units.json"), "utf-8"),
+    readFileSync(join(wtBase, ".otto/workflow", "completed-units.json"), "utf-8"),
   );
   assert.deepEqual(
     wtCompleted,
@@ -135,18 +135,18 @@ test("#1886: worktree completed-units.json untouched when project root has none"
   registerBases(t, mainBase, wtBase);
 
   // Project root milestone dir must exist for sync to run
-  const prM004 = join(mainBase, ".gsd", "milestones", "M004");
+  const prM004 = join(mainBase, ".otto/workflow", "milestones", "M004");
   mkdirSync(prM004, { recursive: true });
 
   writeFileSync(
-    join(wtBase, ".gsd", "completed-units.json"),
+    join(wtBase, ".otto/workflow", "completed-units.json"),
     JSON.stringify(["some-unit/M001"]),
   );
 
   syncProjectRootToWorktree(mainBase, wtBase, "M004");
 
   const wtCompleted = JSON.parse(
-    readFileSync(join(wtBase, ".gsd", "completed-units.json"), "utf-8"),
+    readFileSync(join(wtBase, ".otto/workflow", "completed-units.json"), "utf-8"),
   );
   assert.deepEqual(
     wtCompleted,

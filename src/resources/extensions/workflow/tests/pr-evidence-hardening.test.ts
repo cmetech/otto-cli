@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Hardening tests for buildPrEvidence — HTML-comment stripping, fake commit-trailer removal, and per-item length capping.
 
 import test from "node:test";

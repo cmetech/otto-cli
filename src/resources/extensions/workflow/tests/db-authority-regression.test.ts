@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for DB authority over markdown projections.
 
 import test from "node:test";
@@ -24,7 +24,7 @@ import type { Requirement } from "../types.ts";
 
 function makeBase(prefix = "gsd-db-authority-"): string {
   const base = mkdtempSync(join(tmpdir(), prefix));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -38,7 +38,7 @@ function cleanup(base: string): void {
 }
 
 function openProjectDb(base: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 }
 
 function activeRequirement(id: string): Requirement {
@@ -62,9 +62,9 @@ test("DB authority: PROJECT.md and QUEUE-ORDER projections do not choose runtime
   const base = makeBase();
   t.after(() => cleanup(base));
 
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "PROJECT.md"),
+    join(base, ".otto/workflow", "PROJECT.md"),
     [
       "# Projection Project",
       "",
@@ -74,7 +74,7 @@ test("DB authority: PROJECT.md and QUEUE-ORDER projections do not choose runtime
     ].join("\n"),
   );
   writeFileSync(
-    join(base, ".gsd", "QUEUE-ORDER.json"),
+    join(base, ".otto/workflow", "QUEUE-ORDER.json"),
     JSON.stringify({ order: ["M001", "M999"], updatedAt: new Date().toISOString() }),
   );
 
@@ -94,7 +94,7 @@ test("DB authority: REQUIREMENTS.md and DECISIONS.md projections do not populate
   t.after(() => cleanup(base));
 
   writeFileSync(
-    join(base, ".gsd", "REQUIREMENTS.md"),
+    join(base, ".otto/workflow", "REQUIREMENTS.md"),
     [
       "# Requirements",
       "",
@@ -106,7 +106,7 @@ test("DB authority: REQUIREMENTS.md and DECISIONS.md projections do not populate
     ].join("\n"),
   );
   writeFileSync(
-    join(base, ".gsd", "DECISIONS.md"),
+    join(base, ".otto/workflow", "DECISIONS.md"),
     [
       "# Decisions",
       "",
@@ -139,7 +139,7 @@ test("DB authority: DB requirements remain canonical when REQUIREMENTS.md disagr
   t.after(() => cleanup(base));
 
   writeFileSync(
-    join(base, ".gsd", "REQUIREMENTS.md"),
+    join(base, ".otto/workflow", "REQUIREMENTS.md"),
     [
       "# Requirements",
       "",
@@ -167,7 +167,7 @@ test("explicit markdown import remains opt-in and is not run by startup mismatch
   const base = makeBase();
   t.after(() => cleanup(base));
 
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   const sliceDir = join(milestoneDir, "slices", "S01");
   const tasksDir = join(sliceDir, "tasks");
   mkdirSync(tasksDir, { recursive: true });

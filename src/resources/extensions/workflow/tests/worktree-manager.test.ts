@@ -25,10 +25,10 @@ function makeBaseRepo(): string {
   run("git init -b main", base);
   run('git config user.name "Test User"', base);
   run('git config user.email "test@example.com"', base);
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   writeFileSync(join(base, "README.md"), "# Test Project\n", "utf-8");
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     "# M001: Demo\n\n## Slices\n- [ ] **S01: First** `risk:low` `depends:[]`\n  > After this: it works\n",
     "utf-8",
   );
@@ -45,14 +45,14 @@ function makeRepoWithWorktree(worktreeName: string): { base: string; wtPath: str
 
 function makeRepoWithChanges(worktreeName: string): { base: string; wtPath: string } {
   const { base, wtPath } = makeRepoWithWorktree(worktreeName);
-  mkdirSync(join(wtPath, ".gsd", "milestones", "M002"), { recursive: true });
+  mkdirSync(join(wtPath, ".otto/workflow", "milestones", "M002"), { recursive: true });
   writeFileSync(
-    join(wtPath, ".gsd", "milestones", "M002", "M002-ROADMAP.md"),
+    join(wtPath, ".otto/workflow", "milestones", "M002", "M002-ROADMAP.md"),
     "# M002: New Feature\n\n## Slices\n- [ ] **S01: Setup** `risk:low` `depends:[]`\n  > After this: new feature ready\n",
     "utf-8",
   );
   writeFileSync(
-    join(wtPath, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(wtPath, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     "# M001: Demo (updated)\n\n## Slices\n- [x] **S01: First** `risk:low` `depends:[]`\n  > Done\n",
     "utf-8",
   );
@@ -86,8 +86,8 @@ describe("createWorktree", () => {
     assert.ok(existsSync(info.path), "worktree path should exist on disk");
     assert.ok(existsSync(join(info.path, "README.md")), "README.md should be in worktree");
     assert.ok(
-      existsSync(join(info.path, ".gsd", "milestones", "M001", "M001-ROADMAP.md")),
-      ".gsd files should be in worktree",
+      existsSync(join(info.path, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md")),
+      ".otto/workflow files should be in worktree",
     );
     const branches = run("git branch", base);
     assert.ok(branches.includes("worktree/feature-x"), "branch should be created in base repo");
@@ -144,7 +144,7 @@ describe("createWorktree — branch cleanup on add failure", () => {
 
     // Make the worktrees parent directory non-writable so `git worktree add`
     // fails after the branch has already been force-reset.
-    const parentDir = join(base, ".gsd", "worktrees");
+    const parentDir = join(base, ".otto/workflow", "worktrees");
     mkdirSync(parentDir, { recursive: true });
     run(`chmod 555 "${parentDir}"`, base);
 
@@ -211,7 +211,7 @@ describe("diffWorktreeGSD and getWorktreeGSDDiff", () => {
   });
   afterEach(() => { rmSync(base, { recursive: true, force: true }); });
 
-  test("detects added and modified GSD files", () => {
+  test("detects added and modified OTTO files", () => {
     const diff = diffWorktreeGSD(base, "feature-x");
     assert.ok(diff.added.length > 0, "should have added files");
     assert.ok(

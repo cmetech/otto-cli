@@ -1,4 +1,4 @@
-// the agent + /gsd brief command behavior tests
+// the agent + /otto brief command behavior tests
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -30,7 +30,7 @@ function createMockPi() {
   };
 }
 
-test("/gsd brief appears in the command description and top-level completions", () => {
+test("/otto brief appears in the command description and top-level completions", () => {
   assert.match(WORKFLOW_COMMAND_DESCRIPTION, /brief/);
 
   const completions = getWorkflowArgumentCompletions("br");
@@ -40,20 +40,20 @@ test("/gsd brief appears in the command description and top-level completions", 
   assert.match(entry.description, /visual HTML brief/i);
 });
 
-test("/gsd brief exposes Visual Brief mode completions", () => {
+test("/otto brief exposes Visual Brief mode completions", () => {
   const completions = getWorkflowArgumentCompletions("brief d");
 
   assert.ok(
     completions.some((completion) => completion.value === "brief diagram"),
-    "diagram should be suggested as a /gsd brief mode",
+    "diagram should be suggested as a /otto brief mode",
   );
   assert.ok(
     getWorkflowArgumentCompletions("brief ").some((completion) => completion.value === "brief diff"),
-    "diff should be suggested after /gsd brief",
+    "diff should be suggested after /otto brief",
   );
 });
 
-test("/gsd brief sends a Visual Brief prompt for valid args", async () => {
+test("/otto brief sends a Visual Brief prompt for valid args", async () => {
   const ctx = createMockCtx();
   const pi = createMockPi();
 
@@ -67,7 +67,7 @@ test("/gsd brief sends a Visual Brief prompt for valid args", async () => {
   assert.match(pi.sentMessages[0], /Output directory:/);
 });
 
-test("/gsd brief reports usage for empty args instead of sending a prompt", async () => {
+test("/otto brief reports usage for empty args instead of sending a prompt", async () => {
   const ctx = createMockCtx();
   const pi = createMockPi();
 
@@ -78,12 +78,12 @@ test("/gsd brief reports usage for empty args instead of sending a prompt", asyn
   assert.deepEqual(ctx.notifications, [{ message: VISUAL_BRIEF_USAGE, level: "info" }]);
 });
 
-test("/gsd help full lists brief separately from visualize", () => {
+test("/otto help full lists brief separately from visualize", () => {
   const ctx = createMockCtx();
 
   showHelp(ctx as any, "full");
 
   const help = ctx.notifications.at(0)?.message ?? "";
-  assert.match(help, /\/gsd visualize\s+Interactive 10-tab TUI/);
-  assert.match(help, /\/gsd brief <mode>\s+Generate a visual HTML brief/);
+  assert.match(help, /\/otto visualize\s+Interactive 10-tab TUI/);
+  assert.match(help, /\/otto brief <mode>\s+Generate a visual HTML brief/);
 });

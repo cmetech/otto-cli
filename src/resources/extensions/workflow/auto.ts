@@ -1,9 +1,9 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Auto-mode orchestration, session lifecycle, and stop handling.
 /**
  * Auto Mode — Fresh Session Per Unit
  *
- * State machine driven by .gsd/ files on disk. Each "unit" of work
+ * State machine driven by .otto/workflow/ files on disk. Each "unit" of work
  * (plan slice, execute task, complete slice) gets a fresh session via
  * the stashed ctx.newSession() pattern.
  *
@@ -17,7 +17,7 @@ import type {
   ExtensionContext,
   ExtensionCommandContext,
   SessionMessageEntry,
-} from "@loop24/pi-coding-agent";
+} from "@otto/pi-coding-agent";
 
 import { deriveState } from "./state.js";
 import { parseUnitId } from "./unit-id.js";
@@ -349,20 +349,20 @@ function registerAutoWorkerForSession(
 
 function captureProjectRootEnv(projectRoot: string): void {
   if (!s.projectRootEnvCaptured) {
-    s.hadProjectRootEnv = Object.prototype.hasOwnProperty.call(process.env, "LOOP24_PROJECT_ROOT") || Object.prototype.hasOwnProperty.call(process.env, "GSD_PROJECT_ROOT");
-    s.previousProjectRootEnv = (process.env.LOOP24_PROJECT_ROOT ?? process.env.GSD_PROJECT_ROOT) ?? null;
+    s.hadProjectRootEnv = Object.prototype.hasOwnProperty.call(process.env, "OTTO_PROJECT_ROOT") || Object.prototype.hasOwnProperty.call(process.env, "OTTO_PROJECT_ROOT");
+    s.previousProjectRootEnv = (process.env.OTTO_PROJECT_ROOT ?? process.env.OTTO_PROJECT_ROOT) ?? null;
     s.projectRootEnvCaptured = true;
   }
-  process.env.LOOP24_PROJECT_ROOT = process.env.GSD_PROJECT_ROOT = projectRoot;
+  process.env.OTTO_PROJECT_ROOT = projectRoot;
 }
 
 function restoreProjectRootEnv(): void {
   if (!s.projectRootEnvCaptured) return;
 
   if (s.hadProjectRootEnv && s.previousProjectRootEnv !== null) {
-    process.env.LOOP24_PROJECT_ROOT = process.env.GSD_PROJECT_ROOT = s.previousProjectRootEnv;
+    process.env.OTTO_PROJECT_ROOT = s.previousProjectRootEnv;
   } else {
-    delete process.env.LOOP24_PROJECT_ROOT; delete process.env.GSD_PROJECT_ROOT;
+    delete process.env.OTTO_PROJECT_ROOT; delete process.env.OTTO_PROJECT_ROOT;
   }
 
   s.previousProjectRootEnv = null;
@@ -380,15 +380,15 @@ export function _restoreProjectRootEnvForTest(): void {
 
 function captureMilestoneLockEnv(milestoneId: string | null): void {
   if (!s.milestoneLockEnvCaptured) {
-    s.hadMilestoneLockEnv = Object.prototype.hasOwnProperty.call(process.env, "LOOP24_MILESTONE_LOCK") || Object.prototype.hasOwnProperty.call(process.env, "GSD_MILESTONE_LOCK");
-    s.previousMilestoneLockEnv = (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK) ?? null;
+    s.hadMilestoneLockEnv = Object.prototype.hasOwnProperty.call(process.env, "OTTO_MILESTONE_LOCK") || Object.prototype.hasOwnProperty.call(process.env, "OTTO_MILESTONE_LOCK");
+    s.previousMilestoneLockEnv = (process.env.OTTO_MILESTONE_LOCK ?? process.env.OTTO_MILESTONE_LOCK) ?? null;
     s.milestoneLockEnvCaptured = true;
   }
 
   if (milestoneId) {
-    process.env.LOOP24_MILESTONE_LOCK = process.env.GSD_MILESTONE_LOCK = milestoneId;
+    process.env.OTTO_MILESTONE_LOCK = milestoneId;
   } else {
-    delete process.env.LOOP24_MILESTONE_LOCK; delete process.env.GSD_MILESTONE_LOCK;
+    delete process.env.OTTO_MILESTONE_LOCK; delete process.env.OTTO_MILESTONE_LOCK;
   }
 }
 
@@ -396,9 +396,9 @@ function restoreMilestoneLockEnv(): void {
   if (!s.milestoneLockEnvCaptured) return;
 
   if (s.hadMilestoneLockEnv && s.previousMilestoneLockEnv !== null) {
-    process.env.LOOP24_MILESTONE_LOCK = process.env.GSD_MILESTONE_LOCK = s.previousMilestoneLockEnv;
+    process.env.OTTO_MILESTONE_LOCK = s.previousMilestoneLockEnv;
   } else {
-    delete process.env.LOOP24_MILESTONE_LOCK; delete process.env.GSD_MILESTONE_LOCK;
+    delete process.env.OTTO_MILESTONE_LOCK; delete process.env.OTTO_MILESTONE_LOCK;
   }
 
   s.previousMilestoneLockEnv = null;
@@ -759,7 +759,7 @@ export function _warnIfWorktreeMissingForTest(
   if (worktreePath && !existsSync(worktreePath)) {
     logWarning(
       "session",
-      `Worktree was expected at ${worktreePath} but is missing. Continuing in project-root mode. To restart with a fresh worktree, run /gsd-debug or recreate the milestone.`,
+      `Worktree was expected at ${worktreePath} but is missing. Continuing in project-root mode. To restart with a fresh worktree, run /otto-debug or recreate the milestone.`,
       { file: "auto.ts", milestoneId },
     );
     return true;
@@ -783,8 +783,8 @@ export async function refreshResumeResourcesAndDb(
 ): Promise<void> {
   const env = deps.env ?? process.env;
   const importModule = deps.importModule ?? ((specifier: string) => import(specifier));
-  const agentDir = env.GSD_CODING_AGENT_DIR || join(workflowHome(), "agent");
-  const pkgRoot = env.GSD_PKG_ROOT;
+  const agentDir = env.OTTO_CODING_AGENT_DIR || join(workflowHome(), "agent");
+  const pkgRoot = env.OTTO_PKG_ROOT;
   const resourceLoaderPath = pkgRoot
     ? pathToFileURL(join(pkgRoot, "dist", "resource-loader.js")).href
     : new URL("../../../resource-loader.js", import.meta.url).href;
@@ -911,7 +911,7 @@ export function stopAutoRemote(projectRoot: string): {
 /**
  * Check if a remote auto-mode session is running (from a different process).
  * Reads the crash lock, checks PID liveness, and returns session details.
- * Used by the guard in commands.ts to prevent bare /gsd, /otto next, and
+ * Used by the guard in commands.ts to prevent bare /otto, /otto next, and
  * /otto auto from stealing the session lock.
  */
 export function checkRemoteAutoSession(projectRoot: string): {
@@ -1069,8 +1069,8 @@ function handleLostSessionLock(
   const message =
     lockStatus?.failureReason === "pid-mismatch"
       ? lockStatus.existingPid
-        ? `Session lock (${lockFilePath}) moved to PID ${lockStatus.existingPid} — another GSD process appears to have taken over. Stopping gracefully.${recoverySuggestion}`
-        : `Session lock (${lockFilePath}) moved to a different process — another GSD process appears to have taken over. Stopping gracefully.${recoverySuggestion}`
+        ? `Session lock (${lockFilePath}) moved to PID ${lockStatus.existingPid} — another OTTO process appears to have taken over. Stopping gracefully.${recoverySuggestion}`
+        : `Session lock (${lockFilePath}) moved to a different process — another OTTO process appears to have taken over. Stopping gracefully.${recoverySuggestion}`
       : lockStatus?.failureReason === "missing-metadata"
         ? `Session lock metadata (${lockFilePath}) disappeared, so ownership could not be confirmed. Stopping gracefully.${recoverySuggestion}`
         : lockStatus?.failureReason === "compromised"
@@ -1365,7 +1365,7 @@ export async function stopAuto(
         const lifecycle = buildLifecycle();
 
         // Check if the milestone is complete. DB status is the authoritative
-        // signal — only a successful gsd_complete_milestone call flips it to
+        // signal — only a successful otto_complete_milestone call flips it to
         // "complete" (tools/complete-milestone.ts). SUMMARY file presence is
         // NOT sufficient: a blocker placeholder stub or a partial write can
         // leave a file behind without the milestone actually being done,
@@ -1580,7 +1580,7 @@ export async function stopAuto(
         allMilestonesComplete: options.completionWidget.allMilestonesComplete,
         basePath: s.originalBasePath || s.basePath || null,
       });
-      if ((process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) === "1") {
+      if ((process.env.OTTO_HEADLESS ?? process.env.OTTO_HEADLESS) === "1") {
         ctx.ui.notify(`${stopNotificationPrefix}.`, "info");
       }
     }
@@ -2540,11 +2540,11 @@ export async function startAuto(
     return;
   }
 
-  // Heal .gsd.migrating before any branching — covers both fresh-start and
+  // Heal .otto/workflow.migrating before any branching — covers both fresh-start and
   // resume paths (#4416). The matching call in auto-start.ts covers the
   // bootstrap-only path; this call ensures the resume path is also protected.
   if (recoverFailedMigration(base)) {
-    ctx.ui.notify("Recovered unfinished migration (.gsd.migrating → .gsd).", "info");
+    ctx.ui.notify("Recovered unfinished migration (.otto/workflow.migrating → .otto/workflow).", "info");
   }
 
   const unmergedStartMessage = await getUnmergedMilestoneBlockMessageForBase(base, "auto");
@@ -2664,7 +2664,7 @@ export async function startAuto(
               if (persistedWorktreePath && !existsSync(persistedWorktreePath)) {
                 logWarning(
                   "session",
-                  `Worktree was expected at ${persistedWorktreePath} but is missing. Continuing in project-root mode. To restart with a fresh worktree, run /gsd-debug or recreate the milestone.`,
+                  `Worktree was expected at ${persistedWorktreePath} but is missing. Continuing in project-root mode. To restart with a fresh worktree, run /otto-debug or recreate the milestone.`,
                   { file: "auto.ts", milestoneId: meta.milestoneId ?? "" },
                 );
               }
@@ -2759,7 +2759,7 @@ export async function startAuto(
     if (resumeWorktreePath && !existsSync(resumeWorktreePath)) {
       logWarning(
         "session",
-        `Worktree was expected at ${resumeWorktreePath} but is missing. Continuing in project-root mode. To restart with a fresh worktree, run /gsd-debug or recreate the milestone.`,
+        `Worktree was expected at ${resumeWorktreePath} but is missing. Continuing in project-root mode. To restart with a fresh worktree, run /otto-debug or recreate the milestone.`,
         { file: "auto.ts", milestoneId: s.currentMilestoneId ?? "" },
       );
     }
@@ -2822,11 +2822,11 @@ export async function startAuto(
     restoreHookState(s.basePath);
     // Re-sync managed resources on resume so long-lived auto sessions pick up
     // bundled extension updates before resume-time verification/state logic runs.
-    // GSD_PKG_ROOT is set by loader.ts and points to the upstream package root.
+    // OTTO_PKG_ROOT is set by loader.ts and points to the upstream package root.
     // The relative import ("../../../resource-loader.js") only works from the source
     // tree; deployed extensions live at ~/.otto/agent/extensions/gsd/ where the
     // relative path resolves to ~/.otto/agent/resource-loader.js which doesn't exist.
-    // Using GSD_PKG_ROOT constructs a correct absolute path in both contexts (#3949).
+    // Using OTTO_PKG_ROOT constructs a correct absolute path in both contexts (#3949).
     await refreshResumeResourcesAndDb(s.basePath);
     try {
       await rebuildState(s.basePath);

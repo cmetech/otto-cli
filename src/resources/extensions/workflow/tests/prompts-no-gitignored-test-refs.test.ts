@@ -19,7 +19,7 @@ test("add-tests prompt forbids referencing gitignored paths", () => {
     /gitignore/i,
     "add-tests prompt should mention .gitignore to rule out referencing local-only files",
   );
-  assert.match(prompt, /\.gsd\//, "add-tests prompt should name .gsd/ as off-limits for tests");
+  assert.match(prompt, /\.otto\/workflow\//, "add-tests prompt should name .otto/workflow/ as off-limits for tests");
   assert.match(prompt, /\.planning\//, "add-tests prompt should name .planning/ as off-limits for tests");
   assert.match(prompt, /\.audits\//, "add-tests prompt should name .audits/ as off-limits for tests");
   assert.match(
@@ -37,7 +37,7 @@ test("plan-slice prompt warns against planning tests that depend on gitignored f
     /gitignore/i,
     "plan-slice prompt should warn against planning tests that depend on .gitignore paths",
   );
-  assert.match(prompt, /\.gsd\//, "plan-slice prompt should name .gsd/ as off-limits for planned tests");
+  assert.match(prompt, /\.otto\/workflow\//, "plan-slice prompt should name .otto/workflow/ as off-limits for planned tests");
   assert.match(prompt, /\.planning\//, "plan-slice prompt should name .planning/ as off-limits for planned tests");
   assert.match(prompt, /\.audits\//, "plan-slice prompt should name .audits/ as off-limits for planned tests");
 });
@@ -50,7 +50,7 @@ test("execute-task prompt forbids tests that reference gitignored paths", () => 
     /gitignore/i,
     "execute-task prompt should forbid referencing gitignored paths from tests",
   );
-  assert.match(prompt, /\.gsd\//, "execute-task prompt should name .gsd/ as off-limits for tests");
+  assert.match(prompt, /\.otto\/workflow\//, "execute-task prompt should name .otto/workflow/ as off-limits for tests");
   assert.match(prompt, /\.planning\//, "execute-task prompt should name .planning/ as off-limits for tests");
   assert.match(prompt, /\.audits\//, "execute-task prompt should name .audits/ as off-limits for tests");
 });

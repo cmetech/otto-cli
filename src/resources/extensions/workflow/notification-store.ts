@@ -1,6 +1,6 @@
 // Workflow Extension — Persistent Notification Store
 // Captures all ctx.ui.notify() calls and workflow-logger warnings to
-// .gsd/notifications.jsonl so they survive context resets and session restarts.
+// .otto/workflow/notifications.jsonl so they survive context resets and session restarts.
 // Rotates at MAX_ENTRIES to prevent unbounded growth.
 
 import { appendFileSync, existsSync, mkdirSync, openSync, closeSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
@@ -85,7 +85,7 @@ export function appendNotification(
   };
 
   try {
-    const dir = join(_basePath, ".gsd");
+    const dir = join(_basePath, ".otto/workflow");
     mkdirSync(dir, { recursive: true });
     appendFileSync(join(dir, FILENAME), JSON.stringify(entry) + "\n", "utf-8");
     _lineCount++;
@@ -223,7 +223,7 @@ export function _resetNotificationStore(): void {
 // ─── Internal ───────────────────────────────────────────────────────────
 
 function _readEntriesFromDisk(basePath: string): NotificationEntry[] {
-  const filePath = join(basePath, ".gsd", FILENAME);
+  const filePath = join(basePath, ".otto/workflow", FILENAME);
   if (!existsSync(filePath)) return [];
   try {
     const content = readFileSync(filePath, "utf-8");
@@ -276,7 +276,7 @@ function _emitChange(): void {
  * Must be called inside _withLock for cross-process safety.
  */
 function _atomicWrite(basePath: string, content: string): void {
-  const dir = join(basePath, ".gsd");
+  const dir = join(basePath, ".otto/workflow");
   mkdirSync(dir, { recursive: true });
   const target = join(dir, FILENAME);
   const tmp = target + ".tmp." + process.pid;
@@ -291,14 +291,14 @@ function _atomicWrite(basePath: string, content: string): void {
  * to avoid deadlocking the UI on a stale lock.
  */
 function _withLock<T>(basePath: string, fn: () => T): T {
-  const lockPath = join(basePath, ".gsd", LOCKFILE);
+  const lockPath = join(basePath, ".otto/workflow", LOCKFILE);
   let fd: number | null = null;
   const maxAttempts = 5;
   const retryMs = 20;
 
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      mkdirSync(join(basePath, ".gsd"), { recursive: true });
+      mkdirSync(join(basePath, ".otto/workflow"), { recursive: true });
       fd = openSync(lockPath, "wx");
       break;
     } catch (err: any) {

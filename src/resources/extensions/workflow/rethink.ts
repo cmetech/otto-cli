@@ -7,7 +7,7 @@
  * through conversation.
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { existsSync } from "node:fs";
 
 import { isAutoActive } from "./auto.js";
@@ -37,7 +37,7 @@ export async function handleRethink(
   const basePath = currentDirectoryRoot();
   const root = workflowRoot(basePath);
   if (!existsSync(root)) {
-    ctx.ui.notify("No GSD project found. Run /gsd init first.", "warning");
+    ctx.ui.notify("No OTTO project found. Run /otto init first.", "warning");
     return;
   }
 
@@ -56,8 +56,8 @@ export async function handleRethink(
   const existingMilestonesContext = await buildExistingMilestonesContext(basePath, milestoneIds, state);
 
   const commitInstruction = isGitignored(basePath)
-    ? "Do not commit planning artifacts — .gsd/ is gitignored in this project."
-    : 'After changes, run `git add .gsd/ && git commit -m "docs(gsd): rethink milestone plan"` to persist (rethink runs interactively outside auto-mode, so no system auto-commit)';
+    ? "Do not commit planning artifacts — .otto/workflow/ is gitignored in this project."
+    : 'After changes, run `git add .otto/workflow/ && git commit -m "docs(gsd): rethink milestone plan"` to persist (rethink runs interactively outside auto-mode, so no system auto-commit)';
 
   const content = loadPrompt("rethink", {
     rethinkData,

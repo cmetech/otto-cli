@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for SQLite provider loading and fallback behavior.
 
 import { describe, test } from "node:test";
@@ -42,11 +42,11 @@ describe("db-provider", () => {
   test("loads node:sqlite first and opens raw databases with it", () => {
     const loader = createSqliteProviderLoader(createDeps());
 
-    const rawDb = loader.openRaw("/tmp/gsd-node.db");
+    const rawDb = loader.openRaw("/tmp/otto-node.db");
 
     assert.equal(loader.getProviderName(), "node:sqlite");
     assert.ok(rawDb instanceof FakeNodeDatabase);
-    assert.equal((rawDb as FakeNodeDatabase).path, "/tmp/gsd-node.db");
+    assert.equal((rawDb as FakeNodeDatabase).path, "/tmp/otto-node.db");
   });
 
   test("falls back to better-sqlite3 when node:sqlite is unavailable", () => {
@@ -58,11 +58,11 @@ describe("db-provider", () => {
       },
     }));
 
-    const rawDb = loader.openRaw("/tmp/gsd-better.db");
+    const rawDb = loader.openRaw("/tmp/otto-better.db");
 
     assert.equal(loader.getProviderName(), "better-sqlite3");
     assert.ok(rawDb instanceof FakeBetterDatabase);
-    assert.equal((rawDb as FakeBetterDatabase).path, "/tmp/gsd-better.db");
+    assert.equal((rawDb as FakeBetterDatabase).path, "/tmp/otto-better.db");
   });
 
   test("reports provider unavailability with a Node version hint below Node 22", () => {
@@ -74,7 +74,7 @@ describe("db-provider", () => {
     });
     const loader = createSqliteProviderLoader(deps);
 
-    assert.equal(loader.openRaw("/tmp/gsd-none.db"), null);
+    assert.equal(loader.openRaw("/tmp/otto-none.db"), null);
 
     assert.equal(loader.getProviderName(), null);
     assert.equal(deps.stderr.length, 1);
@@ -92,12 +92,12 @@ describe("db-provider", () => {
     }));
 
     loader.load();
-    const fallback = loader.tryOpenBetterSqliteFallback("/tmp/gsd-fallback.db");
+    const fallback = loader.tryOpenBetterSqliteFallback("/tmp/otto-fallback.db");
 
     assert.equal(loader.getProviderName(), "node:sqlite");
     assert.ok(fallback);
     assert.ok(fallback.rawDb instanceof FakeBetterDatabase);
-    assert.equal((fallback.rawDb as FakeBetterDatabase).path, "/tmp/gsd-fallback.db");
+    assert.equal((fallback.rawDb as FakeBetterDatabase).path, "/tmp/otto-fallback.db");
 
     loader.commitFallback(fallback);
     assert.equal(loader.getProviderName(), "better-sqlite3");

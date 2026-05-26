@@ -5,7 +5,7 @@ name: performance-audit
 version: 1
 mode: markdown-phase
 requires_project: false
-artifact_dir: .gsd/workflows/perf/
+artifact_dir: .otto/workflow/workflows/perf/
 </template_meta>
 
 <purpose>

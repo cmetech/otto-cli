@@ -1,4 +1,4 @@
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
@@ -46,7 +46,7 @@ import {
 import { slashCommand } from "../../strings.js";
 
 /**
- * Parse optional `/loop24 discuss` targeting args.
+ * Parse optional `/otto discuss` targeting args.
  *
  * Supports positional targets (`M014`, `M014/S03`) and flag variants:
  * `--milestone M014` or `--slice M014/S03`.
@@ -91,7 +91,7 @@ function parseDiscussArgs(args: string): { target: string | null; error: string 
 export const _parseDiscussArgsForTest = parseDiscussArgs;
 
 /**
- * Refuses interactive commands that mutate durable .gsd/ planning state while
+ * Refuses interactive commands that mutate durable .otto/workflow/ planning state while
  * auto-mode holds the worktree. Returns true if the command was blocked and
  * the caller should return immediately; false if it is safe to proceed.
  *
@@ -196,7 +196,7 @@ export function parseWorkflowRunArgs(args: string): { defName: string; overrides
 
 /**
  * Parse every token as an optional `k=v` override. Use when the workflow name
- * is already known (e.g., direct `/loop24 workflow <name> ...` dispatch) so the
+ * is already known (e.g., direct `/otto workflow <name> ...` dispatch) so the
  * first token isn't eaten as a def name.
  */
 export function parseWorkflowOverridesOnly(args: string): Record<string, string> {
@@ -275,7 +275,7 @@ async function handleCustomWorkflow(
   ctx: ExtensionCommandContext,
   pi: ExtensionAPI,
 ): Promise<boolean> {
-  // Bare `/loop24 workflow` — list plugins
+  // Bare `/otto workflow` — list plugins
   if (!sub) {
     const base = projectRoot();
     const listing = listPluginsFormatted(base);
@@ -462,7 +462,7 @@ async function handleCustomWorkflow(
       }
     } else {
       // Legacy fallback path for names that don't resolve via plugins.
-      const defPath = join(base, ".gsd", "workflow-defs", `${rest}.yaml`);
+      const defPath = join(base, ".otto/workflow", "workflow-defs", `${rest}.yaml`);
       if (!existsSync(defPath)) {
         ctx.ui.notify(`Definition not found: ${defPath}`, "error");
         return true;
@@ -522,7 +522,7 @@ async function handleCustomWorkflow(
     return true;
   }
 
-  // ── Direct dispatch: /loop24 workflow <name> [args] ──
+  // ── Direct dispatch: /otto workflow <name> [args] ──
   // If the first token isn't a reserved subcommand, resolve it as a plugin.
   if (!RESERVED_SUBCOMMANDS.has(head)) {
     const base = projectRoot();
@@ -539,7 +539,7 @@ async function handleCustomWorkflow(
 }
 
 export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionCommandContext, pi: ExtensionAPI): Promise<boolean> {
-  // ── /loop24 do — natural language routing (must be early to route to other commands) ──
+  // ── /otto do — natural language routing (must be early to route to other commands) ──
   if (trimmed === "do" || trimmed.startsWith("do ")) {
     if (requireNotAutoActive(slashCommand("do"), ctx)) return true;
     const { handleDo } = await import("../../commands-do.js");
@@ -553,7 +553,7 @@ export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionComma
     await handleBacklog(trimmed.replace(/^backlog\s*/, "").trim(), ctx, pi);
     return true;
   }
-  // ── Custom workflow commands (`/loop24 workflow ...`) ──
+  // ── Custom workflow commands (`/otto workflow ...`) ──
   if (trimmed === "workflow" || trimmed.startsWith("workflow ")) {
     const sub = trimmed.slice("workflow".length).trim();
     return handleCustomWorkflow(sub, ctx, pi);
@@ -591,7 +591,7 @@ export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionComma
     const args = trimmed.replace(/^new-milestone\s*/, "").trim();
     if (/(^|\s)--deep(\s|$)/.test(args)) {
       setPlanningDepth(basePath, "deep");
-      ctx.ui.notify("Deep planning mode enabled (.gsd/PREFERENCES.md updated).", "info");
+      ctx.ui.notify("Deep planning mode enabled (.otto/workflow/PREFERENCES.md updated).", "info");
     }
     const headlessChainAuto = args.split(/\s+/).includes(HEADLESS_CHAIN_AUTO_FLAG);
     const headlessContextPath = join(workflowRoot(basePath), "runtime", "headless-context.md");
@@ -616,7 +616,7 @@ export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionComma
     const args = trimmed.replace(/^new-project\s*/, "").trim();
     if (/(^|\s)--deep(\s|$)/.test(args)) {
       setPlanningDepth(basePath, "deep");
-      ctx.ui.notify("Deep planning mode enabled (.gsd/PREFERENCES.md updated).", "info");
+      ctx.ui.notify("Deep planning mode enabled (.otto/workflow/PREFERENCES.md updated).", "info");
     }
     const { showSmartEntry } = await import("../../guided-flow.js");
     await showSmartEntry(ctx, pi, basePath);

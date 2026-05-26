@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Interactive terminal tool execution renderer for commands, tool calls, diffs, images, and summaries.
 import {
 	Box,
@@ -13,7 +13,7 @@ import {
 	type TUI,
 	truncateToWidth,
 	visibleWidth,
-} from "@loop24/pi-tui";
+} from "@otto/pi-tui";
 import stripAnsi from "strip-ansi";
 import type { ToolDefinition } from "../../../core/extensions/types.js";
 import { computeEditDiff, type EditDiffError, type EditDiffResult } from "../../../core/tools/edit-diff.js";
@@ -72,12 +72,12 @@ function parseMcpToolName(name: string): { server: string; tool: string } | null
 
 /**
  * Prettify a raw tool name for display. Prefers the registered `label`
- * ("Complete Slice") when available; otherwise strips a leading `gsd_`
+ * ("Complete Slice") when available; otherwise strips a leading `otto_`
  * prefix and converts snake_case to Title Case.
  */
 function prettifyToolName(name: string, label?: string): string {
 	if (label && label.trim().length > 0) return label;
-	const stripped = name.replace(/^gsd_/, "");
+	const stripped = name.replace(/^otto_/, "");
 	if (stripped.length === 0) return name;
 	return stripped
 		.split("_")

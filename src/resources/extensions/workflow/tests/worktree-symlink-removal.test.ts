@@ -1,7 +1,7 @@
 /**
- * Regression test for #1852: removeWorktree targets wrong path when .gsd/ is a symlink.
+ * Regression test for #1852: removeWorktree targets wrong path when .otto/workflow/ is a symlink.
  *
- * When .gsd/ is a symlink to an external state directory, git registers
+ * When .otto/workflow/ is a symlink to an external state directory, git registers
  * the worktree at the resolved (real) path. But removeWorktree recomputes
  * the path via worktreePath() which uses the unresolved symlink, causing
  * a mismatch — the removal silently fails.
@@ -29,10 +29,10 @@ function run(command: string, cwd: string): string {
 }
 
 test('worktree-symlink-removal removes the git-registered symlink target safely', (t) => {
-  console.log("\n=== #1852: removeWorktree with symlinked .gsd/ ===");
+  console.log("\n=== #1852: removeWorktree with symlinked .otto/workflow/ ===");
 
-  // Set up a test repo with .gsd/ as a symlink to an external directory,
-  // mimicking the external state directory layout (~/.gsd/projects/<hash>/).
+  // Set up a test repo with .otto/workflow/ as a symlink to an external directory,
+  // mimicking the external state directory layout (~/.otto/workflow/projects/<hash>/).
   // Resolve tmpdir to handle macOS /tmp -> /private/var/... symlink.
   const realTmp = realpathSync(tmpdir());
   const base = mkdtempSync(join(realTmp, "gsd-wt-symlink-test-"));
@@ -49,14 +49,15 @@ test('worktree-symlink-removal removes the git-registered symlink target safely'
   // Create external state directory structure
   mkdirSync(join(externalState, "worktrees"), { recursive: true });
 
-  // Create .gsd as a symlink to the external state directory
-  symlinkSync(externalState, join(base, ".gsd"));
+  // Create .otto/workflow as a symlink to the external state directory
+  mkdirSync(join(base, ".otto"), { recursive: true });
+  symlinkSync(externalState, join(base, ".otto/workflow"));
 
   // Verify the symlink is in place
-  assert.ok(existsSync(join(base, ".gsd")), ".gsd symlink exists");
+  assert.ok(existsSync(join(base, ".otto/workflow")), ".otto/workflow symlink exists");
   assert.ok(
-    realpathSync(join(base, ".gsd")) === externalState,
-    ".gsd resolves to external state dir",
+    realpathSync(join(base, ".otto/workflow")) === externalState,
+    ".otto/workflow resolves to external state dir",
   );
 
   // Create initial commit so we have a valid repo
@@ -84,15 +85,15 @@ test('worktree-symlink-removal removes the git-registered symlink target safely'
   const computedPath = worktreePath(base, "M002");
   assert.ok(existsSync(computedPath), "computed path exists (via symlink)");
 
-  // Simulate what syncStateToProjectRoot does: replace the .gsd symlink with
+  // Simulate what syncStateToProjectRoot does: replace the .otto/workflow symlink with
   // a real directory containing stale worktree data. This causes worktreePath()
   // to compute a LOCAL path that differs from git's REGISTERED path (the
   // resolved external path). The stale local dir passes existsSync but is not
   // a real git worktree, so nativeWorktreeRemove fails silently.
-  unlinkSync(join(base, ".gsd"));  // remove the symlink
-  mkdirSync(join(base, ".gsd", "worktrees", "M002"), { recursive: true });
+  unlinkSync(join(base, ".otto/workflow"));  // remove the symlink
+  mkdirSync(join(base, ".otto/workflow", "worktrees", "M002"), { recursive: true });
   // Write a dummy file so the stale directory is non-empty
-  writeFileSync(join(base, ".gsd", "worktrees", "M002", "stale.txt"), "stale sync artifact", "utf-8");
+  writeFileSync(join(base, ".otto/workflow", "worktrees", "M002", "stale.txt"), "stale sync artifact", "utf-8");
 
   // Now worktreePath(base, "M002") points to the LOCAL stale dir, not the
   // external path where git actually registered the worktree.

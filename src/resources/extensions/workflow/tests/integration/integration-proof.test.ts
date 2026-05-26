@@ -111,14 +111,14 @@ function makeCtx(): { notifications: Array<{ message: string; level: string }>; 
 }
 
 /**
- * Create a temp directory with a realistic .gsd/ structure:
+ * Create a temp directory with a realistic .otto/workflow/ structure:
  * - M001-ROADMAP.md with one slice (S01, two tasks T01/T02)
  * - S01-PLAN.md with two task checkboxes
  * - REQUIREMENTS.md and DECISIONS.md stubs to keep doctor happy
  */
 function createRealisticFixture(): string {
   const base = makeTempDir();
-  const workflowDir = join(base, ".gsd");
+  const workflowDir = join(base, ".otto/workflow");
   const mDir = join(workflowDir, "milestones", "M001");
   const sliceDir = join(mDir, "slices", "S01");
   const tasksDir = join(sliceDir, "tasks");
@@ -276,7 +276,7 @@ function makeCompleteSliceParams(): any {
 
 test("full lifecycle: migration through completion through doctor", async (t) => {
   const base = createRealisticFixture();
-  const dbPath = join(base, ".gsd", "gsd.db");
+  const dbPath = join(base, ".otto/workflow", "otto.db");
 
   t.after(() => {
     closeDatabase();
@@ -336,7 +336,7 @@ test("full lifecycle: migration through completion through doctor", async (t) =>
     }
 
     // Verify plan checkboxes toggled
-    const planPath = join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md");
+    const planPath = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md");
     const planAfterTasks = readFileSync(planPath, "utf-8");
     assert.match(planAfterTasks, /\[x\]\s+\*\*T01:/, "T01 should be checked in plan");
     assert.match(planAfterTasks, /\[x\]\s+\*\*T02:/, "T02 should be checked in plan");
@@ -357,7 +357,7 @@ test("full lifecycle: migration through completion through doctor", async (t) =>
     }
 
     // Verify roadmap checkbox toggled — authoritative renderer emits a checkbox list.
-    const roadmapPath = join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md");
+    const roadmapPath = join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md");
     const roadmapAfter = readFileSync(roadmapPath, "utf-8");
     assert.match(roadmapAfter, /- \[x\] \*\*S01:/, "S01 should be checked ([x]) in roadmap");
 
@@ -396,7 +396,7 @@ test("full lifecycle: migration through completion through doctor", async (t) =>
 
     // ── (i) Rogue file detection (R008) ──────────────────────────────
     // Write a fake summary for a non-DB-tracked task T99
-    const rogueDir = join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks");
+    const rogueDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks");
     writeFileSync(join(rogueDir, "T99-SUMMARY.md"), "# Rogue Summary\n", "utf-8");
 
     // Clear path cache so resolveTaskFile sees the newly written file
@@ -415,7 +415,7 @@ test("full lifecycle: migration through completion through doctor", async (t) =>
 
 test("recovery: DB loss → migrateFromMarkdown restores state, stale render detection", async (t) => {
   const base = createRealisticFixture();
-  const dbPath = join(base, ".gsd", "gsd.db");
+  const dbPath = join(base, ".otto/workflow", "otto.db");
 
   t.after(() => {
     closeDatabase();
@@ -503,7 +503,7 @@ test("recovery: DB loss → migrateFromMarkdown restores state, stale render det
 
 test("undo/reset: undo task and reset slice revert DB + markdown", async (t) => {
   const base = createRealisticFixture();
-  const dbPath = join(base, ".gsd", "gsd.db");
+  const dbPath = join(base, ".otto/workflow", "otto.db");
 
   t.after(() => {
     closeDatabase();
@@ -534,7 +534,7 @@ test("undo/reset: undo task and reset slice revert DB + markdown", async (t) => 
     // T01 summary file should be deleted
     const t1SummaryPath = join(
       base,
-      ".gsd",
+      ".otto/workflow",
       "milestones",
       "M001",
       "slices",
@@ -545,7 +545,7 @@ test("undo/reset: undo task and reset slice revert DB + markdown", async (t) => 
     assert.equal(existsSync(t1SummaryPath), false, "T01 summary should be deleted after undo");
 
     // Plan checkbox should be unchecked
-    const planPath = join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md");
+    const planPath = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md");
     const planAfterUndo = readFileSync(planPath, "utf-8");
     assert.match(planAfterUndo, /\[ \]\s+\*\*T01:/, "T01 should be unchecked in plan after undo");
 
@@ -581,7 +581,7 @@ test("undo/reset: undo task and reset slice revert DB + markdown", async (t) => 
     assert.equal(existsSync(t1SummaryPath), false, "T01 summary should be deleted after reset");
     const t2SummaryPath = join(
       base,
-      ".gsd",
+      ".otto/workflow",
       "milestones",
       "M001",
       "slices",
@@ -594,7 +594,7 @@ test("undo/reset: undo task and reset slice revert DB + markdown", async (t) => 
     // Slice summary and UAT should be deleted
     const sliceSummaryPath = join(
       base,
-      ".gsd",
+      ".otto/workflow",
       "milestones",
       "M001",
       "slices",
@@ -603,7 +603,7 @@ test("undo/reset: undo task and reset slice revert DB + markdown", async (t) => 
     );
     const sliceUatPath = join(
       base,
-      ".gsd",
+      ".otto/workflow",
       "milestones",
       "M001",
       "slices",

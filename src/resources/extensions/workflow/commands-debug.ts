@@ -1,4 +1,4 @@
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import {
   assertValidDebugSessionSlug,
@@ -45,11 +45,11 @@ function formatSessionLine(prefix: string, session: {
 
 function usageText(): string {
   return [
-    "Usage: /gsd debug <issue-text>",
-    "       /gsd debug list",
-    "       /gsd debug status <slug>",
-    "       /gsd debug continue <slug>",
-    "       /gsd debug --diagnose [<slug> | <issue text>]",
+    "Usage: /otto debug <issue-text>",
+    "       /otto debug list",
+    "       /otto debug status <slug>",
+    "       /otto debug continue <slug>",
+    "       /otto debug --diagnose [<slug> | <issue text>]",
   ].join("\n");
 }
 
@@ -67,13 +67,13 @@ export function parseDebugCommand(args: string): DebugCommandIntent {
   }
 
   if (head === "status") {
-    if (parts.length === 1) return { type: "error", message: "Missing slug. Usage: /gsd debug status <slug>" };
+    if (parts.length === 1) return { type: "error", message: "Missing slug. Usage: /otto debug status <slug>" };
     if (parts.length === 2 && isValidSlugCandidate(parts[1])) return { type: "status", slug: parts[1] };
     return { type: "issue-start", issue: raw };
   }
 
   if (head === "continue") {
-    if (parts.length === 1) return { type: "error", message: "Missing slug. Usage: /gsd debug continue <slug>" };
+    if (parts.length === 1) return { type: "error", message: "Missing slug. Usage: /otto debug continue <slug>" };
     if (parts.length === 2 && isValidSlugCandidate(parts[1])) return { type: "continue", slug: parts[1] };
     return { type: "issue-start", issue: raw };
   }
@@ -82,7 +82,7 @@ export function parseDebugCommand(args: string): DebugCommandIntent {
     if (parts.length === 1) return { type: "diagnose" };
     if (parts.length === 2 && isValidSlugCandidate(parts[1])) return { type: "diagnose", slug: parts[1] };
     if (parts.length >= 3) return { type: "diagnose-issue", issue: parts.slice(1).join(" ") };
-    return { type: "error", message: "Invalid diagnose target. Usage: /gsd debug --diagnose [<slug> | <issue text>]" };
+    return { type: "error", message: "Invalid diagnose target. Usage: /otto debug --diagnose [<slug> | <issue text>]" };
   }
 
   if (head.startsWith("-") && !SUBCOMMANDS.has(head)) {
@@ -124,7 +124,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
           formatSessionLine("Session:", s),
           `Artifact: ${created.artifactPath}`,
           `Log: ${s.logPath}`,
-          `Next: /gsd debug status ${s.slug} or /gsd debug continue ${s.slug}`,
+          `Next: /otto debug status ${s.slug} or /otto debug continue ${s.slug}`,
         ].join("\n") + dispatchNote,
         "info",
       );
@@ -147,7 +147,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           ctx.ui.notify(
-            `Debug dispatch failed: ${msg}\nSession '${s.slug}' is persisted; retry with /gsd debug continue ${s.slug}`,
+            `Debug dispatch failed: ${msg}\nSession '${s.slug}' is persisted; retry with /otto debug continue ${s.slug}`,
             "warning",
           );
         }
@@ -155,7 +155,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       ctx.ui.notify(
-        `Unable to create debug session: ${message}\nTry /gsd debug --diagnose for artifact health details.`,
+        `Unable to create debug session: ${message}\nTry /otto debug --diagnose for artifact health details.`,
         "error",
       );
     }
@@ -166,7 +166,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
     try {
       const listed = listDebugSessions(basePath);
       if (listed.sessions.length === 0 && listed.malformed.length === 0) {
-        ctx.ui.notify("No debug sessions found. Start one with: /gsd debug <issue-text>", "info");
+        ctx.ui.notify("No debug sessions found. Start one with: /otto debug <issue-text>", "info");
         return;
       }
 
@@ -187,14 +187,14 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
         if (listed.malformed.length > 5) {
           lines.push(`  ... and ${listed.malformed.length - 5} more`);
         }
-        lines.push("Run /gsd debug --diagnose for remediation guidance.");
+        lines.push("Run /otto debug --diagnose for remediation guidance.");
       }
 
       ctx.ui.notify(lines.join("\n"), "info");
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       ctx.ui.notify(
-        `Unable to list debug sessions: ${message}\nRun /gsd debug --diagnose for details.`,
+        `Unable to list debug sessions: ${message}\nRun /otto debug --diagnose for details.`,
         "warning",
       );
     }
@@ -206,7 +206,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
       const loaded = loadDebugSession(basePath, parsed.slug);
       if (!loaded) {
         ctx.ui.notify(
-          `Unknown debug session slug '${parsed.slug}'. Run /gsd debug list to see available sessions.`,
+          `Unknown debug session slug '${parsed.slug}'. Run /otto debug list to see available sessions.`,
           "warning",
         );
         return;
@@ -230,7 +230,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       ctx.ui.notify(
-        `Unable to load debug session '${parsed.slug}': ${message}\nTry /gsd debug --diagnose ${parsed.slug}`,
+        `Unable to load debug session '${parsed.slug}': ${message}\nTry /otto debug --diagnose ${parsed.slug}`,
         "warning",
       );
     }
@@ -242,7 +242,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
       const loaded = loadDebugSession(basePath, parsed.slug);
       if (!loaded) {
         ctx.ui.notify(
-          `Unknown debug session slug '${parsed.slug}'. Run /gsd debug list to see available sessions.`,
+          `Unknown debug session slug '${parsed.slug}'. Run /otto debug list to see available sessions.`,
           "warning",
         );
         return;
@@ -250,7 +250,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
 
       if (loaded.session.status === "resolved") {
         ctx.ui.notify(
-          `Session '${parsed.slug}' is resolved. Open a new session with /gsd debug <issue-text> for follow-up work.`,
+          `Session '${parsed.slug}' is resolved. Open a new session with /otto debug <issue-text> for follow-up work.`,
           "warning",
         );
         return;
@@ -359,7 +359,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
           `Resumed debug session: ${resumed.session.slug}`,
           formatSessionLine("Session:", resumed.session),
           `Log: ${resumed.session.logPath}`,
-          `Next: /gsd debug status ${resumed.session.slug}`,
+          `Next: /otto debug status ${resumed.session.slug}`,
         ].join("\n") + dispatchNote,
         "info",
       );
@@ -386,7 +386,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           ctx.ui.notify(
-            `Continue dispatch failed: ${msg}\nSession '${resumed.session.slug}' is persisted; retry with /gsd debug continue ${resumed.session.slug}`,
+            `Continue dispatch failed: ${msg}\nSession '${resumed.session.slug}' is persisted; retry with /otto debug continue ${resumed.session.slug}`,
             "warning",
           );
         }
@@ -394,7 +394,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       ctx.ui.notify(
-        `Unable to continue debug session '${parsed.slug}': ${message}\nTry /gsd debug --diagnose ${parsed.slug}`,
+        `Unable to continue debug session '${parsed.slug}': ${message}\nTry /otto debug --diagnose ${parsed.slug}`,
         "warning",
       );
     }
@@ -418,7 +418,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
           `Artifact: ${created.artifactPath}`,
           `Log: ${s.logPath}`,
           `dispatchMode=find_root_cause_only`,
-          `Next: /gsd debug status ${s.slug} or /gsd debug --diagnose ${s.slug}`,
+          `Next: /otto debug status ${s.slug} or /otto debug --diagnose ${s.slug}`,
         ].join("\n"),
         "info",
       );
@@ -439,7 +439,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           ctx.ui.notify(
-            `Diagnose dispatch failed: ${msg}\nSession '${s.slug}' is persisted; continue manually with /gsd debug continue ${s.slug}`,
+            `Diagnose dispatch failed: ${msg}\nSession '${s.slug}' is persisted; continue manually with /otto debug continue ${s.slug}`,
             "warning",
           );
         }
@@ -447,7 +447,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       ctx.ui.notify(
-        `Unable to create diagnose session: ${message}\nTry /gsd debug --diagnose for artifact health details.`,
+        `Unable to create diagnose session: ${message}\nTry /otto debug --diagnose for artifact health details.`,
         "error",
       );
     }
@@ -462,7 +462,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
         const loaded = loadDebugSession(basePath, parsed.slug);
         if (!loaded) {
           ctx.ui.notify(
-            `Diagnose: session '${parsed.slug}' not found.\nRun /gsd debug list to discover valid slugs.`,
+            `Diagnose: session '${parsed.slug}' not found.\nRun /otto debug list to discover valid slugs.`,
             "warning",
           );
           return;
@@ -498,7 +498,7 @@ export async function handleDebug(args: string, ctx: ExtensionCommandContext, pi
           lines.push(`  - ${malformed.artifactPath}`);
           lines.push(`    ${malformed.message}`);
         }
-        lines.push("Remediation: repair/remove malformed JSON artifacts under .gsd/debug/sessions/.");
+        lines.push("Remediation: repair/remove malformed JSON artifacts under .otto/workflow/debug/sessions/.");
       }
 
       ctx.ui.notify(lines.join("\n"), listed.malformed.length > 0 ? "warning" : "info");

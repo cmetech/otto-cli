@@ -9,32 +9,32 @@
 
 ## Context
 
-GSD vendors four packages from [pi-mono](https://github.com/badlogic/pi-mono) (an open-source coding agent framework) by copying their source directly into `/packages/`:
+OTTO vendors four packages from [pi-mono](https://github.com/badlogic/pi-mono) (an open-source coding agent framework) by copying their source directly into `/packages/`:
 
 | Package | Role | Current version |
 |---|---|---|
-| `@loop24/pi-agent-core` | Core agent loop and types | 0.57.1 |
-| `@loop24/pi-ai` | Multi-provider LLM API | 0.57.1 |
-| `@loop24/pi-tui` | Terminal UI framework | 0.57.1 |
-| `@loop24/pi-coding-agent` | Coding agent, tools, extension system | 2.74.0 |
+| `@otto/pi-agent-core` | Core agent loop and types | 0.57.1 |
+| `@otto/pi-ai` | Multi-provider LLM API | 0.57.1 |
+| `@otto/pi-tui` | Terminal UI framework | 0.57.1 |
+| `@otto/pi-coding-agent` | Coding agent, tools, extension system | 2.74.0 |
 
-Vendoring was chosen over npm dependencies to allow GSD to modify the upstream packages freely. However, over time, GSD has written substantial original logic directly inside `pi-coding-agent` — approximately 79 files including:
+Vendoring was chosen over npm dependencies to allow OTTO to modify the upstream packages freely. However, over time, OTTO has written substantial original logic directly inside `pi-coding-agent` — approximately 79 files including:
 
-- `agent-session.ts` (98KB) — the primary GSD session orchestrator
+- `agent-session.ts` (98KB) — the primary OTTO session orchestrator
 - `compaction/` — context window management
 - `modes/interactive/`, `modes/rpc/`, `modes/print/` — all three run modes
 - `cli/` — CLI argument parsing and utilities
 - `sdk.ts` — the `createAgentSession()` factory
 
-This GSD-authored code is mixed in with upstream pi code inside the same package. The pi packages are currently 10 versions behind upstream (0.57.1 vs 0.67.2), with a breaking API change from v0.65.0 (`session_switch`/`session_fork` removal) unresolved. The primary obstacle to applying updates is that there is no reliable way to distinguish GSD files from pi files without reading them individually.
+This OTTO-authored code is mixed in with upstream pi code inside the same package. The pi packages are currently 10 versions behind upstream (0.57.1 vs 0.67.2), with a breaking API change from v0.65.0 (`session_switch`/`session_fork` removal) unresolved. The primary obstacle to applying updates is that there is no reliable way to distinguish OTTO files from pi files without reading them individually.
 
 ### Why not move to npm dependencies now?
 
 Pi-mono does publish to npm as `@mariozechner/pi-*`. Moving to npm dependencies would eliminate vendoring entirely, but it is blocked by:
 
-1. `@loop24/native` bindings are imported directly inside the vendored pi-tui and pi-coding-agent source — the upstream npm packages do not have these imports
+1. `@otto/native` bindings are imported directly inside the vendored pi-tui and pi-coding-agent source — the upstream npm packages do not have these imports
 2. ~50 direct source modification commits to the vendored packages since March 2026 would need to be evaluated individually
-3. The upstream extension API (~25 events) is a subset of GSD's extension system (~50+ events) — the delta would need to be re-architected before the move
+3. The upstream extension API (~25 events) is a subset of OTTO's extension system (~50+ events) — the delta would need to be re-architected before the move
 
 Moving to npm is a valid Phase 2. This ADR covers Phase 1: establishing a clean seam without changing the vendoring approach.
 
@@ -42,44 +42,44 @@ Moving to npm is a valid Phase 2. This ADR covers Phase 1: establishing a clean 
 
 ## Decision
 
-Introduce two new workspace packages that own all GSD-authored code currently living inside `pi-coding-agent`. The vendored pi packages become close-to-upstream source copies. GSD code depends on pi; pi code does not depend on GSD.
+Introduce two new workspace packages that own all OTTO-authored code currently living inside `pi-coding-agent`. The vendored pi packages become close-to-upstream source copies. OTTO code depends on pi; pi code does not depend on OTTO.
 
 ### New package structure
 
 ```
 packages/
-  pi-agent-core/          # vendored upstream — no GSD modifications
-  pi-ai/                  # vendored upstream — no GSD modifications
-  pi-tui/                 # vendored upstream — no GSD modifications
+  pi-agent-core/          # vendored upstream — no OTTO modifications
+  pi-ai/                  # vendored upstream — no OTTO modifications
+  pi-tui/                 # vendored upstream — no OTTO modifications
   pi-coding-agent/        # vendored upstream + extension system (pi-typed, stays here)
-  gsd-agent-core/         # NEW — GSD session orchestration layer
-  gsd-agent-modes/        # NEW — GSD run modes and CLI layer
+  otto-agent-core/         # NEW — OTTO session orchestration layer
+  otto-agent-modes/        # NEW — OTTO run modes and CLI layer
 ```
 
 ### Dependency graph
 
 ```
-gsd-pi (binary)
-  └── @loop24/agent-modes
-        ├── @loop24/agent-core
-        │     ├── @loop24/pi-coding-agent
-        │     ├── @loop24/pi-agent-core
-        │     └── @loop24/pi-ai
-        └── @loop24/pi-coding-agent
-              ├── @loop24/pi-agent-core
-              ├── @loop24/pi-ai
-              └── @loop24/pi-tui
+otto (binary)
+  └── @otto/agent-modes
+        ├── @otto/agent-core
+        │     ├── @otto/pi-coding-agent
+        │     ├── @otto/pi-agent-core
+        │     └── @otto/pi-ai
+        └── @otto/pi-coding-agent
+              ├── @otto/pi-agent-core
+              ├── @otto/pi-ai
+              └── @otto/pi-tui
 ```
 
-Arrows point in one direction only. No cycles. The vendored pi packages have no knowledge of `@loop24/agent-core` or `@loop24/agent-modes`.
+Arrows point in one direction only. No cycles. The vendored pi packages have no knowledge of `@otto/agent-core` or `@otto/agent-modes`.
 
 ---
 
 ## Package Specifications
 
-### `@loop24/agent-core` (`packages/gsd-agent-core/`)
+### `@otto/agent-core` (`packages/otto-agent-core/`)
 
-**Purpose:** GSD's session orchestration layer. Owns the `AgentSession` class, compaction, bash execution, system prompt construction, and the `createAgentSession()` factory that wires everything together.
+**Purpose:** OTTO's session orchestration layer. Owns the `AgentSession` class, compaction, bash execution, system prompt construction, and the `createAgentSession()` factory that wires everything together.
 
 **Public API surface (exported from `index.ts`):**
 
@@ -108,8 +108,8 @@ export { BlobStore } from './blob-store.js'
 | `compaction/compaction.ts` | Context window orchestration |
 | `compaction/branch-summarization.ts` | Summarization on fork |
 | `compaction/utils.ts` | Shared compaction utilities |
-| `system-prompt.ts` | GSD system prompt construction |
-| `bash-executor.ts` | Bash runtime with GSD integration |
+| `system-prompt.ts` | OTTO system prompt construction |
+| `bash-executor.ts` | Bash runtime with OTTO integration |
 | `fallback-resolver.ts` | Model fallback strategy |
 | `lifecycle-hooks.ts` | Phase hook system |
 | `image-overflow-recovery.ts` | Context overflow recovery |
@@ -119,13 +119,13 @@ export { BlobStore } from './blob-store.js'
 | `blob-store.ts` | External binary data management |
 | `export-html/` | Session HTML export |
 
-**Key dependency note:** `agent-session.ts` imports pi types directly (`Agent`, `AgentEvent`, `AgentMessage`, `AgentState`, `AgentTool`, `ThinkingLevel` from `@loop24/pi-agent-core`; `Model`, `Message` from `@loop24/pi-ai`). This is intentional — GSD's session layer is pi-typed, not abstracting over pi. This makes the seam a clear seam, not an abstraction.
+**Key dependency note:** `agent-session.ts` imports pi types directly (`Agent`, `AgentEvent`, `AgentMessage`, `AgentState`, `AgentTool`, `ThinkingLevel` from `@otto/pi-agent-core`; `Model`, `Message` from `@otto/pi-ai`). This is intentional — OTTO's session layer is pi-typed, not abstracting over pi. This makes the seam a clear seam, not an abstraction.
 
 ---
 
-### `@loop24/agent-modes` (`packages/gsd-agent-modes/`)
+### `@otto/agent-modes` (`packages/otto-agent-modes/`)
 
-**Purpose:** GSD's run-mode and CLI layer. Assembles the agent session (from `@loop24/agent-core`) with a specific interface: interactive TUI, headless RPC server, or print output. Contains the `main()` entry point logic invoked by the `gsd` binary.
+**Purpose:** OTTO's run-mode and CLI layer. Assembles the agent session (from `@otto/agent-core`) with a specific interface: interactive TUI, headless RPC server, or print output. Contains the `main()` entry point logic invoked by the `otto` binary.
 
 **Public API surface (exported from `index.ts`):**
 
@@ -163,30 +163,30 @@ After the migration, `pi-coding-agent` contains:
 - **Upstream agent infrastructure** — auth storage, model registry, upstream session manager
 - **Extension system** (`src/core/extensions/`) — loader, runner, types, wrapper
 
-The extension system remains here because it is legitimately pi-typed. Extensions subscribe to pi events (`session_start`, `tool_execution_start`, `model_select`, etc.) and receive pi types in their handlers. Moving the extension system out of `pi-coding-agent` would require re-expressing those types in GSD terms, which is the abstraction-layer work explicitly out of scope for this phase.
+The extension system remains here because it is legitimately pi-typed. Extensions subscribe to pi events (`session_start`, `tool_execution_start`, `model_select`, etc.) and receive pi types in their handlers. Moving the extension system out of `pi-coding-agent` would require re-expressing those types in OTTO terms, which is the abstraction-layer work explicitly out of scope for this phase.
 
 **Required update to extension loader:**
 
-`src/core/extensions/loader.ts` maintains a `STATIC_BUNDLED_MODULES` map of packages that extensions can import at runtime. After the migration, `@loop24/agent-core` and `@loop24/agent-modes` must be added to this map so that extensions importing those packages continue to resolve correctly in compiled Bun binaries:
+`src/core/extensions/loader.ts` maintains a `STATIC_BUNDLED_MODULES` map of packages that extensions can import at runtime. After the migration, `@otto/agent-core` and `@otto/agent-modes` must be added to this map so that extensions importing those packages continue to resolve correctly in compiled Bun binaries:
 
 ```typescript
 // Before (current)
 const STATIC_BUNDLED_MODULES = {
-  "@loop24/pi-agent-core": _bundledPiAgentCore,
-  "@loop24/pi-ai": _bundledPiAi,
-  "@loop24/pi-tui": _bundledPiTui,
-  "@loop24/pi-coding-agent": _bundledPiCodingAgent,
+  "@otto/pi-agent-core": _bundledPiAgentCore,
+  "@otto/pi-ai": _bundledPiAi,
+  "@otto/pi-tui": _bundledPiTui,
+  "@otto/pi-coding-agent": _bundledPiCodingAgent,
   // ...
 }
 
 // After
 const STATIC_BUNDLED_MODULES = {
-  "@loop24/pi-agent-core": _bundledPiAgentCore,
-  "@loop24/pi-ai": _bundledPiAi,
-  "@loop24/pi-tui": _bundledPiTui,
-  "@loop24/pi-coding-agent": _bundledPiCodingAgent,
-  "@loop24/agent-core": _bundledGsdAgentCore,     // NEW
-  "@loop24/agent-modes": _bundledGsdAgentModes,   // NEW
+  "@otto/pi-agent-core": _bundledPiAgentCore,
+  "@otto/pi-ai": _bundledPiAi,
+  "@otto/pi-tui": _bundledPiTui,
+  "@otto/pi-coding-agent": _bundledPiCodingAgent,
+  "@otto/agent-core": _bundledGsdAgentCore,     // NEW
+  "@otto/agent-modes": _bundledGsdAgentModes,   // NEW
   // ...
 }
 ```
@@ -197,9 +197,9 @@ const STATIC_BUNDLED_MODULES = {
 
 1. Download the new pi-mono release for the four vendored packages
 2. Copy the upstream source into `packages/pi-agent-core/`, `pi-ai/`, `pi-tui/`, `pi-coding-agent/`
-   - Do not touch `packages/gsd-agent-core/` or `packages/gsd-agent-modes/`
+   - Do not touch `packages/otto-agent-core/` or `packages/otto-agent-modes/`
 3. Run `tsc --noEmit` (or the build) across the workspace
-4. Fix type errors in `@loop24/agent-core` and `@loop24/agent-modes` only
+4. Fix type errors in `@otto/agent-core` and `@otto/agent-modes` only
 5. If upstream changed the extension event API, fix extension system integration in `pi-coding-agent/src/core/extensions/`
 
 Steps 2-5 are scoped to known files. No archaeology required.
@@ -210,9 +210,9 @@ Steps 2-5 are scoped to known files. No archaeology required.
 
 | Issue | Location | Fix |
 |---|---|---|
-| Internal-path import of `AgentSessionEvent` | `src/web/bridge-service.ts` | Import from `@loop24/agent-core` public export |
-| `clearQueue()` not in typed public API | `AgentSession` | Add to public interface in `@loop24/agent-core/index.ts` |
-| `buildSessionContext()` on `SessionManager` | Used by GSD code, not publicly exported | Evaluate: re-export from `@loop24/agent-core` or remove dependency |
+| Internal-path import of `AgentSessionEvent` | `src/web/bridge-service.ts` | Import from `@otto/agent-core` public export |
+| `clearQueue()` not in typed public API | `AgentSession` | Add to public interface in `@otto/agent-core/index.ts` |
+| `buildSessionContext()` on `SessionManager` | Used by OTTO code, not publicly exported | Evaluate: re-export from `@otto/agent-core` or remove dependency |
 | Deprecated `session_switch`, `session_fork`, `session_directory` usage | 2+ files in `pi-coding-agent` | Migrate to `session_start` with `reason` field (required for v0.65.0 compat) — can be done as part of or after clean seam work |
 
 ---
@@ -221,10 +221,10 @@ Steps 2-5 are scoped to known files. No archaeology required.
 
 ### Positive
 
-- Pi updates are scoped: type errors from a pi update surface only in the two new GSD packages, not scattered across mixed source
-- The module system enforces the boundary: a pi file importing `@loop24/agent-core` is a compiler error, not a convention violation
+- Pi updates are scoped: type errors from a pi update surface only in the two new OTTO packages, not scattered across mixed source
+- The module system enforces the boundary: a pi file importing `@otto/agent-core` is a compiler error, not a convention violation
 - Phase 2 (moving pi packages to npm) becomes a package.json change rather than a file archaeology project
-- Headless/RPC consumers can depend on `@loop24/agent-core` without pulling in the TUI layer
+- Headless/RPC consumers can depend on `@otto/agent-core` without pulling in the TUI layer
 
 ### Negative
 
@@ -234,25 +234,25 @@ Steps 2-5 are scoped to known files. No archaeology required.
 
 ### Neutral
 
-- End-user install experience (`npm install -g @opengsd/gsd-pi@latest`) is unchanged
-- Extension authors see no change — the extension API surface remains in `@loop24/pi-coding-agent`
-- GSD packages continue to use pi types directly — no new abstraction layer
+- End-user install experience (`npm install -g @cmetech/otto@latest`) is unchanged
+- Extension authors see no change — the extension API surface remains in `@otto/pi-coding-agent`
+- OTTO packages continue to use pi types directly — no new abstraction layer
 
 ---
 
 ## Alternatives Considered
 
-### Single `@loop24/agent` package
+### Single `@otto/agent` package
 
 Move everything into one package instead of two. Simpler dependency graph but creates a large package where session logic and TUI logic share a build unit. Rejected because headless/RPC use cases would pull in the TUI unnecessarily, and the two concerns have meaningfully different consumers.
 
 ### Directory convention within `pi-coding-agent` (no new packages)
 
-Add a `src/gsd/` subdirectory inside `pi-coding-agent` to clearly mark GSD files without creating new packages. Fastest to implement but the seam is a convention, not enforced by the module system. A future accidental cross-import would not be caught by the compiler. Rejected because the enforcement value of proper packages is worth the modest extra setup.
+Add a `src/otto/` subdirectory inside `pi-coding-agent` to clearly mark OTTO files without creating new packages. Fastest to implement but the seam is a convention, not enforced by the module system. A future accidental cross-import would not be caught by the compiler. Rejected because the enforcement value of proper packages is worth the modest extra setup.
 
 ### Move to npm dependencies now (Phase 2 first)
 
-Take `@mariozechner/pi-*` from npm and skip vendoring entirely. Blocked by `@loop24/native` imports baked into the vendored source, ~50 direct source modification commits, and the upstream extension API gap. Deferred to Phase 2.
+Take `@mariozechner/pi-*` from npm and skip vendoring entirely. Blocked by `@otto/native` imports baked into the vendored source, ~50 direct source modification commits, and the upstream extension API gap. Deferred to Phase 2.
 
 ---
 
@@ -261,11 +261,11 @@ Take `@mariozechner/pi-*` from npm and skip vendoring entirely. Blocked by `@loo
 The migration should proceed in this order to maintain a working build at each step:
 
 1. **Audit** — identify all imports of `pi-coding-agent` internal paths (non-index) and document them
-2. **Create packages** — scaffold `gsd-agent-core` and `gsd-agent-modes` with `package.json` and empty `index.ts`
+2. **Create packages** — scaffold `otto-agent-core` and `otto-agent-modes` with `package.json` and empty `index.ts`
 3. **Move files in batches** — start with leaf files (no downstream dependents within pi-coding-agent), work toward `agent-session.ts` last
 4. **Fix imports incrementally** — TypeScript will identify broken imports after each batch
 5. **Update extension loader** — add new packages to virtual module map
 6. **Update build script** — insert new packages in dependency order
-7. **Verify** — full build, existing tests pass, `gsd --version` works
+7. **Verify** — full build, existing tests pass, `otto --version` works
 
 The pi update to v0.67.2 (and the deprecated API migration) can be done as a follow-on once the clean seam is in place, since that work will be dramatically simpler with the new structure.

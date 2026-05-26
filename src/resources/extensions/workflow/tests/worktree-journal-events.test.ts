@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 
 /**
- * Initialize the temp dir as a real git repo with a `.gsd/preferences.md`
+ * Initialize the temp dir as a real git repo with a `.otto/workflow/preferences.md`
  * declaring the requested isolation mode. Required after ADR-016 phase 2 /
  * C1+C2+C3 inlined the worktree-manager + cache + preferences primitives —
  * tests can no longer stub them via deps.
@@ -19,10 +19,10 @@ function initGitRepoIn(base: string, isolation: "worktree" | "branch" | "none"):
   git(["config", "user.email", "test@test.com"]);
   git(["config", "user.name", "Test"]);
   writeFileSync(join(base, "README.md"), "# test\n");
-  writeFileSync(join(base, ".gitignore"), ".gsd/worktrees/\n");
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  writeFileSync(join(base, ".gitignore"), ".otto/workflow/worktrees/\n");
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "preferences.md"),
+    join(base, ".otto/workflow", "preferences.md"),
     `## Git\n- isolation: ${isolation}\n`,
   );
   git(["add", "."]);
@@ -124,9 +124,9 @@ function makeNotifyCtx(): NotifyCtx {
   };
 }
 
-/** Read all journal entries from a temp .gsd/journal directory. */
+/** Read all journal entries from a temp .otto/workflow/journal directory. */
 function readJournalEntries(basePath: string): JournalEntry[] {
-  const journalDir = join(basePath, ".gsd", "journal");
+  const journalDir = join(basePath, ".otto/workflow", "journal");
   try {
     const files = readdirSync(journalDir).filter(f => f.endsWith(".jsonl")).sort();
     const entries: JournalEntry[] = [];
@@ -147,11 +147,11 @@ function setupMergeWorktree(basePath: string, milestoneId: string): string {
   initGitRepoIn(basePath, "worktree");
   execFileSync("git", ["checkout", "-b", `milestone/${milestoneId}`], { cwd: basePath, stdio: "pipe" });
   execFileSync("git", ["checkout", "main"], { cwd: basePath, stdio: "pipe" });
-  const wt = join(basePath, ".gsd", "worktrees", milestoneId);
+  const wt = join(basePath, ".otto/workflow", "worktrees", milestoneId);
   execFileSync("git", ["worktree", "add", wt, `milestone/${milestoneId}`], { cwd: basePath, stdio: "pipe" });
-  mkdirSync(join(basePath, ".gsd", "milestones", milestoneId), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow", "milestones", milestoneId), { recursive: true });
   writeFileSync(
-    join(basePath, ".gsd", "milestones", milestoneId, `${milestoneId}-ROADMAP.md`),
+    join(basePath, ".otto/workflow", "milestones", milestoneId, `${milestoneId}-ROADMAP.md`),
     `# ${milestoneId}\n- [x] S01: Slice one\n`,
   );
   return wt;
@@ -205,7 +205,7 @@ describe("worktree journal events", () => {
     execFileSync("git", ["checkout", "main"], { cwd: tmp, stdio: "pipe" });
     execFileSync(
       "git",
-      ["worktree", "add", join(tmp, ".gsd", "worktrees", "M001"), "milestone/M001"],
+      ["worktree", "add", join(tmp, ".otto/workflow", "worktrees", "M001"), "milestone/M001"],
       { cwd: tmp, stdio: "pipe" },
     );
 
@@ -250,7 +250,7 @@ describe("worktree journal events", () => {
     initGitRepoIn(tmp, "worktree");
     execFileSync("git", ["checkout", "-b", "milestone/M001"], { cwd: tmp, stdio: "pipe" });
     execFileSync("git", ["checkout", "main"], { cwd: tmp, stdio: "pipe" });
-    const wt = join(tmp, ".gsd", "worktrees", "M001");
+    const wt = join(tmp, ".otto/workflow", "worktrees", "M001");
     execFileSync("git", ["worktree", "add", wt, "milestone/M001"], { cwd: tmp, stdio: "pipe" });
 
     const s = makeSession({ basePath: wt, originalBasePath: tmp });
@@ -273,11 +273,11 @@ describe("worktree journal events", () => {
     initGitRepoIn(tmp, "worktree");
     execFileSync("git", ["checkout", "-b", "milestone/M001"], { cwd: tmp, stdio: "pipe" });
     execFileSync("git", ["checkout", "main"], { cwd: tmp, stdio: "pipe" });
-    const wt = join(tmp, ".gsd", "worktrees", "M001");
+    const wt = join(tmp, ".otto/workflow", "worktrees", "M001");
     execFileSync("git", ["worktree", "add", wt, "milestone/M001"], { cwd: tmp, stdio: "pipe" });
-    mkdirSync(join(tmp, ".gsd", "milestones", "M001"), { recursive: true });
+    mkdirSync(join(tmp, ".otto/workflow", "milestones", "M001"), { recursive: true });
     writeFileSync(
-      join(tmp, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+      join(tmp, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
       "# M001\n- [x] S01: Slice one\n",
     );
 

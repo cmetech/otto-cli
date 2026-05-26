@@ -1,7 +1,7 @@
-// LOOP24 + Visual Brief artifact policy
+// OTTO + Visual Brief artifact policy
 
 import { join } from "node:path";
-import { getAgentDir } from "@loop24/pi-coding-agent";
+import { getAgentDir } from "@otto/pi-coding-agent";
 
 export interface VisualBriefArtifactPolicy {
 	outputDir: string;

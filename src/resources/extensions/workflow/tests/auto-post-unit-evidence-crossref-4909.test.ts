@@ -43,9 +43,9 @@ test("does not suppress when session has no execution tool calls", () => {
   assert.equal(_hasExecutionToolCallsInSessionForTest(entries), false);
 });
 
-test("detects top-level gsd_exec tool call with normalized name", () => {
+test("detects top-level otto_exec tool call with normalized name", () => {
   const entries = [
-    { type: "toolCall", name: "  GSD_EXEC  ", arguments: { command: "npm test" } },
+    { type: "toolCall", name: "  OTTO_EXEC  ", arguments: { command: "npm test" } },
   ];
 
   assert.equal(_hasExecutionToolCallsInSessionForTest(entries), true);

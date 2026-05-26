@@ -4,9 +4,9 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { getAgentDir, parseFrontmatter } from "@loop24/pi-coding-agent";
+import { getAgentDir, parseFrontmatter } from "@otto/pi-coding-agent";
 
-const PROJECT_AGENT_DIR_CANDIDATES = [".gsd", ".pi"] as const;
+const PROJECT_AGENT_DIR_CANDIDATES = [".otto/workflow", ".pi"] as const;
 
 export type AgentScope = "user" | "project" | "both";
 

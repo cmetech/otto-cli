@@ -4,8 +4,6 @@ on:
   pull_request:
     paths:
       - "package-lock.json"
-      - "web/package-lock.json"
-      - "vscode-extension/package-lock.json"
       - "native/Cargo.lock"
   schedule:
     - cron: "0 6 * * 1"
@@ -32,10 +30,6 @@ jobs:
         include:
           - workspace: "."
             artifact: "root"
-          - workspace: "web"
-            artifact: "web"
-          - workspace: "vscode-extension"
-            artifact: "vscode-extension"
     steps:
       - uses: actions/checkout@v6
 

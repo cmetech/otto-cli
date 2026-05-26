@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for GitHub sync markdown formatters.
 
 import { describe, it } from "node:test";

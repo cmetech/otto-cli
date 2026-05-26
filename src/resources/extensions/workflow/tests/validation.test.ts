@@ -1,4 +1,4 @@
-// GSD — validation unit tests
+// OTTO — validation unit tests
 
 import test from 'node:test';
 import assert from 'node:assert/strict';

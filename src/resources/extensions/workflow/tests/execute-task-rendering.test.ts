@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Verifies the execution prompt renders compact required guidance.
 
 import test from "node:test";
@@ -8,14 +8,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 test("execute-task prompt renders compact execution and completion gates", async (t) => {
-  const previousWorkflowHome = process.env.GSD_HOME;
-  const providedWorkflowHome = process.env.GSD_TEST_HOME;
+  const previousWorkflowHome = process.env.OTTO_HOME;
+  const providedWorkflowHome = process.env.OTTO_TEST_HOME;
   const isolatedHome = providedWorkflowHome ?? mkdtempSync(join(tmpdir(), "gsd-execute-task-render-"));
-  const fixtureRoot = process.env.GSD_TEST_WORKSPACE_ROOT ?? process.cwd();
-  process.env.GSD_HOME = isolatedHome;
+  const fixtureRoot = process.env.OTTO_TEST_WORKSPACE_ROOT ?? process.cwd();
+  process.env.OTTO_HOME = isolatedHome;
   t.after(() => {
-    if (previousWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousWorkflowHome;
+    if (previousWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = previousWorkflowHome;
     if (!providedWorkflowHome) rmSync(isolatedHome, { recursive: true, force: true });
   });
 
@@ -35,15 +35,15 @@ test("execute-task prompt renders compact execution and completion gates", async
     taskPlanInline: "## Task Plan\n\n1. Edit prompt.",
     slicePlanExcerpt: "## Slice Plan\n\nReduce prompt size.",
     gatesToClose: "- Gate: prompt markers retained.",
-    planPath: ".gsd/milestones/M001/slices/S01/S01-PLAN.md",
-    taskPlanPath: ".gsd/milestones/M001/slices/S01/tasks/T01-PLAN.md",
+    planPath: ".otto/workflow/milestones/M001/slices/S01/S01-PLAN.md",
+    taskPlanPath: ".otto/workflow/milestones/M001/slices/S01/tasks/T01-PLAN.md",
     priorTaskLines: "- None",
     skillActivation: "Load relevant skills.",
     inlinedTemplates: "### Output Template: Task Summary\nSource: `templates/task-summary.md`",
     templatesDir: join(fixtureRoot, "templates"),
-    taskSummaryTemplatePath: "C:\\Users\\Test\\.gsd\\agent\\extensions\\gsd\\templates\\task-summary.md",
+    taskSummaryTemplatePath: "C:\\Users\\Test\\.otto/workflow\\agent\\extensions\\gsd\\templates\\task-summary.md",
     verificationBudget: "~10K chars",
-    taskSummaryPath: ".gsd/milestones/M001/slices/S01/tasks/T01-SUMMARY.md",
+    taskSummaryPath: ".otto/workflow/milestones/M001/slices/S01/tasks/T01-SUMMARY.md",
   });
 
   assert.match(prompt, /You execute\./);
@@ -53,10 +53,10 @@ test("execute-task prompt renders compact execution and completion gates", async
   assert.match(prompt, /Background process rule/);
   assert.match(prompt, /blocker_discovered: true/);
   assert.match(prompt, /Use the inlined Task Summary template below/);
-  assert.match(prompt, /Read `C:\\Users\\Test\\.gsd\\agent\\extensions\\gsd\\templates\\task-summary\.md` only if the inlined template is absent or visibly truncated/);
+  assert.match(prompt, /Read `C:\\Users\\Test\\.otto\/workflow\\agent\\extensions\\gsd\\templates\\task-summary\.md` only if the inlined template is absent or visibly truncated/);
   assert.match(prompt, /### Output Template: Task Summary/);
   assert.doesNotMatch(prompt, /\{\{templatesDir\}\}\/task-summary\.md/);
-  assert.match(prompt, /Call `gsd_task_complete`/);
+  assert.match(prompt, /Call `otto_task_complete`/);
   assert.match(prompt, /Do not run git commands/);
   assert.doesNotMatch(prompt, /\{\{[a-zA-Z][a-zA-Z0-9_]*\}\}/);
 });

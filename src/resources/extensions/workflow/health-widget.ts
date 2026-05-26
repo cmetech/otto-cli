@@ -1,7 +1,7 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Always-on ambient health signal rendered below the editor.
 
-import type { ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionContext } from "@otto/pi-coding-agent";
 import type { WorkflowDbState } from "./types.js";
 import { runProviderChecks, summariseProviderIssues } from "./doctor-providers.js";
 import { runEnvironmentChecks } from "./doctor-environment.js";
@@ -18,7 +18,7 @@ import {
 } from "./health-widget-core.js";
 
 export const HEALTH_WIDGET_ACTIVE_HINTS =
-  "  /gsd auto to run  ·  /gsd status to inspect  ·  /gsd report for snapshots  ·  /gsd notifications for history  ·  /gsd help";
+  "  /otto auto to run  ·  /otto status to inspect  ·  /otto report for snapshots  ·  /otto notifications for history  ·  /otto help";
 
 // ── Data loader ────────────────────────────────────────────────────────────────
 

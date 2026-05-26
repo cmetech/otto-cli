@@ -13,7 +13,7 @@ import { resolveMilestoneFile } from "./paths.js";
 // ─── needsAutoMigration ───────────────────────────────────────────────────
 
 /**
- * Returns true when engine tables are empty AND a .gsd/milestones/ directory
+ * Returns true when engine tables are empty AND a .otto/workflow/milestones/ directory
  * with markdown files exists — signals that this is a legacy project that needs
  * one-time migration from markdown to engine state.
  */
@@ -30,8 +30,8 @@ export function needsAutoMigration(basePath: string): boolean {
     return false;
   }
 
-  // Check if .gsd/milestones/ directory exists
-  const milestonesDir = join(basePath, ".gsd", "milestones");
+  // Check if .otto/workflow/milestones/ directory exists
+  const milestonesDir = join(basePath, ".otto/workflow", "milestones");
   if (!existsSync(milestonesDir)) return false;
 
   return true;
@@ -40,8 +40,8 @@ export function needsAutoMigration(basePath: string): boolean {
 // ─── migrateFromMarkdown ──────────────────────────────────────────────────
 
 /**
- * Migrate legacy markdown-only .gsd/ projects to engine DB state.
- * Reads .gsd/milestones/<ID>/ directories and parses ROADMAP.md, *-PLAN.md
+ * Migrate legacy markdown-only .otto/workflow/ projects to engine DB state.
+ * Reads .otto/workflow/milestones/<ID>/ directories and parses ROADMAP.md, *-PLAN.md
  * files. All inserts are wrapped in a transaction.
  *
  * This function only INSERTs data into the already-existing v10 schema tables
@@ -60,9 +60,9 @@ export function migrateFromMarkdown(basePath: string): void {
     return;
   }
 
-  const milestonesDir = join(basePath, ".gsd", "milestones");
+  const milestonesDir = join(basePath, ".otto/workflow", "milestones");
   if (!existsSync(milestonesDir)) {
-    process.stderr.write("workflow-migration: no .gsd/milestones/ directory found, nothing to migrate\n");
+    process.stderr.write("workflow-migration: no .otto/workflow/milestones/ directory found, nothing to migrate\n");
     return;
   }
 
@@ -78,7 +78,7 @@ export function migrateFromMarkdown(basePath: string): void {
   }
 
   if (milestoneDirs.length === 0) {
-    process.stderr.write("workflow-migration: no milestone directories found in .gsd/milestones/\n");
+    process.stderr.write("workflow-migration: no milestone directories found in .otto/workflow/milestones/\n");
     return;
   }
 
@@ -269,7 +269,7 @@ export function validateMigration(basePath: string): { discrepancies: string[] }
   const engineTaskCount = engTasks ? (engTasks["cnt"] as number) : 0;
 
   // Count from markdown
-  const milestonesDir = join(basePath, ".gsd", "milestones");
+  const milestonesDir = join(basePath, ".otto/workflow", "milestones");
   if (!existsSync(milestonesDir)) {
     return { discrepancies };
   }

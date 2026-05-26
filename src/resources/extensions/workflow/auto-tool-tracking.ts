@@ -93,7 +93,7 @@ export function clearInFlightTools(): void {
  * produce the same failure, so the retry loop must be broken.
  */
 const TOOL_INVOCATION_ERROR_RE = /Validation failed for tool|Expected ',' or '\}'(?: after property value)?(?: in JSON)?|Unexpected end of JSON|Unexpected token.*in JSON|does not provide an export named|Named export .* not found|Cannot find module|ERR_MODULE_NOT_FOUND|ERR_MODULE_NOT_EXPORTED|ERR_PACKAGE_PATH_NOT_EXPORTED/i;
-const DETERMINISTIC_POLICY_ERROR_RE = /(?:^|\b)(?:HARD BLOCK:|Blocked: \/gsd queue is a planning tool|Direct writes to \.gsd\/STATE\.md and \.gsd\/gsd\.db are blocked|This is a mechanical gate)/i;
+const DETERMINISTIC_POLICY_ERROR_RE = /(?:^|\b)(?:HARD BLOCK:|Blocked: \/otto queue is a planning tool|Direct writes to \.otto\/workflow\/STATE\.md and \.otto\/workflow\/otto\.db are blocked|This is a mechanical gate)/i;
 
 /**
  * Returns true if the error message indicates a deterministic invocation or
@@ -125,14 +125,14 @@ export function isQueuedUserMessageSkip(errorMsg: string): boolean {
  * regex — explicit substrings keep the list auditable.
  */
 export const DETERMINISTIC_POLICY_ERROR_STRINGS = [
-  // gsd_summary_save write-gate: CONTEXT artifact blocked pending depth verification (#4973).
+  // otto_summary_save write-gate: CONTEXT artifact blocked pending depth verification (#4973).
   // Matches the fallback text in workflow-tool-executors.ts and the verbose reason
   // from shouldBlockContextArtifactSaveInSnapshot at write-gate.ts:432-442.
   "context write blocked",
   "CONTEXT without depth verification",
   // Raw write tool gate (#4973): shouldBlockContextWrite at write-gate.ts:390-399 emits
   // "Cannot write to milestone CONTEXT.md without depth verification." for direct
-  // write tool calls to *-CONTEXT.md paths (different code path than gsd_summary_save).
+  // write tool calls to *-CONTEXT.md paths (different code path than otto_summary_save).
   "CONTEXT.md without depth verification",
 ] as const;
 

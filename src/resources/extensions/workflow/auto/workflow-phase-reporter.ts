@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Thin adapter for auto-mode UOK phase-result reporting.
 
 import type { TurnPhase, UokTurnObserver } from "../uok/contracts.js";

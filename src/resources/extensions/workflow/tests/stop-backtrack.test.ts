@@ -40,7 +40,7 @@ function makeTempDir(prefix: string): string {
 }
 
 function setupWorkflowDir(tmp: string): void {
-  mkdirSync(join(tmp, ".gsd"), { recursive: true });
+  mkdirSync(join(tmp, ".otto/workflow"), { recursive: true });
 }
 
 // ─── Classification Types ─────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ test("revertExecutorResolvedCaptures reverts captures resolved without classific
   const id = appendCapture(tmp, "stop everything");
 
   // Simulate an executor writing Status: resolved directly (no classification)
-  const capPath = join(tmp, ".gsd", "CAPTURES.md");
+  const capPath = join(tmp, ".otto/workflow", "CAPTURES.md");
   let content = readFileSync(capPath, "utf-8");
   content = content.replace("**Status:** pending", "**Status:** resolved");
   writeFileSync(capPath, content, "utf-8");
@@ -144,7 +144,7 @@ test("executeBacktrack writes trigger and regression markers", () => {
   setupWorkflowDir(tmp);
 
   // Create target milestone directory
-  mkdirSync(join(tmp, ".gsd", "milestones", "M003"), { recursive: true });
+  mkdirSync(join(tmp, ".otto/workflow", "milestones", "M003"), { recursive: true });
 
   const targetMid = executeBacktrack(tmp, "M005", {
     id: "CAP-test123",
@@ -159,14 +159,14 @@ test("executeBacktrack writes trigger and regression markers", () => {
   assert.equal(targetMid, "M003");
 
   // Check trigger file exists
-  const triggerPath = join(tmp, ".gsd", "BACKTRACK-TRIGGER.md");
+  const triggerPath = join(tmp, ".otto/workflow", "BACKTRACK-TRIGGER.md");
   assert.ok(existsSync(triggerPath));
   const triggerContent = readFileSync(triggerPath, "utf-8");
   assert.ok(triggerContent.includes("M005"));
   assert.ok(triggerContent.includes("M003"));
 
   // Check regression marker exists on target milestone
-  const regressionPath = join(tmp, ".gsd", "milestones", "M003", "M003-REGRESSION.md");
+  const regressionPath = join(tmp, ".otto/workflow", "milestones", "M003", "M003-REGRESSION.md");
   assert.ok(existsSync(regressionPath));
   const regressionContent = readFileSync(regressionPath, "utf-8");
   assert.ok(regressionContent.includes("M005"));
@@ -178,7 +178,7 @@ test("executeBacktrack writes trigger and regression markers", () => {
 test("readBacktrackTrigger parses trigger file", () => {
   const tmp = makeTempDir("read-bt");
   setupWorkflowDir(tmp);
-  mkdirSync(join(tmp, ".gsd", "milestones", "M003"), { recursive: true });
+  mkdirSync(join(tmp, ".otto/workflow", "milestones", "M003"), { recursive: true });
 
   executeBacktrack(tmp, "M005", {
     id: "CAP-abc",

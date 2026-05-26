@@ -56,7 +56,7 @@ function makeRecordingPi() {
   const pi = makeMockPi();
 
   // Simulate the bug: buildRecoveryContext returns {} (empty object).
-  // basePath is undefined, which causes join(undefined, ".gsd") to throw.
+  // basePath is undefined, which causes join(undefined, ".otto/workflow") to throw.
   const emptyRctx = {} as RecoveryContext;
 
   let crashed = false;
@@ -77,19 +77,19 @@ function makeRecordingPi() {
 {
   console.log("\n=== execute-task timeout recovery trusts closed DB status ===");
   const base = mkdtempSync(join(tmpdir(), "gsd-timeout-db-complete-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
 
   try {
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone", status: "active" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Slice", status: "in_progress" });
     insertTask({ id: "T01", milestoneId: "M001", sliceId: "S01", title: "Task", status: "complete" });
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
       "# S01\n\n## Tasks\n\n- [ ] **T01: Task** `est:10m`\n",
       "utf-8",
     );
-    writeFileSync(join(base, ".gsd", "STATE.md"), "## Next Action\nExecute T01 for S01: Task\n", "utf-8");
+    writeFileSync(join(base, ".otto/workflow", "STATE.md"), "## Next Action\nExecute T01 for S01: Task\n", "utf-8");
 
     const ctx = makeMockCtx();
     const pi = makeRecordingPi();
@@ -102,7 +102,7 @@ function makeRecordingPi() {
 
     assert.equal(result, "recovered", "db-complete task should recover immediately");
     assert.equal(pi.messages.length, 0, "db-complete task should not send steering recovery");
-    const runtime = JSON.parse(readFileSync(join(base, ".gsd", "runtime", "units", "execute-task-M001-S01-T01.json"), "utf-8"));
+    const runtime = JSON.parse(readFileSync(join(base, ".otto/workflow", "runtime", "units", "execute-task-M001-S01-T01.json"), "utf-8"));
     assert.equal(runtime.phase, "finalized", "db-complete task should be finalized");
     assert.equal(runtime.recovery.dbComplete, true, "runtime recovery should record DB completion");
   } finally {
@@ -116,8 +116,8 @@ function makeRecordingPi() {
 {
   console.log("\n=== #1855: recoverTimedOutUnit succeeds with valid RecoveryContext ===");
   const base = mkdtempSync(join(tmpdir(), "gsd-stalled-tool-test-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
-  mkdirSync(join(base, ".gsd", "runtime", "units"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime", "units"), { recursive: true });
 
   try {
     const ctx = makeMockCtx();

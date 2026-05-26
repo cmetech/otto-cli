@@ -1,4 +1,4 @@
-// LOOP24 — Ollama Extension: Stateful <think> tag stream parser
+// OTTO — Ollama Extension: Stateful <think> tag stream parser
 
 /**
  * Extracts <think>...</think> thinking blocks from a streaming text response.

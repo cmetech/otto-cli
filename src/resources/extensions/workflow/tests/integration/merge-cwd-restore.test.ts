@@ -47,9 +47,9 @@ function createTempRepo(): string {
   run("git config user.email test@test.com", dir);
   run("git config user.name Test", dir);
   writeFileSync(join(dir, "README.md"), "# test\n");
-  writeFileSync(join(dir, ".gitignore"), ".gsd/worktrees/\n");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
-  writeFileSync(join(dir, ".gsd", "STATE.md"), "# State\n");
+  writeFileSync(join(dir, ".gitignore"), ".otto/workflow/worktrees/\n");
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
+  writeFileSync(join(dir, ".otto/workflow", "STATE.md"), "# State\n");
   run("git add .", dir);
   run("git commit -m init", dir);
   return dir;
@@ -137,9 +137,9 @@ describe("merge cwd restore (#2929)", () => {
     writeFileSync(join(repo, "dirty-from-m020.txt"), "should not be committed\n");
 
     // Set up roadmap so mergeMilestoneToMain can find milestone metadata
-    mkdirSync(join(repo, ".gsd", "milestones", "M010"), { recursive: true });
+    mkdirSync(join(repo, ".otto/workflow", "milestones", "M010"), { recursive: true });
     writeFileSync(
-      join(repo, ".gsd", "milestones", "M010", "M010-ROADMAP.md"),
+      join(repo, ".otto/workflow", "milestones", "M010", "M010-ROADMAP.md"),
       makeRoadmap("M010", "First milestone"),
     );
 
@@ -158,7 +158,7 @@ describe("merge cwd restore (#2929)", () => {
     assert.ok(mergeLog.length > 0, "m010.ts should be in a commit on main");
 
     // The dirty file should NOT appear in the squash merge commit.
-    const squashCommit = run("git log --format=%H --grep='GSD-Milestone: M010' -1", repo);
+    const squashCommit = run("git log --format=%H --grep='OTTO-Milestone: M010' -1", repo);
     assert.ok(squashCommit.length > 0, "should find the squash merge commit");
     const filesInSquash = run(`git diff-tree --no-commit-id --name-only -r ${squashCommit}`, repo);
     assert.ok(

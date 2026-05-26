@@ -1,5 +1,5 @@
 /**
- * /gsd show-config command behavior tests.
+ * /otto show-config command behavior tests.
  */
 
 import test from "node:test";
@@ -23,7 +23,7 @@ test("ConfigOverlay renders and responds to input", () => {
   );
 
   const lines = overlay.render(60);
-  assert.ok(lines.some((line) => line.includes("GSD Configuration")));
+  assert.ok(lines.some((line) => line.includes("OTTO Configuration")));
 
   overlay.handleInput("j");
   assert.equal(renderRequests, 1);
@@ -34,7 +34,7 @@ test("ConfigOverlay renders and responds to input", () => {
 
 test("formatConfigText provides a text fallback", () => {
   const text = formatConfigText();
-  assert.match(text, /GSD Configuration/);
+  assert.match(text, /OTTO Configuration/);
   assert.match(text, /SOURCES/);
 });
 
@@ -54,5 +54,5 @@ test("core handler routes show-config to overlay with text fallback", async () =
   assert.equal(handled, true);
   assert.equal(notifications.length, 1);
   assert.equal(notifications[0]?.level, "info");
-  assert.match(notifications[0]?.message ?? "", /GSD Configuration/);
+  assert.match(notifications[0]?.message ?? "", /OTTO Configuration/);
 });

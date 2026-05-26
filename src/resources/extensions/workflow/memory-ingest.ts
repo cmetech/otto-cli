@@ -1,18 +1,18 @@
 // Memory Ingest — turn raw content into memories
 //
 // Provides four entry points: ingestNote (inline text), ingestFile (local
-// path), ingestUrl (HTTP resource), and ingestArtifact (a named .gsd/ artifact
+// path), ingestUrl (HTTP resource), and ingestArtifact (a named .otto/workflow/ artifact
 // for a given milestone). Each one inserts a row into `memory_sources` and,
 // if an LLM call is available, fires the extractor against the content with
 // source-specific scope/tags.
 //
 // All four functions are safe to call without an LLM — they still persist the
 // source. This means ingestion is decoupled from extraction; a later
-// `/loop24 memory rebuild` can re-extract from persisted sources.
+// `/otto memory rebuild` can re-extract from persisted sources.
 
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { basename, isAbsolute, resolve } from "node:path";
-import type { ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionContext } from "@otto/pi-coding-agent";
 
 import { createMemorySource, type MemorySource, type MemorySourceKind } from "./memory-source-store.js";
 import { buildMemoryLLMCall, extractMemoriesFromTranscript } from "./memory-extractor.js";

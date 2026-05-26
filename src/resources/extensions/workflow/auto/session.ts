@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Mutable auto-mode session state container.
 /**
  * AutoSession — encapsulates all mutable auto-mode state into a single instance.
@@ -18,8 +18,8 @@
  * `let` or `var` declarations.
  */
 
-import type { Api, Model } from "@loop24/pi-ai";
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { Api, Model } from "@otto/pi-ai";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import type { GitServiceImpl } from "../git-service.js";
 import type { CaptureEntry } from "../captures.js";
 import type { BudgetAlertLevel } from "../auto-budget.js";
@@ -159,7 +159,7 @@ export class AutoSession {
 
   // ── Model state ──────────────────────────────────────────────────────────
   autoModeStartModel: StartModel | null = null;
-  /** Explicit /loop24 model pin captured at bootstrap (session-scoped policy override). */
+  /** Explicit /otto model pin captured at bootstrap (session-scoped policy override). */
   manualSessionModelOverride: StartModel | null = null;
   currentUnitModel: Model<Api> | null = null;
   /** Fully-qualified model ID (provider/id) set after selectAndApplyModel + hook overrides (#2899). */

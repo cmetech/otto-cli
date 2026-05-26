@@ -8,7 +8,7 @@ Produce a security review that names specific exploit paths through the actual c
 </objective>
 
 <context>
-the agent's general `review` skill covers security as one of several categories. This skill is the deeper pass — triggered deliberately when security is the primary concern. It complements v1's `/gsd-secure-phase` concept, adapted to the gsd-2 artifact model.
+the agent's general `review` skill covers security as one of several categories. This skill is the deeper pass — triggered deliberately when security is the primary concern. It complements v1's `/otto-secure-phase` concept, adapted to the otto-2 artifact model.
 
 Invocation points:
 - Any change touching authentication, authorization, session handling
@@ -147,14 +147,14 @@ Severity × Exploitability = priority. Sort findings by priority.
 <what wasn't reviewed>
 ```
 
-Offer to file as a GitHub issue — requires explicit confirmation per the outward-action rule. Sensitive findings should stay in `.gsd/security-reviews/` and not be pushed to a public tracker; check the repository's security policy first.
+Offer to file as a GitHub issue — requires explicit confirmation per the outward-action rule. Sensitive findings should stay in `.otto/workflow/security-reviews/` and not be pushed to a public tracker; check the repository's security policy first.
 
 ## Step 7: Follow-ups
 
 If the review found CRITICAL or HIGH issues:
 - Recommend filing a private security advisory (not a public issue) if the repo is public.
-- Flag the finding for `/gsd start hotfix` if it's in the scope of active work.
-- Append one line to `.gsd/DECISIONS.md` if the remediation involves an architectural change.
+- Flag the finding for `/otto start hotfix` if it's in the scope of active work.
+- Append one line to `.otto/workflow/DECISIONS.md` if the remediation involves an architectural change.
 
 </process>
 

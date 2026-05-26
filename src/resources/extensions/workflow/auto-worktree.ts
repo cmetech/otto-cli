@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Auto-mode worktree lifecycle, merge, and cleanup management.
 
 /**
@@ -101,7 +101,7 @@ const LEGACY_DEEP_SETUP_RUNTIME_UNIT_FILES = new Set([
 // ─── Shared Constants & Helpers ─────────────────────────────────────────────
 
 /**
- * Root-level .gsd/ projections copied from project root into worktrees for
+ * Root-level .otto/workflow/ projections copied from project root into worktrees for
  * compatibility. Project root remains the canonical state/projection root.
  */
 const ROOT_STATE_FILES = [
@@ -369,7 +369,7 @@ function findRegularMergeChangedPaths(basePath: string, milestoneBranch: string,
         encoding: "utf-8",
       }).trim();
       for (const path of output.split("\n").filter(Boolean)) {
-        if (!path.startsWith(".gsd/")) changedPaths.add(path);
+        if (!path.startsWith(".otto/workflow/")) changedPaths.add(path);
       }
     } catch (err) {
       logWarning("worktree", `regular merge diff lookup failed: ${err instanceof Error ? err.message : String(err)}`);
@@ -460,9 +460,9 @@ export const SAFE_AUTO_RESOLVE_PATTERNS: RegExp[] = [
 ];
 
 /** Returns true if the file path is safe to auto-resolve during merge.
- * Covers `.gsd/` state files and common build artifacts. */
+ * Covers `.otto/workflow/` state files and common build artifacts. */
 export const isSafeToAutoResolve = (filePath: string): boolean =>
-  filePath.startsWith(".gsd/") ||
+  filePath.startsWith(".otto/workflow/") ||
   SAFE_AUTO_RESOLVE_PATTERNS.some((re) => re.test(filePath));
 
 function removeMergeStateFiles(basePath: string, contextLabel: string): void {
@@ -513,7 +513,7 @@ function cleanupSquashConflictState(basePath: string): void {
  * Sync milestone artifacts from project root INTO worktree before deriveState.
  * Covers the case where the LLM wrote artifacts to the main repo filesystem
  * (e.g. via absolute paths) but the worktree has stale data. Also deletes
- * gsd.db in the worktree so it rebuilds from fresh disk state (#853).
+ * otto.db in the worktree so it rebuilds from fresh disk state (#853).
  * Non-fatal — sync failure should never block dispatch.
  */
 /**
@@ -552,7 +552,7 @@ export function syncStateToProjectRoot(
  */
 export function readResourceVersion(): string | null {
   const agentDir =
-    (process.env.LOOP24_CODING_AGENT_DIR ?? process.env.GSD_CODING_AGENT_DIR) || join(workflowHome(), "agent");
+    (process.env.OTTO_CODING_AGENT_DIR ?? process.env.OTTO_CODING_AGENT_DIR) || join(workflowHome(), "agent");
   const manifestPath = join(agentDir, "managed-resources.json");
   try {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
@@ -576,7 +576,7 @@ export function checkResourcesStale(
   const current = readResourceVersion();
   if (current === null) return null;
   if (current !== versionOnStart) {
-    return "GSD resources were updated since this session started. Restart gsd to load the new code.";
+    return "OTTO resources were updated since this session started. Restart gsd to load the new code.";
   }
   return null;
 }
@@ -587,7 +587,7 @@ export function checkResourcesStale(
  * Detect and escape a stale worktree cwd (#608).
  *
  * After milestone completion + merge, the worktree directory is removed but
- * the process cwd may still point inside `.gsd/worktrees/<MID>/`.
+ * the process cwd may still point inside `.otto/workflow/worktrees/<MID>/`.
  * When a new session starts, `process.cwd()` is passed as `base` to startAuto
  * and all subsequent writes land in the wrong directory. This function detects
  * that scenario and chdir back to the project root.
@@ -595,27 +595,27 @@ export function checkResourcesStale(
  * Returns the corrected base path.
  */
 export function escapeStaleWorktree(base: string): string {
-  // Direct layout: /.gsd/worktrees/
-  const directMarker = `${pathSep}.gsd${pathSep}worktrees${pathSep}`;
+  // Direct layout: /.otto/workflow/worktrees/
+  const directMarker = `${pathSep}.otto${pathSep}workflow${pathSep}worktrees${pathSep}`;
   let idx = base.indexOf(directMarker);
   if (idx === -1) {
-    // Symlink-resolved layout: /.gsd/projects/<hash>/worktrees/
+    // Symlink-resolved layout: /.otto/workflow/projects/<hash>/worktrees/
     const symlinkRe = new RegExp(
-      `\\${pathSep}\\.gsd\\${pathSep}projects\\${pathSep}[a-f0-9]+\\${pathSep}worktrees\\${pathSep}`,
+      `\\${pathSep}\\.otto\\${pathSep}workflow\\${pathSep}projects\\${pathSep}[a-f0-9]+\\${pathSep}worktrees\\${pathSep}`,
     );
     const match = base.match(symlinkRe);
     if (!match || match.index === undefined) return base;
     idx = match.index;
   }
 
-  // base is inside .gsd/worktrees/<something> — extract the project root
+  // base is inside .otto/workflow/worktrees/<something> — extract the project root
   const projectRoot = base.slice(0, idx);
 
-  // Guard: If the candidate project root's .gsd IS the user-level ~/.gsd,
-  // the string-slice heuristic matched the wrong /.gsd/ boundary. This happens
-  // when .gsd is a symlink into ~/.otto/projects/<hash> and process.cwd()
+  // Guard: If the candidate project root's .otto/workflow IS the user-level ~/.otto,
+  // the string-slice heuristic matched the wrong /.otto/workflow/ boundary. This happens
+  // when .otto/workflow is a symlink into ~/.otto/projects/<hash> and process.cwd()
   // resolved through the symlink. Returning ~ would be catastrophic (#1676).
-  const candidateGsd = normalizeWorktreePathForCompare(join(projectRoot, ".gsd"));
+  const candidateGsd = normalizeWorktreePathForCompare(join(projectRoot, ".otto/workflow"));
   const workflowHomeNorm = normalizeWorktreePathForCompare(workflowHome());
   if (candidateGsd === workflowHomeNorm || candidateGsd.startsWith(workflowHomeNorm + "/")) {
     // Don't chdir to home — return base unchanged.
@@ -719,15 +719,15 @@ export function syncWorkflowStateToWorktreeByScope(
 }
 
 /**
- * Sync .gsd/ state from the main repo into the worktree.
+ * Sync .otto/workflow/ state from the main repo into the worktree.
  *
- * When .gsd/ is a symlink to the external state directory, both the main
+ * When .otto/workflow/ is a symlink to the external state directory, both the main
  * repo and worktree share the same directory — no sync needed.
  *
- * When .gsd/ is a real directory (e.g., git-tracked or manage_gitignore:false),
+ * When .otto/workflow/ is a real directory (e.g., git-tracked or manage_gitignore:false),
  * the worktree has its own copy that may be stale. This function copies
  * missing milestones, CONTEXT, ROADMAP, DECISIONS, REQUIREMENTS, and
- * PROJECT files from the main repo's .gsd/ into the worktree's .gsd/.
+ * PROJECT files from the main repo's .otto/workflow/ into the worktree's .otto/workflow/.
  *
  * Only adds missing content — never overwrites existing files in the worktree.
  * Worktree files are compatibility projections; DB/project root remains
@@ -741,7 +741,7 @@ export function syncWorkflowStateToWorktree(
 ): { synced: string[] } {
   const contract = resolveWorkflowPathContract(worktreePath_, mainBasePath);
   const mainGsd = contract.projectGsd;
-  const wtGsd = contract.worktreeGsd ?? join(worktreePath_, ".gsd");
+  const wtGsd = contract.worktreeGsd ?? join(worktreePath_, ".otto/workflow");
   const synced: string[] = [];
 
   // If both resolve to the same directory (symlink), no sync needed
@@ -750,7 +750,7 @@ export function syncWorkflowStateToWorktree(
   if (!existsSync(mainGsd)) return { synced };
   mkdirSync(wtGsd, { recursive: true });
 
-  // Sync root-level .gsd/ files (DECISIONS, REQUIREMENTS, PROJECT, KNOWLEDGE, etc.)
+  // Sync root-level .otto/workflow/ files (DECISIONS, REQUIREMENTS, PROJECT, KNOWLEDGE, etc.)
   for (const f of ROOT_STATE_FILES) {
     const src = join(mainGsd, f);
     const dst = join(wtGsd, f);
@@ -887,7 +887,7 @@ export function syncWorkflowStateToWorktree(
 
 /**
  * Sync compatibility artifacts from worktree back to the main external state
- * directory. Canonical workflow state lives in the project DB; worktree .gsd
+ * directory. Canonical workflow state lives in the project DB; worktree .otto/workflow
  * content is legacy projection/diagnostic data only.
  *
  * Syncs:
@@ -1067,7 +1067,7 @@ export function checkoutBranchWithStashGuard(
 
   const status = nativeWorkingTreeStatus(basePath).trim();
   if (status.length > 0) {
-    stashMarker = `gsd-checkout-stash:${reason}:${process.pid}:${Date.now()}:${process.hrtime.bigint().toString(36)}`;
+    stashMarker = `otto-checkout-stash:${reason}:${process.pid}:${Date.now()}:${process.hrtime.bigint().toString(36)}`;
     const stashListBefore = execFileSync("git", ["stash", "list"], {
       cwd: basePath,
       stdio: ["ignore", "pipe", "pipe"],
@@ -1075,7 +1075,7 @@ export function checkoutBranchWithStashGuard(
     });
     execFileSync(
       "git",
-      ["stash", "push", "--include-untracked", "-m", `gsd: checkout stash [${stashMarker}]`],
+      ["stash", "push", "--include-untracked", "-m", `otto: checkout stash [${stashMarker}]`],
       {
         cwd: basePath,
         stdio: ["ignore", "pipe", "pipe"],
@@ -1140,7 +1140,7 @@ export function checkoutBranchWithStashGuard(
  * Phase C: deleted. Writers in workflow-projections.ts, triage-resolution.ts,
  * rule-registry.ts, and auto-post-unit.ts now route through
  * s.canonicalProjectRoot, so non-symlinked worktrees no longer need a local
- * .gsd/ projection — the project-root .gsd/ is the only authoritative source
+ * .otto/workflow/ projection — the project-root .otto/workflow/ is the only authoritative source
  * for both reads and writes. copyPlanningArtifacts and reconcilePlanCheckboxes
  * (both formerly here) became dead.
  */
@@ -1321,12 +1321,12 @@ export function createAutoWorktree(
   }
 
   // Phase C: copyPlanningArtifacts and reconcilePlanCheckboxes were
-  // deleted. Both addressed the same problem (worktree-local .gsd/
+  // deleted. Both addressed the same problem (worktree-local .otto/workflow/
   // projection lagging behind project-root state) by maintaining a stale
   // copy. Now that auto-mode writers in workflow-projections.ts,
   // triage-resolution.ts, rule-registry.ts, and auto-post-unit.ts route
   // through s.canonicalProjectRoot, the worktree never needs a local
-  // .gsd/ — both reads and writes converge on the project-root .gsd/.
+  // .otto/workflow/ — both reads and writes converge on the project-root .otto/workflow/.
   // The original concerns (#759, #778) no longer apply because there is
   // no second copy to drift.
 
@@ -1356,11 +1356,11 @@ export function createAutoWorktree(
 }
 
 // Phase C: copyPlanningArtifacts removed. Planning artifacts now live
-// only at the project root .gsd/; auto-mode writers (workflow-projections,
+// only at the project root .otto/workflow/; auto-mode writers (workflow-projections,
 // triage-resolution, rule-registry, regenerateIfMissing,
 // resolveHookArtifactPath) all route through s.canonicalProjectRoot.
 // Worktrees are pure git checkouts — they no longer maintain a parallel
-// .gsd/ projection. The gsd.db has always lived at the project root via
+// .otto/workflow/ projection. The otto.db has always lived at the project root via
 // the shared-WAL R012 contract; that is unchanged.
 
 /**
@@ -1402,12 +1402,12 @@ export function teardownAutoWorktree(
       logWarning("worktree", `clearProjectRootStateFiles failed during teardown: ${err instanceof Error ? err.message : String(err)}`);
     }
 
-    // 2. Reconcile worktree-local gsd.db into project root DB if both exist.
+    // 2. Reconcile worktree-local otto.db into project root DB if both exist.
     //    Non-fatal — handles legacy worktrees that have a local copy.
     if (isDbAvailable()) {
       try {
         const contract = resolveWorkflowPathContract(previousCwd, originalBasePath);
-        const worktreeDbPath = join(contract.worktreeGsd ?? join(previousCwd, ".gsd"), "gsd.db");
+        const worktreeDbPath = join(contract.worktreeGsd ?? join(previousCwd, ".otto/workflow"), "otto.db");
         const mainDbPath = contract.projectDb;
         if (_shouldReconcileWorktreeDb(worktreeDbPath, mainDbPath)) {
           reconcileWorktreeDb(mainDbPath, worktreeDbPath);
@@ -1443,7 +1443,7 @@ export function teardownAutoWorktree(
         { worktree: milestoneId },
       );
       // Attempt a direct filesystem removal as a fallback — but ONLY if the
-      // path is safely inside .gsd/worktrees/ to prevent #2365 data loss.
+      // path is safely inside .otto/workflow/worktrees/ to prevent #2365 data loss.
       if (isInsideWorktreesDir(originalBasePath, wtDir)) {
         try {
           rmSync(wtDir, { recursive: true, force: true });
@@ -1453,7 +1453,7 @@ export function teardownAutoWorktree(
         }
       } else {
         console.error(
-          `[GSD] REFUSING fallback rmSync — path is outside .gsd/worktrees/: ${wtDir}`,
+          `[OTTO] REFUSING fallback rmSync — path is outside .otto/workflow/worktrees/: ${wtDir}`,
         );
       }
     }
@@ -1726,7 +1726,7 @@ export function mergeMilestoneToMain(
   if (isDbAvailable()) {
     try {
       const contract = resolveWorkflowPathContract(worktreeCwd, originalBasePath_);
-      const worktreeDbPath = join(contract.worktreeGsd ?? join(worktreeCwd, ".gsd"), "gsd.db");
+      const worktreeDbPath = join(contract.worktreeGsd ?? join(worktreeCwd, ".otto/workflow"), "otto.db");
       const mainDbPath = contract.projectDb;
       if (_shouldReconcileWorktreeDb(worktreeDbPath, mainDbPath)) {
         reconcileWorktreeDb(mainDbPath, worktreeDbPath);
@@ -1839,9 +1839,9 @@ export function mergeMilestoneToMain(
       .flatMap((s) => s.tasks.map((task) => `- ${s.id}/${task.id}: ${task.title}`))
       .join("\n");
     const taskBlock = taskLines ? `\n\nCompleted tasks:\n${taskLines}` : "";
-    body = `\n\nCompleted slices:\n${sliceLines}${taskBlock}\n\n${milestoneContext}\nGSD-Milestone: ${milestoneId}\nBranch: ${milestoneBranch}`;
+    body = `\n\nCompleted slices:\n${sliceLines}${taskBlock}\n\n${milestoneContext}\nOTTO-Milestone: ${milestoneId}\nBranch: ${milestoneBranch}`;
   } else {
-    body = `\n\n${milestoneContext}\nGSD-Milestone: ${milestoneId}\nBranch: ${milestoneBranch}`;
+    body = `\n\n${milestoneContext}\nOTTO-Milestone: ${milestoneId}\nBranch: ${milestoneBranch}`;
   }
   const commitMessage = subject + body;
 
@@ -1907,7 +1907,7 @@ export function mergeMilestoneToMain(
       originalBasePath_,
       mainBranch,
       milestoneBranch,
-    ).filter((entry) => !entry.path.startsWith(".gsd/"));
+    ).filter((entry) => !entry.path.startsWith(".otto/workflow/"));
     if (codeChanges.length > 0) {
       const regularMergeChangedPaths = findRegularMergeChangedPaths(
         originalBasePath_,
@@ -2051,10 +2051,10 @@ export function mergeMilestoneToMain(
   //     locally-added files that conflict with tracked files on the milestone
   //     branch. Passing NO pathspec lets git skip gitignored paths silently;
   //     adding an explicit pathspec trips a `git add`-style fatal on ignored
-  //     entries (e.g. a gitignored `.gsd` symlink under ADR-002) (#4573).
-  //     Queued CONTEXT files under `.gsd/milestones/*` are already sheltered
+  //     entries (e.g. a gitignored `.otto/workflow` symlink under ADR-002) (#4573).
+  //     Queued CONTEXT files under `.otto/workflow/milestones/*` are already sheltered
   //     in step 7 above, so they won't be swept into the stash.
-  // On Windows, SQLite holds mandatory file locks on the gsd.db WAL/SHM
+  // On Windows, SQLite holds mandatory file locks on the otto.db WAL/SHM
   // sidecars while the connection is open. `git stash --include-untracked`
   // walks those files and fails with EBUSY (#4704). Close the DB before
   // stashing so Windows releases the handles; reopen after. No-op on
@@ -2103,7 +2103,7 @@ export function mergeMilestoneToMain(
   // Defensively remove merge artifacts before starting.
   removeMergeStateFiles(originalBasePath_, "pre-merge");
 
-  // 8. Squash merge — auto-resolve .gsd/ state file conflicts (#530)
+  // 8. Squash merge — auto-resolve .otto/workflow/ state file conflicts (#530)
   const mergeResult = nativeMergeSquash(originalBasePath_, milestoneBranch);
   if (needsDbCycle && dbPathToReopen) {
     try {
@@ -2115,7 +2115,7 @@ export function mergeMilestoneToMain(
 
   if (!mergeResult.success) {
     // Dirty working tree — the merge was rejected before it started (e.g.
-    // untracked .gsd/ files left by syncStateToProjectRoot).  Preserve the
+    // untracked .otto/workflow/ files left by syncStateToProjectRoot).  Preserve the
     // milestone branch so commits are not lost.
     if (mergeResult.conflicts.includes("__dirty_working_tree__")) {
       // Defensively clean merge state — the native path may leave MERGE_HEAD
@@ -2134,7 +2134,7 @@ export function mergeMilestoneToMain(
       // Restore cwd so the caller is not stranded on the integration branch
       process.chdir(previousCwd);
       // Surface the actual dirty filenames from git stderr instead of
-      // generically blaming .gsd/ (#2151).
+      // generically blaming .otto/workflow/ (#2151).
       const fileList = mergeResult.dirtyFiles?.length
         ? `Dirty files:\n${mergeResult.dirtyFiles.map((f) => `  ${f}`).join("\n")}`
         : `Check \`git status\` in the project root for details.`;
@@ -2229,25 +2229,25 @@ export function mergeMilestoneToMain(
     } catch (e) {
       stashRefForDrop = stashRefFromError(e);
       logWarning("worktree", `git stash pop failed, attempting conflict resolution: ${(e as Error).message}`);
-      // Stash pop after squash merge can conflict on .gsd/ state files that
+      // Stash pop after squash merge can conflict on .otto/workflow/ state files that
       // diverged between branches.  Left unresolved, these UU entries block
       // every subsequent merge.  Auto-resolve them the same way we handle
-      // .gsd/ conflicts during the merge itself: accept HEAD (the just-committed
+      // .otto/workflow/ conflicts during the merge itself: accept HEAD (the just-committed
       // version) and drop the now-applied stash.
       const uu = nativeConflictFiles(originalBasePath_);
-      const workflowUU = uu.filter((f) => f.startsWith(".gsd/"));
-      const nonWorkflowUU = uu.filter((f) => !f.startsWith(".gsd/"));
+      const workflowUU = uu.filter((f) => f.startsWith(".otto/workflow/"));
+      const nonWorkflowUU = uu.filter((f) => !f.startsWith(".otto/workflow/"));
       const stashPopMessage = e instanceof Error ? e.message : String(e);
       const isUntrackedRestoreFailure = stashPopMessage.includes("could not restore untracked files from stash");
       const workflowContentConflicts: string[] = [];
       const alreadyExists = stashAlreadyExistsFilesFromError(e);
-      const workflowAlreadyExists = alreadyExists.filter((f) => f.startsWith(".gsd/"));
-      const nonWorkflowAlreadyExists = alreadyExists.filter((f) => !f.startsWith(".gsd/"));
+      const workflowAlreadyExists = alreadyExists.filter((f) => f.startsWith(".otto/workflow/"));
+      const nonWorkflowAlreadyExists = alreadyExists.filter((f) => !f.startsWith(".otto/workflow/"));
 
       // Untracked-file restore failures can leave marker conflicts in tracked
-      // .gsd JSONL files without producing `U` status entries.
+      // .otto/workflow JSONL files without producing `U` status entries.
       if (isUntrackedRestoreFailure) {
-        for (const f of nativeLsFiles(originalBasePath_, ".gsd/*.jsonl")) {
+        for (const f of nativeLsFiles(originalBasePath_, ".otto/workflow/*.jsonl")) {
           if (hasConflictMarkers(join(originalBasePath_, f))) {
             workflowContentConflicts.push(f);
           }
@@ -2274,26 +2274,26 @@ export function mergeMilestoneToMain(
       }
 
       if (workflowConflictFiles.length > 0 && nonWorkflowUU.length === 0) {
-        // All detected conflicts were .gsd/ files. Before dropping, verify no
-        // unresolved non-.gsd conflict markers or unmerged entries remain.
+        // All detected conflicts were .otto/workflow/ files. Before dropping, verify no
+        // unresolved non-.otto/workflow conflict markers or unmerged entries remain.
         const remainingUnmerged = nativeConflictFiles(originalBasePath_);
-        const nonWorkflowUnmerged = remainingUnmerged.filter((f) => !f.startsWith(".gsd/"));
+        const nonWorkflowUnmerged = remainingUnmerged.filter((f) => !f.startsWith(".otto/workflow/"));
         const markerCandidates = Array.from(new Set([
           ...nonWorkflowUnmerged,
           ...nativeLsFiles(originalBasePath_, "."),
-        ])).filter((f) => !f.startsWith(".gsd/"));
+        ])).filter((f) => !f.startsWith(".otto/workflow/"));
         const nonWorkflowMarkerConflicts = markerCandidates.filter((f) =>
           hasConflictMarkers(join(originalBasePath_, f)),
         );
         const hasRemainingNonWorkflowConflicts = nonWorkflowUnmerged.length > 0 || nonWorkflowMarkerConflicts.length > 0;
         if (hasRemainingNonWorkflowConflicts) {
           const files = Array.from(new Set([...nonWorkflowUnmerged, ...nonWorkflowMarkerConflicts]));
-          logWarning("reconcile", "Leaving stash because non-.gsd conflicts remain after auto-resolution", {
+          logWarning("reconcile", "Leaving stash because non-.otto/workflow conflicts remain after auto-resolution", {
             files: files.join(", "),
           });
         }
 
-        // No non-.gsd conflicts remain — safe to drop the stash.
+        // No non-.otto/workflow conflicts remain — safe to drop the stash.
         if (!hasRemainingNonWorkflowConflicts && stashRefForDrop) {
           try {
             execFileSync("git", ["stash", "drop", stashRefForDrop], {
@@ -2314,7 +2314,7 @@ export function mergeMilestoneToMain(
         nonWorkflowAlreadyExists.length === 0
       ) {
         // Untracked-file restore failure from stash pop where all collided
-        // paths are .gsd/ artifacts that already exist after merge.
+        // paths are .otto/workflow/ artifacts that already exist after merge.
         if (stashRefForDrop) {
           try {
             execFileSync("git", ["stash", "drop", stashRefForDrop], {
@@ -2329,12 +2329,12 @@ export function mergeMilestoneToMain(
           logWarning("worktree", "recorded stash entry could not be resolved; skipping automatic drop");
         }
       } else if (nonWorkflowUU.length > 0) {
-        // Non-.gsd conflicts remain — leave stash for manual resolution
-        logWarning("reconcile", "Stash pop conflict on non-.gsd files after merge", {
+        // Non-.otto/workflow conflicts remain — leave stash for manual resolution
+        logWarning("reconcile", "Stash pop conflict on non-.otto/workflow files after merge", {
           files: nonWorkflowUU.join(", "),
         });
       } else if (nonWorkflowAlreadyExists.length > 0) {
-        logWarning("reconcile", "Stash pop restore collision on non-.gsd files after merge", {
+        logWarning("reconcile", "Stash pop restore collision on non-.otto/workflow files after merge", {
           files: nonWorkflowAlreadyExists.join(", "),
         });
       } else {
@@ -2351,7 +2351,7 @@ export function mergeMilestoneToMain(
 
   // 9b. Safety check (#1792): if nothing was committed, verify the milestone
   // work is already on the integration branch before allowing teardown.
-  // Compare only non-.gsd/ paths — .gsd/ state files diverge normally and
+  // Compare only non-.otto/workflow/ paths — .otto/workflow/ state files diverge normally and
   // are auto-resolved during the squash merge.
   if (nothingToCommit) {
     const numstat = nativeDiffNumstat(
@@ -2360,7 +2360,7 @@ export function mergeMilestoneToMain(
       milestoneBranch,
     );
     const codeChanges = numstat.filter(
-      (entry) => !entry.path.startsWith(".gsd/"),
+      (entry) => !entry.path.startsWith(".otto/workflow/"),
     );
     if (codeChanges.length > 0) {
       // Milestone has unanchored code changes — abort teardown.
@@ -2374,8 +2374,8 @@ export function mergeMilestoneToMain(
     }
   }
 
-  // 9c. Detect whether any non-.gsd/ code files were actually merged (#1906).
-  // When a milestone only produced .gsd/ metadata (summaries, roadmaps) but no
+  // 9c. Detect whether any non-.otto/workflow/ code files were actually merged (#1906).
+  // When a milestone only produced .otto/workflow/ metadata (summaries, roadmaps) but no
   // real code, the user sees "milestone complete" but nothing changed in their
   // codebase. Surface this so the caller can warn the user.
   //
@@ -2393,7 +2393,7 @@ export function mergeMilestoneToMain(
         { cwd: originalBasePath_, stdio: ["ignore", "pipe", "pipe"], encoding: "utf-8" },
       ).trim();
       const mergedFiles = diffTreeOutput ? diffTreeOutput.split("\n").filter(Boolean) : [];
-      codeFilesChanged = mergedFiles.some((f) => !f.startsWith(".gsd/"));
+      codeFilesChanged = mergedFiles.some((f) => !f.startsWith(".otto/workflow/"));
     } catch (e) {
       // diff-tree failed (e.g. unborn HEAD in a brand-new repo) — fall back to
       // comparing against the empty tree so initial-commit repos still report changes.
@@ -2404,7 +2404,7 @@ export function mergeMilestoneToMain(
           { cwd: originalBasePath_, stdio: ["ignore", "pipe", "pipe"], encoding: "utf-8" },
         ).trim();
         const fallbackFiles = fallbackOutput ? fallbackOutput.split("\n").filter(Boolean) : [];
-        codeFilesChanged = fallbackFiles.some((f) => !f.startsWith(".gsd/"));
+        codeFilesChanged = fallbackFiles.some((f) => !f.startsWith(".otto/workflow/"));
       } catch {
         // Truly unable to determine — assume code was changed to avoid silent data loss
         logWarning("worktree", `diff-tree and empty-tree fallback both failed (assuming code changed): ${(e as Error).message}`);

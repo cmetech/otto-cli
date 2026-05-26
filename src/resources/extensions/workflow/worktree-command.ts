@@ -1,7 +1,7 @@
 /**
  * Worktree Command — /worktree
  *
- * Create, list, merge, and remove git worktrees under .gsd/worktrees/.
+ * Create, list, merge, and remove git worktrees under .otto/workflow/worktrees/.
  *
  * Usage:
  *   /worktree <name>        — create a new worktree
@@ -10,7 +10,7 @@
  *   /worktree remove <name> — remove a worktree and its branch
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { loadPrompt } from "./prompt-loader.js";
 import { autoCommitCurrentBranch, getMainBranch, resolveGitHeadPath, nudgeGitBranchCache } from "./worktree.js";
 import { runWorktreePostCreateHook } from "./auto-worktree.js";
@@ -274,7 +274,7 @@ function hasExistingMilestones(wtPath: string): boolean {
 
 /**
  * Clear planning artifacts so auto-mode starts fresh with the discuss flow.
- * Keeps the .gsd/ directory structure intact but removes milestones and root planning files.
+ * Keeps the .otto/workflow/ directory structure intact but removes milestones and root planning files.
  */
 function clearGSDPlans(wtPath: string): void {
   const mDir = milestonesDir(wtPath);
@@ -329,10 +329,10 @@ async function handleCreate(
       const keepExisting = await showConfirm(ctx, {
         title: "Worktree Setup",
         message: [
-          `This worktree inherited existing GSD milestones from the main branch.`,
+          `This worktree inherited existing OTTO milestones from the main branch.`,
           ``,
           `  Continue — keep milestones and pick up where main left off`,
-          `  Start fresh — clear milestones so /gsd auto starts a new project`,
+          `  Start fresh — clear milestones so /otto auto starts a new project`,
         ].join("\n"),
         confirmLabel: "Continue",
         declineLabel: "Start fresh",
@@ -347,7 +347,7 @@ async function handleCreate(
       ? `  ${CLR.muted("Auto-committed on previous branch before switching.")}`
       : "";
     const freshNote = clearedPlans
-      ? `  ${CLR.ok("✓")} Cleared milestones — ${CLR.hint("/gsd auto")} will start fresh.`
+      ? `  ${CLR.ok("✓")} Cleared milestones — ${CLR.hint("/otto auto")} will start fresh.`
       : "";
     ctx.ui.notify(
       [
@@ -494,7 +494,7 @@ async function handleList(
     const worktrees = listWorktrees(mainBase);
 
     if (worktrees.length === 0) {
-      ctx.ui.notify("No GSD worktrees found. Create one with /worktree <name>.", "info");
+      ctx.ui.notify("No OTTO worktrees found. Create one with /worktree <name>.", "info");
       return;
     }
 
@@ -507,7 +507,7 @@ async function handleList(
     } catch { /* health check failed — show list without status */ }
 
     const cwd = process.cwd();
-    const lines = [CLR.header("GSD Worktrees"), ""];
+    const lines = [CLR.header("OTTO Worktrees"), ""];
     for (const wt of worktrees) {
       const isCurrent = cwd === wt.path
         || (existsSync(cwd) && existsSync(wt.path)
@@ -569,7 +569,7 @@ async function handleMerge(
       return;
     }
 
-    // Gather merge context — full repo diff, not just .gsd/
+    // Gather merge context — full repo diff, not just .otto/workflow/
     const diffSummary = diffWorktreeAll(basePath, name);
     const numstat = diffWorktreeNumstat(basePath, name);
     const workflowDiff = getWorktreeGSDDiff(basePath, name);
@@ -592,7 +592,7 @@ async function handleMerge(
     for (const s of numstat) { totalAdded += s.added; totalRemoved += s.removed; }
 
     // Split files into code vs workflow files for the preview
-    const isAgent = (f: string) => f.startsWith(".gsd/");
+    const isAgent = (f: string) => f.startsWith(".otto/workflow/");
     const codeChanges = diffSummary.added.filter(f => !isAgent(f)).length
       + diffSummary.modified.filter(f => !isAgent(f)).length
       + diffSummary.removed.filter(f => !isAgent(f)).length;
@@ -611,7 +611,7 @@ async function handleMerge(
     const previewLines = [
       `Merge ${CLR.name(name)} → ${CLR.branch(mainBranch)}`,
       "",
-      `  ${totalChanges} file${totalChanges === 1 ? "" : "s"} changed, ${CLR.ok(`+${totalAdded}`)} ${RED}-${totalRemoved}${RESET} lines ${CLR.muted(`(${codeChanges} code, ${workflowChanges} GSD)`)}`,
+      `  ${totalChanges} file${totalChanges === 1 ? "" : "s"} changed, ${CLR.ok(`+${totalAdded}`)} ${RED}-${totalRemoved}${RESET} lines ${CLR.muted(`(${codeChanges} code, ${workflowChanges} OTTO)`)}`,
     ];
 
     const appendFileList = (label: string, files: string[], prefix: string, limit = 10) => {
@@ -652,7 +652,7 @@ async function handleMerge(
 
     // Reconcile worktree DB into main DB before squash merge
     const contract = resolveWorkflowPathContract(worktreePath(basePath, name), basePath);
-    const wtDbPath = join(contract.worktreeGsd ?? join(contract.workRoot, ".gsd"), "gsd.db");
+    const wtDbPath = join(contract.worktreeGsd ?? join(contract.workRoot, ".otto/workflow"), "otto.db");
     const mainDbPath = contract.projectDb;
     if (existsSync(wtDbPath) && existsSync(mainDbPath)) {
       try {

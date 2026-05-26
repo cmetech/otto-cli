@@ -1,13 +1,13 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { EditorTheme, MarkdownTheme, SelectListTheme } from "@loop24/pi-tui";
+import type { EditorTheme, MarkdownTheme, SelectListTheme } from "@otto/pi-tui";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 import chalk from "chalk";
 import {
 	highlightCode as nativeHighlightCode,
 	supportsLanguage,
 	type HighlightColors,
-} from "@loop24/native";
+} from "@otto/native";
 import { getCustomThemesDir } from "../../../config.js";
 import { ThemeJsonSchema, type ColorValue, type ThemeJson } from "./theme-schema.js";
 import { builtinThemes } from "./themes.js";
@@ -15,7 +15,7 @@ import { builtinThemes } from "./themes.js";
 // Issue #453: native preview highlighting can wedge the entire interactive
 // session after a successful file tool. Keep the safer plain-text path as the
 // default and allow native highlighting only as an explicit opt-in.
-const NATIVE_TUI_HIGHLIGHT_ENABLED = (process.env.LOOP24_ENABLE_NATIVE_TUI_HIGHLIGHT ?? process.env.GSD_ENABLE_NATIVE_TUI_HIGHLIGHT) === "1";
+const NATIVE_TUI_HIGHLIGHT_ENABLED = (process.env.OTTO_ENABLE_NATIVE_TUI_HIGHLIGHT ?? process.env.OTTO_ENABLE_NATIVE_TUI_HIGHLIGHT) === "1";
 
 // ============================================================================
 // Types & Schema
@@ -571,12 +571,12 @@ export function getThemeByName(name: string): Theme | undefined {
 }
 
 function getDefaultTheme(): string {
-	// LOOP24 fork: brand-default theme regardless of terminal background.
+	// OTTO fork: brand-default theme regardless of terminal background.
 	// Users can still opt into "dark", "light", "tui-classic", or "vivid"
 	// via /theme; this only sets the initial active theme. The previous
 	// detectTerminalBackground() heuristic (COLORFGBG env-var based) was
 	// removed alongside this change — see commit history.
-	return "loop24";
+	return "otto";
 }
 
 // ============================================================================
@@ -584,7 +584,7 @@ function getDefaultTheme(): string {
 // ============================================================================
 
 // Use globalThis to share theme across module loaders (tsx + jiti in dev mode)
-const THEME_KEY = Symbol.for("@loop24/pi-coding-agent:theme");
+const THEME_KEY = Symbol.for("@otto/pi-coding-agent:theme");
 
 // Export theme as a getter that reads from globalThis
 // This ensures all module instances (tsx, jiti) see the same theme
@@ -675,7 +675,7 @@ function startThemeWatcher(): void {
 		!currentThemeName ||
 		currentThemeName === "dark" ||
 		currentThemeName === "light" ||
-		currentThemeName === "loop24" ||
+		currentThemeName === "otto" ||
 		currentThemeName === "tui-classic" ||
 		currentThemeName === "vivid"
 	) {
@@ -1116,7 +1116,7 @@ export function getEditorTheme(): EditorTheme {
 	};
 }
 
-export function getSettingsListTheme(): import("@loop24/pi-tui").SettingsListTheme {
+export function getSettingsListTheme(): import("@otto/pi-tui").SettingsListTheme {
 	return {
 		label: (text: string, selected: boolean) => (selected ? theme.fg("accent", text) : text),
 		value: (text: string, selected: boolean) => (selected ? theme.fg("accent", text) : theme.fg("muted", text)),

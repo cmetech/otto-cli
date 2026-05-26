@@ -1,7 +1,7 @@
 // the agent + Regression tests for auto-mode discuss-milestone write-gate deadlock (#4973)
 //
 // The depth-verification write-gate in write-gate.ts:415-443 blocks
-// gsd_summary_save({artifact_type:"CONTEXT"}) until markDepthVerified() is
+// otto_summary_save({artifact_type:"CONTEXT"}) until markDepthVerified() is
 // called. In interactive mode this happens when the user picks the confirmation
 // option in ask_user_questions. In auto-mode there is no human — the gate
 // deadlocked every discuss-milestone unit, wasting 200K-360K tokens per run.
@@ -43,7 +43,7 @@ describe('auto-discuss-milestone-deadlock-4973', () => {
   afterEach(resetState);
 
   // ── Test 1 ──────────────────────────────────────────────────────────────
-  // CONTEXT artifact save via gsd_summary_save is blocked before the mark
+  // CONTEXT artifact save via otto_summary_save is blocked before the mark
   // and unblocked after it. This is the exact path that deadlocked in #4973:
   // workflow-tool-executors.ts calls shouldBlockContextArtifactSaveInSnapshot
   // against a snapshot that had no verified milestones.
@@ -80,7 +80,7 @@ describe('auto-discuss-milestone-deadlock-4973', () => {
   test('Test 2: raw write to M001-CONTEXT.md unblocks after markDepthVerified (auto-mode)', () => {
     _setAutoActiveForTest(true);
 
-    const contextPath = '.gsd/milestones/M001/M001-CONTEXT.md';
+    const contextPath = '.otto/workflow/milestones/M001/M001-CONTEXT.md';
 
     // Before mark: blocked
     const beforeResult = shouldBlockContextWrite('write', contextPath, 'M001');
@@ -172,7 +172,7 @@ describe('auto-discuss-milestone-deadlock-4973', () => {
     // Raw write to CONTEXT.md is still blocked
     const writeResult = shouldBlockContextWrite(
       'write',
-      '.gsd/milestones/M002/M002-CONTEXT.md',
+      '.otto/workflow/milestones/M002/M002-CONTEXT.md',
       'M002',
     );
     assert.strictEqual(
@@ -204,7 +204,7 @@ describe('auto-discuss-milestone-deadlock-4973', () => {
     // commit 73bb7e085) — without this, the rule writes the snapshot under
     // basePath but the test would read process.cwd() and never see it.
     const tempBase = mkdtempSync(join(tmpdir(), '4973-rule-test-'));
-    const snapshotFile = join(tempBase, '.gsd', 'runtime', 'write-gate-state.json');
+    const snapshotFile = join(tempBase, '.otto/workflow', 'runtime', 'write-gate-state.json');
     try {
       const baseCtx = {
         basePath: tempBase,

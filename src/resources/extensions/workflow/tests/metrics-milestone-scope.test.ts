@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for milestone-scoped metrics aggregation.
 
 import test from "node:test";

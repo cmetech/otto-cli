@@ -4,11 +4,11 @@
  * Read-only TUI overlay showing the effective agent configuration:
  * token profile, model assignments, dynamic routing, git settings,
  * budget, workflow toggles, and preference file sources.
- * Opened via `/loop24 show-config` or `/otto config`.
+ * Opened via `/otto show-config` or `/otto config`.
  */
 
-import type { Theme } from "@loop24/pi-coding-agent";
-import { matchesKey, Key, truncateToWidth } from "@loop24/pi-tui";
+import type { Theme } from "@otto/pi-coding-agent";
+import { matchesKey, Key, truncateToWidth } from "@otto/pi-tui";
 
 import {
   loadEffectiveGSDPreferences,

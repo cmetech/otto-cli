@@ -11,7 +11,7 @@ function git(cwd: string, args: string[]): void {
   assert.equal(result.status, 0, result.stderr || result.stdout);
 }
 
-test("quick task commit instruction does not ask agents to stage external .gsd quick files", { skip: process.platform === "win32" }, () => {
+test("quick task commit instruction does not ask agents to stage external .otto/workflow quick files", { skip: process.platform === "win32" }, () => {
   const tempRoot = realpathSync(mkdtempSync(join(tmpdir(), "gsd-quick-ext-")));
   const repo = join(tempRoot, "repo");
   const externalGsd = join(tempRoot, "state");
@@ -26,11 +26,12 @@ test("quick task commit instruction does not ask agents to stage external .gsd q
     writeFileSync(join(repo, "README.md"), "# Test\n", "utf-8");
     git(repo, ["add", "README.md"]);
     git(repo, ["commit", "-m", "init"]);
-    symlinkSync(externalGsd, join(repo, ".gsd"), "dir");
+    mkdirSync(join(repo, ".otto"), { recursive: true });
+    symlinkSync(externalGsd, join(repo, ".otto/workflow"), "dir");
 
-    const instruction = buildQuickCommitInstruction(repo, join(repo, ".gsd"));
+    const instruction = buildQuickCommitInstruction(repo, join(repo, ".otto/workflow"));
 
-    assert.match(instruction, /do not stage or commit `\.gsd\/quick\/\.\.\.`/);
+    assert.match(instruction, /do not stage or commit `\.otto\/workflow\/quick\/\.\.\.`/);
     assert.match(instruction, /nothing in the project repo to commit/);
     assert.match(instruction, /Write the quick summary file directly/);
   } finally {

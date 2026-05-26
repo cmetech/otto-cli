@@ -87,9 +87,9 @@ const INTERACTIVE_HEADLESS_TOOLS = new Set(['ask_user_questions', 'secure_env_co
 
 function isManualResolutionNotification(message: string): boolean {
   return (
-    message.includes('resolve manually and re-run /gsd auto') ||
-    message.includes('resolve conflicts manually and run /gsd auto to resume') ||
-    message.includes('resolve and run /gsd auto to resume')
+    message.includes('resolve manually and re-run /otto auto') ||
+    message.includes('resolve conflicts manually and run /otto auto to resume') ||
+    message.includes('resolve and run /otto auto to resume')
   )
 }
 

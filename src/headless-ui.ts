@@ -8,7 +8,7 @@
 
 import type { Readable } from 'node:stream'
 
-import { RpcClient, attachJsonlLineReader } from '@loop24/pi-coding-agent'
+import { RpcClient, attachJsonlLineReader } from '@otto/pi-coding-agent'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -146,7 +146,7 @@ export function summarizeToolArgs(toolName: unknown, toolInput: unknown): string
       return String(input.url ?? '')
     default: {
       // workflow tools: show milestone/slice/task IDs when present
-      if (name.startsWith('gsd_')) {
+      if (name.startsWith('otto_')) {
         return summarizeWorkflowTool(name, input)
       }
       // Fallback: show first string-valued key up to 60 chars
@@ -175,7 +175,7 @@ function summarizeWorkflowTool(name: string, input: Record<string, unknown>): st
     }
     return id
   }
-  // Fallback for workflow tools without IDs (e.g. gsd_decision_save)
+  // Fallback for workflow tools without IDs (e.g. otto_decision_save)
   if (input.decision) {
     const d = String(input.decision)
     return d.length > 60 ? d.slice(0, 57) + '...' : d

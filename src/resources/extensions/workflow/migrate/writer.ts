@@ -1,7 +1,7 @@
 // Directory Writer — Format Functions & Directory Orchestrator
 // Format functions: pure string-returning functions that serialize types into the exact markdown
 // format that the parsers expect (parseRoadmap, parsePlan, parseSummary, parseRequirementCounts).
-// writeAgentDirectory: orchestrator that writes a complete .gsd directory tree from a WorkflowProject.
+// writeAgentDirectory: orchestrator that writes a complete .otto/workflow directory tree from a WorkflowProject.
 
 import { join } from 'node:path';
 import { saveFile } from '../files.js';
@@ -408,7 +408,7 @@ export function formatContext(milestoneId: string): string {
 /**
  * Format STATE.md.
  * deriveState() does not read STATE.md — it recomputes from scratch.
- * Write a minimal stub that will be overwritten on first /loop24 status.
+ * Write a minimal stub that will be overwritten on first /otto status.
  */
 export function formatState(milestones: WorkflowMilestone[]): string {
   const lines: string[] = [];
@@ -430,7 +430,7 @@ export function formatState(milestones: WorkflowMilestone[]): string {
 // ─── Directory Writer Orchestrator ─────────────────────────────────────────
 
 /**
- * Write a complete .gsd directory tree from a WorkflowProject.
+ * Write a complete .otto/workflow directory tree from a WorkflowProject.
  * Iterates milestones → slices → tasks, calls format functions,
  * and writes each file via saveFile(). Returns a manifest of written paths.
  *

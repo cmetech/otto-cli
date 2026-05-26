@@ -145,8 +145,8 @@ describe("parallel-worker-monitoring", () => {
   it("refreshWorkerStatuses restores persisted workers from disk", () => {
     const base = mkdtempSync(join(tmpdir(), "gsd-parallel-monitoring-"));
     try {
-      mkdirSync(join(base, ".gsd"), { recursive: true });
-      writeFileSync(join(base, ".gsd", "orchestrator.json"), JSON.stringify({
+      mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+      writeFileSync(join(base, ".otto/workflow", "orchestrator.json"), JSON.stringify({
         active: true,
         workers: [
           {
@@ -176,8 +176,8 @@ describe("parallel-worker-monitoring", () => {
   it("refreshWorkerStatuses restores persisted workers from live session status files", () => {
     const base = mkdtempSync(join(tmpdir(), "gsd-parallel-stderr-"));
     try {
-      mkdirSync(join(base, ".gsd", "parallel"), { recursive: true });
-      writeFileSync(join(base, ".gsd", "parallel", "M009.status.json"), JSON.stringify({
+      mkdirSync(join(base, ".otto/workflow", "parallel"), { recursive: true });
+      writeFileSync(join(base, ".otto/workflow", "parallel", "M009.status.json"), JSON.stringify({
         milestoneId: "M009",
         pid: process.pid,
         state: "running",

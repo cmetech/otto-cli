@@ -35,9 +35,9 @@ describe('shared-wal', async () => {
   console.log('\n=== shared-wal: resolve worktree path to project root DB ===');
   {
     const projectRoot = '/home/user/myproject';
-    const worktreePath = join(projectRoot, '.gsd', 'worktrees', 'M001');
+    const worktreePath = join(projectRoot, '.otto/workflow', 'worktrees', 'M001');
     const result = resolveProjectRootDbPath(worktreePath);
-    assert.deepStrictEqual(result, join(projectRoot, '.gsd', 'gsd.db'),
+    assert.deepStrictEqual(result, join(projectRoot, '.otto/workflow', 'otto.db'),
       'worktree path resolves to project root DB');
   }
 
@@ -46,7 +46,7 @@ describe('shared-wal', async () => {
   {
     const projectRoot = '/home/user/myproject';
     const result = resolveProjectRootDbPath(projectRoot);
-    assert.deepStrictEqual(result, join(projectRoot, '.gsd', 'gsd.db'),
+    assert.deepStrictEqual(result, join(projectRoot, '.otto/workflow', 'otto.db'),
       'project root path stays at project root DB');
   }
 
@@ -54,47 +54,47 @@ describe('shared-wal', async () => {
   console.log('\n=== shared-wal: resolve nested worktree subdir ===');
   {
     const projectRoot = '/home/user/myproject';
-    const nestedPath = join(projectRoot, '.gsd', 'worktrees', 'M002', 'src', 'lib');
+    const nestedPath = join(projectRoot, '.otto/workflow', 'worktrees', 'M002', 'src', 'lib');
     const result = resolveProjectRootDbPath(nestedPath);
-    assert.deepStrictEqual(result, join(projectRoot, '.gsd', 'gsd.db'),
+    assert.deepStrictEqual(result, join(projectRoot, '.otto/workflow', 'otto.db'),
       'nested worktree subdir resolves to project root DB');
   }
 
   // ─── Test (d): resolve with forward slashes (cross-platform) ──────────
   console.log('\n=== shared-wal: resolve forward-slash path ===');
   {
-    const result = resolveProjectRootDbPath('/proj/.gsd/worktrees/M001');
-    assert.deepStrictEqual(result, join('/proj', '.gsd', 'gsd.db'),
+    const result = resolveProjectRootDbPath('/proj/.otto/workflow/worktrees/M001');
+    assert.deepStrictEqual(result, join('/proj', '.otto/workflow', 'otto.db'),
       'forward-slash worktree path resolves correctly');
   }
 
   // ─── Test (e1): external-state worktree resolves to project state DB (#2952) ───
   console.log('\n=== shared-wal: resolve external-state worktree path (#2952) ===');
   {
-    // External-state layout: ~/.gsd/projects/<hash>/worktrees/<MID>
-    // Should resolve to:     ~/.gsd/projects/<hash>/gsd.db
-    const stateRoot = '/home/user/.gsd/projects/a1b2c3d4';
+    // External-state layout: ~/.otto/workflow/projects/<hash>/worktrees/<MID>
+    // Should resolve to:     ~/.otto/workflow/projects/<hash>/otto.db
+    const stateRoot = '/home/user/.otto/workflow/projects/a1b2c3d4';
     const worktreePath = join(stateRoot, 'worktrees', 'M002');
     const result = resolveProjectRootDbPath(worktreePath);
-    assert.deepStrictEqual(result, join(stateRoot, 'gsd.db'),
+    assert.deepStrictEqual(result, join(stateRoot, 'otto.db'),
       'external-state worktree path resolves to project state DB (#2952)');
   }
 
   // ─── Test (e2): external-state worktree nested subdir (#2952) ─────────
   console.log('\n=== shared-wal: resolve external-state worktree nested subdir (#2952) ===');
   {
-    const stateRoot = '/home/user/.gsd/projects/deadbeef42';
+    const stateRoot = '/home/user/.otto/workflow/projects/deadbeef42';
     const nestedPath = join(stateRoot, 'worktrees', 'M003', 'src', 'lib');
     const result = resolveProjectRootDbPath(nestedPath);
-    assert.deepStrictEqual(result, join(stateRoot, 'gsd.db'),
+    assert.deepStrictEqual(result, join(stateRoot, 'otto.db'),
       'external-state nested worktree subdir resolves to project state DB (#2952)');
   }
 
   // ─── Test (e3): external-state worktree with forward slashes (#2952) ──
   console.log('\n=== shared-wal: resolve external-state worktree forward-slash (#2952) ===');
   {
-    const result = resolveProjectRootDbPath('/Users/dev/.gsd/projects/cafe0123/worktrees/M001');
-    assert.deepStrictEqual(result, join('/Users/dev/.gsd/projects/cafe0123', 'gsd.db'),
+    const result = resolveProjectRootDbPath('/Users/dev/.otto/workflow/projects/cafe0123/worktrees/M001');
+    assert.deepStrictEqual(result, join('/Users/dev/.otto/workflow/projects/cafe0123', 'otto.db'),
       'external-state forward-slash worktree path resolves correctly (#2952)');
   }
 

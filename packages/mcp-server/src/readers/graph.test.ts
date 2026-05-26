@@ -34,7 +34,7 @@ function writeFixture(base: string, relPath: string, content: string): void {
 }
 
 function makeProjectWithArtifacts(projectDir: string): void {
-  writeFixture(projectDir, '.gsd/STATE.md', [
+  writeFixture(projectDir, '.otto/workflow/STATE.md', [
     '# Workflow State',
     '',
     '**Active Milestone:** M001: Auth System',
@@ -50,7 +50,7 @@ function makeProjectWithArtifacts(projectDir: string): void {
     'Execute T01 in S01.',
   ].join('\n'));
 
-  writeFixture(projectDir, '.gsd/KNOWLEDGE.md', [
+  writeFixture(projectDir, '.otto/workflow/KNOWLEDGE.md', [
     '# Project Knowledge',
     '',
     '## Rules',
@@ -73,7 +73,7 @@ function makeProjectWithArtifacts(projectDir: string): void {
     '| L001 | CI tests failed | Env diff | Added setup script | testing |',
   ].join('\n'));
 
-  writeFixture(projectDir, '.gsd/milestones/M001/M001-ROADMAP.md', [
+  writeFixture(projectDir, '.otto/workflow/milestones/M001/M001-ROADMAP.md', [
     '# M001: Auth System',
     '',
     '## Vision',
@@ -87,7 +87,7 @@ function makeProjectWithArtifacts(projectDir: string): void {
     '| S01 | Login flow | low | — | 🔄 | Users can log in |',
   ].join('\n'));
 
-  writeFixture(projectDir, '.gsd/milestones/M001/slices/S01/S01-PLAN.md', [
+  writeFixture(projectDir, '.otto/workflow/milestones/M001/slices/S01/S01-PLAN.md', [
     '# S01: Login flow',
     '',
     '## Tasks',
@@ -102,7 +102,7 @@ function makeProjectWithArtifacts(projectDir: string): void {
 // ---------------------------------------------------------------------------
 
 function writeLearningsFixture(projectDir: string, milestoneId: string, content: string): void {
-  writeFixture(projectDir, `.gsd/milestones/${milestoneId}/${milestoneId}-LEARNINGS.md`, content);
+  writeFixture(projectDir, `.otto/workflow/milestones/${milestoneId}/${milestoneId}-LEARNINGS.md`, content);
 }
 
 const SAMPLE_LEARNINGS = `---
@@ -192,7 +192,7 @@ describe('buildGraph', () => {
   it('skips unparseable artifact and does not throw', async () => {
     const badProject = tmpProject();
     // Write a corrupt/minimal STATE.md that is technically valid but empty
-    writeFixture(badProject, '.gsd/STATE.md', 'not valid gsd state at all \0\0\0');
+    writeFixture(badProject, '.otto/workflow/STATE.md', 'not valid gsd state at all \0\0\0');
     // Don't throw, and don't lose the well-formed builtAt timestamp
     // (which previous `graph.nodes.length >= 0` tautology ignored).
     const graph = await buildGraph(badProject);
@@ -205,13 +205,13 @@ describe('buildGraph', () => {
     rmSync(badProject, { recursive: true, force: true });
   });
 
-  it('returns empty graph for project with no .gsd/ directory', async () => {
+  it('returns empty graph for project with no .otto/workflow/ directory', async () => {
     const emptyProject = tmpProject();
     const graph = await buildGraph(emptyProject);
     // Previous `graph.nodes.length >= 0` was a tautology. The real
-    // contract for a .gsd-less project: truly empty graph.
-    assert.deepEqual(graph.nodes, [], "nodes must be empty for .gsd-less project");
-    assert.deepEqual(graph.edges, [], "edges must be empty for .gsd-less project");
+    // contract for a .otto/workflow-less project: truly empty graph.
+    assert.deepEqual(graph.nodes, [], "nodes must be empty for .otto/workflow-less project");
+    assert.deepEqual(graph.edges, [], "edges must be empty for .otto/workflow-less project");
     assert.equal(typeof graph.builtAt, 'string');
     rmSync(emptyProject, { recursive: true, force: true });
   });
@@ -242,7 +242,7 @@ describe('buildGraph — LEARNINGS.md parsing', () => {
   beforeEach(() => {
     projectDir = tmpProject();
     // Create minimal milestone directory so parseMilestoneFiles finds it
-    mkdirSync(join(projectDir, '.gsd', 'milestones', 'M001'), { recursive: true });
+    mkdirSync(join(projectDir, '.otto', 'workflow', 'milestones', 'M001'), { recursive: true });
     writeLearningsFixture(projectDir, 'M001', SAMPLE_LEARNINGS);
   });
 
@@ -311,7 +311,7 @@ describe('buildGraph — LEARNINGS.md parsing', () => {
 
   it('skips LEARNINGS.md gracefully when file is malformed', async () => {
     const badProject = tmpProject();
-    mkdirSync(join(badProject, '.gsd', 'milestones', 'M002'), { recursive: true });
+    mkdirSync(join(badProject, '.otto', 'workflow', 'milestones', 'M002'), { recursive: true });
     writeLearningsFixture(badProject, 'M002', '\0\0\0 not valid yaml or markdown \0\0\0');
     // Must not throw AND must not produce garbage learning nodes from
     // the binary contents (previous `nodes.length >= 0` tautology
@@ -333,7 +333,7 @@ describe('buildGraph — LEARNINGS.md parsing', () => {
 
   it('produces no learning nodes when all sections are empty', async () => {
     const emptyProject = tmpProject();
-    mkdirSync(join(emptyProject, '.gsd', 'milestones', 'M003'), { recursive: true });
+    mkdirSync(join(emptyProject, '.otto', 'workflow', 'milestones', 'M003'), { recursive: true });
     writeLearningsFixture(emptyProject, 'M003', `---
 phase: "M003"
 phase_name: "Empty"
@@ -370,7 +370,7 @@ missing_artifacts: []
 
   it('does not crash when LEARNINGS.md is missing entirely', async () => {
     const noLearningsProject = tmpProject();
-    mkdirSync(join(noLearningsProject, '.gsd', 'milestones', 'M004'), { recursive: true });
+    mkdirSync(join(noLearningsProject, '.otto', 'workflow', 'milestones', 'M004'), { recursive: true });
     // No LEARNINGS.md file written. Previous tautology (nodes.length >= 0)
     // passed regardless of whether the graph was structurally valid;
     // assert real shape + no-learnings outcome.
@@ -409,22 +409,22 @@ describe('writeGraph', () => {
 
   after(() => rmSync(projectDir, { recursive: true, force: true }));
 
-  it('creates graph.json in .gsd/graphs/ after writeGraph()', async () => {
-    const workflowRoot = join(projectDir, '.gsd');
+  it('creates graph.json in .otto/workflow/graphs/ after writeGraph()', async () => {
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     await writeGraph(workflowRoot, graph);
     const graphPath = join(workflowRoot, 'graphs', 'graph.json');
     assert.ok(existsSync(graphPath), `Expected ${graphPath} to exist`);
   });
 
   it('write is atomic — no temp file remains after writeGraph()', async () => {
-    const workflowRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     await writeGraph(workflowRoot, graph);
     const tmpPath = join(workflowRoot, 'graphs', 'graph.tmp.json');
     assert.ok(!existsSync(tmpPath), 'Temp file should not exist after successful write');
   });
 
   it('written graph.json is valid JSON with nodes and edges', async () => {
-    const workflowRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     await writeGraph(workflowRoot, graph);
     const raw = readFileSync(join(workflowRoot, 'graphs', 'graph.json'), 'utf-8');
     const parsed = JSON.parse(raw) as KnowledgeGraph;
@@ -454,7 +454,7 @@ describe('graphStatus', () => {
 
   it('returns { exists: true, nodeCount, edgeCount, ageHours } when graph exists', async () => {
     makeProjectWithArtifacts(projectDir);
-    const workflowRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     const graph = await buildGraph(projectDir);
     await writeGraph(workflowRoot, graph);
 
@@ -468,7 +468,7 @@ describe('graphStatus', () => {
 
   it('stale = false for a freshly built graph', async () => {
     makeProjectWithArtifacts(projectDir);
-    const workflowRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     const graph = await buildGraph(projectDir);
     await writeGraph(workflowRoot, graph);
 
@@ -478,7 +478,7 @@ describe('graphStatus', () => {
 
   it('stale = true for a graph older than 24h (builtAt backdated)', async () => {
     makeProjectWithArtifacts(projectDir);
-    const workflowRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     mkdirSync(join(workflowRoot, 'graphs'), { recursive: true });
 
     // Write a graph with a builtAt 25 hours ago
@@ -509,7 +509,7 @@ describe('graphQuery', () => {
   before(async () => {
     projectDir = tmpProject();
     makeProjectWithArtifacts(projectDir);
-    const workflowRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     const graph = await buildGraph(projectDir);
     await writeGraph(workflowRoot, graph);
   });
@@ -546,7 +546,7 @@ describe('graphQuery', () => {
     // (nodes × 20 + edges × 10). With 3 nodes (60) + 2 edges (20) = 80,
     // a budget of 70 forces exactly the AMBIGUOUS-edge drop and stops
     // (70 > 70 is false), leaving the INFERRED edge intact.
-    const workflowRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     const mixedGraph: KnowledgeGraph = {
       builtAt: new Date().toISOString(),
       nodes: [
@@ -598,7 +598,7 @@ describe('graphDiff', () => {
   beforeEach(async () => {
     projectDir = tmpProject();
     makeProjectWithArtifacts(projectDir);
-    const workflowRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     const graph = await buildGraph(projectDir);
     await writeGraph(workflowRoot, graph);
   });
@@ -606,7 +606,7 @@ describe('graphDiff', () => {
   afterEach(() => rmSync(projectDir, { recursive: true, force: true }));
 
   it('returns empty diff when comparing graph to itself (snapshot = current)', async () => {
-    const workflowRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     await writeSnapshot(workflowRoot);
     const diff = await graphDiff(projectDir);
     assert.ok(Array.isArray(diff.nodes.added));
@@ -617,7 +617,7 @@ describe('graphDiff', () => {
   });
 
   it('returns added nodes when a new node appears after snapshot', async () => {
-    const workflowRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     // Take snapshot of the original graph
     await writeSnapshot(workflowRoot);
 
@@ -636,7 +636,7 @@ describe('graphDiff', () => {
   });
 
   it('returns removed nodes when a node disappears after snapshot', async () => {
-    const workflowRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     // Create snapshot with a node that won't exist in current graph
     const snapshotGraph: KnowledgeGraph = {
       builtAt: new Date().toISOString(),
@@ -667,7 +667,7 @@ describe('graphDiff', () => {
   });
 
   it('writeSnapshot creates .last-build-snapshot.json with snapshotAt', async () => {
-    const workflowRoot = join(projectDir, '.gsd');
+    const workflowRoot = join(projectDir, '.otto', 'workflow');
     await writeSnapshot(workflowRoot);
     const snapshotPath = join(workflowRoot, 'graphs', '.last-build-snapshot.json');
     assert.ok(existsSync(snapshotPath));

@@ -53,15 +53,15 @@ function cleanupDir(dirPath: string): void {
 }
 
 /**
- * Create a temp project directory with .gsd structure and roadmap for handler tests.
+ * Create a temp project directory with .otto/workflow structure and roadmap for handler tests.
  */
 function createTempProject(): { basePath: string; roadmapPath: string } {
   const basePath = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-slice-handler-'));
-  const sliceDir = path.join(basePath, '.gsd', 'milestones', 'M001', 'slices', 'S01');
+  const sliceDir = path.join(basePath, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01');
   const tasksDir = path.join(sliceDir, 'tasks');
   fs.mkdirSync(tasksDir, { recursive: true });
 
-  const roadmapPath = path.join(basePath, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md');
+  const roadmapPath = path.join(basePath, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md');
   fs.writeFileSync(roadmapPath, `# M001: Test Milestone
 
 ## Slices
@@ -91,7 +91,7 @@ function makeValidSliceParams(): CompleteSliceParams {
     keyDecisions: ['D001'],
     patternsEstablished: ['SliceRow/rowToSlice follows same pattern as TaskRow/rowToTask'],
     observabilitySurfaces: ['SELECT status FROM slices shows completion state'],
-    provides: ['complete_slice handler', 'gsd_slice_complete tool'],
+    provides: ['complete_slice handler', 'otto_slice_complete tool'],
     requirementsSurfaced: [],
     drillDownPaths: ['milestones/M001/slices/S01/tasks/T01-SUMMARY.md'],
     affects: ['S02'],
@@ -458,7 +458,7 @@ console.log('\n=== complete-slice: handler with missing roadmap ===');
 
   // Create a temp dir WITHOUT a roadmap file
   const basePath = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-no-roadmap-'));
-  const sliceDir = path.join(basePath, '.gsd', 'milestones', 'M001', 'slices', 'S01');
+  const sliceDir = path.join(basePath, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01');
   fs.mkdirSync(sliceDir, { recursive: true });
 
   // Set up DB state
@@ -538,7 +538,7 @@ console.log('\n=== complete-slice: backfills omitted requirements from rendered 
 // complete-slice: PROJECT refresh uses DB-backed artifact tool.
 // ═══════════════════════════════════════════════════════════════════════════
 
-console.log('\n=== complete-slice: PROJECT refresh uses gsd_summary_save ===');
+console.log('\n=== complete-slice: PROJECT refresh uses otto_summary_save ===');
 {
   const promptPath = path.join(
     path.dirname(new URL(import.meta.url).pathname),
@@ -546,7 +546,7 @@ console.log('\n=== complete-slice: PROJECT refresh uses gsd_summary_save ===');
   );
   const prompt = fs.readFileSync(promptPath, 'utf-8');
 
-  assertTrue(prompt.includes('gsd_summary_save'), 'PROJECT refresh must use gsd_summary_save');
+  assertTrue(prompt.includes('otto_summary_save'), 'PROJECT refresh must use otto_summary_save');
   assertTrue(prompt.includes('artifact_type: "PROJECT"'), 'PROJECT refresh must use artifact_type PROJECT');
   assertTrue(!/with a full `write`/i.test(prompt), 'prompt must not instruct direct PROJECT.md writes');
 }

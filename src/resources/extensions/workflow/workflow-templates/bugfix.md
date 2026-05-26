@@ -5,7 +5,7 @@ name: bugfix
 version: 1
 mode: markdown-phase
 requires_project: false
-artifact_dir: .gsd/workflows/bugfixes/
+artifact_dir: .otto/workflow/workflows/bugfixes/
 </template_meta>
 
 <purpose>

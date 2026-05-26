@@ -89,5 +89,5 @@ node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experim
 - Commit history — destructive to rewrite
 - `docs/branding/` — user's working area
 - The 269 GSD-prefixed identifiers Task 6's grep missed (separate follow-up)
-- The 22 additional GSD_X env vars (separate follow-up)
+- The 22 additional OTTO_X env vars (separate follow-up)
 - customType strings `"gsd-*"` and `.gsd/` directory references (Phase 10)

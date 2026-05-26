@@ -13,7 +13,7 @@ test("keeps non-worktree cwd unchanged", () => {
 });
 
 test("rewrites stale auto-worktree cwd to live cwd after exit", () => {
-  const cached = "/repo/.gsd/worktrees/M001";
+  const cached = "/repo/.otto/workflow/worktrees/M001";
   const live = "/repo";
   assert.equal(
     resolveBgShellPersistenceCwd(cached, live, (path) => path === live),
@@ -22,7 +22,7 @@ test("rewrites stale auto-worktree cwd to live cwd after exit", () => {
 });
 
 test("rewrites mismatched auto-worktree cwd to live cwd even if old path still exists", () => {
-  const cached = "/repo/.gsd/worktrees/M001";
+  const cached = "/repo/.otto/workflow/worktrees/M001";
   const live = "/repo";
   assert.equal(
     resolveBgShellPersistenceCwd(cached, live, () => true),
@@ -31,7 +31,7 @@ test("rewrites mismatched auto-worktree cwd to live cwd even if old path still e
 });
 
 test("rewrites Windows-style auto-worktree cwd to live cwd", () => {
-  const cached = "C:\\repo\\.gsd\\worktrees\\M001";
+  const cached = "C:\\repo\\.otto\\workflow\\worktrees\\M001";
   const live = "C:\\repo";
   assert.equal(
     resolveBgShellPersistenceCwd(cached, live, () => true),
@@ -40,7 +40,7 @@ test("rewrites Windows-style auto-worktree cwd to live cwd", () => {
 });
 
 test("keeps current auto-worktree cwd when it still matches process cwd", () => {
-  const cached = "/repo/.gsd/worktrees/M001";
+  const cached = "/repo/.otto/workflow/worktrees/M001";
   assert.equal(
     resolveBgShellPersistenceCwd(cached, cached, () => true),
     cached,
@@ -48,7 +48,7 @@ test("keeps current auto-worktree cwd when it still matches process cwd", () => 
 });
 
 test("falls back to project root when process.cwd throws inside a stale auto-worktree", () => {
-  const cached = "/repo/.gsd/worktrees/M001";
+  const cached = "/repo/.otto/workflow/worktrees/M001";
   const live = getBgShellLiveCwd(
     cached,
     (path) => path === "/repo",

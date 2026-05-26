@@ -1,11 +1,11 @@
-<!-- Project/App: GSD-2 -->
+<!-- Project/App: OTTO -->
 <!-- File Purpose: ADR for drift-driven design of the State Reconciliation Module. -->
 
 # ADR-017: Drift-Driven State Reconciliation
 
 **Status:** Accepted
 **Date:** 2026-05-10
-**Author:** GSD architecture review
+**Author:** OTTO architecture review
 **Related:** ADR-014 (deep Auto Orchestration module), ADR-015 (runtime invariant modules), ADR-016 trio (worktree split + fail-closed)
 
 ## Context
@@ -14,7 +14,7 @@ ADR-015 named the **State Reconciliation Module** as one of four runtime invaria
 
 The repair helpers CONTEXT.md names — sketch-flag healing, merge-state reconciliation, PROJECT.md/ROADMAP.md drift, completion-timestamp drift — exist in scattered places, or do not exist at all:
 
-- `autoHealSketchFlags` (`gsd-db.ts:1156`): exists, **zero callers**.
+- `autoHealSketchFlags` (`otto-db.ts:1156`): exists, **zero callers**.
 - `reconcileMergeState` (`auto-recovery.ts:1118`): exists, called only by post-failure recovery paths.
 - `repairStaleRenders` (`markdown-renderer.ts:937`): exists.
 - Stale-worker, PROJECT.md/ROADMAP.md, completion-timestamp repair: **no implementation**.
@@ -107,7 +107,7 @@ state-reconciliation/
   index.ts          → reconcileBeforeDispatch
   errors.ts         → ReconciliationFailedError
   drift/
-    sketch-flag.ts  → detect + repair (relocated from gsd-db.ts)
+    sketch-flag.ts  → detect + repair (relocated from otto-db.ts)
     merge-state.ts  → detect + repair (relocated from auto-recovery.ts)
     stale-worker.ts → detect + repair (new)
     project-md.ts   → detect + repair (new)
@@ -132,7 +132,7 @@ Add new `RecoveryFailureKind: "reconciliation-drift"` with action `escalate` and
 
 ## Consequences
 
-- `gsd-db.ts:1156` `autoHealSketchFlags` relocates to `state-reconciliation/drift/sketch-flag.ts`. `gsd-db.ts` keeps `setSliceSketchFlag` and the SELECT primitive.
+- `otto-db.ts:1156` `autoHealSketchFlags` relocates to `state-reconciliation/drift/sketch-flag.ts`. `otto-db.ts` keeps `setSliceSketchFlag` and the SELECT primitive.
 - `auto-recovery.ts:1118` `reconcileMergeState` and supporting helpers relocate to `state-reconciliation/drift/merge-state.ts`. `auto-recovery.ts` shrinks; remaining post-failure helpers (`verifyExpectedArtifact`, `writeBlockerPlaceholder`) stay.
 - Four new repair functions land: stale-worker, PROJECT.md blocker/recovery guidance, ROADMAP.md projection regeneration, completion-timestamp backfill.
 - `state.ts` `blockers: string[]` is unchanged; existing call sites that read `s.blockers` are unaffected.
@@ -147,4 +147,4 @@ Add new `RecoveryFailureKind: "reconciliation-drift"` with action `escalate` and
 - **Predicate-matched repairs over free-text blockers**. Rejected as fragile: this is the same pattern as the dispatch rule registry, which has already shown drift between two parallel rule sources (see `auto-dispatch.ts:1474`). Typed drift records make new repair additions a type-system change instead of a regex audit.
 - **Loop until stable (uncapped)**. Rejected for runaway risk. Cap=2 is enough for cascading repairs without unbounded retry.
 - **First-failure aborts the pass**. Rejected: loses repair work for unrelated drift. Collecting failures within a pass and throwing at end-of-pass keeps the failure surface complete.
-- **Detectors and repairs delegated to owning modules** (each owner exposes its own `detect` + `repair`). Rejected: the canonical zero-caller bug (`autoHealSketchFlags` shipped in `gsd-db.ts` for over a year without wiring) shows that owners do not naturally compose detection-and-repair into a pre-dispatch lifecycle. Locality wins here — one folder reviews the whole catalog.
+- **Detectors and repairs delegated to owning modules** (each owner exposes its own `detect` + `repair`). Rejected: the canonical zero-caller bug (`autoHealSketchFlags` shipped in `otto-db.ts` for over a year without wiring) shows that owners do not naturally compose detection-and-repair into a pre-dispatch lifecycle. Locality wins here — one folder reviews the whole catalog.

@@ -18,14 +18,14 @@ The original Phase 10 plan (from the Phase 8 deferred-cleanups list) bundled thr
 ## In scope
 
 1. **Identifier sweep** — ~269 distinct GSD-prefixed function/local-variable names that Task 6's verb-prefix grep missed
-2. **Env var sweep** — 22 additional `GSD_*` env vars missed by Task 8's naming map (apply same LOOP24_X canonical + GSD_X fallback compat shim)
+2. **Env var sweep** — 22 additional `OTTO_*` env vars missed by Task 8's naming map (apply same LOOP24_X canonical + OTTO_X fallback compat shim)
 3. **Comment + JSDoc sweep** — ~464 brand mentions in source-file comments across ~2,839 files
 
 ## Out of scope (PRESERVED — session compatibility)
 
 - **`.gsd/` runtime directory references** (~1,664 hits) — code that reads/writes paths under `.gsd/`. Keeping the dir name preserves existing user sessions on disk.
 - **customType session protocol strings** (`"gsd-add-tests"`, `"gsd-dispatch"`, `"gsd-spike"`, `"gsd-build-flow"`, `"gsd-skill-extension"`, etc., ~1,386 hits) — these are persisted in session message files; renaming without migration logic would break loading old sessions.
-- **`process.env.GSD_X` compat-shim fallback** (~939 hits) — intentional from Task 8.
+- **`process.env.OTTO_X` compat-shim fallback** (~939 hits) — intentional from Task 8.
 - **`@opengsd/engine-*` native binary dependencies** — intentional upstream binary reuse.
 - **LICENSE attribution**, **README "Fork attribution"** — MIT-required.
 - **LOOP24-PATCHES.md** — fork-history doc.
@@ -67,24 +67,24 @@ Plus the long tail (~244 more distinct names).
 
 Apply the same Task 8 compat-shim pattern to:
 ```
-GSD_HEADLESS, GSD_WEB_HOST, GSD_WEB_PORT, GSD_WEB_AUTH_TOKEN,
-GSD_WEB_PROJECT_CWD, GSD_WEB_PROJECT_SESSIONS_DIR, GSD_WEB_PACKAGE_ROOT,
-GSD_WEB_HOST_KIND, GSD_WEB_ALLOWED_ORIGINS, GSD_WEB_BRIDGE_TUI,
-GSD_WORKFLOW_MCP_ARGS, GSD_WORKFLOW_MCP_COMMAND, GSD_WORKFLOW_MCP_CWD,
-GSD_WORKFLOW_MCP_ENV, GSD_WORKFLOW_MCP_NAME, GSD_CLI_PATH, GSD_DEV_CLI_PATH,
-GSD_PROJECT_ID, GSD_AGENT_DIR, GSD_CLAUDE_DEBUG, GSD_DISABLE_LSPMUX,
-GSD_DISABLE_WORKTREE_WRITE_GUARD, GSD_ENABLE_NATIVE_TUI_HIGHLIGHT,
-GSD_FAKE_LLM_TRANSCRIPT, GSD_FETCH_ALLOWED_URLS, GSD_LEGACY_TELEMETRY_FILE,
-GSD_NATIVE_DISABLE, GSD_RTK_PATH, GSD_SKILL_MANIFEST_STRICT, GSD_STATE_DIR,
-GSD_UOK_FORCE_LEGACY, GSD_UOK_LEGACY_FALLBACK, GSD_WORKER_MODEL
+OTTO_HEADLESS, OTTO_WEB_HOST, OTTO_WEB_PORT, OTTO_WEB_AUTH_TOKEN,
+OTTO_WEB_PROJECT_CWD, OTTO_WEB_PROJECT_SESSIONS_DIR, OTTO_WEB_PACKAGE_ROOT,
+OTTO_WEB_HOST_KIND, OTTO_WEB_ALLOWED_ORIGINS, OTTO_WEB_BRIDGE_TUI,
+OTTO_WORKFLOW_MCP_ARGS, OTTO_WORKFLOW_MCP_COMMAND, OTTO_WORKFLOW_MCP_CWD,
+OTTO_WORKFLOW_MCP_ENV, OTTO_WORKFLOW_MCP_NAME, OTTO_CLI_PATH, OTTO_DEV_CLI_PATH,
+OTTO_PROJECT_ID, OTTO_AGENT_DIR, OTTO_CLAUDE_DEBUG, OTTO_DISABLE_LSPMUX,
+OTTO_DISABLE_WORKTREE_WRITE_GUARD, OTTO_ENABLE_NATIVE_TUI_HIGHLIGHT,
+OTTO_FAKE_LLM_TRANSCRIPT, OTTO_FETCH_ALLOWED_URLS, OTTO_LEGACY_TELEMETRY_FILE,
+OTTO_NATIVE_DISABLE, OTTO_RTK_PATH, OTTO_SKILL_MANIFEST_STRICT, OTTO_STATE_DIR,
+OTTO_UOK_FORCE_LEGACY, OTTO_UOK_LEGACY_FALLBACK, OTTO_WORKER_MODEL
 ```
 
 For each:
-- Reader: `process.env.GSD_X` → `(process.env.LOOP24_X ?? process.env.GSD_X)`
-- Setter: `process.env.GSD_X = expr` → chained assignment writing both
+- Reader: `process.env.OTTO_X` → `(process.env.LOOP24_X ?? process.env.OTTO_X)`
+- Setter: `process.env.OTTO_X = expr` → chained assignment writing both
 - Env spreads: include both keys
 - hasOwnProperty: check both
-- `delete process.env.GSD_X` → delete both keys
+- `delete process.env.OTTO_X` → delete both keys
 
 ### Task 3: Source comment + JSDoc brand sweep
 
@@ -116,7 +116,7 @@ For each:
 - After Phase 10: remaining GSD residue is **only** in:
   - `.gsd/` directory references (intentional)
   - customType session strings (intentional)
-  - `process.env.GSD_X` compat-shim fallback side (intentional)
+  - `process.env.OTTO_X` compat-shim fallback side (intentional)
   - `@opengsd/engine-*` native binaries (intentional)
   - LICENSE / README / LOOP24-PATCHES.md (intentional)
 

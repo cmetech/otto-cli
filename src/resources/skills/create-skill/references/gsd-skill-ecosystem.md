@@ -1,16 +1,16 @@
 <overview>
-GSD-specific skill ecosystem details: directory conventions, discovery mechanics, telemetry, and health monitoring. Read this reference when creating or auditing skills within GSD.
+OTTO-specific skill ecosystem details: directory conventions, discovery mechanics, telemetry, and health monitoring. Read this reference when creating or auditing skills within OTTO.
 </overview>
 
 <skill_directories>
-GSD supports two skill directories, checked in order:
+OTTO supports two skill directories, checked in order:
 
 **User-scope (global):** `~/.agents/skills/`
-- Available in every GSD session regardless of working directory
+- Available in every OTTO session regardless of working directory
 - Installed via [skills.sh](https://skills.sh) or manually
 
 **Project-scope (local):** `.agents/skills/`
-- Available only when GSD runs inside the project directory
+- Available only when OTTO runs inside the project directory
 - Committable to version control so team members share the same skill set
 - Ideal for project-specific workflows, deploy scripts, or conventions
 
@@ -18,7 +18,7 @@ Skills in both directories follow the same SKILL.md format and router pattern co
 </skill_directories>
 
 <skill_discovery>
-GSD auto-discovers skills at session start and during auto-mode:
+OTTO auto-discovers skills at session start and during auto-mode:
 
 **Session start:** All skills in both directories are enumerated and their names + descriptions are injected into the system prompt as `<available_skills>`.
 
@@ -42,7 +42,7 @@ Skill metadata has validation constraints:
 - **Staleness detection:** Skills unused for 60+ days are flagged as stale
 - **Pass/fail rates:** Derived from unit completion status when a skill is active
 
-Telemetry data is stored in `~/.gsd/metrics.json` alongside other GSD metrics.
+Telemetry data is stored in `~/.otto/metrics.json` alongside other OTTO metrics.
 </skill_telemetry>
 
 <skill_health>

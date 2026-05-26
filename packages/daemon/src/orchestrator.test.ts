@@ -568,7 +568,7 @@ describe('Orchestrator', () => {
       const mockClient = new MockAnthropicClient(
         MockAnthropicClient.toolThenTextHandler(
           'start_session',
-          { projectPath: '/p', command: '/gsd quick fix tests' },
+          { projectPath: '/p', command: '/otto quick fix tests' },
           'Started',
         ),
       );
@@ -577,7 +577,7 @@ describe('Orchestrator', () => {
       await orchestrator.handleMessage(msg);
 
       assert.equal(sessionManager.startSessionCalls.length, 1);
-      assert.equal(sessionManager.startSessionCalls[0]!.command, '/gsd quick fix tests');
+      assert.equal(sessionManager.startSessionCalls[0]!.command, '/otto quick fix tests');
     });
   });
 

@@ -1,4 +1,4 @@
-// @loop24-build/mcp-server + alias-telemetry.test — coverage for #5031.
+// @otto-build/mcp-server + alias-telemetry.test — coverage for #5031.
 // `logAliasUsage` must:
 //   - emit one valid JSON line per call to stderr with the documented shape
 //   - never throw, even if stderr.write fails (telemetry must not break MCP)
@@ -28,22 +28,22 @@ describe("logAliasUsage", () => {
 	});
 
 	test("emits a single JSON line per call", () => {
-		logAliasUsage("gsd_save_decision", "gsd_decision_save");
+		logAliasUsage("otto_save_decision", "otto_decision_save");
 		assert.equal(captured.length, 1);
 		assert.ok(captured[0].endsWith("\n"), "line must terminate with newline");
 	});
 
 	test("emitted JSON has the documented shape", () => {
-		logAliasUsage("gsd_save_decision", "gsd_decision_save");
+		logAliasUsage("otto_save_decision", "otto_decision_save");
 		const parsed = JSON.parse(captured[0].trimEnd());
 		assert.equal(parsed.event, ALIAS_USAGE_EVENT);
-		assert.equal(parsed.alias, "gsd_save_decision");
-		assert.equal(parsed.canonical, "gsd_decision_save");
+		assert.equal(parsed.alias, "otto_save_decision");
+		assert.equal(parsed.canonical, "otto_decision_save");
 		assert.equal(typeof parsed.ts, "number");
 	});
 
 	test("event field is namespaced under 'deprecation.' for grep-friendly filtering", () => {
-		logAliasUsage("gsd_save_decision", "gsd_decision_save");
+		logAliasUsage("otto_save_decision", "otto_decision_save");
 		const parsed = JSON.parse(captured[0].trimEnd());
 		assert.ok(
 			(parsed.event as string).startsWith("deprecation."),
@@ -53,7 +53,7 @@ describe("logAliasUsage", () => {
 
 	test("ts field is a recent timestamp (within ~5s of Date.now())", () => {
 		const before = Date.now();
-		logAliasUsage("gsd_x", "gsd_y");
+		logAliasUsage("otto_x", "otto_y");
 		const after = Date.now();
 		const parsed = JSON.parse(captured[0].trimEnd());
 		assert.ok(parsed.ts >= before && parsed.ts <= after, `ts ${parsed.ts} should be in [${before}, ${after}]`);

@@ -1,4 +1,4 @@
-// Memory Tools — Phase 1 executors for capture_thought, memory_query, gsd_graph
+// Memory Tools — Phase 1 executors for capture_thought, memory_query, otto_graph
 //
 // These executors back the three memory-layer tools the LLM can call at any
 // point in a session. They build on the existing `memory-store.ts` layer
@@ -7,7 +7,7 @@
 // Phase 1 scope:
 //   - capture_thought → create a memory with the caller-supplied category/content
 //   - memory_query    → keyword-filtered, score-ranked listing of active memories
-//   - gsd_graph       → returns a memory and its supersedes edges only (Phase 4 adds memory_relations)
+//   - otto_graph       → returns a memory and its supersedes edges only (Phase 4 adds memory_relations)
 
 import { _getAdapter, isDbAvailable } from "../db.js";
 import {
@@ -32,7 +32,7 @@ function dbUnavailable(operation: string): ToolExecutionResult {
     content: [
       {
         type: "text",
-        text: "Error: GSD database is not available. Memory tools require an initialized .gsd/ project.",
+        text: "Error: OTTO database is not available. Memory tools require an initialized .otto/workflow/ project.",
       },
     ],
     details: { operation, error: "db_unavailable" },
@@ -51,7 +51,7 @@ export interface MemoryCaptureParams {
   /**
    * ADR-013 Step 2: optional structured payload preserved verbatim on the
    * memories row. Used when capturing decisions that need to retain
-   * gsd_save_decision-style fields (scope, decision, choice, rationale,
+   * otto_save_decision-style fields (scope, decision, choice, rationale,
    * made_by, revisable) so the eventual cutover (Step 6) is lossless.
    * Plain pattern/gotcha/convention captures may omit this entirely.
    */
@@ -316,7 +316,7 @@ function includeSupersededMemories(rankedActive: Memory[]): Memory[] {
   }
 }
 
-// ─── gsd_graph ──────────────────────────────────────────────────────────────
+// ─── otto_graph ──────────────────────────────────────────────────────────────
 
 export interface WorkflowGraphParams {
   mode: "build" | "query";
@@ -340,30 +340,30 @@ export interface GraphEdge {
 }
 
 export function executeWorkflowGraph(params: WorkflowGraphParams): ToolExecutionResult {
-  if (!isDbAvailable()) return dbUnavailable("gsd_graph");
+  if (!isDbAvailable()) return dbUnavailable("otto_graph");
 
   if (params.mode === "build") {
     // The extractor emits LINK actions incrementally (Phase 4). There is no
-    // batch rebuild step to run today — ingest artifacts via `/loop24 memory
+    // batch rebuild step to run today — ingest artifacts via `/otto memory
     // extract <SRC-...>` and the next extraction turn will add edges.
     return {
       content: [
         {
           type: "text",
           text:
-            "gsd_graph build acknowledged. Graph edges are populated incrementally by memory " +
-            "extraction (including LINK actions). Use `/gsd memory extract <SRC-...>` to trigger " +
+            "otto_graph build acknowledged. Graph edges are populated incrementally by memory " +
+            "extraction (including LINK actions). Use `/otto memory extract <SRC-...>` to trigger " +
             "extraction against a specific ingested source.",
         },
       ],
-      details: { operation: "gsd_graph", mode: "build", built: 0 },
+      details: { operation: "otto_graph", mode: "build", built: 0 },
     };
   }
 
   if (params.mode !== "query") {
     return {
       content: [{ type: "text", text: `Error: unknown mode "${params.mode}". Must be "build" or "query".` }],
-      details: { operation: "gsd_graph", error: "invalid_mode" },
+      details: { operation: "otto_graph", error: "invalid_mode" },
       isError: true,
     };
   }
@@ -372,7 +372,7 @@ export function executeWorkflowGraph(params: WorkflowGraphParams): ToolExecution
   if (!memoryId) {
     return {
       content: [{ type: "text", text: "Error: memoryId is required for mode=query." }],
-      details: { operation: "gsd_graph", error: "missing_memory_id" },
+      details: { operation: "otto_graph", error: "missing_memory_id" },
       isError: true,
     };
   }
@@ -391,7 +391,7 @@ export function executeWorkflowGraph(params: WorkflowGraphParams): ToolExecution
     if (nodes.length === 0) {
       return {
         content: [{ type: "text", text: `No memory found with id ${memoryId}.` }],
-        details: { operation: "gsd_graph", mode: "query", memoryId, nodes: [], edges: [] },
+        details: { operation: "otto_graph", mode: "query", memoryId, nodes: [], edges: [] },
       };
     }
 
@@ -403,7 +403,7 @@ export function executeWorkflowGraph(params: WorkflowGraphParams): ToolExecution
     return {
       content: [{ type: "text", text: summary }],
       details: {
-        operation: "gsd_graph",
+        operation: "otto_graph",
         mode: "query",
         memoryId,
         nodes: nodes.map((n) => ({ id: n.id, category: n.category, content: n.content })),
@@ -413,7 +413,7 @@ export function executeWorkflowGraph(params: WorkflowGraphParams): ToolExecution
   } catch (err) {
     return {
       content: [{ type: "text", text: `Error: graph query failed: ${(err as Error).message}` }],
-      details: { operation: "gsd_graph", error: (err as Error).message },
+      details: { operation: "otto_graph", error: (err as Error).message },
       isError: true,
     };
   }

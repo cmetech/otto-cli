@@ -1,7 +1,7 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Interactive terminal bash execution renderer with streaming output and recommended command cards.
 
-import { Container, Loader, Spacer, Text, type TUI } from "@loop24/pi-tui";
+import { Container, Loader, Spacer, Text, type TUI } from "@otto/pi-tui";
 import stripAnsi from "strip-ansi";
 import {
 	DEFAULT_MAX_BYTES,

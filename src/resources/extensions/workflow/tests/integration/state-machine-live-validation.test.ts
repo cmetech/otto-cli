@@ -1,6 +1,6 @@
 /**
  * state-machine-live-validation.test.ts — Live operational validation of the
- * GSD state machine with real handlers, real DB, and real filesystem.
+ * OTTO state machine with real handlers, real DB, and real filesystem.
  *
  * Exercises every phase transition, completion guard, edge case, and reopen
  * path end-to-end. This is NOT a unit test — it drives the actual tool handlers
@@ -76,7 +76,7 @@ function makeTempDir(): string {
 }
 
 /**
- * Create a realistic .gsd/ fixture with:
+ * Create a realistic .otto/workflow/ fixture with:
  * - M001 milestone with ROADMAP, CONTEXT
  * - S01 slice with PLAN (2 tasks T01, T02)
  * - S02 slice with PLAN (1 task T01)
@@ -85,7 +85,7 @@ function makeTempDir(): string {
  */
 function createFullFixture(): string {
   const base = makeTempDir();
-  const workflowDir = join(base, ".gsd");
+  const workflowDir = join(base, ".otto/workflow");
   const m001Dir = join(workflowDir, "milestones", "M001");
   const s01Dir = join(m001Dir, "slices", "S01");
   const s01Tasks = join(s01Dir, "tasks");
@@ -282,7 +282,7 @@ function makeMilestoneParams(milestoneId: string): Record<string, unknown> {
 
 function insertPassingMilestoneValidation(milestoneId: string): void {
   insertAssessment({
-    path: `.gsd/milestones/${milestoneId}/${milestoneId}-VALIDATION.md`,
+    path: `.otto/workflow/milestones/${milestoneId}/${milestoneId}-VALIDATION.md`,
     milestoneId,
     status: "pass",
     scope: "milestone-validation",
@@ -309,7 +309,7 @@ describe("state-machine-live-validation", () => {
   describe("happy path: full lifecycle M001 → complete", () => {
     test("step 1: empty project derives pre-planning", async () => {
       base = makeTempDir();
-      mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
+      mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
       const state = await deriveState(base);
       assert.equal(state.phase, "pre-planning");
       assert.equal(state.activeMilestone, null);
@@ -317,7 +317,7 @@ describe("state-machine-live-validation", () => {
 
     test("step 3: full fixture with ROADMAP+PLAN derives planning or executing", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       invalidateStateCache();
       const state = await deriveState(base);
       // Without DB migration, filesystem path is used — should be planning or executing
@@ -329,7 +329,7 @@ describe("state-machine-live-validation", () => {
 
     test("step 4: complete T01 in S01 — handler succeeds, DB reflects completion", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       // Seed DB with hierarchy
       insertMilestone({ id: "M001", title: "Live Validation", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", title: "First Feature", status: "in_progress" });
@@ -345,18 +345,18 @@ describe("state-machine-live-validation", () => {
       assert.ok(isClosedStatus(task!.status), `T01 status should be closed, got: ${task!.status}`);
 
       // Verify SUMMARY.md written to disk
-      const summaryPath = join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md");
+      const summaryPath = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md");
       assert.ok(existsSync(summaryPath), "T01-SUMMARY.md should exist on disk");
 
       // Verify event log entry
-      const events = readEvents(join(base, ".gsd", "event-log.jsonl"));
+      const events = readEvents(join(base, ".otto/workflow", "event-log.jsonl"));
       const taskEvent = events.find(e => e.cmd === "complete-task" && (e.params as any).taskId === "T01");
       assert.ok(taskEvent, "event log should contain complete-task for T01");
     });
 
     test("step 5: complete T02 in S01 — both tasks now done", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Live Validation", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", title: "First Feature", status: "in_progress" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", title: "Implementation", status: "complete" });
@@ -373,7 +373,7 @@ describe("state-machine-live-validation", () => {
 
     test("step 6: complete slice S01 — all tasks done, slice closes", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Live Validation", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", title: "First Feature", status: "in_progress" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", title: "Impl", status: "complete" });
@@ -387,13 +387,13 @@ describe("state-machine-live-validation", () => {
       assert.ok(isClosedStatus(slice!.status), `S01 should be closed, got: ${slice!.status}`);
 
       // SUMMARY.md on disk
-      const summaryPath = join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md");
+      const summaryPath = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md");
       assert.ok(existsSync(summaryPath), "S01-SUMMARY.md should exist");
     });
 
     test("step 7: complete S02 task + slice — both slices done", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Live Validation", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", title: "First", status: "complete" });
       insertSlice({ id: "S02", milestoneId: "M001", title: "Second", status: "in_progress" });
@@ -416,7 +416,7 @@ describe("state-machine-live-validation", () => {
 
     test("step 8: complete milestone M001 — full lifecycle done", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Live Validation", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", title: "First", status: "complete" });
       insertSlice({ id: "S02", milestoneId: "M001", title: "Second", status: "complete" });
@@ -433,7 +433,7 @@ describe("state-machine-live-validation", () => {
       assert.ok(isClosedStatus(milestone!.status), `M001 should be closed, got: ${milestone!.status}`);
 
       // SUMMARY.md on disk
-      const summaryPath = join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md");
+      const summaryPath = join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md");
       assert.ok(existsSync(summaryPath), "M001-SUMMARY.md should exist");
     });
   });
@@ -445,7 +445,7 @@ describe("state-machine-live-validation", () => {
   describe("completion guards — edge cases", () => {
     test("cannot complete task with empty taskId", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       const result = await handleCompleteTask(makeTaskParams("", "S01", "M001") as any, base);
       assert.ok("error" in result);
       assert.match((result as any).error, /taskId is required/);
@@ -453,7 +453,7 @@ describe("state-machine-live-validation", () => {
 
     test("cannot complete task in closed milestone", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Done", status: "complete" });
       insertSlice({ id: "S01", milestoneId: "M001" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "pending" });
@@ -465,7 +465,7 @@ describe("state-machine-live-validation", () => {
 
     test("cannot complete task in closed slice", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "complete" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "pending" });
@@ -477,7 +477,7 @@ describe("state-machine-live-validation", () => {
 
     test("double task completion returns error (H5-related)", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "in_progress" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "complete" });
@@ -489,7 +489,7 @@ describe("state-machine-live-validation", () => {
 
     test("cannot complete slice with zero tasks — vacuous truth guard", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "in_progress" });
       // No tasks inserted
@@ -501,7 +501,7 @@ describe("state-machine-live-validation", () => {
 
     test("cannot complete slice with incomplete tasks", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "in_progress" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "complete" });
@@ -514,7 +514,7 @@ describe("state-machine-live-validation", () => {
 
     test("double slice completion repairs missing artifacts", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "complete" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "complete" });
@@ -528,7 +528,7 @@ describe("state-machine-live-validation", () => {
 
     test("cannot complete milestone with zero slices", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertPassingMilestoneValidation("M001");
 
@@ -539,7 +539,7 @@ describe("state-machine-live-validation", () => {
 
     test("cannot complete milestone with incomplete slices", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "complete" });
       insertSlice({ id: "S02", milestoneId: "M001", status: "in_progress" });
@@ -554,7 +554,7 @@ describe("state-machine-live-validation", () => {
 
     test("cannot complete milestone with incomplete tasks in complete slice (deep check)", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       // Slice marked complete but task is still pending — simulates inconsistent state
       insertSlice({ id: "S01", milestoneId: "M001", status: "complete" });
@@ -568,7 +568,7 @@ describe("state-machine-live-validation", () => {
 
     test("cannot complete milestone without verificationPassed=true", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "complete" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "complete" });
@@ -582,7 +582,7 @@ describe("state-machine-live-validation", () => {
 
     test("double milestone completion is idempotent", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Done", status: "complete" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "complete" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "complete" });
@@ -602,7 +602,7 @@ describe("state-machine-live-validation", () => {
   describe("reopen operations", () => {
     test("reopen task: resets completed task to pending", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "in_progress" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "complete" });
@@ -619,7 +619,7 @@ describe("state-machine-live-validation", () => {
 
     test("cannot reopen task that is not complete", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "in_progress" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "pending" });
@@ -634,7 +634,7 @@ describe("state-machine-live-validation", () => {
 
     test("cannot reopen task in closed slice — must reopen slice first", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "complete" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "complete" });
@@ -649,7 +649,7 @@ describe("state-machine-live-validation", () => {
 
     test("cannot reopen task in closed milestone", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Done", status: "complete" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "complete" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "complete" });
@@ -664,7 +664,7 @@ describe("state-machine-live-validation", () => {
 
     test("reopen slice: resets slice to in_progress and all tasks to pending", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "complete" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "complete" });
@@ -688,7 +688,7 @@ describe("state-machine-live-validation", () => {
 
     test("cannot reopen slice in closed milestone", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Done", status: "complete" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "complete" });
 
@@ -704,7 +704,7 @@ describe("state-machine-live-validation", () => {
       // This test documents the H5 finding: there is no handleReopenMilestone function.
       // A completed milestone can only be undone via direct DB manipulation.
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Done", status: "complete" });
 
       const milestone = getMilestone("M001");
@@ -724,7 +724,7 @@ describe("state-machine-live-validation", () => {
   describe("phantom parent auto-creation (H6)", () => {
     test("completing task for non-existent milestone/slice auto-creates them", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       // No milestone or slice pre-inserted — handler will auto-create
 
       const result = await handleCompleteTask(makeTaskParams("T01", "S99", "M099") as any, base);
@@ -742,7 +742,7 @@ describe("state-machine-live-validation", () => {
 
     test("completing slice for non-existent milestone auto-creates it", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       // Insert task to satisfy completion guard
       insertMilestone({ id: "M099" });
       insertSlice({ id: "S99", milestoneId: "M099" });
@@ -760,7 +760,7 @@ describe("state-machine-live-validation", () => {
   describe("state derivation with live DB", () => {
     test("deriveStateFromDb reflects task completion immediately", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", title: "First", status: "in_progress" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "pending" });
@@ -787,7 +787,7 @@ describe("state-machine-live-validation", () => {
 
     test("deriveStateFromDb reflects slice completion → next slice or validating", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", title: "First", status: "complete" });
       insertSlice({ id: "S02", milestoneId: "M001", title: "Second", status: "in_progress" });
@@ -803,7 +803,7 @@ describe("state-machine-live-validation", () => {
 
     test("deriveStateFromDb with all slices done → validating-milestone", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", title: "First", status: "complete" });
       insertSlice({ id: "S02", milestoneId: "M001", title: "Second", status: "complete" });
@@ -824,7 +824,7 @@ describe("state-machine-live-validation", () => {
   describe("event log integrity across operations", () => {
     test("full operation sequence produces correct event log", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", title: "First", status: "in_progress" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "pending" });
@@ -837,7 +837,7 @@ describe("state-machine-live-validation", () => {
       // Complete S01
       await handleCompleteSlice(makeSliceParams("S01", "M001") as any, base);
 
-      const events = readEvents(join(base, ".gsd", "event-log.jsonl"));
+      const events = readEvents(join(base, ".otto/workflow", "event-log.jsonl"));
 
       // Should have 3 events: 2 task completions + 1 slice completion
       assert.ok(events.length >= 3, `expected ≥3 events, got ${events.length}`);
@@ -865,7 +865,7 @@ describe("state-machine-live-validation", () => {
 
     test("reopen operations produce events", async () => {
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", status: "in_progress" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "complete" });
@@ -875,7 +875,7 @@ describe("state-machine-live-validation", () => {
         base,
       );
 
-      const events = readEvents(join(base, ".gsd", "event-log.jsonl"));
+      const events = readEvents(join(base, ".otto/workflow", "event-log.jsonl"));
       const reopenEvent = events.find(e => e.cmd === "reopen-task");
       assert.ok(reopenEvent, "should have reopen-task event");
       assert.equal((reopenEvent!.params as any).taskId, "T01");
@@ -893,7 +893,7 @@ describe("state-machine-live-validation", () => {
       // post-mutation hook runs, preventing the reconciler from auto-correcting
       // the task back to "complete".
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", title: "First", status: "in_progress" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "pending" });
@@ -902,7 +902,7 @@ describe("state-machine-live-validation", () => {
       const r1 = await handleCompleteTask(makeTaskParams("T01", "S01", "M001") as any, base);
       assert.ok(!("error" in r1), `first complete: ${JSON.stringify(r1)}`);
 
-      const summaryPath = join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md");
+      const summaryPath = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md");
       assert.ok(existsSync(summaryPath), "SUMMARY.md exists after completion");
 
       // Reopen — now deletes SUMMARY.md from disk (M12 fix)
@@ -923,7 +923,7 @@ describe("state-machine-live-validation", () => {
       // M12 fix: reopen-slice now deletes all SUMMARY.md and UAT.md artifacts
       // from disk, preventing reconciler interference.
       base = createFullFixture();
-      openDatabase(join(base, ".gsd", "gsd.db"));
+      openDatabase(join(base, ".otto/workflow", "otto.db"));
       insertMilestone({ id: "M001", title: "Active", status: "active" });
       insertSlice({ id: "S01", milestoneId: "M001", title: "First", status: "in_progress" });
       insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", status: "pending" });

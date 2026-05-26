@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-const resolveTsPath = join(process.cwd(), "src", "resources", "extensions", "gsd", "tests", "resolve-ts.mjs")
+const resolveTsPath = join(process.cwd(), "src", "resources", "extensions", "workflow", "tests", "resolve-ts.mjs")
 
 test("onboarding claude-cli path persists defaultProvider to settings.json", (t) => {
   const workflowHome = mkdtempSync(join(tmpdir(), "gsd-onboarding-claude-cli-"))
@@ -39,7 +39,7 @@ test("onboarding claude-cli path persists defaultProvider to settings.json", (t)
         if (!configured) throw new Error("claude-cli onboarding did not complete");
       `,
     ],
-    { env: { ...process.env, GSD_HOME: workflowHome }, stdio: "pipe" },
+    { env: { ...process.env, OTTO_HOME: workflowHome }, stdio: "pipe" },
   )
 
   const settings = JSON.parse(readFileSync(join(workflowHome, "agent", "settings.json"), "utf-8"))

@@ -1,4 +1,4 @@
-// LOOP24 + packages/pi-tui/src/components/box.ts - Box container component with padding and background rendering.
+// OTTO + packages/pi-tui/src/components/box.ts - Box container component with padding and background rendering.
 
 import type { Component } from "../tui.js";
 import { applyBackgroundToLine, truncateToWidth, visibleWidth } from "../utils.js";

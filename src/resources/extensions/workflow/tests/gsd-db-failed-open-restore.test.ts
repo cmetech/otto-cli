@@ -20,7 +20,7 @@ import type { WorkflowWorkspace } from "../workspace.ts";
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function makeProjectDir(base: string): string {
-  mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
   return base;
 }
 
@@ -63,8 +63,8 @@ describe("openDatabaseByWorkspace: restores previous connection on failure", () 
       contract: {
         projectRoot: "/does-not-exist-gsd-test-ws-restore",
         workRoot: "/does-not-exist-gsd-test-ws-restore",
-        projectGsd: "/does-not-exist-gsd-test-ws-restore/.gsd",
-        projectDb: "/does-not-exist-gsd-test-ws-restore/.gsd/does-not-exist.db",
+        projectGsd: "/does-not-exist-gsd-test-ws-restore/.otto/workflow",
+        projectDb: "/does-not-exist-gsd-test-ws-restore/.otto/workflow/does-not-exist.db",
         worktreeGsd: null,
         isWorktree: false,
       },
@@ -95,8 +95,8 @@ describe("openDatabaseByWorkspace: restores previous connection on failure", () 
       contract: {
         projectRoot: "/does-not-exist-gsd-cache-test",
         workRoot: "/does-not-exist-gsd-cache-test",
-        projectGsd: "/does-not-exist-gsd-cache-test/.gsd",
-        projectDb: "/does-not-exist-gsd-cache-test/.gsd/no.db",
+        projectGsd: "/does-not-exist-gsd-cache-test/.otto/workflow",
+        projectDb: "/does-not-exist-gsd-cache-test/.otto/workflow/no.db",
         worktreeGsd: null,
         isWorktree: false,
       },

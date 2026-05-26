@@ -29,7 +29,7 @@ import { createWorkspace, scopeMilestone } from "../workspace.ts";
 
 function makeProjectDir(): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-resume-warn-test-")));
-  mkdirSync(join(dir, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow", "milestones"), { recursive: true });
   return dir;
 }
 
@@ -60,7 +60,7 @@ describe("resume: missing worktree warning emission", () => {
   });
 
   test("logWarning is called when worktreePath is set but directory is missing", () => {
-    const missingPath = join(projectDir, ".gsd", "worktrees", "M001-nonexistent");
+    const missingPath = join(projectDir, ".otto/workflow", "worktrees", "M001-nonexistent");
     // missingPath was never created — existsSync returns false
 
     const warned = _warnIfWorktreeMissingForTest(missingPath, "M001");
@@ -82,7 +82,7 @@ describe("resume: missing worktree warning emission", () => {
   });
 
   test("logWarning message includes milestone ID", () => {
-    const missingPath = join(projectDir, ".gsd", "worktrees", "M042-gone");
+    const missingPath = join(projectDir, ".otto/workflow", "worktrees", "M042-gone");
     _warnIfWorktreeMissingForTest(missingPath, "M042");
 
     const logs = peekLogs();
@@ -105,7 +105,7 @@ describe("resume: missing worktree warning emission", () => {
   });
 
   test("logWarning is NOT called when worktreePath exists on disk", () => {
-    const existingWorktree = join(projectDir, ".gsd", "worktrees", "M001");
+    const existingWorktree = join(projectDir, ".otto/workflow", "worktrees", "M001");
     mkdirSync(existingWorktree, { recursive: true });
 
     const warned = _warnIfWorktreeMissingForTest(existingWorktree, "M001");
@@ -115,7 +115,7 @@ describe("resume: missing worktree warning emission", () => {
   });
 
   test("warning message mentions project-root fallback action", () => {
-    const missingPath = join(projectDir, ".gsd", "worktrees", "M099-deleted");
+    const missingPath = join(projectDir, ".otto/workflow", "worktrees", "M099-deleted");
     _warnIfWorktreeMissingForTest(missingPath, "M099");
 
     const logs = peekLogs();
@@ -125,8 +125,8 @@ describe("resume: missing worktree warning emission", () => {
       "warning should mention project-root mode fallback",
     );
     assert.ok(
-      logs[0].message.includes("gsd-debug"),
-      "warning should suggest /gsd-debug recovery action",
+      logs[0].message.includes("/otto-debug"),
+      "warning should suggest /otto-debug recovery action",
     );
   });
 });
@@ -153,7 +153,7 @@ describe("resume: scope fallback to project-root mode when worktree is missing",
     s.currentMilestoneId = mid;
 
     // Simulate auto.ts resume path: worktreePath is set but missing → use projectDir
-    const missingPath = join(projectDir, ".gsd", "worktrees", mid);
+    const missingPath = join(projectDir, ".otto/workflow", "worktrees", mid);
     _warnIfWorktreeMissingForTest(missingPath, mid);
 
     // Fallback: use originalBasePath (project root)
@@ -168,7 +168,7 @@ describe("resume: scope fallback to project-root mode when worktree is missing",
     s.originalBasePath = projectDir;
     s.currentMilestoneId = mid;
 
-    const missingPath = join(projectDir, ".gsd", "worktrees", mid);
+    const missingPath = join(projectDir, ".otto/workflow", "worktrees", mid);
     _warnIfWorktreeMissingForTest(missingPath, mid);
 
     applyProjectRootScope(s, projectDir, mid);
@@ -182,7 +182,7 @@ describe("resume: scope fallback to project-root mode when worktree is missing",
     s.originalBasePath = projectDir;
     s.currentMilestoneId = mid;
 
-    const missingPath = join(projectDir, ".gsd", "worktrees", mid);
+    const missingPath = join(projectDir, ".otto/workflow", "worktrees", mid);
 
     assert.doesNotThrow(() => {
       _warnIfWorktreeMissingForTest(missingPath, mid);
@@ -192,7 +192,7 @@ describe("resume: scope fallback to project-root mode when worktree is missing",
 
   test("warning is emitted once per missing worktree — no double-emission", () => {
     const mid = "M004";
-    const missingPath = join(projectDir, ".gsd", "worktrees", mid);
+    const missingPath = join(projectDir, ".otto/workflow", "worktrees", mid);
 
     _warnIfWorktreeMissingForTest(missingPath, mid);
 

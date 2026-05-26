@@ -6,8 +6,8 @@ import assert from "node:assert/strict";
 import { Type } from "@sinclair/typebox";
 import { agentLoop, MAX_CONSECUTIVE_VALIDATION_FAILURES } from "./agent-loop.js";
 import type { AgentContext, AgentLoopConfig, AgentTool, AgentEvent, AgentMessage } from "./types.js";
-import { AssistantMessageEventStream, EventStream } from "@loop24/pi-ai";
-import type { AssistantMessage, AssistantMessageEvent, Model } from "@loop24/pi-ai";
+import { AssistantMessageEventStream, EventStream } from "@otto/pi-ai";
+import type { AssistantMessage, AssistantMessageEvent, Model } from "@otto/pi-ai";
 
 describe("agent-loop — pauseTurn handling (#2869)", () => {
 	it("emits token audit after context transforms when opted in", async () => {

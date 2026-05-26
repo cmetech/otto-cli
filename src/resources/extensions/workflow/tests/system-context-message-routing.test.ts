@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression coverage for volatile system-context message routing.
 
 import { describe, test } from "node:test";
@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { buildContextMessage } from "../bootstrap/system-context.ts";
 
 describe("buildContextMessage (#5019 — memory routing)", () => {
-  const markedMemory = "[GSD Context Metadata]\n- Memory supplied: yes\n\n[MEMORY]\nrule one";
+  const markedMemory = "[OTTO Context Metadata]\n- Memory supplied: yes\n\n[MEMORY]\nrule one";
 
   test("returns null when nothing to inject", () => {
     const result = buildContextMessage({
@@ -35,7 +35,7 @@ describe("buildContextMessage (#5019 — memory routing)", () => {
     });
     assert.ok(result, "expected a context message");
     assert.equal(result.customType, "gsd-memory");
-    assert.equal(result.content, "[GSD Context Metadata]\n- Memory supplied: yes\n\n[MEMORY]\nrule one\nrule two");
+    assert.equal(result.content, "[OTTO Context Metadata]\n- Memory supplied: yes\n\n[MEMORY]\nrule one\nrule two");
     assert.equal(result.display, false);
   });
 

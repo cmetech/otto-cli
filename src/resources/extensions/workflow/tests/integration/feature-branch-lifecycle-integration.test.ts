@@ -75,9 +75,9 @@ function createFeatureBranchRepo(featureBranch: string): string {
   writeFileSync(join(dir, "README.md"), "# project\n");
   // Mirror production: agent runtime dirs are gitignored so autoCommitDirtyState
   // doesn't pick up the worktrees directory as dirty state (#1127 fix).
-  writeFileSync(join(dir, ".gitignore"), ".gsd/worktrees/\n");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
-  writeFileSync(join(dir, ".gsd", "STATE.md"), "# State\n");
+  writeFileSync(join(dir, ".gitignore"), ".otto/workflow/worktrees/\n");
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
+  writeFileSync(join(dir, ".otto/workflow", "STATE.md"), "# State\n");
   run("git add .", dir);
   run("git commit -m init", dir);
   run("git branch -M main", dir);
@@ -111,7 +111,7 @@ function addSliceToMilestone(
   commits: Array<{ file: string; content: string; message: string }>,
 ): void {
   const normalizedPath = wtPath.replaceAll("\\", "/");
-  const marker = "/.gsd/worktrees/";
+  const marker = "/.otto/workflow/worktrees/";
   const idx = normalizedPath.indexOf(marker);
   const worktreeName = idx !== -1
     ? normalizedPath.slice(idx + marker.length).split("/")[0]
@@ -175,7 +175,7 @@ describe('feature-branch-lifecycle-integration', async () => {
       assert.ok(statusBefore.includes("wip-types.ts"), "wip-types.ts is uncommitted");
 
       // ── Simulate what startAuto does: commit dirty state, capture integration branch ──
-      // startAuto bootstraps .gsd/ which commits .gsd/ files. It also calls
+      // startAuto bootstraps .otto/workflow/ which commits .otto/workflow/ files. It also calls
       // captureIntegrationBranch which commits META.json. But user's dirty
       // files need to be committed first so the worktree branches from a
       // commit that includes them.
@@ -183,12 +183,12 @@ describe('feature-branch-lifecycle-integration', async () => {
       // In production, the first dispatch unit (research-milestone) would
       // auto-commit via autoCommitCurrentBranch. But the worktree is created
       // BEFORE any unit runs. So we simulate the pre-worktree state:
-      // GSD bootstraps .gsd/ and captureIntegrationBranch commits metadata.
+      // OTTO bootstraps .otto/workflow/ and captureIntegrationBranch commits metadata.
       // The user's dirty files are NOT auto-committed pre-worktree — they
       // stay in the original working directory.
 
       // Create milestone directory (happens during guided-flow)
-      mkdirSync(join(repo, ".gsd", "milestones", milestoneId), { recursive: true });
+      mkdirSync(join(repo, ".otto/workflow", "milestones", milestoneId), { recursive: true });
 
       // Write integration branch metadata (what captureIntegrationBranch does)
       writeIntegrationBranch(repo, milestoneId, featureBranch);
@@ -285,7 +285,7 @@ describe('feature-branch-lifecycle-integration', async () => {
       run(`git checkout ${featureBranch}`, repo);
 
       // ── Assert: worktree cleaned up ──
-      const worktreeDir = join(repo, ".gsd", "worktrees", milestoneId);
+      const worktreeDir = join(repo, ".otto/workflow", "worktrees", milestoneId);
       assert.ok(!existsSync(worktreeDir), "worktree directory removed");
 
       // Milestone branch deleted
@@ -305,9 +305,9 @@ describe('feature-branch-lifecycle-integration', async () => {
     });
 
     // ================================================================
-    // Test 2: Uncommitted .gsd/ planning files are available in worktree
+    // Test 2: Uncommitted .otto/workflow/ planning files are available in worktree
     //
-    // When auto-mode starts, .gsd/ files may be untracked/uncommitted.
+    // When auto-mode starts, .otto/workflow/ files may be untracked/uncommitted.
     // Planning artifacts should be carried into the worktree even if
     // they weren't committed on the feature branch.
     // ================================================================
@@ -317,17 +317,17 @@ describe('feature-branch-lifecycle-integration', async () => {
       const milestoneId = nextMilestoneId([], true);
 
       // Write planning files that are NOT committed
-      mkdirSync(join(repo, ".gsd", "milestones", milestoneId, "slices", "S01", "tasks"), { recursive: true });
+      mkdirSync(join(repo, ".otto/workflow", "milestones", milestoneId, "slices", "S01", "tasks"), { recursive: true });
       writeFileSync(
-        join(repo, ".gsd", "milestones", milestoneId, `${milestoneId}-ROADMAP.md`),
+        join(repo, ".otto/workflow", "milestones", milestoneId, `${milestoneId}-ROADMAP.md`),
         makeRoadmap(milestoneId, "Planning test", [{ id: "S01", title: "First" }]),
       );
       writeFileSync(
-        join(repo, ".gsd", "milestones", milestoneId, "slices", "S01", "S01-PLAN.md"),
+        join(repo, ".otto/workflow", "milestones", milestoneId, "slices", "S01", "S01-PLAN.md"),
         "# S01: First\n\n**Goal:** Test\n**Demo:** Test\n\n## Tasks\n- [ ] **T01: Do it** `est:10m`\n",
       );
-      writeFileSync(join(repo, ".gsd", "PROJECT.md"), "# Planning Test Project\n");
-      writeFileSync(join(repo, ".gsd", "DECISIONS.md"), "# Decisions\n\n## D001\nTest decision.\n");
+      writeFileSync(join(repo, ".otto/workflow", "PROJECT.md"), "# Planning Test Project\n");
+      writeFileSync(join(repo, ".otto/workflow", "DECISIONS.md"), "# Decisions\n\n## D001\nTest decision.\n");
 
       // These files are untracked
       assert.ok(run("git status --short", repo).length > 0, "repo has untracked files");
@@ -337,10 +337,10 @@ describe('feature-branch-lifecycle-integration', async () => {
       const wtPath = createAutoWorktree(repo, milestoneId);
       tempDirs.push(wtPath);
 
-      // With external state, worktree .gsd is a symlink to shared state.
+      // With external state, worktree .otto/workflow is a symlink to shared state.
       // Verify symlink was created (planning files are shared, not copied).
-      const wtGsd = join(wtPath, ".gsd");
-      assert.ok(existsSync(wtGsd), "worktree .gsd exists (symlink or dir)");
+      const wtGsd = join(wtPath, ".otto/workflow");
+      assert.ok(existsSync(wtGsd), "worktree .otto/workflow exists (symlink or dir)");
 
       // Clean up: chdir back before teardown
       process.chdir(savedCwd);
@@ -360,7 +360,7 @@ describe('feature-branch-lifecycle-integration', async () => {
 
       // First milestone
       const mid1 = nextMilestoneId([], true);
-      mkdirSync(join(repo, ".gsd", "milestones", mid1), { recursive: true });
+      mkdirSync(join(repo, ".otto/workflow", "milestones", mid1), { recursive: true });
       writeIntegrationBranch(repo, mid1, featureBranch);
 
       const wt1 = createAutoWorktree(repo, mid1);
@@ -379,7 +379,7 @@ describe('feature-branch-lifecycle-integration', async () => {
       assert.ok(mid1 !== mid2, "second milestone has different ID");
       assert.match(mid2, /^M002-[a-z0-9]{6}$/, "second milestone is M002-xxxxxx");
 
-      mkdirSync(join(repo, ".gsd", "milestones", mid2), { recursive: true });
+      mkdirSync(join(repo, ".otto/workflow", "milestones", mid2), { recursive: true });
       writeIntegrationBranch(repo, mid2, featureBranch);
 
       const wt2 = createAutoWorktree(repo, mid2);

@@ -74,7 +74,7 @@ Override which model is used for each tier. When omitted, the router uses a buil
 - **Standard:** `claude-sonnet-4-6`, `gpt-4o`, `gpt-4.1`, `gpt-5.1-codex-max`, `gemini-2.5-pro`, `deepseek-chat`
 - **Heavy:** `claude-opus-4-6`, `claude-opus-4-7`, `gpt-5`, `gpt-5-pro`, `gpt-5.1`, `gpt-5.2`, `gpt-5.2-codex`, `gpt-5.3-codex`, `gpt-5.4`, `gpt-5.5`, `o1`, `o3`, `o4-mini`
 
-Token profiles use the same tier mapping. `budget`, `balanced`, and `quality` declare per-phase tier intentions, then GSD resolves those tiers against the models currently available from your configured providers. This means a profile can resolve to OpenAI, Gemini, Anthropic, or another provider-specific model instead of hardcoding Claude-family defaults.
+Token profiles use the same tier mapping. `budget`, `balanced`, and `quality` declare per-phase tier intentions, then OTTO resolves those tiers against the models currently available from your configured providers. This means a profile can resolve to OpenAI, Gemini, Anthropic, or another provider-specific model instead of hardcoding Claude-family defaults.
 
 ### `escalate_on_failure`
 
@@ -97,13 +97,13 @@ When enabled, the router may select models from providers other than your primar
 
 ### Cross-provider telemetry
 
-When cross-provider routing replays an existing conversation into a model with a different provider API, GSD records any context transformations reported by `@loop24/pi-ai`'s `ProviderSwitchReport`. Non-empty reports are visible as:
+When cross-provider routing replays an existing conversation into a model with a different provider API, OTTO records any context transformations reported by `@otto/pi-ai`'s `ProviderSwitchReport`. Non-empty reports are visible as:
 
 - A warning notification summarizing the provider switch and transformation counts.
 - A UOK audit event during auto-mode traces with `category: "model-policy"` and `type: "provider-switch"`.
 - Process-local provider switch stats exposed to internal dashboards, doctor checks, and tests through `getProviderSwitchStats()`.
 
-The report tracks the source and target APIs plus counts for dropped or downgraded thinking blocks, remapped tool call IDs, synthetic tool results, and dropped thought signatures. Set `GSD_VERBOSE=1` or `PI_VERBOSE=1` to also print provider-switch summaries to stderr.
+The report tracks the source and target APIs plus counts for dropped or downgraded thinking blocks, remapped tool call IDs, synthetic tool results, and dropped thought signatures. Set `OTTO_VERBOSE=1` or `PI_VERBOSE=1` to also print provider-switch summaries to stderr.
 
 ### `capability_routing`
 
@@ -286,7 +286,7 @@ For `execute-task` units, the classifier analyzes the task plan:
 
 ### Adaptive Learning
 
-The routing history (`.gsd/routing-history.json`) tracks success/failure per tier per unit type. If a tier's failure rate exceeds 20% for a given pattern, future classifications are bumped up. User feedback (`over`/`under`/`ok`) is weighted 2× vs automatic outcomes.
+The routing history (`.otto/workflow/routing-history.json`) tracks success/failure per tier per unit type. If a tier's failure rate exceeds 20% for a given pattern, future classifications are bumped up. User feedback (`over`/`under`/`ok`) is weighted 2× vs automatic outcomes.
 
 ## Interaction with Token Profiles
 

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for milestone validation persistence and evidence gates.
 
 import { describe, it, afterEach } from "node:test";
@@ -15,7 +15,7 @@ import { clearParseCache } from "../files.js";
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-val-handler-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   return base;
 }
 
@@ -45,7 +45,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
 
   it("writes DB row and disk file on success", async () => {
     base = makeTmpBase();
-    const dbPath = join(base, ".gsd", "gsd.db");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
     openDatabase(dbPath);
     insertMilestone({ id: "M001" });
     insertSlice({ id: "S01", milestoneId: "M001" });
@@ -62,7 +62,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
     assert.equal(row!.status, "pass");
 
     // Disk file exists
-    const filePath = join(base, ".gsd", "milestones", "M001", "M001-VALIDATION.md");
+    const filePath = join(base, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md");
     assert.ok(existsSync(filePath), "VALIDATION.md should exist on disk");
     const validationMd = readFileSync(filePath, "utf-8");
     assert.match(validationMd, /## Verification Class Compliance/);
@@ -72,7 +72,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
 
   it("omits verification class section when no verification classes are supplied", async () => {
     base = makeTmpBase();
-    const dbPath = join(base, ".gsd", "gsd.db");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
     openDatabase(dbPath);
     insertMilestone({ id: "M001" });
     insertSlice({ id: "S01", milestoneId: "M001" });
@@ -83,14 +83,14 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
     );
     assert.ok(!("error" in result), `unexpected error: ${"error" in result ? result.error : ""}`);
 
-    const filePath = join(base, ".gsd", "milestones", "M001", "M001-VALIDATION.md");
+    const filePath = join(base, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md");
     const validationMd = readFileSync(filePath, "utf-8");
     assert.doesNotMatch(validationMd, /## Verification Class Compliance/);
   });
 
   it("keeps DB row and reports stale projection when disk write fails", async () => {
     base = makeTmpBase();
-    const dbPath = join(base, ".gsd", "gsd.db");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
     openDatabase(dbPath);
     insertMilestone({ id: "M001" });
     insertSlice({ id: "S01", milestoneId: "M001" });
@@ -98,7 +98,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
     // Force disk write failure by replacing the milestone directory with a
     // regular file. saveFile() will fail because it cannot write inside a
     // non-directory. This works cross-platform (chmod is ignored on Windows).
-    const milestoneDir = join(base, ".gsd", "milestones", "M001");
+    const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
     rmSync(milestoneDir, { recursive: true, force: true });
     writeFileSync(milestoneDir, "not-a-directory");
 
@@ -117,7 +117,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
 
   it("persists milestone validation gate_runs rows when UOK gates are enabled", async () => {
     base = makeTmpBase();
-    const dbPath = join(base, ".gsd", "gsd.db");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
     openDatabase(dbPath);
     insertMilestone({ id: "M001" });
     insertSlice({ id: "S01", milestoneId: "M001" });
@@ -156,7 +156,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
 
   it("rejects verificationClasses that omit planned Operational class", async () => {
     base = makeTmpBase();
-    const dbPath = join(base, ".gsd", "gsd.db");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
     openDatabase(dbPath);
     insertMilestone({
       id: "M001",
@@ -182,7 +182,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
 
   it("accepts verificationClasses when planned Operational class is present", async () => {
     base = makeTmpBase();
-    const dbPath = join(base, ".gsd", "gsd.db");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
     openDatabase(dbPath);
     insertMilestone({
       id: "M001",
@@ -205,7 +205,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
 
   it("treats 'not required - ...' verification values as not applicable", async () => {
     base = makeTmpBase();
-    const dbPath = join(base, ".gsd", "gsd.db");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
     openDatabase(dbPath);
     insertMilestone({
       id: "M001",
@@ -224,7 +224,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
 
   it("downgrades pass to needs-attention when browser criteria lack browser evidence", async () => {
     base = makeTmpBase();
-    const dbPath = join(base, ".gsd", "gsd.db");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
     openDatabase(dbPath);
     insertMilestone({
       id: "M001",
@@ -260,7 +260,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
     ).get() as { status: string } | undefined;
     assert.equal(row?.status, "needs-attention");
 
-    const filePath = join(base, ".gsd", "milestones", "M001", "M001-VALIDATION.md");
+    const filePath = join(base, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md");
     const validationMd = readFileSync(filePath, "utf-8");
     assert.match(validationMd, /verdict: needs-attention/);
     assert.match(validationMd, /Browser evidence gate/);
@@ -268,7 +268,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
 
   it("keeps pass when browser criteria have persisted browser evidence", async () => {
     base = makeTmpBase();
-    const dbPath = join(base, ".gsd", "gsd.db");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
     openDatabase(dbPath);
     insertMilestone({
       id: "M001",
@@ -285,7 +285,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
       milestoneId: "M001",
       demo: "Open index.html, add todos, click Mark All Complete, reload the page.",
     });
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     mkdirSync(sliceDir, { recursive: true });
     writeFileSync(
       join(sliceDir, "S01-ASSESSMENT.md"),
@@ -322,7 +322,7 @@ describe("handleValidateMilestone write ordering (#2725)", () => {
 
   it("keeps pass when browser evidence is persisted in the DB artifact", async () => {
     base = makeTmpBase();
-    const dbPath = join(base, ".gsd", "gsd.db");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
     openDatabase(dbPath);
     insertMilestone({
       id: "M001",

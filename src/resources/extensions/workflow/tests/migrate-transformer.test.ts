@@ -279,8 +279,8 @@ test('Scenario 2b: Milestone directory layout drives canonical M output with leg
 
   const result = transformToGSD(project);
 
-  assert.deepStrictEqual(result.milestones.length, 2, 'milestone dirs: two GSD milestones');
-  assert.deepStrictEqual(result.milestones.map((m) => m.id), ['M001', 'M002'], 'milestone dirs: canonical GSD IDs');
+  assert.deepStrictEqual(result.milestones.length, 2, 'milestone dirs: two OTTO milestones');
+  assert.deepStrictEqual(result.milestones.map((m) => m.id), ['M001', 'M002'], 'milestone dirs: canonical OTTO IDs');
   assert.ok(result.milestones[0]?.title.includes('v1.0'), 'milestone dirs: legacy ID visible in title');
   assert.deepStrictEqual(result.milestones[0]?.slices.length, 1, 'milestone dirs: first milestone has one slice');
   assert.deepStrictEqual(result.milestones[0]?.slices[0]?.tasks.length, 1, 'milestone dirs: first slice has task');

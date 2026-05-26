@@ -8,7 +8,7 @@ import { createTurnObserver } from "../uok/loop-adapter.ts";
 import { hasActiveWriterToken, resetWriterTokensForTests } from "../uok/writer.ts";
 
 function readAuditPayloads(basePath: string): Array<Record<string, unknown>> {
-  const path = join(basePath, ".gsd", "audit", "events.jsonl");
+  const path = join(basePath, ".otto/workflow", "audit", "events.jsonl");
   if (!existsSync(path)) return [];
   return readFileSync(path, "utf-8")
     .split("\n")

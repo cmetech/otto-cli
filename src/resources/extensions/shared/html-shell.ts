@@ -47,7 +47,7 @@ ${options.toc.map((item) => `    <li><a href="${esc(item.href)}">${esc(item.labe
 <header>
   <div class="header-inner">
     <div class="branding">
-      <span class="logo">GSD</span>
+      <span class="logo">OTTO</span>
       ${version ? `<span class="version">${version}</span>` : ""}
     </div>
     <div class="header-meta">
@@ -67,7 +67,7 @@ ${options.mainHtml}
 </main>
 <footer>
   <div class="footer-inner">
-    <span>GSD${version ? ` ${version}` : ""}</span>
+    <span>OTTO${version ? ` ${version}` : ""}</span>
     <span class="sep">/</span>
     <span>${esc(options.kind)}</span>
     ${footerNote}

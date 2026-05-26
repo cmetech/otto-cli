@@ -32,7 +32,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Path to the Workflow extension source directory (relative to test file)
-const GSD_SRC_DIR = join(__dirname, "..");
+const OTTO_SRC_DIR = join(__dirname, "..");
 
 // Speed targets from R013
 const PRE_EXECUTION_TIMEOUT_MS = 2000;
@@ -79,10 +79,10 @@ function createTask(overrides: Partial<TaskRow> = {}): TaskRow {
   };
 }
 
-// ─── Real GSD Source Files for Testing ───────────────────────────────────────
+// ─── Real OTTO Source Files for Testing ───────────────────────────────────────
 
 // These are actual Workflow extension source files that exist in the codebase
-const REAL_GSD_FILES = [
+const REAL_OTTO_FILES = [
   "db.ts",
   "auto-verification.ts",
   "pre-execution-checks.ts",
@@ -96,8 +96,8 @@ const REAL_GSD_FILES = [
 
 // Verify the test fixture files actually exist
 function verifyTestFixturesExist(): void {
-  for (const file of REAL_GSD_FILES) {
-    const fullPath = join(GSD_SRC_DIR, file);
+  for (const file of REAL_OTTO_FILES) {
+    const fullPath = join(OTTO_SRC_DIR, file);
     if (!existsSync(fullPath)) {
       throw new Error(`Test fixture file does not exist: ${fullPath}`);
     }
@@ -112,7 +112,7 @@ describe("Enhanced Verification Integration Tests", () => {
     verifyTestFixturesExist();
   });
 
-  describe("Pre-Execution Checks on Real GSD Code", () => {
+  describe("Pre-Execution Checks on Real OTTO Code", () => {
     test("runs pre-execution checks on realistic tasks referencing real files", async () => {
       // Simulate tasks that reference real Workflow extension source files
       const tasks: TaskRow[] = [
@@ -122,24 +122,24 @@ describe("Enhanced Verification Integration Tests", () => {
           title: "Add validation to gsd-db",
           description: `
 ## Steps
-1. Update src/resources/extensions/workflow/gsd-db.ts to add validation
+1. Update src/resources/extensions/workflow/otto-db.ts to add validation
 2. Read from src/resources/extensions/workflow/types.ts for type definitions
 3. Update src/resources/extensions/workflow/errors.ts with new error types
 4. Run tests to verify changes
           `.trim(),
-          files: REAL_GSD_FILES.slice(0, 4).map((f) => join(GSD_SRC_DIR, f)),
+          files: REAL_OTTO_FILES.slice(0, 4).map((f) => join(OTTO_SRC_DIR, f)),
           inputs: [
-            join(GSD_SRC_DIR, "types.ts"),
-            join(GSD_SRC_DIR, "errors.ts"),
+            join(OTTO_SRC_DIR, "types.ts"),
+            join(OTTO_SRC_DIR, "errors.ts"),
           ],
           expected_output: [
-            join(GSD_SRC_DIR, "db.ts"),
+            join(OTTO_SRC_DIR, "db.ts"),
           ],
         }),
       ];
 
       const start = performance.now();
-      const result = await runPreExecutionChecks(tasks, GSD_SRC_DIR);
+      const result = await runPreExecutionChecks(tasks, OTTO_SRC_DIR);
       const duration = performance.now() - start;
 
       // R012: No blocking failures (false positives) on production code
@@ -151,7 +151,7 @@ describe("Enhanced Verification Integration Tests", () => {
       );
 
       // Overall status should not be fail
-      assert.notEqual(result.status, "fail", "Pre-execution checks should not fail on real GSD code");
+      assert.notEqual(result.status, "fail", "Pre-execution checks should not fail on real OTTO code");
 
       // R013: Speed target met
       assert.ok(
@@ -175,18 +175,18 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { existsSync } from "node:fs";
 
-// Use existing GSD types
+// Use existing OTTO types
 import type { TaskRow } from "./db.ts";
 \`\`\`
 
 Update the file watcher to use these imports.
           `.trim(),
-          files: [join(GSD_SRC_DIR, "auto-verification.ts")],
+          files: [join(OTTO_SRC_DIR, "auto-verification.ts")],
         }),
       ];
 
       const start = performance.now();
-      const result = await runPreExecutionChecks(tasks, GSD_SRC_DIR);
+      const result = await runPreExecutionChecks(tasks, OTTO_SRC_DIR);
       const duration = performance.now() - start;
 
       // No blocking failures
@@ -212,7 +212,7 @@ Update the file watcher to use these imports.
           sequence: 0,
           title: "Create types file",
           status: "complete",
-          expected_output: [join(GSD_SRC_DIR, "types.ts")],
+          expected_output: [join(OTTO_SRC_DIR, "types.ts")],
         }),
         createTask({
           id: "T02",
@@ -221,13 +221,13 @@ Update the file watcher to use these imports.
           description: `
 Read the types from src/resources/extensions/workflow/types.ts and use them.
           `.trim(),
-          inputs: [join(GSD_SRC_DIR, "types.ts")],
-          files: [join(GSD_SRC_DIR, "db.ts")],
+          inputs: [join(OTTO_SRC_DIR, "types.ts")],
+          files: [join(OTTO_SRC_DIR, "db.ts")],
         }),
       ];
 
       const start = performance.now();
-      const result = await runPreExecutionChecks(tasks, GSD_SRC_DIR);
+      const result = await runPreExecutionChecks(tasks, OTTO_SRC_DIR);
       const duration = performance.now() - start;
 
       // No blocking failures
@@ -246,7 +246,7 @@ Read the types from src/resources/extensions/workflow/types.ts and use them.
     });
   });
 
-  describe("Post-Execution Checks on Real GSD Code", () => {
+  describe("Post-Execution Checks on Real OTTO Code", () => {
     test("runs post-execution checks on real Workflow extension source files", () => {
       // Simulate a completed task that modified real files
       const completedTask = createTask({
@@ -254,13 +254,13 @@ Read the types from src/resources/extensions/workflow/types.ts and use them.
         title: "Update gsd-db validation",
         status: "complete",
         key_files: [
-          join(GSD_SRC_DIR, "db.ts"),
-          join(GSD_SRC_DIR, "types.ts"),
+          join(OTTO_SRC_DIR, "db.ts"),
+          join(OTTO_SRC_DIR, "types.ts"),
         ],
       });
 
       const start = performance.now();
-      const result = runPostExecutionChecks(completedTask, [], GSD_SRC_DIR);
+      const result = runPostExecutionChecks(completedTask, [], OTTO_SRC_DIR);
       const duration = performance.now() - start;
 
       // R012: No blocking failures (false positives) on production code
@@ -272,7 +272,7 @@ Read the types from src/resources/extensions/workflow/types.ts and use them.
       );
 
       // Overall status should not be fail
-      assert.notEqual(result.status, "fail", "Post-execution checks should not fail on real GSD code");
+      assert.notEqual(result.status, "fail", "Post-execution checks should not fail on real OTTO code");
 
       // R013: Speed target met
       assert.ok(
@@ -282,16 +282,16 @@ Read the types from src/resources/extensions/workflow/types.ts and use them.
     });
 
     test("analyzes imports in real TypeScript files", () => {
-      // Use auto-verification.ts which imports from multiple other GSD files
+      // Use auto-verification.ts which imports from multiple other OTTO files
       const completedTask = createTask({
         id: "T02",
         title: "Verify auto-verification imports",
         status: "complete",
-        key_files: [join(GSD_SRC_DIR, "auto-verification.ts")],
+        key_files: [join(OTTO_SRC_DIR, "auto-verification.ts")],
       });
 
       const start = performance.now();
-      const result = runPostExecutionChecks(completedTask, [], GSD_SRC_DIR);
+      const result = runPostExecutionChecks(completedTask, [], OTTO_SRC_DIR);
       const duration = performance.now() - start;
 
       // No blocking failures
@@ -316,14 +316,14 @@ Read the types from src/resources/extensions/workflow/types.ts and use them.
         title: "Refactor state management",
         status: "complete",
         key_files: [
-          join(GSD_SRC_DIR, "state.ts"),
-          join(GSD_SRC_DIR, "db.ts"),
-          join(GSD_SRC_DIR, "cache.ts"),
+          join(OTTO_SRC_DIR, "state.ts"),
+          join(OTTO_SRC_DIR, "db.ts"),
+          join(OTTO_SRC_DIR, "cache.ts"),
         ],
       });
 
       const start = performance.now();
-      const result = runPostExecutionChecks(completedTask, [], GSD_SRC_DIR);
+      const result = runPostExecutionChecks(completedTask, [], OTTO_SRC_DIR);
       const duration = performance.now() - start;
 
       // No blocking failures
@@ -349,7 +349,7 @@ Read the types from src/resources/extensions/workflow/types.ts and use them.
           sequence: 0,
           title: "Define TaskRow interface",
           status: "complete",
-          key_files: [join(GSD_SRC_DIR, "db.ts")],
+          key_files: [join(OTTO_SRC_DIR, "db.ts")],
         }),
       ];
 
@@ -358,11 +358,11 @@ Read the types from src/resources/extensions/workflow/types.ts and use them.
         sequence: 1,
         title: "Use TaskRow in state module",
         status: "complete",
-        key_files: [join(GSD_SRC_DIR, "state.ts")],
+        key_files: [join(OTTO_SRC_DIR, "state.ts")],
       });
 
       const start = performance.now();
-      const result = runPostExecutionChecks(completedTask, priorTasks, GSD_SRC_DIR);
+      const result = runPostExecutionChecks(completedTask, priorTasks, OTTO_SRC_DIR);
       const duration = performance.now() - start;
 
       // No blocking failures
@@ -402,22 +402,22 @@ import { runPostExecutionChecks } from "./post-execution-checks.ts";
 \`\`\`
           `.trim(),
           files: [
-            join(GSD_SRC_DIR, "pre-execution-checks.ts"),
-            join(GSD_SRC_DIR, "post-execution-checks.ts"),
+            join(OTTO_SRC_DIR, "pre-execution-checks.ts"),
+            join(OTTO_SRC_DIR, "post-execution-checks.ts"),
           ],
           inputs: [
-            join(GSD_SRC_DIR, "types.ts"),
-            join(GSD_SRC_DIR, "db.ts"),
+            join(OTTO_SRC_DIR, "types.ts"),
+            join(OTTO_SRC_DIR, "db.ts"),
           ],
           expected_output: [
-            join(GSD_SRC_DIR, "tests/enhanced-verification-integration.test.ts"),
+            join(OTTO_SRC_DIR, "tests/enhanced-verification-integration.test.ts"),
           ],
         }),
       ];
 
       // Run pre-execution checks
       const preStart = performance.now();
-      const preResult = await runPreExecutionChecks(tasks, GSD_SRC_DIR);
+      const preResult = await runPreExecutionChecks(tasks, OTTO_SRC_DIR);
       const preDuration = performance.now() - preStart;
 
       // Verify pre-execution results
@@ -441,7 +441,7 @@ import { runPostExecutionChecks } from "./post-execution-checks.ts";
 
       // Run post-execution checks
       const postStart = performance.now();
-      const postResult = runPostExecutionChecks(completedTask, [], GSD_SRC_DIR);
+      const postResult = runPostExecutionChecks(completedTask, [], OTTO_SRC_DIR);
       const postDuration = performance.now() - postStart;
 
       // Verify post-execution results
@@ -459,7 +459,7 @@ import { runPostExecutionChecks } from "./post-execution-checks.ts";
 
     test("handles large number of files without timeout", () => {
       // Use all available Workflow extension source files to stress test
-      const allWorkflowFiles = REAL_GSD_FILES.map((f) => join(GSD_SRC_DIR, f));
+      const allWorkflowFiles = REAL_OTTO_FILES.map((f) => join(OTTO_SRC_DIR, f));
 
       const task = createTask({
         id: "T01",
@@ -470,7 +470,7 @@ import { runPostExecutionChecks } from "./post-execution-checks.ts";
       });
 
       const start = performance.now();
-      const result = runPostExecutionChecks(task, [], GSD_SRC_DIR);
+      const result = runPostExecutionChecks(task, [], OTTO_SRC_DIR);
       const duration = performance.now() - start;
 
       // No blocking failures
@@ -498,12 +498,12 @@ import { runPostExecutionChecks } from "./post-execution-checks.ts";
         title: "Review code quality",
         status: "complete",
         key_files: [
-          join(GSD_SRC_DIR, "pre-execution-checks.ts"),
-          join(GSD_SRC_DIR, "post-execution-checks.ts"),
+          join(OTTO_SRC_DIR, "pre-execution-checks.ts"),
+          join(OTTO_SRC_DIR, "post-execution-checks.ts"),
         ],
       });
 
-      const result = runPostExecutionChecks(task, [], GSD_SRC_DIR);
+      const result = runPostExecutionChecks(task, [], OTTO_SRC_DIR);
 
       // Extract warnings (either non-passed non-blocking, or passed with warning messages)
       const warnings = result.checks.filter(

@@ -353,7 +353,7 @@ function rewriteDivergedEventsForEntity(
 }
 
 function writeEventLog(basePath: string, events: WorkflowEvent[]): void {
-  const dir = join(basePath, ".gsd");
+  const dir = join(basePath, ".otto/workflow");
   mkdirSync(dir, { recursive: true });
   const content = events.map((e) => JSON.stringify(e)).join("\n") + (events.length > 0 ? "\n" : "");
   atomicWriteSync(join(dir, "event-log.jsonl"), content);
@@ -362,7 +362,7 @@ function writeEventLog(basePath: string, events: WorkflowEvent[]): void {
 // ─── writeConflictsFile ───────────────────────────────────────────────────────
 
 /**
- * Write a human-readable CONFLICTS.md to basePath/.gsd/CONFLICTS.md.
+ * Write a human-readable CONFLICTS.md to basePath/.otto/workflow/CONFLICTS.md.
  * Lists each conflict with both sides' event payloads and resolution instructions.
  */
 export function writeConflictsFile(
@@ -399,7 +399,7 @@ export function writeConflictsFile(
   });
 
   const content = lines.join("\n");
-  const dir = join(basePath, ".gsd");
+  const dir = join(basePath, ".otto/workflow");
   mkdirSync(dir, { recursive: true });
   atomicWriteSync(join(dir, "CONFLICTS.md"), content);
 }
@@ -442,8 +442,8 @@ function _reconcileWorktreeLogsInner(
   worktreeBasePath: string,
 ): ReconcileResult {
   // Step 1: Read both logs
-  const mainLogPath = join(mainBasePath, ".gsd", "event-log.jsonl");
-  const wtLogPath = join(worktreeBasePath, ".gsd", "event-log.jsonl");
+  const mainLogPath = join(mainBasePath, ".otto/workflow", "event-log.jsonl");
+  const wtLogPath = join(worktreeBasePath, ".otto/workflow", "event-log.jsonl");
 
   const mainEvents = readEvents(mainLogPath);
   const wtEvents = readEvents(wtLogPath);
@@ -467,7 +467,7 @@ function _reconcileWorktreeLogsInner(
     writeConflictsFile(mainBasePath, conflicts, worktreeBasePath);
     const conflictSummary = conflicts.slice(0, 3).map(c => `${c.entityType}:${c.entityId}`).join(", ");
     const truncated = conflicts.length > 3 ? `... and ${conflicts.length - 3} more` : "";
-    logError("reconcile", `${conflicts.length} conflict(s) detected on ${conflictSummary}${truncated}. Details: .gsd/CONFLICTS.md`, { count: String(conflicts.length), path: join(mainBasePath, ".gsd", "CONFLICTS.md") });
+    logError("reconcile", `${conflicts.length} conflict(s) detected on ${conflictSummary}${truncated}. Details: .otto/workflow/CONFLICTS.md`, { count: String(conflicts.length), path: join(mainBasePath, ".otto/workflow", "CONFLICTS.md") });
     return { autoMerged: 0, conflicts };
   }
 
@@ -488,8 +488,8 @@ function _reconcileWorktreeLogsInner(
   const baseEvents = mainEvents.slice(0, forkPoint + 1);
   const mergedLog = baseEvents.concat(merged);
   const logContent = mergedLog.map((e) => JSON.stringify(e)).join("\n") + (mergedLog.length > 0 ? "\n" : "");
-  mkdirSync(join(mainBasePath, ".gsd"), { recursive: true });
-  atomicWriteSync(join(mainBasePath, ".gsd", "event-log.jsonl"), logContent);
+  mkdirSync(join(mainBasePath, ".otto/workflow"), { recursive: true });
+  atomicWriteSync(join(mainBasePath, ".otto/workflow", "event-log.jsonl"), logContent);
 
   // Step 8: Replay into DB (wrapped in a transaction by replayEvents)
   openDatabase(resolveWorkflowPathContract(mainBasePath).projectDb);
@@ -527,7 +527,7 @@ function _reconcileWorktreeLogsInner(
  *     params: {JSON}
  */
 export function listConflicts(basePath: string): ConflictEntry[] {
-  const conflictsPath = join(basePath, ".gsd", "CONFLICTS.md");
+  const conflictsPath = join(basePath, ".otto/workflow", "CONFLICTS.md");
   if (!existsSync(conflictsPath)) return [];
 
   const content = readFileSync(conflictsPath, "utf-8");
@@ -628,8 +628,8 @@ export function resolveConflict(
   const conflict = conflicts[idx]!;
   const eventsToReplay = pick === "main" ? conflict.mainSideEvents : conflict.worktreeSideEvents;
 
-  const mainLogPath = join(basePath, ".gsd", "event-log.jsonl");
-  const wtLogPath = join(worktreeBasePath, ".gsd", "event-log.jsonl");
+  const mainLogPath = join(basePath, ".otto/workflow", "event-log.jsonl");
+  const wtLogPath = join(worktreeBasePath, ".otto/workflow", "event-log.jsonl");
   const mainEvents = readEvents(mainLogPath);
   const wtEvents = readEvents(wtLogPath);
   const forkPoint = findForkPoint(mainEvents, wtEvents);
@@ -674,7 +674,7 @@ export function resolveConflict(
  * No-op if CONFLICTS.md does not exist.
  */
 export function removeConflictsFile(basePath: string): void {
-  const conflictsPath = join(basePath, ".gsd", "CONFLICTS.md");
+  const conflictsPath = join(basePath, ".otto/workflow", "CONFLICTS.md");
   if (existsSync(conflictsPath)) {
     unlinkSync(conflictsPath);
   }

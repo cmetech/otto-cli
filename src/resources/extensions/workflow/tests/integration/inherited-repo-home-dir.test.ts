@@ -2,11 +2,11 @@
  * inherited-repo-home-dir.test.ts — Regression test for #2393.
  *
  * When the user's home directory IS a git repo (common with dotfile
- * managers like yadm), isInheritedRepo() must not treat ~/.gsd (the
- * global GSD state directory) as a project .gsd belonging to the home
+ * managers like yadm), isInheritedRepo() must not treat ~/.otto (the
+ * global OTTO state directory) as a project .otto/workflow belonging to the home
  * repo. Without the fix, isInheritedRepo() returns false for project
- * subdirectories because it sees ~/.gsd and concludes the parent repo
- * has already been initialised with GSD — causing the wrong project
+ * subdirectories because it sees ~/.otto and concludes the parent repo
+ * has already been initialised with OTTO — causing the wrong project
  * state to be loaded.
  */
 
@@ -50,64 +50,64 @@ describe("isInheritedRepo when git root is HOME (#2393)", () => {
     run("git", ["add", ".bashrc"], fakeHome);
     run("git", ["commit", "-m", "init dotfiles"], fakeHome);
 
-    // Create a plain ~/.gsd directory at fakeHome — this simulates the
-    // global GSD home directory, NOT a project .gsd.
-    mkdirSync(join(fakeHome, ".gsd", "projects"), { recursive: true });
+    // Create a plain ~/.otto directory at fakeHome — this simulates the
+    // global OTTO home directory, NOT a project .otto/workflow.
+    mkdirSync(join(fakeHome, ".otto/workflow", "projects"), { recursive: true });
 
-    // Save and override env. Point GSD_HOME at fakeHome/.gsd so the
+    // Save and override env. Point OTTO_HOME at fakeHome/.otto/workflow so the
     // function recognizes it as the global state directory.
-    origWorkflowHome = process.env.GSD_HOME;
-    origWorkflowStateDir = process.env.GSD_STATE_DIR;
-    process.env.GSD_HOME = join(fakeHome, ".gsd");
+    origWorkflowHome = process.env.OTTO_HOME;
+    origWorkflowStateDir = process.env.OTTO_STATE_DIR;
+    process.env.OTTO_HOME = join(fakeHome, ".otto/workflow");
     stateDir = mkdtempSync(join(tmpdir(), "gsd-state-"));
-    process.env.GSD_STATE_DIR = stateDir;
+    process.env.OTTO_STATE_DIR = stateDir;
   });
 
   afterEach(() => {
-    if (origWorkflowHome !== undefined) process.env.GSD_HOME = origWorkflowHome;
-    else delete process.env.GSD_HOME;
-    if (origWorkflowStateDir !== undefined) process.env.GSD_STATE_DIR = origWorkflowStateDir;
-    else delete process.env.GSD_STATE_DIR;
+    if (origWorkflowHome !== undefined) process.env.OTTO_HOME = origWorkflowHome;
+    else delete process.env.OTTO_HOME;
+    if (origWorkflowStateDir !== undefined) process.env.OTTO_STATE_DIR = origWorkflowStateDir;
+    else delete process.env.OTTO_STATE_DIR;
 
     rmSync(fakeHome, { recursive: true, force: true });
     rmSync(stateDir, { recursive: true, force: true });
   });
 
-  test("subdirectory of home-as-git-root is detected as inherited even when ~/.gsd exists", () => {
+  test("subdirectory of home-as-git-root is detected as inherited even when ~/.otto exists", () => {
     // Create a project directory inside fake HOME
     const projectDir = join(fakeHome, "projects", "my-app");
     mkdirSync(projectDir, { recursive: true });
 
-    // The bug: isInheritedRepo sees ~/.gsd and returns false, thinking
-    // the home repo is a legitimate GSD project. It should return true
-    // because ~/.gsd is the global state dir, not a project .gsd.
+    // The bug: isInheritedRepo sees ~/.otto and returns false, thinking
+    // the home repo is a legitimate OTTO project. It should return true
+    // because ~/.otto is the global state dir, not a project .otto/workflow.
     assert.strictEqual(
       isInheritedRepo(projectDir),
       true,
       "project inside home-as-git-root must be detected as inherited repo, " +
-      "even when ~/.gsd (global state dir) exists",
+      "even when ~/.otto (global state dir) exists",
     );
   });
 
-  test("subdirectory with a real project .gsd symlink at git root is NOT inherited", () => {
-    // Simulate a legitimately initialised GSD project at the home repo root:
-    // .gsd is a symlink to an external state directory.
+  test("subdirectory with a real project .otto/workflow symlink at git root is NOT inherited", () => {
+    // Simulate a legitimately initialised OTTO project at the home repo root:
+    // .otto/workflow is a symlink to an external state directory.
     const externalState = join(stateDir, "projects", "home-project");
     mkdirSync(externalState, { recursive: true });
-    const workflowDir = join(fakeHome, ".gsd");
+    const workflowDir = join(fakeHome, ".otto/workflow");
 
-    // Remove the plain directory and replace with a symlink (real project .gsd)
+    // Remove the plain directory and replace with a symlink (real project .otto/workflow)
     rmSync(workflowDir, { recursive: true, force: true });
     symlinkSync(externalState, workflowDir);
 
     const projectDir = join(fakeHome, "projects", "my-app");
     mkdirSync(projectDir, { recursive: true });
 
-    // When .gsd at root IS a project symlink, subdirectories are legitimate children
+    // When .otto/workflow at root IS a project symlink, subdirectories are legitimate children
     assert.strictEqual(
       isInheritedRepo(projectDir),
       false,
-      "subdirectory of a legitimately-initialised GSD project should NOT be inherited",
+      "subdirectory of a legitimately-initialised OTTO project should NOT be inherited",
     );
   });
 
@@ -120,7 +120,7 @@ describe("isInheritedRepo when git root is HOME (#2393)", () => {
   });
 });
 
-describe("isInheritedRepo with stale .gsd at parent git root", () => {
+describe("isInheritedRepo with stale .otto/workflow at parent git root", () => {
   let parentRepo: string;
 
   beforeEach(() => {
@@ -137,20 +137,20 @@ describe("isInheritedRepo with stale .gsd at parent git root", () => {
     rmSync(parentRepo, { recursive: true, force: true });
   });
 
-  test("stale .gsd dir at parent git root does not suppress inherited detection", () => {
-    // Simulate a stale .gsd directory at the parent git root (e.g. from a
+  test("stale .otto/workflow dir at parent git root does not suppress inherited detection", () => {
+    // Simulate a stale .otto/workflow directory at the parent git root (e.g. from a
     // prior doctor run or accidental init). This is a real directory, NOT
-    // a symlink, and NOT the global GSD home.
-    mkdirSync(join(parentRepo, ".gsd"), { recursive: true });
+    // a symlink, and NOT the global OTTO home.
+    mkdirSync(join(parentRepo, ".otto/workflow"), { recursive: true });
 
     const projectDir = join(parentRepo, "my-project");
     mkdirSync(projectDir, { recursive: true });
 
-    // Without fix: isProjectGsd(join(root, ".gsd")) returns true because
-    // the stale .gsd is a real directory that isn't the global GSD home,
+    // Without fix: isProjectGsd(join(root, ".otto/workflow")) returns true because
+    // the stale .otto/workflow is a real directory that isn't the global OTTO home,
     // causing isInheritedRepo to return false (false negative).
     //
-    // The stale .gsd at parent is still treated as a "project .gsd" by
+    // The stale .otto/workflow at parent is still treated as a "project .otto/workflow" by
     // isProjectGsd(), so the git root check at line 128 returns false.
     // This is the expected behavior for that check — the defense-in-depth
     // fix in auto-start.ts handles this case by checking for local .git.
@@ -159,31 +159,31 @@ describe("isInheritedRepo with stale .gsd at parent git root", () => {
     assert.strictEqual(
       isInheritedRepo(projectDir),
       false,
-      "stale .gsd dir at git root still causes isInheritedRepo to return false " +
+      "stale .otto/workflow dir at git root still causes isInheritedRepo to return false " +
       "(defense-in-depth in auto-start.ts handles this case)",
     );
   });
 
-  test("basePath's own .gsd symlink does not suppress inherited detection", () => {
-    // Create a project subdir with its own .gsd symlink (set up during
+  test("basePath's own .otto/workflow symlink does not suppress inherited detection", () => {
+    // Create a project subdir with its own .otto/workflow symlink (set up during
     // the discuss phase, before auto-mode bootstrap runs).
     const projectDir = join(parentRepo, "my-project");
     mkdirSync(projectDir, { recursive: true });
 
     const externalState = mkdtempSync(join(tmpdir(), "gsd-ext-state-"));
-    symlinkSync(externalState, join(projectDir, ".gsd"));
+    symlinkSync(externalState, join(projectDir, ".otto/workflow"));
 
     // Before fix: the walk-up loop started at normalizedBase (projectDir),
-    // found .gsd at projectDir, and returned false — even though projectDir
-    // has no .git of its own. The .gsd at basePath is irrelevant to whether
+    // found .otto/workflow at projectDir, and returned false — even though projectDir
+    // has no .git of its own. The .otto/workflow at basePath is irrelevant to whether
     // the git repo is inherited from a parent.
     //
     // After fix: the walk-up starts at dirname(normalizedBase), skipping
-    // basePath's own .gsd.
+    // basePath's own .otto/workflow.
     assert.strictEqual(
       isInheritedRepo(projectDir),
       true,
-      "project's own .gsd symlink must not suppress inherited repo detection",
+      "project's own .otto/workflow symlink must not suppress inherited repo detection",
     );
 
     rmSync(externalState, { recursive: true, force: true });

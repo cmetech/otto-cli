@@ -9,7 +9,7 @@
  * `loggedIn` field, falling back to plain `claude auth status` and a text
  * heuristic when the JSON shape is unavailable (older Claude CLI builds).
  *
- * Set GSD_CLAUDE_DEBUG=1 to print the probe's binary selection and auth
+ * Set OTTO_CLAUDE_DEBUG=1 to print the probe's binary selection and auth
  * outputs to stderr — useful when diagnosing platform-specific detection
  * failures (Issue #4997).
  */
@@ -74,7 +74,7 @@ const VERSION_TIMEOUT_MS = 5_000;
 const AUTH_TIMEOUT_MS = 15_000;
 
 function debugLog(...parts: unknown[]): void {
-	if ((process.env.LOOP24_CLAUDE_DEBUG ?? process.env.GSD_CLAUDE_DEBUG)) {
+	if ((process.env.OTTO_CLAUDE_DEBUG ?? process.env.OTTO_CLAUDE_DEBUG)) {
 		process.stderr.write(`[claude-readiness] ${parts.map((p) => (typeof p === "string" ? p : JSON.stringify(p))).join(" ")}\n`);
 	}
 }

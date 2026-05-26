@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 // database without implicitly importing markdown projections.
 //
 // This covers the bug where interactive (non-auto) sessions got
-// "GSD database is not available" because ensureDbOpen only opened
+// "OTTO database is not available" because ensureDbOpen only opened
 // existing DB files but never created them.
 
 import * as path from 'node:path';
@@ -290,7 +290,7 @@ function createLegacyV15Db(dbPath: string): void {
 describe('ensure-db-open', () => {
   test('ensureDbOpen: creates empty DB without importing Markdown', async () => {
     const tmpDir = makeTmpDir();
-    const workflowDir = path.join(tmpDir, '.gsd');
+    const workflowDir = path.join(tmpDir, '.otto/workflow');
     fs.mkdirSync(workflowDir, { recursive: true });
 
     // Write a minimal DECISIONS.md so migration has content
@@ -303,7 +303,7 @@ describe('ensure-db-open', () => {
     fs.writeFileSync(path.join(workflowDir, 'DECISIONS.md'), decisionsContent);
 
     // Verify no DB file exists yet
-    const dbPath = path.join(workflowDir, 'gsd.db');
+    const dbPath = path.join(workflowDir, 'otto.db');
     assert.ok(!fs.existsSync(dbPath), 'DB file should not exist before ensureDbOpen');
 
     // Close any previously open DB
@@ -319,7 +319,7 @@ describe('ensure-db-open', () => {
 
       const result = await ensureDbOpen();
 
-      assert.ok(result === true, 'ensureDbOpen should return true when .gsd/ exists');
+      assert.ok(result === true, 'ensureDbOpen should return true when .otto/workflow/ exists');
       assert.ok(fs.existsSync(dbPath), 'DB file should be created after ensureDbOpen');
       assert.ok(isDbAvailable(), 'DB should be available after ensureDbOpen');
 
@@ -334,7 +334,7 @@ describe('ensure-db-open', () => {
 
   test('ensureDbOpen: explicit basePath opens target project without cwd override', async () => {
     const tmpDir = makeTmpDir();
-    const workflowDir = path.join(tmpDir, '.gsd');
+    const workflowDir = path.join(tmpDir, '.otto/workflow');
     fs.mkdirSync(workflowDir, { recursive: true });
     fs.writeFileSync(path.join(workflowDir, 'DECISIONS.md'), `# Decisions
 
@@ -364,9 +364,9 @@ describe('ensure-db-open', () => {
 
   test('ensureDbOpen: migrates legacy v15 DB before bootstrap indexes touch new columns', async () => {
     const tmpDir = makeTmpDir();
-    const workflowDir = path.join(tmpDir, '.gsd');
+    const workflowDir = path.join(tmpDir, '.otto/workflow');
     fs.mkdirSync(workflowDir, { recursive: true });
-    const dbPath = path.join(workflowDir, 'gsd.db');
+    const dbPath = path.join(workflowDir, 'otto.db');
     createLegacyV15Db(dbPath);
 
     try {
@@ -408,12 +408,12 @@ describe('ensure-db-open', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // ensureDbOpen returns false when no .gsd/ exists
+  // ensureDbOpen returns false when no .otto/workflow/ exists
   // ═══════════════════════════════════════════════════════════════════════════
 
-  test('ensureDbOpen: no .gsd/ returns false', async () => {
+  test('ensureDbOpen: no .otto/workflow/ returns false', async () => {
     const tmpDir = makeTmpDir();
-    // No .gsd/ directory at all
+    // No .otto/workflow/ directory at all
 
     try { closeDatabase(); } catch { /* ok */ }
     const origCwd = process.cwd;
@@ -422,7 +422,7 @@ describe('ensure-db-open', () => {
     try {
       const { ensureDbOpen } = await import('../bootstrap/dynamic-tools.ts');
       const result = await ensureDbOpen();
-      assert.ok(result === false, 'ensureDbOpen should return false when no .gsd/ exists');
+      assert.ok(result === false, 'ensureDbOpen should return false when no .otto/workflow/ exists');
       assert.ok(!isDbAvailable(), 'DB should not be available');
     } finally {
       process.cwd = origCwd;
@@ -436,11 +436,11 @@ describe('ensure-db-open', () => {
 
   test('ensureDbOpen: opens existing DB', async () => {
     const tmpDir = makeTmpDir();
-    const workflowDir = path.join(tmpDir, '.gsd');
+    const workflowDir = path.join(tmpDir, '.otto/workflow');
     fs.mkdirSync(workflowDir, { recursive: true });
 
     // Create a DB file first
-    const dbPath = path.join(workflowDir, 'gsd.db');
+    const dbPath = path.join(workflowDir, 'otto.db');
     const { openDatabase } = await import('../db.ts');
     openDatabase(dbPath);
     closeDatabase();
@@ -463,14 +463,14 @@ describe('ensure-db-open', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // ensureDbOpen returns false for empty .gsd/ (no Markdown, no DB)
+  // ensureDbOpen returns false for empty .otto/workflow/ (no Markdown, no DB)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  test('ensureDbOpen: empty .gsd/ creates empty DB (#2510)', async () => {
+  test('ensureDbOpen: empty .otto/workflow/ creates empty DB (#2510)', async () => {
     const tmpDir = makeTmpDir();
-    const workflowDir = path.join(tmpDir, '.gsd');
+    const workflowDir = path.join(tmpDir, '.otto/workflow');
     fs.mkdirSync(workflowDir, { recursive: true });
-    // .gsd/ exists but no DECISIONS.md, REQUIREMENTS.md, or milestones/
+    // .otto/workflow/ exists but no DECISIONS.md, REQUIREMENTS.md, or milestones/
 
     try { closeDatabase(); } catch { /* ok */ }
     const origCwd = process.cwd;
@@ -479,8 +479,8 @@ describe('ensure-db-open', () => {
     try {
       const { ensureDbOpen } = await import('../bootstrap/dynamic-tools.ts');
       const result = await ensureDbOpen();
-      assert.ok(result === true, 'ensureDbOpen should create empty DB for fresh .gsd/');
-      assert.ok(fs.existsSync(path.join(workflowDir, 'gsd.db')), 'DB file should be created');
+      assert.ok(result === true, 'ensureDbOpen should create empty DB for fresh .otto/workflow/');
+      assert.ok(fs.existsSync(path.join(workflowDir, 'otto.db')), 'DB file should be created');
       assert.ok(isDbAvailable(), 'DB should be available');
     } finally {
       process.cwd = origCwd;
@@ -492,15 +492,15 @@ describe('ensure-db-open', () => {
   test('ensureDbOpen: switches open database when basePath changes', async () => {
     const firstDir = makeTmpDir();
     const secondDir = makeTmpDir();
-    fs.mkdirSync(path.join(firstDir, '.gsd'), { recursive: true });
-    fs.mkdirSync(path.join(secondDir, '.gsd'), { recursive: true });
-    fs.writeFileSync(path.join(firstDir, '.gsd', 'DECISIONS.md'), `# Decisions
+    fs.mkdirSync(path.join(firstDir, '.otto/workflow'), { recursive: true });
+    fs.mkdirSync(path.join(secondDir, '.otto/workflow'), { recursive: true });
+    fs.writeFileSync(path.join(firstDir, '.otto/workflow', 'DECISIONS.md'), `# Decisions
 
 | # | When | Scope | Decision | Choice | Rationale | Revisable |
 |---|------|-------|----------|--------|-----------|-----------|
 | D101 | M001 | architecture | First DB | First | First rationale | Yes |
 `);
-    fs.writeFileSync(path.join(secondDir, '.gsd', 'DECISIONS.md'), `# Decisions
+    fs.writeFileSync(path.join(secondDir, '.otto/workflow', 'DECISIONS.md'), `# Decisions
 
 | # | When | Scope | Decision | Choice | Rationale | Revisable |
 |---|------|-------|----------|--------|-----------|-----------|

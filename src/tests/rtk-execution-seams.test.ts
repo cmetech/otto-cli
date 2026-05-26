@@ -38,20 +38,20 @@ async function waitForOutputMatch(
 
 function withFakeRtk<T>(mapping: Record<string, string | { status?: number; stdout?: string }>, run: () => Promise<T> | T): Promise<T> | T {
   const fake = createFakeRtk(mapping);
-  const previousPath = process.env.GSD_RTK_PATH;
-  const previousDisabled = process.env.GSD_RTK_DISABLED;
-  const previousTimeout = process.env.GSD_RTK_REWRITE_TIMEOUT_MS;
-  process.env.GSD_RTK_PATH = fake.path;
-  process.env.GSD_RTK_REWRITE_TIMEOUT_MS = "20000";
-  delete process.env.GSD_RTK_DISABLED;
+  const previousPath = process.env.OTTO_RTK_PATH;
+  const previousDisabled = process.env.OTTO_RTK_DISABLED;
+  const previousTimeout = process.env.OTTO_RTK_REWRITE_TIMEOUT_MS;
+  process.env.OTTO_RTK_PATH = fake.path;
+  process.env.OTTO_RTK_REWRITE_TIMEOUT_MS = "20000";
+  delete process.env.OTTO_RTK_DISABLED;
 
   const finalize = () => {
-    if (previousPath === undefined) delete process.env.GSD_RTK_PATH;
-    else process.env.GSD_RTK_PATH = previousPath;
-    if (previousDisabled === undefined) delete process.env.GSD_RTK_DISABLED;
-    else process.env.GSD_RTK_DISABLED = previousDisabled;
-    if (previousTimeout === undefined) delete process.env.GSD_RTK_REWRITE_TIMEOUT_MS;
-    else process.env.GSD_RTK_REWRITE_TIMEOUT_MS = previousTimeout;
+    if (previousPath === undefined) delete process.env.OTTO_RTK_PATH;
+    else process.env.OTTO_RTK_PATH = previousPath;
+    if (previousDisabled === undefined) delete process.env.OTTO_RTK_DISABLED;
+    else process.env.OTTO_RTK_DISABLED = previousDisabled;
+    if (previousTimeout === undefined) delete process.env.OTTO_RTK_REWRITE_TIMEOUT_MS;
+    else process.env.OTTO_RTK_REWRITE_TIMEOUT_MS = previousTimeout;
     fake.cleanup();
   };
 
@@ -79,31 +79,31 @@ function withManagedFakeRtk<T>(mapping: Record<string, string | { status?: numbe
     chmodSync(managedPath, 0o755);
   }
 
-  const previousHome = process.env.GSD_HOME;
-  const previousPath = process.env.GSD_RTK_PATH;
-  const previousDisabled = process.env.GSD_RTK_DISABLED;
-  const previousTimeout = process.env.GSD_RTK_REWRITE_TIMEOUT_MS;
-  process.env.GSD_HOME = managedHome;
-  process.env.GSD_RTK_REWRITE_TIMEOUT_MS = "20000";
-  delete process.env.GSD_RTK_PATH;
-  delete process.env.GSD_RTK_DISABLED;
+  const previousHome = process.env.OTTO_HOME;
+  const previousPath = process.env.OTTO_RTK_PATH;
+  const previousDisabled = process.env.OTTO_RTK_DISABLED;
+  const previousTimeout = process.env.OTTO_RTK_REWRITE_TIMEOUT_MS;
+  process.env.OTTO_HOME = managedHome;
+  process.env.OTTO_RTK_REWRITE_TIMEOUT_MS = "20000";
+  delete process.env.OTTO_RTK_PATH;
+  delete process.env.OTTO_RTK_DISABLED;
 
   const env: NodeJS.ProcessEnv = {
     ...process.env,
-    GSD_HOME: managedHome,
-    GSD_RTK_REWRITE_TIMEOUT_MS: "20000",
+    OTTO_HOME: managedHome,
+    OTTO_RTK_REWRITE_TIMEOUT_MS: "20000",
   };
-  delete env.GSD_RTK_PATH;
+  delete env.OTTO_RTK_PATH;
 
   const finalize = () => {
-    if (previousHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousHome;
-    if (previousPath === undefined) delete process.env.GSD_RTK_PATH;
-    else process.env.GSD_RTK_PATH = previousPath;
-    if (previousDisabled === undefined) delete process.env.GSD_RTK_DISABLED;
-    else process.env.GSD_RTK_DISABLED = previousDisabled;
-    if (previousTimeout === undefined) delete process.env.GSD_RTK_REWRITE_TIMEOUT_MS;
-    else process.env.GSD_RTK_REWRITE_TIMEOUT_MS = previousTimeout;
+    if (previousHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = previousHome;
+    if (previousPath === undefined) delete process.env.OTTO_RTK_PATH;
+    else process.env.OTTO_RTK_PATH = previousPath;
+    if (previousDisabled === undefined) delete process.env.OTTO_RTK_DISABLED;
+    else process.env.OTTO_RTK_DISABLED = previousDisabled;
+    if (previousTimeout === undefined) delete process.env.OTTO_RTK_REWRITE_TIMEOUT_MS;
+    else process.env.OTTO_RTK_REWRITE_TIMEOUT_MS = previousTimeout;
     fake.cleanup();
     rmSync(managedHome, { recursive: true, force: true });
   };
@@ -123,7 +123,7 @@ function withManagedFakeRtk<T>(mapping: Record<string, string | { status?: numbe
 
 // NOTE: The bash tool itself no longer does RTK rewriting directly. That's now
 // handled by the bash_transform extension hook in register-hooks.ts. The seam
-// tests below verify the GSD-layer surfaces that still call rewriteCommandWithRtk
+// tests below verify the OTTO-layer surfaces that still call rewriteCommandWithRtk
 // directly: shared/rtk.ts, verification-gate, async-bash, and bg-shell.
 
 test("shared RTK helper rewrites commands via fake RTK binary", async () => {
@@ -133,7 +133,7 @@ test("shared RTK helper rewrites commands via fake RTK binary", async () => {
   });
 });
 
-test("shared RTK helper falls back to the managed RTK path when GSD_RTK_PATH is unset", async () => {
+test("shared RTK helper falls back to the managed RTK path when OTTO_RTK_PATH is unset", async () => {
   await withManagedFakeRtk({ "echo raw": "echo rewritten" }, async (env) => {
     assert.equal(rewriteSharedCommandWithRtk("echo raw", env), "echo rewritten");
   });

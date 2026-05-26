@@ -1,4 +1,4 @@
-import type { AgentTool } from "@loop24/pi-agent-core";
+import type { AgentTool } from "@otto/pi-agent-core";
 import { type Static, Type } from "@sinclair/typebox";
 import { mkdir as fsMkdir, writeFile as fsWriteFile } from "fs/promises";
 import { dirname } from "path";

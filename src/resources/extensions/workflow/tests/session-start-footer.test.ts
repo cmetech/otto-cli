@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Verifies GSD session hook widget and footer lifecycle behavior.
+// Project/App: OTTO
+// File Purpose: Verifies OTTO session hook widget and footer lifecycle behavior.
 
 /**
  * Verifies that register-hooks.ts suppresses the gsd-health widget (not the
@@ -75,20 +75,20 @@ test("session_switch toggles gsd-health from runtime auto state without touching
     tmpdir(),
     `gsd-session-switch-widget-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   );
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   const tempWorkflowHome = join(dir, "home");
   mkdirSync(tempWorkflowHome, { recursive: true });
 
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
-  process.env.GSD_HOME = tempWorkflowHome;
+  const originalWorkflowHome = process.env.OTTO_HOME;
+  process.env.OTTO_HOME = tempWorkflowHome;
   process.chdir(dir);
   autoSession.reset();
   t.after(() => {
     autoSession.reset();
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     try { rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort */ }
   });
 
@@ -150,7 +150,7 @@ test("session_switch toggles gsd-health from runtime auto state without touching
       ["gsd-progress", undefined],
       ["gsd-outcome", undefined],
     ],
-    "session_switch should clear stale GSD completion widgets when auto is inactive",
+    "session_switch should clear stale OTTO completion widgets when auto is inactive",
   );
   const healthWidgetValues = widgetCalls
     .filter((call) => call.key === "gsd-health")
@@ -240,25 +240,25 @@ test("session_start installs the welcome screen as the TUI header", async (t) =>
   );
 
   const originalCwd = process.cwd();
-  const originalWorkflowPkgRoot = process.env.GSD_PKG_ROOT;
-  const originalWorkflowBinPath = process.env.GSD_BIN_PATH;
-  const originalWorkflowVersion = process.env.GSD_VERSION;
-  const originalFirstRunBanner = process.env.LOOP24_FIRST_RUN_BANNER;
+  const originalWorkflowPkgRoot = process.env.OTTO_PKG_ROOT;
+  const originalWorkflowBinPath = process.env.OTTO_BIN_PATH;
+  const originalWorkflowVersion = process.env.OTTO_VERSION;
+  const originalFirstRunBanner = process.env.OTTO_FIRST_RUN_BANNER;
   process.chdir(dir);
-  process.env.GSD_PKG_ROOT = dir;
-  process.env.GSD_BIN_PATH = join(dir, "bin", "loader.js");
-  process.env.GSD_VERSION = "9.9.9-test";
-  delete process.env.LOOP24_FIRST_RUN_BANNER;
+  process.env.OTTO_PKG_ROOT = dir;
+  process.env.OTTO_BIN_PATH = join(dir, "bin", "loader.js");
+  process.env.OTTO_VERSION = "9.9.9-test";
+  delete process.env.OTTO_FIRST_RUN_BANNER;
   t.after(() => {
     process.chdir(originalCwd);
-    if (originalWorkflowPkgRoot === undefined) delete process.env.GSD_PKG_ROOT;
-    else process.env.GSD_PKG_ROOT = originalWorkflowPkgRoot;
-    if (originalWorkflowBinPath === undefined) delete process.env.GSD_BIN_PATH;
-    else process.env.GSD_BIN_PATH = originalWorkflowBinPath;
-    if (originalWorkflowVersion === undefined) delete process.env.GSD_VERSION;
-    else process.env.GSD_VERSION = originalWorkflowVersion;
-    if (originalFirstRunBanner === undefined) delete process.env.LOOP24_FIRST_RUN_BANNER;
-    else process.env.LOOP24_FIRST_RUN_BANNER = originalFirstRunBanner;
+    if (originalWorkflowPkgRoot === undefined) delete process.env.OTTO_PKG_ROOT;
+    else process.env.OTTO_PKG_ROOT = originalWorkflowPkgRoot;
+    if (originalWorkflowBinPath === undefined) delete process.env.OTTO_BIN_PATH;
+    else process.env.OTTO_BIN_PATH = originalWorkflowBinPath;
+    if (originalWorkflowVersion === undefined) delete process.env.OTTO_VERSION;
+    else process.env.OTTO_VERSION = originalWorkflowVersion;
+    if (originalFirstRunBanner === undefined) delete process.env.OTTO_FIRST_RUN_BANNER;
+    else process.env.OTTO_FIRST_RUN_BANNER = originalFirstRunBanner;
     try { rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort */ }
   });
 
@@ -303,24 +303,24 @@ test("session_start and session_switch apply disabled model provider policy from
     tmpdir(),
     `gsd-disabled-provider-policy-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   );
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   const tempWorkflowHome = join(dir, "home");
   mkdirSync(tempWorkflowHome, { recursive: true });
 
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
-  process.env.GSD_HOME = tempWorkflowHome;
+  const originalWorkflowHome = process.env.OTTO_HOME;
+  process.env.OTTO_HOME = tempWorkflowHome;
   process.chdir(dir);
   t.after(() => {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     try { rmSync(dir, { recursive: true, force: true }); } catch { /* best-effort */ }
   });
 
   const writePrefs = (providers: string[]) => {
     writeFileSync(
-      join(dir, ".gsd", "PREFERENCES.md"),
+      join(dir, ".otto/workflow", "PREFERENCES.md"),
       [
         "---",
         "version: 1",

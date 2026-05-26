@@ -45,7 +45,7 @@ export interface BoundaryMapEntry {
 }
 
 export interface Roadmap {
-  title: string; // e.g. "M001: GSD Extension — Hierarchical Planning with Auto Mode"
+  title: string; // e.g. "M001: OTTO Extension — Hierarchical Planning with Auto Mode"
   vision: string;
   successCriteria: string[];
   slices: RoadmapSliceEntry[];
@@ -257,7 +257,7 @@ export interface WorkflowDbState {
 
 // ─── Ecosystem Extension API Types ────────────────────────────────────
 // Pure data type — no runtime deps. The WorkflowExtensionAPI interface itself
-// lives in ecosystem/gsd-extension-api.ts (it imports from pi).
+// lives in ecosystem/otto-extension-api.ts (it imports from pi).
 
 export interface ActiveUnit {
   milestoneId: string;
@@ -361,7 +361,7 @@ export interface PhaseSkipPreferences {
 // ─── ADR-011 Phase 2 Escalation ──────────────────────────────────────────
 
 export interface EscalationOption {
-  /** Short identifier, e.g. "A", "B". Used as the `choice` value in `/loop24 escalate resolve <taskId> <id>`. */
+  /** Short identifier, e.g. "A", "B". Used as the `choice` value in `/otto escalate resolve <taskId> <id>`. */
   id: string;
   /** One-line label for the option. */
   label: string;
@@ -387,11 +387,11 @@ export interface EscalationArtifact {
    * When true, the executor proceeds with the recommendation as the answer
    * and the loop continues. User's later choice becomes a carry-forward
    * override for the NEXT task. When false, auto-mode pauses until the
-   * user resolves via `/loop24 escalate resolve`.
+   * user resolves via `/otto escalate resolve`.
    */
   continueWithDefault: boolean;
   createdAt: string;
-  /** Populated by `/loop24 escalate resolve`. */
+  /** Populated by `/otto escalate resolve`. */
   respondedAt?: string;
   /** User's choice — either an option id, "accept" (use recommendation), or "reject-blocker". */
   userChoice?: string;
@@ -571,7 +571,7 @@ export interface BrowserFlowResult {
   duration: number;
 }
 
-// ─── Complete Task Params (gsd_complete_task tool input) ─────────────────
+// ─── Complete Task Params (otto_complete_task tool input) ─────────────────
 
 export interface CompleteTaskParams {
   taskId: string;
@@ -635,7 +635,7 @@ export interface CompleteTaskParams {
   triggerReason?: string;
 }
 
-// ─── Complete Slice Params (gsd_complete_slice tool input) ───────────────
+// ─── Complete Slice Params (otto_complete_slice tool input) ───────────────
 
 export interface CompleteSliceParams {
   sliceId: string;

@@ -10,7 +10,7 @@ import { applyLoaderCliEntrypointEnv, resolveLoaderCliEntrypoint } from "../load
 
 const devCli = await import("../../scripts/dev-cli-helpers.mjs");
 
-test("source dev CLI remains the child-process GSD_BIN_PATH", (t) => {
+test("source dev CLI remains the child-process OTTO_BIN_PATH", (t) => {
   const root = mkdtempSync(join(tmpdir(), "gsd-loader-entrypoint-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
 
@@ -26,16 +26,16 @@ test("source dev CLI remains the child-process GSD_BIN_PATH", (t) => {
 });
 
 test("explicit CLI path overrides the invoked source loader path", () => {
-  const env = { GSD_CLI_PATH: "/custom/gsd" } as NodeJS.ProcessEnv;
+  const env = { OTTO_CLI_PATH: "/custom/otto" } as NodeJS.ProcessEnv;
   const resolved = applyLoaderCliEntrypointEnv(env, {
     workflowRoot: "/repo",
     invokedBinPath: "/repo/src/loader.ts",
     existsSync: () => true,
   });
 
-  assert.equal(resolved, resolve("/custom/gsd"));
-  assert.equal(env.GSD_BIN_PATH, resolve("/custom/gsd"));
-  assert.equal(env.GSD_CLI_PATH, "/custom/gsd");
+  assert.equal(resolved, resolve("/custom/otto"));
+  assert.equal(env.OTTO_BIN_PATH, resolve("/custom/otto"));
+  assert.equal(env.OTTO_CLI_PATH, "/custom/otto");
 });
 
 test("dev CLI wrapper passes itself as every child-process CLI entrypoint", () => {
@@ -52,27 +52,28 @@ test("dev CLI wrapper passes itself as every child-process CLI entrypoint", () =
 
   const env = devCli.buildDevCliChildEnv({ PATH: "/usr/bin" }, "/repo/scripts/dev-cli.js");
   assert.equal(env.PATH, "/usr/bin");
-  assert.equal(env.GSD_DEV_CLI_PATH, "/repo/scripts/dev-cli.js");
-  assert.equal(env.GSD_CLI_PATH, "/repo/scripts/dev-cli.js");
-  assert.equal(env.GSD_BIN_PATH, "/repo/scripts/dev-cli.js");
+  assert.equal(env.OTTO_DEV_CLI_PATH, "/repo/scripts/dev-cli.js");
+  assert.equal(env.OTTO_CLI_PATH, "/repo/scripts/dev-cli.js");
+  assert.equal(env.OTTO_BIN_PATH, "/repo/scripts/dev-cli.js");
 
   assert.deepEqual(
     devCli.buildDevCliSpawnArgs({
       resolveTsPath: "/repo/src/resources/extensions/workflow/tests/resolve-ts.mjs",
       srcLoaderPath: "/repo/src/loader.ts",
-      argv: ["--web"],
+      argv: ["--print", "hello"],
     }),
     [
       "--import",
       "/repo/src/resources/extensions/workflow/tests/resolve-ts.mjs",
       "--experimental-strip-types",
       "/repo/src/loader.ts",
-      "--web",
+      "--print",
+      "hello",
     ],
   );
 });
 
-test("GSD_PKG_ROOT still resolves the deployed resource-loader location", () => {
+test("OTTO_PKG_ROOT still resolves the deployed resource-loader location", () => {
   const pkgRoot = process.cwd();
   const resourceLoaderPath = join(pkgRoot, "dist", "resource-loader.js");
   assert.equal(resourceLoaderPath, join(pkgRoot, "dist", "resource-loader.js"));

@@ -6,7 +6,7 @@
  * directories (which auto-mode won't touch until it reaches them).
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { showNextAction } from "../shared/tui.js";
 import { setQueuePhaseActive } from "./index.js";
 import { loadFile } from "./files.js";
@@ -47,10 +47,10 @@ export async function showQueue(
   pi: ExtensionAPI,
   basePath: string,
 ): Promise<void> {
-  // ── Ensure .gsd/ exists ─────────────────────────────────────────────
+  // ── Ensure .otto/workflow/ exists ─────────────────────────────────────────────
   const gsd = workflowRoot(basePath);
   if (!existsSync(gsd)) {
-    ctx.ui.notify("No GSD project found. Run /gsd to start one first.", "warning");
+    ctx.ui.notify("No OTTO project found. Run /otto to start one first.", "warning");
     return;
   }
 
@@ -58,7 +58,7 @@ export async function showQueue(
   const milestoneIds = findMilestoneIds(basePath);
 
   if (milestoneIds.length === 0) {
-    ctx.ui.notify("No milestones exist yet. Run /gsd to create the first one.", "warning");
+    ctx.ui.notify("No milestones exist yet. Run /otto to create the first one.", "warning");
     return;
   }
 
@@ -75,7 +75,7 @@ export async function showQueue(
     if (parkedCount > 0) summaryParts.push(`${parkedCount} parked.`);
 
     const choice = await showNextAction(ctx, {
-      title: "GSD — Queue Management",
+      title: "OTTO — Queue Management",
       summary: summaryParts,
       actions: [
         {
@@ -90,7 +90,7 @@ export async function showQueue(
           description: "Queue new milestones via discussion.",
         },
       ],
-      notYetMessage: "Run /gsd queue when ready.",
+      notYetMessage: "Run /otto queue when ready.",
     });
 
     if (choice === "reorder") {
@@ -141,9 +141,9 @@ export async function handleQueueReorder(
   syncProjectMdSequence(basePath, state.registry, result.order);
 
   // Commit the change
-  const filesToAdd = [".gsd/QUEUE-ORDER.json", ".gsd/PROJECT.md"];
+  const filesToAdd = [".otto/workflow/QUEUE-ORDER.json", ".otto/workflow/PROJECT.md"];
   for (const r of result.depsToRemove) {
-    filesToAdd.push(`.gsd/milestones/${r.milestone}/${r.milestone}-CONTEXT.md`);
+    filesToAdd.push(`.otto/workflow/milestones/${r.milestone}/${r.milestone}-CONTEXT.md`);
   }
   try {
     nativeAddPaths(basePath, filesToAdd);
@@ -172,7 +172,7 @@ export async function showQueueAdd(
   const existingContext = await buildExistingMilestonesContext(basePath, milestoneIds, state);
 
   // ── Determine next milestone ID ─────────────────────────────────────
-  // Note: the LLM will use the gsd_milestone_generate_id tool to get IDs
+  // Note: the LLM will use the otto_milestone_generate_id tool to get IDs
   // at creation time, but we still mention the next ID in the preamble
   // for context about where the sequence is.
   const uniqueEnabled = !!loadEffectiveGSDPreferences()?.preferences?.unique_milestone_ids;
@@ -187,7 +187,7 @@ export async function showQueueAdd(
   const completeCount = state.registry.filter(m => m.status === "complete").length;
 
   const preamble = [
-    `Queuing new work onto an existing GSD project.`,
+    `Queuing new work onto an existing OTTO project.`,
     activePart,
     `${completeCount} milestone(s) complete, ${pendingCount} pending.`,
     `Next available milestone ID: ${nextId}.`,
@@ -202,7 +202,7 @@ export async function showQueueAdd(
     preamble,
     existingMilestonesContext: existingContext,
     inlinedTemplates: queueInlinedTemplates,
-    commitInstruction: "Do not commit planning artifacts — .gsd/ is managed externally.",
+    commitInstruction: "Do not commit planning artifacts — .otto/workflow/ is managed externally.",
   });
 
   pi.sendMessage(

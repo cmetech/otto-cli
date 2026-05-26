@@ -1,9 +1,9 @@
-// LOOP24 — Decisions -> memories backfill (ADR-013 step 5)
+// OTTO — Decisions -> memories backfill (ADR-013 step 5)
 //
 // Idempotent migration that copies every decisions row (active and
 // superseded — see Stage 2a note below) into the memories table with
 // category="architecture" and a structured_fields payload preserving the
-// original gsd_save_decision schema (when_context, scope, decision, choice,
+// original otto_save_decision schema (when_context, scope, decision, choice,
 // rationale, made_by, revisable, superseded_by, sourceDecisionId).
 //
 // The backfill exists so the cutover in ADR-013 step 6 can drop the

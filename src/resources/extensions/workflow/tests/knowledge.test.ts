@@ -30,7 +30,7 @@ test('knowledge: KNOWLEDGE key exists in ROOT_FILES', () => {
 
 test('knowledge: resolveWorkflowRootFile returns canonical path when KNOWLEDGE.md exists', () => {
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-knowledge-')));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
   writeFileSync(join(workflowDir, 'KNOWLEDGE.md'), '# Project Knowledge\n');
 
@@ -42,7 +42,7 @@ test('knowledge: resolveWorkflowRootFile returns canonical path when KNOWLEDGE.m
 
 test('knowledge: resolveWorkflowRootFile resolves when legacy knowledge.md exists', () => {
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-knowledge-')));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
   writeFileSync(join(workflowDir, 'knowledge.md'), '# Project Knowledge\n');
 
@@ -61,7 +61,7 @@ test('knowledge: resolveWorkflowRootFile resolves when legacy knowledge.md exist
 
 test('knowledge: resolveWorkflowRootFile returns canonical path when file does not exist', () => {
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-knowledge-')));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
 
   const resolved = resolveWorkflowRootFile(tmp, 'KNOWLEDGE');
@@ -74,7 +74,7 @@ test('knowledge: resolveWorkflowRootFile returns canonical path when file does n
 
 test('knowledge: inlineWorkflowRootFile returns content when KNOWLEDGE.md exists', async () => {
   const tmp = mkdtempSync(join(tmpdir(), 'gsd-knowledge-'));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
   writeFileSync(join(workflowDir, 'KNOWLEDGE.md'), '# Project Knowledge\n\n## Rules\n\nK001: Use real DB');
 
@@ -88,7 +88,7 @@ test('knowledge: inlineWorkflowRootFile returns content when KNOWLEDGE.md exists
 
 test('knowledge: inlineWorkflowRootFile returns null when KNOWLEDGE.md does not exist', async () => {
   const tmp = mkdtempSync(join(tmpdir(), 'gsd-knowledge-'));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
 
   const result = await inlineWorkflowRootFile(tmp, 'knowledge.md', 'Project Knowledge');
@@ -101,7 +101,7 @@ test('knowledge: inlineWorkflowRootFile returns null when KNOWLEDGE.md does not 
 
 test('knowledge: appendKnowledge creates KNOWLEDGE.md with rule when file does not exist', async () => {
   const tmp = mkdtempSync(join(tmpdir(), 'gsd-knowledge-'));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
 
   await appendKnowledge(tmp, 'rule', 'Use real DB for integration tests', 'M001/S01');
@@ -117,7 +117,7 @@ test('knowledge: appendKnowledge creates KNOWLEDGE.md with rule when file does n
 
 test('knowledge: appendKnowledge appends to existing KNOWLEDGE.md with auto-incrementing ID', async () => {
   const tmp = mkdtempSync(join(tmpdir(), 'gsd-knowledge-'));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
 
   // Create initial file with one rule
@@ -136,7 +136,7 @@ test('knowledge: appendKnowledge appends to existing KNOWLEDGE.md with auto-incr
 
 test('knowledge: appendKnowledge handles pattern type', async () => {
   const tmp = mkdtempSync(join(tmpdir(), 'gsd-knowledge-'));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
 
   await appendKnowledge(tmp, 'pattern', 'Middleware chain for auth', 'M001');
@@ -150,7 +150,7 @@ test('knowledge: appendKnowledge handles pattern type', async () => {
 
 test('knowledge: appendKnowledge handles lesson type', async () => {
   const tmp = mkdtempSync(join(tmpdir(), 'gsd-knowledge-'));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
 
   await appendKnowledge(tmp, 'lesson', 'API timeout on large payloads', 'M002');
@@ -168,7 +168,7 @@ test('loadKnowledgeBlock: returns empty block when neither file exists', () => {
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-kb-')));
   const workflowHome = join(tmp, 'home');
   const cwd = join(tmp, 'project');
-  mkdirSync(join(cwd, '.gsd'), { recursive: true });
+  mkdirSync(join(cwd, '.otto/workflow'), { recursive: true });
   mkdirSync(join(workflowHome, 'agent'), { recursive: true });
 
   const result = loadKnowledgeBlock(workflowHome, cwd);
@@ -182,9 +182,9 @@ test('loadKnowledgeBlock: uses project knowledge alone when no global file', () 
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-kb-')));
   const workflowHome = join(tmp, 'home');
   const cwd = join(tmp, 'project');
-  mkdirSync(join(cwd, '.gsd'), { recursive: true });
+  mkdirSync(join(cwd, '.otto/workflow'), { recursive: true });
   mkdirSync(join(workflowHome, 'agent'), { recursive: true });
-  writeFileSync(join(cwd, '.gsd', 'KNOWLEDGE.md'), 'K001: Use real DB');
+  writeFileSync(join(cwd, '.otto/workflow', 'KNOWLEDGE.md'), 'K001: Use real DB');
 
   const result = loadKnowledgeBlock(workflowHome, cwd);
   assert.ok(result.block.includes('[KNOWLEDGE — Rules from KNOWLEDGE.md'));
@@ -200,7 +200,7 @@ test('loadKnowledgeBlock: uses global knowledge alone when no project file', () 
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-kb-')));
   const workflowHome = join(tmp, 'home');
   const cwd = join(tmp, 'project');
-  mkdirSync(join(cwd, '.gsd'), { recursive: true });
+  mkdirSync(join(cwd, '.otto/workflow'), { recursive: true });
   mkdirSync(join(workflowHome, 'agent'), { recursive: true });
   writeFileSync(join(workflowHome, 'agent', 'KNOWLEDGE.md'), 'G001: Respond in English');
 
@@ -218,10 +218,10 @@ test('loadKnowledgeBlock: merges global before project when both exist', () => {
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-kb-')));
   const workflowHome = join(tmp, 'home');
   const cwd = join(tmp, 'project');
-  mkdirSync(join(cwd, '.gsd'), { recursive: true });
+  mkdirSync(join(cwd, '.otto/workflow'), { recursive: true });
   mkdirSync(join(workflowHome, 'agent'), { recursive: true });
   writeFileSync(join(workflowHome, 'agent', 'KNOWLEDGE.md'), 'G001: Global rule');
-  writeFileSync(join(cwd, '.gsd', 'KNOWLEDGE.md'), 'K001: Project rule');
+  writeFileSync(join(cwd, '.otto/workflow', 'KNOWLEDGE.md'), 'K001: Project rule');
 
   const result = loadKnowledgeBlock(workflowHome, cwd);
   assert.ok(result.block.includes('## Global Knowledge'));
@@ -238,10 +238,10 @@ test('loadKnowledgeBlock: strips patterns and lessons from project knowledge', (
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-kb-strip-')));
   const workflowHome = join(tmp, 'home');
   const cwd = join(tmp, 'project');
-  mkdirSync(join(cwd, '.gsd'), { recursive: true });
+  mkdirSync(join(cwd, '.otto/workflow'), { recursive: true });
   mkdirSync(join(workflowHome, 'agent'), { recursive: true });
   writeFileSync(
-    join(cwd, '.gsd', 'KNOWLEDGE.md'),
+    join(cwd, '.otto/workflow', 'KNOWLEDGE.md'),
     [
       '# Project Knowledge',
       '',
@@ -283,7 +283,7 @@ test('loadKnowledgeBlock: reports globalSizeKb above 4KB threshold', () => {
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-kb-')));
   const workflowHome = join(tmp, 'home');
   const cwd = join(tmp, 'project');
-  mkdirSync(join(cwd, '.gsd'), { recursive: true });
+  mkdirSync(join(cwd, '.otto/workflow'), { recursive: true });
   mkdirSync(join(workflowHome, 'agent'), { recursive: true });
   // Write > 4KB of content
   writeFileSync(join(workflowHome, 'agent', 'KNOWLEDGE.md'), 'x'.repeat(5000));
@@ -298,20 +298,20 @@ test('loadKnowledgeBlock: caps repeated system prompt knowledge by default with 
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-kb-')));
   const workflowHome = join(tmp, 'home');
   const cwd = join(tmp, 'project');
-  mkdirSync(join(cwd, '.gsd'), { recursive: true });
+  mkdirSync(join(cwd, '.otto/workflow'), { recursive: true });
   mkdirSync(join(workflowHome, 'agent'), { recursive: true });
-  writeFileSync(join(cwd, '.gsd', 'KNOWLEDGE.md'), `K001: ${'large project knowledge '.repeat(1200)}`);
+  writeFileSync(join(cwd, '.otto/workflow', 'KNOWLEDGE.md'), `K001: ${'large project knowledge '.repeat(1200)}`);
 
-  const original = process.env.PI_GSD_KNOWLEDGE_MAX_CHARS;
-  delete process.env.PI_GSD_KNOWLEDGE_MAX_CHARS;
+  const original = process.env.PI_OTTO_KNOWLEDGE_MAX_CHARS;
+  delete process.env.PI_OTTO_KNOWLEDGE_MAX_CHARS;
   try {
     const result = loadKnowledgeBlock(workflowHome, cwd);
     assert.ok(result.block.includes('Source: `'));
     assert.ok(result.block.length <= 12_500, `knowledge block ${result.block.length} should stay near default cap`);
     assert.ok(result.block.includes('[Knowledge Truncated]'));
   } finally {
-    if (original === undefined) delete process.env.PI_GSD_KNOWLEDGE_MAX_CHARS;
-    else process.env.PI_GSD_KNOWLEDGE_MAX_CHARS = original;
+    if (original === undefined) delete process.env.PI_OTTO_KNOWLEDGE_MAX_CHARS;
+    else process.env.PI_OTTO_KNOWLEDGE_MAX_CHARS = original;
     rmSync(tmp, { recursive: true, force: true });
   }
 });
@@ -322,7 +322,7 @@ test('loadKnowledgeBlock: caps repeated system prompt knowledge by default with 
 
 test('inlineKnowledgeBudgeted: returns scoped H3 entries for single-H2 file', async () => {
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-knowledge-')));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
 
   const content = `# Project Knowledge
@@ -350,7 +350,7 @@ Prefer node:test over external frameworks.
 
 test('inlineKnowledgeBudgeted: caps payload below budget for large files', async () => {
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-knowledge-')));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
 
   // Build a 200KB KNOWLEDGE with 500 H3 entries all matching 'shared'
@@ -384,7 +384,7 @@ test('inlineKnowledgeBudgeted: caps payload below budget for large files', async
 
 test('inlineKnowledgeBudgeted: default budget keeps auto prompt knowledge compact', async () => {
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-knowledge-')));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
 
   const entries = Array.from({ length: 300 }, (_, i) =>
@@ -409,7 +409,7 @@ test('inlineKnowledgeBudgeted: default budget keeps auto prompt knowledge compac
 
 test('inlineKnowledgeBudgeted: returns null when no KNOWLEDGE.md exists', async () => {
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-knowledge-')));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
 
   const result = await inlineKnowledgeBudgeted(tmp, ['database']);
@@ -420,7 +420,7 @@ test('inlineKnowledgeBudgeted: returns null when no KNOWLEDGE.md exists', async 
 
 test('inlineKnowledgeBudgeted: returns null when no entries match', async () => {
   const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-knowledge-')));
-  const workflowDir = join(tmp, '.gsd');
+  const workflowDir = join(tmp, '.otto/workflow');
   mkdirSync(workflowDir, { recursive: true });
   writeFileSync(
     join(workflowDir, 'KNOWLEDGE.md'),

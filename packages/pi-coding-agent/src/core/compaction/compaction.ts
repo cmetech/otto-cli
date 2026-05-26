@@ -5,9 +5,9 @@
  * and after compaction the session is reloaded.
  */
 
-import type { AgentMessage } from "@loop24/pi-agent-core";
-import type { AssistantMessage, Model, Usage } from "@loop24/pi-ai";
-import { completeSimple } from "@loop24/pi-ai";
+import type { AgentMessage } from "@otto/pi-agent-core";
+import type { AssistantMessage, Model, Usage } from "@otto/pi-ai";
+import { completeSimple } from "@otto/pi-ai";
 import { COMPACTION_KEEP_RECENT_TOKENS, COMPACTION_RESERVE_TOKENS } from "../constants.js";
 import { convertToLlm } from "../messages.js";
 import type { CompactionEntry, SessionEntry } from "../session-manager.js";
@@ -90,7 +90,7 @@ export interface CompactionSettings {
 	 * Optional percent-of-context-window threshold (0 < value < 1). When set,
 	 * `shouldCompact()` fires once `contextTokens > contextWindow * thresholdPercent`,
 	 * overriding the absolute `reserveTokens` calculation. Lets host integrations
-	 * (e.g. LOOP24) express compaction policy as a fraction independent of model size.
+	 * (e.g. OTTO) express compaction policy as a fraction independent of model size.
 	 */
 	thresholdPercent?: number;
 }

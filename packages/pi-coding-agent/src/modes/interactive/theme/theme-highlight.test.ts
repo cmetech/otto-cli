@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for safe terminal syntax highlighting fallback.
 
 import test from "node:test";

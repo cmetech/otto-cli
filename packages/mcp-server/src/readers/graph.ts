@@ -4,7 +4,7 @@
 /**
  * Knowledge Graph for the workflow projects.
  *
- * Parses .loop24/ artifacts (STATE.md, milestone ROADMAPs, slice PLANs,
+ * Parses .otto/ artifacts (STATE.md, milestone ROADMAPs, slice PLANs,
  * KNOWLEDGE.md) into a graph of nodes and edges. Parse errors in any
  * single artifact are caught and never propagate — the artifact is skipped
  * and the rest of the graph is returned.
@@ -545,7 +545,7 @@ function parseLearningsSection(
 // ---------------------------------------------------------------------------
 
 /**
- * Build a KnowledgeGraph by parsing all .loop24/ artifacts.
+ * Build a KnowledgeGraph by parsing all .otto/ artifacts.
  *
  * Parse errors in any single artifact are caught — the artifact is skipped
  * and never causes buildGraph() to throw.
@@ -598,7 +598,7 @@ export async function buildGraph(projectDir: string): Promise<KnowledgeGraph> {
 // ---------------------------------------------------------------------------
 
 /**
- * Write the graph to .loop24/graphs/graph.json atomically.
+ * Write the graph to .otto/graphs/graph.json atomically.
  *
  * Writes to graph.tmp.json first, then renames to graph.json.
  * Creates the graphs/ directory if it does not exist.

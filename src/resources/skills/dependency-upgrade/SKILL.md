@@ -1,6 +1,6 @@
 ---
 name: dependency-upgrade
-description: Plan, batch, and verify dependency upgrades safely. Triages outdated packages into risk tiers, upgrades in order (dev/minor/patch first, runtime majors last), verifies each batch before moving on, and produces an auditable commit sequence. Use when asked to "upgrade deps", "bump packages", "update node_modules", "fix vulnerabilities", "upgrade React/Node/TypeScript", or after `/gsd start dep-upgrade`. Complements the dep-upgrade workflow template with execution-level rigor.
+description: Plan, batch, and verify dependency upgrades safely. Triages outdated packages into risk tiers, upgrades in order (dev/minor/patch first, runtime majors last), verifies each batch before moving on, and produces an auditable commit sequence. Use when asked to "upgrade deps", "bump packages", "update node_modules", "fix vulnerabilities", "upgrade React/Node/TypeScript", or after `/otto start dep-upgrade`. Complements the dep-upgrade workflow template with execution-level rigor.
 ---
 
 <objective>
@@ -8,10 +8,10 @@ Turn a pile of outdated packages into a series of small, verifiable upgrades wit
 </objective>
 
 <context>
-the agent ships a `/gsd start dep-upgrade` workflow template (`src/resources/extensions/gsd/workflow-templates/dep-upgrade.md`) that structures the phases: assess → upgrade → fix breaks → verify. This skill is the execution-level detail inside the upgrade phase — how to batch, how to verify, how to recover from a breaking upgrade without losing the good ones.
+the agent ships a `/otto start dep-upgrade` workflow template (`src/resources/extensions/otto/workflow-templates/dep-upgrade.md`) that structures the phases: assess → upgrade → fix breaks → verify. This skill is the execution-level detail inside the upgrade phase — how to batch, how to verify, how to recover from a breaking upgrade without losing the good ones.
 
 Invocation points:
-- `/gsd start dep-upgrade` workflow is running
+- `/otto start dep-upgrade` workflow is running
 - Ad-hoc "bump the deps" request
 - Security advisory response (CVE in a direct dep)
 - Framework major-version update (React 18 → 19, Node LTS bump)
@@ -102,7 +102,7 @@ For each major that breaks something:
 
 1. **Read the migration guide** — do not guess at the API changes.
 2. **Scope the blast radius** — `rg` for the symbols that changed.
-3. **Decide: upgrade now or defer?** If the migration is a weekend's work and not urgent, file a `/gsd start refactor` follow-up and pin the current major for now.
+3. **Decide: upgrade now or defer?** If the migration is a weekend's work and not urgent, file a `/otto start refactor` follow-up and pin the current major for now.
 4. **If upgrading now:** branch the work as its own slice (`S##`). The dep upgrade is only one task; the migration is the rest of the slice.
 5. **Verify end-to-end after migration.** The test suite alone may miss behavior changes.
 
@@ -131,7 +131,7 @@ After all batches, produce a rollup:
 - <CVE> still open — not exploitable in our usage (see comment in package.json)
 ```
 
-Append to `.gsd/KNOWLEDGE.md` any non-obvious gotcha from the upgrade (API changes that tripped you up, migration rituals for this codebase).
+Append to `.otto/workflow/KNOWLEDGE.md` any non-obvious gotcha from the upgrade (API changes that tripped you up, migration rituals for this codebase).
 
 </process>
 

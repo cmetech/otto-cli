@@ -1,8 +1,8 @@
 /**
- * GSD-2 schema migration smoke (forward only).
+ * OTTO-2 schema migration smoke (forward only).
  *
- * Seeds a `.gsd/gsd.db` SQLite file at an older `schema_version` and runs
- * the **real built `gsd` binary** (`gsd headless query`, no LLM required)
+ * Seeds a `.otto/workflow/otto.db` SQLite file at an older `schema_version` and runs
+ * the **real built `otto` binary** (`otto headless query`, no LLM required)
  * against it. Asserts that:
  *
  *   1. The CLI exits cleanly (so the migration didn't crash on start).
@@ -15,7 +15,7 @@
  * **through the shipped binary** so a bad build or missing dist asset
  * would surface here, not at user install time.
  *
- * Forward-only by design: gsd-db.ts has no down-migrations to test, and
+ * Forward-only by design: otto-db.ts has no down-migrations to test, and
  * tests for non-existent behavior create false confidence (peer review).
  *
  * Skip path: if `node:sqlite` is not loadable in this Node build, the
@@ -27,7 +27,7 @@ import assert from "node:assert/strict";
 import { existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
-import { createTmpProject, gsdSync } from "./_shared/index.ts";
+import { createTmpProject, ottoSync } from "./_shared/index.ts";
 
 interface SqliteDb {
 	// Method names match node:sqlite's API surface.
@@ -54,7 +54,7 @@ async function tryLoadSqlite(): Promise<{ ok: true; mod: SqliteModule } | { ok: 
 }
 
 /**
- * Seed a `.gsd/gsd.db` at schema_version = 20.
+ * Seed a `.otto/workflow/otto.db` at schema_version = 20.
  * Mirrors the seed logic from
  * src/resources/extensions/workflow/tests/schema-v21-sequence.test.ts so the
  * forward-migration path from a known stale point is exercised.
@@ -88,8 +88,8 @@ function readSchemaVersion(sqlite: SqliteModule, dbPath: string): number {
 }
 
 function binaryAvailable(): { ok: boolean; reason?: string } {
-	const bin = process.env.GSD_SMOKE_BINARY;
-	if (!bin) return { ok: false, reason: "GSD_SMOKE_BINARY not set; run with `GSD_SMOKE_BINARY=$(pwd)/dist/loader.js`" };
+	const bin = process.env.OTTO_SMOKE_BINARY;
+	if (!bin) return { ok: false, reason: "OTTO_SMOKE_BINARY not set; run with `OTTO_SMOKE_BINARY=$(pwd)/dist/loader.js`" };
 	if (!existsSync(bin)) return { ok: false, reason: `binary not found at ${bin}` };
 	return { ok: true };
 }
@@ -108,20 +108,20 @@ describe("schema migration smoke (forward only)", () => {
 		const project = createTmpProject({ git: true });
 		t.after(project.cleanup);
 
-		const gsdDir = join(project.dir, ".gsd");
-		mkdirSync(gsdDir, { recursive: true });
-		mkdirSync(join(gsdDir, "milestones"), { recursive: true });
+			const workflowDir = join(project.dir, ".otto", "workflow");
+			mkdirSync(workflowDir, { recursive: true });
+			mkdirSync(join(workflowDir, "milestones"), { recursive: true });
 
-		const dbPath = join(gsdDir, "gsd.db");
+			const dbPath = join(workflowDir, "otto.db");
 		seedV20Db(sqliteLoaded.mod, dbPath);
 
-		// Sanity: the seeded DB really is v20 before we hand it to gsd.
+		// Sanity: the seeded DB really is v20 before we hand it to otto.
 		const before = readSchemaVersion(sqliteLoaded.mod, dbPath);
 		assert.equal(before, 20, `seed step failed — expected v20 before run, got ${before}`);
 
 		// Run a no-LLM probe that opens the DB. The mere act of running it
 		// triggers initSchema/migrateSchema in the binary's compiled code.
-		const result = gsdSync(["headless", "query"], {
+		const result = ottoSync(["headless", "query"], {
 			cwd: project.dir,
 			timeoutMs: 30_000,
 		});
@@ -129,7 +129,7 @@ describe("schema migration smoke (forward only)", () => {
 		assert.equal(
 			result.code,
 			0,
-			`expected exit 0 from \`gsd headless query\`, got ${result.code}.\nstderr: ${result.stderrClean.slice(0, 800)}`,
+			`expected exit 0 from \`otto headless query\`, got ${result.code}.\nstderr: ${result.stderrClean.slice(0, 800)}`,
 		);
 
 		const after = readSchemaVersion(sqliteLoaded.mod, dbPath);

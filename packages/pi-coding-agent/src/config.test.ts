@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { APP_NAME, CONFIG_DIR_NAME, COMMAND_NAMESPACE, BRAND_NAME } from "./config.js";
 
 test("APP_NAME reads piConfig.name from package.json", () => {
-  assert.equal(APP_NAME, "loop24");
+  assert.equal(APP_NAME, "otto");
 });
 
 test("CONFIG_DIR_NAME reads piConfig.configDir from package.json", () => {

@@ -10,7 +10,7 @@ function mkStatus(over: Partial<WorktreeStatus>): WorktreeStatus {
   const name = over.name ?? "feat-x";
   return {
     name,
-    path: `/repo/.gsd/worktrees/${name}`,
+    path: `/repo/.otto/workflow/worktrees/${name}`,
     branch: `gsd/${name}`,
     exists: true,
     filesChanged: 0,

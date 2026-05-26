@@ -1,4 +1,4 @@
-// LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/provider-manager.ts - Provider management selector.
+// OTTO + packages/pi-coding-agent/src/modes/interactive/components/provider-manager.ts - Provider management selector.
 /**
  * TUI component for managing provider configurations.
  * Shows providers with auth status, discovery support, and model counts.
@@ -13,7 +13,7 @@ import {
 	Spacer,
 	Text,
 	type TUI,
-} from "@loop24/pi-tui";
+} from "@otto/pi-tui";
 import type { AuthStorage } from "../../../core/auth-storage.js";
 import { getDiscoverableProviders, getDiscoveryAdapter } from "../../../core/model-discovery.js";
 import { providerDisplayName } from "./model-selector.js";

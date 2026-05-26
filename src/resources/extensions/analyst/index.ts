@@ -1,5 +1,5 @@
-import type { ExtensionAPI } from "@loop24/pi-coding-agent";
-import { getDeliverablesDir } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI } from "@otto/pi-coding-agent";
+import { getDeliverablesDir } from "@otto/pi-coding-agent";
 import { mkdirSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";

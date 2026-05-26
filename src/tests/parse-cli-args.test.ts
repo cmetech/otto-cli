@@ -3,7 +3,7 @@
 
 import test, { describe } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildHeadlessAutoArgs, parseCliArgs } from '../cli-web-branch.ts'
+import { buildHeadlessAutoArgs, parseCliArgs } from '../cli-args.ts'
 
 function parse(...args: string[]) {
   return parseCliArgs(['node', 'gsd', ...args])
@@ -115,37 +115,17 @@ describe('parseCliArgs — list flags and accumulators', () => {
   })
 })
 
-describe('parseCliArgs — web mode flags', () => {
-  test('--web with no path sets web=true', () => {
-    const flags = parse('--web')
-    assert.equal(flags.web, true)
-    assert.equal(flags.webPath, undefined)
-  })
-
-  test('--web with a path captures it', () => {
+describe('parseCliArgs — removed web interface flags', () => {
+  test('--web is ignored as an unsupported CLI flag', () => {
     const flags = parse('--web', '/tmp/project')
-    assert.equal(flags.web, true)
-    assert.equal(flags.webPath, '/tmp/project')
+    assert.deepEqual(flags.messages, ['/tmp/project'])
+    assert.equal('web' in flags, false)
   })
 
-  test('--port parses valid integer', () => {
-    assert.equal(parse('--port', '8080').webPort, 8080)
-  })
-
-  test('--port rejects non-numeric', () => {
-    assert.equal(parse('--port', 'abc').webPort, undefined)
-  })
-
-  test('--port rejects out-of-range values', () => {
-    assert.equal(parse('--port', '0').webPort, undefined)
-    assert.equal(parse('--port', '70000').webPort, undefined)
-  })
-
-  test('--allowed-origins splits and trims comma list', () => {
-    assert.deepEqual(
-      parse('--allowed-origins', 'http://a.com, http://b.com ,http://c.com').webAllowedOrigins,
-      ['http://a.com', 'http://b.com', 'http://c.com'],
-    )
+  test('former web-only network flags are ignored', () => {
+    const flags = parse('--port', '8080', '--host', '0.0.0.0', '--allowed-origins', 'http://a.com')
+    assert.deepEqual(flags.messages, ['8080', '0.0.0.0', 'http://a.com'])
+    assert.equal('webPort' in flags, false)
   })
 })
 

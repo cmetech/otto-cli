@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Unit tests for custom workflow verification retry persistence.
 
 import assert from "node:assert/strict";

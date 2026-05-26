@@ -4,10 +4,10 @@ How to run and monitor multiple concurrent workflow sessions.
 
 ## Architecture
 
-the agent uses **file-based IPC** — no sockets or ports. All coordination happens through JSON files in `.gsd/parallel/`.
+the agent uses **file-based IPC** — no sockets or ports. All coordination happens through JSON files in `.otto/workflow/parallel/`.
 
 ```
-.gsd/parallel/
+.otto/workflow/parallel/
 ├── M001.status.json    # Worker heartbeat + state
 ├── M001.signal.json    # Coordinator → worker commands (ephemeral)
 ├── M002.status.json
@@ -18,15 +18,15 @@ the agent uses **file-based IPC** — no sockets or ports. All coordination happ
 ## Worker Isolation
 
 Each worker gets:
-1. **`GSD_MILESTONE_LOCK=M00X`** — state derivation only sees this milestone
-2. **`GSD_PARALLEL_WORKER=1`** — prevents nested parallel spawns
-3. **Own git worktree** at `.gsd/worktrees/M00X/` — branch `milestone/M00X`
+1. **`OTTO_MILESTONE_LOCK=M00X`** — state derivation only sees this milestone
+2. **`OTTO_PARALLEL_WORKER=1`** — prevents nested parallel spawns
+3. **Own git worktree** at `.otto/workflow/worktrees/M00X/` — branch `milestone/M00X`
 
 Workers cannot interfere with each other. Each has its own filesystem and git branch.
 
 ## Status File Schema
 
-Written atomically (`.tmp` + rename) by each worker at `.gsd/parallel/<milestoneId>.status.json`:
+Written atomically (`.tmp` + rename) by each worker at `.otto/workflow/parallel/<milestoneId>.status.json`:
 
 ```json
 {
@@ -42,7 +42,7 @@ Written atomically (`.tmp` + rename) by each worker at `.gsd/parallel/<milestone
   "cost": 1.23,
   "lastHeartbeat": 1710000015000,
   "startedAt": 1710000000000,
-  "worktreePath": ".gsd/worktrees/M001"
+  "worktreePath": ".otto/workflow/worktrees/M001"
 }
 ```
 
@@ -50,7 +50,7 @@ Written atomically (`.tmp` + rename) by each worker at `.gsd/parallel/<milestone
 
 ## Signal Files
 
-Coordinator writes to `.gsd/parallel/<milestoneId>.signal.json`. Worker consumes and deletes on next dispatch cycle.
+Coordinator writes to `.otto/workflow/parallel/<milestoneId>.signal.json`. Worker consumes and deletes on next dispatch cycle.
 
 ```json
 {
@@ -66,8 +66,8 @@ Coordinator writes to `.gsd/parallel/<milestoneId>.signal.json`. Worker consumes
 
 ```bash
 # Spawn worker in its worktree
-GSD_MILESTONE_LOCK=M001 \
-GSD_PARALLEL_WORKER=1 \
+OTTO_MILESTONE_LOCK=M001 \
+OTTO_PARALLEL_WORKER=1 \
   gsd headless --json auto 2>logs/M001.log &
 WORKER_PID=$!
 ```
@@ -78,13 +78,13 @@ Workers emit JSONL events on stdout when `--json` is set.
 
 ```bash
 # Dashboard: enumerate all status files
-for f in .gsd/parallel/*.status.json; do
+for f in .otto/workflow/parallel/*.status.json; do
   [ -f "$f" ] || continue
   jq -r '[.milestoneId, .state, (.currentUnit.id // "idle"), "\(.cost | tostring)$"] | join("\t")' "$f"
 done
 
 # Liveness check
-for f in .gsd/parallel/*.status.json; do
+for f in .otto/workflow/parallel/*.status.json; do
   PID=$(jq -r '.pid' "$f")
   MID=$(jq -r '.milestoneId' "$f")
   if kill -0 "$PID" 2>/dev/null; then
@@ -103,7 +103,7 @@ done
 send_signal() {
   local MID=$1 SIGNAL=$2
   echo "{\"signal\":\"$SIGNAL\",\"sentAt\":$(date +%s000),\"from\":\"coordinator\"}" \
-    > ".gsd/parallel/${MID}.signal.json"
+    > ".otto/workflow/parallel/${MID}.signal.json"
 }
 
 send_signal M001 pause
@@ -119,7 +119,7 @@ TOTAL=$(gsd headless query | jq -r '.cost.total')
 CEILING=50.00
 if (( $(echo "$TOTAL > $CEILING" | bc -l) )); then
   echo "Budget exceeded ($TOTAL > $CEILING) — stopping all"
-  for f in .gsd/parallel/*.status.json; do
+  for f in .otto/workflow/parallel/*.status.json; do
     MID=$(jq -r '.milestoneId' "$f")
     send_signal "$MID" stop
   done
@@ -135,7 +135,7 @@ A session is stale when:
 ```bash
 NOW=$(date +%s000)
 STALE_THRESHOLD=30000
-for f in .gsd/parallel/*.status.json; do
+for f in .otto/workflow/parallel/*.status.json; do
   PID=$(jq -r '.pid' "$f")
   HB=$(jq -r '.lastHeartbeat' "$f")
   AGE=$((NOW - HB))
@@ -148,7 +148,7 @@ done
 
 ## Multi-Project Orchestration
 
-Within one project, milestones are tracked automatically in `.gsd/parallel/`. For orchestrating across **multiple projects**, maintain an external registry:
+Within one project, milestones are tracked automatically in `.otto/workflow/parallel/`. For orchestrating across **multiple projects**, maintain an external registry:
 
 ```json
 {
@@ -160,7 +160,7 @@ Within one project, milestones are tracked automatically in `.gsd/parallel/`. Fo
 }
 ```
 
-Then poll each project's `.gsd/parallel/` directory. GSD has no cross-project awareness — the orchestrator must bridge this gap.
+Then poll each project's `.otto/workflow/parallel/` directory. GSD has no cross-project awareness — the orchestrator must bridge this gap.
 
 ## Built-in Parallel Commands
 

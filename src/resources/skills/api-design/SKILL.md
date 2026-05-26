@@ -161,7 +161,7 @@ If this is a new design, produce:
 <link or inline>
 ```
 
-Append architectural decisions to `.gsd/DECISIONS.md`.
+Append architectural decisions to `.otto/workflow/DECISIONS.md`.
 
 </process>
 
@@ -185,6 +185,6 @@ Append architectural decisions to `.gsd/DECISIONS.md`.
 - [ ] A single error shape is used everywhere, with a machine-readable code.
 - [ ] Versioning stance is stated — even if the answer is "additive only for now."
 - [ ] OpenAPI/SDL reflects the design and lives in the repo.
-- [ ] Decisions appear in `.gsd/DECISIONS.md`.
+- [ ] Decisions appear in `.otto/workflow/DECISIONS.md`.
 
 </success_criteria>

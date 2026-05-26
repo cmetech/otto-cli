@@ -1,4 +1,4 @@
-// LOOP24 — Ollama model discovery and capability detection
+// OTTO — Ollama model discovery and capability detection
 
 /**
  * Discovers locally available Ollama models and enriches them with
@@ -65,7 +65,7 @@ async function enrichModel(info: OllamaModelInfo, deps: ClientDeps): Promise<Dis
 			showContextWindow = extractContextFromModelInfo(showData.model_info);
 		} catch (err) {
 			// non-fatal: fall through to estimate
-			if ((process.env.LOOP24_DEBUG ?? process.env.GSD_DEBUG)) console.warn(`[ollama] /api/show failed for ${info.name}:`, err instanceof Error ? err.message : String(err));
+			if ((process.env.OTTO_DEBUG ?? process.env.OTTO_DEBUG)) console.warn(`[ollama] /api/show failed for ${info.name}:`, err instanceof Error ? err.message : String(err));
 		}
 	}
 

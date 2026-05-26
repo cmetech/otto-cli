@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Shared RPC protocol fixture records for Phase 0 characterization and Phase 1 contracts work.
 
 export const rpcGoldenCommands = [

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Verification evidence SQLite schema helpers for the workflow database facade.
 
 import type { DbAdapter } from "./db-adapter.js";

@@ -5,10 +5,10 @@
 
 | Location | Scope |
 |----------|-------|
-| `~/.gsd/agent/extensions/*.ts` | Global (all projects) |
-| `~/.gsd/agent/extensions/*/index.ts` | Global (subdirectory) |
-| `.gsd/extensions/*.ts` | Project-local |
-| `.gsd/extensions/*/index.ts` | Project-local (subdirectory) |
+| `~/.otto/agent/extensions/*.ts` | Global (all projects) |
+| `~/.otto/agent/extensions/*/index.ts` | Global (subdirectory) |
+| `.otto/workflow/extensions/*.ts` | Project-local |
+| `.otto/workflow/extensions/*/index.ts` | Project-local (subdirectory) |
 
 ### Additional Paths (via settings.json)
 

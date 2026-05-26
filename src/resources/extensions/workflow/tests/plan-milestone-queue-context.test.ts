@@ -8,7 +8,7 @@ import { buildPlanMilestonePrompt } from "../auto-prompts.ts";
 
 function createBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-plan-queue-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M010"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M010"), { recursive: true });
   return base;
 }
 
@@ -21,7 +21,7 @@ describe("plan-milestone queue context", () => {
     const base = createBase();
     try {
       writeFileSync(
-        join(base, ".gsd", "QUEUE.md"),
+        join(base, ".otto/workflow", "QUEUE.md"),
         [
           "# Queue",
           "",
@@ -38,7 +38,7 @@ describe("plan-milestone queue context", () => {
 
       const prompt = await buildPlanMilestonePrompt("M010", "M010", base);
 
-      assert.match(prompt, /Source: `\.gsd\/QUEUE\.md`/);
+      assert.match(prompt, /Source: `\.otto\/workflow\/QUEUE\.md`/);
       assert.match(prompt, /Analytics Dashboard — Interactivity, Intelligence & Demo Readiness/);
       assert.match(prompt, /Ship a polished analytics dashboard/);
     } finally {

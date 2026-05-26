@@ -1,5 +1,5 @@
 /**
- * Regression test for #3477: gsd_skip_slice updates DB state and rebuilds
+ * Regression test for #3477: otto_skip_slice updates DB state and rebuilds
  * the projected STATE.md artifact.
  */
 
@@ -18,14 +18,14 @@ import {
   openDatabase,
 } from "../db.ts";
 
-test("gsd_skip_slice marks a slice skipped and refreshes STATE.md", async () => {
+test("otto_skip_slice marks a slice skipped and refreshes STATE.md", async () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-skip-slice-"));
   const tools = new Map<string, any>();
   const pi = { registerTool: (tool: any) => tools.set(tool.name, tool) };
 
   try {
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Skip Test", status: "active", depends_on: [] });
     insertSlice({
       id: "S01",
@@ -39,8 +39,8 @@ test("gsd_skip_slice marks a slice skipped and refreshes STATE.md", async () => 
     });
 
     registerDbTools(pi as any);
-    const skipSlice = tools.get("gsd_skip_slice");
-    assert.ok(skipSlice, "gsd_skip_slice is registered");
+    const skipSlice = tools.get("otto_skip_slice");
+    assert.ok(skipSlice, "otto_skip_slice is registered");
 
     const result = await skipSlice.execute(
       "tool-call",
@@ -53,7 +53,7 @@ test("gsd_skip_slice marks a slice skipped and refreshes STATE.md", async () => 
     assert.equal(result.details.operation, "skip_slice");
     assert.equal(getSlice("M001", "S01")?.status, "skipped");
 
-    const statePath = join(base, ".gsd", "STATE.md");
+    const statePath = join(base, ".otto/workflow", "STATE.md");
     assert.equal(existsSync(statePath), true, "STATE.md should be rebuilt");
     assert.match(readFileSync(statePath, "utf-8"), /Active Slice:\*\* None/);
   } finally {

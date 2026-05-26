@@ -1,10 +1,10 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Visual contract tests for the assistant message open surface.
 
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import stripAnsi from "strip-ansi";
-import type { AssistantMessage } from "@loop24/pi-ai";
+import type { AssistantMessage } from "@otto/pi-ai";
 
 import { initTheme } from "../../theme/theme.js";
 import { AssistantMessageComponent } from "../assistant-message.js";
@@ -28,19 +28,19 @@ describe("AssistantMessageComponent open surface", () => {
 		const plain = component.render(80).map((line) => stripAnsi(line));
 		const joined = plain.join("\n");
 
-		assert.match(joined, /GSD/);
+		assert.match(joined, /OTTO/);
 		assert.match(joined, /gpt-test/);
 		assert.match(joined, /update the renderer/);
 		assert.doesNotMatch(joined, /╰──────╮/);
-		assert.match(joined, /╭─ GSD/);
+		assert.match(joined, /╭─ OTTO/);
 		assert.match(joined, /╰─/);
 		assert.doesNotMatch(joined, /[│┃]/, "assistant content lines must not use side rail glyphs");
-		// A rounded titled top rule carries the GSD label.
+		// A rounded titled top rule carries the OTTO label.
 		assert.ok(
-			plain.some((line) => line.includes("GSD") && line.includes("─")),
+			plain.some((line) => line.includes("OTTO") && line.includes("─")),
 			`expected a titled top rule:\n${joined}`,
 		);
-		const topRuleIndex = plain.findIndex((line) => line.includes("GSD") && line.includes("─"));
+		const topRuleIndex = plain.findIndex((line) => line.includes("OTTO") && line.includes("─"));
 		const contentIndex = plain.findIndex((line) => line.includes("update the renderer"));
 		assert.ok(contentIndex > topRuleIndex + 1, `expected a breathing row before content:\n${joined}`);
 		assert.equal(plain[contentIndex + 1]?.trim(), "", `expected a breathing row after content:\n${joined}`);
@@ -56,10 +56,10 @@ describe("AssistantMessageComponent open surface", () => {
 	});
 
 	test("can render a connector only when explicitly requested", () => {
-		const standalone = renderAssistantRail(["Standalone"], 80, { label: "GSD" })
+		const standalone = renderAssistantRail(["Standalone"], 80, { label: "OTTO" })
 			.map((line) => stripAnsi(line))
 			.join("\n");
-		const connected = renderAssistantRail(["Connected"], 80, { label: "GSD", connected: true })
+		const connected = renderAssistantRail(["Connected"], 80, { label: "OTTO", connected: true })
 			.map((line) => stripAnsi(line))
 			.join("\n");
 

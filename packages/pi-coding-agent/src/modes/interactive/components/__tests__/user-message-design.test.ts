@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Visual contract test for the user message open surface.
 
 import { describe, test } from "node:test";
@@ -11,7 +11,7 @@ import { UserMessageComponent } from "../user-message.js";
 initTheme("dark", false);
 
 const OSC133_ZONE = /\x1b]133;[AB]\x07/;
-const ENV_KEYS = ["TERM_PROGRAM", "GSD_ENABLE_OSC133_ZONES", "GSD_DISABLE_OSC133_ZONES"] as const;
+const ENV_KEYS = ["TERM_PROGRAM", "OTTO_ENABLE_OSC133_ZONES", "OTTO_DISABLE_OSC133_ZONES"] as const;
 
 function withEnv(values: Partial<Record<(typeof ENV_KEYS)[number], string | undefined>>, run: () => void): void {
 	const saved = Object.fromEntries(ENV_KEYS.map((key) => [key, process.env[key]])) as Record<
@@ -77,8 +77,8 @@ describe("UserMessageComponent open surface", () => {
 		withEnv(
 			{
 				TERM_PROGRAM: "Apple_Terminal",
-				GSD_ENABLE_OSC133_ZONES: undefined,
-				GSD_DISABLE_OSC133_ZONES: undefined,
+				OTTO_ENABLE_OSC133_ZONES: undefined,
+				OTTO_DISABLE_OSC133_ZONES: undefined,
 			},
 			() => {
 				const component = new UserMessageComponent("Plain terminal output");
@@ -93,8 +93,8 @@ describe("UserMessageComponent open surface", () => {
 		withEnv(
 			{
 				TERM_PROGRAM: "Apple_Terminal",
-				GSD_ENABLE_OSC133_ZONES: "1",
-				GSD_DISABLE_OSC133_ZONES: undefined,
+				OTTO_ENABLE_OSC133_ZONES: "1",
+				OTTO_DISABLE_OSC133_ZONES: undefined,
 			},
 			() => {
 				const component = new UserMessageComponent("Shell integration zone");
@@ -112,8 +112,8 @@ describe("UserMessageComponent open surface", () => {
 		withEnv(
 			{
 				TERM_PROGRAM: "Apple_Terminal",
-				GSD_ENABLE_OSC133_ZONES: undefined,
-				GSD_DISABLE_OSC133_ZONES: undefined,
+				OTTO_ENABLE_OSC133_ZONES: undefined,
+				OTTO_DISABLE_OSC133_ZONES: undefined,
 			},
 			() => {
 				first = component.render(100);
@@ -125,8 +125,8 @@ describe("UserMessageComponent open surface", () => {
 		withEnv(
 			{
 				TERM_PROGRAM: "Apple_Terminal",
-				GSD_ENABLE_OSC133_ZONES: "1",
-				GSD_DISABLE_OSC133_ZONES: undefined,
+				OTTO_ENABLE_OSC133_ZONES: "1",
+				OTTO_DISABLE_OSC133_ZONES: undefined,
 			},
 			() => {
 				const withOsc = component.render(100);

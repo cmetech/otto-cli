@@ -14,8 +14,8 @@ test.afterEach(() => {
 test("#2841: cold DB bootstrap opens an existing project database before state derivation", async (t) => {
   const base = realpathSync(mkdtempSync(join(tmpdir(), "gsd-cold-db-")));
   t.after(() => rmSync(base, { recursive: true, force: true }));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  const dbPath = join(base, ".gsd", "gsd.db");
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  const dbPath = join(base, ".otto/workflow", "otto.db");
 
   assert.equal(openDatabase(dbPath), true);
   closeDatabase();

@@ -1,4 +1,4 @@
-// @loop24/pi-coding-agent + system-prompt-skill-filter.test — coverage for the
+// @otto/pi-coding-agent + system-prompt-skill-filter.test — coverage for the
 // optional `skillFilter` option added to buildSystemPrompt (RFC #4779). The
 // filter lets consumers narrow the <available_skills> catalog rendered into
 // the cached system prompt without touching skill loading or invocation.

@@ -1,4 +1,4 @@
-// LOOP24 — Guided workflow Unit context.
+// OTTO — Guided workflow Unit context.
 // Tracks the guided Unit whose queued turn should use manifest Tool Contract policy.
 
 export interface GuidedUnitContext {

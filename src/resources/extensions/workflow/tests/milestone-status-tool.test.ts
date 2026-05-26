@@ -1,4 +1,4 @@
-// GSD2 — Tests for gsd_milestone_status read-only query tool
+// GSD2 — Tests for otto_milestone_status read-only query tool
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -26,7 +26,7 @@ function makeMockPi() {
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-query-tool-test-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -35,7 +35,7 @@ function cleanup(base: string): void {
 }
 
 function openTestDb(base: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 }
 
 async function executeToolInDir(tool: any, params: Record<string, unknown>, dir: string) {
@@ -76,15 +76,15 @@ function seedTask(milestoneId: string, sliceId: string, taskId: string, status: 
 
 // ─── Registration ─────────────────────────────────────────────────────────────
 
-test("registerQueryTools registers gsd_milestone_status tool", () => {
+test("registerQueryTools registers otto_milestone_status tool", () => {
   const pi = makeMockPi();
   registerQueryTools(pi);
   const names = pi.tools.map((t: { name: string }) => t.name);
-  assert.ok(names.includes("gsd_milestone_status"), "Should register gsd_milestone_status");
-  assert.ok(names.includes("gsd_checkpoint_db"), "Should register gsd_checkpoint_db");
+  assert.ok(names.includes("otto_milestone_status"), "Should register otto_milestone_status");
+  assert.ok(names.includes("otto_checkpoint_db"), "Should register otto_checkpoint_db");
 });
 
-test("gsd_milestone_status has promptGuidelines mentioning prohibited alternatives", () => {
+test("otto_milestone_status has promptGuidelines mentioning prohibited alternatives", () => {
   const pi = makeMockPi();
   registerQueryTools(pi);
   const tool = pi.tools[0];
@@ -96,7 +96,7 @@ test("gsd_milestone_status has promptGuidelines mentioning prohibited alternativ
 
 // ─── Happy path: milestone with slices and tasks ──────────────────────────────
 
-test("gsd_milestone_status returns milestone metadata and slice statuses", async () => {
+test("otto_milestone_status returns milestone metadata and slice statuses", async () => {
   const base = makeTmpBase();
   try {
     openTestDb(base);
@@ -138,7 +138,7 @@ test("gsd_milestone_status returns milestone metadata and slice statuses", async
 
 // ─── Milestone with no slices ─────────────────────────────────────────────────
 
-test("gsd_milestone_status returns empty slices array for milestone with no slices", async () => {
+test("otto_milestone_status returns empty slices array for milestone with no slices", async () => {
   const base = makeTmpBase();
   try {
     openTestDb(base);
@@ -162,7 +162,7 @@ test("gsd_milestone_status returns empty slices array for milestone with no slic
 
 // ─── Missing milestone ────────────────────────────────────────────────────────
 
-test("gsd_milestone_status returns not-found for missing milestone", async () => {
+test("otto_milestone_status returns not-found for missing milestone", async () => {
   const base = makeTmpBase();
   try {
     openTestDb(base);
@@ -182,8 +182,8 @@ test("gsd_milestone_status returns not-found for missing milestone", async () =>
 
 // ─── DB unavailable ───────────────────────────────────────────────────────────
 
-test("gsd_milestone_status handles missing DB gracefully", async () => {
-  // Create a directory without .gsd/ to ensure ensureDbOpen has nothing to open
+test("otto_milestone_status handles missing DB gracefully", async () => {
+  // Create a directory without .otto/workflow/ to ensure ensureDbOpen has nothing to open
   const base = join(tmpdir(), `gsd-no-db-${randomUUID()}`);
   mkdirSync(base, { recursive: true });
   closeDatabase(); // ensure no prior DB is open
@@ -193,7 +193,7 @@ test("gsd_milestone_status handles missing DB gracefully", async () => {
     const tool = pi.tools[0];
 
     const result = await executeToolInDir(tool, { milestoneId: "M001" }, base);
-    assert.match(result.content[0].text, /GSD database is not available/);
+    assert.match(result.content[0].text, /OTTO database is not available/);
     assert.equal(result.details.error, "db_unavailable");
   } finally {
     closeDatabase();

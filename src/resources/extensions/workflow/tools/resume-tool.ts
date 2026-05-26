@@ -1,4 +1,4 @@
-// Resume Tool — returns the contents of .gsd/last-snapshot.md so
+// Resume Tool — returns the contents of .otto/workflow/last-snapshot.md so
 // agents can re-orient after compaction or session resume without
 // re-deriving project memory state.
 
@@ -16,7 +16,7 @@ export function executeResume(
   opts: { baseDir: string; preferences?: { context_mode?: ContextModeConfig } | null },
 ): ToolExecutionResult {
   if (!isContextModeEnabled(opts.preferences)) {
-    return contextModeDisabledResult("gsd_resume");
+    return contextModeDisabledResult("otto_resume");
   }
 
   const snapshot = readCompactionSnapshot(opts.baseDir);
@@ -26,15 +26,15 @@ export function executeResume(
         {
           type: "text",
           text:
-            "No snapshot found at .gsd/last-snapshot.md. The snapshot is written automatically " +
+            "No snapshot found at .otto/workflow/last-snapshot.md. The snapshot is written automatically " +
             "on session_before_compact (enabled by default; set context_mode.enabled=false to opt out).",
         },
       ],
-      details: { operation: "gsd_resume", found: false },
+      details: { operation: "otto_resume", found: false },
     };
   }
   return {
     content: [{ type: "text", text: snapshot }],
-    details: { operation: "gsd_resume", found: true, bytes: Buffer.byteLength(snapshot, "utf-8") },
+    details: { operation: "otto_resume", found: true, bytes: Buffer.byteLength(snapshot, "utf-8") },
   };
 }

@@ -11,7 +11,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { CURSOR_MARKER, TUI, type Component, type Terminal } from "@loop24/pi-tui";
+import { CURSOR_MARKER, TUI, type Component, type Terminal } from "@otto/pi-tui";
 
 class MockTTYTerminal implements Terminal {
   public writtenData: string[] = [];
@@ -104,7 +104,7 @@ describe("TUI cursor tracking regression (#3764)", () => {
   });
 
   it("handles editor-to-selector swap without cursor corruption", () => {
-    // Simulates /gsd prefs: editor with CURSOR_MARKER is replaced by
+    // Simulates /otto prefs: editor with CURSOR_MARKER is replaced by
     // a selector component (no CURSOR_MARKER) that has different line count.
     const terminal = new MockTTYTerminal();
     const tui = new TUI(terminal, false);
@@ -229,7 +229,7 @@ describe("TUI cursor tracking regression (#3764)", () => {
   });
 
   it("handles input component swap (prefs wizard text input)", () => {
-    // Simulates /gsd prefs input step: selector replaced by text input with cursor
+    // Simulates /otto prefs input step: selector replaced by text input with cursor
     const terminal = new MockTTYTerminal();
     const tui = new TUI(terminal, false);
 

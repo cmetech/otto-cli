@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI } from "@otto/pi-coding-agent";
 
 export {
   isDepthConfirmationAnswer,
@@ -16,8 +16,8 @@ export {
 } from "./bootstrap/write-gate.js";
 
 export default async function registerExtension(pi: ExtensionAPI) {
-  // Always register the core /loop24 command first, in isolation.
-  // This ensures /loop24 is available even if the full bootstrap (shortcuts,
+  // Always register the core /otto command first, in isolation.
+  // This ensures /otto is available even if the full bootstrap (shortcuts,
   // tools, hooks) fails — e.g. due to a Windows-specific import error.
   const { registerWorkflowCommand } = await import("./commands/index.js");
   registerWorkflowCommand(pi);
@@ -31,7 +31,7 @@ export default async function registerExtension(pi: ExtensionAPI) {
     const { logWarning } = await import("./workflow-logger.js");
     logWarning(
       "bootstrap",
-      `Extension setup partially failed — /gsd commands are available but shortcuts/tools may be missing: ${err instanceof Error ? err.message : String(err)}`,
+      `Extension setup partially failed — /otto commands are available but shortcuts/tools may be missing: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 }

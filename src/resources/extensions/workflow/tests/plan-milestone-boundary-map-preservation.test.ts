@@ -86,8 +86,8 @@ function planParams() {
 
 test('#4402 plan-milestone preserves ## Boundary Map after post-mutation projections', async (t) => {
   const base = mkdtempSync(join(tmpdir(), 'gsd-4402-'));
-  mkdirSync(join(base, '.gsd', 'milestones', 'M001'), { recursive: true });
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  mkdirSync(join(base, '.otto/workflow', 'milestones', 'M001'), { recursive: true });
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   t.after(() => {
     try { closeDatabase(); } catch { /* noop */ }
@@ -97,7 +97,7 @@ test('#4402 plan-milestone preserves ## Boundary Map after post-mutation project
   const result = await handlePlanMilestone(planParams(), base);
   assert.ok(!('error' in result), `unexpected error: ${'error' in result ? result.error : ''}`);
 
-  const roadmapPath = join(base, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md');
+  const roadmapPath = join(base, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md');
   assert.ok(existsSync(roadmapPath), 'ROADMAP.md must exist on disk');
 
   const roadmap = readFileSync(roadmapPath, 'utf-8');

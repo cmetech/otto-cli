@@ -18,12 +18,12 @@ import type { MilestoneScope } from "../workspace.ts";
 
 function makeProjectDir(): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-scope-test-")));
-  mkdirSync(join(dir, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow", "milestones"), { recursive: true });
   return dir;
 }
 
 function makeWorktreeDir(projectDir: string, milestoneId: string): string {
-  const wt = join(projectDir, ".gsd", "worktrees", milestoneId);
+  const wt = join(projectDir, ".otto/workflow", "worktrees", milestoneId);
   mkdirSync(wt, { recursive: true });
   return wt;
 }
@@ -111,7 +111,7 @@ describe("AutoSession.scope — project mode (basePath equals originalBasePath)"
     assert.equal(s.scope.workspace.worktreeRoot, null);
   });
 
-  test("scope path methods resolve under the .gsd directory", () => {
+  test("scope path methods resolve under the .otto/workflow directory", () => {
     const mid = "M002";
     s.basePath = projectDir;
     s.originalBasePath = projectDir;
@@ -120,7 +120,7 @@ describe("AutoSession.scope — project mode (basePath equals originalBasePath)"
     applyRebuildScope(s, projectDir, mid);
 
     assert.ok(s.scope, "scope should be set");
-    const gsd = join(projectDir, ".gsd");
+    const gsd = join(projectDir, ".otto/workflow");
     assert.equal(s.scope.contextFile(), join(gsd, "milestones", mid, `${mid}-CONTEXT.md`));
     assert.equal(s.scope.roadmapFile(), join(gsd, "milestones", mid, `${mid}-ROADMAP.md`));
     assert.equal(s.scope.stateFile(), join(gsd, "STATE.md"));

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Display-friendly path shortening for interactive UI labels.
 
 import * as os from "node:os";

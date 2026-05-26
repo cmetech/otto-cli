@@ -1,12 +1,12 @@
 /**
  * Project Relocation Recovery Tests (#2750)
  *
- * Verifies that moving/renaming a GSD project directory does not cause
+ * Verifies that moving/renaming a OTTO project directory does not cause
  * silent data loss. When a repo has a remote URL, the identity hash
  * should be based solely on the remote — making moves transparent.
  *
  * For local-only repos (no remote), ensureWorkflowSymlink should detect
- * orphaned state directories with a matching .gsd-id marker and
+ * orphaned state directories with a matching .otto/workflow-id marker and
  * recover them automatically.
  */
 
@@ -66,16 +66,16 @@ describe("project-relocation-recovery (#2750)", () => {
   let savedStateDir: string | undefined;
 
   before(() => {
-    savedStateDir = process.env.GSD_STATE_DIR;
+    savedStateDir = process.env.OTTO_STATE_DIR;
     stateDir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-reloc-state-")));
-    process.env.GSD_STATE_DIR = stateDir;
+    process.env.OTTO_STATE_DIR = stateDir;
   });
 
   after(() => {
     if (savedStateDir !== undefined) {
-      process.env.GSD_STATE_DIR = savedStateDir;
+      process.env.OTTO_STATE_DIR = savedStateDir;
     } else {
-      delete process.env.GSD_STATE_DIR;
+      delete process.env.OTTO_STATE_DIR;
     }
     rmSync(stateDir, { recursive: true, force: true });
   });
@@ -110,7 +110,7 @@ describe("project-relocation-recovery (#2750)", () => {
     const repoA = realpathSync(mkdtempSync(join(tmpdir(), "gsd-reloc-reuse-a-")));
     initRepo(repoA, "https://github.com/example/reloc-reuse.git");
 
-    // Initialize GSD state with some planning data
+    // Initialize OTTO state with some planning data
     const externalA = ensureWorkflowSymlink(repoA);
     const milestonesPath = join(externalA, "milestones");
     mkdirSync(milestonesPath, { recursive: true });
@@ -186,30 +186,30 @@ describe("project-relocation-recovery (#2750)", () => {
     rmSync(repoB, { recursive: true, force: true });
   });
 
-  // ── Local-only repos: .gsd-id marker provides recovery ────────────────
+  // ── Local-only repos: .otto/workflow-id marker provides recovery ────────────────
 
-  test("ensureWorkflowSymlink writes a .gsd-id marker in the project root", () => {
+  test("ensureWorkflowSymlink writes a .otto/workflow-id marker in the project root", () => {
     const repo = realpathSync(mkdtempSync(join(tmpdir(), "gsd-reloc-marker-")));
     initRepo(repo);
 
     ensureWorkflowSymlink(repo);
 
-    const markerPath = join(repo, ".gsd-id");
-    assert.ok(existsSync(markerPath), ".gsd-id marker must be written by ensureWorkflowSymlink");
+    const markerPath = join(repo, ".otto/workflow-id");
+    assert.ok(existsSync(markerPath), ".otto/workflow-id marker must be written by ensureWorkflowSymlink");
 
     const markerId = readFileSync(markerPath, "utf-8").trim();
     const computedId = repoIdentity(repo);
-    assert.strictEqual(markerId, computedId, ".gsd-id must contain the repo identity hash");
+    assert.strictEqual(markerId, computedId, ".otto/workflow-id must contain the repo identity hash");
 
     rmSync(repo, { recursive: true, force: true });
   });
 
-  test("local-only repo recovers state via .gsd-id marker after move", () => {
+  test("local-only repo recovers state via .otto/workflow-id marker after move", () => {
     const repoA = realpathSync(mkdtempSync(join(tmpdir(), "gsd-reloc-local-a-")));
     initRepo(repoA);
     // No remote — identity includes gitRoot
 
-    // Initialize GSD state
+    // Initialize OTTO state
     const externalA = ensureWorkflowSymlink(repoA);
     mkdirSync(join(externalA, "milestones"), { recursive: true });
     writeFileSync(
@@ -235,11 +235,11 @@ describe("project-relocation-recovery (#2750)", () => {
       "local-only repo identity changes with move (expected)",
     );
 
-    // But ensureWorkflowSymlink should detect .gsd-id marker and recover
+    // But ensureWorkflowSymlink should detect .otto/workflow-id marker and recover
     const externalB = ensureWorkflowSymlink(repoB);
     assert.ok(
       existsSync(join(externalB, "milestones", "M001.md")),
-      "local-only repo must recover state via .gsd-id marker after move",
+      "local-only repo must recover state via .otto/workflow-id marker after move",
     );
 
     rmSync(repoB, { recursive: true, force: true });

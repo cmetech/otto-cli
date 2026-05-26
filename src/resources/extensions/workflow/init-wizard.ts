@@ -1,12 +1,12 @@
 /**
  * Init Wizard — Per-project onboarding.
  *
- * Guides users through project setup when entering a directory without .gsd/.
+ * Guides users through project setup when entering a directory without .otto/workflow/.
  * Detects project ecosystem, offers v1 migration, configures project preferences,
- * bootstraps .gsd/ structure, and transitions to the first milestone discussion.
+ * bootstraps .otto/workflow/ structure, and transitions to the first milestone discussion.
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { showNextAction } from "../shared/tui.js";
@@ -26,7 +26,7 @@ import { BRAND, slashCommand } from "./strings.js";
 interface InitWizardResult {
   /** Whether the wizard completed (vs cancelled) */
   completed: boolean;
-  /** Whether .gsd/ was created */
+  /** Whether .otto/workflow/ was created */
   bootstrapped: boolean;
   /** Whether git is available or was initialized during setup. */
   gitEnabled?: boolean;
@@ -64,7 +64,7 @@ const DEFAULT_PREFS: ProjectPreferences = {
 
 /**
  * Run the project init wizard.
- * Called when entering a directory without .gsd/ (or via /loop24 init).
+ * Called when entering a directory without .otto/workflow/ (or via /otto init).
  */
 export async function showProjectInit(
   ctx: ExtensionCommandContext,
@@ -86,7 +86,7 @@ export async function showProjectInit(
   let gitEnabled = signals.isGitRepo;
   if (!signals.isGitRepo) {
     const gitChoice = await showNextAction(ctx, {
-      title: "GSD — Project Setup",
+      title: "OTTO — Project Setup",
       summary: ["This folder is not a git repository. the agent uses git for version control and isolation."],
       actions: [
         { id: "init_git", label: "Initialize git", description: "Create a git repo in this folder", recommended: true },
@@ -110,7 +110,7 @@ export async function showProjectInit(
 
   // ── Step 3: Mode selection ─────────────────────────────────────────────────
   const modeChoice = await showNextAction(ctx, {
-    title: "GSD — Workflow Mode",
+    title: "OTTO — Workflow Mode",
     summary: ["How are you working on this project?"],
     actions: [
       {
@@ -142,12 +142,12 @@ export async function showProjectInit(
   if (signals.verificationCommands.length > 0) {
     const verifyLines = signals.verificationCommands.map((cmd, i) => `  ${i + 1}. ${cmd}`);
     const verifyChoice = await showNextAction(ctx, {
-      title: "GSD — Verification Commands",
+      title: "OTTO — Verification Commands",
       summary: [
         "Auto-detected verification commands:",
         ...verifyLines,
         "",
-        "GSD runs these after each code change to verify nothing is broken.",
+        "OTTO runs these after each code change to verify nothing is broken.",
       ],
       actions: [
         { id: "accept", label: "Use these commands", description: "Accept auto-detected commands", recommended: true },
@@ -166,7 +166,7 @@ export async function showProjectInit(
   gitSummary.push(`Main branch: ${prefs.mainBranch}`);
 
   const gitChoice = await showNextAction(ctx, {
-    title: "GSD — Git Settings",
+    title: "OTTO — Git Settings",
     summary: ["Default git settings for this project:", ...gitSummary],
     actions: [
       { id: "accept", label: "Accept defaults", description: "Use standard git settings", recommended: true },
@@ -183,9 +183,9 @@ export async function showProjectInit(
 
   // ── Step 6: Custom instructions ────────────────────────────────────────────
   const instructionChoice = await showNextAction(ctx, {
-    title: "GSD — Project Instructions",
+    title: "OTTO — Project Instructions",
     summary: [
-      "Any rules GSD should follow for this project?",
+      "Any rules OTTO should follow for this project?",
       "",
       "Examples:",
       '  - "Use TypeScript strict mode"',
@@ -219,7 +219,7 @@ export async function showProjectInit(
 
   // ── Step 7: Advanced (optional) ────────────────────────────────────────────
   const advancedChoice = await showNextAction(ctx, {
-    title: "GSD — Advanced Settings",
+    title: "OTTO — Advanced Settings",
     summary: [
       `Token profile: ${prefs.tokenProfile}`,
       `Skip research phase: ${prefs.skipResearch ? "yes" : "no"}`,
@@ -252,7 +252,7 @@ export async function showProjectInit(
   // wizard share one serializer. The "Open full wizard" branch surfaces every
   // configurable preference, prefilled with the init answers.
   const reviewChoice = await showNextAction(ctx, {
-    title: "GSD — Review All Preferences (Optional)",
+    title: "OTTO — Review All Preferences (Optional)",
     summary: [
       "Open the full preferences wizard now? It includes models, timeouts,",
       "budget, notifications, and skills — all pre-filled with your answers.",
@@ -267,12 +267,12 @@ export async function showProjectInit(
   });
 
   if (reviewChoice === "not_yet") {
-    // User deferred — don't create .gsd/ or persist preferences. Pre-step state
+    // User deferred — don't create .otto/workflow/ or persist preferences. Pre-step state
     // (e.g. git init from Step 2) remains as-is, matching prior step semantics.
     return { completed: false, bootstrapped: false };
   }
 
-  // ── Step 10: Bootstrap .gsd/ + write preferences ───────────────────────────
+  // ── Step 10: Bootstrap .otto/workflow/ + write preferences ───────────────────────────
   bootstrapWorkflowDirectoryStructure(basePath, signals);
   const prefillPrefs = mapInitPrefsToWizardShape(prefs);
   // Always derive the preferences path from basePath so init writing the
@@ -335,8 +335,8 @@ export async function showProjectInit(
     // Non-fatal — codebase map generation failure should never block project init
   }
 
-  // Write initial STATE.md so it exists before the first /loop24 invocation.
-  // The explicit /loop24 init path (ops.ts) returns without entering showSmartEntry(),
+  // Write initial STATE.md so it exists before the first /otto invocation.
+  // The explicit /otto init path (ops.ts) returns without entering showSmartEntry(),
   // which would otherwise generate STATE.md at guided-flow.ts:1358.
   try {
     const { deriveState } = await import("./state.js");
@@ -346,7 +346,7 @@ export async function showProjectInit(
     const state = await deriveState(basePath);
     await saveFile(resolveWorkflowRootFile(basePath, "STATE"), buildStateMarkdown(state));
   } catch {
-    // Non-fatal — STATE.md will be regenerated on next /loop24 invocation
+    // Non-fatal — STATE.md will be regenerated on next /otto invocation
   }
 
   {
@@ -354,7 +354,7 @@ export async function showProjectInit(
     prepareWorkflowMcpForProject(ctx, basePath);
   }
 
-  ctx.ui.notify("GSD initialized. Starting your first milestone...", "info");
+  ctx.ui.notify("OTTO initialized. Starting your first milestone...", "info");
 
   return { completed: true, bootstrapped: true, gitEnabled };
 }
@@ -370,7 +370,7 @@ export async function offerMigration(
   v1: NonNullable<ProjectDetection["v1"]>,
 ): Promise<"migrate" | "fresh" | "cancel"> {
   const summary = [
-    "Found .planning/ directory (GSD v1 format)",
+    "Found .planning/ directory (OTTO v1 format)",
   ];
   if (v1.phaseCount > 0) {
     summary.push(`${v1.phaseCount} phase${v1.phaseCount > 1 ? "s" : ""} detected`);
@@ -380,19 +380,19 @@ export async function offerMigration(
   }
 
   const choice = await showNextAction(ctx, {
-    title: "GSD — Legacy Project Detected",
+    title: "OTTO — Legacy Project Detected",
     summary,
     actions: [
       {
         id: "migrate",
-        label: "Migrate to GSD v2",
-        description: "Convert .planning/ to .gsd/ format",
+        label: "Migrate to OTTO v2",
+        description: "Convert .planning/ to .otto/workflow/ format",
         recommended: true,
       },
       {
         id: "fresh",
         label: "Start fresh",
-        description: "Ignore .planning/ and create new .gsd/",
+        description: "Ignore .planning/ and create new .otto/workflow/",
       },
     ],
     notYetMessage: `Run ${slashCommand("init")} when ready.`,
@@ -405,14 +405,14 @@ export async function offerMigration(
 // ─── Re-init Handler ────────────────────────────────────────────────────────────
 
 /**
- * Handle /loop24 init when .gsd/ already exists.
+ * Handle /otto init when .otto/workflow/ already exists.
  * Offers preference reset without destructive milestone deletion.
  */
 export async function handleReinit(
   ctx: ExtensionCommandContext,
   detection: ProjectDetection,
 ): Promise<void> {
-  const summary = ["GSD is already initialized in this project."];
+  const summary = ["OTTO is already initialized in this project."];
   if (detection.v2) {
     summary.push(`${detection.v2.milestoneCount} milestone(s) found`);
     summary.push(`Preferences: ${detection.v2.hasPreferences ? "configured" : "not set"}`);
@@ -514,7 +514,7 @@ async function customizeAdvancedPrefs(
   const researchChoice = await showNextAction(ctx, {
     title: "Research phase",
     summary: [
-      "GSD can research the codebase before planning each milestone.",
+      "OTTO can research the codebase before planning each milestone.",
       "Small projects may not need this step.",
     ],
     actions: [
@@ -544,7 +544,7 @@ async function customizeAdvancedPrefs(
 // ─── Bootstrap ──────────────────────────────────────────────────────────────────
 
 /**
- * Create .gsd/ directory structure and seed CONTEXT.md.
+ * Create .otto/workflow/ directory structure and seed CONTEXT.md.
  *
  * Preferences are written separately by the caller via the unified
  * writePreferencesFile helper so init and the prefs wizard share one path.
@@ -600,11 +600,11 @@ export function mapInitPrefsToWizardShape(prefs: ProjectPreferences): Record<str
 function buildInitPreferencesBody(): string {
   return [
     "",
-    "# GSD Project Preferences",
+    "# OTTO Project Preferences",
     "",
     `Generated by \`${slashCommand("init")}\`. Edit directly or use \`${slashCommand("prefs project")}\` to modify.`,
     "",
-    "See `~/.gsd/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation.",
+    "See `~/.otto/workflow/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation.",
     "",
   ].join("\n");
 }

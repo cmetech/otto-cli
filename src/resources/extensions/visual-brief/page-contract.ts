@@ -1,4 +1,4 @@
-// LOOP24 + Visual Brief page contract
+// OTTO + Visual Brief page contract
 
 import type { VisualBriefMode } from "./prompts.js";
 

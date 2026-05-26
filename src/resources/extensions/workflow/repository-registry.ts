@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Repository registry seam for parent workspace multi-repo resolution.
 
 import { execFileSync } from "node:child_process";

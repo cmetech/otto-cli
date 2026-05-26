@@ -1,11 +1,11 @@
 /**
- * Command — /loop24 session-report
+ * Command — /otto session-report
  *
  * Summarizes the current session: tasks completed, cost, tokens,
  * duration, model usage breakdown.
  */
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";

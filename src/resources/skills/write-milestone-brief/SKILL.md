@@ -4,7 +4,7 @@ description: Synthesize the current conversation into a milestone brief (PRD). W
 ---
 
 <objective>
-Take everything established in the current conversation (plus repo reality) and produce a milestone brief that a future agent can execute from with zero additional context. The output is a populated `M###-CONTEXT.md`, matching the template at `src/resources/extensions/gsd/templates/context.md`. Optionally, with explicit confirmation, also a GitHub issue.
+Take everything established in the current conversation (plus repo reality) and produce a milestone brief that a future agent can execute from with zero additional context. The output is a populated `M###-CONTEXT.md`, matching the template at `src/resources/extensions/otto/templates/context.md`. Optionally, with explicit confirmation, also a GitHub issue.
 </objective>
 
 <context>
@@ -30,13 +30,13 @@ Typical invocation points:
 
 Find the active milestone:
 
-1. Read `.gsd/STATE.md` — it names the active milestone.
+1. Read `.otto/workflow/STATE.md` — it names the active milestone.
 2. If no milestone is active, ask the user whether this is a new milestone (create directory + files) or appending to an existing one.
-3. For a new milestone, use `gsd_milestone_new` or the `/gsd new-milestone` flow — do not create directories by hand.
+3. For a new milestone, use `otto_milestone_new` or the `/otto new-milestone` flow — do not create directories by hand.
 
 ## Step 2: Read the template
 
-Read `src/resources/extensions/gsd/templates/context.md` (the full path is shown in the `templatesDir` system-prompt field). Match its structure exactly — parsers and downstream prompts depend on the headings.
+Read `src/resources/extensions/otto/templates/context.md` (the full path is shown in the `templatesDir` system-prompt field). Match its structure exactly — parsers and downstream prompts depend on the headings.
 
 ## Step 3: Sketch the modules
 
@@ -65,19 +65,19 @@ Populate `M###-CONTEXT.md` using the template. Key sections:
 - **Acceptance Criteria** — per-slice, testable criteria gathered during discussion.
 - **Open Questions** — anything material that is genuinely unresolved. Note current thinking so future agents have a starting point.
 
-> The template headings above are mandatory — do not omit, rename, or reorder them. The exact required order matches `src/resources/extensions/gsd/templates/context.md`: Project Description → Why This Milestone → User-Visible Outcome → Completion Class → Final Integrated Acceptance → Architectural Decisions → Error Handling Strategy → Risks and Unknowns → Existing Codebase / Prior Art → Relevant Requirements → Scope → Technical Constraints → Integration Points → Testing Requirements → Acceptance Criteria → Open Questions.
+> The template headings above are mandatory — do not omit, rename, or reorder them. The exact required order matches `src/resources/extensions/otto/templates/context.md`: Project Description → Why This Milestone → User-Visible Outcome → Completion Class → Final Integrated Acceptance → Architectural Decisions → Error Handling Strategy → Risks and Unknowns → Existing Codebase / Prior Art → Relevant Requirements → Scope → Technical Constraints → Integration Points → Testing Requirements → Acceptance Criteria → Open Questions.
 
 ## Step 5: Write it
 
-Use the `write` tool to create or overwrite `.gsd/milestones/<MID>/<MID>-CONTEXT.md`. Do not ask for approval of the file contents before writing — the user will see the rendered file and can edit directly.
+Use the `write` tool to create or overwrite `.otto/workflow/milestones/<MID>/<MID>-CONTEXT.md`. Do not ask for approval of the file contents before writing — the user will see the rendered file and can edit directly.
 
-Then append a one-line summary to `.gsd/DECISIONS.md` for any genuinely hard-to-reverse architectural decision: `- YYYY-MM-DD [MID]: <decision> — <one-line rationale>`.
+Then append a one-line summary to `.otto/workflow/DECISIONS.md` for any genuinely hard-to-reverse architectural decision: `- YYYY-MM-DD [MID]: <decision> — <one-line rationale>`.
 
 ## Step 6: Offer next steps
 
 After writing, offer the user (do not auto-execute):
 
-1. **Proceed to planning** — run `/gsd dispatch plan` to generate `M###-ROADMAP.md` from this brief.
+1. **Proceed to planning** — run `/otto dispatch plan` to generate `M###-ROADMAP.md` from this brief.
 2. **File as GitHub issue** — use `mcp__github__issue_write` to create a tracking issue. Requires explicit "yes" per the outward-action rule. Use the PRD template below for the body.
 3. **Iterate on the brief** — if something feels wrong, run `grill-me` to stress-test before moving on.
 
@@ -108,7 +108,7 @@ After writing, offer the user (do not auto-execute):
 <any extra context>
 
 ---
-See `.gsd/milestones/<MID>/<MID>-CONTEXT.md` for the full brief.
+See `.otto/workflow/milestones/<MID>/<MID>-CONTEXT.md` for the full brief.
 ```
 
 </process>
@@ -130,6 +130,6 @@ See `.gsd/milestones/<MID>/<MID>-CONTEXT.md` for the full brief.
 - [ ] Completion Class is honest — no "just unit tests" when the milestone demands live integration.
 - [ ] Every architectural decision has a rationale and named alternatives.
 - [ ] Open Questions captures genuinely unresolved items — not decisions the user already made.
-- [ ] `.gsd/DECISIONS.md` has a dated one-liner for any hard-to-reverse decision.
+- [ ] `.otto/workflow/DECISIONS.md` has a dated one-liner for any hard-to-reverse decision.
 
 </success_criteria>

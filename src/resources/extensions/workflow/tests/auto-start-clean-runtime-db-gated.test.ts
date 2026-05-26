@@ -15,16 +15,16 @@ function makeBase(): string {
 describe("auto-start cleanStaleRuntimeUnits DB gating (#4663)", () => {
   test("predicate controls whether milestone runtime units are removed", () => {
     const base = makeBase();
-    const unitsDir = join(base, ".gsd", "runtime", "units");
+    const unitsDir = join(base, ".otto/workflow", "runtime", "units");
     try {
       mkdirSync(unitsDir, { recursive: true });
       const unitFile = join(unitsDir, "execute-task-M001-S01-T01.json");
       writeFileSync(unitFile, "{}\n", "utf-8");
 
-      assert.equal(cleanStaleRuntimeUnits(join(base, ".gsd"), () => false), 0);
+      assert.equal(cleanStaleRuntimeUnits(join(base, ".otto/workflow"), () => false), 0);
       assert.equal(existsSync(unitFile), true);
 
-      assert.equal(cleanStaleRuntimeUnits(join(base, ".gsd"), (mid) => mid === "M001"), 1);
+      assert.equal(cleanStaleRuntimeUnits(join(base, ".otto/workflow"), (mid) => mid === "M001"), 1);
       assert.equal(existsSync(unitFile), false);
     } finally {
       rmSync(base, { recursive: true, force: true });
@@ -33,7 +33,7 @@ describe("auto-start cleanStaleRuntimeUnits DB gating (#4663)", () => {
 
   test("cleanStaleRuntimeUnits removes legacy pseudo deep-setup runtime files", () => {
     const base = makeBase();
-    const workflowRoot = join(base, ".gsd");
+    const workflowRoot = join(base, ".otto/workflow");
     const unitsDir = join(workflowRoot, "runtime", "units");
     try {
       mkdirSync(unitsDir, { recursive: true });

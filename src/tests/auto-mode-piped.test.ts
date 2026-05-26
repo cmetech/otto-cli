@@ -90,9 +90,9 @@ const modules = new Map([
 ])
 
 export async function resolve(specifier, context, nextResolve) {
-  if (specifier === '@loop24/pi-coding-agent') return { url: 'stub:pi-coding-agent', shortCircuit: true }
-  if (specifier === '@loop24/pi-ai' || specifier === '@loop24/pi-ai/oauth') return { url: 'stub:pi-ai', shortCircuit: true }
-  if (specifier === '@loop24/pi-tui') return { url: 'stub:pi-tui', shortCircuit: true }
+  if (specifier === '@otto/pi-coding-agent') return { url: 'stub:pi-coding-agent', shortCircuit: true }
+  if (specifier === '@otto/pi-ai' || specifier === '@otto/pi-ai/oauth') return { url: 'stub:pi-ai', shortCircuit: true }
+  if (specifier === '@otto/pi-tui') return { url: 'stub:pi-tui', shortCircuit: true }
   if (specifier === 'chalk') return { url: 'stub:chalk', shortCircuit: true }
   if (specifier === './headless.js' && context.parentURL?.endsWith('/src/cli.ts')) {
     return { url: 'stub:headless', shortCircuit: true }
@@ -134,8 +134,8 @@ export async function load(url, context, nextLoad) {
       cwd: process.cwd(),
       env: {
         ...process.env,
-        GSD_HOME: join(tempDir, 'home'),
-        GSD_RTK_DISABLED: '1',
+        OTTO_HOME: join(tempDir, 'home'),
+        OTTO_RTK_DISABLED: '1',
       },
       encoding: 'utf8',
       input: '',

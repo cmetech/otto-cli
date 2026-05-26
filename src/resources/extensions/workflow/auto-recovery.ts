@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Verifies auto-mode artifacts and manages recovery placeholders.
 /**
  * Auto-mode Recovery — artifact resolution, verification, blocker placeholders,
@@ -261,13 +261,13 @@ function hasCheckedTaskCompletionOnDisk(base: string, mid: string, sid: string, 
 }
 
 /**
- * Check whether a milestone produced implementation artifacts (non-`.gsd/`
+ * Check whether a milestone produced implementation artifacts (non-`.otto/workflow/`
  * files) in git history. The primary signal is the branch diff against the
  * integration branch. When a retry is already on the integration branch, that
  * diff is a self-diff; if a milestone ID is available, fall back to recent
  * workflow-tagged commits for that milestone.
  *
- * Returns "present" if implementation files found, "absent" if only .gsd/ files,
+ * Returns "present" if implementation files found, "absent" if only .otto/workflow/ files,
  * "unknown" if git is unavailable or check failed (callers decide how to handle).
  */
 export function hasImplementationArtifacts(basePath: string, milestoneId?: string): "present" | "absent" | "unknown" {
@@ -319,7 +319,7 @@ export function hasImplementationArtifacts(basePath: string, milestoneId?: strin
     if (branchClassification === "present") return "present";
 
     // A completing milestone branch can have a non-empty diff containing only
-    // .gsd/ closeout files after implementation commits already landed on the
+    // .otto/workflow/ closeout files after implementation commits already landed on the
     // recorded integration branch. In that topology, the branch diff alone is
     // insufficient; use the same milestone-tagged evidence fallback as the
     // self-diff retry path before declaring the milestone implementation-free.
@@ -356,7 +356,7 @@ function classifyImplementationFiles(files: readonly string[]): "present" | "abs
 }
 
 function isImplementationPath(file: string): boolean {
-  return !file.startsWith(".gsd/") && !file.startsWith(".gsd\\");
+  return !file.startsWith(".otto/workflow/") && !file.startsWith(".otto\\workflow\\");
 }
 
 function normalizeRepoPath(file: string): string {
@@ -435,15 +435,15 @@ function getChangedFilesFromMilestoneTaggedCommits(
   basePath: string,
   milestoneId: string,
 ): { ok: boolean; matched: boolean; files: string[] } {
-  // Primary: path-scoped log against .gsd/milestones/<id>. Fast and unbounded
-  // by depth when .gsd/ is tracked in git.
+  // Primary: path-scoped log against .otto/workflow/milestones/<id>. Fast and unbounded
+  // by depth when .otto/workflow/ is tracked in git.
   const scoped = scanWorkflowTaggedCommits(basePath, milestoneId, [
-    "log", "--format=%H%x1f%B%x1e", "HEAD", "--", `.gsd/milestones/${milestoneId}`,
+    "log", "--format=%H%x1f%B%x1e", "HEAD", "--", `.otto/workflow/milestones/${milestoneId}`,
   ]);
   if (!scoped.ok) return scoped;
   if (scoped.matched && classifyImplementationFiles(scoped.files) === "present") return scoped;
 
-  // Fallback (#5033): when .gsd/ is gitignored / external / untracked, the
+  // Fallback (#5033): when .otto/workflow/ is gitignored / external / untracked, the
   // path-scoped scan matches no commits even though workflow-tagged commits
   // referencing the milestone exist on the integration branch. Re-scan all
   // of HEAD's history and rely on commitMatchesMilestone to bind by
@@ -639,7 +639,7 @@ function getChangedFilesForCommit(basePath: string, hash: string): string[] {
 }
 
 function commitMessageHasWorkflowTrailer(message: string): boolean {
-  return /^GSD-(?:Task|Unit):\s*\S+/m.test(message);
+  return /^(?:OTTO|GSD)-(?:Task|Unit):\s*\S+/m.test(message);
 }
 
 function commitMatchesMilestone(basePath: string, message: string, milestoneId: string, files: readonly string[]): boolean {
@@ -648,10 +648,10 @@ function commitMatchesMilestone(basePath: string, message: string, milestoneId: 
   // Meaningful execute-task commits currently store task scope as Sxx/Tyy
   // rather than Mxx/Sxx/Tyy. Bind those commits back to the milestone when
   // either the commit touched this milestone's artifacts, or — for projects
-  // where .gsd/ is gitignored/external (#5033) — the message explicitly
+  // where .otto/workflow/ is gitignored/external (#5033) — the message explicitly
   // names the milestone, local workflow state proves the task belongs here, or the
   // commit is implementation-bearing evidence itself (#5100).
-  if (/^GSD-Task:\s*S[^/\s]+\/T\S+/m.test(message)) {
+  if (/^(?:OTTO|GSD)-Task:\s*S[^/\s]+\/T\S+/m.test(message)) {
     if (files.some((file) => isMilestoneArtifactPath(file, milestoneId))) return true;
     if (commitMessageMentionsMilestone(message, milestoneId)) return true;
     const taskTrailerOwnership = getTaskOwnershipStatus(basePath, message, milestoneId);
@@ -676,7 +676,7 @@ function getTaskOwnershipStatus(
   message: string,
   milestoneId: string,
 ): true | false | null {
-  const match = message.match(/^GSD-Task:\s*(S[^/\s]+)\/(T[^\s]+)/m);
+  const match = message.match(/^(?:OTTO|GSD)-Task:\s*(S[^/\s]+)\/(T[^\s]+)/m);
   if (!match) return null;
   const [, sliceId, taskId] = match;
 
@@ -710,15 +710,15 @@ function commitMessageMentionsMilestone(message: string, milestoneId: string): b
 function commitTrailerStartsWithMilestone(message: string, milestoneId: string): boolean {
   const escapedMilestone = milestoneId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const trailerPattern = new RegExp(
-    `^GSD-(?:Task|Unit):\\s*${escapedMilestone}(?:$|[\\s/])`,
+    `^(?:OTTO|GSD)-(?:Task|Unit):\\s*${escapedMilestone}(?:$|[\\s/])`,
     "m",
   );
   return trailerPattern.test(message);
 }
 
 function isMilestoneArtifactPath(file: string, milestoneId: string): boolean {
-  return file.startsWith(`.gsd/milestones/${milestoneId}/`)
-    || file.startsWith(`.gsd\\milestones\\${milestoneId}\\`);
+  return file.startsWith(`.otto/workflow/milestones/${milestoneId}/`)
+    || file.startsWith(`.otto/workflow\\milestones\\${milestoneId}\\`);
 }
 
 /**
@@ -1002,7 +1002,7 @@ export function verifyExpectedArtifact(
       } else if (!isDbAvailable()) {
         // LEGACY: Pre-migration fallback for projects without DB.
         // Require a CHECKED checkbox — a bare heading or unchecked checkbox
-        // does not prove gsd_complete_task ran. Summary file on disk alone
+        // does not prove otto_complete_task ran. Summary file on disk alone
         // is not sufficient evidence (could be a rogue write) (#3607).
         if (!hasCheckedTaskCompletionOnDisk(base, mid, sid, tid)) return false;
       } else {
@@ -1049,7 +1049,7 @@ export function verifyExpectedArtifact(
   }
 
   // complete-milestone must have produced implementation artifacts (#1703).
-  // A milestone with only .gsd/ plan files and zero implementation code is
+  // A milestone with only .otto/workflow/ plan files and zero implementation code is
   // not genuinely complete — the LLM wrote plan files but skipped actual work.
   if (unitType === "complete-milestone") {
     const summaryOutcome = classifyMilestoneSummaryContent(readFileSync(absPath, "utf-8"));

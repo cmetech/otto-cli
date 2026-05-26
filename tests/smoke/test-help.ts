@@ -3,7 +3,7 @@
  *
  * Defaults to the locally built binary (`dist/loader.js`) so the test
  * exercises the artifact produced by the current checkout, not whatever
- * is currently published on npm.  Setting `GSD_SMOKE_BINARY` overrides
+ * is currently published on npm.  Setting `OTTO_SMOKE_BINARY` overrides
  * the target (used by post-publish pipelines that install the tarball
  * into a scratch directory).
  */
@@ -15,11 +15,11 @@ import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_BINARY = join(__dirname, "..", "..", "dist", "loader.js");
 
-const binary = process.env.GSD_SMOKE_BINARY || DEFAULT_BINARY;
+const binary = process.env.OTTO_SMOKE_BINARY || DEFAULT_BINARY;
 if (!existsSync(binary)) {
   console.error(
     `Smoke binary not found: ${binary}\n` +
-      `Run \`npm run build\` first, or set GSD_SMOKE_BINARY to an existing binary.`,
+      `Run \`npm run build\` first, or set OTTO_SMOKE_BINARY to an existing binary.`,
   );
   // POSIX skip convention — harness recognises exit 77 as "skipped".
   process.exit(77);

@@ -1,4 +1,4 @@
-// GSD Extension — formatShortcut tests
+// OTTO Extension — formatShortcut tests
 // Verifies OS-specific keyboard shortcut rendering.
 
 import test from 'node:test';

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for interactive assistant replay ordering.
 import assert from "node:assert/strict";
 import { test } from "node:test";

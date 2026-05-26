@@ -1,12 +1,12 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Registers Context Mode execution tools.
-// LOOP24 — Exec (context-mode) tool registration.
+// OTTO — Exec (context-mode) tool registration.
 //
 // Exposes the Context Mode runtime tools in-process. Default-on; opt out with
 // `context_mode.enabled: false` in preferences.
 
 import { Type } from "@sinclair/typebox";
-import type { ExtensionAPI } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI } from "@otto/pi-coding-agent";
 
 import { resolveCtxCwd } from "./dynamic-tools.js";
 
@@ -26,18 +26,18 @@ async function loadContextModePreferences(baseDir: string) {
 
 export function registerExecTools(pi: ExtensionAPI): void {
   pi.registerTool({
-    name: "gsd_exec",
+    name: "otto_exec",
     label: "Exec (Sandboxed)",
     description:
       "Run a short script (bash/node/python) in a subprocess. Capped stdout/stderr and metadata persist to " +
-      ".gsd/exec/<id>.{stdout,stderr,meta.json}; only a short digest returns in context. Use " +
+      ".otto/workflow/exec/<id>.{stdout,stderr,meta.json}; only a short digest returns in context. Use " +
       "this instead of reading many files or emitting large tool outputs — e.g. have the script " +
       "count/grep/summarize and log the finding. Enabled by default; opt out via " +
       "preferences.context_mode.enabled=false.",
     promptSnippet:
       "Run a bash/node/python script in a sandbox; capped output is saved to disk and only a digest returns",
     promptGuidelines: [
-      "Prefer gsd_exec for analyses that would otherwise read >3 files or produce large tool output.",
+      "Prefer otto_exec for analyses that would otherwise read >3 files or produce large tool output.",
       "Write scripts that log the finding (counts, matches, summaries) rather than raw dumps.",
       "The digest is the last ~300 chars of stdout — size your log output accordingly.",
       "Need persisted output? Read the stdout_path returned in details (file on local disk).",
@@ -68,12 +68,12 @@ export function registerExecTools(pi: ExtensionAPI): void {
   });
 
   pi.registerTool({
-    name: "gsd_exec_search",
-    label: "Search gsd_exec History",
+    name: "otto_exec_search",
+    label: "Search otto_exec History",
     description:
-      "List prior gsd_exec runs (most recent first) from .gsd/exec/*.meta.json. Useful for " +
+      "List prior otto_exec runs (most recent first) from .otto/workflow/exec/*.meta.json. Useful for " +
       "rediscovering the stdout_path of an earlier run without re-executing it. Read-only.",
-    promptSnippet: "Search prior gsd_exec runs by substring, runtime, or failing-only filter",
+    promptSnippet: "Search prior otto_exec runs by substring, runtime, or failing-only filter",
     promptGuidelines: [
       "Use this before re-running an expensive analysis — the prior run's stdout file may still answer.",
       "The preview shows the trailing ~300 chars of stdout; read stdout_path for persisted output.",
@@ -99,16 +99,16 @@ export function registerExecTools(pi: ExtensionAPI): void {
   });
 
   pi.registerTool({
-    name: "gsd_resume",
+    name: "otto_resume",
     label: "Resume (Read Snapshot)",
     description:
-      "Return the contents of .gsd/last-snapshot.md — a ≤2 KB digest of top memories, recent " +
-      "gsd_exec runs, and active context, written automatically on session_before_compact. Use " +
+      "Return the contents of .otto/workflow/last-snapshot.md — a ≤2 KB digest of top memories, recent " +
+      "otto_exec runs, and active context, written automatically on session_before_compact. Use " +
       "this after compaction or session resume to re-orient quickly.",
     promptSnippet: "Read the pre-compaction snapshot to re-orient after context loss",
     promptGuidelines: [
       "Call this right after a session resumes if you feel you've lost durable context.",
-      "The snapshot is a summary — use memory_query or gsd_exec_search for detail.",
+      "The snapshot is a summary — use memory_query or otto_exec_search for detail.",
     ],
     parameters: Type.Object({}),
     async execute(_toolCallId, params, _signal, _onUpdate, _ctx) {

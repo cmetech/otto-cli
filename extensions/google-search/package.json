@@ -5,9 +5,9 @@
   "type": "module",
   "keywords": [
     "pi-package",
-    "gsd-extension"
+    "otto-extension"
   ],
-  "gsd": {
+  "otto": {
     "extension": true
   },
   "pi": {
@@ -16,8 +16,8 @@
     ]
   },
   "peerDependencies": {
-    "@loop24/pi-coding-agent": "*",
-    "@loop24/pi-tui": "*"
+    "@otto/pi-coding-agent": "*",
+    "@otto/pi-tui": "*"
   },
   "dependencies": {
     "@google/genai": "^1.40.0",

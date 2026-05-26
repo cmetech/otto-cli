@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Verifies planning prompt placeholder rendering and DB-backed tool guidance.
 
 import test from "node:test";
@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const worktreePromptsDir = join(__dirname, "..", "prompts");
-const fixtureRoot = process.env.GSD_TEST_WORKSPACE_ROOT ?? process.cwd();
+const fixtureRoot = process.env.OTTO_TEST_WORKSPACE_ROOT ?? process.cwd();
 
 function loadPrompt(name: string, vars: Record<string, string> = {}): string {
   const path = join(worktreePromptsDir, `${name}.md`);
@@ -23,20 +23,20 @@ function loadPrompt(name: string, vars: Record<string, string> = {}): string {
 const BASE_VARS = {
   workingDirectory: fixtureRoot,
   milestoneId: "M001", sliceId: "S01", sliceTitle: "Test Slice",
-  slicePath: ".gsd/milestones/M001/slices/S01",
-  roadmapPath: ".gsd/milestones/M001/M001-ROADMAP.md",
-  researchPath: ".gsd/milestones/M001/slices/S01/S01-RESEARCH.md",
-  outputPath: join(fixtureRoot, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+  slicePath: ".otto\/workflow/milestones/M001/slices/S01",
+  roadmapPath: ".otto\/workflow/milestones/M001/M001-ROADMAP.md",
+  researchPath: ".otto\/workflow/milestones/M001/slices/S01/S01-RESEARCH.md",
+  outputPath: join(fixtureRoot, ".otto\/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
   inlinedContext: "--- test inlined context ---",
   dependencySummaries: "", executorContextConstraints: "",
-  sourceFilePaths: "- **Requirements**: `.gsd/REQUIREMENTS.md`",
+  sourceFilePaths: "- **Requirements**: `.otto\/workflow/REQUIREMENTS.md`",
   templatesDir: join(fixtureRoot, "templates"),
-  planTemplatePath: "C:\\Users\\Test\\.gsd\\agent\\extensions\\gsd\\templates\\plan.md",
-  taskPlanTemplatePath: "C:\\Users\\Test\\.gsd\\agent\\extensions\\gsd\\templates\\task-plan.md",
+  planTemplatePath: "C:\\Users\\Test\\.otto/workflow\\agent\\extensions\\gsd\\templates\\plan.md",
+  taskPlanTemplatePath: "C:\\Users\\Test\\.otto/workflow\\agent\\extensions\\gsd\\templates\\task-plan.md",
   skillActivation: "Load the relevant skills.",
 };
 
-const DEFAULT_SKILL_ACTIVATION = "If a `GSD Skill Preferences` block is present in system context, use it and the `<available_skills>` catalog in your system prompt to decide which skills to load and follow for this unit, without relaxing required verification or artifact rules.";
+const DEFAULT_SKILL_ACTIVATION = "If a `OTTO Skill Preferences` block is present in system context, use it and the `<available_skills>` catalog in your system prompt to decide which skills to load and follow for this unit, without relaxing required verification or artifact rules.";
 
 function loadPromptWithDefaultSkillActivation(name: string, vars: Record<string, string> = {}): string {
   return loadPrompt(name, { skillActivation: DEFAULT_SKILL_ACTIVATION, ...vars });
@@ -49,7 +49,7 @@ function promptUsesSkillActivation(name: string): boolean {
 }
 
 test("plan-slice prompt: commit instruction says do not commit (external state)", () => {
-  const result = loadPrompt("plan-slice", { ...BASE_VARS, commitInstruction: "Do not commit planning artifacts — .gsd/ is managed externally." });
+  const result = loadPrompt("plan-slice", { ...BASE_VARS, commitInstruction: "Do not commit planning artifacts — .otto\/workflow/ is managed externally." });
   assert.ok(result.includes("Do not commit planning artifacts"));
   assert.ok(!result.includes("{{commitInstruction}}"));
 });
@@ -63,11 +63,11 @@ test("plan-slice prompt: all variables substituted", () => {
 
 test("plan-slice prompt: DB-backed tool names survive template substitution", () => {
   const result = loadPrompt("plan-slice", { ...BASE_VARS, commitInstruction: "Do not commit." });
-  assert.ok(result.includes("gsd_plan_slice"), "gsd_plan_slice should appear in rendered prompt");
-  assert.ok(result.includes("gsd_plan_task"), "gsd_plan_task should appear in rendered prompt");
-  assert.ok(result.includes("gsd_decision_save"), "structural decisions should use DB-backed decision tool");
+  assert.ok(result.includes("otto_plan_slice"), "otto_plan_slice should appear in rendered prompt");
+  assert.ok(result.includes("otto_plan_task"), "otto_plan_task should appear in rendered prompt");
+  assert.ok(result.includes("otto_decision_save"), "structural decisions should use DB-backed decision tool");
   assert.ok(result.includes("canonical write path"), "canonical write path language should survive substitution");
-  assert.doesNotMatch(result, /append them to `.gsd\/DECISIONS\.md`/);
+  assert.doesNotMatch(result, /append them to `.otto\/workflow\/DECISIONS\.md`/);
 });
 
 test("plan-slice prompt: compact planning gates survive template substitution", () => {
@@ -76,18 +76,18 @@ test("plan-slice prompt: compact planning gates survive template substitution", 
   assert.ok(result.includes("Bias toward \"roadmap is fine.\""), "roadmap reassessment brake should remain visible");
   assert.ok(result.includes("Self-audit before finishing"), "self-audit gate should remain visible");
   assert.ok(result.includes("Quality gates: non-trivial slices/tasks include specific Q3-Q7 coverage where applicable."));
-  assert.ok(result.includes("C:\\Users\\Test\\.gsd\\agent\\extensions\\gsd\\templates\\plan.md"));
-  assert.ok(result.includes("C:\\Users\\Test\\.gsd\\agent\\extensions\\gsd\\templates\\task-plan.md"));
+  assert.ok(result.includes("C:\\Users\\Test\\.otto/workflow\\agent\\extensions\\gsd\\templates\\plan.md"));
+  assert.ok(result.includes("C:\\Users\\Test\\.otto/workflow\\agent\\extensions\\gsd\\templates\\task-plan.md"));
   assert.ok(!result.includes("{{templatesDir}}/plan.md"));
   assert.ok(!result.includes("{{templatesDir}}/task-plan.md"));
   assert.ok(!result.includes("{{"));
 });
 
-test("plan-slice prompt: footer references gsd_plan_slice tool, not direct write", () => {
+test("plan-slice prompt: footer references otto_plan_slice tool, not direct write", () => {
   const result = loadPrompt("plan-slice", { ...BASE_VARS, commitInstruction: "Do not commit." });
   assert.ok(
-    result.includes("MUST call `gsd_plan_slice`"),
-    "footer should instruct calling gsd_plan_slice tool",
+    result.includes("MUST call `otto_plan_slice`"),
+    "footer should instruct calling otto_plan_slice tool",
   );
   assert.ok(
     !result.includes("MUST write the file"),
@@ -119,15 +119,15 @@ test("skillActivation default leaves no unresolved placeholder", () => {
     sliceTitle: "Test Slice",
     taskId: "T01",
     taskTitle: "Implement feature",
-    planPath: ".gsd/milestones/M001/slices/S01/S01-PLAN.md",
-    taskPlanPath: ".gsd/milestones/M001/slices/S01/tasks/T01-PLAN.md",
+    planPath: ".otto\/workflow/milestones/M001/slices/S01/S01-PLAN.md",
+    taskPlanPath: ".otto\/workflow/milestones/M001/slices/S01/tasks/T01-PLAN.md",
     taskPlanInline: "Task plan",
     slicePlanExcerpt: "Slice excerpt",
     carryForwardSection: "Carry forward",
     resumeSection: "Resume",
     priorTaskLines: "- (no prior tasks)",
     templatesDir: join(fixtureRoot, "templates"),
-    taskSummaryPath: join(fixtureRoot, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"),
+    taskSummaryPath: join(fixtureRoot, ".otto\/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"),
     inlinedTemplates: "Template",
     verificationBudget: "~10K chars",
     overridesSection: "",
@@ -145,15 +145,15 @@ test("custom skillActivation is substituted into execute-task", () => {
     sliceTitle: "Test Slice",
     taskId: "T01",
     taskTitle: "Implement feature",
-    planPath: ".gsd/milestones/M001/slices/S01/S01-PLAN.md",
-    taskPlanPath: ".gsd/milestones/M001/slices/S01/tasks/T01-PLAN.md",
+    planPath: ".otto\/workflow/milestones/M001/slices/S01/S01-PLAN.md",
+    taskPlanPath: ".otto\/workflow/milestones/M001/slices/S01/tasks/T01-PLAN.md",
     taskPlanInline: "Task plan",
     slicePlanExcerpt: "Slice excerpt",
     carryForwardSection: "Carry forward",
     resumeSection: "Resume",
     priorTaskLines: "- (no prior tasks)",
     templatesDir: join(fixtureRoot, "templates"),
-    taskSummaryPath: join(fixtureRoot, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"),
+    taskSummaryPath: join(fixtureRoot, ".otto\/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"),
     inlinedTemplates: "Template",
     verificationBudget: "~10K chars",
     overridesSection: "",
@@ -180,9 +180,9 @@ test("research-milestone prompt substitutes skillActivation", () => {
     workingDirectory: fixtureRoot,
     milestoneId: "M001",
     milestoneTitle: "Test Milestone",
-    milestonePath: ".gsd/milestones/M001",
-    contextPath: ".gsd/milestones/M001/M001-CONTEXT.md",
-    outputPath: join(fixtureRoot, ".gsd", "milestones", "M001", "M001-RESEARCH.md"),
+    milestonePath: ".otto\/workflow/milestones/M001",
+    contextPath: ".otto\/workflow/milestones/M001/M001-CONTEXT.md",
+    outputPath: join(fixtureRoot, ".otto\/workflow", "milestones", "M001", "M001-RESEARCH.md"),
     inlinedContext: "Context",
     skillDiscoveryMode: "manual",
     skillDiscoveryInstructions: " Discover skills manually.",
@@ -193,14 +193,14 @@ test("research-milestone prompt substitutes skillActivation", () => {
   assert.ok(!result.includes("{{skillActivation}}"));
 });
 
-test("research-milestone prompt references gsd_summary_save, not direct write", () => {
+test("research-milestone prompt references otto_summary_save, not direct write", () => {
   const result = loadPrompt("research-milestone", {
     workingDirectory: fixtureRoot,
     milestoneId: "M001",
     milestoneTitle: "Test Milestone",
-    milestonePath: ".gsd/milestones/M001",
-    contextPath: ".gsd/milestones/M001/M001-CONTEXT.md",
-    outputPath: join(fixtureRoot, ".gsd", "milestones", "M001", "M001-RESEARCH.md"),
+    milestonePath: ".otto\/workflow/milestones/M001",
+    contextPath: ".otto\/workflow/milestones/M001/M001-CONTEXT.md",
+    outputPath: join(fixtureRoot, ".otto\/workflow", "milestones", "M001", "M001-RESEARCH.md"),
     inlinedContext: "Context",
     skillDiscoveryMode: "manual",
     skillDiscoveryInstructions: " Discover skills manually.",
@@ -208,8 +208,8 @@ test("research-milestone prompt references gsd_summary_save, not direct write", 
   });
 
   assert.ok(
-    result.includes("gsd_summary_save"),
-    "research-milestone should reference gsd_summary_save tool",
+    result.includes("otto_summary_save"),
+    "research-milestone should reference otto_summary_save tool",
   );
   assert.ok(
     result.includes('artifact_type: "RESEARCH"'),
@@ -227,11 +227,11 @@ test("research-slice prompt substitutes skillActivation", () => {
     milestoneId: "M001",
     sliceId: "S01",
     sliceTitle: "Test Slice",
-    slicePath: ".gsd/milestones/M001/slices/S01",
-    roadmapPath: ".gsd/milestones/M001/M001-ROADMAP.md",
-    contextPath: ".gsd/milestones/M001/M001-CONTEXT.md",
-    milestoneResearchPath: ".gsd/milestones/M001/M001-RESEARCH.md",
-    outputPath: join(fixtureRoot, ".gsd", "milestones", "M001", "slices", "S01", "S01-RESEARCH.md"),
+    slicePath: ".otto\/workflow/milestones/M001/slices/S01",
+    roadmapPath: ".otto\/workflow/milestones/M001/M001-ROADMAP.md",
+    contextPath: ".otto\/workflow/milestones/M001/M001-CONTEXT.md",
+    milestoneResearchPath: ".otto\/workflow/milestones/M001/M001-RESEARCH.md",
+    outputPath: join(fixtureRoot, ".otto\/workflow", "milestones", "M001", "slices", "S01", "S01-RESEARCH.md"),
     inlinedContext: "Context",
     dependencySummaries: "",
     skillDiscoveryMode: "manual",
@@ -248,12 +248,12 @@ test("plan-milestone prompt substitutes skillActivation", () => {
     workingDirectory: fixtureRoot,
     milestoneId: "M001",
     milestoneTitle: "Test Milestone",
-    milestonePath: ".gsd/milestones/M001",
-    contextPath: ".gsd/milestones/M001/M001-CONTEXT.md",
-    researchPath: ".gsd/milestones/M001/M001-RESEARCH.md",
-    researchOutputPath: join(fixtureRoot, ".gsd", "milestones", "M001", "M001-RESEARCH.md"),
-    outputPath: join(fixtureRoot, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
-    secretsOutputPath: join(fixtureRoot, ".gsd", "milestones", "M001", "M001-SECRETS.md"),
+    milestonePath: ".otto\/workflow/milestones/M001",
+    contextPath: ".otto\/workflow/milestones/M001/M001-CONTEXT.md",
+    researchPath: ".otto\/workflow/milestones/M001/M001-RESEARCH.md",
+    researchOutputPath: join(fixtureRoot, ".otto\/workflow", "milestones", "M001", "M001-RESEARCH.md"),
+    outputPath: join(fixtureRoot, ".otto\/workflow", "milestones", "M001", "M001-ROADMAP.md"),
+    secretsOutputPath: join(fixtureRoot, ".otto\/workflow", "milestones", "M001", "M001-SECRETS.md"),
     inlinedContext: "Context",
     sourceFilePaths: "- source",
     skillDiscoveryMode: "manual",
@@ -270,12 +270,12 @@ test("plan-milestone prompt: compact planning gates survive template substitutio
     workingDirectory: fixtureRoot,
     milestoneId: "M001",
     milestoneTitle: "Test Milestone",
-    milestonePath: ".gsd/milestones/M001",
-    contextPath: ".gsd/milestones/M001/M001-CONTEXT.md",
-    researchPath: ".gsd/milestones/M001/M001-RESEARCH.md",
-    researchOutputPath: join(fixtureRoot, ".gsd", "milestones", "M001", "M001-RESEARCH.md"),
-    outputPath: join(fixtureRoot, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
-    secretsOutputPath: join(fixtureRoot, ".gsd", "milestones", "M001", "M001-SECRETS.md"),
+    milestonePath: ".otto\/workflow/milestones/M001",
+    contextPath: ".otto\/workflow/milestones/M001/M001-CONTEXT.md",
+    researchPath: ".otto\/workflow/milestones/M001/M001-RESEARCH.md",
+    researchOutputPath: join(fixtureRoot, ".otto\/workflow", "milestones", "M001", "M001-RESEARCH.md"),
+    outputPath: join(fixtureRoot, ".otto\/workflow", "milestones", "M001", "M001-ROADMAP.md"),
+    secretsOutputPath: join(fixtureRoot, ".otto\/workflow", "milestones", "M001", "M001-SECRETS.md"),
     inlinedContext: "Context",
     sourceFilePaths: "- source",
     skillDiscoveryMode: "manual",
@@ -284,7 +284,7 @@ test("plan-milestone prompt: compact planning gates survive template substitutio
   });
 
   assert.ok(result.includes("Already Planned? Soft Brake"));
-  assert.ok(result.includes("gsd_plan_milestone"));
+  assert.ok(result.includes("otto_plan_milestone"));
   assert.ok(result.includes("Dependency format is comma-separated"));
   assert.ok(result.includes("phases.progressive_planning"));
   assert.ok(result.includes("Single-Slice Fast Path"));

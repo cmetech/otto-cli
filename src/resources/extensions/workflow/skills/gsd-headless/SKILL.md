@@ -34,7 +34,7 @@ gsd headless [flags] [command] [args...]
 gsd headless new-milestone --context spec.md --auto
 ```
 
-Reads spec, bootstraps `.gsd/`, creates milestone, then chains into auto-mode executing all phases (discuss → research → plan → execute → summarize → complete).
+Reads spec, bootstraps `.otto/workflow/`, creates milestone, then chains into auto-mode executing all phases (discuss → research → plan → execute → summarize → complete).
 
 Extra flags for `new-milestone`: `--context <path>` (use `-` for stdin), `--context-text <text>`, `--auto`.
 
@@ -119,26 +119,26 @@ done
 
 ### Multi-Session Orchestration
 
-GSD tracks concurrent workers via file-based IPC in `.gsd/parallel/`. See [references/multi-session.md](references/multi-session.md) for the full architecture.
+GSD tracks concurrent workers via file-based IPC in `.otto/workflow/parallel/`. See [references/multi-session.md](references/multi-session.md) for the full architecture.
 
 **Quick overview:**
 
-Each worker spawns with `GSD_MILESTONE_LOCK=M00X` + its own git worktree. Workers write heartbeats to `.gsd/parallel/<milestoneId>.status.json`. The orchestrator enumerates all status files to get a dashboard of all workers, and sends commands via signal files.
+Each worker spawns with `OTTO_MILESTONE_LOCK=M00X` + its own git worktree. Workers write heartbeats to `.otto/workflow/parallel/<milestoneId>.status.json`. The orchestrator enumerates all status files to get a dashboard of all workers, and sends commands via signal files.
 
 ```bash
 # Spawn a worker for milestone M001 in its worktree
-GSD_MILESTONE_LOCK=M001 GSD_PARALLEL_WORKER=1 \
+OTTO_MILESTONE_LOCK=M001 OTTO_PARALLEL_WORKER=1 \
   gsd headless --json auto \
-  --cwd .gsd/worktrees/M001 2>worker-M001.log &
+  --cwd .otto/workflow/worktrees/M001 2>worker-M001.log &
 
-# Monitor all workers: read .gsd/parallel/*.status.json
-for f in .gsd/parallel/*.status.json; do
+# Monitor all workers: read .otto/workflow/parallel/*.status.json
+for f in .otto/workflow/parallel/*.status.json; do
   jq '{mid: .milestoneId, state: .state, unit: .currentUnit.id, cost: .cost}' "$f"
 done
 
 # Send pause signal to M001
 echo '{"signal":"pause","sentAt":'$(date +%s000)',"from":"coordinator"}' \
-  > .gsd/parallel/M001.signal.json
+  > .otto/workflow/parallel/M001.signal.json
 ```
 
 **Status file fields:** `milestoneId`, `pid`, `state` (running/paused/stopped/error), `currentUnit`, `completedUnits`, `cost`, `lastHeartbeat`, `startedAt`, `worktreePath`.
@@ -147,7 +147,7 @@ echo '{"signal":"pause","sentAt":'$(date +%s000)',"from":"coordinator"}' \
 
 **Liveness detection:** PID alive check (`kill -0 $pid`) + heartbeat freshness (30s timeout). Stale sessions are auto-cleaned.
 
-**For multiple projects:** each project has its own `.gsd/` directory. The orchestrator must track `(projectPath, milestoneId)` tuples externally.
+**For multiple projects:** each project has its own `.otto/workflow/` directory. The orchestrator must track `(projectPath, milestoneId)` tuples externally.
 
 ### JSONL Event Stream
 
@@ -207,10 +207,10 @@ See [references/answer-injection.md](references/answer-injection.md) for full de
 
 ## GSD Project Structure
 
-All state lives in `.gsd/` as markdown files (version-controllable):
+All state lives in `.otto/workflow/` as markdown files (version-controllable):
 
 ```
-.gsd/
+.otto/workflow/
   milestones/M001/
     M001-CONTEXT.md      # Requirements, scope, decisions
     M001-ROADMAP.md      # Slices with tasks, dependencies, checkboxes

@@ -6,7 +6,7 @@ import {
 	type KeyId,
 	matchesKey,
 	setEditorKeybindings,
-} from "@loop24/pi-tui";
+} from "@otto/pi-tui";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { getAgentDir } from "../config.js";

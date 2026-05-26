@@ -2,7 +2,7 @@
 
 *Introduced in v2.17.0*
 
-GSD 2.17 introduces a coordinated token optimization system that can reduce token usage by 40-60% without sacrificing output quality for most workloads. The system has three pillars: **token profiles**, **context compression**, and **complexity-based task routing**.
+OTTO 2.17 introduces a coordinated token optimization system that can reduce token usage by 40-60% without sacrificing output quality for most workloads. The system has three pillars: **token profiles**, **context compression**, and **complexity-based task routing**.
 
 ## Token Profiles
 
@@ -74,7 +74,7 @@ Uses stronger tier defaults for planning and full context inlining for dispatche
 
 Best for: complex architectures, critical production work, and workflows where you want full prompt context while retaining the simplified phase pipeline. Override `phases` if you want to force skipped research or reassessment phases back on.
 
-Profile model settings are provider-agnostic. Each profile declares the intended capability tier for each phase, then GSD resolves that tier to an available model from your configured providers at runtime. For example, a light tier may resolve to Haiku, `gpt-4o-mini`, Gemini Flash, or another configured light model depending on what is available. If the model registry is unavailable during early startup, GSD falls back to canonical Anthropic IDs until concrete providers can be resolved.
+Profile model settings are provider-agnostic. Each profile declares the intended capability tier for each phase, then OTTO resolves that tier to an available model from your configured providers at runtime. For example, a light tier may resolve to Haiku, `gpt-4o-mini`, Gemini Flash, or another configured light model depending on what is available. If the model registry is unavailable during early startup, OTTO falls back to canonical Anthropic IDs until concrete providers can be resolved.
 
 ## Context Compression
 
@@ -94,7 +94,7 @@ Dispatch prompt builders accept an `inlineLevel` parameter. At each level, speci
 - `buildExecuteTaskPrompt` — drops the decisions template, truncates prior summaries to the most recent one
 - `buildPlanMilestonePrompt` — drops `PROJECT.md`, `REQUIREMENTS.md`, decisions, and supplementary templates like `secrets-manifest`
 - `buildCompleteSlicePrompt` — drops requirements and UAT template inlining
-- `buildCompleteMilestonePrompt` — drops root GSD file inlining
+- `buildCompleteMilestonePrompt` — drops root OTTO file inlining
 - `buildReassessRoadmapPrompt` — drops project, requirements, and decisions files
 
 These are cumulative — `standard` drops a subset, `minimal` drops more. The `full` level preserves all context (the pre-2.17 behavior).
@@ -116,7 +116,7 @@ Explicit `phases` settings always override the profile defaults.
 
 ## Complexity-Based Task Routing
 
-GSD classifies each task by complexity and routes it to an appropriate model tier when dynamic routing is enabled. Simple documentation fixes use cheaper models while complex architectural work gets the reasoning power it needs.
+OTTO classifies each task by complexity and routes it to an appropriate model tier when dynamic routing is enabled. Simple documentation fixes use cheaper models while complex architectural work gets the reasoning power it needs.
 
 > **Prerequisite:** Dynamic routing requires explicit `models` in your preferences. Without a `models` section, routing is skipped and the session's launch model is used for all phases. Token profiles set `models` automatically.
 
@@ -176,7 +176,7 @@ This graduated approach preserves model quality for the most complex work while 
 
 ## Adaptive Learning (Routing History)
 
-GSD tracks the success and failure of each tier assignment over time and adjusts future classifications accordingly. This is opt-in — it happens automatically and persists in `.gsd/routing-history.json`.
+OTTO tracks the success and failure of each tier assignment over time and adjusts future classifications accordingly. This is opt-in — it happens automatically and persists in `.otto/workflow/routing-history.json`.
 
 ### How It Works
 
@@ -187,12 +187,12 @@ GSD tracks the success and failure of each tier assignment over time and adjusts
 
 ### User Feedback
 
-Use `/gsd rate` to submit feedback on the last completed unit's model tier:
+Use `/otto rate` to submit feedback on the last completed unit's model tier:
 
 ```
-/gsd rate over    # model was overpowered — encourage cheaper next time
-/gsd rate ok      # model was appropriate — no adjustment
-/gsd rate under   # model was too weak — encourage stronger next time
+/otto rate over    # model was overpowered — encourage cheaper next time
+/otto rate ok      # model was appropriate — no adjustment
+/otto rate under   # model was too weak — encourage stronger next time
 ```
 
 Feedback signals are weighted 2× compared to automatic outcomes. Requires dynamic routing to be active (the last unit must have tier data).
@@ -201,7 +201,7 @@ Feedback signals are weighted 2× compared to automatic outcomes. Requires dynam
 
 ```bash
 # Routing history is stored per-project
-.gsd/routing-history.json
+.otto/workflow/routing-history.json
 
 # Clear history to reset adaptive learning
 # (happens via the routing-history module API)
@@ -320,7 +320,7 @@ Individual tool results that exceed `tool_result_max_chars` (default: 800) are t
 
 *Introduced in v2.59.0*
 
-When auto-mode transitions between phases (research → planning → execution), structured JSON anchors are written to `.gsd/milestones/<mid>/anchors/<phase>.json`. Downstream prompt builders inject these anchors so the next phase inherits intent, decisions, blockers, and next steps without re-inferring from artifact files.
+When auto-mode transitions between phases (research → planning → execution), structured JSON anchors are written to `.otto/workflow/milestones/<mid>/anchors/<phase>.json`. Downstream prompt builders inject these anchors so the next phase inherits intent, decisions, blockers, and next steps without re-inferring from artifact files.
 
 This reduces context drift — the 65% of enterprise agent failures caused by agents losing track of prior decisions across phase boundaries.
 
@@ -330,7 +330,7 @@ Anchors are written automatically after successful completion of `research-miles
 
 *Introduced in v2.29.0*
 
-GSD can apply deterministic prompt compression before falling back to section-boundary truncation. This preserves more information when context exceeds the budget.
+OTTO can apply deterministic prompt compression before falling back to section-boundary truncation. This preserves more information when context exceeds the budget.
 
 ### Compression Strategy
 
@@ -374,7 +374,7 @@ At `budget` and `balanced` inline levels, decisions and requirements are formatt
 
 ### Summary Distillation
 
-When a slice has 3+ dependency summaries and the total exceeds the summary budget, GSD extracts essential structured data (provides, requires, key_files, key_decisions) and drops verbose prose sections before falling back to section-boundary truncation.
+When a slice has 3+ dependency summaries and the total exceeds the summary budget, OTTO extracts essential structured data (provides, requires, key_files, key_decisions) and drops verbose prose sections before falling back to section-boundary truncation.
 
 ### Cache Hit Rate Tracking
 

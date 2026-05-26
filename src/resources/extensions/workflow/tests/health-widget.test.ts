@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Tests for the GSD health widget state and footer hint rendering.
+// Project/App: OTTO
+// File Purpose: Tests for the OTTO health widget state and footer hint rendering.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -47,18 +47,18 @@ function activeData(overrides: Partial<HealthWidgetData> = {}): HealthWidgetData
   };
 }
 
-test("detectHealthWidgetProjectState: no .gsd returns none", (t) => {
+test("detectHealthWidgetProjectState: no .otto/workflow returns none", (t) => {
   const dir = makeTempDir("none");
   t.after(() => { cleanup(dir); });
 
   assert.equal(detectHealthWidgetProjectState(dir), "none");
 });
 
-test("detectHealthWidgetProjectState: bootstrapped .gsd without milestones returns initialized", (t) => {
+test("detectHealthWidgetProjectState: bootstrapped .otto/workflow without milestones returns initialized", (t) => {
   const dir = makeTempDir("initialized");
   t.after(() => { cleanup(dir); });
 
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   assert.equal(detectHealthWidgetProjectState(dir), "initialized");
 });
 
@@ -66,24 +66,24 @@ test("detectHealthWidgetProjectState: milestone without metrics returns active",
   const dir = makeTempDir("active");
   t.after(() => { cleanup(dir); });
 
-  mkdirSync(join(dir, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow", "milestones", "M001"), { recursive: true });
   assert.equal(detectHealthWidgetProjectState(dir), "active");
 });
 
-test("buildHealthLines: none state shows single onboarding line pointing at /gsd", (t) => {
+test("buildHealthLines: none state shows single onboarding line pointing at /otto", (t) => {
   const lines = buildHealthLines(activeData({ projectState: "none" }));
   assert.equal(lines.length, 1, "renders exactly one line");
   // Should not show System OK / Budget / Last commit chrome when there's no project.
   assert.ok(!/System OK|Budget|Last commit/.test(lines[0]!), "no active-project chrome");
-  // Should direct user to bootstrap via /gsd.
-  assert.match(lines[0]!, /\/gsd/);
+  // Should direct user to bootstrap via /otto.
+  assert.match(lines[0]!, /\/otto/);
 });
 
 test("buildHealthLines: initialized state shows concise initialized line", (t) => {
   const lines = buildHealthLines(activeData({ projectState: "initialized" }));
   assert.equal(lines.length, 1, "renders exactly one line");
   assert.ok(!/System OK|Budget|Last commit/.test(lines[0]!), "no active-project chrome");
-  assert.equal(lines[0], "  GSD  Project Initialized");
+  assert.equal(lines[0], "  OTTO  Project Initialized");
 });
 
 test("buildHealthLines: active state with ledger-driven spend shows spent summary", (t) => {
@@ -94,11 +94,11 @@ test("buildHealthLines: active state with ledger-driven spend shows spent summar
 });
 
 test("health widget active hints include visualization and notifications", () => {
-  assert.match(HEALTH_WIDGET_ACTIVE_HINTS, /\/gsd auto to run/);
-  assert.match(HEALTH_WIDGET_ACTIVE_HINTS, /\/gsd status to inspect/);
-  assert.match(HEALTH_WIDGET_ACTIVE_HINTS, /\/gsd report for snapshots/);
-  assert.match(HEALTH_WIDGET_ACTIVE_HINTS, /\/gsd notifications for history/);
-  assert.match(HEALTH_WIDGET_ACTIVE_HINTS, /\/gsd help/);
+  assert.match(HEALTH_WIDGET_ACTIVE_HINTS, /\/otto auto to run/);
+  assert.match(HEALTH_WIDGET_ACTIVE_HINTS, /\/otto status to inspect/);
+  assert.match(HEALTH_WIDGET_ACTIVE_HINTS, /\/otto report for snapshots/);
+  assert.match(HEALTH_WIDGET_ACTIVE_HINTS, /\/otto notifications for history/);
+  assert.match(HEALTH_WIDGET_ACTIVE_HINTS, /\/otto help/);
 });
 
 test("buildHealthLines: active state with budget ceiling shows percent summary", (t) => {
@@ -190,9 +190,9 @@ test("detectHealthWidgetProjectState: metrics file alone does not imply project"
   const dir = makeTempDir("metrics-only");
   t.after(() => { cleanup(dir); });
 
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(dir, ".gsd", "metrics.json"),
+    join(dir, ".otto/workflow", "metrics.json"),
     JSON.stringify({ version: 1, projectStartedAt: Date.now(), units: [] }),
     "utf-8",
   );
@@ -201,7 +201,7 @@ test("detectHealthWidgetProjectState: metrics file alone does not imply project"
 
 test("session_start bootstraps the health widget alongside notifications", async (t) => {
   const dir = makeTempDir("bootstrap");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
 
   const originalCwd = process.cwd();
   process.chdir(dir);

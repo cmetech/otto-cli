@@ -433,7 +433,7 @@ describe("measurement: context reduction verification", () => {
   test("formatRoadmapExcerpt achieves ≥40% reduction", () => {
     const sliceId = 'S02';
     
-    const excerptResult = formatRoadmapExcerpt(syntheticRoadmap, sliceId, '.gsd/milestones/M005/M005-ROADMAP.md');
+    const excerptResult = formatRoadmapExcerpt(syntheticRoadmap, sliceId, '.otto/workflow/milestones/M005/M005-ROADMAP.md');
     
     const fullSize = syntheticRoadmap.length;
     const excerptSize = excerptResult.length;

@@ -1,4 +1,4 @@
-import { type Model, modelsAreEqual } from "@loop24/pi-ai";
+import { type Model, modelsAreEqual } from "@otto/pi-ai";
 import {
 	Container,
 	type Focusable,
@@ -9,7 +9,7 @@ import {
 	Text,
 	TruncatedText,
 	type TUI,
-} from "@loop24/pi-tui";
+} from "@otto/pi-tui";
 import type { ModelRegistry, ProviderAuthMode } from "../../../core/model-registry.js";
 import type { SettingsManager } from "../../../core/settings-manager.js";
 import { theme } from "../theme/theme.js";

@@ -1,12 +1,12 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Registers workflow extension runtime hooks and token-saving tool policies.
 
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
-import { isToolCallEventType } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@otto/pi-coding-agent";
+import { isToolCallEventType } from "@otto/pi-coding-agent";
 
 import type { EcosystemBeforeAgentStartHandler } from "../ecosystem/extension-api.js";
 import { updateSnapshot } from "../ecosystem/extension-api.js";
@@ -46,12 +46,12 @@ type WelcomeScreenModule = {
 
 async function loadWelcomeScreenModule(): Promise<WelcomeScreenModule | undefined> {
   const candidates: string[] = [];
-  const workflowBinPath = (process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH);
+  const workflowBinPath = (process.env.OTTO_BIN_PATH ?? process.env.OTTO_BIN_PATH);
   if (workflowBinPath) {
     candidates.push(join(dirname(workflowBinPath), "welcome-screen.js"));
   }
 
-  const packageRoot = (process.env.LOOP24_PKG_ROOT ?? process.env.GSD_PKG_ROOT);
+  const packageRoot = (process.env.OTTO_PKG_ROOT ?? process.env.OTTO_PKG_ROOT);
   if (packageRoot) {
     candidates.push(join(packageRoot, "dist", "welcome-screen.js"));
     candidates.push(join(packageRoot, "src", "welcome-screen.ts"));
@@ -92,7 +92,7 @@ async function installWelcomeHeader(ctx: ExtensionContext): Promise<void> {
         render(width: number): string[] {
           if (cachedLines !== undefined && cachedWidth === width) return cachedLines;
           cachedLines = welcome.buildWelcomeScreenLines({
-            version: (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || "0.0.0",
+            version: (process.env.OTTO_VERSION ?? process.env.OTTO_VERSION) || "0.0.0",
             remoteChannel,
             width,
           });
@@ -112,12 +112,12 @@ async function installWelcomeHeader(ctx: ExtensionContext): Promise<void> {
 
 let deferredApprovalGate: DeferredApprovalGate | null = null;
 
-export const MINIMAL_GSD_TOOL_NAMES = [
-  "gsd_exec",
-  "gsd_exec_search",
-  "gsd_resume",
-  "gsd_milestone_status",
-  "gsd_checkpoint_db",
+export const MINIMAL_OTTO_TOOL_NAMES = [
+  "otto_exec",
+  "otto_exec_search",
+  "otto_resume",
+  "otto_milestone_status",
+  "otto_checkpoint_db",
   "memory_query",
   "capture_thought",
 ] as const;
@@ -156,52 +156,52 @@ const RUN_UAT_BROWSER_TOOL_NAMES = [
 ] as const;
 
 const AUTO_UNIT_SCOPED_TOOLS: Record<string, readonly string[]> = {
-  "research-milestone": ["gsd_summary_save", "gsd_decision_save"],
-  "plan-milestone": ["gsd_plan_milestone", "gsd_decision_save", "gsd_requirement_update"],
+  "research-milestone": ["otto_summary_save", "otto_decision_save"],
+  "plan-milestone": ["otto_plan_milestone", "otto_decision_save", "otto_requirement_update"],
   "discuss-milestone": [
-    "gsd_summary_save",
-    "gsd_decision_save",
-    "gsd_requirement_save",
-    "gsd_requirement_update",
-    "gsd_plan_milestone",
-    "gsd_milestone_generate_id",
+    "otto_summary_save",
+    "otto_decision_save",
+    "otto_requirement_save",
+    "otto_requirement_update",
+    "otto_plan_milestone",
+    "otto_milestone_generate_id",
   ],
-  "validate-milestone": ["gsd_validate_milestone", "gsd_reassess_roadmap", "subagent"],
-  "complete-milestone": ["gsd_complete_milestone", "subagent"],
-  "research-slice": ["gsd_summary_save", "gsd_decision_save"],
-  "plan-slice": ["gsd_plan_slice", "gsd_plan_task", "gsd_decision_save"],
-  "refine-slice": ["gsd_plan_slice", "gsd_plan_task", "gsd_decision_save"],
-  "replan-slice": ["gsd_replan_slice", "gsd_plan_task", "gsd_decision_save"],
-  "complete-slice": ["gsd_slice_complete", "gsd_task_reopen", "gsd_replan_slice", "gsd_decision_save", "gsd_requirement_update", "subagent"],
-  "reassess-roadmap": ["gsd_reassess_roadmap"],
-  "execute-task": ["gsd_task_complete", "gsd_decision_save"],
-  "execute-task-simple": ["gsd_task_complete", "gsd_decision_save"],
-  "reactive-execute": ["gsd_task_complete", "gsd_decision_save"],
-  "run-uat": ["gsd_summary_save", ...RUN_UAT_BROWSER_TOOL_NAMES],
-  "gate-evaluate": ["gsd_save_gate_result"],
-  "rewrite-docs": ["gsd_summary_save", "gsd_decision_save"],
-  "workflow-preferences": ["gsd_summary_save"],
-  "discuss-project": ["gsd_summary_save", "gsd_decision_save", "gsd_requirement_save"],
-  "discuss-requirements": ["gsd_requirement_save", "gsd_summary_save"],
-  "research-decision": ["gsd_summary_save"],
-  "research-project": ["gsd_summary_save", "gsd_decision_save"],
+  "validate-milestone": ["otto_validate_milestone", "otto_reassess_roadmap", "subagent"],
+  "complete-milestone": ["otto_complete_milestone", "subagent"],
+  "research-slice": ["otto_summary_save", "otto_decision_save"],
+  "plan-slice": ["otto_plan_slice", "otto_plan_task", "otto_decision_save"],
+  "refine-slice": ["otto_plan_slice", "otto_plan_task", "otto_decision_save"],
+  "replan-slice": ["otto_replan_slice", "otto_plan_task", "otto_decision_save"],
+  "complete-slice": ["otto_slice_complete", "otto_task_reopen", "otto_replan_slice", "otto_decision_save", "otto_requirement_update", "subagent"],
+  "reassess-roadmap": ["otto_reassess_roadmap"],
+  "execute-task": ["otto_task_complete", "otto_decision_save"],
+  "execute-task-simple": ["otto_task_complete", "otto_decision_save"],
+  "reactive-execute": ["otto_task_complete", "otto_decision_save"],
+  "run-uat": ["otto_summary_save", ...RUN_UAT_BROWSER_TOOL_NAMES],
+  "gate-evaluate": ["otto_save_gate_result"],
+  "rewrite-docs": ["otto_summary_save", "otto_decision_save"],
+  "workflow-preferences": ["otto_summary_save"],
+  "discuss-project": ["otto_summary_save", "otto_decision_save", "otto_requirement_save"],
+  "discuss-requirements": ["otto_requirement_save", "otto_summary_save"],
+  "research-decision": ["otto_summary_save"],
+  "research-project": ["otto_summary_save", "otto_decision_save"],
 };
 
-const WORKFLOW_GSD_TOOL_NAMES = [
-  ...MINIMAL_GSD_TOOL_NAMES,
+const WORKFLOW_OTTO_TOOL_NAMES = [
+  ...MINIMAL_OTTO_TOOL_NAMES,
   ...Object.values(AUTO_UNIT_SCOPED_TOOLS).flat(),
 ].filter(isManagedTool);
 
 function isManagedTool(name: string): boolean {
-  return name.startsWith("gsd_") || name === "memory_query" || name === "capture_thought" || name === "gsd_graph";
+  return name.startsWith("otto_") || name === "memory_query" || name === "capture_thought" || name === "otto_graph";
 }
 
 /**
  * Resolves requested tool names against active tools using exact and MCP-scoped matches.
  *
  * MCP-scoped names follow `mcp__<namespace>__<toolname>`.
- * Example: if `requestedToolNames` contains `gsd_exec` and `activeToolNames` contains
- * `mcp__gsd-workflow__gsd_exec`, the MCP-scoped active name is included in the result.
+ * Example: if `requestedToolNames` contains `otto_exec` and `activeToolNames` contains
+ * `mcp__otto-workflow__otto_exec`, the MCP-scoped active name is included in the result.
  *
  * Returns deduplicated active tool names that satisfy the requested base names.
  */
@@ -230,7 +230,7 @@ function resolveScopedToolNames(
 
 export function buildMinimalWorkflowToolSet(activeToolNames: readonly string[]): string[] {
   const preserved = activeToolNames.filter((name) => !isManagedTool(name));
-  const minimal = resolveScopedToolNames(activeToolNames, MINIMAL_GSD_TOOL_NAMES);
+  const minimal = resolveScopedToolNames(activeToolNames, MINIMAL_OTTO_TOOL_NAMES);
   return [...new Set([...preserved, ...minimal])];
 }
 
@@ -241,14 +241,14 @@ export function buildMinimalAutoWorkflowToolSet(
   const unitTools = unitType ? AUTO_UNIT_SCOPED_TOOLS[unitType] ?? [] : [];
   const autoBaseTools = new Set<string>(MINIMAL_AUTO_BASE_TOOL_NAMES);
   const preserved = activeToolNames.filter((name) => autoBaseTools.has(name));
-  const scoped = resolveScopedToolNames(activeToolNames, [...MINIMAL_GSD_TOOL_NAMES, ...unitTools]);
+  const scoped = resolveScopedToolNames(activeToolNames, [...MINIMAL_OTTO_TOOL_NAMES, ...unitTools]);
   return [...new Set([...preserved, ...scoped])];
 }
 
 export function buildMinimalWorkflowWorkflowToolSet(activeToolNames: readonly string[]): string[] {
   const autoBaseTools = new Set<string>(MINIMAL_AUTO_BASE_TOOL_NAMES);
   const preserved = activeToolNames.filter((name) => autoBaseTools.has(name));
-  const scoped = resolveScopedToolNames(activeToolNames, WORKFLOW_GSD_TOOL_NAMES);
+  const scoped = resolveScopedToolNames(activeToolNames, WORKFLOW_OTTO_TOOL_NAMES);
   return [...new Set([...preserved, ...scoped])];
 }
 
@@ -271,11 +271,11 @@ export function buildRequestScopedWorkflowToolSet(
 }
 
 export function isFullWorkflowToolSurfaceRequested(): boolean {
-  return process.env.PI_GSD_FULL_TOOLS === "1";
+  return process.env.PI_OTTO_FULL_TOOLS === "1";
 }
 
 function isGeneralWorkflowToolScopingRequested(): boolean {
-  return process.env.PI_GSD_MINIMAL_TOOLS === "1";
+  return process.env.PI_OTTO_MINIMAL_TOOLS === "1";
 }
 
 export interface ScopedWorkflowWorkflowState {
@@ -413,7 +413,7 @@ function activateDeferredApprovalGate(basePath: string): void {
 }
 
 function isContextDraftSummarySave(toolName: string, input: unknown): boolean {
-  if (toolName !== "gsd_summary_save" && toolName !== "summary_save") return false;
+  if (toolName !== "otto_summary_save" && toolName !== "summary_save") return false;
   if (!input || typeof input !== "object") return false;
   return (input as { artifact_type?: unknown }).artifact_type === "CONTEXT-DRAFT";
 }
@@ -512,7 +512,7 @@ export function registerHooks(
     try {
       const { loadEffectiveGSDPreferences } = await import("../preferences.js");
       const prefs = loadEffectiveGSDPreferences(basePath);
-      process.env.LOOP24_SHOW_TOKEN_COST = process.env.GSD_SHOW_TOKEN_COST = prefs?.preferences.show_token_cost ? "1" : "";
+      process.env.OTTO_SHOW_TOKEN_COST = prefs?.preferences.show_token_cost ? "1" : "";
     } catch { /* non-fatal */ }
     await installWelcomeHeader(ctx);
     await loadToolApiKeysForSession();
@@ -593,7 +593,7 @@ export function registerHooks(
     // each handler sees the systemPrompt mutated by prior handlers.
     let currentSystemPrompt = workflowResult?.systemPrompt ?? event.systemPrompt;
     // `any` because pi's BeforeAgentStartEventResult.message uses an internal
-    // CustomMessage type that's not re-exported (see ecosystem/gsd-extension-api.ts).
+    // CustomMessage type that's not re-exported (see ecosystem/otto-extension-api.ts).
     let lastMessage: any = workflowResult?.message;
 
     for (const handler of ecosystemHandlers) {
@@ -700,7 +700,7 @@ export function registerHooks(
         ? "Check the task plan for remaining steps."
         : "Continue this slice from the latest planning/research/discussion artifacts.",
       decisions: "Check task summary files for prior decisions.",
-      context: "Session was auto-compacted by Pi. Resume with /gsd.",
+      context: "Session was auto-compacted by Pi. Resume with /otto.",
       nextAction: state.activeTask
         ? `Resume task ${taskId}: ${taskTitle}.`
         : `Resume ${phaseLabel} work for slice ${state.activeSlice.id}.`,
@@ -821,8 +821,8 @@ export function registerHooks(
     }
 
     // ── Queue-mode execution guard (#2545): block source-code mutations ──
-    // When /loop24 queue is active, the agent should only create milestones,
-    // not execute work. Block write/edit to non-.gsd/ paths and bash commands
+    // When /otto queue is active, the agent should only create milestones,
+    // not execute work. Block write/edit to non-.otto/workflow/ paths and bash commands
     // that would modify files.
     if (isQueuePhaseActive(discussionBasePath)) {
       let queueInput = "";
@@ -839,7 +839,7 @@ export function registerHooks(
 
     // ── Planning-unit tools-policy enforcement (#4934): runtime half ─────
     // The active auto-mode unit's manifest declares a ToolsPolicy. For
-    // planning/docs/read-only modes, deny writes outside .gsd/ (or the
+    // planning/docs/read-only modes, deny writes outside .otto/workflow/ (or the
     // manifest's allowedPathGlobs), bash that isn't read-only, and
     // subagent dispatch. Closes the b23 bug class where a discuss-milestone
     // turn used the host Edit tool to modify user source files.
@@ -970,7 +970,7 @@ export function registerHooks(
             : (typeof (event as any).content === "string"
                 ? (event as any).content
                 : String(resultPayload ?? "")));
-      // Let recordToolInvocationError classify the failure so non-gsd_ harness
+      // Let recordToolInvocationError classify the failure so non-otto_ harness
       // errors and deterministic policy rejections are handled consistently.
       recordToolInvocationError(event.toolName, errorText);
     } else if (isAutoActive()) {
@@ -1089,7 +1089,7 @@ export function registerHooks(
       const errorText = typeof event.result === "string"
         ? event.result
         : (typeof event.result?.content?.[0]?.text === "string" ? event.result.content[0].text : String(event.result));
-      // Let recordToolInvocationError classify the failure so non-gsd_ harness
+      // Let recordToolInvocationError classify the failure so non-otto_ harness
       // errors and deterministic policy rejections are handled consistently.
       recordToolInvocationError(event.toolName, errorText);
     } else if (isAutoActive()) {

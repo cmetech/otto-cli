@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, it } from "node:test";
 
-import { Agent } from "@loop24/pi-agent-core";
+import { Agent } from "@otto/pi-agent-core";
 import { AgentSession } from "./agent-session.js";
 import { AuthStorage } from "./auth-storage.js";
 import { ModelRegistry } from "./model-registry.js";

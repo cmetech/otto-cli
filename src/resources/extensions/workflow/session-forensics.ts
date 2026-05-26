@@ -67,8 +67,8 @@ export interface RecoveryBriefing {
 const READ_ONLY_TOOL_NAMES = new Set([
   "read",
   "memory_query",
-  "gsd_resume",
-  "gsd_exec_search",
+  "otto_resume",
+  "otto_exec_search",
   "grep",
   "find",
   "ls",
@@ -82,7 +82,7 @@ const READ_ONLY_EXEC_COMMAND_RE = /^\s*(cat|head|tail|ls|find|grep|rg|git\s+(sta
 function isReadOnlyReconnaissanceTool(call: ToolCall): boolean {
   const name = call.name.toLowerCase();
   if (READ_ONLY_TOOL_NAMES.has(name)) return true;
-  if (name !== "gsd_exec") return false;
+  if (name !== "otto_exec") return false;
   const command = String(call.input.command || call.input.cmd || "").trim();
   if (!command) return false;
   if (UNSAFE_SHELL_TOKENS_RE.test(command)) return false;

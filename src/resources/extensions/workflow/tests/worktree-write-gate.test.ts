@@ -6,7 +6,7 @@
 // Without this gate, writes silently orphan outside git history.
 //
 // Test setup creates a fresh temp project for each isolation case, writes a
-// `.gsd/PREFERENCES.md` with `isolation: "worktree"`, and exercises the helper
+// `.otto/workflow/PREFERENCES.md` with `isolation: "worktree"`, and exercises the helper
 // against the 9 scenarios listed in the issue. No source-grep tests — every
 // assertion exercises the real predicate.
 
@@ -22,9 +22,9 @@ import { invalidateAllCaches } from "../cache.js";
 function makeProject(isolation: "none" | "worktree" | "branch" | null): string {
   const root = mkdtempSync(join(tmpdir(), "wt-write-gate-"));
   if (isolation !== null) {
-    mkdirSync(join(root, ".gsd"), { recursive: true });
+    mkdirSync(join(root, ".otto/workflow"), { recursive: true });
     writeFileSync(
-      join(root, ".gsd", "PREFERENCES.md"),
+      join(root, ".otto/workflow", "PREFERENCES.md"),
       `---\ngit:\n  isolation: "${isolation}"\n---\n`,
     );
   }
@@ -39,8 +39,8 @@ describe("shouldBlockWorktreeWrite (#5199)", () => {
   let prevDisableEnv: string | undefined;
 
   beforeEach(() => {
-    prevDisableEnv = process.env.GSD_DISABLE_WORKTREE_WRITE_GUARD;
-    delete process.env.GSD_DISABLE_WORKTREE_WRITE_GUARD;
+    prevDisableEnv = process.env.OTTO_DISABLE_WORKTREE_WRITE_GUARD;
+    delete process.env.OTTO_DISABLE_WORKTREE_WRITE_GUARD;
   });
 
   afterEach(() => {
@@ -48,9 +48,9 @@ describe("shouldBlockWorktreeWrite (#5199)", () => {
       try { rmSync(projectRoot, { recursive: true, force: true }); } catch { /* best-effort */ }
     }
     if (prevDisableEnv === undefined) {
-      delete process.env.GSD_DISABLE_WORKTREE_WRITE_GUARD;
+      delete process.env.OTTO_DISABLE_WORKTREE_WRITE_GUARD;
     } else {
-      process.env.GSD_DISABLE_WORKTREE_WRITE_GUARD = prevDisableEnv;
+      process.env.OTTO_DISABLE_WORKTREE_WRITE_GUARD = prevDisableEnv;
     }
     invalidateAllCaches();
   });
@@ -70,11 +70,11 @@ describe("shouldBlockWorktreeWrite (#5199)", () => {
     }
   });
 
-  test("Case 2: write to <root>/.gsd/PROJECT.md is allowed", () => {
+  test("Case 2: write to <root>/.otto/workflow/PROJECT.md is allowed", () => {
     projectRoot = makeProject("worktree");
     const result = shouldBlockWorktreeWrite(
       "write",
-      join(projectRoot, ".gsd", "PROJECT.md"),
+      join(projectRoot, ".otto/workflow", "PROJECT.md"),
       projectRoot,
       false,
       null,
@@ -82,16 +82,16 @@ describe("shouldBlockWorktreeWrite (#5199)", () => {
     assert.equal(result.block, false);
   });
 
-  test("Case 3: write inside <root>/.gsd/worktrees/M001/ is allowed", () => {
+  test("Case 3: write inside <root>/.otto/workflow/worktrees/M001/ is allowed", () => {
     projectRoot = makeProject("worktree");
-    const target = join(projectRoot, ".gsd", "worktrees", "M001", "src", "app.js");
+    const target = join(projectRoot, ".otto/workflow", "worktrees", "M001", "src", "app.js");
     const result = shouldBlockWorktreeWrite("edit", target, projectRoot, false, null);
     assert.equal(result.block, false);
   });
 
-  test("Case 4: write to <root>/.gsd/worktrees-extra/M001/app.js (prefix trick) is blocked", () => {
+  test("Case 4: write to <root>/.otto/workflow/worktrees-extra/M001/app.js (prefix trick) is blocked", () => {
     projectRoot = makeProject("worktree");
-    const target = join(projectRoot, ".gsd", "worktrees-extra", "M001", "app.js");
+    const target = join(projectRoot, ".otto/workflow", "worktrees-extra", "M001", "app.js");
     const result = shouldBlockWorktreeWrite("write", target, projectRoot, false, null);
     assert.equal(result.block, true);
     assert.match(result.reason ?? "", /HARD BLOCK/);
@@ -111,7 +111,7 @@ describe("shouldBlockWorktreeWrite (#5199)", () => {
 
   test("Case 6: isolation=worktree, auto active, effectiveBasePath inside worktree → allow", () => {
     projectRoot = makeProject("worktree");
-    const inside = join(projectRoot, ".gsd", "worktrees", "M001");
+    const inside = join(projectRoot, ".otto/workflow", "worktrees", "M001");
     mkdirSync(inside, { recursive: true });
     const result = shouldBlockWorktreeWrite(
       "write",
@@ -125,7 +125,7 @@ describe("shouldBlockWorktreeWrite (#5199)", () => {
 
   test("Case 6b: relative write from active worktree cwd is allowed", () => {
     projectRoot = makeProject("worktree");
-    const inside = join(projectRoot, ".gsd", "worktrees", "M001");
+    const inside = join(projectRoot, ".otto/workflow", "worktrees", "M001");
     mkdirSync(inside, { recursive: true });
     const result = shouldBlockWorktreeWrite(
       "write",
@@ -177,9 +177,9 @@ describe("shouldBlockWorktreeWrite (#5199)", () => {
     }
   });
 
-  test("Case 9: GSD_DISABLE_WORKTREE_WRITE_GUARD=1 → allow", () => {
+  test("Case 9: OTTO_DISABLE_WORKTREE_WRITE_GUARD=1 → allow", () => {
     projectRoot = makeProject("worktree");
-    process.env.GSD_DISABLE_WORKTREE_WRITE_GUARD = "1";
+    process.env.OTTO_DISABLE_WORKTREE_WRITE_GUARD = "1";
     const result = shouldBlockWorktreeWrite(
       "write",
       join(projectRoot, "app.js"),

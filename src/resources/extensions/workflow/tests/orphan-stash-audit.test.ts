@@ -1,5 +1,5 @@
 // the agent + src/resources/extensions/workflow/tests/orphan-stash-audit.test.ts
-// Regression: orphaned gsd-preflight-stash entries from completed milestones
+// Regression: orphaned otto-preflight-stash entries from completed milestones
 // must be auto-applied at startup so the user's pre-merge work returns.
 
 import { describe, test, beforeEach, afterEach } from "node:test";
@@ -32,8 +32,8 @@ function git(cwd: string, ...args: string[]): string {
 
 function pushPreflightStash(repo: string, milestoneId: string, fileName: string, content: string): string {
   writeFileSync(join(repo, fileName), content);
-  const marker = `gsd-preflight-stash:${milestoneId}:42:1700000000000:abcd`;
-  git(repo, "stash", "push", "--include-untracked", "-m", `gsd-preflight-stash [${marker}]`);
+  const marker = `otto-preflight-stash:${milestoneId}:42:1700000000000:abcd`;
+  git(repo, "stash", "push", "--include-untracked", "-m", `otto-preflight-stash [${marker}]`);
   return marker;
 }
 
@@ -80,7 +80,7 @@ describe("auditOrphanedPreflightStashes", () => {
 
     // The stash entry must remain (apply, not pop) so the user has a backup.
     const list = git(repo, "stash", "list");
-    assert.match(list, /gsd-preflight-stash:M002:/);
+    assert.match(list, /otto-preflight-stash:M002:/);
   });
 
   test("ignores stashes whose milestone is not complete", () => {
@@ -119,8 +119,8 @@ describe("auditOrphanedPreflightStashes", () => {
     // Push a stash containing a change to seed.txt; then dirty seed.txt with
     // a conflicting modification before the audit runs so apply fails.
     writeFileSync(join(repo, "seed.txt"), "stashed\n");
-    const marker = `gsd-preflight-stash:M005:42:1700:zz`;
-    git(repo, "stash", "push", "-m", `gsd-preflight-stash [${marker}]`);
+    const marker = `otto-preflight-stash:M005:42:1700:zz`;
+    git(repo, "stash", "push", "-m", `otto-preflight-stash [${marker}]`);
 
     // Dirty the working tree so apply will conflict.
     writeFileSync(join(repo, "seed.txt"), "conflicting modification\n");
@@ -134,7 +134,7 @@ describe("auditOrphanedPreflightStashes", () => {
     assert.match(result.warnings[0], /git stash apply/);
 
     const list = git(repo, "stash", "list");
-    assert.match(list, /gsd-preflight-stash:M005:/);
+    assert.match(list, /otto-preflight-stash:M005:/);
   });
 
   test("returns empty result when basePath is not a git repo", () => {

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Auto-loop execution, dispatch, recovery, and cancellation regression tests.
 
 import test, { mock } from "node:test";
@@ -1164,19 +1164,19 @@ test("autoLoop preserves stuck recovery counter when dispatch recovery continues
   const ctx = makeMockCtx();
   const pi = makeMockPi();
   const basePath = realpathSync(mkdtempSync(join(tmpdir(), "gsd-stuck-counter-reset-")));
-  mkdirSync(join(basePath, ".gsd"), { recursive: true });
-  mkdirSync(join(basePath, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow"), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
   writeFileSync(
-    join(basePath, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+    join(basePath, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
     "# Slice Plan\n\n- [ ] **T01:** task one\n",
   );
   writeFileSync(
-    join(basePath, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-PLAN.md"),
+    join(basePath, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-PLAN.md"),
     "# Task Plan\n",
   );
 
   try {
-    openDatabase(join(basePath, ".gsd", "gsd.db"));
+    openDatabase(join(basePath, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Test Milestone", status: "active" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Test Slice", status: "pending" });
     insertTask({ id: "T01", milestoneId: "M001", sliceId: "S01", title: "Task One", status: "pending" });
@@ -1239,10 +1239,10 @@ test("autoLoop skips provider dispatch when execute-task is already complete in 
   ctx.ui.setWidget = () => {};
   const pi = makeMockPi();
   const basePath = realpathSync(mkdtempSync(join(tmpdir(), "gsd-already-complete-dispatch-")));
-  mkdirSync(join(basePath, ".gsd"), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow"), { recursive: true });
 
   try {
-    openDatabase(join(basePath, ".gsd", "gsd.db"));
+    openDatabase(join(basePath, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Test Milestone", status: "active" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Test Slice", status: "pending" });
     insertTask({ id: "T01", milestoneId: "M001", sliceId: "S01", title: "Task One", status: "complete" });
@@ -1319,7 +1319,7 @@ test("autoLoop stops before success notification when postflight stash restore n
     },
     preflightCleanRoot: () => ({
       stashPushed: true,
-      stashMarker: "gsd-preflight-stash:M001:test",
+      stashMarker: "otto-preflight-stash:M001:test",
       summary: "stashed",
     }),
     postflightPopStash: () => ({
@@ -1387,7 +1387,7 @@ test("autoLoop marks transition merge complete before postflight recovery stop",
     },
     preflightCleanRoot: () => ({
       stashPushed: true,
-      stashMarker: "gsd-preflight-stash:M001:test",
+      stashMarker: "otto-preflight-stash:M001:test",
       summary: "stashed",
     }),
     postflightPopStash: () => ({
@@ -3933,7 +3933,7 @@ test("runUnitPhase records failed routing outcome when expected artifact is miss
   );
 });
 
-test("runUnitPhase execute-task retry prompt instructs gsd_task_complete instead of manual summary writes", async (t) => {
+test("runUnitPhase execute-task retry prompt instructs otto_task_complete instead of manual summary writes", async (t) => {
   _resetPendingResolve();
 
   const basePath = mkdtempSync(join(tmpdir(), "gsd-execute-task-retry-prompt-"));
@@ -4006,7 +4006,7 @@ test("runUnitPhase execute-task retry prompt instructs gsd_task_complete instead
 
   const dispatchedPrompt = pi.calls[0]?.[0]?.content;
   assert.equal(typeof dispatchedPrompt, "string");
-  assert.match(dispatchedPrompt, /Call `gsd_task_complete`/);
+  assert.match(dispatchedPrompt, /Call `otto_task_complete`/);
   assert.match(dispatchedPrompt, /Do NOT manually write this file/);
   assert.match(dispatchedPrompt, /milestoneId/i);
   assert.match(dispatchedPrompt, /sliceId/i);
@@ -4094,7 +4094,7 @@ test("runUnitPhase non-execute-task retry prompt keeps generic required-file gui
   const dispatchedPrompt = pi.calls[0]?.[0]?.content;
   assert.equal(typeof dispatchedPrompt, "string");
   assert.match(dispatchedPrompt, /Fix whatever went wrong and make sure you write the required file this time/);
-  assert.doesNotMatch(dispatchedPrompt, /Call `gsd_task_complete`/);
+  assert.doesNotMatch(dispatchedPrompt, /Call `otto_task_complete`/);
   assert.doesNotMatch(dispatchedPrompt, /Do NOT manually write this file/);
 });
 
@@ -4563,7 +4563,7 @@ test("autoLoop stops when Worktree Safety finds no .git marker for execute-task 
   ctx.ui.notify = (msg: string) => { notifications.push(msg); };
 
   const projectRoot = mkdtempSync(join(tmpdir(), "gsd-wt-safety-loop-"));
-  const worktreeRoot = join(projectRoot, ".gsd", "worktrees", "M001");
+  const worktreeRoot = join(projectRoot, ".otto/workflow", "worktrees", "M001");
   mkdirSync(worktreeRoot, { recursive: true });
   t.after(() => rmSync(projectRoot, { recursive: true, force: true }));
 
@@ -4612,7 +4612,7 @@ test("dispatch Worktree Safety wins before stuck detection for execute-task with
   ctx.ui.notify = (msg: string) => { notifications.push(msg); };
 
   const projectRoot = mkdtempSync(join(tmpdir(), "gsd-wt-safety-dispatch-"));
-  const worktreeRoot = join(projectRoot, ".gsd", "worktrees", "M001");
+  const worktreeRoot = join(projectRoot, ".otto/workflow", "worktrees", "M001");
   mkdirSync(worktreeRoot, { recursive: true });
   t.after(() => rmSync(projectRoot, { recursive: true, force: true }));
 
@@ -4879,7 +4879,7 @@ test("dispatch Worktree Safety stops unknown unit types with missing Tool Contra
   ctx.ui.notify = (msg: string) => { notifications.push(msg); };
 
   const projectRoot = mkdtempSync(join(tmpdir(), "gsd-wt-safety-missing-contract-"));
-  const worktreeRoot = join(projectRoot, ".gsd", "worktrees", "M001");
+  const worktreeRoot = join(projectRoot, ".otto/workflow", "worktrees", "M001");
   mkdirSync(worktreeRoot, { recursive: true });
   t.after(() => rmSync(projectRoot, { recursive: true, force: true }));
 
@@ -4949,7 +4949,7 @@ test("dispatch Worktree Safety allows hook units without Tool Contract lookup", 
   ctx.ui.notify = (msg: string) => { notifications.push(msg); };
 
   const projectRoot = mkdtempSync(join(tmpdir(), "gsd-wt-safety-hook-contract-"));
-  const worktreeRoot = join(projectRoot, ".gsd", "worktrees", "M001");
+  const worktreeRoot = join(projectRoot, ".otto/workflow", "worktrees", "M001");
   mkdirSync(worktreeRoot, { recursive: true });
   t.after(() => rmSync(projectRoot, { recursive: true, force: true }));
 
@@ -5017,7 +5017,7 @@ test("dispatch Worktree Safety accepts sidecar-prefixed known unit types", async
   const pi = makeMockPi();
 
   const projectRoot = mkdtempSync(join(tmpdir(), "gsd-wt-safety-sidecar-prefix-"));
-  const worktreeRoot = join(projectRoot, ".gsd", "worktrees", "M001");
+  const worktreeRoot = join(projectRoot, ".otto/workflow", "worktrees", "M001");
   mkdirSync(worktreeRoot, { recursive: true });
   t.after(() => rmSync(projectRoot, { recursive: true, force: true }));
 
@@ -5079,7 +5079,7 @@ test("dispatch Worktree Safety allows hook units without Unit Tool Contract mani
   ctx.ui.notify = (msg: string) => { notifications.push(msg); };
 
   const projectRoot = mkdtempSync(join(tmpdir(), "gsd-wt-safety-hook-contract-"));
-  const worktreeRoot = join(projectRoot, ".gsd", "worktrees", "M001");
+  const worktreeRoot = join(projectRoot, ".otto/workflow", "worktrees", "M001");
   mkdirSync(worktreeRoot, { recursive: true });
   t.after(() => rmSync(projectRoot, { recursive: true, force: true }));
 

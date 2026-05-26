@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Stop-auto worktree exit strategy regression tests.
 /**
  * stop-auto-merge-back.test.ts — Regression test for #5576.
@@ -82,14 +82,14 @@ test("#5576: stopAuto returns none when phases are already merged even if milest
 
 test("#6273: stopAuto infers milestone id from milestone worktree path when session milestone id is missing", () => {
   assert.equal(
-    _resolveStopAutoMilestoneId(null, "/repo/.gsd/worktrees/M001"),
+    _resolveStopAutoMilestoneId(null, "/repo/.otto/workflow/worktrees/M001"),
     "M001",
   );
 });
 
 test("#6273: stopAuto does not infer non-milestone worktree names", () => {
   assert.equal(
-    _resolveStopAutoMilestoneId(null, "/repo/.gsd/worktrees/feature-x"),
+    _resolveStopAutoMilestoneId(null, "/repo/.otto/workflow/worktrees/feature-x"),
     null,
   );
 });

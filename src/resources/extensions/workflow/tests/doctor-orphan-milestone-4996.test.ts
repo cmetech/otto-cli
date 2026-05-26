@@ -1,4 +1,4 @@
-// GSD Extension — Regression test for #4996: doctor orphan milestone dir check
+// OTTO Extension — Regression test for #4996: doctor orphan milestone dir check
 // Verifies that checkRuntimeHealth reports orphan_milestone_dir for empty stub
 // dirs with no DB row, does not report populated dirs, and does not report
 // legitimate in-flight worktree-only milestone dirs.
@@ -20,20 +20,20 @@ import type { DoctorIssue, DoctorIssueCode } from "../doctor-types.ts";
 
 function makeBase(prefix = "gsd-doctor-orphan-"): string {
   const base = mkdtempSync(join(tmpdir(), prefix));
-  mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
   return base;
 }
 
 function stubDir(base: string, mid: string): void {
-  mkdirSync(join(base, ".gsd", "milestones", mid, "slices"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", mid, "slices"), { recursive: true });
 }
 
 function populateDir(base: string, mid: string): void {
-  mkdirSync(join(base, ".gsd", "milestones", mid), { recursive: true });
-  writeFileSync(join(base, ".gsd", "milestones", mid, `${mid}-CONTEXT.md`), `# ${mid}\n`);
+  mkdirSync(join(base, ".otto/workflow", "milestones", mid), { recursive: true });
+  writeFileSync(join(base, ".otto/workflow", "milestones", mid, `${mid}-CONTEXT.md`), `# ${mid}\n`);
 }
 
-describe("gsd_doctor orphan milestone directory check (#4996)", () => {
+describe("otto_doctor orphan milestone directory check (#4996)", () => {
   let base: string;
 
   afterEach(() => {
@@ -73,7 +73,7 @@ describe("gsd_doctor orphan milestone directory check (#4996)", () => {
     base = makeBase();
     stubDir(base, "M003");
     // Simulate a legitimate in-flight worktree
-    mkdirSync(join(base, ".gsd", "worktrees", "M003"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "worktrees", "M003"), { recursive: true });
 
     const issues: DoctorIssue[] = [];
     const fixes: string[] = [];
@@ -86,7 +86,7 @@ describe("gsd_doctor orphan milestone directory check (#4996)", () => {
   it("(d) queued DB row (in-flight ID) is NOT reported as orphan", async () => {
     base = makeBase();
     stubDir(base, "M003");
-    const dbPath = join(base, ".gsd", "gsd.db");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
     openDatabase(dbPath);
     insertMilestone({ id: "M003", status: "queued" });
 

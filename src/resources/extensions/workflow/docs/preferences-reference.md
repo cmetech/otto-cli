@@ -1,6 +1,6 @@
 # Workflow Preferences Reference
 
-Full documentation for `~/.gsd/PREFERENCES.md` (global) and `.gsd/PREFERENCES.md` (project).
+Full documentation for `~/.otto/workflow/PREFERENCES.md` (global) and `.otto/workflow/PREFERENCES.md` (project).
 
 ---
 
@@ -10,7 +10,7 @@ Full documentation for `~/.gsd/PREFERENCES.md` (global) and `.gsd/PREFERENCES.md
 - Prefer explicit skill names or absolute paths.
 - Use absolute paths for personal/local skills when you want zero ambiguity.
 - These preferences guide which skills the agent should load and follow; they do not override higher-priority instructions in the current conversation.
-- For Claude marketplace/plugin import behavior, see `~/.gsd/agent/extensions/gsd/docs/claude-marketplace-import.md`.
+- For Claude marketplace/plugin import behavior, see `~/.otto/workflow/agent/extensions/gsd/docs/claude-marketplace-import.md`.
 
 ---
 
@@ -51,8 +51,8 @@ skill_rules: []
 
 Preferences are loaded from two locations and merged:
 
-1. **Global:** `~/.gsd/PREFERENCES.md` — applies to all projects
-2. **Project:** `.gsd/PREFERENCES.md` — applies to the current project only
+1. **Global:** `~/.otto/workflow/PREFERENCES.md` — applies to all projects
+2. **Project:** `.otto/workflow/PREFERENCES.md` — applies to the current project only
 
 **Merge behavior** (see `mergePreferences()` in `preferences.ts`):
 
@@ -90,7 +90,7 @@ Setting `prefer_skills: []` does **not** disable skill discovery — it just mea
   | `git.isolation`        | `"none"`     | `"none"`     |
   | `unique_milestone_ids` | `false`      | `true`       |
 
-  Quick setup: `/gsd mode` (global) or `/gsd mode project` (project-level).
+  Quick setup: `/otto mode` (global) or `/otto mode project` (project-level).
 
 - `always_use_skills`: skills the agent should use whenever they are relevant.
 
@@ -100,9 +100,9 @@ Setting `prefer_skills: []` does **not** disable skill discovery — it just mea
 
 - `skill_rules`: situational rules with a human-readable `when` trigger and one or more of `use`, `prefer`, or `avoid`.
 
-- `custom_instructions`: extra durable instructions related to skill use. For operational project knowledge, use `.gsd/KNOWLEDGE.md` instead. Rules are file-canonical; patterns and lessons are persisted to the `memories` table and projected back into `KNOWLEDGE.md` on the next session start.
+- `custom_instructions`: extra durable instructions related to skill use. For operational project knowledge, use `.otto/workflow/KNOWLEDGE.md` instead. Rules are file-canonical; patterns and lessons are persisted to the `memories` table and projected back into `KNOWLEDGE.md` on the next session start.
 
-- `language`: preferred response language for all workflow interactions. Accepts any language name or code — `"Chinese"`, `"zh"`, `"German"`, `"de"`, `"日本語"`, etc. When set, the agent injects "Always respond in \<language\>" into every agent's system prompt, including after `/clear`. Quickest way to set it: `/gsd language <name>`. To clear: `/gsd language off`.
+- `language`: preferred response language for all workflow interactions. Accepts any language name or code — `"Chinese"`, `"zh"`, `"German"`, `"de"`, `"日本語"`, etc. When set, the agent injects "Always respond in \<language\>" into every agent's system prompt, including after `/clear`. Quickest way to set it: `/otto language <name>`. To clear: `/otto language off`.
 
 - `models`: per-stage model selection (applies to both auto-mode and guided-flow dispatches). Keys: `research`, `planning`, `discuss`, `execution`, `execution_simple`, `completion`, `validation`, `subagent`. Values can be:
   - Simple string: `"claude-sonnet-4-6"` — single model, no fallbacks
@@ -142,11 +142,11 @@ Setting `prefer_skills: []` does **not** disable skill discovery — it just mea
   - `worktree_post_create`: string — script to run after a worktree is created (both auto-mode and manual `/worktree`). Receives `SOURCE_DIR` and `WORKTREE_DIR` as environment variables. Can be absolute or relative to project root. Runs with 30-second timeout. Failure is non-fatal (logged as warning). Default: none.
   - `auto_pr`: boolean — automatically create a GitHub pull request after a milestone branch is merged. Requires `gh` CLI to be installed. Default: `false`.
   - `pr_target_branch`: string — branch to target when `auto_pr` is enabled. Defaults to `main_branch` when omitted.
-  - **Deprecated:** `commit_docs` — no longer valid; `.gsd/` is always gitignored. Remove this setting.
+  - **Deprecated:** `commit_docs` — no longer valid; `.otto/workflow/` is always gitignored. Remove this setting.
   - **Deprecated:** `merge_to_main` — no longer valid; milestone-level merge is always used. Remove this setting.
 
 - `workspace`: configures multi-repository parent workspaces. Keys:
-  - `mode`: `"project"` (default single-repo behavior) or `"parent"` (one `.gsd` controlling child repos).
+  - `mode`: `"project"` (default single-repo behavior) or `"parent"` (one `.otto/workflow` controlling child repos).
   - `repositories`: object map of repository IDs to config.
     - Repository ID format: `^[A-Za-z0-9][A-Za-z0-9._-]*$`.
     - Reserved ID: `project` is implicit and always maps to the project root; user-defined `workspace.repositories.project` is rejected.
@@ -195,7 +195,7 @@ This config sets a parent workspace with two child repositories. The implicit `p
 
 - `token_profile`: `"budget"`, `"balanced"`, `"quality"`, or `"burn-max"` — coordinates model selection, phase skipping, and context compression. `budget` skips research/reassessment and uses cheaper models; `balanced` (default) skips research/reassessment to reduce token burn; `quality` prefers higher-quality models; `burn-max` keeps full-context defaults, disables downgrade routing, and keeps phase skips off.
 
-- `planning_depth`: `"light"` or `"deep"` — controls project-level discovery before milestone planning. `"light"` is the default milestone discussion flow. `"deep"` runs workflow preferences, project discussion, requirements discussion, a research-decision gate, and optional project research before milestone planning. Enable it with `/gsd new-project --deep`, `/gsd new-milestone --deep`, or by setting `planning_depth: deep` in project-local `.gsd/PREFERENCES.md`. Global `~/.gsd/PREFERENCES.md` does not opt every fresh repo into deep mode. Deep mode writes `.gsd/PROJECT.md`, `.gsd/REQUIREMENTS.md`, `.gsd/runtime/research-decision.json`, and, when research is approved, `.gsd/research/STACK.md`, `FEATURES.md`, `ARCHITECTURE.md`, and `PITFALLS.md`.
+- `planning_depth`: `"light"` or `"deep"` — controls project-level discovery before milestone planning. `"light"` is the default milestone discussion flow. `"deep"` runs workflow preferences, project discussion, requirements discussion, a research-decision gate, and optional project research before milestone planning. Enable it with `/otto new-project --deep`, `/otto new-milestone --deep`, or by setting `planning_depth: deep` in project-local `.otto/workflow/PREFERENCES.md`. Global `~/.otto/workflow/PREFERENCES.md` does not opt every fresh repo into deep mode. Deep mode writes `.otto/workflow/PROJECT.md`, `.otto/workflow/REQUIREMENTS.md`, `.otto/workflow/runtime/research-decision.json`, and, when research is approved, `.otto/workflow/research/STACK.md`, `FEATURES.md`, `ARCHITECTURE.md`, and `PITFALLS.md`.
 
 - `phases`: fine-grained control over which phases run. Usually set by `token_profile`, but can be overridden. Keys:
   - `skip_research`: boolean — skip milestone-level research. Default: `false`.
@@ -222,7 +222,7 @@ This config sets a parent workspace with two child repositories. The implicit `p
   - `on_budget`: boolean — notify when budget thresholds are reached. Default: `true`.
   - `on_milestone`: boolean — notify when a milestone finishes. Default: `true`.
   - `on_attention`: boolean — notify when manual attention is needed. Default: `true`.
-  - Terminal auto-loop errors persist an `activity/*-auto-crash-note.json` file with error/session metadata; when available, the error notification includes the crash-note path and instructs resuming with `/gsd auto`.
+  - Terminal auto-loop errors persist an `activity/*-auto-crash-note.json` file with error/session metadata; when available, the error notification includes the crash-note path and instructs resuming with `/otto auto`.
 
 - `cmux`: configures cmux terminal integration when the agent is running inside a cmux workspace. Keys:
   - `enabled`: boolean — master toggle for cmux integration. Default: `false`.
@@ -245,7 +245,7 @@ This config sets a parent workspace with two child repositories. The implicit `p
 - `uok`: Unified Orchestration Kernel controls. Keys:
   - `enabled`: boolean — enable kernel wrappers and contract observers. Default: `true`.
   - `legacy_fallback.enabled`: boolean — emergency release fallback that forces legacy orchestration behavior even when `uok.enabled` is `true`. Default: `false`.
-    - Runtime override: set `LOOP24_UOK_FORCE_LEGACY=1` (or `LOOP24_UOK_LEGACY_FALLBACK=1`) to force legacy behavior for the current process.
+    - Runtime override: set `OTTO_UOK_FORCE_LEGACY=1` (or `OTTO_UOK_LEGACY_FALLBACK=1`) to force legacy behavior for the current process.
   - `gates.enabled`: boolean — route checks through the unified gate runner and persist `gate_runs`. Default: `true`.
   - `model_policy.enabled`: boolean — enforce policy filtering before model capability scoring. Default: `true`.
   - `execution_graph.enabled`: boolean — enable DAG scheduler facade/adapters for execution. Default: `true`.
@@ -328,7 +328,7 @@ This config sets a parent workspace with two child repositories. The implicit `p
   **Known unit types for `before`/`after`:** `research-milestone`, `plan-milestone`, `research-slice`, `plan-slice`, `execute-task`, `complete-slice`, `replan-slice`, `reassess-roadmap`, `run-uat`.
 
 - `experimental`: opt-in experimental features. All features here are **off by default** — you must explicitly set each one to `true` to enable it. Features in this block may change or be removed without a deprecation cycle while in experimental status. Keys:
-  - `rtk`: boolean — enable RTK (Real-Time Kompression) shell-command compression. When enabled, the workflow wraps shell commands through the RTK binary to reduce token usage during command execution. RTK is downloaded automatically on first use if not already installed. **Default: `false`** (opt-in required). Set `LOOP24_RTK_DISABLED=1` in the environment to force-disable regardless of this preference.
+  - `rtk`: boolean — enable RTK (Real-Time Kompression) shell-command compression. When enabled, the workflow wraps shell commands through the RTK binary to reduce token usage during command execution. RTK is downloaded automatically on first use if not already installed. **Default: `false`** (opt-in required). Set `OTTO_RTK_DISABLED=1` in the environment to force-disable regardless of this preference.
 
 ---
 
@@ -752,4 +752,4 @@ experimental:
 ---
 ```
 
-Opts in to RTK shell-command compression. RTK is downloaded automatically on first use. Set `LOOP24_RTK_DISABLED=1` to force-disable at the environment level regardless of this setting.
+Opts in to RTK shell-command compression. RTK is downloaded automatically on first use. Set `OTTO_RTK_DISABLED=1` to force-disable at the environment level regardless of this setting.

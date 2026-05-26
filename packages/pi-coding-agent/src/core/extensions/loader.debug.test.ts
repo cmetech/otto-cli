@@ -1,7 +1,7 @@
 import { test, beforeEach, afterEach } from "node:test"
 import assert from "node:assert/strict"
 
-const ORIGINAL_ENV = process.env.LOOP24_DEBUG_EXTENSIONS
+const ORIGINAL_ENV = process.env.OTTO_DEBUG_EXTENSIONS
 const ORIGINAL_STDERR_WRITE = process.stderr.write.bind(process.stderr)
 
 let captured: string[] = []
@@ -16,12 +16,12 @@ beforeEach(() => {
 
 afterEach(() => {
   process.stderr.write = ORIGINAL_STDERR_WRITE
-  if (ORIGINAL_ENV === undefined) delete process.env.LOOP24_DEBUG_EXTENSIONS
-  else process.env.LOOP24_DEBUG_EXTENSIONS = ORIGINAL_ENV
+  if (ORIGINAL_ENV === undefined) delete process.env.OTTO_DEBUG_EXTENSIONS
+  else process.env.OTTO_DEBUG_EXTENSIONS = ORIGINAL_ENV
 })
 
-test("LOOP24_DEBUG_EXTENSIONS=1 emits a registration line per pi.registerCommand call", async () => {
-  process.env.LOOP24_DEBUG_EXTENSIONS = "1"
+test("OTTO_DEBUG_EXTENSIONS=1 emits a registration line per pi.registerCommand call", async () => {
+  process.env.OTTO_DEBUG_EXTENSIONS = "1"
 
   // Import the loader fresh (after env var is set). Use a dynamic import to
   // get a clean reference and call createExtensionAPI directly.
@@ -41,15 +41,15 @@ test("LOOP24_DEBUG_EXTENSIONS=1 emits a registration line per pi.registerCommand
   const extension = createExtension("/fake/ext.js", "/fake/ext.js")
   const api = createExtensionAPI(extension, fakeRuntime, "/tmp", fakeEventBus)
 
-  api.registerCommand("loop24", { handler: () => {} })
+  api.registerCommand("otto", { handler: () => {} })
 
   const text = captured.join("")
-  assert.match(text, /\[loop24-debug\] registered command 'loop24'/)
+  assert.match(text, /\[otto-debug\] registered command 'otto'/)
   assert.match(text, /\/fake\/ext\.js/)
 })
 
-test("LOOP24_DEBUG_EXTENSIONS unset → no debug output", async () => {
-  delete process.env.LOOP24_DEBUG_EXTENSIONS
+test("OTTO_DEBUG_EXTENSIONS unset → no debug output", async () => {
+  delete process.env.OTTO_DEBUG_EXTENSIONS
 
   const loaderModule = await import("./loader.js")
   const { createExtensionAPI, createExtension } = loaderModule as unknown as {

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Auto Orchestration module interfaces and ADR-015 invariant adapter contracts.
 
 import type { WorkflowDbState } from "../types.js";

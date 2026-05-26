@@ -1,4 +1,4 @@
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -152,7 +152,7 @@ export async function handleAutoCommand(trimmed: string, ctx: ExtensionCommandCo
   if (trimmed === "pause") {
     if (!isAutoActive()) {
       if (isAutoPaused()) {
-        ctx.ui.notify("Auto-mode is already paused. /gsd auto to resume.", "info");
+        ctx.ui.notify("Auto-mode is already paused. /otto auto to resume.", "info");
       } else {
         ctx.ui.notify("Auto-mode is not running.", "info");
       }

@@ -6,13 +6,13 @@
  * start in that scenario — otherwise it runs at ~4,600 renders/second
  * consuming 500%+ CPU doing nothing useful.
  *
- * Regression test for: https://github.com/open-gsd/gsd-pi/issues/3095
+ * Regression test for: https://github.com/open-gsd/otto-pi/issues/3095
  */
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { ProcessTerminal } from "@loop24/pi-tui";
-import { TUI } from "@loop24/pi-tui";
-import type { Terminal } from "@loop24/pi-tui";
+import { ProcessTerminal } from "@otto/pi-tui";
+import { TUI } from "@otto/pi-tui";
+import type { Terminal } from "@otto/pi-tui";
 
 /**
  * A mock terminal that tracks writes and render activity.

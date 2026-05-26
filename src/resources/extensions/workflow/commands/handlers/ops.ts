@@ -1,6 +1,6 @@
-// Project/App: LOOP24
-// File Purpose: Handles operational /loop24 subcommands.
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+// Project/App: OTTO
+// File Purpose: Handles operational /otto subcommands.
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { enableDebug } from "../../debug-logger.js";
 import { dispatchDirectPhase } from "../../auto-direct-dispatch.js";
@@ -342,7 +342,7 @@ Examples:
   }
   if (trimmed === "scan" || trimmed.startsWith("scan ")) {
     const { handleScan } = await import("../../commands-scan.js");
-    // \s* (not \s+) is intentional: handles both /loop24 scan (no args) and /loop24 scan --focus X
+    // \s* (not \s+) is intentional: handles both /otto scan (no args) and /otto scan --focus X
     await handleScan(trimmed.replace(/^scan\s*/, "").trim(), ctx, pi);
     return true;
   }

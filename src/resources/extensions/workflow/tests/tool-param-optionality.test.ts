@@ -8,7 +8,7 @@
  * are required, while enrichment arrays (patterns, requirements, files, etc.)
  * are optional — so any model can call the tool successfully.
  *
- * See: https://github.com/open-gsd/gsd-pi/issues/2771
+ * See: https://github.com/open-gsd/otto-pi/issues/2771
  */
 
 import { test } from "node:test";
@@ -50,11 +50,11 @@ function getOptionalProps(tool: any): string[] {
   return allProps.filter((p: string) => !required.has(p));
 }
 
-// ─── gsd_summary_save: OpenAI requires top-level object schema ──────────────
+// ─── otto_summary_save: OpenAI requires top-level object schema ──────────────
 
-test("gsd_summary_save — parameters are a top-level object schema", () => {
-  const tool = getTool("gsd_summary_save");
-  assert.ok(tool, "gsd_summary_save must be registered");
+test("otto_summary_save — parameters are a top-level object schema", () => {
+  const tool = getTool("otto_summary_save");
+  assert.ok(tool, "otto_summary_save must be registered");
 
   assert.strictEqual(tool.parameters.type, "object", "OpenAI function parameters require a top-level object schema");
   assert.ok(!("anyOf" in tool.parameters), "top-level anyOf is rejected by OpenAI function schema validation");
@@ -65,9 +65,9 @@ test("gsd_summary_save — parameters are a top-level object schema", () => {
   assert.ok(!required.has("milestone_id"), "milestone_id must remain optional for root artifacts");
 });
 
-test("gsd_summary_save — validates UAT assessment params", () => {
-  const tool = getTool("gsd_summary_save");
-  assert.ok(tool, "gsd_summary_save must be registered");
+test("otto_summary_save — validates UAT assessment params", () => {
+  const tool = getTool("otto_summary_save");
+  assert.ok(tool, "otto_summary_save must be registered");
 
   const ajv = new Ajv({ strict: false });
   const validate = ajv.compile(tool.parameters);
@@ -81,11 +81,11 @@ test("gsd_summary_save — validates UAT assessment params", () => {
   assert.strictEqual(valid, true, `UAT assessment params should validate but got errors: ${JSON.stringify(validate.errors)}`);
 });
 
-// ─── gsd_slice_complete: enrichment arrays must be optional ──────────────────
+// ─── otto_slice_complete: enrichment arrays must be optional ──────────────────
 
-test("gsd_slice_complete — enrichment arrays are optional", () => {
-  const tool = getTool("gsd_slice_complete");
-  assert.ok(tool, "gsd_slice_complete must be registered");
+test("otto_slice_complete — enrichment arrays are optional", () => {
+  const tool = getTool("otto_slice_complete");
+  assert.ok(tool, "otto_slice_complete must be registered");
 
   const required = new Set(getRequiredProps(tool));
 
@@ -127,9 +127,9 @@ test("gsd_slice_complete — enrichment arrays are optional", () => {
   }
 });
 
-test("gsd_slice_complete — validates with only core params", () => {
-  const tool = getTool("gsd_slice_complete");
-  assert.ok(tool, "gsd_slice_complete must be registered");
+test("otto_slice_complete — validates with only core params", () => {
+  const tool = getTool("otto_slice_complete");
+  assert.ok(tool, "otto_slice_complete must be registered");
 
   const minimalParams = {
     sliceId: "S01",
@@ -146,11 +146,11 @@ test("gsd_slice_complete — validates with only core params", () => {
   assert.strictEqual(errors.length, 0, `Minimal params should validate but got errors: ${errors.map(e => `${e.path}: ${e.message}`).join(", ")}`);
 });
 
-// ─── gsd_plan_milestone: enrichment arrays must be optional ──────────────────
+// ─── otto_plan_milestone: enrichment arrays must be optional ──────────────────
 
-test("gsd_plan_milestone — enrichment arrays are optional", () => {
-  const tool = getTool("gsd_plan_milestone");
-  assert.ok(tool, "gsd_plan_milestone must be registered");
+test("otto_plan_milestone — enrichment arrays are optional", () => {
+  const tool = getTool("otto_plan_milestone");
+  assert.ok(tool, "otto_plan_milestone must be registered");
 
   const required = new Set(getRequiredProps(tool));
 
@@ -178,9 +178,9 @@ test("gsd_plan_milestone — enrichment arrays are optional", () => {
   }
 });
 
-test("gsd_plan_milestone — validates with only core params", () => {
-  const tool = getTool("gsd_plan_milestone");
-  assert.ok(tool, "gsd_plan_milestone must be registered");
+test("otto_plan_milestone — validates with only core params", () => {
+  const tool = getTool("otto_plan_milestone");
+  assert.ok(tool, "otto_plan_milestone must be registered");
 
   const minimalParams = {
     milestoneId: "M001",
@@ -206,11 +206,11 @@ test("gsd_plan_milestone — validates with only core params", () => {
   assert.strictEqual(errors.length, 0, `Minimal params should validate but got errors: ${errors.map(e => `${e.path}: ${e.message}`).join(", ")}`);
 });
 
-// ─── gsd_task_complete: enrichment arrays must be optional ───────────────────
+// ─── otto_task_complete: enrichment arrays must be optional ───────────────────
 
-test("gsd_task_complete — enrichment arrays are optional", () => {
-  const tool = getTool("gsd_task_complete");
-  assert.ok(tool, "gsd_task_complete must be registered");
+test("otto_task_complete — enrichment arrays are optional", () => {
+  const tool = getTool("otto_task_complete");
+  assert.ok(tool, "otto_task_complete must be registered");
 
   const required = new Set(getRequiredProps(tool));
 
@@ -241,9 +241,9 @@ test("gsd_task_complete — enrichment arrays are optional", () => {
   }
 });
 
-test("gsd_task_complete — validates with only core params", () => {
-  const tool = getTool("gsd_task_complete");
-  assert.ok(tool, "gsd_task_complete must be registered");
+test("otto_task_complete — validates with only core params", () => {
+  const tool = getTool("otto_task_complete");
+  assert.ok(tool, "otto_task_complete must be registered");
 
   const minimalParams = {
     taskId: "T01",
@@ -258,11 +258,11 @@ test("gsd_task_complete — validates with only core params", () => {
   assert.strictEqual(errors.length, 0, `Minimal params should validate but got errors: ${errors.map(e => `${e.path}: ${e.message}`).join(", ")}`);
 });
 
-// ─── gsd_complete_milestone: enrichment arrays must be optional ──────────────
+// ─── otto_complete_milestone: enrichment arrays must be optional ──────────────
 
-test("gsd_complete_milestone — enrichment arrays are optional", () => {
-  const tool = getTool("gsd_complete_milestone");
-  assert.ok(tool, "gsd_complete_milestone must be registered");
+test("otto_complete_milestone — enrichment arrays are optional", () => {
+  const tool = getTool("otto_complete_milestone");
+  assert.ok(tool, "otto_complete_milestone must be registered");
 
   const required = new Set(getRequiredProps(tool));
 
@@ -292,9 +292,9 @@ test("gsd_complete_milestone — enrichment arrays are optional", () => {
   }
 });
 
-test("gsd_complete_milestone — validates with only core params", () => {
-  const tool = getTool("gsd_complete_milestone");
-  assert.ok(tool, "gsd_complete_milestone must be registered");
+test("otto_complete_milestone — validates with only core params", () => {
+  const tool = getTool("otto_complete_milestone");
+  assert.ok(tool, "otto_complete_milestone must be registered");
 
   const minimalParams = {
     milestoneId: "M001",
@@ -308,11 +308,11 @@ test("gsd_complete_milestone — validates with only core params", () => {
   assert.strictEqual(errors.length, 0, `Minimal params should validate but got errors: ${errors.map(e => `${e.path}: ${e.message}`).join(", ")}`);
 });
 
-// ─── gsd_plan_slice: enrichment fields must be optional ──────────────────────
+// ─── otto_plan_slice: enrichment fields must be optional ──────────────────────
 
-test("gsd_plan_slice — enrichment fields are optional", () => {
-  const tool = getTool("gsd_plan_slice");
-  assert.ok(tool, "gsd_plan_slice must be registered");
+test("otto_plan_slice — enrichment fields are optional", () => {
+  const tool = getTool("otto_plan_slice");
+  assert.ok(tool, "otto_plan_slice must be registered");
 
   const required = new Set(getRequiredProps(tool));
 
@@ -334,9 +334,9 @@ test("gsd_plan_slice — enrichment fields are optional", () => {
   }
 });
 
-test("gsd_plan_slice — validates with only core params", () => {
-  const tool = getTool("gsd_plan_slice");
-  assert.ok(tool, "gsd_plan_slice must be registered");
+test("otto_plan_slice — validates with only core params", () => {
+  const tool = getTool("otto_plan_slice");
+  assert.ok(tool, "otto_plan_slice must be registered");
 
   const minimalParams = {
     milestoneId: "M001",
@@ -364,11 +364,11 @@ test("gsd_plan_slice — validates with only core params", () => {
 
 test("no planning/completion tool requires more than 10 top-level params", () => {
   const heavyTools = [
-    "gsd_slice_complete",
-    "gsd_plan_milestone",
-    "gsd_task_complete",
-    "gsd_complete_milestone",
-    "gsd_plan_slice",
+    "otto_slice_complete",
+    "otto_plan_milestone",
+    "otto_task_complete",
+    "otto_complete_milestone",
+    "otto_plan_slice",
   ];
 
   for (const name of heavyTools) {

@@ -2,9 +2,8 @@ import { existsSync } from "node:fs";
 import { homedir as osHomedir } from "node:os";
 import { delimiter, join } from "node:path";
 
-export const LOOP24_RTK_DISABLED_ENV = "LOOP24_RTK_DISABLED";
-export const GSD_RTK_DISABLED_ENV = "GSD_RTK_DISABLED";
-export const GSD_RTK_PATH_ENV = "GSD_RTK_PATH";
+export const OTTO_RTK_DISABLED_ENV = "OTTO_RTK_DISABLED";
+export const OTTO_RTK_PATH_ENV = "OTTO_RTK_PATH";
 export const RTK_TELEMETRY_DISABLED_ENV = "RTK_TELEMETRY_DISABLED";
 
 export function isTruthy(value: string | undefined): boolean {
@@ -14,11 +13,11 @@ export function isTruthy(value: string | undefined): boolean {
 }
 
 export function isRtkEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  return !isTruthy(env[LOOP24_RTK_DISABLED_ENV] ?? env[GSD_RTK_DISABLED_ENV]);
+  return !isTruthy(env[OTTO_RTK_DISABLED_ENV]);
 }
 
 export function getManagedRtkDir(env: NodeJS.ProcessEnv = process.env): string {
-  return join((env.LOOP24_HOME ?? env.GSD_HOME) || join(osHomedir(), ".gsd"), "agent", "bin");
+  return join(env.OTTO_HOME || join(osHomedir(), ".otto"), "agent", "bin");
 }
 
 export function getRtkBinaryName(platform: NodeJS.Platform = process.platform): string {

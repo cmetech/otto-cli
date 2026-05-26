@@ -1,7 +1,7 @@
 /**
  * External State Migration
  *
- * Migrates legacy in-project `.gsd/` directories to the external
+ * Migrates legacy in-project `.otto/workflow/` directories to the external
  * `~/.otto/projects/<hash>/` state directory. After migration, a
  * symlink replaces the original directory so all paths remain valid.
  */
@@ -20,29 +20,29 @@ export interface MigrationResult {
 }
 
 /**
- * Migrate a legacy in-project `.gsd/` directory to external storage.
+ * Migrate a legacy in-project `.otto/workflow/` directory to external storage.
  *
  * Algorithm:
- * 1. If `<project>/.gsd` is a symlink or doesn't exist -> skip
- * 2. If `<project>/.gsd` is a real directory:
+ * 1. If `<project>/.otto/workflow` is a symlink or doesn't exist -> skip
+ * 2. If `<project>/.otto/workflow` is a real directory:
  *    a. Compute external path from repoIdentity
  *    b. mkdir -p external dir
- *    c. Rename `.gsd` -> `.gsd.migrating` (atomic on same FS, acts as lock)
+ *    c. Rename `.otto/workflow` -> `.otto/workflow.migrating` (atomic on same FS, acts as lock)
  *    d. Copy contents to external dir (skip `worktrees/` subdirectory)
- *    e. Create symlink `.gsd -> external path`
- *    f. Remove `.gsd.migrating`
- * 3. On failure: rename `.gsd.migrating` back to `.gsd` (rollback)
+ *    e. Create symlink `.otto/workflow -> external path`
+ *    f. Remove `.otto/workflow.migrating`
+ * 3. On failure: rename `.otto/workflow.migrating` back to `.otto/workflow` (rollback)
  */
 export function migrateToExternalState(basePath: string): MigrationResult {
-  // Worktrees get their .gsd via syncWorkflowStateToWorktree(), not migration.
+  // Worktrees get their .otto/workflow via syncWorkflowStateToWorktree(), not migration.
   // Migration inside a worktree would compute the same external hash as the
   // main repo (externalWorkflowRoot hashes remoteUrl + gitRoot), creating a broken
-  // junction and orphaning .gsd.migrating (#2970).
+  // junction and orphaning .otto/workflow.migrating (#2970).
   if (isInsideWorktree(basePath)) {
     return { migrated: false };
   }
 
-  const localGsd = join(basePath, ".gsd");
+  const localGsd = join(basePath, ".otto/workflow");
 
   // Skip if doesn't exist
   if (!existsSync(localGsd)) {
@@ -56,19 +56,19 @@ export function migrateToExternalState(basePath: string): MigrationResult {
       return { migrated: false };
     }
     if (!stat.isDirectory()) {
-      return { migrated: false, error: ".gsd exists but is not a directory or symlink" };
+      return { migrated: false, error: ".otto/workflow exists but is not a directory or symlink" };
     }
   } catch (err) {
-    return { migrated: false, error: `Cannot stat .gsd: ${getErrorMessage(err)}` };
+    return { migrated: false, error: `Cannot stat .otto/workflow: ${getErrorMessage(err)}` };
   }
 
-  // Skip if .gsd/ contains git-tracked files — the project intentionally
-  // keeps .gsd/ in version control and migration would destroy that.
+  // Skip if .otto/workflow/ contains git-tracked files — the project intentionally
+  // keeps .otto/workflow/ in version control and migration would destroy that.
   if (hasGitTrackedWorkflowFiles(basePath)) {
     return { migrated: false };
   }
 
-  // Skip if .gsd/worktrees/ has active worktree directories (#1337).
+  // Skip if .otto/workflow/worktrees/ has active worktree directories (#1337).
   // On Windows, active git worktrees hold OS-level directory handles that
   // prevent rename/delete. Attempting migration causes EBUSY and data loss.
   const worktreesDir = join(localGsd, "worktrees");
@@ -85,13 +85,13 @@ export function migrateToExternalState(basePath: string): MigrationResult {
   }
 
   const externalPath = externalWorkflowRoot(basePath);
-  const migratingPath = join(basePath, ".gsd.migrating");
+  const migratingPath = join(basePath, ".otto", "workflow.migrating");
 
   try {
     // mkdir -p the external dir
     mkdirSync(externalPath, { recursive: true });
 
-    // Rename .gsd -> .gsd.migrating (atomic lock).
+    // Rename .otto/workflow -> .otto/workflow.migrating (atomic lock).
     // On Windows, NTFS may reject rename with EPERM if file descriptors are
     // open (VS Code watchers, antivirus on-access scan). Fall back to
     // copy+delete (#1292).
@@ -104,7 +104,7 @@ export function migrateToExternalState(basePath: string): MigrationResult {
           rmSync(localGsd, { recursive: true, force: true });
         } catch (copyErr) {
           // If copy succeeded but delete failed (e.g. EPERM file lock), remove
-          // the migrated copy so we don't leave an orphaned .gsd.migrating.
+          // the migrated copy so we don't leave an orphaned .otto/workflow.migrating.
           if (existsSync(localGsd) && existsSync(migratingPath)) {
             try { rmSync(migratingPath, { recursive: true, force: true }); } catch { /* best-effort cleanup */ }
           }
@@ -134,7 +134,7 @@ export function migrateToExternalState(basePath: string): MigrationResult {
       }
     }
 
-    // Create symlink .gsd -> external path
+    // Create symlink .otto/workflow -> external path
     symlinkSync(externalPath, localGsd, "junction");
 
     // Verify the symlink resolves correctly before removing the backup (#1377).
@@ -159,12 +159,12 @@ export function migrateToExternalState(basePath: string): MigrationResult {
       return { migrated: false, error: `Migration verification failed: ${getErrorMessage(verifyErr)}` };
     }
 
-    // Clean the git index — any .gsd/* files tracked before migration now
+    // Clean the git index — any .otto/workflow/* files tracked before migration now
     // sit behind the symlink and git can't follow it, causing them to show
     // as deleted. Remove them from the index so the working tree stays clean.
-    // --ignore-unmatch makes this a no-op on fresh projects with no tracked .gsd/.
+    // --ignore-unmatch makes this a no-op on fresh projects with no tracked .otto/workflow/.
     try {
-      execFileSync("git", ["rm", "-r", "--cached", "--ignore-unmatch", ".gsd"], {
+      execFileSync("git", ["rm", "-r", "--cached", "--ignore-unmatch", ".otto/workflow"], {
         cwd: basePath,
         stdio: ["ignore", "pipe", "ignore"],
         env: GIT_NO_PROMPT_ENV,
@@ -174,18 +174,18 @@ export function migrateToExternalState(basePath: string): MigrationResult {
       // Non-fatal — git may be unavailable or nothing was tracked
     }
 
-    // Remove .gsd.migrating only after symlink is verified and index is clean
+    // Remove .otto/workflow.migrating only after symlink is verified and index is clean
     rmSync(migratingPath, { recursive: true, force: true });
 
     return { migrated: true };
   } catch (err) {
-    // Rollback: rename .gsd.migrating back to .gsd
+    // Rollback: rename .otto/workflow.migrating back to .otto/workflow
     try {
       if (existsSync(migratingPath) && !existsSync(localGsd)) {
         renameSync(migratingPath, localGsd);
       }
     } catch {
-      // Rollback failed -- leave .gsd.migrating for doctor to detect
+      // Rollback failed -- leave .otto/workflow.migrating for doctor to detect
     }
 
     return {
@@ -196,12 +196,12 @@ export function migrateToExternalState(basePath: string): MigrationResult {
 }
 
 /**
- * Recover from a failed migration (`.gsd.migrating` exists).
- * Moves `.gsd.migrating` back to `.gsd` if `.gsd` doesn't exist.
+ * Recover from a failed migration (`.otto/workflow.migrating` exists).
+ * Moves `.otto/workflow.migrating` back to `.otto/workflow` if `.otto/workflow` doesn't exist.
  */
 export function recoverFailedMigration(basePath: string): boolean {
-  const localGsd = join(basePath, ".gsd");
-  const migratingPath = join(basePath, ".gsd.migrating");
+  const localGsd = join(basePath, ".otto/workflow");
+  const migratingPath = join(basePath, ".otto", "workflow.migrating");
 
   if (!existsSync(migratingPath)) return false;
   if (existsSync(localGsd)) return false; // both exist -- ambiguous, don't touch

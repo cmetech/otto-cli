@@ -1,0 +1,21 @@
+{
+  "id": "otto",
+  "name": "OTTO",
+  "version": "0.3.0",
+  "description": "OTTO-specific services — gateway probe, LangFlow flow triggers (Phase 3), LangFlow flow builder (Phase 4), prompt engineer (Phase 5)",
+  "tier": "core",
+  "requires": { "platform": ">=2.29.0" },
+  "provides": {
+    "hooks": ["session_start"],
+    "tools": [
+      "otto__refresh_catalog",
+      "otto__normalize_catalog",
+      "otto__check_catalog_health",
+      "otto__inspect_component",
+      "otto__validate_flow",
+      "otto__import_flow",
+      "otto__smoke_test_flow"
+    ],
+    "commands": ["build-flow", "prompt-engineer"]
+  }
+}

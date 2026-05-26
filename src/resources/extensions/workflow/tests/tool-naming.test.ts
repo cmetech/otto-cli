@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Verifies canonical and alias DB tool registration plus legacy alias telemetry.
 
 import { test } from 'node:test';
@@ -20,23 +20,23 @@ function makeMockPi() {
 // ─── Rename map ───────────────────────────────────────────────────────────────
 
 const RENAME_MAP: Array<{ canonical: string; alias: string }> = [
-  { canonical: "gsd_decision_save", alias: "gsd_save_decision" },
-  { canonical: "gsd_requirement_update", alias: "gsd_update_requirement" },
-  { canonical: "gsd_requirement_save", alias: "gsd_save_requirement" },
-  { canonical: "gsd_summary_save", alias: "gsd_save_summary" },
-  { canonical: "gsd_milestone_generate_id", alias: "gsd_generate_milestone_id" },
-  { canonical: "gsd_task_complete", alias: "gsd_complete_task" },
-  { canonical: "gsd_slice_complete", alias: "gsd_complete_slice" },
-  { canonical: "gsd_plan_milestone", alias: "gsd_milestone_plan" },
-  { canonical: "gsd_plan_slice", alias: "gsd_slice_plan" },
-  { canonical: "gsd_plan_task", alias: "gsd_task_plan" },
-  { canonical: "gsd_replan_slice", alias: "gsd_slice_replan" },
-  { canonical: "gsd_reassess_roadmap", alias: "gsd_roadmap_reassess" },
-  { canonical: "gsd_complete_milestone", alias: "gsd_milestone_complete" },
-  { canonical: "gsd_validate_milestone", alias: "gsd_milestone_validate" },
-  { canonical: "gsd_task_reopen", alias: "gsd_reopen_task" },
-  { canonical: "gsd_slice_reopen", alias: "gsd_reopen_slice" },
-  { canonical: "gsd_milestone_reopen", alias: "gsd_reopen_milestone" },
+  { canonical: "otto_decision_save", alias: "otto_save_decision" },
+  { canonical: "otto_requirement_update", alias: "otto_update_requirement" },
+  { canonical: "otto_requirement_save", alias: "otto_save_requirement" },
+  { canonical: "otto_summary_save", alias: "otto_save_summary" },
+  { canonical: "otto_milestone_generate_id", alias: "otto_generate_milestone_id" },
+  { canonical: "otto_task_complete", alias: "otto_complete_task" },
+  { canonical: "otto_slice_complete", alias: "otto_complete_slice" },
+  { canonical: "otto_plan_milestone", alias: "otto_milestone_plan" },
+  { canonical: "otto_plan_slice", alias: "otto_slice_plan" },
+  { canonical: "otto_plan_task", alias: "otto_task_plan" },
+  { canonical: "otto_replan_slice", alias: "otto_slice_replan" },
+  { canonical: "otto_reassess_roadmap", alias: "otto_roadmap_reassess" },
+  { canonical: "otto_complete_milestone", alias: "otto_milestone_complete" },
+  { canonical: "otto_validate_milestone", alias: "otto_milestone_validate" },
+  { canonical: "otto_task_reopen", alias: "otto_reopen_task" },
+  { canonical: "otto_slice_reopen", alias: "otto_reopen_slice" },
+  { canonical: "otto_milestone_reopen", alias: "otto_reopen_milestone" },
 ];
 
 // ─── Registration count ──────────────────────────────────────────────────────
@@ -49,7 +49,7 @@ registerDbTools(pi);
 assert.deepStrictEqual(
   pi.tools.length,
   RENAME_MAP.length * 2 + 2,
-  'Should register canonical/alias tool pairs plus 1 gate tool and 1 gsd_skip_slice',
+  'Should register canonical/alias tool pairs plus 1 gate tool and 1 otto_skip_slice',
 );
 
 // ─── Both names exist for each pair ──────────────────────────────────────────
@@ -81,8 +81,8 @@ for (const { canonical, alias } of RENAME_MAP) {
 }
 
 test("alias execute increments legacy MCP alias telemetry before delegating", async () => {
-  const canonicalTool = pi.tools.find((t: any) => t.name === "gsd_decision_save");
-  const aliasTool = pi.tools.find((t: any) => t.name === "gsd_save_decision");
+  const canonicalTool = pi.tools.find((t: any) => t.name === "otto_decision_save");
+  const aliasTool = pi.tools.find((t: any) => t.name === "otto_save_decision");
   assert.ok(canonicalTool);
   assert.ok(aliasTool);
 

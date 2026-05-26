@@ -104,7 +104,7 @@ exist but `~/.loop24` **does**, copy `~/.loop24` → `~/.otto` (recursive). Leav
 `~/.loop24` intact (safety net; user deletes manually). Idempotent: skip if
 `~/.otto` already exists. Best-effort and wrapped so it can never crash the
 loader. Hook in the early startup path (`src/loader.ts` / `src/app-paths.ts`
-consumer), honoring `LOOP24_HOME`/`GSD_HOME` overrides if set (migrate the
+consumer), honoring `LOOP24_HOME`/`OTTO_HOME` overrides if set (migrate the
 resolved appRoot, not a hardcoded `~/.loop24`).
 
 ### G. Tests
@@ -120,7 +120,7 @@ resolved appRoot, not a hardcoded `~/.loop24`).
   workspace scope `@loop24/*`.
 - Internal filenames/identifiers: `loop24-config.ts`, `loop24-wizard.ts`, the
   `extensions/loop24/` resource dir, `loop24.json` theme.
-- `LOOP24_*` env var names and `LOOP24_HOME`/`GSD_HOME` (step 4).
+- `LOOP24_*` env var names and `LOOP24_HOME`/`OTTO_HOME` (step 4).
 - The `.gsd` project-dir name itself — not renamed; we only correct stale
   `.loop24` comments to `.gsd`.
 

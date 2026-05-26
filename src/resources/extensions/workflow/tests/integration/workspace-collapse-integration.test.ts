@@ -39,7 +39,7 @@ import {
 
 function makeProjectDir(): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-collapse-int-")));
-  mkdirSync(join(dir, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow", "milestones"), { recursive: true });
   return dir;
 }
 
@@ -51,7 +51,7 @@ function makeGitRepo(): string {
   const dir = makeProjectDir();
   git(["init"], dir);
   git(["config", "user.email", "test@gsd.test"], dir);
-  git(["config", "user.name", "GSD Test"], dir);
+  git(["config", "user.name", "OTTO Test"], dir);
   writeFileSync(join(dir, "README.md"), "# test\n");
   git(["add", "README.md"], dir);
   git(["commit", "-m", "init"], dir);
@@ -80,7 +80,7 @@ describe("workspace-collapse integration: Test 1 — cwd-drift path agreement", 
   });
 
   test("contextFile() returns same absolute path before and after cwd change", () => {
-    const worktreeDir = join(projectDir, ".gsd", "worktrees", "M001");
+    const worktreeDir = join(projectDir, ".otto/workflow", "worktrees", "M001");
     mkdirSync(worktreeDir, { recursive: true });
 
     const ws = createWorkspace(projectDir);
@@ -144,7 +144,7 @@ describe("workspace-collapse integration: Test 2 — abort teardown clears stale
   test("STATE.md and M001-META.json are removed by teardownAutoWorktree", () => {
     // Phase C pt 2: auto.lock no longer exists as a file — it migrated
     // to the workers + unit_dispatches tables.
-    const workflowDir = join(repoDir, ".gsd");
+    const workflowDir = join(repoDir, ".otto/workflow");
     const milestonesDir = join(workflowDir, "milestones", "M001");
     mkdirSync(milestonesDir, { recursive: true });
 
@@ -239,8 +239,8 @@ describe("workspace-collapse integration: Test 4 — sibling worktrees share DB 
   });
 
   test("ws1 and ws2 (sibling worktrees) have same identityKey", () => {
-    const wt1 = join(projectDir, ".gsd", "worktrees", "M001");
-    const wt2 = join(projectDir, ".gsd", "worktrees", "M002");
+    const wt1 = join(projectDir, ".otto/workflow", "worktrees", "M001");
+    const wt2 = join(projectDir, ".otto/workflow", "worktrees", "M002");
     mkdirSync(wt1, { recursive: true });
     mkdirSync(wt2, { recursive: true });
 
@@ -260,8 +260,8 @@ describe("workspace-collapse integration: Test 4 — sibling worktrees share DB 
   });
 
   test("openDatabaseByWorkspace for sibling worktrees resolves to the same DB path", () => {
-    const wt1 = join(projectDir, ".gsd", "worktrees", "M001");
-    const wt2 = join(projectDir, ".gsd", "worktrees", "M002");
+    const wt1 = join(projectDir, ".otto/workflow", "worktrees", "M001");
+    const wt2 = join(projectDir, ".otto/workflow", "worktrees", "M002");
     mkdirSync(wt1, { recursive: true });
     mkdirSync(wt2, { recursive: true });
 
@@ -306,18 +306,18 @@ describe("workspace-collapse integration: Test 5 — workflowRootCache normaliza
 
   beforeEach(() => {
     projectDir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-cache-int-")));
-    mkdirSync(join(projectDir, ".gsd"), { recursive: true });
+    mkdirSync(join(projectDir, ".otto/workflow"), { recursive: true });
 
     fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "gsd-cache-int-home-")));
 
     savedHome = process.env.HOME;
     savedUserProfile = process.env.USERPROFILE;
-    savedWorkflowHome = process.env.GSD_HOME;
+    savedWorkflowHome = process.env.OTTO_HOME;
 
-    // Prevent ~/.gsd interference
+    // Prevent ~/.otto interference
     process.env.HOME = fakeHome;
     process.env.USERPROFILE = fakeHome;
-    process.env.GSD_HOME = join(fakeHome, ".gsd");
+    process.env.OTTO_HOME = join(fakeHome, ".otto/workflow");
 
     clearPathCache();
   });
@@ -327,8 +327,8 @@ describe("workspace-collapse integration: Test 5 — workflowRootCache normaliza
     else process.env.HOME = savedHome;
     if (savedUserProfile === undefined) delete process.env.USERPROFILE;
     else process.env.USERPROFILE = savedUserProfile;
-    if (savedWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = savedWorkflowHome;
+    if (savedWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = savedWorkflowHome;
 
     clearPathCache();
     rmSync(projectDir, { recursive: true, force: true });
@@ -346,8 +346,8 @@ describe("workspace-collapse integration: Test 5 — workflowRootCache normaliza
     );
     assert.equal(
       withoutSlash,
-      join(projectDir, ".gsd"),
-      "both calls must resolve to projectDir/.gsd",
+      join(projectDir, ".otto/workflow"),
+      "both calls must resolve to projectDir/.otto/workflow",
     );
   });
 

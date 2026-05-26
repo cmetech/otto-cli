@@ -1,16 +1,16 @@
 /**
  * gsdroot-worktree-detection.test.ts — Regression test for #2594.
  *
- * workflowRoot() must return the canonical project .gsd directory when basePath
- * is inside a .gsd/worktrees/<name>/ structure. Worktree-local .gsd folders
+ * workflowRoot() must return the canonical project .otto/workflow directory when basePath
+ * is inside a .otto/workflow/worktrees/<name>/ structure. Worktree-local .otto/workflow folders
  * are projection roots; runtime/control state stays DB-authoritative at the
- * project .gsd.
+ * project .otto/workflow.
  *
- * The bug: when a git worktree lives at /project/.gsd/worktrees/M008/,
+ * The bug: when a git worktree lives at /project/.otto/workflow/worktrees/M008/,
  * probeWorkflowRoot() runs `git rev-parse --show-toplevel` which can return the
  * main project root (not the worktree root) depending on git version and
- * worktree setup. The walk-up then finds /project/.gsd and returns that
- * instead of the worktree's own .gsd path.
+ * worktree setup. The walk-up then finds /project/.otto/workflow and returns that
+ * instead of the worktree's own .otto/workflow path.
  */
 
 import { describe, test, beforeEach, afterEach } from "node:test";
@@ -32,7 +32,7 @@ describe("workflowRoot() worktree detection (#2594)", () => {
     // Create a temporary project with a git repo to simulate real conditions.
     // realpathSync handles macOS /tmp -> /private/tmp.
     projectRoot = realpathSync(mkdtempSync(join(tmpdir(), "gsdroot-wt-")));
-    projectGsd = join(projectRoot, ".gsd");
+    projectGsd = join(projectRoot, ".otto/workflow");
     mkdirSync(projectGsd, { recursive: true });
 
     // Initialize a git repo in the project root so git rev-parse works
@@ -62,39 +62,39 @@ describe("workflowRoot() worktree detection (#2594)", () => {
     rmSync(projectRoot, { recursive: true, force: true });
   });
 
-  test("returns project .gsd when basePath is a worktree with its own .gsd", () => {
+  test("returns project .otto/workflow when basePath is a worktree with its own .otto/workflow", () => {
     // Simulates a worktree that already had copyPlanningArtifacts() run,
-    // so it has its own .gsd/ directory.
+    // so it has its own .otto/workflow/ directory.
     const worktreeBase = join(projectGsd, "worktrees", "M008");
-    const worktreeGsd = join(worktreeBase, ".gsd");
+    const worktreeGsd = join(worktreeBase, ".otto/workflow");
     mkdirSync(worktreeGsd, { recursive: true });
 
     const result = workflowRoot(worktreeBase);
     assert.equal(
       result,
       projectGsd,
-      `Expected canonical project .gsd (${projectGsd}), got ${result}.`,
+      `Expected canonical project .otto/workflow (${projectGsd}), got ${result}.`,
     );
     assert.equal(resolveWorkflowPathContract(worktreeBase).worktreeGsd, worktreeGsd);
     assert.equal(workflowProjectionRoot(worktreeBase), worktreeGsd);
   });
 
-  test("returns project .gsd when worktree .gsd does not exist yet", () => {
+  test("returns project .otto/workflow when worktree .otto/workflow does not exist yet", () => {
     const worktreeBase = join(projectGsd, "worktrees", "M008");
     mkdirSync(worktreeBase, { recursive: true });
-    // NOTE: no .gsd/ inside worktreeBase
+    // NOTE: no .otto/workflow/ inside worktreeBase
 
     const result = workflowRoot(worktreeBase);
     assert.equal(
       result,
       projectGsd,
-      `Expected canonical project .gsd (${projectGsd}), got ${result}.`,
+      `Expected canonical project .otto/workflow (${projectGsd}), got ${result}.`,
     );
-    assert.equal(workflowProjectionRoot(worktreeBase), join(worktreeBase, ".gsd"));
+    assert.equal(workflowProjectionRoot(worktreeBase), join(worktreeBase, ".otto/workflow"));
   });
 
-  test("returns project .gsd when basePath is a real git worktree inside .gsd/worktrees/", () => {
-    // Create a real git worktree at .gsd/worktrees/M010
+  test("returns project .otto/workflow when basePath is a real git worktree inside .otto/workflow/worktrees/", () => {
+    // Create a real git worktree at .otto/workflow/worktrees/M010
     const worktreeName = "M010";
     const worktreeBase = join(projectGsd, "worktrees", worktreeName);
 
@@ -111,14 +111,14 @@ describe("workflowRoot() worktree detection (#2594)", () => {
       return;
     }
 
-    // The real git worktree exists at worktreeBase but has NO .gsd/ subdir yet
+    // The real git worktree exists at worktreeBase but has NO .otto/workflow/ subdir yet
     const workflowResult = workflowRoot(worktreeBase);
     assert.equal(
       workflowResult,
       projectGsd,
-      `Expected canonical project .gsd (${projectGsd}), got ${workflowResult}`,
+      `Expected canonical project .otto/workflow (${projectGsd}), got ${workflowResult}`,
     );
-    assert.equal(workflowProjectionRoot(worktreeBase), join(worktreeBase, ".gsd"));
+    assert.equal(workflowProjectionRoot(worktreeBase), join(worktreeBase, ".otto/workflow"));
 
     // Cleanup worktree
     spawnSync("git", ["worktree", "remove", "--force", worktreeBase], {
@@ -127,12 +127,12 @@ describe("workflowRoot() worktree detection (#2594)", () => {
     });
   });
 
-  test("still returns project .gsd for normal (non-worktree) basePath", () => {
+  test("still returns project .otto/workflow for normal (non-worktree) basePath", () => {
     const result = workflowRoot(projectRoot);
     assert.equal(result, projectGsd);
   });
 
-  test("still returns project .gsd for a subdirectory of the project", () => {
+  test("still returns project .otto/workflow for a subdirectory of the project", () => {
     const subdir = join(projectRoot, "src", "lib");
     mkdirSync(subdir, { recursive: true });
 
@@ -140,7 +140,7 @@ describe("workflowRoot() worktree detection (#2594)", () => {
     assert.equal(
       result,
       projectGsd,
-      "Non-worktree subdirectories should still resolve to project .gsd",
+      "Non-worktree subdirectories should still resolve to project .otto/workflow",
     );
   });
 });

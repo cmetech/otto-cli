@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Shared RGB palette for the pre-theme watch splash.
 
 export const splashPalette = {

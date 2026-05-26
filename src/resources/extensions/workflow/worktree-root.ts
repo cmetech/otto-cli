@@ -24,13 +24,13 @@ export function normalizeWorktreePathForCompare(path: string): string {
  * symlink-resolved external-state layout used by ~/.otto/projects/<hash>.
  */
 export function findWorktreeSegment(normalizedPath: string): WorktreeSegment | null {
-  const directMarker = "/.gsd/worktrees/";
+  const directMarker = "/.otto/workflow/worktrees/";
   const directIdx = normalizedPath.indexOf(directMarker);
   if (directIdx !== -1) {
     return { workflowIdx: directIdx, afterWorktrees: directIdx + directMarker.length };
   }
 
-  const externalRe = /\/\.gsd\/projects\/[^/]+\/worktrees\//;
+  const externalRe = /\/\.otto\/workflow\/projects\/[^/]+\/worktrees\//;
   const externalMatch = normalizedPath.match(externalRe);
   if (externalMatch && externalMatch.index !== undefined) {
     return {
@@ -50,8 +50,8 @@ export function isWorktreePath(path: string): boolean {
  * Resolve the canonical project root for worktree operations.
  *
  * `originalBasePath` wins when available because session state already knows the
- * root. `GSD_PROJECT_ROOT` is the next strongest signal for worker processes.
- * Otherwise, derive the root from direct `.gsd/worktrees` paths, or recover it
+ * root. `OTTO_PROJECT_ROOT` is the next strongest signal for worker processes.
+ * Otherwise, derive the root from direct `.otto/workflow/worktrees` paths, or recover it
  * from the worktree `.git` file for symlink-resolved ~/.otto/project paths.
  */
 export function resolveWorktreeProjectRoot(
@@ -61,7 +61,7 @@ export function resolveWorktreeProjectRoot(
   const explicitOriginal = originalBasePath?.trim();
   if (explicitOriginal) return resolveProjectRootFromPath(explicitOriginal);
 
-  const envProjectRoot = (process.env.LOOP24_PROJECT_ROOT ?? process.env.GSD_PROJECT_ROOT)?.trim();
+  const envProjectRoot = (process.env.OTTO_PROJECT_ROOT ?? process.env.OTTO_PROJECT_ROOT)?.trim();
   if (envProjectRoot && isWorktreePath(basePath)) {
     return resolveProjectRootFromPath(envProjectRoot);
   }
@@ -77,14 +77,14 @@ function resolveProjectRootFromPath(path: string): string {
   }
 
   const sepChar = path.includes("\\") ? "\\" : "/";
-  const workflowMarker = `${sepChar}.gsd${sepChar}`;
+  const workflowMarker = `${sepChar}.otto${sepChar}workflow${sepChar}`;
   const markerIdx = path.indexOf(workflowMarker);
   const candidate = markerIdx !== -1
     ? path.slice(0, markerIdx)
     : path.slice(0, segment.workflowIdx);
 
   const workflowHomeNorm = normalizeWorktreePathForCompare(workflowHome());
-  const candidateWorkflowPath = normalizeWorktreePathForCompare(join(candidate, ".gsd"));
+  const candidateWorkflowPath = normalizeWorktreePathForCompare(join(candidate, ".otto/workflow"));
 
   if (candidateWorkflowPath === workflowHomeNorm || candidateWorkflowPath.startsWith(`${workflowHomeNorm}/`)) {
     const realRoot = resolveProjectRootFromGitFile(path);
@@ -103,7 +103,7 @@ function resolveNearestBootstrappedWorkflowRoot(path: string): string | null {
 
     for (let i = 0; i < 30; i++) {
       if (normalizeWorktreePathForCompare(dir) === externalStateParent) return null;
-      if (hasWorkflowBootstrapArtifacts(join(dir, ".gsd"))) return dir;
+      if (hasWorkflowBootstrapArtifacts(join(dir, ".otto/workflow"))) return dir;
 
       const gitPath = join(dir, ".git");
       if (existsSync(gitPath)) return null;

@@ -1,19 +1,19 @@
-# @loop24-build/rpc-client
+# @otto-build/rpc-client
 
 Standalone RPC client SDK for GSD. Spawn the agent process, perform a v2 protocol handshake, send commands, and consume typed events via an async generator — all in a few lines of TypeScript.
 
-Public protocol types are shared through `@loop24-build/contracts` and re-exported from this package for compatibility.
+Public protocol types are shared through `@otto-build/contracts` and re-exported from this package for compatibility.
 
 ## Installation
 
 ```bash
-npm install @loop24-build/rpc-client
+npm install @otto-build/rpc-client
 ```
 
 ## Quick Start
 
 ```typescript
-import { RpcClient } from '@loop24-build/rpc-client';
+import { RpcClient } from '@otto-build/rpc-client';
 
 const client = new RpcClient({ cwd: process.cwd() });
 await client.start();
@@ -124,7 +124,7 @@ import type {
   SessionStats,
   SdkAgentEvent,
   RpcClientOptions,
-} from '@loop24-build/rpc-client';
+} from '@otto-build/rpc-client';
 ```
 
 ## License

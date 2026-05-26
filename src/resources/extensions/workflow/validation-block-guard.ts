@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Shared command gate for validation-blocked milestones.
 
 import { existsSync } from "node:fs";
@@ -50,8 +50,8 @@ export function formatValidationBlockedMessage(
   if (!isValidationBlockedState(state)) return null;
 
   const commandLabel = attemptedCommand.trim()
-    ? `/gsd ${attemptedCommand.trim()}`
-    : "/gsd";
+    ? `/otto ${attemptedCommand.trim()}`
+    : "/otto";
   const blockers = state.blockers.filter((blocker) => blocker.trim().length > 0);
 
   return [

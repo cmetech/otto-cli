@@ -23,7 +23,7 @@ test("text helpers fall back to JS when native addon is unavailable", () => {
 
   const result = spawnSync(process.execPath, ["-e", script], {
     cwd: packageRoot,
-    env: { ...process.env, GSD_NATIVE_DISABLE: "1" },
+    env: { ...process.env, OTTO_NATIVE_DISABLE: "1" },
     encoding: "utf8",
   });
 

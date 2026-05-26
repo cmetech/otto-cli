@@ -1,4 +1,4 @@
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import {
   getOrchestratorState,
@@ -141,7 +141,7 @@ export async function handleParallelCommand(trimmed: string, _ctx: ExtensionComm
     return true;
   }
 
-  emitParallelMessage(pi, `Unknown parallel subcommand "${subcommand}". Usage: /gsd parallel [start|status|stop|pause|resume|merge|watch]`);
+  emitParallelMessage(pi, `Unknown parallel subcommand "${subcommand}". Usage: /otto parallel [start|status|stop|pause|resume|merge|watch]`);
   return true;
 }
 

@@ -1,5 +1,5 @@
 // the agent — Deep planning mode setPlanningDepth helper.
-// Verifies the helper correctly creates and updates .gsd/PREFERENCES.md while
+// Verifies the helper correctly creates and updates .otto/workflow/PREFERENCES.md while
 // preserving existing frontmatter keys and body content.
 
 import test from "node:test";
@@ -33,7 +33,7 @@ test("Deep mode: setPlanningDepth creates PREFERENCES.md when missing", (t) => {
 
   setPlanningDepth(base, "deep");
 
-  const path = join(base, ".gsd", "PREFERENCES.md");
+  const path = join(base, ".otto/workflow", "PREFERENCES.md");
   assert.ok(existsSync(path), "PREFERENCES.md must be created");
   const { frontmatter } = readFrontmatter(path);
   assert.strictEqual(frontmatter.planning_depth, "deep");
@@ -42,9 +42,9 @@ test("Deep mode: setPlanningDepth creates PREFERENCES.md when missing", (t) => {
   assert.strictEqual(frontmatter.branch_model, "single");
   assert.strictEqual(frontmatter.uat_dispatch, true);
   assert.deepStrictEqual(frontmatter.models, { executor_class: "balanced" });
-  assert.ok(existsSync(join(base, ".gsd", "runtime", "research-decision.json")));
+  assert.ok(existsSync(join(base, ".otto/workflow", "runtime", "research-decision.json")));
   const researchDecision = JSON.parse(
-    readFileSync(join(base, ".gsd", "runtime", "research-decision.json"), "utf-8"),
+    readFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), "utf-8"),
   );
   assert.strictEqual(researchDecision.decision, "skip");
   assert.strictEqual(researchDecision.source, "workflow-preferences");
@@ -55,11 +55,11 @@ test("Deep mode: setPlanningDepth updates existing planning_depth", (t) => {
   const base = makeBase();
   t.after(() => { try { rmSync(base, { recursive: true, force: true }); } catch {} });
 
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  writeFileSync(join(base, ".gsd", "PREFERENCES.md"), "---\nplanning_depth: light\n---\n");
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  writeFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "---\nplanning_depth: light\n---\n");
   setPlanningDepth(base, "deep");
 
-  const { frontmatter } = readFrontmatter(join(base, ".gsd", "PREFERENCES.md"));
+  const { frontmatter } = readFrontmatter(join(base, ".otto/workflow", "PREFERENCES.md"));
   assert.strictEqual(frontmatter.planning_depth, "deep");
 });
 
@@ -67,14 +67,14 @@ test("Deep mode: setPlanningDepth preserves other frontmatter keys", (t) => {
   const base = makeBase();
   t.after(() => { try { rmSync(base, { recursive: true, force: true }); } catch {} });
 
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "PREFERENCES.md"),
+    join(base, ".otto/workflow", "PREFERENCES.md"),
     "---\nversion: 1\nmode: solo\nuat_dispatch: true\n---\n",
   );
   setPlanningDepth(base, "deep");
 
-  const { frontmatter } = readFrontmatter(join(base, ".gsd", "PREFERENCES.md"));
+  const { frontmatter } = readFrontmatter(join(base, ".otto/workflow", "PREFERENCES.md"));
   assert.strictEqual(frontmatter.planning_depth, "deep");
   assert.strictEqual(frontmatter.version, 1);
   assert.strictEqual(frontmatter.mode, "solo");
@@ -85,9 +85,9 @@ test("Deep mode: setPlanningDepth preserves explicit workflow preference values"
   const base = makeBase();
   t.after(() => { try { rmSync(base, { recursive: true, force: true }); } catch {} });
 
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "PREFERENCES.md"),
+    join(base, ".otto/workflow", "PREFERENCES.md"),
     [
       "---",
       "planning_depth: deep",
@@ -102,7 +102,7 @@ test("Deep mode: setPlanningDepth preserves explicit workflow preference values"
   );
   setPlanningDepth(base, "deep");
 
-  const { frontmatter } = readFrontmatter(join(base, ".gsd", "PREFERENCES.md"));
+  const { frontmatter } = readFrontmatter(join(base, ".otto/workflow", "PREFERENCES.md"));
   assert.strictEqual(frontmatter.workflow_prefs_captured, true);
   assert.strictEqual(frontmatter.commit_policy, "manual");
   assert.strictEqual(frontmatter.branch_model, "per-milestone-worktree");
@@ -114,12 +114,12 @@ test("Deep mode: setPlanningDepth preserves body content", (t) => {
   const base = makeBase();
   t.after(() => { try { rmSync(base, { recursive: true, force: true }); } catch {} });
 
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   const original = "---\nversion: 1\n---\n\n# User notes\n\nKeep this body intact.\n";
-  writeFileSync(join(base, ".gsd", "PREFERENCES.md"), original);
+  writeFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), original);
   setPlanningDepth(base, "deep");
 
-  const content = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
+  const content = readFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "utf-8");
   assert.ok(content.includes("# User notes"), "body header must survive");
   assert.ok(content.includes("Keep this body intact."), "body text must survive");
 });
@@ -128,14 +128,14 @@ test("Deep mode: setPlanningDepth handles file without frontmatter delimiters", 
   const base = makeBase();
   t.after(() => { try { rmSync(base, { recursive: true, force: true }); } catch {} });
 
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   // Some agents write preferences without frontmatter delimiters (#2036 case)
-  writeFileSync(join(base, ".gsd", "PREFERENCES.md"), "version: 1\nmode: solo\n");
+  writeFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "version: 1\nmode: solo\n");
   setPlanningDepth(base, "deep");
 
-  const content = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
+  const content = readFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "utf-8");
   assert.ok(content.startsWith("---\n"), "result must have frontmatter delimiters");
-  const { frontmatter, body } = readFrontmatter(join(base, ".gsd", "PREFERENCES.md"));
+  const { frontmatter, body } = readFrontmatter(join(base, ".otto/workflow", "PREFERENCES.md"));
   assert.strictEqual(frontmatter.planning_depth, "deep");
   // The legacy non-frontmatter content is preserved as body
   assert.ok(body.includes("version: 1"), "legacy content preserved as body");
@@ -148,7 +148,7 @@ test("Deep mode: setPlanningDepth can flip back to light", (t) => {
   setPlanningDepth(base, "deep");
   setPlanningDepth(base, "light");
 
-  const { frontmatter } = readFrontmatter(join(base, ".gsd", "PREFERENCES.md"));
+  const { frontmatter } = readFrontmatter(join(base, ".otto/workflow", "PREFERENCES.md"));
   assert.strictEqual(frontmatter.planning_depth, "light");
 });
 
@@ -156,16 +156,16 @@ test("Deep mode: setPlanningDepth preserves explicit user research decision", (t
   const base = makeBase();
   t.after(() => { try { rmSync(base, { recursive: true, force: true }); } catch {} });
 
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "research-decision.json"),
+    join(base, ".otto/workflow", "runtime", "research-decision.json"),
     JSON.stringify({ decision: "research", source: "research-decision", decided_at: "2026-04-27T00:00:00Z" }),
   );
 
   setPlanningDepth(base, "deep");
 
   const researchDecision = JSON.parse(
-    readFileSync(join(base, ".gsd", "runtime", "research-decision.json"), "utf-8"),
+    readFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), "utf-8"),
   );
   assert.strictEqual(researchDecision.decision, "research");
   assert.strictEqual(researchDecision.source, "research-decision");

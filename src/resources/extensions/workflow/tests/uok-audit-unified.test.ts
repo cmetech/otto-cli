@@ -10,7 +10,7 @@ import { setLogBasePath, logWarning } from "../workflow-logger.ts";
 import { setUnifiedAuditEnabled } from "../uok/audit-toggle.ts";
 
 function readAuditEvents(basePath: string): Array<Record<string, unknown>> {
-  const file = join(basePath, ".gsd", "audit", "events.jsonl");
+  const file = join(basePath, ".otto/workflow", "audit", "events.jsonl");
   if (!existsSync(file)) return [];
   const raw = readFileSync(file, "utf-8");
   return raw

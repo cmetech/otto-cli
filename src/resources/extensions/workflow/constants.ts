@@ -35,35 +35,35 @@ export const CACHE_MAX = 50;
  * sent to the provider stays well under provider limits.
  *
  * Included tools and why:
- *   - gsd_summary_save: writes CONTEXT.md artifacts (all discuss prompts)
- *   - gsd_save_summary: alias for above
- *   - gsd_decision_save: records decisions (discuss.md output phase)
- *   - gsd_save_decision: alias for above
- *   - gsd_plan_milestone: writes roadmap (discuss.md single/multi milestone)
- *   - gsd_milestone_plan: alias for above
- *   - gsd_milestone_generate_id: generates milestone IDs (discuss.md multi-milestone)
- *   - gsd_generate_milestone_id: alias for above
- *   - gsd_requirement_save: creates requirements during discuss
- *   - gsd_save_requirement: alias for above
- *   - gsd_requirement_update: updates requirements during discuss
- *   - gsd_update_requirement: alias for above
+ *   - otto_summary_save: writes CONTEXT.md artifacts (all discuss prompts)
+ *   - otto_save_summary: alias for above
+ *   - otto_decision_save: records decisions (discuss.md output phase)
+ *   - otto_save_decision: alias for above
+ *   - otto_plan_milestone: writes roadmap (discuss.md single/multi milestone)
+ *   - otto_milestone_plan: alias for above
+ *   - otto_milestone_generate_id: generates milestone IDs (discuss.md multi-milestone)
+ *   - otto_generate_milestone_id: alias for above
+ *   - otto_requirement_save: creates requirements during discuss
+ *   - otto_save_requirement: alias for above
+ *   - otto_requirement_update: updates requirements during discuss
+ *   - otto_update_requirement: alias for above
  */
 export const DISCUSS_TOOLS_ALLOWLIST: readonly string[] = [
   // Context / summary writing
-  "gsd_summary_save",
-  "gsd_save_summary",
+  "otto_summary_save",
+  "otto_save_summary",
   // Decision recording
-  "gsd_decision_save",
-  "gsd_save_decision",
+  "otto_decision_save",
+  "otto_save_decision",
   // Milestone planning (needed for discuss.md output phase)
-  "gsd_plan_milestone",
-  "gsd_milestone_plan",
+  "otto_plan_milestone",
+  "otto_milestone_plan",
   // Milestone ID generation (multi-milestone flow)
-  "gsd_milestone_generate_id",
-  "gsd_generate_milestone_id",
+  "otto_milestone_generate_id",
+  "otto_generate_milestone_id",
   // Requirement updates
-  "gsd_requirement_save",
-  "gsd_save_requirement",
-  "gsd_requirement_update",
-  "gsd_update_requirement",
+  "otto_requirement_save",
+  "otto_save_requirement",
+  "otto_requirement_update",
+  "otto_update_requirement",
 ];

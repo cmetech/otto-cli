@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Timestamp formatting helpers for interactive transcript messages.
 
 /**

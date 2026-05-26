@@ -1,4 +1,4 @@
-// Project/App: Open GSD
+// Project/App: Open OTTO
 // File Purpose: Tests for release version surface synchronization.
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
@@ -30,7 +30,7 @@ function writeText(root: string, relativePath: string, value: string): void {
 }
 
 function createFixture(): string {
-  const root = mkdtempSync(join(tmpdir(), "open-gsd-version-sync-"));
+  const root = mkdtempSync(join(tmpdir(), "otto-version-sync-"));
   writeJson(root, "package.json", { name: "@cmetech/otto", version: "1.0.0" });
   writeJson(root, "package-lock.json", {
     name: "@cmetech/otto",
@@ -38,29 +38,29 @@ function createFixture(): string {
     packages: {
       "": { name: "@cmetech/otto", version: "1.0.0" },
       "extensions/google-search": { name: "@gsd-extensions/google-search", version: "1.0.0" },
-      "packages/pi-coding-agent": { name: "@loop24/pi-coding-agent", version: "1.0.0" },
+      "packages/pi-coding-agent": { name: "@otto/pi-coding-agent", version: "1.0.0" },
     },
   });
   writeJson(root, "extensions/google-search/package.json", {
     name: "@gsd-extensions/google-search",
     version: "1.0.0",
     peerDependencies: {
-      "@loop24/pi-coding-agent": "*",
-      "@loop24/pi-tui": "*",
+      "@otto/pi-coding-agent": "*",
+      "@otto/pi-tui": "*",
     },
   });
   writeJson(root, "packages/pi-coding-agent/package.json", {
-    name: "@loop24/pi-coding-agent",
+    name: "@otto/pi-coding-agent",
     version: "1.0.0",
-    dependencies: { "@loop24-build/contracts": "^1.0.0" },
+    dependencies: { "@otto-build/contracts": "^1.0.0" },
   });
   writeJson(root, "packages/contracts/package.json", {
-    name: "@loop24-build/contracts",
+    name: "@otto-build/contracts",
     version: "1.0.0",
   });
-  writeJson(root, "pkg/package.json", { name: "@glittercowboy/gsd", version: "1.0.0" });
+  writeJson(root, "pkg/package.json", { name: "@glittercowboy/otto", version: "1.0.0" });
   writeJson(root, "native/npm/darwin-arm64/package.json", {
-    name: "@opengsd/engine-darwin-arm64",
+    name: "@cmetech/otto-engine-darwin-arm64",
     version: "1.0.0",
   });
   writeText(
@@ -108,7 +108,7 @@ test("verifyVersionSync reports every release-owned surface that drifts from roo
   assert.match(issues.join("\n"), /packages\/pi-coding-agent\/package\.json version is 1\.0\.0, expected 2\.0\.0/);
   assert.match(
     issues.join("\n"),
-    /packages\/pi-coding-agent\/package\.json dependencies\.@loop24-build\/contracts is \^1\.0\.0, expected \^2\.0\.0/,
+    /packages\/pi-coding-agent\/package\.json dependencies\.@otto-build\/contracts is \^1\.0\.0, expected \^2\.0\.0/,
   );
   assert.match(issues.join("\n"), /native\/Cargo\.toml workspace package version is 1\.0\.0, expected 2\.0\.0/);
   assert.match(issues.join("\n"), /native\/Cargo\.lock gsd-engine version is 1\.0\.0, expected 2\.0\.0/);
@@ -125,13 +125,13 @@ test("syncVersionSurfaces updates package, native, and bridge versions together"
   assert.equal(readJson<{ version: string }>(root, "pkg/package.json").version, "2.1.0-dev.abc123");
   assert.equal(
     readJson<{ dependencies: Record<string, string> }>(root, "packages/pi-coding-agent/package.json").dependencies[
-      "@loop24-build/contracts"
+      "@otto-build/contracts"
     ],
     "^2.1.0-dev.abc123",
   );
   assert.deepEqual(readJson<{ peerDependencies: Record<string, string> }>(root, "extensions/google-search/package.json").peerDependencies, {
-    "@loop24/pi-coding-agent": "*",
-    "@loop24/pi-tui": "*",
+    "@otto/pi-coding-agent": "*",
+    "@otto/pi-tui": "*",
   });
   assert.match(readFileSync(join(root, "native/Cargo.toml"), "utf8"), /version = "2\.1\.0-dev\.abc123"/);
   assert.match(readFileSync(join(root, "native/Cargo.lock"), "utf8"), /name = "gsd-engine"\nversion = "2\.1\.0-dev\.abc123"/);

@@ -18,15 +18,15 @@
  *   --heal                Auto-respawn dead workers (opt-in, off by default)
  *   --heal-retries <n>    Max respawn attempts per worker (default: 3)
  *   --heal-cooldown <sec> Seconds between respawn attempts (default: 30)
- *   --dir <path>          Status file directory (default: .loop24/parallel)
+ *   --dir <path>          Status file directory (default: .otto/parallel)
  *   --root <path>         Project root (default: cwd)
  * 
  * Data sources:
- *   .loop24/parallel/M0xx.status.json  — heartbeat, cost, state (written by orchestrator)
- *   .loop24/worktrees/M0xx/.loop24/auto.lock — current unit type + ID (written by worker)
- *   .loop24/worktrees/M0xx/.loop24/gsd.db — task/slice completion (SQLite, queried via cli)
- *   .loop24/parallel/M0xx.stdout.log — NDJSON events (cost extraction, notify messages)
- *   .loop24/parallel/M0xx.stderr.log — error surfacing
+ *   .otto/parallel/M0xx.status.json  — heartbeat, cost, state (written by orchestrator)
+ *   .otto/worktrees/M0xx/.otto/auto.lock — current unit type + ID (written by worker)
+ *   .otto/worktrees/M0xx/.otto/otto.db — task/slice completion (SQLite, queried via cli)
+ *   .otto/parallel/M0xx.stdout.log — NDJSON events (cost extraction, notify messages)
+ *   .otto/parallel/M0xx.stderr.log — error surfacing
  * 
  * Health indicators:
  *   ● green  — PID alive, fresh heartbeat (<30s)
@@ -163,7 +163,7 @@ function readAutoLock(mid) {
 }
 
 function querySliceProgress(mid) {
-  const dbPath = path.resolve(PROJECT_ROOT, `.gsd/worktrees/${mid}/.gsd/gsd.db`);
+  const dbPath = path.resolve(PROJECT_ROOT, `.gsd/worktrees/${mid}/.gsd/otto.db`);
   if (!fs.existsSync(dbPath)) return [];
   
   try {
@@ -308,7 +308,7 @@ function findWorkflowLoader() {
   return null;
 }
 
-const GSD_LOADER = findWorkflowLoader();
+const OTTO_LOADER = findWorkflowLoader();
 
 /**
  * Respawn a dead worker. Returns the new PID or null on failure.
@@ -317,7 +317,7 @@ const GSD_LOADER = findWorkflowLoader();
 function respawnWorker(mid) {
   const worktreeDir = path.resolve(PROJECT_ROOT, `.gsd/worktrees/${mid}`);
   if (!fs.existsSync(worktreeDir)) return null;
-  if (!fs.existsSync(GSD_LOADER)) return null;
+  if (!fs.existsSync(OTTO_LOADER)) return null;
   
   const stdoutLog = path.resolve(PROJECT_ROOT, PARALLEL_DIR, `${mid}.stdout.log`);
   const stderrLog = path.resolve(PROJECT_ROOT, PARALLEL_DIR, `${mid}.stderr.log`);
@@ -329,17 +329,14 @@ function respawnWorker(mid) {
     stdoutFd = fs.openSync(stdoutLog, 'a');
     stderrFd = fs.openSync(stderrLog, 'a');
 
-    const child = spawn(process.execPath, [GSD_LOADER, 'headless', '--json', 'auto'], {
+    const child = spawn(process.execPath, [OTTO_LOADER, 'headless', '--json', 'auto'], {
       cwd: worktreeDir,
       detached: true,
       env: {
         ...process.env,
-        LOOP24_MILESTONE_LOCK: mid,
-        GSD_MILESTONE_LOCK: mid,
-        LOOP24_PROJECT_ROOT: PROJECT_ROOT,
-        GSD_PROJECT_ROOT: PROJECT_ROOT,
-        LOOP24_PARALLEL_WORKER: '1',
-        GSD_PARALLEL_WORKER: '1',
+        OTTO_MILESTONE_LOCK: mid,
+        OTTO_PROJECT_ROOT: PROJECT_ROOT,
+        OTTO_PARALLEL_WORKER: '1',
       },
       stdio: ['ignore', stdoutFd, stderrFd],
       windowsHide: true,
@@ -517,7 +514,7 @@ function truncate(str, maxLen) {
  * Get recently completed tasks/slices from the worktree DB for the event feed.
  */
 function queryRecentCompletions(mid) {
-  const dbPath = path.resolve(PROJECT_ROOT, `.gsd/worktrees/${mid}/.gsd/gsd.db`);
+  const dbPath = path.resolve(PROJECT_ROOT, `.gsd/worktrees/${mid}/.gsd/otto.db`);
   if (!fs.existsSync(dbPath)) return [];
   
   try {

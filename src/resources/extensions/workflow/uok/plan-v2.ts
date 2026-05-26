@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: UOK plan v2 graph compilation from workflow state.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -50,7 +50,7 @@ function hasFileContent(path: string | null): boolean {
 
 function getArtifactLookupBases(basePath: string): string[] {
   const bases = [basePath];
-  const projectRoot = (process.env.LOOP24_PROJECT_ROOT ?? process.env.GSD_PROJECT_ROOT);
+  const projectRoot = process.env.OTTO_PROJECT_ROOT;
   if (projectRoot && projectRoot.trim().length > 0 && projectRoot !== basePath) {
     bases.push(projectRoot);
   }

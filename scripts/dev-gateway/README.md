@@ -1,15 +1,15 @@
-# LOOP24 dev mock gateway
+# OTTO dev mock gateway
 
 A transparent HTTP proxy that forwards `POST /v1/messages` to
 `https://api.anthropic.com/v1/messages`. Stand-in for the real
-`loop24-gateway`'s Anthropic surface (`SURF-V2-01`) until that team
+`otto-gateway`'s Anthropic surface (`SURF-V2-01`) until that team
 ships it.
 
 ## Why this exists
 
-LOOP24's Phase 1 (gateway routing) needs SOMETHING to point at to
-validate the end-to-end client-side wiring. The real `loop24-gateway`
-is pre-implementation; this mock unblocks LOOP24 development without
+OTTO's Phase 1 (gateway routing) needs SOMETHING to point at to
+validate the end-to-end client-side wiring. The real `otto-gateway`
+is pre-implementation; this mock unblocks OTTO development without
 waiting on it.
 
 ## Usage
@@ -19,15 +19,15 @@ waiting on it.
 export ANTHROPIC_API_KEY=sk-ant-...        # required — upstream auth
 node scripts/dev-gateway/server.js
 # → listens on http://127.0.0.1:7250 by default
-# → port override via LOOP24_DEV_GATEWAY_PORT
+# → port override via OTTO_DEV_GATEWAY_PORT
 
-# Terminal 2: run loop24 routed through the mock
-export LOOP24_GATEWAY_URL=http://127.0.0.1:7250
-export LOOP24_GATEWAY_TOKEN=anything       # optional; mock accepts any value
-loop24
+# Terminal 2: run otto routed through the mock
+export OTTO_GATEWAY_URL=http://127.0.0.1:7250
+export OTTO_GATEWAY_TOKEN=anything       # optional; mock accepts any value
+otto
 ```
 
-When you launch `loop24`, the banner status line should read
+When you launch `otto`, the banner status line should read
 `gateway: routed → 127.0.0.1:7250`. Any messages you send route
 through the mock, which forwards them to Anthropic with your real
 `ANTHROPIC_API_KEY`.
@@ -39,5 +39,5 @@ through the mock, which forwards them to Anthropic with your real
 - No request/response transformation beyond Authorization stripping
 - No persistence — restarts are stateless
 
-When the real gateway lands, swap `LOOP24_GATEWAY_URL` to point at it
+When the real gateway lands, swap `OTTO_GATEWAY_URL` to point at it
 and stop using this script.

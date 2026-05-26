@@ -16,7 +16,7 @@ import {
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-cmd-q-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -28,7 +28,7 @@ function cleanup(base: string): void {
 test("enqueue + claim + complete round-trip for targeted command", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   const id = enqueueCommand({
     targetWorker: "worker-A",
@@ -53,7 +53,7 @@ test("enqueue + claim + complete round-trip for targeted command", (t) => {
 test("targeted command is invisible to other workers", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   enqueueCommand({ targetWorker: "worker-A", command: "for-A" });
   const wrong = claimNextCommand("worker-B");
@@ -67,7 +67,7 @@ test("targeted command is invisible to other workers", (t) => {
 test("broadcast command (target=null) is visible to ANY worker, claimed exactly once", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   enqueueCommand({ targetWorker: null, command: "broadcast-cancel" });
 
@@ -83,7 +83,7 @@ test("broadcast command (target=null) is visible to ANY worker, claimed exactly 
 test("oldest-first ordering across mixed targeted + broadcast queue", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   enqueueCommand({ targetWorker: null, command: "first" });
   enqueueCommand({ targetWorker: "worker-A", command: "second" });
@@ -101,7 +101,7 @@ test("oldest-first ordering across mixed targeted + broadcast queue", (t) => {
 test("completeCommand is idempotent — second call does not overwrite", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   const id = enqueueCommand({ targetWorker: "w", command: "x" });
   claimNextCommand("w");
@@ -114,7 +114,7 @@ test("completeCommand is idempotent — second call does not overwrite", (t) => 
 test("completed commands cannot be reclaimed or completed by a different worker", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   const id = enqueueCommand({ targetWorker: "worker-A", command: "x" });
   const claimed = claimNextCommand("worker-A");
@@ -131,7 +131,7 @@ test("completed commands cannot be reclaimed or completed by a different worker"
 test("completeCommand does not complete an unclaimed command", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   const id = enqueueCommand({ targetWorker: "w", command: "x" });
   completeCommand(id, "w", { result: 1 });

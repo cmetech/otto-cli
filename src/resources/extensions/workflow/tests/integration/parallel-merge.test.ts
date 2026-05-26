@@ -57,11 +57,11 @@ function createTempRepo(): string {
   run("git config user.email test@test.com", dir);
   run("git config user.name Test", dir);
   writeFileSync(join(dir, "README.md"), "# test\n");
-  // Mirror production: .gsd/worktrees/ is gitignored so autoCommitDirtyState
+  // Mirror production: .otto/workflow/worktrees/ is gitignored so autoCommitDirtyState
   // doesn't pick up the worktrees directory as dirty state (#1127 fix).
-  writeFileSync(join(dir, ".gitignore"), ".gsd/worktrees/\n");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
-  writeFileSync(join(dir, ".gsd", "STATE.md"), "# State\n");
+  writeFileSync(join(dir, ".gitignore"), ".otto/workflow/worktrees/\n");
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
+  writeFileSync(join(dir, ".otto/workflow", "STATE.md"), "# State\n");
   run("git add .", dir);
   run("git commit -m init", dir);
   return dir;
@@ -86,7 +86,7 @@ function cleanup(dir: string): void {
 }
 
 /**
- * Write `.gsd/preferences.md` with `git.isolation: branch` so the merge
+ * Write `.otto/workflow/preferences.md` with `git.isolation: branch` so the merge
  * routes through the standalone Lifecycle merge body in branch mode rather
  * than falling through `getIsolationMode === "none"` to a skipped result.
  *
@@ -98,9 +98,9 @@ function cleanup(dir: string): void {
  * the test simple while still going through the Module.
  */
 function setupBranchIsolation(repo: string): void {
-  mkdirSync(join(repo, ".gsd"), { recursive: true });
+  mkdirSync(join(repo, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(repo, ".gsd", "preferences.md"),
+    join(repo, ".otto/workflow", "preferences.md"),
     "## Git\n- isolation: branch\n",
   );
   // Commit on main so subsequent `git checkout main` restores the file.
@@ -109,13 +109,13 @@ function setupBranchIsolation(repo: string): void {
   // main loses the preference file before `mergeMilestoneStandalone`
   // reads it (ADR-016 phase 2 / A2).
   try {
-    run("git add .gsd/preferences.md", repo);
+    run("git add .otto/workflow/preferences.md", repo);
     run('git commit -m "test: add branch-isolation preferences"', repo);
   } catch { /* file may already be committed */ }
 }
 
 /**
- * Set up a milestone roadmap file in .gsd/milestones/<MID>/ AND commit it on
+ * Set up a milestone roadmap file in .otto/workflow/milestones/<MID>/ AND commit it on
  * the current branch.
  *
  * The commit is required after ADR-016 phase 2 / A2 because the standalone
@@ -129,7 +129,7 @@ function setupBranchIsolation(repo: string): void {
  * part of the unit's normal output; tests should mirror that.
  */
 function setupRoadmap(repo: string, mid: string, title: string, slices: string[]): void {
-  const dir = join(repo, ".gsd", "milestones", mid);
+  const dir = join(repo, ".otto/workflow", "milestones", mid);
   mkdirSync(dir, { recursive: true });
   const sliceLines = slices.map(s => `- [x] **${s}**`).join("\n");
   writeFileSync(
@@ -137,7 +137,7 @@ function setupRoadmap(repo: string, mid: string, title: string, slices: string[]
     `# ${mid}: ${title}\n\n## Slices\n${sliceLines}\n`,
   );
   try {
-    run(`git add .gsd/milestones/${mid}/${mid}-ROADMAP.md`, repo);
+    run(`git add .otto/workflow/milestones/${mid}/${mid}-ROADMAP.md`, repo);
     run(`git commit -m "test: add roadmap for ${mid}"`, repo);
   } catch { /* file may already be committed; not a git repo; etc. */ }
 }
@@ -346,7 +346,7 @@ test("mergeCompletedMilestone — clean merge, session status cleaned up", async
       cost: 1.5,
       lastHeartbeat: Date.now(),
       startedAt: Date.now() - 60000,
-      worktreePath: join(repo, ".gsd", "worktrees", "M010"),
+      worktreePath: join(repo, ".otto/workflow", "worktrees", "M010"),
     });
 
     // Verify session status exists before merge
@@ -364,9 +364,9 @@ test("mergeCompletedMilestone — clean merge, session status cleaned up", async
     // Verify file merged to main
     assert.ok(existsSync(join(repo, "auth.ts")), "auth.ts should be on main");
 
-    // Verify commit on main (M010 is now in the body as a GSD-Milestone trailer)
+    // Verify commit on main (M010 is now in the body as a OTTO-Milestone trailer)
     const log = run("git log -1 --format=%B main", repo);
-    assert.ok(log.includes("GSD-Milestone: M010"), "commit message should reference M010 in trailer");
+    assert.ok(log.includes("OTTO-Milestone: M010"), "commit message should reference M010 in trailer");
 
     // Verify session status cleaned up
     const statusAfter = readSessionStatus(repo, "M010");
@@ -566,9 +566,9 @@ test("mergeAllCompleted — by-completion order respects startedAt", async () =>
 
 /** Set up canonical DB with a milestone marked complete and a worktree marker dir */
 function setupCanonicalDbWithWorktree(basePath: string, mid: string): void {
-  mkdirSync(join(basePath, ".gsd", "worktrees", mid), { recursive: true });
-  mkdirSync(join(basePath, ".gsd"), { recursive: true });
-  const dbPath = join(basePath, ".gsd", "gsd.db");
+  mkdirSync(join(basePath, ".otto/workflow", "worktrees", mid), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow"), { recursive: true });
+  const dbPath = join(basePath, ".otto/workflow", "otto.db");
   openDatabase(dbPath);
   insertMilestone({ id: mid, title: `Milestone ${mid}`, status: "complete" });
   updateMilestoneStatus(mid, "complete", new Date().toISOString());

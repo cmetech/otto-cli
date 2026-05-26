@@ -10,7 +10,7 @@ import { loadPrompt } from "../prompt-loader.ts";
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-debug-command-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -237,7 +237,7 @@ describe("handleDebug lifecycle", () => {
       await handleDebug("status no-such-session", unknownSlugCtx as any);
       assert.equal(unknownSlugCtx.notifications[0].level, "warning");
       assert.match(unknownSlugCtx.notifications[0].message, /Unknown debug session slug/);
-      assert.match(unknownSlugCtx.notifications[0].message, /\/gsd debug list/);
+      assert.match(unknownSlugCtx.notifications[0].message, /\/otto debug list/);
     } finally {
       process.chdir(saved);
       rmSync(base, { recursive: true, force: true });
@@ -251,12 +251,12 @@ describe("handleDebug lifecycle", () => {
 
     try {
       createDebugSession(base, { issue: "Healthy issue", createdAt: 1 });
-      writeFileSync(join(base, ".gsd", "debug", "sessions", "broken.json"), "{ nope", "utf-8");
+      writeFileSync(join(base, ".otto/workflow", "debug", "sessions", "broken.json"), "{ nope", "utf-8");
 
       const listCtx = createMockCtx();
       await handleDebug("list", listCtx as any);
       assert.match(listCtx.notifications[0].message, /Malformed artifacts: 1/);
-      assert.match(listCtx.notifications[0].message, /Run \/gsd debug --diagnose/);
+      assert.match(listCtx.notifications[0].message, /Run \/otto debug --diagnose/);
 
       const diagnoseCtx = createMockCtx();
       await handleDebug("--diagnose", diagnoseCtx as any);
@@ -349,7 +349,7 @@ describe("handleDebug lifecycle", () => {
       await handleDebug("--diagnose no-such-session", ctx as any);
       assert.equal(ctx.notifications[0].level, "warning");
       assert.match(ctx.notifications[0].message, /not found/);
-      assert.match(ctx.notifications[0].message, /\/gsd debug list/);
+      assert.match(ctx.notifications[0].message, /\/otto debug list/);
     } finally {
       process.chdir(saved);
       rmSync(base, { recursive: true, force: true });
@@ -363,7 +363,7 @@ describe("handleDebug lifecycle", () => {
 
     try {
       createDebugSession(base, { issue: "Healthy issue", createdAt: 1 });
-      writeFileSync(join(base, ".gsd", "debug", "sessions", "broken.json"), "{ nope", "utf-8");
+      writeFileSync(join(base, ".otto/workflow", "debug", "sessions", "broken.json"), "{ nope", "utf-8");
 
       const ctx = createMockCtx();
       await handleDebug("--diagnose billing webhook is dropping events", ctx as any);

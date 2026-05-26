@@ -1,11 +1,11 @@
 /**
- * Tests for /gsd verdict — manual override of milestone validation verdict.
+ * Tests for /otto verdict — manual override of milestone validation verdict.
  *
  * Covers parseValidationFile section extraction and handleVerdict end-to-end:
  * pass override, needs-remediation override with rationale, missing rationale
  * rejection, active-milestone fallback, missing VALIDATION rejection.
  *
- * Also asserts the three paused-state messages reference /gsd verdict so the
+ * Also asserts the three paused-state messages reference /otto verdict so the
  * user has a discoverable recovery path.
  */
 import test from "node:test";
@@ -38,7 +38,7 @@ function makeMockCtx(): { ctx: any; calls: NotifyCall[] } {
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), `gsd-verdict-${randomUUID()}-`));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -47,7 +47,7 @@ function cleanup(base: string): void {
 }
 
 function openTestDb(base: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 }
 
 function seedMilestone(milestoneId: string, title: string, status = "active"): void {
@@ -67,7 +67,7 @@ function seedSlice(milestoneId: string, sliceId: string, status: string): void {
 }
 
 function writeValidation(base: string, milestoneId: string, verdict: string, round = 0): string {
-  const milestoneDir = join(base, ".gsd", "milestones", milestoneId);
+  const milestoneDir = join(base, ".otto/workflow", "milestones", milestoneId);
   mkdirSync(milestoneDir, { recursive: true });
   const path = join(milestoneDir, `${milestoneId}-VALIDATION.md`);
   const md = [
@@ -187,7 +187,7 @@ test("handleVerdict rejects missing verdict", async () => {
   const { ctx, calls } = makeMockCtx();
   await handleVerdict("", ctx, "/tmp/unused");
   assert.equal(calls.length, 1);
-  assert.match(calls[0].message, /Usage: \/gsd verdict/);
+  assert.match(calls[0].message, /Usage: \/otto verdict/);
   assert.equal(calls[0].kind, "warning");
 });
 
@@ -227,7 +227,7 @@ test("handleVerdict rejects when milestone validation is missing", async () => {
     openTestDb(base);
     seedMilestone("M001", "Test Milestone");
     seedSlice("M001", "S01", "complete");
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
 
     const { ctx, calls } = makeMockCtx();
     await handleVerdict("pass --milestone M001", ctx, base);
@@ -260,7 +260,7 @@ test("handleVerdict pass override flips verdict and preserves sections", async (
     assert.match(rewritten, /^verdict: pass$/m, "verdict should flip to pass");
     assert.match(rewritten, /Criterion A met/, "success criteria preserved");
     assert.match(rewritten, /S01 \| delivered/, "slice audit preserved");
-    assert.match(rewritten, /Manually overridden via \/gsd verdict/, "default rationale applied");
+    assert.match(rewritten, /Manually overridden via \/otto verdict/, "default rationale applied");
 
     assert.ok(
       calls.some((c) => c.kind === "success" && /needs-attention.*->.*pass/.test(c.message)),
@@ -308,7 +308,7 @@ test("handleVerdict pass override works when validation only exists in DB", asyn
     ].join("\n");
 
     insertAssessment({
-      path: "/external/worktree/.gsd/milestones/M001/M001-VALIDATION.md",
+      path: "/external/worktree/.otto/workflow/milestones/M001/M001-VALIDATION.md",
       milestoneId: "M001",
       status: "needs-attention",
       scope: "milestone-validation",
@@ -318,7 +318,7 @@ test("handleVerdict pass override works when validation only exists in DB", asyn
     const { ctx, calls } = makeMockCtx();
     await handleVerdict('pass --milestone M001 --rationale "reviewed and accepted"', ctx, base);
 
-    const validationPath = join(base, ".gsd", "milestones", "M001", "M001-VALIDATION.md");
+    const validationPath = join(base, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md");
     const rewritten = readFileSync(validationPath, "utf-8");
     assert.match(rewritten, /^verdict: pass$/m, "DB-backed validation should be rewritten as pass");
     assert.match(rewritten, /reviewed and accepted/, "explicit rationale should be persisted");
@@ -354,8 +354,8 @@ test("handleVerdict needs-remediation override with --rationale rewrites verdict
     assert.match(rewritten, /found missing slice/);
 
     assert.ok(
-      calls.some((c) => /gsd_reassess_roadmap/.test(c.message)),
-      "needs-remediation override should suggest gsd_reassess_roadmap follow-up",
+      calls.some((c) => /otto_reassess_roadmap/.test(c.message)),
+      "needs-remediation override should suggest otto_reassess_roadmap follow-up",
     );
   } finally {
     closeDatabase();
@@ -389,18 +389,18 @@ test("handleVerdict resolves active milestone when --milestone omitted", async (
   }
 });
 
-// ─── Pause messages reference /gsd verdict ─────────────────────────────
+// ─── Pause messages reference /otto verdict ─────────────────────────────
 
-test("auto-dispatch needs-attention pause message references /gsd verdict", async () => {
+test("auto-dispatch needs-attention pause message references /otto verdict", async () => {
   const { DISPATCH_RULES } = await import("../auto-dispatch.ts");
   const rule = DISPATCH_RULES.find((r) => r.name === "completing-milestone → complete-milestone");
   assert.ok(rule, "completing-milestone rule should exist");
 
   const base = mkdtempSync(join(tmpdir(), "gsd-verdict-paused-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   try {
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "M001-VALIDATION.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md"),
       "---\nverdict: needs-attention\nremediation_round: 0\n---\n\n# Validation\nNeeds work.\n",
     );
 
@@ -416,14 +416,14 @@ test("auto-dispatch needs-attention pause message references /gsd verdict", asyn
     assert.ok(result !== null);
     assert.equal(result!.action, "stop");
     if (result!.action === "stop") {
-      assert.match(result!.reason, /\/gsd verdict/);
+      assert.match(result!.reason, /\/otto verdict/);
     }
   } finally {
     cleanup(base);
   }
 });
 
-test("state.ts needs-remediation blocker messages reference /gsd verdict", async () => {
+test("state.ts needs-remediation blocker messages reference /otto verdict", async () => {
   // We don't need to invoke deriveState — just assert the substring is in the
   // source. The blocker strings are constructed inline and shipped to the user
   // verbatim, so a static check is sufficient and avoids fragile DB setup.
@@ -431,9 +431,9 @@ test("state.ts needs-remediation blocker messages reference /gsd verdict", async
     new URL("../state.ts", import.meta.url).pathname,
     "utf-8",
   );
-  const occurrences = stateSource.match(/`\/gsd verdict /g) ?? [];
+  const occurrences = stateSource.match(/slashCommand\("verdict"\)/g) ?? [];
   assert.ok(
     occurrences.length >= 2,
-    `expected at least 2 references to /gsd verdict in state.ts blockers, found ${occurrences.length}`,
+    `expected at least 2 references to /otto verdict in state.ts blockers, found ${occurrences.length}`,
   );
 });

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-// Test the PR content generation logic used by /gsd ship.
+// Test the PR content generation logic used by /otto ship.
 // Full integration requires gh CLI + git, so we test the text generation.
 
 test("ship: generates TL;DR format", () => {

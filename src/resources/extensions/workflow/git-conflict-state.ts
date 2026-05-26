@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Detect unresolved Git conflict state before automation runs.
 
 import { execFileSync } from "node:child_process";

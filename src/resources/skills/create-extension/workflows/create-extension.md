@@ -13,7 +13,7 @@
 
 Ask the user:
 - **Global** (`~/.pi/agent/extensions/`) — Available in all workflow sessions
-- **Project-local** (`.gsd/extensions/`) — Available only in this project
+- **Project-local** (`.otto/workflow/extensions/`) — Available only in this project
 
 ## Step 2: Determine Extension Capabilities
 
@@ -88,7 +88,7 @@ Only include non-empty arrays in `provides`. See `docs/extension-sdk/manifest-sp
 Start with the skeleton:
 
 ```typescript
-import type { ExtensionAPI } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI } from "@otto/pi-coding-agent";
 
 export default function (pi: ExtensionAPI) {
   // Register events, tools, commands here
@@ -100,7 +100,7 @@ Then add capabilities based on Step 2. Reference the appropriate reference files
 **Tool registration pattern:**
 ```typescript
 import { Type } from "@sinclair/typebox";
-import { StringEnum } from "@loop24/pi-ai";
+import { StringEnum } from "@otto/pi-ai";
 
 pi.registerTool({
   name: "my_tool",
@@ -143,7 +143,7 @@ pi.on("tool_call", async (event, ctx) => {
 
 ```bash
 # Quick test without installing
-gsd -e ./path/to/my-extension.ts
+otto -e ./path/to/my-extension.ts
 
 # Or place in extensions dir and reload
 /reload

@@ -1,4 +1,4 @@
-// @loop24/pi-coding-agent + token-telemetry.test — coverage for #5023.
+// @otto/pi-coding-agent + token-telemetry.test — coverage for #5023.
 // Verifies the env-gated emitter:
 //   - is silent by default (no behavior change for existing users)
 //   - emits a single valid JSON line when PI_TOKEN_TELEMETRY=1
@@ -8,7 +8,7 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 
-import type { AssistantMessage } from "@loop24/pi-ai";
+import type { AssistantMessage } from "@otto/pi-ai";
 
 import { buildTokenTelemetryRecord, emitTokenTelemetry } from "../core/token-telemetry.js";
 

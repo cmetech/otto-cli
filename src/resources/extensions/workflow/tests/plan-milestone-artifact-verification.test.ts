@@ -8,18 +8,18 @@ import { verifyExpectedArtifact } from "../auto-recovery.ts";
 
 function createFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-plan-milestone-artifact-"));
-  mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
   return base;
 }
 
 function writeRoadmap(base: string, milestoneId: string, content: string): void {
-  const milestoneDir = join(base, ".gsd", "milestones", milestoneId);
+  const milestoneDir = join(base, ".otto/workflow", "milestones", milestoneId);
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(join(milestoneDir, `${milestoneId}-ROADMAP.md`), content, "utf-8");
 }
 
 function writeLegacyRoadmap(base: string, milestoneId: string, content: string): void {
-  const milestoneDir = join(base, ".gsd", "milestones", milestoneId);
+  const milestoneDir = join(base, ".otto/workflow", "milestones", milestoneId);
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(join(milestoneDir, "ROADMAP.md"), content, "utf-8");
 }
@@ -90,7 +90,7 @@ test("plan-milestone verification accepts legacy ROADMAP.md via shared resolver"
 test("discuss-milestone verification accepts legacy CONTEXT.md via shared resolver", () => {
   const base = createFixtureBase();
   try {
-    const milestoneDir = join(base, ".gsd", "milestones", "M001");
+    const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
     mkdirSync(milestoneDir, { recursive: true });
     writeFileSync(join(milestoneDir, "CONTEXT.md"), "# M001 Context\n", "utf-8");
 

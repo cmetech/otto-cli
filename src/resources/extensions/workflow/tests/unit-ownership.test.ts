@@ -1,4 +1,4 @@
-// GSD — unit-ownership tests
+// OTTO — unit-ownership tests
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 
 import test from 'node:test';

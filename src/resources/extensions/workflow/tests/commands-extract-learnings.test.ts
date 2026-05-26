@@ -47,13 +47,13 @@ describe("parseExtractLearningsArgs", () => {
 
 describe("buildLearningsOutputPath", () => {
   it("builds the correct output path", () => {
-    const result = buildLearningsOutputPath("/base/.gsd/milestones/M001", "M001");
-    assert.equal(result, "/base/.gsd/milestones/M001/M001-LEARNINGS.md");
+    const result = buildLearningsOutputPath("/base/.otto/workflow/milestones/M001", "M001");
+    assert.equal(result, "/base/.otto/workflow/milestones/M001/M001-LEARNINGS.md");
   });
 
   it("builds path for different milestone ID", () => {
-    const result = buildLearningsOutputPath("/project/.gsd/milestones/M005", "M005");
-    assert.equal(result, "/project/.gsd/milestones/M005/M005-LEARNINGS.md");
+    const result = buildLearningsOutputPath("/project/.otto/workflow/milestones/M005", "M005");
+    assert.equal(result, "/project/.otto/workflow/milestones/M005/M005-LEARNINGS.md");
   });
 });
 
@@ -159,8 +159,8 @@ describe("buildExtractLearningsPrompt", () => {
     const result = buildExtractLearningsPrompt({
       milestoneId: "M001",
       milestoneName: "Test Milestone",
-      outputPath: "/project/.gsd/milestones/M001/M001-LEARNINGS.md",
-      relativeOutputPath: ".gsd/milestones/M001/M001-LEARNINGS.md",
+      outputPath: "/project/.otto/workflow/milestones/M001/M001-LEARNINGS.md",
+      relativeOutputPath: ".otto/workflow/milestones/M001/M001-LEARNINGS.md",
       roadmapContent: "# Roadmap content",
       summaryContent: "# Summary content",
       verificationContent: null,
@@ -170,7 +170,7 @@ describe("buildExtractLearningsPrompt", () => {
     });
 
     assert.ok(result.includes("M001"));
-    assert.ok(result.includes("/project/.gsd/milestones/M001/M001-LEARNINGS.md"));
+    assert.ok(result.includes("/project/.otto/workflow/milestones/M001/M001-LEARNINGS.md"));
   });
 
   it("includes all 4 learning categories", () => {
@@ -178,7 +178,7 @@ describe("buildExtractLearningsPrompt", () => {
       milestoneId: "M001",
       milestoneName: "Test Milestone",
       outputPath: "/out/M001-LEARNINGS.md",
-      relativeOutputPath: ".gsd/milestones/M001/M001-LEARNINGS.md",
+      relativeOutputPath: ".otto/workflow/milestones/M001/M001-LEARNINGS.md",
       roadmapContent: "# Roadmap",
       summaryContent: "# Summary",
       verificationContent: null,
@@ -198,7 +198,7 @@ describe("buildExtractLearningsPrompt", () => {
       milestoneId: "M001",
       milestoneName: "Test Milestone",
       outputPath: "/out/M001-LEARNINGS.md",
-      relativeOutputPath: ".gsd/milestones/M001/M001-LEARNINGS.md",
+      relativeOutputPath: ".otto/workflow/milestones/M001/M001-LEARNINGS.md",
       roadmapContent: "ROADMAP_CONTENT_UNIQUE_123",
       summaryContent: "SUMMARY_CONTENT_UNIQUE_456",
       verificationContent: null,
@@ -216,7 +216,7 @@ describe("buildExtractLearningsPrompt", () => {
       milestoneId: "M001",
       milestoneName: "Test Milestone",
       outputPath: "/out/M001-LEARNINGS.md",
-      relativeOutputPath: ".gsd/milestones/M001/M001-LEARNINGS.md",
+      relativeOutputPath: ".otto/workflow/milestones/M001/M001-LEARNINGS.md",
       roadmapContent: "# Roadmap",
       summaryContent: "# Summary",
       verificationContent: "VERIFICATION_UNIQUE_789",
@@ -234,7 +234,7 @@ describe("buildExtractLearningsPrompt", () => {
       milestoneId: "M001",
       milestoneName: "Test Milestone",
       outputPath: "/out/M001-LEARNINGS.md",
-      relativeOutputPath: ".gsd/milestones/M001/M001-LEARNINGS.md",
+      relativeOutputPath: ".otto/workflow/milestones/M001/M001-LEARNINGS.md",
       roadmapContent: "# Roadmap",
       summaryContent: "# Summary",
       verificationContent: null,
@@ -251,7 +251,7 @@ describe("buildExtractLearningsPrompt", () => {
       milestoneId: "M001",
       milestoneName: "Test Milestone",
       outputPath: "/out/M001-LEARNINGS.md",
-      relativeOutputPath: ".gsd/milestones/M001/M001-LEARNINGS.md",
+      relativeOutputPath: ".otto/workflow/milestones/M001/M001-LEARNINGS.md",
       roadmapContent: "# Roadmap",
       summaryContent: "# Summary",
       verificationContent: null,
@@ -266,12 +266,12 @@ describe("buildExtractLearningsPrompt", () => {
     );
   });
 
-  it("does NOT reference phantom gsd_graph tool (regression for #4429)", () => {
+  it("does NOT reference phantom otto_graph tool (regression for #4429)", () => {
     const result = buildExtractLearningsPrompt({
       milestoneId: "M001",
       milestoneName: "Test Milestone",
       outputPath: "/out/M001-LEARNINGS.md",
-      relativeOutputPath: ".gsd/milestones/M001/M001-LEARNINGS.md",
+      relativeOutputPath: ".otto/workflow/milestones/M001/M001-LEARNINGS.md",
       roadmapContent: "# Roadmap",
       summaryContent: "# Summary",
       verificationContent: null,
@@ -281,8 +281,8 @@ describe("buildExtractLearningsPrompt", () => {
     });
 
     assert.ok(
-      !result.includes("gsd_graph"),
-      "prompt must not advertise the non-existent gsd_graph tool",
+      !result.includes("otto_graph"),
+      "prompt must not advertise the non-existent otto_graph tool",
     );
   });
 
@@ -291,7 +291,7 @@ describe("buildExtractLearningsPrompt", () => {
       milestoneId: "M001",
       milestoneName: "Test Milestone",
       outputPath: "/out/M001-LEARNINGS.md",
-      relativeOutputPath: ".gsd/milestones/M001/M001-LEARNINGS.md",
+      relativeOutputPath: ".otto/workflow/milestones/M001/M001-LEARNINGS.md",
       roadmapContent: "# Roadmap",
       summaryContent: "# Summary",
       verificationContent: null,
@@ -378,7 +378,7 @@ describe("extractProjectName", () => {
 
   beforeEach(() => {
     tmpBase = join(tmpdir(), `gsd-projname-test-${randomUUID()}`);
-    mkdirSync(join(tmpBase, ".gsd"), { recursive: true });
+    mkdirSync(join(tmpBase, ".otto/workflow"), { recursive: true });
   });
 
   afterEach(() => {
@@ -387,7 +387,7 @@ describe("extractProjectName", () => {
 
   it("reads name from PROJECT.md frontmatter", () => {
     writeFileSync(
-      join(tmpBase, ".gsd", "PROJECT.md"),
+      join(tmpBase, ".otto/workflow", "PROJECT.md"),
       "---\nname: My Cool Project\nversion: 1\n---\n# Project\n",
       "utf-8",
     );
@@ -404,7 +404,7 @@ describe("extractProjectName", () => {
 
   it("falls back to directory name when PROJECT.md has no name field", () => {
     writeFileSync(
-      join(tmpBase, ".gsd", "PROJECT.md"),
+      join(tmpBase, ".otto/workflow", "PROJECT.md"),
       "---\nversion: 1\n---\n# Project\n",
       "utf-8",
     );
@@ -417,15 +417,15 @@ describe("extractProjectName", () => {
 // ─── buildExtractionStepsBlock ────────────────────────────────────────────────
 //
 // The steps block is the single source of truth for how learnings are routed
-// into KNOWLEDGE.md and the DECISIONS DB. Both the manual /gsd extract-learnings
+// into KNOWLEDGE.md and the DECISIONS DB. Both the manual /otto extract-learnings
 // path and the auto complete-milestone path render it verbatim, so every
 // structural assertion below protects both paths at once.
 
 describe("buildExtractionStepsBlock", () => {
   const ctx = {
     milestoneId: "M042",
-    outputPath: "/project/.gsd/milestones/M042/M042-LEARNINGS.md",
-    relativeOutputPath: ".gsd/milestones/M042/M042-LEARNINGS.md",
+    outputPath: "/project/.otto/workflow/milestones/M042/M042-LEARNINGS.md",
+    relativeOutputPath: ".otto/workflow/milestones/M042/M042-LEARNINGS.md",
   };
 
   it("declares itself as the structured extraction procedure", () => {
@@ -458,14 +458,14 @@ describe("buildExtractionStepsBlock", () => {
   // The following nine tests asserted structural properties of the legacy
   // KNOWLEDGE.md table scaffolding (Rules/Patterns/Lessons headers, P###/L###
   // row templates, em-dash placeholders, append-only semantics, "missing file"
-  // template) and the gsd_save_decision call-out (parameter list, "never edit
+  // template) and the otto_save_decision call-out (parameter list, "never edit
   // DECISIONS.md" prohibition). The cutover replaced both surfaces with
   // capture_thought calls into the memories table; the extraction steps no
-  // longer reference KNOWLEDGE.md tables or gsd_save_decision at all, so each
+  // longer reference KNOWLEDGE.md tables or otto_save_decision at all, so each
   // assertion is now structurally false.
   //
   // The replacement assertions ("removes the legacy KNOWLEDGE.md table append
-  // step", "removes the gsd_save_decision call", "requires structuredFields
+  // step", "removes the otto_save_decision call", "requires structuredFields
   // payload on architecture-category memories") below cover the inverse
   // contract.
   //
@@ -518,16 +518,16 @@ describe("buildExtractionStepsBlock", () => {
     assert.ok(!block.includes("| # | What Happened | Root Cause | Fix | Scope |"), "Lessons table scaffolding must be removed");
     assert.ok(!/\| P<NNN>/.test(block), "Pattern row template must be removed");
     assert.ok(!/\| L<NNN>/.test(block), "Lesson row template must be removed");
-    assert.ok(!block.includes(".gsd/KNOWLEDGE.md"), "extraction flow must not reference KNOWLEDGE.md as a write target");
+    assert.ok(!block.includes(".otto/workflow/KNOWLEDGE.md"), "extraction flow must not reference KNOWLEDGE.md as a write target");
   });
 
-  it("removes the gsd_save_decision call (ADR-013 step 6 cutover)", () => {
+  it("removes the otto_save_decision call (ADR-013 step 6 cutover)", () => {
     const block = buildExtractionStepsBlock(ctx);
     // ADR-013 Cutover: decisions are now persisted via capture_thought with
     // category=architecture and a structuredFields payload that preserves the
-    // gsd_save_decision schema. The legacy MCP tool is no longer called from
+    // otto_save_decision schema. The legacy MCP tool is no longer called from
     // the extraction flow.
-    assert.ok(!block.includes("gsd_save_decision"), "gsd_save_decision must no longer appear in extraction steps");
+    assert.ok(!block.includes("otto_save_decision"), "otto_save_decision must no longer appear in extraction steps");
   });
 
   it("requires structuredFields payload on architecture-category memories (ADR-013 lossless projection)", () => {
@@ -535,22 +535,22 @@ describe("buildExtractionStepsBlock", () => {
     // ADR-013 Cutover: architecture-category memories must carry structured
     // fields so projection back to a human-visible decisions register stays
     // lossless. The Decisions persistence step must instruct the LLM to set
-    // structuredFields with the original gsd_save_decision schema fields.
+    // structuredFields with the original otto_save_decision schema fields.
     assert.ok(/structuredFields/.test(block), "Decisions persistence step must instruct structuredFields use");
     assert.ok(/scope/i.test(block) && /decision/i.test(block) && /choice/i.test(block) && /rationale/i.test(block),
       "structuredFields must enumerate the preserved decision fields");
   });
 
-  it("does NOT reference the non-existent gsd_graph tool (#4429 regression)", () => {
+  it("does NOT reference the non-existent otto_graph tool (#4429 regression)", () => {
     const block = buildExtractionStepsBlock(ctx);
-    assert.ok(!block.includes("gsd_graph"));
+    assert.ok(!block.includes("otto_graph"));
   });
 
   it("substitutes the milestone ID into every placeholder callout", () => {
     const block = buildExtractionStepsBlock({
       milestoneId: "M999",
-      outputPath: "/p/.gsd/milestones/M999/M999-LEARNINGS.md",
-      relativeOutputPath: ".gsd/milestones/M999/M999-LEARNINGS.md",
+      outputPath: "/p/.otto/workflow/milestones/M999/M999-LEARNINGS.md",
+      relativeOutputPath: ".otto/workflow/milestones/M999/M999-LEARNINGS.md",
     });
     assert.ok(!block.includes("M042"));
     assert.ok(block.includes("M999"));
@@ -563,8 +563,8 @@ describe("buildExtractLearningsPrompt composes the steps block", () => {
   it("embeds the exact buildExtractionStepsBlock output for the same context", () => {
     const shared = {
       milestoneId: "M007",
-      outputPath: "/p/.gsd/milestones/M007/M007-LEARNINGS.md",
-      relativeOutputPath: ".gsd/milestones/M007/M007-LEARNINGS.md",
+      outputPath: "/p/.otto/workflow/milestones/M007/M007-LEARNINGS.md",
+      relativeOutputPath: ".otto/workflow/milestones/M007/M007-LEARNINGS.md",
     };
     const expected = buildExtractionStepsBlock(shared);
     const prompt = buildExtractLearningsPrompt({
@@ -586,7 +586,7 @@ describe("buildExtractLearningsPrompt composes the steps block", () => {
       milestoneId: "M001",
       milestoneName: "Test",
       outputPath: "/out/M001-LEARNINGS.md",
-      relativeOutputPath: ".gsd/milestones/M001/M001-LEARNINGS.md",
+      relativeOutputPath: ".otto/workflow/milestones/M001/M001-LEARNINGS.md",
       roadmapContent: "# Roadmap",
       summaryContent: "# Summary",
       verificationContent: null,
@@ -606,24 +606,24 @@ describe("complete-milestone loadPrompt round-trip (#4429)", () => {
     const { loadPrompt } = await import("../prompt-loader.js");
     const stepsBlock = buildExtractionStepsBlock({
       milestoneId: "M123",
-      outputPath: "/p/.gsd/milestones/M123/M123-LEARNINGS.md",
-      relativeOutputPath: ".gsd/milestones/M123/M123-LEARNINGS.md",
+      outputPath: "/p/.otto/workflow/milestones/M123/M123-LEARNINGS.md",
+      relativeOutputPath: ".otto/workflow/milestones/M123/M123-LEARNINGS.md",
     });
 
     const rendered = loadPrompt("complete-milestone", {
       workingDirectory: "/p",
       milestoneId: "M123",
       milestoneTitle: "Test Milestone",
-      roadmapPath: ".gsd/milestones/M123/M123-ROADMAP.md",
+      roadmapPath: ".otto/workflow/milestones/M123/M123-ROADMAP.md",
       inlinedContext: "(inlined context stub)",
-      milestoneSummaryPath: "/p/.gsd/milestones/M123/M123-SUMMARY.md",
+      milestoneSummaryPath: "/p/.otto/workflow/milestones/M123/M123-SUMMARY.md",
       extractLearningsSteps: stepsBlock,
     });
 
     // Placeholder must be gone — real content must be in.
     assert.ok(!rendered.includes("{{extractLearningsSteps}}"));
     assert.ok(rendered.includes("Structured Learnings Extraction"));
-    // ADR-013 cutover: gsd_save_decision is no longer in the rendered block;
+    // ADR-013 cutover: otto_save_decision is no longer in the rendered block;
     // the new persistence path is capture_thought with structuredFields.
     assert.ok(rendered.includes("capture_thought"));
     assert.ok(rendered.includes("M123"));

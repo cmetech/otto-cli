@@ -11,12 +11,12 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 /**
- * Write a crash log to ~/.otto/crash/<timestamp>.log (or $GSD_HOME/crash/).
+ * Write a crash log to ~/.otto/crash/<timestamp>.log (or $OTTO_HOME/crash/).
  * Never throws — must be safe to call from any error handler.
  */
 export function writeCrashLog(err: Error, source: string): void {
   try {
-    const crashDir = join((process.env.LOOP24_HOME ?? process.env.GSD_HOME) ?? join(homedir(), ".gsd"), "crash");
+    const crashDir = join((process.env.OTTO_HOME ?? process.env.OTTO_HOME) ?? join(homedir(), ".otto"), "crash");
     mkdirSync(crashDir, { recursive: true });
     const ts = new Date().toISOString().replace(/[:.]/g, "-");
     const logPath = join(crashDir, `${ts}.log`);

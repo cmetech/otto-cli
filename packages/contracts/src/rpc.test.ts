@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for canonical RPC contract constants exported by the contracts package.
 
 import assert from "node:assert/strict";
@@ -60,21 +60,21 @@ test("mcp pending blocker preserves secure input payloads", () => {
 });
 
 test("workflow tool contracts expose canonical names and aliases", () => {
-	assert.ok(WORKFLOW_TOOL_NAMES.includes("gsd_task_complete"));
-	assert.ok(WORKFLOW_TOOL_NAMES.includes("gsd_complete_task"));
-	assert.ok(WORKFLOW_TOOL_NAMES.includes("gsd_task_reopen"));
-	assert.ok(WORKFLOW_TOOL_NAMES.includes("gsd_reopen_task"));
-	assert.ok(WORKFLOW_TOOL_NAMES.includes("gsd_plan_milestone"));
+	assert.ok(WORKFLOW_TOOL_NAMES.includes("otto_task_complete"));
+	assert.ok(WORKFLOW_TOOL_NAMES.includes("otto_complete_task"));
+	assert.ok(WORKFLOW_TOOL_NAMES.includes("otto_task_reopen"));
+	assert.ok(WORKFLOW_TOOL_NAMES.includes("otto_reopen_task"));
+	assert.ok(WORKFLOW_TOOL_NAMES.includes("otto_plan_milestone"));
 
-	const taskComplete = WORKFLOW_TOOL_CONTRACTS.find((tool) => tool.canonicalName === "gsd_task_complete");
+	const taskComplete = WORKFLOW_TOOL_CONTRACTS.find((tool) => tool.canonicalName === "otto_task_complete");
 	assert.ok(taskComplete);
-	assert.deepEqual([...taskComplete.aliases], ["gsd_complete_task"]);
+	assert.deepEqual([...taskComplete.aliases], ["otto_complete_task"]);
 	assert.equal(taskComplete.writePolicy, "write");
 	assert.equal(taskComplete.schemaId, "workflow.task.complete");
 
-	const taskReopen = WORKFLOW_TOOL_CONTRACTS.find((tool) => tool.canonicalName === "gsd_task_reopen");
+	const taskReopen = WORKFLOW_TOOL_CONTRACTS.find((tool) => tool.canonicalName === "otto_task_reopen");
 	assert.ok(taskReopen);
-	assert.deepEqual([...taskReopen.aliases], ["gsd_reopen_task"]);
+	assert.deepEqual([...taskReopen.aliases], ["otto_reopen_task"]);
 	assert.equal(taskReopen.writePolicy, "write");
 	assert.equal(taskReopen.schemaId, "workflow.task.reopen");
 });

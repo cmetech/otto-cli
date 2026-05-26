@@ -1,11 +1,11 @@
 {
-  "name": "@loop24/native",
+  "name": "@otto/native",
   "version": "1.0.1",
-  "description": "Native Rust bindings for GSD — high-performance native modules via N-API",
+  "description": "Native Rust bindings for OTTO — high-performance native modules via N-API",
   "type": "commonjs",
   "gsd": {
     "linkable": true,
-    "scope": "@loop24",
+    "scope": "@otto",
     "name": "native"
   },
   "main": "./dist/index.js",

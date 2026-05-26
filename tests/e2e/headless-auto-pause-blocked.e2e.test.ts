@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: OTTO-2
 // File Purpose: E2E gate for headless auto-mode pause and blocked recovery behavior.
 
 import { execFileSync } from "node:child_process";
@@ -10,14 +10,14 @@ import { join } from "node:path";
 import {
 	artifactsFor,
 	createTmpProject,
-	gsdSync,
+	ottoSync,
 	parseJsonEvents,
 	writeTranscript,
 } from "./_shared/index.ts";
 
 function binaryAvailable(): { ok: boolean; reason?: string } {
-	const bin = process.env.GSD_SMOKE_BINARY;
-	if (!bin) return { ok: false, reason: "GSD_SMOKE_BINARY not set; build with `npm run build:core` and re-export." };
+	const bin = process.env.OTTO_SMOKE_BINARY;
+	if (!bin) return { ok: false, reason: "OTTO_SMOKE_BINARY not set; build with `npm run build:core` and re-export." };
 	if (!existsSync(bin)) return { ok: false, reason: `binary not found at ${bin}` };
 	return { ok: true };
 }
@@ -44,7 +44,7 @@ function nodeOutput(dir: string, args: string[]): string {
 }
 
 function writeRecoveredMilestone(dir: string): void {
-	const milestoneDir = join(dir, ".gsd", "milestones", "M001");
+	const milestoneDir = join(dir, ".otto", "workflow", "milestones", "M001");
 	const sliceDir = join(milestoneDir, "slices", "S01");
 	mkdirSync(join(sliceDir, "tasks"), { recursive: true });
 
@@ -97,9 +97,9 @@ function writeRecoveredMilestone(dir: string): void {
 }
 
 function writeCompletedConflictMilestone(dir: string): void {
-	const milestoneDir = join(dir, ".gsd", "milestones", "M001");
+	const milestoneDir = join(dir, ".otto", "workflow", "milestones", "M001");
 	mkdirSync(milestoneDir, { recursive: true });
-	writeFileSync(join(dir, ".gsd", "PREFERENCES.md"), "## Git\n- isolation: worktree\n");
+	writeFileSync(join(dir, ".otto", "workflow", "PREFERENCES.md"), "## Git\n- isolation: worktree\n");
 	writeFileSync(
 		join(milestoneDir, "M001-ROADMAP.md"),
 		[
@@ -127,7 +127,7 @@ describe("headless auto pause e2e (fake LLM)", () => {
 		const project = createTmpProject({
 			git: true,
 			files: {
-				".gitignore": ".gsd/\n",
+				".gitignore": ".otto/workflow/\n",
 				"package.json": JSON.stringify({ type: "module", scripts: { test: "node --test test/answer.test.js" } }, null, 2) + "\n",
 				"src/answer.js": "export function answer() {\n\treturn \"pending\";\n}\n",
 				"test/answer.test.js": [
@@ -146,7 +146,7 @@ describe("headless auto pause e2e (fake LLM)", () => {
 		commitFixture(project.dir);
 		writeRecoveredMilestone(project.dir);
 
-		const recover = gsdSync(["headless", "recover"], {
+		const recover = ottoSync(["headless", "recover"], {
 			cwd: project.dir,
 			timeoutMs: 30_000,
 		});
@@ -159,12 +159,12 @@ describe("headless auto pause e2e (fake LLM)", () => {
 		const transcript = writeTranscript([
 			{
 				turn: 1,
-				expect: { modelId: "gsd-fake-model" },
+				expect: { modelId: "otto-fake-model" },
 				emit: { kind: "error_429", message: "invalid api key" },
 			},
 		]);
 
-		const result = gsdSync(
+		const result = ottoSync(
 			[
 				"headless",
 				"--output-format",
@@ -172,7 +172,7 @@ describe("headless auto pause e2e (fake LLM)", () => {
 				"--events",
 				"extension_ui_request,message_start,message_end,agent_end",
 				"--model",
-				"gsd-fake-model",
+				"otto-fake-model",
 				"--timeout",
 				"45000",
 				"--max-restarts",
@@ -183,7 +183,7 @@ describe("headless auto pause e2e (fake LLM)", () => {
 				cwd: project.dir,
 				timeoutMs: 60_000,
 				env: {
-					GSD_FAKE_LLM_TRANSCRIPT: transcript,
+					OTTO_FAKE_LLM_TRANSCRIPT: transcript,
 				},
 			},
 		);
@@ -219,7 +219,7 @@ describe("headless auto pause e2e (fake LLM)", () => {
 		const project = createTmpProject({
 			git: true,
 			files: {
-				".gitignore": ".gsd/worktrees/\n",
+				".gitignore": ".otto/workflow/worktrees/\n",
 				"package.json": JSON.stringify({ type: "module" }, null, 2) + "\n",
 				"src/conflict.js": "export const value = \"base\";\n",
 			},
@@ -228,7 +228,7 @@ describe("headless auto pause e2e (fake LLM)", () => {
 		commitPaths(project.dir, [".gitignore", "package.json", "src/conflict.js"], "test: seed merge conflict fixture");
 		writeCompletedConflictMilestone(project.dir);
 
-		const recover = gsdSync(["headless", "recover"], {
+		const recover = ottoSync(["headless", "recover"], {
 			cwd: project.dir,
 			timeoutMs: 30_000,
 		});
@@ -245,7 +245,7 @@ describe("headless auto pause e2e (fake LLM)", () => {
 		writeFileSync(join(project.dir, "src/conflict.js"), "export const value = \"main\";\n");
 		commitPaths(project.dir, ["src/conflict.js"], "feat: main conflict");
 
-		const result = gsdSync(
+		const result = ottoSync(
 			[
 				"headless",
 				"--output-format",
@@ -253,7 +253,7 @@ describe("headless auto pause e2e (fake LLM)", () => {
 				"--events",
 				"extension_ui_request,message_start,message_end,agent_end",
 				"--model",
-				"gsd-fake-model",
+				"otto-fake-model",
 				"--timeout",
 				"45000",
 				"--max-restarts",
@@ -296,7 +296,7 @@ describe("headless auto pause e2e (fake LLM)", () => {
 			`expected conflicted source file in messages, got:\n${visibleMessages.join("\n")}`,
 		);
 		assert.ok(
-			visibleMessages.some((message) => /\/gsd dispatch complete-milestone M001/i.test(message)),
+			visibleMessages.some((message) => /\/otto dispatch complete-milestone M001/i.test(message)),
 			`expected complete-milestone repair instruction, got:\n${visibleMessages.join("\n")}`,
 		);
 
@@ -309,7 +309,7 @@ describe("headless auto pause e2e (fake LLM)", () => {
 		commitPaths(project.dir, ["src/conflict.js"], "merge: manually resolve milestone M001");
 		assert.equal(gitOutput(project.dir, ["diff", "--name-only", "--diff-filter=U"]), "");
 
-		const resume = gsdSync(
+		const resume = ottoSync(
 			[
 				"headless",
 				"--output-format",
@@ -317,7 +317,7 @@ describe("headless auto pause e2e (fake LLM)", () => {
 				"--events",
 				"extension_ui_request,agent_end",
 				"--model",
-				"gsd-fake-model",
+				"otto-fake-model",
 				"--timeout",
 				"45000",
 				"--max-restarts",

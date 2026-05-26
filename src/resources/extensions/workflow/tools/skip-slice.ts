@@ -1,5 +1,5 @@
 /**
- * skip-slice handler — the core operation behind gsd_skip_slice.
+ * skip-slice handler — the core operation behind otto_skip_slice.
  *
  * Marks a slice as skipped and cascades the skip to every non-closed task in
  * that slice. Without the task cascade the deep-check in
@@ -87,7 +87,7 @@ export function handleSkipSlice(params: SkipSliceParams): SkipSliceResult {
   // The MCP wrapper in bootstrap/db-tools.ts runs ensureDbOpen() before calling
   // this helper; this guard protects direct callers (tests, future code).
   if (!isDbAvailable()) {
-    throw new Error("handleSkipSlice: GSD database is not available");
+    throw new Error("handleSkipSlice: OTTO database is not available");
   }
 
   // ── Guards + DB writes inside a single transaction (prevents TOCTOU) ────

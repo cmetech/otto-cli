@@ -3,7 +3,7 @@
  * completion.  Does NOT assert on model response content — sampling drift
  * would flake.  Checks status, response shape, and token accounting.
  *
- * Model ID is env-driven (`GSD_LIVE_ANTHROPIC_MODEL`) so retirement doesn't
+ * Model ID is env-driven (`OTTO_LIVE_ANTHROPIC_MODEL`) so retirement doesn't
  * require a code change.
  */
 const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -12,7 +12,7 @@ if (!apiKey) {
   process.exit(77); // POSIX skip convention
 }
 
-const model = process.env.GSD_LIVE_ANTHROPIC_MODEL || "claude-sonnet-4-5";
+const model = process.env.OTTO_LIVE_ANTHROPIC_MODEL || "claude-sonnet-4-5";
 
 const response = await fetch("https://api.anthropic.com/v1/messages", {
   method: "POST",

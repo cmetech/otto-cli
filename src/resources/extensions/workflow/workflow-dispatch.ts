@@ -2,11 +2,11 @@
  * workflow-dispatch.ts — Shared dispatchers for workflow plugins.
  *
  * Called by both `/otto start <template>` (existing markdown path) and
- * `/loop24 workflow <name>` (new direct dispatch). Keeps the prompt-build
+ * `/otto workflow <name>` (new direct dispatch). Keeps the prompt-build
  * logic in one place so md template behavior stays consistent.
  */
 
-import type { ExtensionAPI } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI } from "@otto/pi-coding-agent";
 import { readFileSync } from "node:fs";
 
 import { loadPrompt } from "./prompt-loader.js";
@@ -54,7 +54,7 @@ export function dispatchOneshot(
   });
 
   pi.sendMessage(
-    { customType: "gsd-workflow-oneshot", content: prompt, display: false },
+    { customType: "otto-workflow-oneshot", content: prompt, display: false },
     { triggerTurn: true },
   );
 }
@@ -98,7 +98,7 @@ export function dispatchMarkdownPhase(
   });
 
   pi.sendMessage(
-    { customType: "gsd-workflow-template", content: prompt, display: false },
+    { customType: "otto-workflow-template", content: prompt, display: false },
     { triggerTurn: true },
   );
 

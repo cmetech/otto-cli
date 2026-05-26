@@ -14,10 +14,10 @@ function traceWithToolCalls(toolCalls: ExecutionTrace["toolCalls"]): ExecutionTr
   };
 }
 
-test("classifyTraceProgress treats skill + read-only gsd_exec as reconnaissance-only", () => {
+test("classifyTraceProgress treats skill + read-only otto_exec as reconnaissance-only", () => {
   const trace = traceWithToolCalls([
     { name: "skill", input: { name: "diagnose" }, isError: false },
-    { name: "gsd_exec", input: { command: "rg -n TODO src" }, isError: false },
+    { name: "otto_exec", input: { command: "rg -n TODO src" }, isError: false },
   ]);
   const result = classifyTraceProgress(trace);
   assert.equal(result.isReadOnlyReconnaissanceOnly, true);
@@ -31,9 +31,9 @@ test("classifyTraceProgress treats skill alone as reconnaissance-only", () => {
   assert.equal(result.isReadOnlyReconnaissanceOnly, true);
 });
 
-test("classifyTraceProgress treats read-only gsd_exec alone as reconnaissance-only", () => {
+test("classifyTraceProgress treats read-only otto_exec alone as reconnaissance-only", () => {
   const trace = traceWithToolCalls([
-    { name: "gsd_exec", input: { command: "rg -n TODO src" }, isError: false },
+    { name: "otto_exec", input: { command: "rg -n TODO src" }, isError: false },
   ]);
   const result = classifyTraceProgress(trace);
   assert.equal(result.isReadOnlyReconnaissanceOnly, true);
@@ -45,25 +45,25 @@ test("classifyTraceProgress treats empty trace as not reconnaissance-only", () =
   assert.equal(result.isReadOnlyReconnaissanceOnly, false);
 });
 
-test("classifyTraceProgress rejects mutating gsd_exec command", () => {
+test("classifyTraceProgress rejects mutating otto_exec command", () => {
   const trace = traceWithToolCalls([
-    { name: "gsd_exec", input: { command: "npm run build" }, isError: false },
+    { name: "otto_exec", input: { command: "npm run build" }, isError: false },
   ]);
   const result = classifyTraceProgress(trace);
   assert.equal(result.isReadOnlyReconnaissanceOnly, false);
 });
 
-test("classifyTraceProgress rejects shell-chained gsd_exec command", () => {
+test("classifyTraceProgress rejects shell-chained otto_exec command", () => {
   const trace = traceWithToolCalls([
-    { name: "gsd_exec", input: { command: "cat file && echo x > y" }, isError: false },
+    { name: "otto_exec", input: { command: "cat file && echo x > y" }, isError: false },
   ]);
   const result = classifyTraceProgress(trace);
   assert.equal(result.isReadOnlyReconnaissanceOnly, false);
 });
 
-test("classifyTraceProgress rejects script-eval gsd_exec command", () => {
+test("classifyTraceProgress rejects script-eval otto_exec command", () => {
   const trace = traceWithToolCalls([
-    { name: "gsd_exec", input: { command: "python -c \"import pathlib; pathlib.Path('x').write_text('y')\"" }, isError: false },
+    { name: "otto_exec", input: { command: "python -c \"import pathlib; pathlib.Path('x').write_text('y')\"" }, isError: false },
   ]);
   const result = classifyTraceProgress(trace);
   assert.equal(result.isReadOnlyReconnaissanceOnly, false);

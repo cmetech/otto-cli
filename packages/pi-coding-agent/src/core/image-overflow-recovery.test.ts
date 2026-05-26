@@ -5,7 +5,7 @@ import {
 	MANY_IMAGE_MAX_DIMENSION,
 	downsizeConversationImages,
 } from "./image-overflow-recovery.js";
-import type { Message } from "@loop24/pi-ai";
+import type { Message } from "@otto/pi-ai";
 
 // ─── isImageDimensionError ────────────────────────────────────────────────────
 

@@ -1,4 +1,4 @@
-import { RpcClient } from '@loop24-build/rpc-client';
+import { RpcClient } from '@otto-build/rpc-client';
 
 const client = new RpcClient({ cwd: process.cwd() });
 await client.start();

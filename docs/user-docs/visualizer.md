@@ -7,7 +7,7 @@ The workflow visualizer is an interactive view for project progress, execution h
 ## Opening the Visualizer
 
 ```
-/gsd visualize
+/otto visualize
 ```
 
 Or configure automatic display after milestone completion:
@@ -70,7 +70,7 @@ Bar charts showing cost and token usage breakdowns:
 - **By model** — which models consumed the most budget
 - **By routing tier** — light, standard, heavy, and downgraded unit counts
 
-Uses data from `.gsd/metrics.json`.
+Uses data from `.otto/workflow/metrics.json`.
 
 ### 5. Health
 
@@ -86,7 +86,7 @@ Completed slice summaries, modified files, verification decisions, and establish
 
 ### 8. Knowledge
 
-Persistent project rules, patterns, and lessons from `.gsd/KNOWLEDGE.md`.
+Persistent project rules, patterns, and lessons from `.otto/workflow/KNOWLEDGE.md`.
 
 ### 9. Captures
 
@@ -114,7 +114,7 @@ The visualizer refreshes data from disk every 2 seconds, so it stays current if 
 
 ## HTML Reports (v2.26)
 
-For shareable reports outside the terminal, use `/gsd report`. This generates HTML reports for all milestones, opens the reports index in a browser, and uses the same data as the TUI visualizer — progress tree, dependency graph (SVG DAG), cost/token bar charts, execution timeline, changelog, and knowledge base. All CSS and JS are inlined — no external dependencies. Printable to PDF from any browser.
+For shareable reports outside the terminal, use `/otto report`. This generates HTML reports for all milestones, opens the reports index in a browser, and uses the same data as the TUI visualizer — progress tree, dependency graph (SVG DAG), cost/token bar charts, execution timeline, changelog, and knowledge base. All CSS and JS are inlined — no external dependencies. Printable to PDF from any browser.
 
 An auto-generated `index.html` shows all reports with progression metrics across milestones.
 

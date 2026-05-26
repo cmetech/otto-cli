@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Git operations, commit-message formatting, and turn git actions.
 /**
  * Git Service
@@ -52,7 +52,7 @@ export interface GitPreferences {
   push_branches?: boolean;
   remote?: string;
   snapshots?: boolean;
-  /** Deprecated. .gsd/ is managed externally; retained for compatibility. */
+  /** Deprecated. .otto/workflow/ is managed externally; retained for compatibility. */
   commit_docs?: boolean;
   pre_merge_check?: boolean | string;
   commit_type?: string;
@@ -197,11 +197,11 @@ export function buildTaskCommitMessage(ctx: TaskCommitContext): string {
 
   const contextLines = buildTaskCommitContextLines(ctx);
   if (contextLines.length > 0) {
-    bodyParts.push(`GSD context:\n${contextLines.join("\n")}`);
+    bodyParts.push(`OTTO context:\n${contextLines.join("\n")}`);
   }
 
-  // Trailers: Workflow-Task first, then Resolves
-  bodyParts.push(`GSD-Task: ${ctx.taskId}`);
+  // Trailers: workflow task first, then Resolves.
+  bodyParts.push(`OTTO-Task: ${ctx.taskId}`);
 
   if (ctx.issueNumber) {
     bodyParts.push(`Resolves #${ctx.issueNumber}`);
@@ -312,7 +312,7 @@ function isInsideSubmodule(path: string, submodulePaths: ReadonlySet<string>): b
 }
 
 /**
- * Thrown when a slice merge hits code conflicts in non-.gsd files.
+ * Thrown when a slice merge hits code conflicts in non-.otto/workflow files.
  * The working tree is left in a conflicted state (no reset) so the
  * caller can dispatch a fix-merge session to resolve it.
  */
@@ -331,7 +331,7 @@ export class MergeConflictError extends WorkflowError {
     super(
       MERGE_CONFLICT,
       `${strategy === "merge" ? "Merge" : "Squash-merge"} of "${branch}" into "${mainBranch}" ` +
-      `failed with conflicts in ${conflictedFiles.length} non-.gsd file(s): ${conflictedFiles.join(", ")}`,
+      `failed with conflicts in ${conflictedFiles.length} non-.otto/workflow file(s): ${conflictedFiles.join(", ")}`,
     );
     this.name = "MergeConflictError";
     this.conflictedFiles = conflictedFiles;
@@ -358,29 +358,29 @@ export interface PreMergeCheckResult {
  * This array must stay synchronized with it.
  */
 export const RUNTIME_EXCLUSION_PATHS: readonly string[] = [
-  ".gsd/activity/",
-  ".gsd/audit/",
-  ".gsd/forensics/",
-  ".gsd/runtime/",
-  ".gsd/worktrees/",
-  ".gsd/parallel/",
-  ".gsd/auto.lock",
-  ".gsd/metrics.json",
-  ".gsd/completed-units*.json", // covers completed-units.json and archived completed-units-{MID}.json
-  ".gsd/state-manifest.json",
-  ".gsd/STATE.md",
-  ".gsd/gsd.db*",
-  ".gsd/journal/",
-  ".gsd/doctor-history.jsonl",
-  ".gsd/event-log.jsonl",
-  ".gsd/DISCUSSION-MANIFEST.json",
+  ".otto/workflow/activity/",
+  ".otto/workflow/audit/",
+  ".otto/workflow/forensics/",
+  ".otto/workflow/runtime/",
+  ".otto/workflow/worktrees/",
+  ".otto/workflow/parallel/",
+  ".otto/workflow/auto.lock",
+  ".otto/workflow/metrics.json",
+  ".otto/workflow/completed-units*.json", // covers completed-units.json and archived completed-units-{MID}.json
+  ".otto/workflow/state-manifest.json",
+  ".otto/workflow/STATE.md",
+  ".otto/workflow/otto.db*",
+  ".otto/workflow/journal/",
+  ".otto/workflow/doctor-history.jsonl",
+  ".otto/workflow/event-log.jsonl",
+  ".otto/workflow/DISCUSSION-MANIFEST.json",
 ];
 
 // ─── Integration Branch Metadata ───────────────────────────────────────────
 
 /**
  * Path to the milestone metadata file that stores the integration branch.
- * Format: .gsd/milestones/<MID>/<MID>-META.json
+ * Format: .otto/workflow/milestones/<MID>/<MID>-META.json
  */
 function milestoneMetaPath(basePath: string, milestoneId: string): string {
   return join(workflowRoot(basePath), "milestones", milestoneId, `${milestoneId}-META.json`);
@@ -457,7 +457,7 @@ export function writeIntegrationBranch(
 
   existing.integrationBranch = branch;
   writeFileSync(metaFile, JSON.stringify(existing, null, 2) + "\n", "utf-8");
-  // .gsd/ is managed externally (symlinked) — metadata is not committed to git.
+  // .otto/workflow/ is managed externally (symlinked) — metadata is not committed to git.
 }
 
 export type IntegrationBranchResolutionStatus = "recorded" | "fallback" | "missing";
@@ -748,10 +748,10 @@ export class GitServiceImpl {
     // the git reset HEAD step below would otherwise undo the rm --cached.
     //
     // SAFETY: Only untrack the specific RUNTIME paths (activity/, runtime/,
-    // auto.lock, etc.) — NOT all of .gsd/. If .gsd/milestones/ files were
+    // auto.lock, etc.) — NOT all of .otto/workflow/. If .otto/workflow/milestones/ files were
     // previously tracked, they stay tracked until the milestone completes
     // and the worktree is torn down. This prevents a mid-execution behavioral
-    // discontinuity where the first half of a milestone has .gsd/ artifacts
+    // discontinuity where the first half of a milestone has .otto/workflow/ artifacts
     // committed but the second half doesn't (#1326).
     if (!this._runtimeFilesCleanedUp) {
       let cleaned = false;
@@ -760,7 +760,7 @@ export class GitServiceImpl {
         if (removed.length > 0) cleaned = true;
       }
       if (cleaned) {
-        nativeCommit(this.basePath, "chore: untrack .gsd/ runtime files from git index", { allowEmpty: false });
+        nativeCommit(this.basePath, "chore: untrack .otto/workflow/ runtime files from git index", { allowEmpty: false });
       }
       this._runtimeFilesCleanedUp = true;
     }
@@ -769,23 +769,23 @@ export class GitServiceImpl {
     // hashed by git. The old approach of `git add -A` followed by unstaging
     // hangs indefinitely on repos with large untracked artifact trees (#1605).
     //
-    // Exclude only RUNTIME paths from staging — not the entire .gsd/ directory.
-    // When .gsd/milestones/ files are already tracked in the index (projects
-    // where .gsd/ is not gitignored, or Windows junctions that git sees as
+    // Exclude only RUNTIME paths from staging — not the entire .otto/workflow/ directory.
+    // When .otto/workflow/milestones/ files are already tracked in the index (projects
+    // where .otto/workflow/ is not gitignored, or Windows junctions that git sees as
     // real directories), they should continue to be committed. Excluding the
-    // entire .gsd/ directory mid-milestone causes silent commit failure where
+    // entire .otto/workflow/ directory mid-milestone causes silent commit failure where
     // the second half of a milestone's artifacts are never committed (#1326).
     //
-    // If .gsd/ IS in .gitignore (the default for external state projects),
+    // If .otto/workflow/ IS in .gitignore (the default for external state projects),
     // git add -A already skips it and the exclusions are harmless no-ops.
     const allExclusions = [...RUNTIME_EXCLUSION_PATHS, ...extraExclusions];
 
     // ── Parallel worker milestone scope (#1991) ──
-    // When GSD_MILESTONE_LOCK is set, this process is a parallel worker that
+    // When OTTO_MILESTONE_LOCK is set, this process is a parallel worker that
     // must only commit files belonging to its own milestone. Exclude all other
     // milestone directories from staging to prevent cross-milestone pollution
     // (e.g., an M033 worker fabricating M032 artifacts in the same commit).
-    const milestoneLock = (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK);
+    const milestoneLock = (process.env.OTTO_MILESTONE_LOCK ?? process.env.OTTO_MILESTONE_LOCK);
     if (milestoneLock) {
       const msDir = join(workflowRoot(this.basePath), "milestones");
       if (existsSync(msDir)) {
@@ -793,7 +793,7 @@ export class GitServiceImpl {
           const entries = readdirSync(msDir, { withFileTypes: true });
           for (const entry of entries) {
             if (entry.isDirectory() && entry.name !== milestoneLock) {
-              allExclusions.push(`.gsd/milestones/${entry.name}/`);
+              allExclusions.push(`.otto/workflow/milestones/${entry.name}/`);
             }
           }
         } catch {
@@ -910,7 +910,7 @@ export class GitServiceImpl {
    * (e.g. pre-switch commits, stop commits, state rebuild commits).
    *
    * Returns the commit message on success, or null if nothing to commit.
-   * @param extraExclusions Additional paths to exclude from staging (e.g. [".gsd/"] for pre-switch commits).
+   * @param extraExclusions Additional paths to exclude from staging (e.g. [".otto/workflow/"] for pre-switch commits).
    */
   autoCommit(
     unitType: string,
@@ -933,7 +933,7 @@ export class GitServiceImpl {
 
     const message = taskContext
       ? buildTaskCommitMessage(taskContext)
-      : `chore: auto-commit after ${unitType}\n\nGSD-Unit: ${unitId}`;
+      : `chore: auto-commit after ${unitType}\n\nOTTO-Unit: ${unitId}`;
     try {
       nativeCommit(this.basePath, message, { allowEmpty: false });
     } catch (err) {
@@ -1023,8 +1023,8 @@ export class GitServiceImpl {
 
       // Re-run smartStage so the same RUNTIME_EXCLUSION_PATHS apply.
       // Snapshot commits used nativeAddTracked (git add -u) which stages
-      // ALL tracked modifications including .gsd/ state files. Without
-      // re-staging, those .gsd/ changes leak into the absorbed commit.
+      // ALL tracked modifications including .otto/workflow/ state files. Without
+      // re-staging, those .otto/workflow/ changes leak into the absorbed commit.
       this.smartStage();
 
       try {
@@ -1102,7 +1102,7 @@ export class GitServiceImpl {
   /**
    * Create a snapshot ref for the given label (typically a slice branch name).
    * Enabled by default; opt out with prefs.snapshots === false.
-   * Ref path: refs/gsd/snapshots/<label>/<timestamp>
+   * Ref path: refs/otto/snapshots/<label>/<timestamp>
    * The ref points at HEAD, capturing the current commit before destructive operations.
    */
   createSnapshot(label: string): void {
@@ -1117,7 +1117,8 @@ export class GitServiceImpl {
       + String(now.getMinutes()).padStart(2, "0")
       + String(now.getSeconds()).padStart(2, "0");
 
-    const refPath = `refs/gsd/snapshots/${label}/${ts}`;
+    const snapshotLabel = label.replace(/^gsd\//, "otto/");
+    const refPath = `refs/otto/snapshots/${snapshotLabel}/${ts}`;
     nativeUpdateRef(this.basePath, refPath, "HEAD");
   }
 
@@ -1153,7 +1154,7 @@ export class GitServiceImpl {
     // Tokenize and run via execFileSync (no shell). Shell metacharacters in
     // user-supplied prefs.pre_merge_check would otherwise be interpreted as
     // chaining/redirection (e.g. `;`, `&&`, `|`, backticks) — a privesc
-    // surface in repos with a checked-in `.gsd/PREFERENCES.md`.
+    // surface in repos with a checked-in `.otto/workflow/PREFERENCES.md`.
     // (Issue #4980 HIGH-2)
     if (containsUnquotedShellControl(command)) {
       return {

@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-// gsd-inspect — Tests for /gsd inspect output formatting
+// gsd-inspect — Tests for /otto inspect output formatting
 //
 // Tests the pure formatInspectOutput function with known data.
 
@@ -23,7 +23,7 @@ describe('gsd-inspect', () => {
 
     const output = formatInspectOutput(data);
 
-    assert.match(output, /=== GSD Database Inspect ===/, "contains header");
+    assert.match(output, /=== OTTO Database Inspect ===/, "contains header");
     assert.match(output, /Schema version: 2/, "contains schema version");
     assert.match(output, /Decisions:\s+12/, "contains decisions count");
     assert.match(output, /Requirements:\s+8/, "contains requirements count");

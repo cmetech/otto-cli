@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { COMMAND_NAMESPACE } from "@loop24/pi-coding-agent";
+import { COMMAND_NAMESPACE } from "@otto/pi-coding-agent";
 
 import { registerWorkflowCommand } from "../commands.ts";
 import { dispatchWorkflowCommand } from "../commands/dispatcher.ts";
@@ -35,7 +35,7 @@ function createMockCtx() {
   };
 }
 
-test("/gsd description includes discuss", () => {
+test("/otto description includes discuss", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -47,7 +47,7 @@ test("/gsd description includes discuss", () => {
   );
 });
 
-test("/gsd description includes debug", () => {
+test("/otto description includes debug", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -55,7 +55,7 @@ test("/gsd description includes debug", () => {
   assert.ok(gsd.description.includes("debug"), "description should include debug");
 });
 
-test("/gsd next completions include --debug", () => {
+test("/otto next completions include --debug", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -65,7 +65,7 @@ test("/gsd next completions include --debug", () => {
   assert.ok(debug, "next --debug should appear in completions");
 });
 
-test("/gsd debug completions include list|status|continue|--diagnose", () => {
+test("/otto debug completions include list|status|continue|--diagnose", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -77,7 +77,7 @@ test("/gsd debug completions include list|status|continue|--diagnose", () => {
   }
 });
 
-test("/gsd widget completions include full|small|min|off", () => {
+test("/otto widget completions include full|small|min|off", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -89,7 +89,7 @@ test("/gsd widget completions include full|small|min|off", () => {
   }
 });
 
-test("/gsd logs completions still include debug after adding /gsd debug", () => {
+test("/otto logs completions still include debug after adding /otto debug", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -99,7 +99,7 @@ test("/gsd logs completions still include debug after adding /gsd debug", () => 
   assert.ok(values.includes("logs debug"), "logs debug completion should remain available");
 });
 
-test("/gsd help full includes /gsd debug command", async () => {
+test("/otto help full includes /otto debug command", async () => {
   const ctx = createMockCtx();
 
   await dispatchWorkflowCommand("help full", ctx as any, {} as any);

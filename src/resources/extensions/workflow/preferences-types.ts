@@ -30,7 +30,7 @@ export interface ContextManagementConfig {
 }
 
 /**
- * Opt-in tool-output sandboxing for sub-sessions. When enabled, the gsd_exec
+ * Opt-in tool-output sandboxing for sub-sessions. When enabled, the otto_exec
  * MCP tool runs scripts in an isolated subprocess and returns only a short
  * digest to the calling agent's context window; capped stdout/stderr persist
  * in the project memory store and can be retrieved by id later.
@@ -52,7 +52,7 @@ export interface ContextModeConfig {
 }
 
 /**
- * Resolve whether context-mode features (gsd_exec sandbox + compaction
+ * Resolve whether context-mode features (otto_exec sandbox + compaction
  * snapshot) should be active. Default is ON: missing config or missing
  * `enabled` is treated as true. Only `enabled: false` disables.
  */
@@ -313,7 +313,7 @@ export interface ExperimentalPreferences {
   rtk?: boolean;
 }
 
-/** Configuration for the codebase map generator (/loop24 codebase). */
+/** Configuration for the codebase map generator (/otto codebase). */
 export interface CodebaseMapPreferences {
   /** Additional directory/file patterns to exclude (e.g. ["docs/", "fixtures/"]). Merged with built-in defaults. */
   exclude_patterns?: string[];
@@ -347,7 +347,7 @@ export interface WorkspaceRepositoryPreference {
 }
 
 export interface WorkspacePreferences {
-  /** Parent-workspace uses one parent .gsd coordinating child repos. */
+  /** Parent-workspace uses one parent .otto/workflow coordinating child repos. */
   mode?: "project" | "parent";
   repositories?: Record<string, WorkspaceRepositoryPreference>;
 }
@@ -391,7 +391,7 @@ export interface WorkflowPreferences {
   context_window_override?: number;
   context_management?: ContextManagementConfig;
   /**
-   * Tool-output sandboxing via gsd_exec. Keeps sub-session context windows
+   * Tool-output sandboxing via otto_exec. Keeps sub-session context windows
    * clean by running scripts in a subprocess and only surfacing a short
    * digest. See `ContextModeConfig`. Default: enabled unless explicitly
    * disabled with `context_mode.enabled: false`.
@@ -428,7 +428,7 @@ export interface WorkflowPreferences {
   github?: GitHubSyncConfig;
   /** OpenAI service tier preference. "priority" = 2x cost, faster. "flex" = 0.5x cost, slower. Only affects gpt-5.4 models. */
   service_tier?: "priority" | "flex";
-  /** Opt-in: search existing issues and PRs before filing from /loop24 forensics. Uses additional AI tokens. */
+  /** Opt-in: search existing issues and PRs before filing from /otto forensics. Uses additional AI tokens. */
   forensics_dedup?: boolean;
   /** Opt-in: show per-prompt and cumulative session token cost in the footer. Default: false. */
   show_token_cost?: boolean;
@@ -446,7 +446,7 @@ export interface WorkflowPreferences {
    * See the preferences reference for details on each feature.
    */
   experimental?: ExperimentalPreferences;
-  /** Configuration for the codebase map generator (/loop24 codebase). */
+  /** Configuration for the codebase map generator (/otto codebase). */
   codebase?: CodebaseMapPreferences;
   /** Multi-repository parent workspace configuration. */
   workspace?: WorkspacePreferences;

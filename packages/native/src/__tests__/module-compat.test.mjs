@@ -1,5 +1,5 @@
 /**
- * Tests that the @loop24/native package.json is correctly configured
+ * Tests that the @otto/native package.json is correctly configured
  * for Node.js module resolution (ESM/CJS compatibility).
  *
  * Regression test for #2861: "type": "module" + "import"-only export
@@ -19,7 +19,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkgPath = path.resolve(__dirname, "..", "..", "package.json");
 const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
 
-describe("@loop24/native module compatibility (#2861)", () => {
+describe("@otto/native module compatibility (#2861)", () => {
   test("package.json must not declare type: module (compiled output is CJS-compatible)", () => {
     // The compiled output uses createRequire() to load .node addons.
     // Declaring "type": "module" forces Node.js to treat .js files as ESM,

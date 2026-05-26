@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for the inlineCode markdown helper and its use in PR body templates.
 
 import { describe, it } from "node:test";

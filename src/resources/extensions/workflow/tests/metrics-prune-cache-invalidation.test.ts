@@ -25,12 +25,12 @@ import { createWorkspace, scopeMilestone } from "../workspace.ts";
 
 function makeProjectDir(): string {
   const dir = mkdtempSync(join(tmpdir(), "gsd-metrics-prune-"));
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   return dir;
 }
 
 function metricsPath(base: string): string {
-  return join(base, ".gsd", "metrics.json");
+  return join(base, ".otto/workflow", "metrics.json");
 }
 
 function makeUnit(id: string, startedAt: number): any {
@@ -85,7 +85,7 @@ describe("pruneMetricsLedger: invalidates scoped ledger cache", () => {
 
   beforeEach(() => {
     tmpDir = makeProjectDir();
-    mkdirSync(join(tmpDir, ".gsd", "milestones"), { recursive: true });
+    mkdirSync(join(tmpDir, ".otto/workflow", "milestones"), { recursive: true });
     ws = createWorkspace(tmpDir);
     scope = scopeMilestone(ws, "M001");
   });

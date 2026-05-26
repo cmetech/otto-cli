@@ -1,16 +1,14 @@
 services:
-  gsd:
+  otto:
     build:
       context: .
       dockerfile: Dockerfile.sandbox
       args:
-        GSD_VERSION: latest
-    container_name: gsd-sandbox
-    ports:
-      - "3000:3000"
+        OTTO_VERSION: latest
+    container_name: otto-sandbox
     volumes:
       - ../:/workspace
-      - gsd-state:/home/gsd/.gsd
+      - otto-state:/home/otto/.otto
     env_file:
       - .env
     environment:
@@ -19,5 +17,5 @@ services:
     tty: true
 
 volumes:
-  gsd-state:
+  otto-state:
     driver: local

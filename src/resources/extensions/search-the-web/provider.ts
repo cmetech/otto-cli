@@ -9,12 +9,12 @@
  * @see S01-RESEARCH.md for the storage decision rationale (D002).
  */
 
-import { AuthStorage } from '@loop24/pi-coding-agent'
+import { AuthStorage } from '@otto/pi-coding-agent'
 import { join } from 'path'
 import { resolveSearchProviderFromPreferences } from '../workflow/preferences.js'
 import { workflowHome } from "../workflow/home.js";
 
-// Compute authFilePath lazily so GSD_HOME overrides (e.g. in tests) take effect.
+// Compute authFilePath lazily so OTTO_HOME overrides (e.g. in tests) take effect.
 // Imported locally instead of from app-paths.ts because extensions are copied to
 // ~/.otto/agent/extensions/ at runtime where '../../../app-paths.ts' doesn't resolve.
 function authFilePath(): string {

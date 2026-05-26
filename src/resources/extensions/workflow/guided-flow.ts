@@ -6,7 +6,7 @@
  * No execution state, no hooks, no tools — the LLM does the rest.
  */
 
-import type { ExtensionAPI, ExtensionContext, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import type { WorkflowDbState } from "./types.js";
 import { showNextAction } from "../shared/tui.js";
 import { loadFile, saveFile } from "./files.js";
@@ -183,11 +183,11 @@ export function resolveExpectedArtifactPathForScope(
 
 async function runQuickTaskChoice(ctx: ExtensionCommandContext, pi: ExtensionAPI): Promise<void> {
   if (!ctx.hasUI) {
-    ctx.ui.notify("Run /gsd quick <task> for small bounded work, or /gsd do <task> for natural-language routing.", "info");
+    ctx.ui.notify("Run /otto quick <task> for small bounded work, or /otto do <task> for natural-language routing.", "info");
     return;
   }
 
-  const task = (await ctx.ui.input("Quick task", "Describe the small task to run with /gsd quick"))?.trim();
+  const task = (await ctx.ui.input("Quick task", "Describe the small task to run with /otto quick"))?.trim();
   if (!task) {
     ctx.ui.notify("Quick task cancelled.", "info");
     return;
@@ -199,7 +199,7 @@ async function runQuickTaskChoice(ctx: ExtensionCommandContext, pi: ExtensionAPI
 
 function isNonInteractiveContext(ctx: ExtensionCommandContext): boolean {
   if (!ctx.hasUI) return true;
-  return (process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) === "1" || (process.env.LOOP24_WEB_BRIDGE_TUI ?? process.env.GSD_WEB_BRIDGE_TUI) === "1";
+  return (process.env.OTTO_HEADLESS ?? process.env.OTTO_HEADLESS) === "1" || (process.env.OTTO_WEB_BRIDGE_TUI ?? process.env.OTTO_WEB_BRIDGE_TUI) === "1";
 }
 
 /**
@@ -255,9 +255,9 @@ export function _roadmapHasParseableSlicesForTest(
 
 // ─── Commit Instruction Helpers ──────────────────────────────────────────────
 
-/** Build commit instruction for planning prompts. .gsd/ is managed externally and always gitignored. */
+/** Build commit instruction for planning prompts. .otto/workflow/ is managed externally and always gitignored. */
 function buildDocsCommitInstruction(_message: string): string {
-  return "Do not commit planning artifacts — .gsd/ is managed externally.";
+  return "Do not commit planning artifacts — .otto/workflow/ is managed externally.";
 }
 
 // ─── Auto-start after discuss ─────────────────────────────────────────────────
@@ -274,7 +274,7 @@ interface PendingDeepProjectSetupEntry {
 }
 
 // #4573: cap for how many times we nudge the LLM after a premature ready
-// phrase before giving up and asking the user to re-run /gsd.
+// phrase before giving up and asking the user to re-run /otto.
 const MAX_READY_REJECTS = 2;
 
 // H1 (#5012): cap for Gate 1b plan-blocked recovery hints. After this many
@@ -466,7 +466,7 @@ async function dispatchNextDeepProjectSetupStage(entry: PendingDeepProjectSetupE
     // Claude Code currently surfaces workflow-MCP question calls as tool-request
     // UI that can be cancelled outside the normal chat flow. During the
     // foreground deep project setup interview, keep user input in plain chat so
-    // `/loop24 new-project --deep` cannot bounce through cancelled tool requests.
+    // `/otto new-project --deep` cannot bounce through cancelled tool requests.
     structuredQuestionsAvailable: "false" as const,
   };
   let result: Awaited<ReturnType<(typeof DISPATCH_RULES)[number]["match"]>> = null;
@@ -548,9 +548,9 @@ export function checkAutoStartAfterDiscuss(lookupBasePath?: string): boolean {
 
   // Gate 1b: Discriminate plan-blocked from discuss-incomplete when the DB row is queued.
   // If the DB is available and the row is still "queued" but CONTEXT.md already exists on
-  // disk, the discuss phase completed but gsd_plan_milestone was hard-blocked by the
+  // disk, the discuss phase completed but otto_plan_milestone was hard-blocked by the
   // depth-verification gate.  Emit a recovery hint so the next agent turn can retry
-  // gsd_plan_milestone, then return false (keep blocking auto-start).
+  // otto_plan_milestone, then return false (keep blocking auto-start).
   // If CONTEXT.md does not exist (discuss-incomplete), Gate 1 already blocked above.
   if (isDbAvailable()) {
     const dbRow = getMilestone(milestoneId);
@@ -564,7 +564,7 @@ export function checkAutoStartAfterDiscuss(lookupBasePath?: string): boolean {
         );
         ctx.ui.notify(
           `Milestone ${milestoneId} plan_milestone has been blocked ${entry.planBlockedRecoveryCount} times. ` +
-          `Re-run /gsd to reset the recovery counter, or run /gsd-debug to diagnose without resetting.`,
+          `Re-run /otto to reset the recovery counter, or run /otto-debug to diagnose without resetting.`,
           "error",
         );
         return false;
@@ -577,7 +577,7 @@ export function checkAutoStartAfterDiscuss(lookupBasePath?: string): boolean {
       );
       ctx.ui.notify(
         `Milestone ${milestoneId}: context file exists but milestone is still queued. ` +
-        `Retrying gsd_plan_milestone to complete the blocked planning step.`,
+        `Retrying otto_plan_milestone to complete the blocked planning step.`,
         "warning",
       );
       try {
@@ -586,8 +586,8 @@ export function checkAutoStartAfterDiscuss(lookupBasePath?: string): boolean {
             customType: "gsd-plan-milestone-blocked-recovery",
             content:
               `Milestone ${milestoneId} has ${contextFile} on disk but its DB row is still ` +
-              `"queued". The gsd_plan_milestone tool was previously blocked by the ` +
-              `depth-verification gate. Call gsd_plan_milestone now to complete the ` +
+              `"queued". The otto_plan_milestone tool was previously blocked by the ` +
+              `depth-verification gate. Call otto_plan_milestone now to complete the ` +
               `planning phase.`,
             display: false,
           },
@@ -683,7 +683,7 @@ export function checkAutoStartAfterDiscuss(lookupBasePath?: string): boolean {
   // R3b: belt-and-suspenders for silent registration failure. The discuss flow
   // finished and STATE.md exists, but the milestone may never have landed in
   // the DB. Without this guard, the user sees "Milestone M001 ready." and then
-  // /loop24 reports "No Active Milestone".
+  // /otto reports "No Active Milestone".
   if (isDbAvailable()) {
     const milestoneRow = getMilestone(milestoneId);
     if (!milestoneRow) {
@@ -701,7 +701,7 @@ export function checkAutoStartAfterDiscuss(lookupBasePath?: string): boolean {
           `Milestone ${milestoneId}: discuss artifacts on disk but no DB row exists. ` +
           `PROJECT.md may have failed to register milestones. ` +
           `Re-save PROJECT.md with canonical "- [ ] M001: Title — One-liner" lines, ` +
-          `then re-run /gsd to recover.`,
+          `then re-run /otto to recover.`,
           "error",
         );
         return false;
@@ -766,7 +766,7 @@ function hasToolUse(msg: any): boolean {
  *
  * When the LLM emits "Milestone {{id}} ready." but has not written the
  * milestone CONTEXT/ROADMAP artifacts, `checkAutoStartAfterDiscuss()` silently
- * returns false and the next /loop24 invocation loops into the "All milestones
+ * returns false and the next /otto invocation loops into the "All milestones
  * complete" warning.
  *
  * This function, called from `handleAgentEnd` after `checkAutoStartAfterDiscuss`
@@ -777,7 +777,7 @@ function hasToolUse(msg: any): boolean {
  *   2. Injects a system message via `pi.sendMessage(..., {triggerTurn:true})`
  *      telling the LLM the signal was premature and to emit the writes now.
  *   3. Caps at `MAX_READY_REJECTS` per-entry; beyond that, gives up and asks
- *      the user to re-run /gsd.
+ *      the user to re-run /otto.
  *
  * Returns true when a nudge (or give-up) was emitted, signaling the caller to
  * skip `resolveAgentEnd`.
@@ -828,12 +828,12 @@ export function maybeHandleReadyPhraseWithoutFiles(event: { messages: any[] }, l
   entry.readyRejectCount = (entry.readyRejectCount ?? 0) + 1;
 
   if (entry.readyRejectCount > MAX_READY_REJECTS) {
-    // Give up: clear state and tell the user to re-run /gsd. Avoids an
+    // Give up: clear state and tell the user to re-run /otto. Avoids an
     // infinite nudge loop when the LLM never produces the writes.
     deletePendingAutoStart(basePath);
     ctx.ui.notify(
       `Milestone ${milestoneId}: LLM signaled "ready" ${entry.readyRejectCount} times without writing files. ` +
-      `Stopping auto-nudge. Run /gsd to try again.`,
+      `Stopping auto-nudge. Run /otto to try again.`,
       "error",
     );
     return true;
@@ -851,7 +851,7 @@ export function maybeHandleReadyPhraseWithoutFiles(event: { messages: any[] }, l
     `${contextRel} nor ${roadmapRel} exists on disk. ` +
     `The ready phrase is a POST-WRITE signal and has been rejected. ` +
     `In this turn: (1) write PROJECT.md, REQUIREMENTS.md, and the milestone ` +
-    `CONTEXT.md, (2) call gsd_plan_milestone, then (3) emit the ready phrase. ` +
+    `CONTEXT.md, (2) call otto_plan_milestone, then (3) emit the ready phrase. ` +
     `Do not describe these steps — execute them as tool calls. ` +
     `This is retry ${entry.readyRejectCount}/${MAX_READY_REJECTS}; further ` +
     `premature signals will clear the session.`;
@@ -914,7 +914,7 @@ export function maybeHandleEmptyIntentTurn(
   lookupBasePath?: string,
 ): boolean {
   // Gate: only fire when there is system-driven work in flight. Interactive
-  // /loop24 discuss (user-driven) produces legitimate text-only turns.
+  // /otto discuss (user-driven) produces legitimate text-only turns.
   if (!isAuto && !hasPendingAutoStart(lookupBasePath)) return false;
 
   const lastMsg = event.messages[event.messages.length - 1];
@@ -1095,7 +1095,7 @@ async function dispatchWorkflow(
       // Keep all non-workflow tools (builtins, other extensions) and only the
       // workflow tools on the discuss allowlist.
       const scopedTools = currentTools.filter(
-        (t) => !t.startsWith("gsd_") || DISCUSS_TOOLS_ALLOWLIST.includes(t),
+        (t) => !t.startsWith("otto_") || DISCUSS_TOOLS_ALLOWLIST.includes(t),
       );
       pi.setActiveTools(scopedTools);
       const scopedState = scopeWorkflowWorkflowToolsForDispatch(pi, unitType);
@@ -1114,7 +1114,7 @@ async function dispatchWorkflow(
       savedTools = scopeWorkflowWorkflowToolsForDispatch(pi, unitType) ?? savedTools;
     }
 
-    const workflowPath = process.env.LOOP24_WORKFLOW_PATH ?? process.env.GSD_WORKFLOW_PATH ?? join(workflowHome(), "agent", "WORKFLOW.md");
+    const workflowPath = process.env.OTTO_WORKFLOW_PATH ?? process.env.OTTO_WORKFLOW_PATH ?? join(workflowHome(), "agent", "WORKFLOW.md");
     const workflow = readFileSync(workflowPath, "utf-8");
 
     if (unitType) setGuidedUnitContext(projectRoot, unitType);
@@ -1209,7 +1209,7 @@ function resolveAvailableModel<T extends { id: string; provider: string }>(
  * Used by all three "new milestone" paths (first ever, no active, all complete).
  */
 function buildDiscussPrompt(nextId: string, preamble: string, _basePath: string, pi: ExtensionAPI, ctx: ExtensionCommandContext, preparationContext?: string): string {
-  const milestoneRel = `.gsd/milestones/${nextId}`;
+  const milestoneRel = `.otto/workflow/milestones/${nextId}`;
   const structuredQuestionsAvailable = getStructuredQuestionsAvailability(pi, ctx);
   const inlinedTemplates = [
     inlineTemplate("project", "Project"),
@@ -1236,7 +1236,7 @@ function buildDiscussPrompt(nextId: string, preamble: string, _basePath: string,
  * Uses the discuss-headless prompt template with seed context injected.
  */
 function buildHeadlessDiscussPrompt(nextId: string, seedContext: string, _basePath: string): string {
-  const milestoneRel = `.gsd/milestones/${nextId}`;
+  const milestoneRel = `.otto/workflow/milestones/${nextId}`;
   const inlinedTemplates = [
     inlineTemplate("project", "Project"),
     inlineTemplate("requirements", "Requirements"),
@@ -1309,8 +1309,8 @@ async function prepareAndBuildDiscussPrompt(
 }
 
 /**
- * Bootstrap a .gsd/ project from scratch for headless use.
- * Ensures git repo, .gsd/ structure, gitignore, and preferences all exist.
+ * Bootstrap a .otto/workflow/ project from scratch for headless use.
+ * Ensures git repo, .otto/workflow/ structure, gitignore, and preferences all exist.
  */
 function bootstrapWorkflowProject(basePath: string): void {
   if (!nativeIsRepo(basePath) || isInheritedRepo(basePath)) {
@@ -1344,7 +1344,7 @@ export async function showHeadlessMilestoneCreation(
   // Clear stale reservations from previous cancelled sessions (#2488)
   clearReservedMilestoneIds();
 
-  // Ensure .gsd/ is bootstrapped
+  // Ensure .otto/workflow/ is bootstrapped
   bootstrapWorkflowProject(basePath);
 
   const { ensureDbOpen } = await import("./bootstrap/dynamic-tools.js");
@@ -1375,7 +1375,7 @@ export async function showHeadlessMilestoneCreation(
   });
 
   // Dispatch as discuss-milestone. The LLM writes PROJECT.md, REQUIREMENTS.md,
-  // and CONTEXT.md, then calls gsd_plan_milestone — this is semantically the
+  // and CONTEXT.md, then calls otto_plan_milestone — this is semantically the
   // discuss path, just non-interactive. Using "plan-milestone" here caused
   // model/tool routing to skip discuss-flow tool scoping and
   // `checkAutoStartAfterDiscuss` guardrails that rely on the
@@ -1459,7 +1459,7 @@ async function buildDiscussSlicePrompt(
     ? `## Inlined Context (preloaded — do not re-read these files)\n\n${inlined.join("\n\n---\n\n")}`
     : `## Inlined Context\n\n_(no context files found yet — go in blind and ask broad questions)_`;
 
-  const sliceDirPath = `.gsd/milestones/${mid}/slices/${sid}`;
+  const sliceDirPath = `.otto/workflow/milestones/${mid}/slices/${sid}`;
   const sliceContextPath = `${sliceDirPath}/${sid}-CONTEXT.md`;
 
   // When re-discussing, inject a preamble so the agent treats this as an update interview
@@ -1483,7 +1483,7 @@ async function buildDiscussSlicePrompt(
 }
 
 /**
- * /loop24 discuss — show a picker of non-done slices and run a slice interview.
+ * /otto discuss — show a picker of non-done slices and run a slice interview.
  * Loops back to the picker after each discussion so the user can chain
  * multiple slice interviews in one session.
  */
@@ -1493,9 +1493,9 @@ export async function showDiscuss(
   basePath: string,
   options?: { target?: string },
 ): Promise<void> {
-  // Guard: no .gsd/ project
+  // Guard: no .otto/workflow/ project
   if (!existsSync(workflowRoot(basePath))) {
-    ctx.ui.notify("No GSD project found. Run /gsd to start one first.", "warning");
+    ctx.ui.notify("No OTTO project found. Run /otto to start one first.", "warning");
     return;
   }
 
@@ -1568,7 +1568,7 @@ export async function showDiscuss(
   // check for pending milestones to discuss instead
   if (!state.activeMilestone?.id) {
     if (discussableFutureMilestones.length === 0) {
-      ctx.ui.notify("No active milestone. Run /gsd to create one first.", "warning");
+      ctx.ui.notify("No active milestone. Run /otto to create one first.", "warning");
       return;
     }
     await showDiscussQueuedMilestone(ctx, pi, basePath, discussableFutureMilestones);
@@ -1585,7 +1585,7 @@ export async function showDiscuss(
     const draftContent = draftFile ? await loadFile(draftFile) : null;
 
     const choice = await showNextAction(ctx, {
-      title: `GSD — ${mid}: ${milestoneTitle}`,
+      title: `OTTO — ${mid}: ${milestoneTitle}`,
       summary: ["This milestone has a draft context from a prior discussion.", "It needs a dedicated discussion before auto-planning can begin."],
       actions: [
         {
@@ -1605,7 +1605,7 @@ export async function showDiscuss(
           description: "Leave this milestone as-is and start something new.",
         },
       ],
-      notYetMessage: "Run /gsd discuss when ready to discuss this milestone.",
+      notYetMessage: "Run /otto discuss when ready to discuss this milestone.",
     });
 
     if (choice === "discuss_draft") {
@@ -1648,7 +1648,7 @@ export async function showDiscuss(
   const roadmapFile = resolveMilestoneFile(basePath, mid, "ROADMAP");
   const roadmapContent = roadmapFile ? await loadFile(roadmapFile) : null;
   if (!roadmapContent && !isDbAvailable()) {
-    ctx.ui.notify("No roadmap yet for this milestone. Run /gsd to plan first.", "warning");
+    ctx.ui.notify("No roadmap yet for this milestone. Run /otto to plan first.", "warning");
     return;
   }
 
@@ -1700,8 +1700,8 @@ export async function showDiscuss(
       const lockData = readSessionLockData(basePath);
       const remoteAutoRunning = lockData && lockData.pid !== process.pid && isSessionLockProcessAlive(lockData);
       const nextStep = remoteAutoRunning
-        ? "Auto-mode is already running — use /gsd status to check progress."
-        : "Run /gsd to start planning.";
+        ? "Auto-mode is already running — use /otto status to check progress."
+        : "Run /otto to start planning.";
       ctx.ui.notify(
         `All ${pendingSlices.length} slices discussed. ${nextStep}`,
         "info",
@@ -1738,13 +1738,13 @@ export async function showDiscuss(
     }
 
     const choice = await showNextAction(ctx, {
-      title: "GSD — Discuss a slice",
+      title: "OTTO — Discuss a slice",
       summary: [
         `${mid}: ${milestoneTitle}`,
         "Pick a slice to interview. Context file will be written when done.",
       ],
       actions,
-      notYetMessage: "Run /gsd discuss when ready.",
+      notYetMessage: "Run /otto discuss when ready.",
     });
 
     if (choice === "not_yet") return;
@@ -1813,7 +1813,7 @@ async function showDiscussQueuedMilestone(
   });
 
   const choice = await showNextAction(ctx, {
-    title: "GSD — Discuss a future/planned milestone",
+    title: "OTTO — Discuss a future/planned milestone",
     summary: [
       "Select a future or planned milestone to discuss.",
       "Discussing will update its context file. It will not be activated.",
@@ -1850,7 +1850,7 @@ async function showDiscussQueuedMilestone(
           description: "Treat your first message as authoritative seed context; skip scouting",
         },
       ],
-      notYetMessage: "Run /gsd discuss when ready.",
+      notYetMessage: "Run /otto discuss when ready.",
     });
     if (mode === "not_yet") return;
     fastPath = mode === "fast";
@@ -1910,7 +1910,7 @@ async function dispatchDiscussForMilestone(
 /**
  * Self-heal: scan runtime records and clear stale ones left behind when
  * auto-mode crashed mid-unit. auto.ts has its own selfHealRuntimeRecords()
- * but guided-flow (manual /loop24 mode) never called it — meaning stale records
+ * but guided-flow (manual /otto mode) never called it — meaning stale records
  * persisted until the next /otto auto run.  This ensures the wizard always
  * starts from a clean state regardless of how the previous session ended.
  */
@@ -1987,7 +1987,7 @@ async function handleMilestoneActions(
         description: "Return to the previous menu.",
       },
     ],
-    notYetMessage: "Run /gsd when ready.",
+    notYetMessage: "Run /otto when ready.",
   });
 
   if (choice === "park") {
@@ -1999,7 +1999,7 @@ async function handleMilestoneActions(
         { id: "blocked_external", label: "Blocked externally", description: "Waiting on an external dependency or decision." },
         { id: "needs_rethink", label: "Needs rethinking", description: "The approach needs to be reconsidered." },
       ],
-      notYetMessage: "Run /gsd when ready.",
+      notYetMessage: "Run /otto when ready.",
     });
 
     // User pressed "Not yet" / Escape — cancel the park operation
@@ -2012,7 +2012,7 @@ async function handleMilestoneActions(
 
     const success = parkMilestone(basePath, milestoneId, reasonText);
     if (success) {
-      ctx.ui.notify(`Parked ${milestoneId}. Run /gsd unpark ${milestoneId} to reactivate.`, "info");
+      ctx.ui.notify(`Parked ${milestoneId}. Run /otto unpark ${milestoneId} to reactivate.`, "info");
     } else {
       ctx.ui.notify(`Could not park ${milestoneId} — milestone not found or already parked.`, "warning");
     }
@@ -2059,7 +2059,7 @@ export async function showSmartEntry(
   const stepMode = options?.step;
 
   // ── Clear stale milestone ID reservations from previous cancelled sessions ──
-  // Reservations only need to survive within a single /loop24 interaction.
+  // Reservations only need to survive within a single /otto interaction.
   // Without this, each cancelled session permanently bumps the next ID. (#2488)
   clearReservedMilestoneIds();
 
@@ -2071,7 +2071,7 @@ export async function showSmartEntry(
   }
   if (dirCheck.severity === "warning") {
     const proceed = await showConfirm(ctx, {
-      title: "GSD — Unusual Directory",
+      title: "OTTO — Unusual Directory",
       message: dirCheck.reason!,
       confirmLabel: "Continue anyway",
       declineLabel: "Cancel",
@@ -2080,8 +2080,8 @@ export async function showSmartEntry(
   }
 
   // ── Detection preamble — run before any bootstrap ────────────────────
-  // Check bootstrap completeness, not just .gsd/ directory existence.
-  // A zombie .gsd/ state (symlink exists but missing PREFERENCES.md and
+  // Check bootstrap completeness, not just .otto/workflow/ directory existence.
+  // A zombie .otto/workflow/ state (symlink exists but missing PREFERENCES.md and
   // milestones/) must trigger the init wizard, not skip it (#2942).
   const workflowPath = workflowRoot(basePath);
   const hasBootstrapArtifacts = hasWorkflowBootstrapArtifacts(workflowPath);
@@ -2102,18 +2102,18 @@ export async function showSmartEntry(
       // "fresh" — fall through to init wizard
     }
 
-    // No .gsd/ or zombie .gsd/ — run the project init wizard
+    // No .otto/workflow/ or zombie .otto/workflow/ — run the project init wizard
     const result = await showProjectInit(ctx, pi, basePath, detection);
     if (!result.completed) return; // User cancelled
     skipGitBootstrap = shouldSkipGitBootstrapAfterInit(result);
 
-    // Init wizard bootstrapped .gsd/ — fall through to the normal flow below
+    // Init wizard bootstrapped .otto/workflow/ — fall through to the normal flow below
     // which will detect "no milestones" and start the discuss prompt
   }
 
   // ── Ensure git repo exists — requires it for worktree isolation ──────
   // Also handle inherited repos: if basePath is a subdirectory of another
-  // git repo that has no .gsd, create a fresh repo to prevent cross-project
+  // git repo that has no .otto/workflow, create a fresh repo to prevent cross-project
   // state leaks (#1639).
   if (!skipGitBootstrap && (!nativeIsRepo(basePath) || isInheritedRepo(basePath))) {
     const mainBranch = loadEffectiveGSDPreferences()?.preferences?.git?.main_branch || "main";
@@ -2128,7 +2128,7 @@ export async function showSmartEntry(
     if (manageGitignore !== false) untrackRuntimeFiles(basePath);
   }
 
-  // Deep setup can pre-create .gsd/PREFERENCES.md before the normal init
+  // Deep setup can pre-create .otto/workflow/PREFERENCES.md before the normal init
   // wizard path runs. If that path also initialized git, make HEAD reachable
   // now so later worktree/git-log operations do not run on an unborn branch.
   if (!skipGitBootstrap && nativeIsRepo(basePath) && !nativeHasCommittedHead(basePath)) {
@@ -2169,10 +2169,10 @@ export async function showSmartEntry(
   } else if (interrupted.classification === "recoverable") {
     if (interrupted.lock) clearLock(basePath);
     const resumeLabel = interrupted.pausedSession?.stepMode
-      ? "Resume with /gsd next"
-      : "Resume with /gsd auto";
+      ? "Resume with /otto next"
+      : "Resume with /otto auto";
     const resume = await showNextAction(ctx, {
-      title: "GSD — Interrupted Session Detected",
+      title: "OTTO — Interrupted Session Detected",
       summary: formatInterruptedSessionSummary(interrupted),
       actions: [
         { id: "resume", label: resumeLabel, description: "Pick up where it left off", recommended: true },
@@ -2201,7 +2201,7 @@ export async function showSmartEntry(
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      ctx.ui.notify(`GSD could not compare markdown planning artifacts with gsd.db: ${message}`, "warning");
+      ctx.ui.notify(`OTTO could not compare markdown planning artifacts with otto.db: ${message}`, "warning");
       logWarning("guided", `planning state DB/markdown comparison failed: ${message}`, { file: "guided-flow.ts" });
     }
   }
@@ -2219,7 +2219,7 @@ export async function showSmartEntry(
   }
 
   // ── Deep planning mode kickoff ────────────────────────────────────────
-  // When `planning_depth: deep` is set (e.g. via `/loop24 new-project --deep`)
+  // When `planning_depth: deep` is set (e.g. via `/otto new-project --deep`)
   // and any project-level stage gate is still pending, keep the user-question
   // stages in the foreground conversation. Auto-mode is resumed only after
   // the project interview artifacts exist, so questions do not look like
@@ -2240,8 +2240,8 @@ export async function showSmartEntry(
 
   if (!state.activeMilestone?.id) {
     // Guard: if a discuss session is already in flight, don't re-inject the prompt.
-    // Both /loop24 and /otto auto reach this branch when no milestone exists yet.
-    // Without this guard, every subsequent /loop24 call overwrites the pending auto-start
+    // Both /otto and /otto auto reach this branch when no milestone exists yet.
+    // Without this guard, every subsequent /otto call overwrites the pending auto-start
     // and fires another dispatchWorkflow, resetting the conversation mid-interview.
     if (hasPendingAutoStart(basePath)) {
       // #3274: If /clear interrupted the discussion, the pending entry is stale.
@@ -2298,7 +2298,7 @@ export async function showSmartEntry(
       ctx.ui.setStatus("gsd-step", "New Milestone · answer the questions above to plan");
       setPendingAutoStart(basePath, { ctx, pi, basePath, milestoneId: nextId, step: stepMode });
       await dispatchWorkflow(pi, await prepareAndBuildDiscussPrompt(ctx, pi, nextId,
-        `New project, milestone ${nextId}. Do NOT read or explore .gsd/ — it's empty scaffolding.`,
+        `New project, milestone ${nextId}. Do NOT read or explore .otto/workflow/ — it's empty scaffolding.`,
         basePath
       ), "gsd-run", ctx, "discuss-milestone", { basePath });
     } else {
@@ -2307,13 +2307,13 @@ export async function showSmartEntry(
         return;
       }
       const choice = await showNextAction(ctx, {
-        title: "GSD — Get Shit Done",
+        title: "OTTO — Get Shit Done",
         summary: ["No active milestone."],
         actions: [
           {
             id: "quick_task",
             label: "Quick task",
-            description: "For small bounded work, run /gsd quick <task> or /gsd do <task>.",
+            description: "For small bounded work, run /otto quick <task> or /otto do <task>.",
             recommended: true,
           },
           {
@@ -2322,7 +2322,7 @@ export async function showSmartEntry(
             description: "Define a larger body of work with planning artifacts.",
           },
         ],
-        notYetMessage: "Run /gsd when ready.",
+        notYetMessage: "Run /otto when ready.",
       });
 
       if (choice === "quick_task") {
@@ -2367,7 +2367,7 @@ export async function showSmartEntry(
       return;
     }
     const choice = await showNextAction(ctx, {
-      title: `GSD — ${milestoneId}: ${milestoneTitle}`,
+      title: `OTTO — ${milestoneId}: ${milestoneTitle}`,
       summary: ["All milestones complete."],
       actions: [
         {
@@ -2387,7 +2387,7 @@ export async function showSmartEntry(
           description: "Review what was built.",
         },
       ],
-      notYetMessage: "Run /gsd when ready.",
+      notYetMessage: "Run /otto when ready.",
     });
 
     if (choice === "quick_task") {
@@ -2415,7 +2415,7 @@ export async function showSmartEntry(
     const draftContent = draftFile ? await loadFile(draftFile) : null;
 
     const choice = await showNextAction(ctx, {
-      title: `GSD — ${milestoneId}: ${milestoneTitle}`,
+      title: `OTTO — ${milestoneId}: ${milestoneTitle}`,
       summary: ["This milestone has a draft context from a prior discussion.", "It needs a dedicated discussion before auto-planning can begin."],
       actions: [
         {
@@ -2435,7 +2435,7 @@ export async function showSmartEntry(
           description: "Leave this milestone as-is and start something new.",
         },
       ],
-      notYetMessage: "Run /gsd when ready to discuss this milestone.",
+      notYetMessage: "Run /otto when ready to discuss this milestone.",
     });
 
     if (choice === "discuss_draft") {
@@ -2477,7 +2477,7 @@ export async function showSmartEntry(
 
   if (state.phase === "blocked") {
     const choice = await showNextAction(ctx, {
-      title: `GSD — ${milestoneId}: ${milestoneTitle}`,
+      title: `OTTO — ${milestoneId}: ${milestoneTitle}`,
       summary: state.blockers.length > 0
         ? state.blockers
         : [state.nextAction || "This milestone is blocked."],
@@ -2503,7 +2503,7 @@ export async function showSmartEntry(
     } else if (choice === "park") {
       const success = parkMilestone(basePath, milestoneId, "Validation attention deferred by user");
       ctx.ui.notify(
-        success ? `Parked ${milestoneId}. Run /gsd unpark ${milestoneId} to reactivate.` : `Could not park ${milestoneId} — milestone not found.`,
+        success ? `Parked ${milestoneId}. Run /otto unpark ${milestoneId} to reactivate.` : `Could not park ${milestoneId} — milestone not found.`,
         success ? "info" : "warning",
       );
     }
@@ -2563,10 +2563,10 @@ export async function showSmartEntry(
       ];
 
       const choice = await showNextAction(ctx, {
-        title: `GSD — ${milestoneId}: ${milestoneTitle}`,
+        title: `OTTO — ${milestoneId}: ${milestoneTitle}`,
         summary: [hasContext ? "Context captured. Ready to create roadmap." : "New milestone — no roadmap yet."],
         actions,
-        notYetMessage: "Run /gsd when ready.",
+        notYetMessage: "Run /otto when ready.",
       });
 
       if (choice === "quick_task") {
@@ -2634,10 +2634,10 @@ export async function showSmartEntry(
       ];
 
       const choice = await showNextAction(ctx, {
-        title: `GSD — ${milestoneId}: ${milestoneTitle}`,
+        title: `OTTO — ${milestoneId}: ${milestoneTitle}`,
         summary: ["Roadmap exists. Ready to execute."],
         actions,
-        notYetMessage: "Run /gsd status for details.",
+        notYetMessage: "Run /otto status for details.",
       });
 
       if (choice === "auto") {
@@ -2700,10 +2700,10 @@ export async function showSmartEntry(
       : `${sliceId}: ${sliceTitle} — ready for planning.`;
 
     const choice = await showNextAction(ctx, {
-      title: `GSD — ${milestoneId} / ${sliceId}: ${sliceTitle}`,
+      title: `OTTO — ${milestoneId} / ${sliceId}: ${sliceTitle}`,
       summary: [summaryLine],
       actions,
-      notYetMessage: "Run /gsd when ready.",
+      notYetMessage: "Run /otto when ready.",
     });
 
     if (choice === "plan") {
@@ -2747,7 +2747,7 @@ export async function showSmartEntry(
   // ── All tasks done → Complete slice ──────────────────────────────────
   if (state.phase === "summarizing") {
     const choice = await showNextAction(ctx, {
-      title: `GSD — ${milestoneId} / ${sliceId}: ${sliceTitle}`,
+      title: `OTTO — ${milestoneId} / ${sliceId}: ${sliceTitle}`,
       summary: ["All tasks complete. Ready for slice summary."],
       actions: [
         {
@@ -2767,7 +2767,7 @@ export async function showSmartEntry(
           description: "Park, discard, or skip this milestone.",
         },
       ],
-      notYetMessage: "Run /gsd when ready.",
+      notYetMessage: "Run /otto when ready.",
     });
 
     if (choice === "complete") {
@@ -2801,7 +2801,7 @@ export async function showSmartEntry(
       !!(sDir && await loadFile(join(sDir, "continue.md")));
 
     const choice = await showNextAction(ctx, {
-      title: `GSD — ${milestoneId} / ${sliceId}: ${sliceTitle}`,
+      title: `OTTO — ${milestoneId} / ${sliceId}: ${sliceTitle}`,
       summary: [
         hasInterrupted
           ? `Resuming: ${taskId} — ${taskTitle}`
@@ -2832,7 +2832,7 @@ export async function showSmartEntry(
           description: "Park, discard, or skip this milestone.",
         },
       ],
-      notYetMessage: "Run /gsd when ready.",
+      notYetMessage: "Run /otto when ready.",
     });
 
     if (choice === "not_yet") return;

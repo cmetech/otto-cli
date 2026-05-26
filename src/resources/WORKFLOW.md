@@ -2,9 +2,9 @@
 
 > This document teaches you how to operate the planning methodology manually using files on disk.
 >
-> **When to read this:** At the start of any session working on workflow-managed work, or when loaded by `/loop24`.
+> **When to read this:** At the start of any session working on workflow-managed work, or when loaded by `/otto`.
 >
-> **After reading this, always read `.gsd/STATE.md` to find out what's next.**
+> **After reading this, always read `.otto/workflow/STATE.md` to find out what's next.**
 > If the milestone has a `M###-CONTEXT.md`, read that too. If the active slice has an `S##-CONTEXT.md`, read that as well — these files contain project-specific decisions, reference paths, and implementation guidance that this generic methodology doc does not.
 
 ---
@@ -13,12 +13,12 @@
 
 Read these files in order and act on what they say:
 
-1. **`.gsd/STATE.md`** — Where are we? What's the next action?
-2. **`.gsd/milestones/<active>/M###-ROADMAP.md`** — What's the plan? Which slices are done? (`STATE.md` tells you which milestone is active)
-3. **`.gsd/milestones/<active>/M###-CONTEXT.md`** — Milestone-level project decisions, reference paths, constraints. Read this before doing implementation work.
+1. **`.otto/workflow/STATE.md`** — Where are we? What's the next action?
+2. **`.otto/workflow/milestones/<active>/M###-ROADMAP.md`** — What's the plan? Which slices are done? (`STATE.md` tells you which milestone is active)
+3. **`.otto/workflow/milestones/<active>/M###-CONTEXT.md`** — Milestone-level project decisions, reference paths, constraints. Read this before doing implementation work.
 4. If a slice is active and has one, read **`S##-CONTEXT.md`** — Slice-specific decisions and constraints.
 5. If a slice is active, read its **`S##-PLAN.md`** — Which tasks exist? Which are done?
-6. If `.gsd/CODEBASE.md` exists, skim it for fast structural orientation before broad code exploration.
+6. If `.otto/workflow/CODEBASE.md` exists, skim it for fast structural orientation before broad code exploration.
 7. If a task was interrupted, check for **`continue.md`** in the active slice directory — Resume from there.
 
 Then do the thing `STATE.md` says to do next.
@@ -39,10 +39,10 @@ Milestone  →  a shippable version (1-10 slices, sized to the work)
 
 ## File Locations
 
-All artifacts live in `.gsd/` at the project root:
+All artifacts live in `.otto/workflow/` at the project root:
 
 ```
-.gsd/
+.otto/workflow/
   STATE.md                                  # Dashboard — always read first (derived cache; runtime, gitignored)
   DECISIONS.md                              # Append-only decisions register
   CODEBASE.md                               # Generated codebase map cache (auto-refreshed by the agent)
@@ -330,7 +330,7 @@ The **Don't Hand-Roll** and **Common Pitfalls** sections prevent the most expens
 **Produces:** `S##-PLAN.md` + individual `T01-PLAN.md` files.
 
 **For a milestone (roadmap):**
-1. Read `M###-CONTEXT.md`, `M###-RESEARCH.md`, and `.gsd/DECISIONS.md` if they exist.
+1. Read `M###-CONTEXT.md`, `M###-RESEARCH.md`, and `.otto/workflow/DECISIONS.md` if they exist.
 2. Decompose the vision into 1-10 demoable vertical slices. Prefer one slice for tiny, single-file, or static work unless the request clearly spans independent capabilities.
 3. Order by risk (high-risk first to validate feasibility early).
 4. Write `M###-ROADMAP.md` with checkboxes, risk levels, dependencies, demo sentences.
@@ -338,7 +338,7 @@ The **Don't Hand-Roll** and **Common Pitfalls** sections prevent the most expens
 
 **For a slice (task decomposition):**
 1. Read the slice's entry in `M###-ROADMAP.md` **and its boundary map section** — know what interfaces this slice must produce and consume.
-2. Read `M###-CONTEXT.md`, `S##-CONTEXT.md`, `M###-RESEARCH.md`, `S##-RESEARCH.md`, and `.gsd/DECISIONS.md` if they exist for this slice.
+2. Read `M###-CONTEXT.md`, `S##-CONTEXT.md`, `M###-RESEARCH.md`, `S##-RESEARCH.md`, and `.otto/workflow/DECISIONS.md` if they exist for this slice.
 3. Read summaries from dependency slices (check `depends:[]` in roadmap).
 4. Verify that upstream slices' actual outputs match what the boundary map says this slice consumes. If they diverge, update the boundary map.
 5. Decompose into 1-7 tasks, each fitting one context window.
@@ -355,7 +355,7 @@ The **Don't Hand-Roll** and **Common Pitfalls** sections prevent the most expens
 1. Read the task's `T##-PLAN.md`.
 2. Read relevant summaries from prior tasks (for context on what's already built).
 3. Execute each step. Mark progress with `[DONE:n]` in responses.
-4. If you made an architectural, pattern, or library decision, append it to `.gsd/DECISIONS.md`.
+4. If you made an architectural, pattern, or library decision, append it to `.otto/workflow/DECISIONS.md`.
 5. If interrupted or context is getting full, write `continue.md` (see below).
 
 ### Phase 5: Verify
@@ -424,7 +424,7 @@ key_decisions:
 patterns_established:
   - "Pattern name and where it lives"
 drill_down_paths:
-  - .gsd/milestones/M001/slices/S01/tasks/T01-PLAN.md
+  - .otto/workflow/milestones/M001/slices/S01/tasks/T01-PLAN.md
 duration: 15min
 verification_result: pass
 completed_at: 2026-03-07T16:00:00Z
@@ -455,7 +455,7 @@ key_files: []
 key_decisions: []
 ```
 
-**Slice summary:** Written when all tasks in a slice complete. Compresses all task summaries. Includes `drill_down_paths` to each task summary. During slice completion, review task summaries for `key_decisions` and ensure any significant ones are captured in `.gsd/DECISIONS.md`.
+**Slice summary:** Written when all tasks in a slice complete. Compresses all task summaries. Includes `drill_down_paths` to each task summary. During slice completion, review task summaries for `key_decisions` and ensure any significant ones are captured in `.otto/workflow/DECISIONS.md`.
 
 **Milestone summary:** Updated each time a slice completes. Compresses all slice summaries. This is what gets injected into later slice planning instead of loading many individual summaries.
 
@@ -558,7 +558,7 @@ If files disagree, **pause and surface to the user**:
 | Mode | Where work happens | Branch behavior |
 |------|--------------------|-----------------|
 | `none` (default) | Project root | Current branch, no isolation branch |
-| `worktree` | `.gsd/worktrees/<MID>/` | `milestone/<MID>` branch in a git worktree |
+| `worktree` | `.otto/workflow/worktrees/<MID>/` | `milestone/<MID>` branch in a git worktree |
 | `branch` | Project root | `milestone/<MID>` branch checked out in place |
 
 In all modes, slices and tasks commit sequentially on the active branch; there are no per-slice branches. The integration branch is captured when the milestone starts, so stale `git.main_branch` preferences do not redirect merge-back.
@@ -595,7 +595,7 @@ The system reads the task summary after execution and builds a meaningful commit
 - **Subject**: `{type}: {one-liner}` — the one-liner from the summary frontmatter, sanitized to one line
 - **Type**: Inferred from the task title and one-liner (`feat`, `fix`, `test`, `refactor`, `docs`, `perf`, `chore`)
 - **Body**: Key files from the summary frontmatter (up to 8 files listed)
-- **Trailers**: `GSD-Task: S##/T##`; if GitHub sync linked an issue, `Resolves #N`
+- **Trailers**: `OTTO-Task: S##/T##`; if GitHub sync linked an issue, `Resolves #N`
 
 Commit types: `feat`, `fix`, `test`, `refactor`, `docs`, `perf`, `chore`
 
@@ -634,8 +634,8 @@ These are soft caps — exceed them when genuinely needed, but don't let summari
 
 This methodology doc is generic. Project-specific guidance belongs in the milestone and slice context files:
 
-- **`.gsd/milestones/<active>/M###-CONTEXT.md`** — milestone-level architecture decisions, reference file paths, and implementation constraints
-- **`.gsd/milestones/<active>/slices/S##/S##-CONTEXT.md`** — slice-level decisions, edge cases, and narrow implementation guidance when present
+- **`.otto/workflow/milestones/<active>/M###-CONTEXT.md`** — milestone-level architecture decisions, reference file paths, and implementation constraints
+- **`.otto/workflow/milestones/<active>/slices/S##/S##-CONTEXT.md`** — slice-level decisions, edge cases, and narrow implementation guidance when present
 
 **Always read the active milestone's `M###-CONTEXT.md` before starting implementation work.** If the active slice also has `S##-CONTEXT.md`, read that too. These files tell you what decisions are locked, what files to reference, and how to verify your work in this specific project.
 
@@ -643,11 +643,11 @@ This methodology doc is generic. Project-specific guidance belongs in the milest
 
 ## Checklist for a Fresh Session
 
-1. Read `.gsd/STATE.md` — what's the next action?
+1. Read `.otto/workflow/STATE.md` — what's the next action?
 2. Check for `continue.md` in the active slice — is there interrupted work?
 3. If resuming: read `continue.md`, delete it, pick up from "Next Action".
 4. If starting fresh: read the active slice's `S##-PLAN.md`, find the next incomplete task.
-5. If in a planning or research phase, read `.gsd/DECISIONS.md` — respect existing decisions.
+5. If in a planning or research phase, read `.otto/workflow/DECISIONS.md` — respect existing decisions.
 6. Read relevant summaries from prior tasks/slices for context.
 7. Do the work.
 8. Verify the must-haves.
@@ -659,6 +659,6 @@ This methodology doc is generic. Project-specific guidance belongs in the milest
 
 If you sense context pressure (many files read, long execution, lots of tool output):
 
-1. **If mid-task:** Write `continue.md` with exact resume state. Tell the user: "Context is getting full. I've saved progress to continue.md. Start a new session and run `/gsd` to pick up where you left off, or `/gsd auto` to resume in auto-execution mode."
+1. **If mid-task:** Write `continue.md` with exact resume state. Tell the user: "Context is getting full. I've saved progress to continue.md. Start a new session and run `/otto` to pick up where you left off, or `/otto auto` to resume in auto-execution mode."
 2. **If between tasks:** Just update `STATE.md` with the next action. No continue file needed — the next session will read STATE.md and pick up the next task cleanly.
 3. **Don't fight it.** The whole system is designed for this. A fresh session with the right files loaded is better than a stale session with degraded reasoning.

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Integration tests for UAT mode extraction, dispatch, and prompt contracts.
 
 import { describe, test } from 'node:test';
@@ -30,7 +30,7 @@ function loadPromptFromWorktree(name: string, vars: Record<string, string> = {})
 
 function createFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), 'gsd-run-uat-test-'));
-  mkdirSync(join(base, '.gsd', 'milestones'), { recursive: true });
+  mkdirSync(join(base, '.otto/workflow', 'milestones'), { recursive: true });
   return base;
 }
 
@@ -41,7 +41,7 @@ function writeSliceFile(
   suffix: string,
   content: string,
 ): void {
-  const dir = join(base, '.gsd', 'milestones', mid, 'slices', sid);
+  const dir = join(base, '.otto/workflow', 'milestones', mid, 'slices', sid);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, `${sid}-${suffix}.md`), content);
 }
@@ -191,8 +191,8 @@ test('(j) case sensitivity', () => {
 test('(k) run-uat prompt template', () => {
   const milestoneId = 'M001';
   const sliceId = 'S01';
-  const uatPath = '.gsd/milestones/M001/slices/S01/S01-UAT.md';
-  const uatResultPath = '.gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md';
+  const uatPath = '.otto/workflow/milestones/M001/slices/S01/S01-UAT.md';
+  const uatResultPath = '.otto/workflow/milestones/M001/slices/S01/S01-ASSESSMENT.md';
   const uatType = 'live-runtime';
   const inlinedContext = '<!-- no context -->';
   let promptResult: string | undefined;
@@ -249,20 +249,20 @@ test('(k) run-uat prompt template', () => {
   );
 });
 
-test('(k2) run-uat prompt references gsd_summary_save, not direct write', () => {
+test('(k2) run-uat prompt references otto_summary_save, not direct write', () => {
   const promptResult = loadPromptFromWorktree('run-uat', {
     workingDirectory: '/tmp/test-project',
     milestoneId: 'M001',
     sliceId: 'S01',
-    uatPath: '.gsd/milestones/M001/slices/S01/S01-UAT.md',
-    uatResultPath: '.gsd/milestones/M001/slices/S01/S01-UAT.md',
+    uatPath: '.otto/workflow/milestones/M001/slices/S01/S01-UAT.md',
+    uatResultPath: '.otto/workflow/milestones/M001/slices/S01/S01-UAT.md',
     uatType: 'artifact-driven',
     inlinedContext: '<!-- no context -->',
   });
 
   assert.ok(
-    promptResult.includes('gsd_summary_save'),
-    'run-uat prompt should reference gsd_summary_save tool',
+    promptResult.includes('otto_summary_save'),
+    'run-uat prompt should reference otto_summary_save tool',
   );
   assert.ok(
     promptResult.includes('artifact_type: "ASSESSMENT"'),
@@ -327,7 +327,7 @@ test('test block at line 307', () => {
 test('(m) non-artifact UAT skip', async () => {
     const base = createFixtureBase();
     try {
-      const roadmapDir = join(base, '.gsd', 'milestones', 'M001');
+      const roadmapDir = join(base, '.otto/workflow', 'milestones', 'M001');
       mkdirSync(roadmapDir, { recursive: true });
       writeFileSync(
         join(roadmapDir, 'M001-ROADMAP.md'),
@@ -414,8 +414,8 @@ test('(p) run-uat prompt allows PASS when human-only checks remain as NEEDS-HUMA
       workingDirectory: '/tmp/test-project',
       milestoneId: 'M001',
       sliceId: 'S01',
-      uatPath: '.gsd/milestones/M001/slices/S01/S01-UAT.md',
-      uatResultPath: '.gsd/milestones/M001/slices/S01/S01-UAT.md',
+      uatPath: '.otto/workflow/milestones/M001/slices/S01/S01-UAT.md',
+      uatResultPath: '.otto/workflow/milestones/M001/slices/S01/S01-UAT.md',
       uatType: 'mixed',
       inlinedContext: '<!-- no context -->',
     });
@@ -439,7 +439,7 @@ test('(p) run-uat prompt allows PASS when human-only checks remain as NEEDS-HUMA
 test('(n) stale replay guard', async () => {
     const base = createFixtureBase();
     try {
-      const roadmapDir = join(base, '.gsd', 'milestones', 'M001');
+      const roadmapDir = join(base, '.otto/workflow', 'milestones', 'M001');
       mkdirSync(roadmapDir, { recursive: true });
       writeFileSync(
         join(roadmapDir, 'M001-ROADMAP.md'),
@@ -483,11 +483,11 @@ test('(n) stale replay guard', async () => {
 
 test('(q) verdict in ASSESSMENT file skips UAT dispatch (file-based path)', async () => {
     // Regression test for #2644: run-uat prompt writes the verdict to
-    // S{sid}-ASSESSMENT.md (via gsd_summary_save artifact_type:"ASSESSMENT"),
+    // S{sid}-ASSESSMENT.md (via otto_summary_save artifact_type:"ASSESSMENT"),
     // but checkNeedsRunUat only checked S{sid}-UAT.md — causing a stuck loop.
     const base = createFixtureBase();
     try {
-      const roadmapDir = join(base, '.gsd', 'milestones', 'M001');
+      const roadmapDir = join(base, '.otto/workflow', 'milestones', 'M001');
       mkdirSync(roadmapDir, { recursive: true });
       writeFileSync(
         join(roadmapDir, 'M001-ROADMAP.md'),
@@ -536,7 +536,7 @@ test('(r) no ASSESSMENT file still dispatches UAT (no false skip)', async () => 
     // normally. The ASSESSMENT check must not cause a false-negative skip.
     const base = createFixtureBase();
     try {
-      const roadmapDir = join(base, '.gsd', 'milestones', 'M001');
+      const roadmapDir = join(base, '.otto/workflow', 'milestones', 'M001');
       mkdirSync(roadmapDir, { recursive: true });
       writeFileSync(
         join(roadmapDir, 'M001-ROADMAP.md'),
@@ -583,7 +583,7 @@ test('(s) ASSESSMENT without verdict does not skip UAT dispatch', async () => {
     // NOT suppress UAT dispatch — only a file with an actual verdict should.
     const base = createFixtureBase();
     try {
-      const roadmapDir = join(base, '.gsd', 'milestones', 'M001');
+      const roadmapDir = join(base, '.otto/workflow', 'milestones', 'M001');
       mkdirSync(roadmapDir, { recursive: true });
       writeFileSync(
         join(roadmapDir, 'M001-ROADMAP.md'),
@@ -630,7 +630,7 @@ test('(s) ASSESSMENT without verdict does not skip UAT dispatch', async () => {
 test('(t) browser-observable UAT dispatches for final slice even when uat_dispatch is off', async () => {
     const base = createFixtureBase();
     try {
-      const roadmapDir = join(base, '.gsd', 'milestones', 'M001');
+      const roadmapDir = join(base, '.otto/workflow', 'milestones', 'M001');
       mkdirSync(roadmapDir, { recursive: true });
       writeFileSync(
         join(roadmapDir, 'M001-ROADMAP.md'),
@@ -672,7 +672,7 @@ test('(t) browser-observable UAT dispatches for final slice even when uat_dispat
 test('(u) run-uat prompt promotes artifact-driven browser specs to browser-executable mode', async () => {
     const base = createFixtureBase();
     try {
-      const uatRel = '.gsd/milestones/M001/slices/S01/S01-UAT.md';
+      const uatRel = '.otto/workflow/milestones/M001/slices/S01/S01-UAT.md';
       const uatContent = makeBrowserObservableUatContent();
       writeSliceFile(base, 'M001', 'S01', 'UAT', uatContent);
 

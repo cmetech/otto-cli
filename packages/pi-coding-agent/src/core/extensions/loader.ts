@@ -10,11 +10,11 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createJiti } from "@mariozechner/jiti";
-import * as _bundledPiAgentCore from "@loop24/pi-agent-core";
-import * as _bundledPiAi from "@loop24/pi-ai";
-import * as _bundledPiAiOauth from "@loop24/pi-ai/oauth";
-import type { KeyId } from "@loop24/pi-tui";
-import * as _bundledPiTui from "@loop24/pi-tui";
+import * as _bundledPiAgentCore from "@otto/pi-agent-core";
+import * as _bundledPiAi from "@otto/pi-ai";
+import * as _bundledPiAiOauth from "@otto/pi-ai/oauth";
+import type { KeyId } from "@otto/pi-tui";
+import * as _bundledPiTui from "@otto/pi-tui";
 // Static imports of packages that extensions may use.
 // These MUST be static so Bun bundles them into the compiled binary.
 // The virtualModules option then makes them available to extensions.
@@ -31,7 +31,7 @@ import * as _bundledMcpServerStreamableHttp from "@modelcontextprotocol/sdk/serv
 import * as _bundledMcpTypes from "@modelcontextprotocol/sdk/types.js";
 import { getAgentDir, isBunBinary } from "../../config.js";
 // NOTE: This import works because loader.ts exports are NOT re-exported from index.ts,
-// avoiding a circular dependency. Extensions can import from @loop24/pi-coding-agent.
+// avoiding a circular dependency. Extensions can import from @otto/pi-coding-agent.
 import * as _bundledPiCodingAgent from "../../index.js";
 import { createEventBus, type EventBus } from "../event-bus.js";
 import type { ExecOptions } from "../exec.js";
@@ -60,11 +60,11 @@ import type {
  */
 const STATIC_BUNDLED_MODULES: Record<string, unknown> = {
 	"@sinclair/typebox": _bundledTypebox,
-	"@loop24/pi-agent-core": _bundledPiAgentCore,
-	"@loop24/pi-tui": _bundledPiTui,
-	"@loop24/pi-ai": _bundledPiAi,
-	"@loop24/pi-ai/oauth": _bundledPiAiOauth,
-	"@loop24/pi-coding-agent": _bundledPiCodingAgent,
+	"@otto/pi-agent-core": _bundledPiAgentCore,
+	"@otto/pi-tui": _bundledPiTui,
+	"@otto/pi-ai": _bundledPiAi,
+	"@otto/pi-ai/oauth": _bundledPiAiOauth,
+	"@otto/pi-coding-agent": _bundledPiCodingAgent,
 	"yaml": _bundledYaml,
 	"@modelcontextprotocol/sdk/client": _bundledMcpClient,
 	"@modelcontextprotocol/sdk/client/stdio": _bundledMcpStdio,
@@ -94,7 +94,7 @@ const STATIC_BUNDLED_MODULES: Record<string, unknown> = {
 const VIRTUAL_MODULES: Record<string, unknown> = { ...STATIC_BUNDLED_MODULES };
 
 const require = createRequire(import.meta.url);
-const EXTENSION_TIMING_ENABLED = (process.env.LOOP24_STARTUP_TIMING ?? process.env.GSD_STARTUP_TIMING) === "1" || process.env.PI_TIMING === "1";
+const EXTENSION_TIMING_ENABLED = (process.env.OTTO_STARTUP_TIMING ?? process.env.OTTO_STARTUP_TIMING) === "1" || process.env.PI_TIMING === "1";
 
 /**
  * Bundled npm packages whose subpath exports should be auto-resolved for extensions.
@@ -326,19 +326,19 @@ function getAliases(): Record<string, string> {
 		// Auto-discovered subpath exports (lowest priority — overridden by manual entries below)
 		...autoDiscovered,
 		// Manual entries for workspace packages and packages needing special resolution
-		"@loop24/pi-coding-agent": packageIndex,
-		"@loop24/pi-agent-core": resolveWorkspaceOrImport("agent/dist/index.js", "@loop24/pi-agent-core"),
-		"@loop24/pi-tui": resolveWorkspaceOrImport("tui/dist/index.js", "@loop24/pi-tui"),
-		"@loop24/pi-ai": resolveWorkspaceOrImport("ai/dist/index.js", "@loop24/pi-ai"),
-		"@loop24/pi-ai/oauth": resolveWorkspaceOrImport("ai/dist/oauth.js", "@loop24/pi-ai/oauth"),
+		"@otto/pi-coding-agent": packageIndex,
+		"@otto/pi-agent-core": resolveWorkspaceOrImport("agent/dist/index.js", "@otto/pi-agent-core"),
+		"@otto/pi-tui": resolveWorkspaceOrImport("tui/dist/index.js", "@otto/pi-tui"),
+		"@otto/pi-ai": resolveWorkspaceOrImport("ai/dist/index.js", "@otto/pi-ai"),
+		"@otto/pi-ai/oauth": resolveWorkspaceOrImport("ai/dist/oauth.js", "@otto/pi-ai/oauth"),
 		"@sinclair/typebox": typeboxRoot,
 		"yaml": yamlRoot,
 		// Aliases for external PI ecosystem packages that import from the original scope
 		"@mariozechner/pi-coding-agent": packageIndex,
-		"@mariozechner/pi-agent-core": resolveWorkspaceOrImport("agent/dist/index.js", "@loop24/pi-agent-core"),
-		"@mariozechner/pi-tui": resolveWorkspaceOrImport("tui/dist/index.js", "@loop24/pi-tui"),
-		"@mariozechner/pi-ai": resolveWorkspaceOrImport("ai/dist/index.js", "@loop24/pi-ai"),
-		"@mariozechner/pi-ai/oauth": resolveWorkspaceOrImport("ai/dist/oauth.js", "@loop24/pi-ai/oauth"),
+		"@mariozechner/pi-agent-core": resolveWorkspaceOrImport("agent/dist/index.js", "@otto/pi-agent-core"),
+		"@mariozechner/pi-tui": resolveWorkspaceOrImport("tui/dist/index.js", "@otto/pi-tui"),
+		"@mariozechner/pi-ai": resolveWorkspaceOrImport("ai/dist/index.js", "@otto/pi-ai"),
+		"@mariozechner/pi-ai/oauth": resolveWorkspaceOrImport("ai/dist/oauth.js", "@otto/pi-ai/oauth"),
 	};
 
 	return _aliases;
@@ -475,8 +475,8 @@ export function createExtensionAPI(
 
 		registerCommand(name: string, options: Omit<RegisteredCommand, "name">): void {
 			extension.commands.set(name, { name, ...options });
-			if (process.env.LOOP24_DEBUG_EXTENSIONS) {
-				process.stderr.write(`[loop24-debug] registered command '${name}' from ${extension.path}\n`);
+			if (process.env.OTTO_DEBUG_EXTENSIONS) {
+				process.stderr.write(`[otto-debug] registered command '${name}' from ${extension.path}\n`);
 			}
 		},
 
@@ -658,7 +658,7 @@ export function containsTypeScriptSyntax(source: string): boolean {
  * Shared jiti instance for loading extension modules.
  *
  * Before this fix (#2108), each extension created a NEW jiti instance with
- * `moduleCache: false`, causing shared dependencies (e.g. @loop24/pi-agent-core)
+ * `moduleCache: false`, causing shared dependencies (e.g. @otto/pi-agent-core)
  * to be recompiled for every extension — turning a ~3s parallel load into a
  * ~15-30s serial compilation bottleneck.
  *

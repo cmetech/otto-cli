@@ -1,6 +1,6 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Interactive TUI chat stream controller.
-import { Loader, Markdown, Spacer, Text } from "@loop24/pi-tui";
+import { Loader, Markdown, Spacer, Text } from "@otto/pi-tui";
 
 import type { InteractiveModeEvent, InteractiveModeStateHost } from "../interactive-mode-state.js";
 import { theme } from "../theme/theme.js";

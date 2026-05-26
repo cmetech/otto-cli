@@ -1,10 +1,10 @@
-<!-- GSD Pi - Getting started guide -->
+<!-- OTTO Pi - Getting started guide -->
 
-# Getting Started With GSD2
+# Getting Started With OTTO2
 
-GSD2, published from this repository as GSD Pi, is a local-first coding agent for planning, implementing, and verifying project work from your terminal.
+OTTO2, published from this repository as OTTO Pi, is a local-first coding agent for planning, implementing, and verifying project work from your terminal.
 
-This guide gets you from a clean machine to your first GSD session.
+This guide gets you from a clean machine to your first OTTO session.
 
 ## Prerequisites
 
@@ -25,21 +25,21 @@ npm --version
 git --version
 ```
 
-## Install GSD Pi
+## Install OTTO Pi
 
 Install the CLI globally from the scoped npm package:
 
 ```bash
-npm install -g @opengsd/gsd-pi@latest
+npm install -g @cmetech/otto@latest
 ```
 
 Confirm the command is available:
 
 ```bash
-gsd
+otto
 ```
 
-If `gsd` is not found, your npm global bin directory is probably not on `PATH`.
+If `otto` is not found, your npm global bin directory is probably not on `PATH`.
 
 ```bash
 npm prefix -g
@@ -47,30 +47,30 @@ npm prefix -g
 
 Add that directory's `bin` folder to your shell profile, then open a new terminal.
 
-## Upgrade GSD Pi
+## Upgrade OTTO Pi
 
 After the first install, upgrade to the latest release from your shell:
 
 ```bash
-gsd upgrade
+otto upgrade
 ```
 
-`gsd update` is an alias for the same command. Inside a GSD session, use `/gsd update` instead.
+`otto update` is an alias for the same command. Inside a OTTO session, use `/otto update` instead.
 
-If `gsd` reports a version mismatch with synced resources, or you previously installed the unscoped `gsd-pi` package, see [Upgrade from older GSD-2 installs](./troubleshooting.md#upgrade-from-older-gsd-2-installs) in Troubleshooting.
+If `otto` reports a version mismatch with synced resources, or you previously installed the unscoped `otto-pi` package, see [Upgrade from older OTTO installs](./troubleshooting.md#upgrade-from-older-otto-2-installs) in Troubleshooting.
 
-## Configure GSD
+## Configure OTTO
 
-Start GSD:
+Start OTTO:
 
 ```bash
-gsd
+otto
 ```
 
-Then run the setup wizard inside the GSD session:
+Then run the setup wizard inside the OTTO session:
 
 ```text
-/gsd config
+/otto config
 ```
 
 The wizard walks through:
@@ -80,99 +80,99 @@ The wizard walks through:
 - default model and reasoning preferences
 - local project/runtime settings
 
-You can rerun it any time from inside GSD:
+You can rerun it any time from inside OTTO:
 
 ```text
-/gsd config
+/otto config
 ```
 
 ## Start In A Project
 
-Move into the repository you want GSD to work on:
+Move into the repository you want OTTO to work on:
 
 ```bash
 cd path/to/your-project
 ```
 
-Start GSD:
+Start OTTO:
 
 ```bash
-gsd
+otto
 ```
 
-On first run for a project, GSD creates local project state under `.gsd/`. This state tracks plans, milestones, tasks, decisions, session history, and runtime metadata.
+On first run for a project, OTTO creates local project state under `.otto/workflow/`. This state tracks plans, milestones, tasks, decisions, session history, and runtime metadata.
 
 ## Create Your First Task
 
-For a small change, start GSD and use a quick task command:
+For a small change, start OTTO and use a quick task command:
 
 ```bash
-gsd
+otto
 ```
 
 ```text
-/gsd quick "Update the README with local setup instructions"
+/otto quick "Update the README with local setup instructions"
 ```
 
 For planned work, start an interactive session:
 
 ```bash
-gsd
+otto
 ```
 
-Inside the session, describe what you want to build. GSD can help shape the request into milestones, slices, and tasks before implementing.
+Inside the session, describe what you want to build. OTTO can help shape the request into milestones, slices, and tasks before implementing.
 
 ## Run Auto Mode
 
-Auto mode lets GSD continue through planning, implementation, verification, and handoff until it needs input or finishes the current unit of work.
+Auto mode lets OTTO continue through planning, implementation, verification, and handoff until it needs input or finishes the current unit of work.
 
 ```bash
-gsd
+otto
 ```
 
 ```text
-/gsd auto
+/otto auto
 ```
 
 Use auto mode when:
 
 - the task is clearly described
 - the project has a clean Git state
-- you are comfortable letting GSD create isolated worktrees and commits
+- you are comfortable letting OTTO create isolated worktrees and commits
 
-Pause or stop auto mode from the session controls or with the relevant `/gsd` command in the interactive UI.
+Pause or stop auto mode from the session controls or with the relevant `/otto` command in the interactive UI.
 
 ## Check Status
 
-Use status commands inside GSD when you want to inspect progress before continuing:
+Use status commands inside OTTO when you want to inspect progress before continuing:
 
 ```text
-/gsd status
+/otto status
 ```
 
 In an interactive session, common commands include:
 
 ```text
-/gsd status
-/gsd auto
-/gsd next
-/gsd stop
-/gsd help
+/otto status
+/otto auto
+/otto next
+/otto stop
+/otto help
 ```
 
 ## Recommended First Workflow
 
 1. Open a clean project checkout.
-2. Run `gsd`.
-3. Run `/gsd config`.
-4. Ask GSD to inspect the project and suggest the next small improvement.
+2. Run `otto`.
+3. Run `/otto config`.
+4. Ask OTTO to inspect the project and suggest the next small improvement.
 5. Approve one focused task.
-6. Let GSD implement and verify it.
+6. Let OTTO implement and verify it.
 7. Review the Git diff and generated planning notes.
 
 ## Working With Git
 
-GSD expects Git to be the source of truth for code changes.
+OTTO expects Git to be the source of truth for code changes.
 
 Before starting meaningful work:
 
@@ -180,11 +180,11 @@ Before starting meaningful work:
 git status
 ```
 
-Start from a clean worktree when possible. GSD can create task worktrees for isolated implementation, but your base checkout should still be understandable before you begin.
+Start from a clean worktree when possible. OTTO can create task worktrees for isolated implementation, but your base checkout should still be understandable before you begin.
 
 ## Local Project State
 
-GSD stores project state in `.gsd/`. Depending on your workflow, some generated markdown files may be useful to commit and review, while runtime/cache files should stay local.
+OTTO stores project state in `.otto/workflow/`. Depending on your workflow, some generated markdown files may be useful to commit and review, while runtime/cache files should stay local.
 
 When in doubt:
 
@@ -199,30 +199,30 @@ Review generated files before committing them.
 If setup fails:
 
 ```bash
-gsd
+otto
 ```
 
 ```text
-/gsd doctor
+/otto doctor
 ```
 
 If the CLI cannot find your provider credentials, rerun:
 
 ```text
-/gsd config
+/otto config
 ```
 
 If a session gets stuck, check status first:
 
 ```text
-/gsd status
+/otto status
 ```
 
 Then inspect logs or use the debugging tools documented in [Troubleshooting](./troubleshooting.md).
 
 ## Next Steps
 
-- [Commands Reference](./commands.md) - learn the available `/gsd` commands.
+- [Commands Reference](./commands.md) - learn the available `/otto` commands.
 - [Configuration](./configuration.md) - tune model, reasoning, Git, and token settings.
 - [Provider Setup](./providers.md) - connect the model provider your team uses.
 - [Git Strategy](./git-strategy.md) - understand worktrees, branches, and merge behavior.

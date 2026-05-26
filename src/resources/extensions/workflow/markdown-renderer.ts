@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Markdown projection renderer for workflow database rows.
 // Markdown Renderer — DB → Markdown file generation
 //
@@ -44,8 +44,8 @@ import { clearPathCache } from "./paths.js";
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
 /**
- * Convert an absolute file path to a .gsd-relative artifact path.
- * E.g. "/project/.gsd/milestones/M001/M001-ROADMAP.md" → "milestones/M001/M001-ROADMAP.md"
+ * Convert an absolute file path to a .otto/workflow-relative artifact path.
+ * E.g. "/project/.otto/workflow/milestones/M001/M001-ROADMAP.md" → "milestones/M001/M001-ROADMAP.md"
  */
 function toArtifactPath(absPath: string, basePath: string): string {
   const projectionRoot = workflowProjectionRoot(basePath);

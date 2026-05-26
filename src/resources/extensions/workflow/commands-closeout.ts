@@ -1,7 +1,7 @@
-// Project/App: LOOP24
-// File Purpose: Handles /loop24 closeout recovery commands for failed git closeout.
+// Project/App: OTTO
+// File Purpose: Handles /otto closeout recovery commands for failed git closeout.
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { ensureDbOpen } from "./bootstrap/dynamic-tools.js";
 import {
@@ -14,7 +14,7 @@ import {
 } from "./closeout-recovery.js";
 
 const USAGE = [
-  "Usage: /gsd closeout [status|retry|resolve] [unit-id]",
+  "Usage: /otto closeout [status|retry|resolve] [unit-id]",
   "",
   "  status   Show unresolved git closeout failures",
   "  retry    Retry the latest failed closeout git action",
@@ -34,7 +34,7 @@ function formatRecord(record: CloseoutFailureRecord): string {
 
 async function ensureCloseoutDb(ctx: ExtensionCommandContext, basePath: string): Promise<boolean> {
   if (await ensureDbOpen(basePath)) return true;
-  ctx.ui.notify("Closeout recovery could not open the GSD database for this project.", "error");
+  ctx.ui.notify("Closeout recovery could not open the OTTO database for this project.", "error");
   return false;
 }
 

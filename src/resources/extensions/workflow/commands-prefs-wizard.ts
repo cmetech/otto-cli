@@ -6,7 +6,7 @@
  * handlePrefsMode, handleImportClaude, handlePrefs
  */
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { existsSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -249,7 +249,7 @@ export async function handlePrefs(args: string, ctx: ExtensionCommandContext): P
       : `missing: ${canonicalGlobal}`;
     const projectStatus = projectPrefs ? `present: ${projectPrefs.path}` : `missing: ${getProjectGSDPreferencesPath()}`;
 
-    const lines = [`GSD skill prefs — global ${globalStatus}; project ${projectStatus}`];
+    const lines = [`OTTO skill prefs — global ${globalStatus}; project ${projectStatus}`];
 
     const effective = loadEffectiveGSDPreferences();
     let hasUnresolved = false;
@@ -269,7 +269,7 @@ export async function handlePrefs(args: string, ctx: ExtensionCommandContext): P
     return;
   }
 
-  ctx.ui.notify("Usage: /gsd prefs [global|project|status|wizard|setup|import-claude [global|project]]", "info");
+  ctx.ui.notify("Usage: /otto prefs [global|project|status|wizard|setup|import-claude [global|project]]", "info");
 }
 
 export async function handleImportClaude(ctx: ExtensionCommandContext, scope: "global" | "project"): Promise<void> {
@@ -288,7 +288,7 @@ export async function handleImportClaude(ctx: ExtensionCommandContext, scope: "g
   const writePrefs = async (prefs: Record<string, unknown>): Promise<void> => {
     prefs.version = prefs.version || 1;
     const frontmatter = serializePreferencesToFrontmatter(prefs);
-    let body = "\n# GSD Skill Preferences\n\nSee `~/.gsd/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
+    let body = "\n# OTTO Skill Preferences\n\nSee `~/.otto/workflow/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
     if (existsSync(path)) {
       const preserved = extractBodyAfterFrontmatter(readFileSync(path, "utf-8"));
       if (preserved) body = preserved;
@@ -310,7 +310,7 @@ export async function handlePrefsMode(ctx: ExtensionCommandContext, scope: "glob
   prefs.version = prefs.version || 1;
   const frontmatter = serializePreferencesToFrontmatter(prefs);
 
-  let body = "\n# GSD Skill Preferences\n\nSee `~/.gsd/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
+  let body = "\n# OTTO Skill Preferences\n\nSee `~/.otto/workflow/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
   if (existsSync(path)) {
     const preserved = extractBodyAfterFrontmatter(readFileSync(path, "utf-8"));
     if (preserved) body = preserved;
@@ -1563,14 +1563,14 @@ export async function handlePrefsWizard(
   prefill?: Record<string, unknown>,
   opts?: { pathOverride?: string },
 ): Promise<void> {
-  // pathOverride lets callers like /loop24 init pass a basePath-derived target
+  // pathOverride lets callers like /otto init pass a basePath-derived target
   // path so the wizard doesn't fall back to cwd-based getProjectGSDPreferencesPath
   // when the init target diverges from the current working directory.
   const path = opts?.pathOverride
     ?? (scope === "project" ? getProjectGSDPreferencesPath() : getGlobalGSDPreferencesPath());
   const existing = scope === "project" ? loadProjectGSDPreferences() : loadGlobalGSDPreferences();
   // Order: existing-on-disk values, overlaid with prefill (caller's seeded answers).
-  // Callers like /loop24 init pass freshly-collected init answers as prefill so the
+  // Callers like /otto init pass freshly-collected init answers as prefill so the
   // wizard menu shows them populated and writeable in one place.
   // `normalizePreferencesShape` tolerates a missing preferences file, a malformed
   // wrapper (`{ preferences: undefined }`), or a bare prefs object so the wizard
@@ -1581,7 +1581,7 @@ export async function handlePrefsWizard(
     ...(prefill ?? {}),
   };
 
-  ctx.ui.notify(`GSD preferences (${scope}) — pick a category to configure.`, "info");
+  ctx.ui.notify(`OTTO preferences (${scope}) — pick a category to configure.`, "info");
 
   while (true) {
     const summaries = buildCategorySummaries(prefs);
@@ -1633,7 +1633,7 @@ export async function handlePrefsWizard(
 /**
  * Single source of truth for writing a PREFERENCES.md file.
  *
- * Both `/loop24 init` and the prefs wizard route through this helper so we can't
+ * Both `/otto init` and the prefs wizard route through this helper so we can't
  * drift on serialization, body preservation, or post-write reload. Callers
  * pass `ctx` for the reload/notify side effects; the function is safe to call
  * without a full UI context for tests via `ctx: null` (skips reload/notify).
@@ -1648,7 +1648,7 @@ export async function writePreferencesFile(
   const frontmatter = serializePreferencesToFrontmatter(next);
 
   const fallbackBody = opts?.defaultBody
-    ?? "\n# GSD Skill Preferences\n\nSee `~/.gsd/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
+    ?? "\n# OTTO Skill Preferences\n\nSee `~/.otto/workflow/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
 
   // Preserve existing body content (everything after closing ---) so users
   // who edited the markdown body don't lose their notes.
@@ -1783,20 +1783,20 @@ export async function ensurePreferencesFile(
   if (!existsSync(path)) {
     const template = await loadFile(join(dirname(fileURLToPath(import.meta.url)), "templates", "PREFERENCES.md"));
     if (!template) {
-      ctx.ui.notify("Could not load GSD preferences template.", "error");
+      ctx.ui.notify("Could not load OTTO preferences template.", "error");
       return;
     }
     await saveFile(path, template);
-    ctx.ui.notify(`Created ${scope} GSD skill preferences at ${path}`, "info");
+    ctx.ui.notify(`Created ${scope} OTTO skill preferences at ${path}`, "info");
   } else {
-    ctx.ui.notify(`Using existing ${scope} GSD skill preferences at ${path}`, "info");
+    ctx.ui.notify(`Using existing ${scope} OTTO skill preferences at ${path}`, "info");
   }
 }
 
 /**
- * Handle `/loop24 language [code]` — set or clear the global language preference.
+ * Handle `/otto language [code]` — set or clear the global language preference.
  * Without an argument, shows the current setting.
- * Project-level override can be set by editing `.gsd/PREFERENCES.md` directly
+ * Project-level override can be set by editing `.otto/workflow/PREFERENCES.md` directly
  * (project language overrides global when both are set).
  */
 export async function handleLanguage(args: string, ctx: ExtensionCommandContext): Promise<void> {
@@ -1808,9 +1808,9 @@ export async function handleLanguage(args: string, ctx: ExtensionCommandContext)
     const loaded = loadGlobalGSDPreferences();
     const current = loaded?.preferences.language;
     if (current) {
-      ctx.ui.notify(`Current language preference: ${current}\nUse /gsd language <name> to change, or /gsd language off to clear.`, "info");
+      ctx.ui.notify(`Current language preference: ${current}\nUse /otto language <name> to change, or /otto language off to clear.`, "info");
     } else {
-      ctx.ui.notify("No language preference set. Use /gsd language <name> to set one (e.g. /gsd language Chinese).", "info");
+      ctx.ui.notify("No language preference set. Use /otto language <name> to set one (e.g. /otto language Chinese).", "info");
     }
     return;
   }
@@ -1824,12 +1824,12 @@ export async function handleLanguage(args: string, ctx: ExtensionCommandContext)
 
   if (lang === "off" || lang === "none" || lang === "clear") {
     delete prefs.language;
-    ctx.ui.notify("Language preference cleared. GSD will use the default language.", "info");
+    ctx.ui.notify("Language preference cleared. OTTO will use the default language.", "info");
   } else {
     // Validate before writing — reject values that would fail on next load
     if (lang.length > 50 || /[\r\n]/.test(lang)) {
       ctx.ui.notify(
-        "Language value must be 50 characters or fewer with no newlines (e.g. /gsd language Chinese).",
+        "Language value must be 50 characters or fewer with no newlines (e.g. /otto language Chinese).",
         "warning",
       );
       return;
@@ -1841,7 +1841,7 @@ export async function handleLanguage(args: string, ctx: ExtensionCommandContext)
   const rawContent = existsSync(path) ? readFileSync(path, "utf-8") : `---\nversion: 1\n---\n`;
   const frontmatter = serializePreferencesToFrontmatter(prefs);
   const body = extractBodyAfterFrontmatter(rawContent)
-    ?? "\n# GSD Skill Preferences\n\nSee `~/.gsd/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
+    ?? "\n# OTTO Skill Preferences\n\nSee `~/.otto/workflow/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
   await saveFile(path, `---\n${frontmatter}---${body}`);
   await ctx.waitForIdle();
   await ctx.reload();

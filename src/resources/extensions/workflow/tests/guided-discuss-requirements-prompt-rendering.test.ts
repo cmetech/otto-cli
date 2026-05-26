@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Verifies the guided requirements discussion prompt renders core requirements and persistence contracts.
 
 import test from "node:test";
@@ -8,19 +8,19 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 test("guided requirements prompt renders compact capability and persistence guidance", async (t) => {
-  const previousWorkflowHome = process.env.GSD_HOME;
-  const providedWorkflowHome = process.env.GSD_TEST_HOME;
+  const previousWorkflowHome = process.env.OTTO_HOME;
+  const providedWorkflowHome = process.env.OTTO_TEST_HOME;
   const isolatedHome = providedWorkflowHome ?? mkdtempSync(join(tmpdir(), "gsd-guided-requirements-render-"));
-  process.env.GSD_HOME = isolatedHome;
+  process.env.OTTO_HOME = isolatedHome;
   t.after(() => {
-    if (previousWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousWorkflowHome;
+    if (previousWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = previousWorkflowHome;
     if (!providedWorkflowHome) rmSync(isolatedHome, { recursive: true, force: true });
   });
 
   const { loadPrompt } = await import(`../prompt-loader.ts?test=${Date.now()}`);
   const prompt = loadPrompt("guided-discuss-requirements", {
-    workingDirectory: process.env.GSD_TEST_WORKSPACE_ROOT ?? process.cwd(),
+    workingDirectory: process.env.OTTO_TEST_WORKSPACE_ROOT ?? process.cwd(),
     structuredQuestionsAvailable: "true",
     inlinedTemplates: "## Active\n\n## Validated\n\n## Deferred\n\n## Out of Scope\n\n## Traceability\n\n## Coverage Summary",
     commitInstruction: "Do not commit during this test.",
@@ -36,8 +36,8 @@ test("guided requirements prompt renders compact capability and persistence guid
   assert.match(prompt, /class-assignment and status questions are exempt/);
   assert.match(prompt, /artifact_type: "REQUIREMENTS-DRAFT"/);
   assert.match(prompt, /depth_verification_requirements_confirm/);
-  assert.match(prompt, /gsd_requirement_save/);
-  assert.match(prompt, /gsd_summary_save/);
+  assert.match(prompt, /otto_requirement_save/);
+  assert.match(prompt, /otto_summary_save/);
   assert.match(prompt, /artifact_type: "REQUIREMENTS"/);
   assert.match(prompt, /Do NOT use `artifact_type: "CONTEXT"`/);
   assert.match(prompt, /Requirements written\./);

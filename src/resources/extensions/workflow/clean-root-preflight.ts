@@ -116,7 +116,7 @@ function readZeroDelimitedPaths(output: string): string[] {
 }
 
 function isOwnedPath(path: string): boolean {
-  return path === ".gsd" || path.startsWith(".gsd/");
+  return path === ".otto/workflow" || path.startsWith(".otto/workflow/");
 }
 
 function hasStashUntrackedParent(basePath: string, stashRef: string): boolean | null {
@@ -173,9 +173,9 @@ function findOverlappingDirtyMilestonePaths(basePath: string, milestoneId: strin
   const changedPaths = listMilestoneChangedPaths(basePath, milestoneId);
   if (!dirtyPaths || !changedPaths) return null;
 
-  const changedPathSet = new Set(changedPaths.filter((path) => !path.startsWith(".gsd/")));
+  const changedPathSet = new Set(changedPaths.filter((path) => !path.startsWith(".otto/workflow/")));
   return dirtyPaths
-    .filter((path) => !path.startsWith(".gsd/") && changedPathSet.has(path))
+    .filter((path) => !path.startsWith(".otto/workflow/") && changedPathSet.has(path))
     .sort();
 }
 
@@ -301,7 +301,7 @@ function reconcileAlreadyPresentUntrackedStash(
 }
 
 function findPreflightStashRef(basePath: string, milestoneId: string, stashMarker?: string): string | null {
-  const markerPrefix = `gsd-preflight-stash:${milestoneId}:`;
+  const markerPrefix = `otto-preflight-stash:${milestoneId}:`;
   let fallbackRef: string | null = null;
   try {
     const list = execFileSync("git", ["stash", "list", "--format=%gd%x00%s"], {
@@ -329,7 +329,7 @@ function findPreflightStashRef(basePath: string, milestoneId: string, stashMarke
  *
  * Dirty tree path:
  *  1. Emits a warning notification via the provided `notify` callback.
- *  2. Runs `git stash push --include-untracked -m "gsd-preflight-stash"`.
+ *  2. Runs `git stash push --include-untracked -m "otto-preflight-stash"`.
  *  3. Returns stashPushed=true so the caller knows to call postflightPopStash.
  *
  * Any stash error is logged but does NOT throw — the merge proceeds regardless.
@@ -426,8 +426,8 @@ export function preflightCleanRoot(
 
   // Push the stash
   try {
-    const stashMarker = `gsd-preflight-stash:${milestoneId}:${process.pid}:${Date.now()}:${process.hrtime.bigint().toString(36)}`;
-    execFileSync("git", ["stash", "push", "--include-untracked", "-m", `gsd-preflight-stash [${stashMarker}]`], {
+    const stashMarker = `otto-preflight-stash:${milestoneId}:${process.pid}:${Date.now()}:${process.hrtime.bigint().toString(36)}`;
+    execFileSync("git", ["stash", "push", "--include-untracked", "-m", `otto-preflight-stash [${stashMarker}]`], {
       cwd: basePath,
       stdio: ["ignore", "pipe", "pipe"],
       encoding: "utf-8",
@@ -468,7 +468,7 @@ export function postflightPopStash(
   try {
     stashRef = findPreflightStashRef(basePath, milestoneId, stashMarker);
     if (!stashRef) {
-      const msg = `No matching GSD preflight stash found for milestone ${milestoneId}; leaving stash list untouched.`;
+      const msg = `No matching OTTO preflight stash found for milestone ${milestoneId}; leaving stash list untouched.`;
       logWarning("preflight", msg);
       notify(msg, "warning");
       return {
@@ -494,11 +494,11 @@ export function postflightPopStash(
           });
         } catch (err) {
           dropped = false;
-          logWarning("preflight", `git stash drop ${stashRef} failed after skipping GSD metadata-only restore: ${err instanceof Error ? err.message : String(err)}`);
+          logWarning("preflight", `git stash drop ${stashRef} failed after skipping OTTO metadata-only restore: ${err instanceof Error ? err.message : String(err)}`);
         }
         const msg = dropped
-          ? `Skipped restoring GSD metadata-only preflight stash after milestone ${milestoneId} merge.`
-          : `Skipped restoring GSD metadata-only preflight stash after milestone ${milestoneId} merge, but ${stashRef} could not be dropped and remains as a backup.`;
+          ? `Skipped restoring OTTO metadata-only preflight stash after milestone ${milestoneId} merge.`
+          : `Skipped restoring OTTO metadata-only preflight stash after milestone ${milestoneId} merge, but ${stashRef} could not be dropped and remains as a backup.`;
         notify(msg, dropped ? "info" : "warning");
         return {
           restored: true,
@@ -549,7 +549,7 @@ export function postflightPopStash(
     // Log a warning — the user needs to resolve manually, but the merge succeeded.
     const restoreHint = stashRef
       ? `Run "git stash apply ${stashRef}" manually to restore the correct stash, then "git stash drop ${stashRef}" after recovery.`
-      : `Run "git stash list" to find the matching GSD preflight stash before restoring manually.`;
+      : `Run "git stash list" to find the matching OTTO preflight stash before restoring manually.`;
     const msg = `git stash apply ${stashRef ?? ""}`.trim() + ` failed after merge of milestone ${milestoneId}: ${err instanceof Error ? err.message : String(err)}. ${restoreHint}`;
     logWarning("preflight", msg);
     notify(msg, "warning");

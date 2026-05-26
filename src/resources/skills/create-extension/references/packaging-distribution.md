@@ -1,5 +1,5 @@
 <overview>
-Packaging extensions for distribution via npm, git, or local paths. Creating GSD/pi packages.
+Packaging extensions for distribution via npm, git, or local paths. Creating OTTO/pi packages.
 </overview>
 
 <package_manifest>
@@ -7,7 +7,7 @@ Add a `pi` manifest to `package.json`:
 
 ```json
 {
-  "name": "my-gsd-package",
+  "name": "my-otto-package",
   "keywords": ["pi-package"],
   "pi": {
     "extensions": ["./extensions"],
@@ -21,12 +21,12 @@ Add a `pi` manifest to `package.json`:
 
 <installing>
 ```bash
-gsd install npm:@foo/bar@1.0.0
-gsd install git:github.com/user/repo@v1
-gsd install ./local/path
+otto install npm:@foo/bar@1.0.0
+otto install git:github.com/user/repo@v1
+otto install ./local/path
 
 # Try without installing:
-gsd -e npm:@foo/bar
+otto -e npm:@foo/bar
 ```
 </installing>
 
@@ -39,7 +39,7 @@ If no `pi` manifest exists, auto-discovers:
 </convention_directories>
 
 <dependencies>
-- List `@loop24/pi-ai`, `@loop24/pi-coding-agent`, `@loop24/pi-tui`, `@sinclair/typebox` in `peerDependencies` with `"*"` — they're bundled by the runtime.
+- List `@otto/pi-ai`, `@otto/pi-coding-agent`, `@otto/pi-tui`, `@sinclair/typebox` in `peerDependencies` with `"*"` — they're bundled by the runtime.
 - Other npm deps go in `dependencies`. The runtime runs `npm install` on package installation.
 </dependencies>
 

@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { visibleWidth } from "@loop24/pi-tui";
+import { visibleWidth } from "@otto/pi-tui";
 import { mergeSideBySide, padRight } from "../layout-utils.js";
 
 // ─── mergeSideBySide ──────────────────────────────────────────────────────────

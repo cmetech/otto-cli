@@ -47,7 +47,7 @@ describe("hook dispatch session workspace root", () => {
   test("dispatchHookUnit passes basePath explicitly to newSession", async (t) => {
     const originalCwd = process.cwd();
     const basePath = mkdtempSync(join(tmpdir(), "gsd-hook-cwd-"));
-    mkdirSync(join(basePath, ".gsd"), { recursive: true });
+    mkdirSync(join(basePath, ".otto/workflow"), { recursive: true });
     autoSession.reset();
     t.after(() => {
       try {
@@ -103,7 +103,7 @@ describe("deep setup approval questions pause immediately", () => {
     const base = realpathSync(mkdtempSync(join(tmpdir(), "gsd-deferred-approval-")));
     const previousCwd = process.cwd();
     try {
-      mkdirSync(join(base, ".gsd", "milestones", "M003"), { recursive: true });
+      mkdirSync(join(base, ".otto/workflow", "milestones", "M003"), { recursive: true });
       process.chdir(base);
       clearDiscussionFlowState(base);
       autoSession.reset();
@@ -130,7 +130,7 @@ describe("deep setup approval questions pause immediately", () => {
 
       const draftResult = await emit("tool_call", {
         toolCallId: "draft-save",
-        toolName: "gsd_summary_save",
+        toolName: "otto_summary_save",
         input: {
           milestone_id: "M003",
           artifact_type: "CONTEXT-DRAFT",
@@ -145,7 +145,7 @@ describe("deep setup approval questions pause immediately", () => {
 
       const finalContextResult = await emit("tool_call", {
         toolCallId: "final-context",
-        toolName: "gsd_summary_save",
+        toolName: "otto_summary_save",
         input: {
           milestone_id: "M003",
           artifact_type: "CONTEXT",

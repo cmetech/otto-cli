@@ -27,7 +27,7 @@ test("uok parity report writes runtime report artifact", (t) => {
     rmSync(basePath, { recursive: true, force: true });
   });
 
-  const runtime = join(basePath, ".gsd", "runtime");
+  const runtime = join(basePath, ".otto/workflow", "runtime");
   mkdirSync(runtime, { recursive: true });
   appendFileSync(
     join(runtime, "uok-parity.jsonl"),

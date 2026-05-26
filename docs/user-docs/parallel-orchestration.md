@@ -21,21 +21,21 @@ parallel:
 2. Start parallel execution:
 
 ```
-/gsd parallel start
+/otto parallel start
 ```
 
-GSD scans your milestones, checks dependencies and file overlap, shows an eligibility report, and spawns workers for eligible milestones.
+OTTO scans your milestones, checks dependencies and file overlap, shows an eligibility report, and spawns workers for eligible milestones.
 
 3. Monitor progress:
 
 ```
-/gsd parallel status
+/otto parallel status
 ```
 
 4. Stop when done:
 
 ```
-/gsd parallel stop
+/otto parallel stop
 ```
 
 ## How It Works
@@ -44,7 +44,7 @@ GSD scans your milestones, checks dependencies and file overlap, shows an eligib
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  Coordinator (your GSD session)                         │
+│  Coordinator (your OTTO session)                         │
 │                                                         │
 │  Responsibilities:                                      │
 │  - Eligibility analysis (deps + file overlap)           │
@@ -60,7 +60,7 @@ GSD scans your milestones, checks dependencies and file overlap, shows an eligib
 │  └──────────┘  └──────────┘  └──────────┘              │
 │       │              │              │                   │
 │       ▼              ▼              ▼                   │
-│  .gsd/worktrees/ .gsd/worktrees/ .gsd/worktrees/       │
+│  .otto/workflow/worktrees/ .otto/workflow/worktrees/ .otto/workflow/worktrees/       │
 │  M001/           M003/           M005/                  │
 │  (milestone/     (milestone/     (milestone/            │
 │   M001 branch)    M003 branch)    M005 branch)          │
@@ -69,20 +69,20 @@ GSD scans your milestones, checks dependencies and file overlap, shows an eligib
 
 ### Worker Isolation
 
-Each worker is a separate `gsd` process with complete isolation:
+Each worker is a separate `otto` process with complete isolation:
 
 | Resource | Isolation Method |
 |----------|-----------------|
 | **Filesystem** | Git worktree — each worker has its own checkout |
 | **Git branch** | `milestone/<MID>` — one branch per milestone |
-| **State derivation** | `GSD_MILESTONE_LOCK` env var — `deriveState()` only sees the assigned milestone |
+| **State derivation** | `OTTO_MILESTONE_LOCK` env var — `deriveState()` only sees the assigned milestone |
 | **Context window** | Separate process — each worker has its own agent sessions |
-| **Metrics** | Project-root `.gsd/metrics.json` remains the durable ledger; worktree diagnostics may be mirrored back there |
+| **Metrics** | Project-root `.otto/workflow/metrics.json` remains the durable ledger; worktree diagnostics may be mirrored back there |
 | **Crash recovery** | Coordination state stays anchored at the project root; per-worker locks and diagnostics are implementation details, not the source of truth |
 
 ### Coordination
 
-Workers and the coordinator communicate through DB-backed coordination tables in `.gsd/gsd.db`:
+Workers and the coordinator communicate through DB-backed coordination tables in `.otto/workflow/otto.db`:
 
 - **`workers`** — registry of active auto-mode workers with heartbeat TTL and shutdown/crash status
 - **`milestone_leases`** — one-worker-at-a-time milestone ownership with fencing tokens for safe takeover after expiry or release
@@ -91,11 +91,11 @@ Workers and the coordinator communicate through DB-backed coordination tables in
 
 If a worker stops heartbeating, its lease can expire and another worker can safely take over the milestone. Retry-aware stuck detection also consults the dispatch ledger so a unit waiting for `next_run_at` is not misclassified as stuck.
 
-This model assumes local-disk locking semantics. Do not place the project on NFS/SMB/FUSE-style mounts or try to share `.gsd/gsd.db*` across hosts.
+This model assumes local-disk locking semantics. Do not place the project on NFS/SMB/FUSE-style mounts or try to share `.otto/workflow/otto.db*` across hosts.
 
 ## Eligibility Analysis
 
-Before starting parallel execution, GSD checks which milestones can safely run concurrently.
+Before starting parallel execution, OTTO checks which milestones can safely run concurrently.
 
 ### Rules
 
@@ -133,7 +133,7 @@ File overlaps are warnings, not blockers. Both milestones work in separate workt
 
 ## Configuration
 
-Add to `~/.gsd/PREFERENCES.md` or `.gsd/PREFERENCES.md`:
+Add to `~/.otto/PREFERENCES.md` or `.otto/workflow/PREFERENCES.md`:
 
 ```yaml
 ---
@@ -150,26 +150,26 @@ parallel:
 
 | Key              | Type                               | Default           | Description                                                                                                    |
 | ---------------- | ---------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------- |
-| `enabled`        | boolean                            | `false`           | Master toggle. Must be `true` for `/gsd parallel` commands to work.                                            |
+| `enabled`        | boolean                            | `false`           | Master toggle. Must be `true` for `/otto parallel` commands to work.                                            |
 | `max_workers`    | number (1-4)                       | `2`               | Maximum concurrent worker processes. Higher values use more memory and API budget.                             |
 | `budget_ceiling` | number                             | none              | Aggregate cost ceiling in USD across all workers. When reached, no new units are dispatched.                   |
 | `merge_strategy` | `"per-slice"` or `"per-milestone"` | `"per-milestone"` | When worktree changes merge back to main. Per-milestone waits for the full milestone to complete.              |
-| `auto_merge`     | `"auto"`, `"confirm"`, `"manual"`  | `"confirm"`       | How merge-back is handled. `confirm` prompts before merging. `manual` requires explicit `/gsd parallel merge`. |
+| `auto_merge`     | `"auto"`, `"confirm"`, `"manual"`  | `"confirm"`       | How merge-back is handled. `confirm` prompts before merging. `manual` requires explicit `/otto parallel merge`. |
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `/gsd parallel start` | Analyze eligibility, confirm, and start workers |
-| `/gsd parallel status` | Show all workers with state, units completed, and cost |
-| `/gsd parallel stop` | Stop all workers (enqueues stop + sends SIGTERM) |
-| `/gsd parallel stop M002` | Stop a specific milestone's worker |
-| `/gsd parallel pause` | Pause all workers (finish current unit, then wait) |
-| `/gsd parallel pause M002` | Pause a specific worker |
-| `/gsd parallel resume` | Resume all paused workers |
-| `/gsd parallel resume M002` | Resume a specific worker |
-| `/gsd parallel merge` | Merge all completed milestones back to main |
-| `/gsd parallel merge M002` | Merge a specific milestone back to main |
+| `/otto parallel start` | Analyze eligibility, confirm, and start workers |
+| `/otto parallel status` | Show all workers with state, units completed, and cost |
+| `/otto parallel stop` | Stop all workers (enqueues stop + sends SIGTERM) |
+| `/otto parallel stop M002` | Stop a specific milestone's worker |
+| `/otto parallel pause` | Pause all workers (finish current unit, then wait) |
+| `/otto parallel pause M002` | Pause a specific worker |
+| `/otto parallel resume` | Resume all paused workers |
+| `/otto parallel resume M002` | Resume a specific worker |
+| `/otto parallel merge` | Merge all completed milestones back to main |
+| `/otto parallel merge M002` | Merge a specific milestone back to main |
 
 ## Command Lifecycle
 
@@ -208,12 +208,12 @@ When milestones complete, their worktree changes need to merge back to main.
 ### Conflict Handling
 
 1. Runtime coordination state (worker registry, leases, dispatches, cancellation requests, command queue) lives in the project-root SQLite runtime and is not merge-driven.
-2. Code conflicts — **stop and report**. The merge halts, showing which files conflict. Resolve manually and retry with `/gsd parallel merge <MID>`.
+2. Code conflicts — **stop and report**. The merge halts, showing which files conflict. Resolve manually and retry with `/otto parallel merge <MID>`.
 
 ### Example
 
 ```text
-/gsd parallel merge
+/otto parallel merge
 
 # Merge Results
 
@@ -221,7 +221,7 @@ When milestones complete, their worktree changes need to merge back to main.
 - **M003** — CONFLICT (2 file(s)):
   - `src/types.ts`
   - `src/middleware.ts`
-  Resolve conflicts manually and run `/gsd parallel merge M003` to retry.
+  Resolve conflicts manually and run `/otto parallel merge M003` to retry.
 ```
 
 ## Budget Management
@@ -236,11 +236,11 @@ When `budget_ceiling` is set, the coordinator tracks aggregate cost across all w
 
 ### Doctor Integration
 
-`/gsd doctor` detects parallel session issues:
+`/otto doctor` detects parallel session issues:
 
 - **Stale workers or leases** — Worker process died without cleanup. Doctor inspects worker heartbeats and expired milestone leases in the database, then clears the stale coordination state.
 
-Run `/gsd doctor --fix` to clean up automatically.
+Run `/otto doctor --fix` to clean up automatically.
 
 ### Stale Detection
 
@@ -258,8 +258,8 @@ The coordinator runs stale detection during status refresh and either marks the 
 | **Feature flag** | `parallel.enabled: false` by default — existing users unaffected |
 | **Eligibility analysis** | Dependency and file overlap checks before starting |
 | **Worker isolation** | Separate processes, worktrees, branches, context windows |
-| **`GSD_MILESTONE_LOCK`** | Each worker only sees its milestone in state derivation |
-| **`GSD_PARALLEL_WORKER`** | Workers cannot spawn nested parallel sessions |
+| **`OTTO_MILESTONE_LOCK`** | Each worker only sees its milestone in state derivation |
+| **`OTTO_PARALLEL_WORKER`** | Workers cannot spawn nested parallel sessions |
 | **Budget ceiling** | Aggregate cost enforcement across all workers |
 | **Command queue + SIGTERM** | Graceful stop/pause/resume via DB-backed commands plus process signals |
 | **Doctor integration** | Detects and cleans up orphaned sessions |
@@ -268,9 +268,9 @@ The coordinator runs stale detection during status refresh and either marks the 
 ## File Layout
 
 ```text
-.gsd/
-├── gsd.db                       # Shared runtime database
-├── gsd.db-wal / gsd.db-shm      # SQLite WAL sidecars while workers are active
+.otto/workflow/
+├── otto.db                       # Shared runtime database
+├── otto.db-wal / otto.db-shm      # SQLite WAL sidecars while workers are active
 ├── parallel/                    # Per-milestone runtime lock / isolation dirs
 │   ├── M002/
 │   └── M003/
@@ -282,7 +282,7 @@ The coordinator runs stale detection during status refresh and either marks the 
 └── ...
 ```
 
-`.gsd/gsd.db*`, `.gsd/parallel/`, and `.gsd/worktrees/` are all local runtime artifacts and should remain gitignored.
+`.otto/workflow/otto.db*`, `.otto/workflow/parallel/`, and `.otto/workflow/worktrees/` are all local runtime artifacts and should remain gitignored.
 
 ## Troubleshooting
 
@@ -292,22 +292,22 @@ Set `parallel.enabled: true` in your preferences file.
 
 ### "No milestones are eligible for parallel execution"
 
-All milestones are either complete or blocked by dependencies. Check `/gsd queue` to see milestone status and dependency chains.
+All milestones are either complete or blocked by dependencies. Check `/otto queue` to see milestone status and dependency chains.
 
 ### Worker crashed — how to recover
 
 Workers now persist coordination state in the shared runtime DB. If a worker process dies, the coordinator detects heartbeat expiry, marks the worker as crashed, and releases stale coordination state so a replacement worker can resume safely.
 
-1. Run `/gsd doctor --fix` to clean up stale sessions
-2. Run `/gsd parallel status` to see current state
-3. Re-run `/gsd parallel start` to spawn new workers for remaining milestones
+1. Run `/otto doctor --fix` to clean up stale sessions
+2. Run `/otto parallel status` to see current state
+3. Re-run `/otto parallel start` to spawn new workers for remaining milestones
 
 ### Merge conflicts after parallel completion
 
-1. Run `/gsd parallel merge` to see which milestones have conflicts
-2. Resolve conflicts in the worktree at `.gsd/worktrees/<MID>/`
-3. Retry with `/gsd parallel merge <MID>`
+1. Run `/otto parallel merge` to see which milestones have conflicts
+2. Resolve conflicts in the worktree at `.otto/workflow/worktrees/<MID>/`
+3. Retry with `/otto parallel merge <MID>`
 
 ### Workers seem stuck
 
-Check if budget ceiling was reached: `/gsd parallel status` shows per-worker costs. Increase `parallel.budget_ceiling` or remove it to continue.
+Check if budget ceiling was reached: `/otto parallel status` shows per-worker costs. Increase `parallel.budget_ceiling` or remove it to continue.

@@ -1,7 +1,7 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Left-edge user message rail renderer for interactive chat transcripts.
 
-import { Container, Markdown, type MarkdownTheme } from "@loop24/pi-tui";
+import { Container, Markdown, type MarkdownTheme } from "@otto/pi-tui";
 import { getMarkdownTheme } from "../theme/theme.js";
 import { RenderCache } from "./render-cache.js";
 import { formatTimestamp, type TimestampFormat } from "./timestamp.js";
@@ -11,8 +11,8 @@ const OSC133_ZONE_START = "\x1b]133;A\x07";
 const OSC133_ZONE_END = "\x1b]133;B\x07";
 
 function shouldEmitOsc133Zones(): boolean {
-	if (process.env.GSD_DISABLE_OSC133_ZONES === "1") return false;
-	if (process.env.GSD_ENABLE_OSC133_ZONES === "1") return true;
+	if (process.env.OTTO_DISABLE_OSC133_ZONES === "1") return false;
+	if (process.env.OTTO_ENABLE_OSC133_ZONES === "1") return true;
 	return process.env.TERM_PROGRAM === "iTerm.app";
 }
 

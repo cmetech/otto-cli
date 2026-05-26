@@ -52,7 +52,7 @@ describe("currentDirectoryRoot() homedir() fallback on deleted cwd", () => {
         );
         assert.equal(
           (err as Error).message,
-          expected.reason ?? "GSD must be run inside a project directory.",
+          expected.reason ?? "OTTO must be run inside a project directory.",
           "error message must match validateDirectory(homedir()), confirming homedir() was the fallback",
         );
         return true;

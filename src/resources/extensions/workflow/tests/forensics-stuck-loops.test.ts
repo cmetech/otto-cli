@@ -210,6 +210,6 @@ test("#4711 detectWorktreeOrphans suggests doctor fix for completed unmerged bra
   detectWorktreeOrphans(summary, anomalies);
 
   assert.equal(anomalies.length, 1);
-  assert.match(anomalies[0]!.details, /\/gsd doctor fix/);
-  assert.doesNotMatch(anomalies[0]!.details, /\/gsd health --fix/);
+  assert.match(anomalies[0]!.details, /\/otto doctor fix/);
+  assert.doesNotMatch(anomalies[0]!.details, /\/otto health --fix/);
 });

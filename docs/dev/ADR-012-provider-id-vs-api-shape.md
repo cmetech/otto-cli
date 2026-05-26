@@ -8,7 +8,7 @@
 
 ## Context
 
-A GSD model is described by two independent fields:
+A OTTO model is described by two independent fields:
 
 - **`provider`** — a transport / credential identifier. Examples: `anthropic`, `claude-code`, `anthropic-vertex`, `amazon-bedrock`, `vercel-ai-gateway`, `openai`, `azure`, `openrouter`, `groq`, `github-copilot`, `google`, `google-vertex`, `google-gemini-cli`.
 - **`api`** — the wire protocol the request is serialized as. Registered today in `packages/pi-ai/src/providers/register-builtins.ts`: `anthropic-messages`, `anthropic-vertex`, `openai-completions`, `openai-responses`, `azure-openai-responses`, `openai-codex-responses`, `google-generative-ai`, `google-gemini-cli`, `google-vertex`, `bedrock-converse-stream`, `mistral-conversations`.
@@ -21,7 +21,7 @@ These are **not the same thing**. Many providers serve genuine Anthropic/OpenAI/
 
 1. Got the "Set `BRAVE_API_KEY` or use an Anthropic model" warning spammed on every `model_select` event.
 2. Did **not** receive native `web_search_20250305` tool injection.
-3. Had no functional web search unless they paid for a Brave API key that GSD did not actually need.
+3. Had no functional web search unless they paid for a Brave API key that OTTO did not actually need.
 
 The same class of bug would bite OpenAI-Responses features gated on `provider === "openai"` (missing Azure, Codex, Copilot, OpenRouter) and Gemini features gated on `provider === "google"` (missing Vertex, Gemini CLI).
 
@@ -38,7 +38,7 @@ Use the shared predicates in `packages/pi-ai/src/providers/api-family.ts`:
 - `isGeminiApi(model)` — `google-generative-ai` | `google-gemini-cli` | `google-vertex`
 - `isBedrockApi(model)` — `bedrock-converse-stream`
 
-The helpers are re-exported from `@loop24/pi-ai` for use across the monorepo.
+The helpers are re-exported from `@otto/pi-ai` for use across the monorepo.
 
 ### When `provider` comparison is still correct
 

@@ -82,7 +82,7 @@ describe("discuss dispatch via handleWorkflowCommand (#5471)", () => {
 
     assert.equal(handled, true);
     assert.deepEqual(ctx.notifications, [{
-      message: "/gsd discuss cannot run while auto-mode is active.\nStop auto-mode first with /gsd stop, then run /gsd discuss.",
+      message: "/otto discuss cannot run while auto-mode is active.\nStop auto-mode first with /otto stop, then run /otto discuss.",
       level: "error",
     }]);
   });

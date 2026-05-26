@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Auto-mode bootstrap, worktree recovery, and fresh-start initialization.
 /**
  * Auto-mode bootstrap — fresh-start initialization path.
@@ -14,7 +14,7 @@
 import type {
   ExtensionAPI,
   ExtensionCommandContext,
-} from "@loop24/pi-coding-agent";
+} from "@otto/pi-coding-agent";
 import { deriveState } from "./state.js";
 import { loadFile, getManifestStatus } from "./files.js";
 import type { InterruptedSessionAssessment } from "./interrupted-session.js";
@@ -156,7 +156,7 @@ export async function openProjectDbIfPresent(basePath: string): Promise<void> {
 
 export function reconcileProjectMilestonesFromDisk(basePath: string): number {
   if (!isDbAvailable()) return 0;
-  const projectPath = join(basePath, ".gsd", "PROJECT.md");
+  const projectPath = join(basePath, ".otto/workflow", "PROJECT.md");
   if (!existsSync(projectPath)) return 0;
 
   try {
@@ -320,12 +320,12 @@ export function auditOrphanedMilestoneBranches(
       const wtDir = getWorktreeDir(basePath, milestoneId);
       const wtDirExists = existsSync(wtDir);
       const wtSuffix = wtDirExists
-        ? ` Worktree directory at .gsd/worktrees/${milestoneId}/ holds the live work.`
+        ? ` Worktree directory at .otto/workflow/worktrees/${milestoneId}/ holds the live work.`
         : "";
       warnings.push(
         `Branch ${branch} has ${commitsAhead} commit(s) ahead of ${mainBranch} for in-progress milestone ${milestoneId}.` +
         wtSuffix +
-        ` Run \`/gsd auto\` to resume, or merge manually if abandoning.`,
+        ` Run \`/otto auto\` to resume, or merge manually if abandoning.`,
       );
 
       // #4764 telemetry
@@ -369,7 +369,7 @@ export function auditOrphanedMilestoneBranches(
 
         // If the directory still exists after git worktree remove (either it
         // wasn't registered or the remove was a noop), fall back to direct
-        // filesystem removal — but only inside .gsd/worktrees/ for safety (#2365).
+        // filesystem removal — but only inside .otto/workflow/worktrees/ for safety (#2365).
         if (existsSync(wtDir)) {
           if (isInsideWorktreesDir(basePath, wtDir)) {
             try {
@@ -379,7 +379,7 @@ export function auditOrphanedMilestoneBranches(
               warnings.push(`Failed to remove worktree directory for ${milestoneId}: ${err2 instanceof Error ? err2.message : String(err2)}`);
             }
           } else {
-            warnings.push(`Orphaned worktree directory for ${milestoneId} is outside .gsd/worktrees/ — skipping removal for safety.`);
+            warnings.push(`Orphaned worktree directory for ${milestoneId} is outside .otto/workflow/worktrees/ — skipping removal for safety.`);
           }
         } else {
           recovered.push(`Removed orphaned worktree directory for ${milestoneId}.`);
@@ -389,7 +389,7 @@ export function auditOrphanedMilestoneBranches(
       // Branch is NOT merged — preserve for safety, warn the user
       warnings.push(
         `Branch ${branch} exists for completed milestone ${milestoneId} but is NOT merged into ${mainBranch}. ` +
-        `This may contain unmerged work. Merge manually or run \`/gsd doctor fix\` to resolve.`,
+        `This may contain unmerged work. Merge manually or run \`/otto doctor fix\` to resolve.`,
       );
 
       // #4764 telemetry
@@ -413,10 +413,10 @@ export function auditOrphanedMilestoneBranches(
   // reached.
   //
   // Keyed on milestones whose DB status is `complete`. We do not iterate
-  // over arbitrary directories under .gsd/worktrees/ to avoid touching
+  // over arbitrary directories under .otto/workflow/worktrees/ to avoid touching
   // dirs that belong to an in-progress milestone whose branch was deleted
   // separately — those are handled by the in-progress orphan path above
-  // when the branch is present, and by `/loop24 doctor` when it is not.
+  // when the branch is present, and by `/otto doctor` when it is not.
   const seenMilestoneIds = new Set(
     milestoneBranches.map((branch) => branch.replace(/^milestone\//, "")),
   );
@@ -444,7 +444,7 @@ export function auditOrphanedMilestoneBranches(
     if (!existsSync(wtDir)) continue;
     if (!isInsideWorktreesDir(basePath, wtDir)) {
       warnings.push(
-        `Orphaned worktree directory for ${m.id} is outside .gsd/worktrees/ — skipping removal for safety.`,
+        `Orphaned worktree directory for ${m.id} is outside .otto/workflow/worktrees/ — skipping removal for safety.`,
       );
       continue;
     }
@@ -615,7 +615,7 @@ export function _finalizeSurvivorBranch(
   const err = result.cause instanceof Error ? result.cause : new Error(String(result.cause));
   const msg = err.message;
   ui.notify(
-    `Survivor-branch finalization for ${milestoneId} failed: ${msg}. Resolve manually and re-run /gsd auto.`,
+    `Survivor-branch finalization for ${milestoneId} failed: ${msg}. Resolve manually and re-run /otto auto.`,
     "error",
   );
   return { merged: false, error: err };
@@ -649,7 +649,7 @@ export function _mergeOrphanCompletedMilestone(
   const err = result.cause instanceof Error ? result.cause : new Error(String(result.cause));
   const msg = err.message;
   ui.notify(
-    `Could not merge orphan milestone ${orphanId}: ${msg}. Resolve manually and re-run /gsd auto.`,
+    `Could not merge orphan milestone ${orphanId}: ${msg}. Resolve manually and re-run /otto auto.`,
     "warning",
   );
   return { merged: false, error: err };
@@ -701,12 +701,12 @@ export async function bootstrapAutoSession(
   // phase-specific planning model for a discuss turn (#2829).
   //
   // Precedence:
-  // 1) Explicit session override via /loop24 model (this session)
+  // 1) Explicit session override via /otto model (this session)
   // 2) Current session model from settings/session restore (if provider ready)
   // 3) model preferences from PREFERENCES.md (validated against live auth)
   //
   // This preserves #3517 defaults while honoring explicit runtime model
-  // selection for subsequent /loop24 runs in the same session.
+  // selection for subsequent /otto runs in the same session.
   //
   // Exception (#4122): when the session provider is a custom provider declared
   // in ~/.otto/agent/models.json (Ollama, vLLM, OpenAI-compatible proxy, etc.),
@@ -753,11 +753,11 @@ export async function bootstrapAutoSession(
     ?? null;
 
   try {
-    // Validate GSD_PROJECT_ID early so the user gets immediate feedback
-    const customProjectId = (process.env.LOOP24_PROJECT_ID ?? process.env.GSD_PROJECT_ID);
+    // Validate OTTO_PROJECT_ID early so the user gets immediate feedback
+    const customProjectId = process.env.OTTO_PROJECT_ID;
     if (customProjectId && !validateProjectId(customProjectId)) {
       ctx.ui.notify(
-        `GSD_PROJECT_ID must contain only alphanumeric characters, hyphens, and underscores. Got: "${customProjectId}"`,
+        `OTTO_PROJECT_ID must contain only alphanumeric characters, hyphens, and underscores. Got: "${customProjectId}"`,
         "error",
       );
       return releaseLockAndReturn();
@@ -766,7 +766,7 @@ export async function bootstrapAutoSession(
     const gitLockFile = join(base, ".git", "index.lock");
     if (existsSync(gitLockFile)) {
       ctx.ui.notify(
-        "Git index lock is present at .git/index.lock. Another git process may be running; resolve the lock before starting GSD.",
+        "Git index lock is present at .git/index.lock. Another git process may be running; resolve the lock before starting OTTO.",
         "error",
       );
       debugLog("git-index-lock-present-preflight", { path: gitLockFile });
@@ -777,7 +777,7 @@ export async function bootstrapAutoSession(
     // nativeIsRepo() uses `git rev-parse` which traverses up to parent dirs,
     // so a parent repo can make it return true even when base has no .git of
     // its own. Check for a local .git instead (defense-in-depth for the case
-    // where isInheritedRepo() returns a false negative, e.g. stale .gsd at
+    // where isInheritedRepo() returns a false negative, e.g. stale .otto/workflow at
     // the parent git root). See #2393 and related issue.
     const hasLocalGit = existsSync(join(base, ".git"));
     if (!hasLocalGit || isInheritedRepo(base)) {
@@ -786,9 +786,9 @@ export async function bootstrapAutoSession(
       nativeInit(base, mainBranch);
     }
 
-    // Migrate legacy in-project .gsd/ to external state directory.
-    // Migration MUST run before ensureGitignore to avoid adding ".gsd" to
-    // .gitignore when .gsd/ is git-tracked (data-loss bug #1364).
+    // Migrate legacy in-project .otto/workflow/ to external state directory.
+    // Migration MUST run before ensureGitignore to avoid adding ".otto/workflow" to
+    // .gitignore when .otto/workflow/ is git-tracked (data-loss bug #1364).
     recoverFailedMigration(base);
     const migration = migrateToExternalState(base);
     if (migration.error) {
@@ -798,17 +798,17 @@ export async function bootstrapAutoSession(
     ensureWorkflowSymlink(base);
 
     // Ensure .gitignore has baseline patterns.
-    // ensureGitignore checks for git-tracked .gsd/ files and skips the
-    // ".gsd" pattern if the project intentionally tracks .gsd/ in git.
+    // ensureGitignore checks for git-tracked .otto/workflow/ files and skips the
+    // ".otto/workflow" pattern if the project intentionally tracks .otto/workflow/ in git.
     const gitPrefs = loadEffectiveGSDPreferences(base)?.preferences?.git;
     const manageGitignore = gitPrefs?.manage_gitignore;
     ensureGitignore(base, { manageGitignore });
     if (manageGitignore !== false) untrackRuntimeFiles(base);
 
     // Bootstrap milestones/ if it doesn't exist.
-    // Check milestones/ directly — ensureWorkflowSymlink above already created .gsd/,
-    // so checking .gsd/ existence would be dead code (#2942).
-    const workflowDir = join(base, ".gsd");
+    // Check milestones/ directly — ensureWorkflowSymlink above already created .otto/workflow/,
+    // so checking .otto/workflow/ existence would be dead code (#2942).
+    const workflowDir = join(base, ".otto/workflow");
     const milestonesPath = join(workflowDir, "milestones");
     if (!existsSync(milestonesPath)) {
       mkdirSync(milestonesPath, { recursive: true });
@@ -833,7 +833,7 @@ export async function bootstrapAutoSession(
     );
 
     // ── Debug mode ──
-    if (!isDebugEnabled() && (process.env.LOOP24_DEBUG ?? process.env.GSD_DEBUG) === "1") {
+    if (!isDebugEnabled() && process.env.OTTO_DEBUG === "1") {
       enableDebug(base);
     }
     if (isDebugEnabled()) {
@@ -947,7 +947,7 @@ export async function bootstrapAutoSession(
     let state = await deriveState(base);
 
     if (
-      (process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) === "1" &&
+      process.env.OTTO_HEADLESS === "1" &&
       orphanAuditRecovered &&
       !state.activeMilestone &&
       state.phase === "complete"
@@ -988,7 +988,7 @@ export async function bootstrapAutoSession(
       (state.phase === "pre-planning" || state.phase === "complete") &&
       survivorIsolationMode !== "none" &&
       !detectWorktreeName(base) &&
-      !base.includes(`${pathSep}.gsd${pathSep}worktrees${pathSep}`)
+      !base.includes(`${pathSep}.otto${pathSep}workflow${pathSep}worktrees${pathSep}`)
     ) {
       const milestoneBranch = `milestone/${survivorMilestoneId}`;
       const { nativeBranchExists } = await import("./native-git-bridge.js");
@@ -1020,7 +1020,7 @@ export async function bootstrapAutoSession(
         hasSurvivorBranch = false;
       } else {
         ctx.ui.notify(
-          "Discussion completed but milestone draft was not promoted. Run /gsd to try again.",
+          "Discussion completed but milestone draft was not promoted. Run /otto to try again.",
           "warning",
         );
         return releaseLockAndReturn();
@@ -1120,7 +1120,7 @@ export async function bootstrapAutoSession(
           s.consecutiveCompleteBootstraps = 0;
           ctx.ui.notify(
             "All milestones are complete and the discussion didn't produce a new one. " +
-            "Run /gsd to start a new milestone manually.",
+            "Run /otto to start a new milestone manually.",
             "warning",
           );
           return releaseLockAndReturn();
@@ -1176,7 +1176,7 @@ export async function bootstrapAutoSession(
           state = postState;
         } else {
           ctx.ui.notify(
-            "Discussion completed but milestone draft was not promoted. Run /gsd to try again.",
+            "Discussion completed but milestone draft was not promoted. Run /otto to try again.",
             "warning",
           );
           return releaseLockAndReturn();
@@ -1268,14 +1268,14 @@ export async function bootstrapAutoSession(
     // live here is gone.
 
     const isUnderWorkflowWorktrees = (p: string): boolean => {
-      // Direct layout: /.gsd/worktrees/
-      const marker = `${pathSep}.gsd${pathSep}worktrees${pathSep}`;
+      // Direct layout: /.otto/workflow/worktrees/
+      const marker = `${pathSep}.otto${pathSep}workflow${pathSep}worktrees${pathSep}`;
       if (p.includes(marker)) return true;
-      const worktreesSuffix = `${pathSep}.gsd${pathSep}worktrees`;
+      const worktreesSuffix = `${pathSep}.otto${pathSep}workflow${pathSep}worktrees`;
       if (p.endsWith(worktreesSuffix)) return true;
-      // Symlink-resolved layout: /.gsd/projects/<hash>/worktrees/
+      // Symlink-resolved layout: /.otto/workflow/projects/<hash>/worktrees/
       const symlinkRe = new RegExp(
-        `\\${pathSep}\\.gsd\\${pathSep}projects\\${pathSep}[a-f0-9]+\\${pathSep}worktrees(?:\\${pathSep}|$)`,
+        `\\${pathSep}\\.otto\\${pathSep}workflow\\${pathSep}projects\\${pathSep}[a-f0-9]+\\${pathSep}worktrees(?:\\${pathSep}|$)`,
       );
       return symlinkRe.test(p);
     };
@@ -1303,7 +1303,7 @@ export async function bootstrapAutoSession(
           );
         } else if (enterResult.reason === "isolation-degraded") {
           ctx.ui.notify(
-            `Cannot enter milestone ${s.currentMilestoneId}: isolation is degraded from a prior worktree failure. Close processes locking the worktree and retry, or run /gsd doctor fix.`,
+            `Cannot enter milestone ${s.currentMilestoneId}: isolation is degraded from a prior worktree failure. Close processes locking the worktree and retry, or run /otto doctor fix.`,
             "error",
           );
         } else if (enterResult.reason === "invalid-milestone-id") {
@@ -1327,7 +1327,7 @@ export async function bootstrapAutoSession(
 
     // ── DB lifecycle ──
     const workflowDbPath = resolveProjectRootDbPath(s.basePath);
-    const workflowDirPath = join(s.basePath, ".gsd");
+    const workflowDirPath = join(s.basePath, ".otto/workflow");
     if (existsSync(workflowDirPath) && !existsSync(workflowDbPath)) {
       try {
         const { openDatabase: openDb } = await import("./db.js");
@@ -1347,7 +1347,7 @@ export async function bootstrapAutoSession(
 
     // Gate: abort bootstrap if the DB file exists but the provider is
     // still unavailable after both open attempts above. Without this,
-    // auto-mode starts but every gsd_task_complete / gsd_slice_complete
+    // auto-mode starts but every otto_task_complete / otto_slice_complete
     // call returns "db_unavailable", triggering artifact-retry which
     // re-dispatches the same task — producing an infinite loop (#2419).
     if (existsSync(workflowDbPath) && !isDbAvailable()) {
@@ -1389,11 +1389,11 @@ export async function bootstrapAutoSession(
     s.manualSessionModelOverride = manualSessionOverride ?? null;
 
     // Apply worker model override from parallel orchestrator (#worker-model).
-    // GSD_WORKER_MODEL is injected by the coordinator when parallel.worker_model
+    // OTTO_WORKER_MODEL is injected by the coordinator when parallel.worker_model
     // is configured, so parallel milestone workers use a cheaper model than the
     // coordinator session (e.g. Haiku for execution, Sonnet for planning).
-    const workerModelOverride = (process.env.LOOP24_WORKER_MODEL ?? process.env.GSD_WORKER_MODEL);
-    if (workerModelOverride && (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) === "1") {
+    const workerModelOverride = process.env.OTTO_WORKER_MODEL;
+    if (workerModelOverride && process.env.OTTO_PARALLEL_WORKER === "1") {
       const availableModels = ctx.modelRegistry.getAvailable();
       const { resolveModelId } = await import("./auto-model-selection.js");
       const overrideModel = resolveModelId(workerModelOverride, availableModels, ctx.model?.provider);
@@ -1430,7 +1430,7 @@ export async function bootstrapAutoSession(
     const contextOverride = loadEffectiveGSDPreferences(base)?.preferences.context_window_override;
     if (providerReportedWindow > 500_000 && contextOverride === undefined) {
       ctx.ui.notify(
-        `Model reports a ${Math.round(providerReportedWindow / 1000)}K context window. If the provider's real API limit is lower, set context_window_override in .gsd/PREFERENCES.md so wrap-up signals fire before context overflow.`,
+        `Model reports a ${Math.round(providerReportedWindow / 1000)}K context window. If the provider's real API limit is lower, set context_window_override in .otto/workflow/PREFERENCES.md so wrap-up signals fire before context overflow.`,
         "warning",
       );
     }
@@ -1514,7 +1514,7 @@ export async function bootstrapAutoSession(
 
     // Pre-flight: validate milestone queue
     try {
-      const msDir = join(base, ".gsd", "milestones");
+      const msDir = join(base, ".otto/workflow", "milestones");
       if (existsSync(msDir)) {
         const milestoneIds = readdirSync(msDir, { withFileTypes: true })
           .filter((d) => d.isDirectory() && /^M\d{3}/.test(d.name))

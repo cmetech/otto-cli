@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for the interactive terminal footer renderer.
 
 import test from "node:test";
@@ -40,8 +40,8 @@ test("FooterComponent renders a rounded operations-console footer with extension
   assert.match(lines[1], /^\│/);
   assert.match(lines[1], /\(main\)/);
   assert.match(lines[1], /ready synced\s*│$/);
-  assert.match(lines[1], /● GSD/);
-  assert.match(lines[1], /● GSD  │  .* \(main\)  │  /);
+  assert.match(lines[1], /● OTTO/);
+  assert.match(lines[1], /● OTTO  │  .* \(main\)  │  /);
   assert.match(lines[1], /12\.5%\/1\.0k/);
   assert.match(lines[2], /^╰─+╯$/);
 });

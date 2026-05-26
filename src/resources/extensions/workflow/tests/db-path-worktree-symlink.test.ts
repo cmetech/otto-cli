@@ -4,8 +4,8 @@
  * Regression test for the db_unavailable loop in worktree/symlink layouts.
  *
  * The path resolver must handle BOTH worktree path families:
- *   - /.gsd/worktrees/<MID>/...           (direct layout)
- *   - /.gsd/projects/<hash>/worktrees/<MID>/...  (symlink-resolved layout)
+ *   - /.otto/workflow/worktrees/<MID>/...           (direct layout)
+ *   - /.otto/workflow/projects/<hash>/worktrees/<MID>/...  (symlink-resolved layout)
  *
  * When the second layout is not recognised, ensureDbOpen derives a wrong DB
  * path, the open fails silently, and every completion tool call returns
@@ -29,54 +29,54 @@ console.log("\n=== #2517 Part 1: resolveProjectRootDbPath symlink layout ===");
 const { resolveProjectRootDbPath } = await import("../bootstrap/dynamic-tools.js");
 
 // Standard worktree layout (already works)
-const standardPath = `/home/user/myproject/.gsd/worktrees/M001/work`;
+const standardPath = `/home/user/myproject/.otto/workflow/worktrees/M001/work`;
 const standardResult = resolveProjectRootDbPath(standardPath);
 assertEq(
   standardResult,
-  join("/home/user/myproject", ".gsd", "gsd.db"),
+  join("/home/user/myproject", ".otto/workflow", "otto.db"),
   "Standard worktree layout resolves to project root DB path",
 );
 
-// Symlink-resolved layout: /.gsd/projects/<hash>/worktrees/...
+// Symlink-resolved layout: /.otto/workflow/projects/<hash>/worktrees/...
 // After PR #2952, these paths resolve to the hash-level DB (same as external-state),
 // because on POSIX getcwd() returns the canonical (symlink-resolved) path anyway, so
-// a path like <proj>/.gsd/projects/<hash>/worktrees/ in practice is always
-// ~/.gsd/projects/<hash>/worktrees/ after the OS resolves the .gsd symlink.
-const symlinkPath = `/home/user/myproject/.gsd/projects/abc123def/worktrees/M001/work`;
+// a path like <proj>/.otto/workflow/projects/<hash>/worktrees/ in practice is always
+// ~/.otto/workflow/projects/<hash>/worktrees/ after the OS resolves the .otto/workflow symlink.
+const symlinkPath = `/home/user/myproject/.otto/workflow/projects/abc123def/worktrees/M001/work`;
 const symlinkResult = resolveProjectRootDbPath(symlinkPath);
 assertEq(
   symlinkResult,
-  join("/home/user/myproject/.gsd/projects/abc123def", "gsd.db"),
-  "/.gsd/projects/<hash>/worktrees/ resolves to external project state DB",
+  join("/home/user/myproject/.otto/workflow/projects/abc123def", "otto.db"),
+  "/.otto/workflow/projects/<hash>/worktrees/ resolves to external project state DB",
 );
 
 // Windows-style separators for symlink layout
 if (sep === "\\") {
-  const winSymlinkPath = `C:\\Users\\dev\\project\\.gsd\\projects\\abc123def\\worktrees\\M001\\work`;
+  const winSymlinkPath = `C:\\Users\\dev\\project\\.otto/workflow\\projects\\abc123def\\worktrees\\M001\\work`;
   const winResult = resolveProjectRootDbPath(winSymlinkPath);
   assertEq(
     winResult,
-    join("C:\\Users\\dev\\project\\.gsd\\projects\\abc123def", "gsd.db"),
-    "Windows /.gsd/projects/<hash>/worktrees/ resolves to external project state DB",
+    join("C:\\Users\\dev\\project\\.otto/workflow\\projects\\abc123def", "otto.db"),
+    "Windows /.otto/workflow/projects/<hash>/worktrees/ resolves to external project state DB",
   );
 } else {
   // On non-Windows, test forward-slash variant explicitly
-  const fwdSymlinkPath = `/home/user/myproject/.gsd/projects/abc123def/worktrees/M001/work`;
+  const fwdSymlinkPath = `/home/user/myproject/.otto/workflow/projects/abc123def/worktrees/M001/work`;
   const fwdResult = resolveProjectRootDbPath(fwdSymlinkPath);
   assertEq(
     fwdResult,
-    join("/home/user/myproject/.gsd/projects/abc123def", "gsd.db"),
-    "Forward-slash /.gsd/projects/<hash>/worktrees/ resolves to external project state DB on POSIX",
+    join("/home/user/myproject/.otto/workflow/projects/abc123def", "otto.db"),
+    "Forward-slash /.otto/workflow/projects/<hash>/worktrees/ resolves to external project state DB on POSIX",
   );
 }
 
 // Edge: deeper nesting under projects/<hash>/worktrees
-const deepSymlinkPath = `/home/user/myproject/.gsd/projects/deadbeef42/worktrees/M003/sub/dir`;
+const deepSymlinkPath = `/home/user/myproject/.otto/workflow/projects/deadbeef42/worktrees/M003/sub/dir`;
 const deepResult = resolveProjectRootDbPath(deepSymlinkPath);
 assertEq(
   deepResult,
-  join("/home/user/myproject/.gsd/projects/deadbeef42", "gsd.db"),
-  "Deep /.gsd/projects/<hash>/worktrees/ path resolves to external project state DB",
+  join("/home/user/myproject/.otto/workflow/projects/deadbeef42", "otto.db"),
+  "Deep /.otto/workflow/projects/<hash>/worktrees/ path resolves to external project state DB",
 );
 
 // Non-worktree path should be unchanged
@@ -84,7 +84,7 @@ const normalPath = `/home/user/myproject`;
 const normalResult = resolveProjectRootDbPath(normalPath);
 assertEq(
   normalResult,
-  join("/home/user/myproject", ".gsd", "gsd.db"),
+  join("/home/user/myproject", ".otto/workflow", "otto.db"),
   "Non-worktree path is unchanged",
 );
 

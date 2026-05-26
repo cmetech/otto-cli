@@ -156,7 +156,7 @@ describe('toRoundResultResponse', () => {
 
 describe('isRemoteConfigured', () => {
   let tmpDir: string;
-  const origWorkflowHome = process.env['GSD_HOME'];
+  const origWorkflowHome = process.env['OTTO_HOME'];
   const origToken = process.env['DISCORD_BOT_TOKEN'];
 
   before(() => {
@@ -166,9 +166,9 @@ describe('isRemoteConfigured', () => {
   after(() => {
     rmSync(tmpDir, { recursive: true, force: true });
     if (origWorkflowHome !== undefined) {
-      process.env['GSD_HOME'] = origWorkflowHome;
+      process.env['OTTO_HOME'] = origWorkflowHome;
     } else {
-      delete process.env['GSD_HOME'];
+      delete process.env['OTTO_HOME'];
     }
     if (origToken !== undefined) {
       process.env['DISCORD_BOT_TOKEN'] = origToken;
@@ -178,7 +178,7 @@ describe('isRemoteConfigured', () => {
   });
 
   beforeEach(() => {
-    process.env['GSD_HOME'] = tmpDir;
+    process.env['OTTO_HOME'] = tmpDir;
     delete process.env['DISCORD_BOT_TOKEN'];
     delete process.env['SLACK_BOT_TOKEN'];
     delete process.env['TELEGRAM_BOT_TOKEN'];
@@ -242,11 +242,11 @@ describe('isRemoteConfigured', () => {
 
 describe('tryRemoteQuestions returns null when remote is not configured', () => {
   let tmpDir: string;
-  const origWorkflowHome = process.env['GSD_HOME'];
+  const origWorkflowHome = process.env['OTTO_HOME'];
 
   before(() => {
     tmpDir = mkdtempSync(join(tmpdir(), 'gsd-rq-null-test-'));
-    process.env['GSD_HOME'] = tmpDir;
+    process.env['OTTO_HOME'] = tmpDir;
     // No PREFERENCES.md, no tokens
     delete process.env['DISCORD_BOT_TOKEN'];
     delete process.env['SLACK_BOT_TOKEN'];
@@ -256,9 +256,9 @@ describe('tryRemoteQuestions returns null when remote is not configured', () => 
   after(() => {
     rmSync(tmpDir, { recursive: true, force: true });
     if (origWorkflowHome !== undefined) {
-      process.env['GSD_HOME'] = origWorkflowHome;
+      process.env['OTTO_HOME'] = origWorkflowHome;
     } else {
-      delete process.env['GSD_HOME'];
+      delete process.env['OTTO_HOME'];
     }
   });
 
@@ -274,14 +274,14 @@ describe('tryRemoteQuestions returns null when remote is not configured', () => 
 
 describe('tryRemoteQuestions returns error result on auth failure', () => {
   let tmpDir: string;
-  const origWorkflowHome = process.env['GSD_HOME'];
+  const origWorkflowHome = process.env['OTTO_HOME'];
   const origToken = process.env['DISCORD_BOT_TOKEN'];
 
   before(() => {
     tmpDir = mkdtempSync(join(tmpdir(), 'gsd-rq-auth-test-'));
     // Set up a valid discord config pointing at an unreachable/fake endpoint
     makePrefsFile(tmpDir, '---\nremote_questions:\n  channel: discord\n  channel_id: "123456789012345678"\n---\n');
-    process.env['GSD_HOME'] = tmpDir;
+    process.env['OTTO_HOME'] = tmpDir;
     // Use an obviously invalid token — the Discord API will reject it
     // but we don't actually call the live Discord API in unit tests.
     // Instead we rely on the fact that fetch() to Discord API will fail
@@ -292,9 +292,9 @@ describe('tryRemoteQuestions returns error result on auth failure', () => {
   after(() => {
     rmSync(tmpDir, { recursive: true, force: true });
     if (origWorkflowHome !== undefined) {
-      process.env['GSD_HOME'] = origWorkflowHome;
+      process.env['OTTO_HOME'] = origWorkflowHome;
     } else {
-      delete process.env['GSD_HOME'];
+      delete process.env['OTTO_HOME'];
     }
     if (origToken !== undefined) {
       process.env['DISCORD_BOT_TOKEN'] = origToken;
@@ -328,7 +328,7 @@ describe('tryRemoteQuestions returns error result on auth failure', () => {
 
 describe('remote-questions YAML frontmatter parsing (via isRemoteConfigured)', () => {
   let tmpDir: string;
-  const origWorkflowHome = process.env['GSD_HOME'];
+  const origWorkflowHome = process.env['OTTO_HOME'];
 
   before(() => {
     tmpDir = mkdtempSync(join(tmpdir(), 'gsd-rq-yaml-test-'));
@@ -337,15 +337,15 @@ describe('remote-questions YAML frontmatter parsing (via isRemoteConfigured)', (
   after(() => {
     rmSync(tmpDir, { recursive: true, force: true });
     if (origWorkflowHome !== undefined) {
-      process.env['GSD_HOME'] = origWorkflowHome;
+      process.env['OTTO_HOME'] = origWorkflowHome;
     } else {
-      delete process.env['GSD_HOME'];
+      delete process.env['OTTO_HOME'];
     }
     delete process.env['DISCORD_BOT_TOKEN'];
   });
 
   beforeEach(() => {
-    process.env['GSD_HOME'] = tmpDir;
+    process.env['OTTO_HOME'] = tmpDir;
     process.env['DISCORD_BOT_TOKEN'] = 'Bot fake-token';
   });
 

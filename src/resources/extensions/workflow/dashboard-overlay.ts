@@ -4,11 +4,11 @@
  * Full-screen overlay showing auto-mode progress: milestone/slice/task
  * breakdown, current unit, completed units, timing, and activity log.
  * Toggled with Ctrl+Alt+G (⌃⌥G on macOS), Ctrl+Shift+G fallback,
- * or opened from /loop24 status.
+ * or opened from /otto status.
  */
 
-import type { Theme } from "@loop24/pi-coding-agent";
-import { truncateToWidth, visibleWidth, matchesKey, Key } from "@loop24/pi-tui";
+import type { Theme } from "@otto/pi-coding-agent";
+import { truncateToWidth, visibleWidth, matchesKey, Key } from "@otto/pi-tui";
 import { deriveState } from "./state.js";
 import { loadFile } from "./files.js";
 import { isDbAvailable, getMilestoneSlices, getSliceTasks } from "./db.js";
@@ -303,7 +303,7 @@ export class DashboardOverlay {
     const hr = () => row(th.fg("dim", "─".repeat(contentWidth)));
     const centered = (content: string) => row(centerLine(content, contentWidth));
 
-    const title = th.fg("accent", th.bold("GSD Dashboard"));
+    const title = th.fg("accent", th.bold("OTTO Dashboard"));
     const isRemote = !!this.dashData.remoteSession;
     const status = this.dashData.active
       ? `${Date.now() % 2000 < 1000 ? th.fg("success", "●") : th.fg("dim", "○")} ${th.fg("success", "AUTO")}`
@@ -360,7 +360,7 @@ export class DashboardOverlay {
       )));
       lines.push(blank());
     } else if (this.dashData.paused) {
-      lines.push(row(th.fg("dim", "/gsd auto to resume")));
+      lines.push(row(th.fg("dim", "/otto auto to resume")));
       lines.push(blank());
     } else if (isRemote) {
       const rs = this.dashData.remoteSession!;
@@ -370,7 +370,7 @@ export class DashboardOverlay {
       lines.push(row(th.fg("text", `Remote session: ${unitDisplay}`)));
       lines.push(blank());
     } else {
-      lines.push(row(th.fg("dim", "No unit running · /gsd auto to start")));
+      lines.push(row(th.fg("dim", "No unit running · /otto auto to start")));
       lines.push(blank());
     }
 

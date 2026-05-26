@@ -1,12 +1,12 @@
 # ──────────────────────────────────────────────
-# GSD Docker Sandbox Template
+# OTTO Docker Sandbox Template
 # Base: docker/sandbox-templates:shell
-# Purpose: Isolated environment for GSD auto mode
+# Purpose: Isolated environment for OTTO auto mode
 # Usage: docker sandbox create --template ./docker
 # ──────────────────────────────────────────────
 FROM node:24-bookworm-slim
 
-# System dependencies required by GSD
+# System dependencies required by OTTO
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
@@ -15,28 +15,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gosu \
     && rm -rf /var/lib/apt/lists/*
 
-# Install GSD globally — version controlled via build arg
-ARG GSD_VERSION=latest
-RUN npm install -g @opengsd/gsd-pi@${GSD_VERSION}
+# Install OTTO globally — version controlled via build arg
+ARG OTTO_VERSION=latest
+RUN npm install -g @cmetech/otto@${OTTO_VERSION}
 
 # Create non-root user for sandbox isolation
-RUN groupadd --gid 1000 gsd \
-    && useradd --uid 1000 --gid gsd --shell /bin/bash --create-home gsd
+RUN groupadd --gid 1000 otto \
+    && useradd --uid 1000 --gid otto --shell /bin/bash --create-home otto
 
-# Persistent GSD state directory
-RUN mkdir -p /home/gsd/.gsd && chown -R gsd:gsd /home/gsd/.gsd
+# Persistent OTTO state directory
+RUN mkdir -p /home/otto/.otto && chown -R otto:otto /home/otto/.otto
 
 # Workspace directory — synced from host via Docker sandbox
 WORKDIR /workspace
-RUN chown gsd:gsd /workspace
+RUN chown otto:otto /workspace
 
-# Entrypoint handles UID/GID remapping, bootstrap, and drops to gsd user
+# Entrypoint handles UID/GID remapping, bootstrap, and drops to otto user
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY bootstrap.sh /usr/local/bin/bootstrap.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/bootstrap.sh
 
-# Expose default GSD web UI port
-EXPOSE 3000
-
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["gsd", "--help"]
+CMD ["otto", "--help"]

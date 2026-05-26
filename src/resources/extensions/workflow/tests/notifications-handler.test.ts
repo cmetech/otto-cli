@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Tests for /gsd notifications command handling and overlay launch behavior.
+// Project/App: OTTO
+// File Purpose: Tests for /otto notifications command handling and overlay launch behavior.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -20,7 +20,7 @@ function makeTempDir(prefix: string): string {
     `gsd-notifications-handler-test-${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   );
   mkdirSync(dir, { recursive: true });
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   return dir;
 }
 
@@ -130,5 +130,5 @@ test("notifications tail caps inline output and hints to open overlay", async (t
 
   assert.equal(notices.length, 1);
   assert.match(notices[0].message, /Last 40 notification\(s\):/);
-  assert.match(notices[0].message, /\.\.\. and \d+ more \(open \/gsd notifications to browse all\)/);
+  assert.match(notices[0].message, /\.\.\. and \d+ more \(open \/otto notifications to browse all\)/);
 });

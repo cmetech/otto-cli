@@ -1,4 +1,4 @@
-// LOOP24 + packages/pi-tui/src/components/truncated-text.ts - Single-line text component with width-aware truncation.
+// OTTO + packages/pi-tui/src/components/truncated-text.ts - Single-line text component with width-aware truncation.
 
 import type { Component } from "../tui.js";
 import { truncateToWidth, visibleWidth } from "../utils.js";

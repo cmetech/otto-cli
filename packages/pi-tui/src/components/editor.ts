@@ -1,4 +1,4 @@
-// LOOP24 + packages/pi-tui/src/components/editor.ts - Multi-line editor with autocomplete rendering.
+// OTTO + packages/pi-tui/src/components/editor.ts - Multi-line editor with autocomplete rendering.
 
 import type { AutocompleteProvider, CombinedAutocompleteProvider } from "../autocomplete.js";
 import { getEditorKeybindings } from "../keybindings.js";

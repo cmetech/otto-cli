@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-017 types for drift-driven state reconciliation.
 
 import type { DeriveStateOptions } from "../state.js";

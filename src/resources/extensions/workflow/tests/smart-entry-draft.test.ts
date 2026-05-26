@@ -11,7 +11,7 @@ import { resolveMilestoneFile } from "../paths.js";
 import { closeDatabase, insertMilestone, openDatabase } from "../db.js";
 
 function writeDraftOnlyMilestone(base: string): void {
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(
     join(milestoneDir, "M001-CONTEXT-DRAFT.md"),
@@ -23,7 +23,7 @@ test("deriveState returns needs-discussion for draft-only milestone", async () =
   const base = mkdtempSync(join(tmpdir(), "gsd-smart-entry-draft-"));
   try {
     writeDraftOnlyMilestone(base);
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Test Milestone", status: "needs-discussion" });
     const state = await deriveState(base);
     assert.equal(state.phase, "needs-discussion");

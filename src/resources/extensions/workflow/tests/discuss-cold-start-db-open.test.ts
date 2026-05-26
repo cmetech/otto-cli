@@ -1,7 +1,7 @@
 /**
  * Behavioural regression test for #5837.
  *
- * /gsd discuss silently exited on cold-start because showDiscuss() derived
+ * /otto discuss silently exited on cold-start because showDiscuss() derived
  * workflow state before opening the DB. On a cold-start session the DB file
  * exists on disk but is not open in-process, so deriveState() takes the
  * "DB unavailable" branch, reports no active milestone, and showDiscuss()
@@ -32,11 +32,11 @@ describe("discuss cold-start DB ordering (#5837)", () => {
   test("deriveState only surfaces a DB-resident milestone after ensureDbOpen runs", async () => {
     const base = realpathSync(mkdtempSync(join(tmpdir(), "gsd-discuss-cold-")));
     try {
-      mkdirSync(join(base, ".gsd"), { recursive: true });
+      mkdirSync(join(base, ".otto/workflow"), { recursive: true });
 
       // Seed a milestone into the DB, then close it — this is the cold-start
       // state: the DB file exists on disk but nothing is open in-process.
-      const dbPath = join(base, ".gsd", "gsd.db");
+      const dbPath = join(base, ".otto/workflow", "otto.db");
       assert.equal(openDatabase(dbPath), true);
       insertMilestone({ id: "M001", title: "Cold start milestone", status: "active" });
       closeDatabase();
@@ -60,7 +60,7 @@ describe("discuss cold-start DB ordering (#5837)", () => {
       assert.equal(
         warmState.activeMilestone?.id,
         "M001",
-        "after ensureDbOpen, deriveState must surface the DB-resident milestone so /gsd discuss does not silently exit",
+        "after ensureDbOpen, deriveState must surface the DB-resident milestone so /otto discuss does not silently exit",
       );
     } finally {
       if (isDbAvailable()) closeDatabase();

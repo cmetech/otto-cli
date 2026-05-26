@@ -5,7 +5,7 @@ name: spike
 version: 1
 mode: markdown-phase
 requires_project: false
-artifact_dir: .gsd/workflows/spikes/
+artifact_dir: .otto/workflow/workflows/spikes/
 </template_meta>
 
 <purpose>
@@ -71,6 +71,6 @@ Use for: technology evaluation, architecture decisions, "should we X?" questions
    `.claude/skills/<name>/SKILL.md`. That skill will auto-load on future
    similar tasks via `skill-discovery.ts`. If the recommendation is
    decision-only (no reusable guidance), suggest appending a one-liner to
-   `.gsd/DECISIONS.md` instead.
+   `.otto/workflow/DECISIONS.md` instead.
 
 </process>

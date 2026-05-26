@@ -1,4 +1,4 @@
-// LOOP24 - Agent session lifecycle and workspace runtime coordination
+// OTTO - Agent session lifecycle and workspace runtime coordination
 /**
  * AgentSession - Core abstraction for agent lifecycle and session management.
  *
@@ -24,9 +24,9 @@ import type {
 	AgentState,
 	AgentTool,
 	ThinkingLevel,
-} from "@loop24/pi-agent-core";
-import type { AssistantMessage, ImageContent, Message, Model, TextContent } from "@loop24/pi-ai";
-import { modelsAreEqual, resetApiProviders, supportsXhigh } from "@loop24/pi-ai";
+} from "@otto/pi-agent-core";
+import type { AssistantMessage, ImageContent, Message, Model, TextContent } from "@otto/pi-ai";
+import { modelsAreEqual, resetApiProviders, supportsXhigh } from "@otto/pi-ai";
 import { Type } from "@sinclair/typebox";
 import { getDocsPath } from "../config.js";
 import { getErrorMessage } from "../utils/error.js";
@@ -1779,7 +1779,7 @@ export class AgentSession {
 			// Extensions (e.g., discuss flows) may narrow the active tool list
 			// via setActiveTools() during a session. Without this refresh, the
 			// narrowed set persists into the next session — causing tools like
-			// gsd_plan_slice to be missing from auto-mode subagent sessions.
+			// otto_plan_slice to be missing from auto-mode subagent sessions.
 			this._refreshToolRegistry({
 				activeToolNames: this.getActiveToolNames(),
 				includeAllExtensionTools: true,

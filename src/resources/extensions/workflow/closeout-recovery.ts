@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Closeout git failure discovery, retry, and manual resolution helpers.
 
 import { execFileSync } from "node:child_process";
@@ -128,7 +128,7 @@ export function listUnresolvedCloseoutFailures(): CloseoutFailureRecord[] {
 
 export function formatCloseoutAutoBlockMessage(count: number): string {
   const noun = count === 1 ? "failure" : "failures";
-  return `Closeout recovery required: ${count} unresolved git closeout ${noun}. Run /gsd closeout status, then /gsd closeout retry or /gsd closeout resolve before resuming auto-mode.`;
+  return `Closeout recovery required: ${count} unresolved git closeout ${noun}. Run /otto closeout status, then /otto closeout retry or /otto closeout resolve before resuming auto-mode.`;
 }
 
 function selectFailure(unitId?: string): CloseoutFailureRecord | null {
@@ -156,7 +156,7 @@ export function resolveCloseoutRecoveryBasePath(projectRoot: string, record: Clo
   const parsed = parseUnitId(record.unitId);
   const milestoneId = parsed.milestone ?? (/^M\d+(?:-[a-z0-9]{6})?/.exec(record.unitId)?.[0] ?? "");
   if (milestoneId) {
-    const worktreePath = existingRealPath(join(projectRoot, ".gsd", "worktrees", milestoneId));
+    const worktreePath = existingRealPath(join(projectRoot, ".otto/workflow", "worktrees", milestoneId));
     if (worktreePath) return worktreePath;
   }
 
@@ -207,7 +207,7 @@ export function getCloseoutManualResolveBlocker(basePath: string): string | null
 
   const status = runGit(basePath, ["status", "--porcelain"]);
   if (status) {
-    return `Working tree still has uncommitted changes in ${basePath}. Commit, stash, or run /gsd closeout retry first.`;
+    return `Working tree still has uncommitted changes in ${basePath}. Commit, stash, or run /otto closeout retry first.`;
   }
 
   return null;

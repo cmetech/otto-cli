@@ -51,7 +51,7 @@ function makeBaseRepo(): string {
   git(["config", "user.name", "Test"], base);
   git(["config", "user.email", "test@test.com"], base);
   writeFileSync(join(base, "README.md"), "# test\n");
-  mkdirSync(join(base, ".gsd", "milestones", "M011"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M011"), { recursive: true });
   git(["add", "."], base);
   git(["commit", "-m", "init"], base);
   return base;
@@ -66,10 +66,10 @@ describe("#2821 Bug 1 — ASSESSMENT file force-synced on resume", () => {
   beforeEach(() => {
     mainBase = mkdtempSync(join(tmpdir(), "gsd-2821-main-"));
     wtBase = mkdtempSync(join(tmpdir(), "gsd-2821-wt-"));
-    mkdirSync(join(mainBase, ".gsd", "milestones", "M011", "slices", "S01"), {
+    mkdirSync(join(mainBase, ".otto/workflow", "milestones", "M011", "slices", "S01"), {
       recursive: true,
     });
-    mkdirSync(join(wtBase, ".gsd", "milestones", "M011", "slices", "S01"), {
+    mkdirSync(join(wtBase, ".otto/workflow", "milestones", "M011", "slices", "S01"), {
       recursive: true,
     });
   });
@@ -83,7 +83,7 @@ describe("#2821 Bug 1 — ASSESSMENT file force-synced on resume", () => {
     // Project root has ASSESSMENT with a PASS verdict (written by run-uat, synced by post-unit)
     const prAssessment = join(
       mainBase,
-      ".gsd",
+      ".otto/workflow",
       "milestones",
       "M011",
       "slices",
@@ -98,7 +98,7 @@ describe("#2821 Bug 1 — ASSESSMENT file force-synced on resume", () => {
     // Worktree has a stale ASSESSMENT with FAIL verdict (from the initial run-uat execution)
     const wtAssessment = join(
       wtBase,
-      ".gsd",
+      ".otto/workflow",
       "milestones",
       "M011",
       "slices",
@@ -124,7 +124,7 @@ describe("#2821 Bug 1 — ASSESSMENT file force-synced on resume", () => {
     // Project root has ASSESSMENT with verdict
     const prAssessment = join(
       mainBase,
-      ".gsd",
+      ".otto/workflow",
       "milestones",
       "M011",
       "slices",
@@ -143,7 +143,7 @@ describe("#2821 Bug 1 — ASSESSMENT file force-synced on resume", () => {
 
     const wtAssessment = join(
       wtBase,
-      ".gsd",
+      ".otto/workflow",
       "milestones",
       "M011",
       "slices",
@@ -165,7 +165,7 @@ describe("#2821 Bug 1 — ASSESSMENT file force-synced on resume", () => {
     // Project root has ASSESSMENT without verdict (incomplete)
     const prAssessment = join(
       mainBase,
-      ".gsd",
+      ".otto/workflow",
       "milestones",
       "M011",
       "slices",
@@ -177,7 +177,7 @@ describe("#2821 Bug 1 — ASSESSMENT file force-synced on resume", () => {
     // Worktree has ASSESSMENT with verdict:fail
     const wtAssessment = join(
       wtBase,
-      ".gsd",
+      ".otto/workflow",
       "milestones",
       "M011",
       "slices",
@@ -220,13 +220,13 @@ describe("#2821 Bug 2 — removeWorktree cleans up despite untracked files", () 
 
     // Simulate run-uat writing untracked files (S01-UAT-RESULT.md, ASSESSMENT)
     mkdirSync(
-      join(info.path, ".gsd", "milestones", "M011", "slices", "S01"),
+      join(info.path, ".otto/workflow", "milestones", "M011", "slices", "S01"),
       { recursive: true },
     );
     writeFileSync(
       join(
         info.path,
-        ".gsd",
+        ".otto/workflow",
         "milestones",
         "M011",
         "slices",
@@ -238,7 +238,7 @@ describe("#2821 Bug 2 — removeWorktree cleans up despite untracked files", () 
     writeFileSync(
       join(
         info.path,
-        ".gsd",
+        ".otto/workflow",
         "milestones",
         "M011",
         "slices",

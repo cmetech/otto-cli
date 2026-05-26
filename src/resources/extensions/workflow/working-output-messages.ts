@@ -1,4 +1,4 @@
-// LOOP24 + src/resources/extensions/workflow/working-output-messages.ts - Formats and audits user-facing working-state messages.
+// OTTO + src/resources/extensions/workflow/working-output-messages.ts - Formats and audits user-facing working-state messages.
 
 export type WorkingOutputSurface =
   | "loader"

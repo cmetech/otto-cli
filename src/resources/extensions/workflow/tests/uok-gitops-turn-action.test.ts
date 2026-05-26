@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: UOK turn git action regression tests.
 
 import test from "node:test";
@@ -60,7 +60,7 @@ test("uok gitops turn action status-only reports per-repository dirtiness in par
   const root = mkdtempSync(join(tmpdir(), "gsd-uok-gitops-parent-"));
   try {
     initRepo(root);
-    mkdirSync(join(root, ".gsd"), { recursive: true });
+    mkdirSync(join(root, ".otto/workflow"), { recursive: true });
     mkdirSync(join(root, "frontend"), { recursive: true });
     mkdirSync(join(root, "backend"), { recursive: true });
     initRepo(join(root, "frontend"));
@@ -68,7 +68,7 @@ test("uok gitops turn action status-only reports per-repository dirtiness in par
     writeFileSync(join(root, ".gitignore"), "frontend/\nbackend/\n", "utf-8");
     run("git add .gitignore", root);
     run('git commit -m "chore: ignore nested repos"', root);
-    writeFileSync(join(root, ".gsd", "PREFERENCES.md"), `---
+    writeFileSync(join(root, ".otto/workflow", "PREFERENCES.md"), `---
 version: 1
 workspace:
   mode: parent
@@ -79,7 +79,7 @@ workspace:
       path: backend
 ---
 `, "utf-8");
-    run("git add .gsd/PREFERENCES.md", root);
+    run("git add .otto/workflow/PREFERENCES.md", root);
     run('git commit -m "chore: configure parent workspace repos"', root);
 
     writeFileSync(join(root, "frontend", "README.md"), "# Dirty frontend\n", "utf-8");
@@ -112,8 +112,8 @@ test("uok gitops turn action snapshot writes snapshot refs", () => {
     });
     assert.equal(result.status, "ok");
     assert.ok(result.snapshotLabel?.includes("execute-task/M001/S01/T01"));
-    const refs = run("git for-each-ref refs/gsd/snapshots/ --format='%(refname)'", repo);
-    assert.ok(refs.includes("refs/gsd/snapshots/execute-task/M001/S01/T01/"));
+    const refs = run("git for-each-ref refs/otto/snapshots/ --format='%(refname)'", repo);
+    assert.ok(refs.includes("refs/otto/snapshots/execute-task/M001/S01/T01/"));
   } finally {
     rmSync(repo, { recursive: true, force: true });
   }
@@ -132,7 +132,7 @@ test("uok gitops turn action commit creates commit with unit trailer", () => {
     assert.equal(result.status, "ok");
     assert.ok(result.commitMessage?.includes("chore: auto-commit after execute-task"));
     const body = run("git log -1 --pretty=%B", repo);
-    assert.ok(body.includes("GSD-Unit: M001/S01/T02"));
+    assert.ok(body.includes("OTTO-Unit: M001/S01/T02"));
   } finally {
     rmSync(repo, { recursive: true, force: true });
   }
@@ -143,11 +143,12 @@ test("uok gitops turn action commits the active external-state worktree", () => 
   const externalState = mkdtempSync(join(tmpdir(), "gsd-uok-gitops-state-"));
   try {
     initRepo(projectRoot);
-    symlinkSync(externalState, join(projectRoot, ".gsd"), "junction");
+    mkdirSync(join(projectRoot, ".otto"), { recursive: true });
+    symlinkSync(externalState, join(projectRoot, ".otto/workflow"), "junction");
     mkdirSync(join(externalState, "worktrees"), { recursive: true });
-    run("git worktree add .gsd/worktrees/M001 -b milestone/M001", projectRoot);
+    run("git worktree add .otto/workflow/worktrees/M001 -b milestone/M001", projectRoot);
 
-    const worktreeRoot = realpathSync(join(projectRoot, ".gsd", "worktrees", "M001"));
+    const worktreeRoot = realpathSync(join(projectRoot, ".otto/workflow", "worktrees", "M001"));
     writeFileSync(join(worktreeRoot, "feature.txt"), "worktree change\n", "utf-8");
 
     const result = runTurnGitAction({
@@ -160,7 +161,7 @@ test("uok gitops turn action commits the active external-state worktree", () => 
     assert.equal(result.status, "ok");
     assert.ok(result.commitMessage?.includes("chore: auto-commit after execute-task"));
     assert.equal(run("git status --porcelain", worktreeRoot), "");
-    assert.ok(run("git log -1 --pretty=%B", worktreeRoot).includes("GSD-Unit: M001/S01/T04"));
+    assert.ok(run("git log -1 --pretty=%B", worktreeRoot).includes("OTTO-Unit: M001/S01/T04"));
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });
     rmSync(externalState, { recursive: true, force: true });
@@ -171,7 +172,7 @@ test("uok gitops turn action commit honors per-repo commit_policy skip", () => {
   const root = mkdtempSync(join(tmpdir(), "gsd-uok-gitops-commit-policy-"));
   try {
     initRepo(root);
-    mkdirSync(join(root, ".gsd"), { recursive: true });
+    mkdirSync(join(root, ".otto/workflow"), { recursive: true });
     mkdirSync(join(root, "frontend"), { recursive: true });
     mkdirSync(join(root, "backend"), { recursive: true });
     initRepo(join(root, "frontend"));
@@ -179,7 +180,7 @@ test("uok gitops turn action commit honors per-repo commit_policy skip", () => {
     writeFileSync(join(root, ".gitignore"), "frontend/\nbackend/\n", "utf-8");
     run("git add .gitignore", root);
     run('git commit -m "chore: ignore nested repos"', root);
-    writeFileSync(join(root, ".gsd", "PREFERENCES.md"), `---
+    writeFileSync(join(root, ".otto/workflow", "PREFERENCES.md"), `---
 version: 1
 workspace:
   mode: parent
@@ -191,7 +192,7 @@ workspace:
       path: backend
 ---
 `, "utf-8");
-    run("git add .gsd/PREFERENCES.md", root);
+    run("git add .otto/workflow/PREFERENCES.md", root);
     run('git commit -m "chore: configure commit policies"', root);
 
     writeFileSync(join(root, "frontend", "README.md"), "# frontend dirty\n", "utf-8");

@@ -16,8 +16,8 @@ import { handlePlanMilestone, type PlanMilestoneParams } from "../tools/plan-mil
 
 function makeTmpBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-plan-sketch-render-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   return base;
 }
 
@@ -90,7 +90,7 @@ test("ROADMAP renders sketch slices with [sketch] badge and full slices without"
       assert.fail(`handlePlanMilestone failed: ${result.error}`);
     }
 
-    const roadmapPath = join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md");
+    const roadmapPath = join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md");
     const roadmap = readFileSync(roadmapPath, "utf-8");
 
     // S01 is a full slice — no sketch badge.
@@ -142,7 +142,7 @@ test("ROADMAP omits sketch badge when no slices are sketches", async () => {
     }
 
     const roadmap = readFileSync(
-      join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
       "utf-8",
     );
 

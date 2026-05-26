@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for milestone and artifact database row mappers.
 
 import { describe, test } from "node:test";

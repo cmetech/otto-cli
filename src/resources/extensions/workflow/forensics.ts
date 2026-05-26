@@ -8,8 +8,8 @@
  * Entry point: handleForensics() called from commands.ts
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
-import { CONFIG_DIR_NAME } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
+import { CONFIG_DIR_NAME } from "@otto/pi-coding-agent";
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -59,7 +59,7 @@ interface UnitTrace {
   mtime: number;
 }
 
-/** Summary of .gsd/activity/ directory metadata. */
+/** Summary of .otto/workflow/activity/ directory metadata. */
 interface ActivityLogMeta {
   fileCount: number;
   totalSizeBytes: number;
@@ -68,7 +68,7 @@ interface ActivityLogMeta {
 }
 
 /**
- * Summary of .gsd/journal/ data for forensic investigation.
+ * Summary of .otto/workflow/journal/ data for forensic investigation.
  *
  * To avoid loading huge journal histories into memory, only the most recent
  * daily files are fully parsed. Older files are line-counted for totals.
@@ -133,17 +133,17 @@ Use keywords from the user's problem description and the anomaly summaries in th
 
 1. **Search closed issues** for similar keywords:
    \`\`\`
-   gh issue list --repo open-gsd/gsd-pi --state closed --search "<keywords from root cause>" --limit 20
+   gh issue list --repo open-gsd/otto-pi --state closed --search "<keywords from root cause>" --limit 20
    \`\`\`
 
 2. **Search open PRs** that might contain the fix:
    \`\`\`
-   gh pr list --repo open-gsd/gsd-pi --state open --search "<keywords>" --limit 10
+   gh pr list --repo open-gsd/otto-pi --state open --search "<keywords>" --limit 10
    \`\`\`
 
 3. **Search merged PRs** that may have already fixed this:
    \`\`\`
-   gh pr list --repo open-gsd/gsd-pi --state merged --search "<keywords>" --limit 10
+   gh pr list --repo open-gsd/otto-pi --state merged --search "<keywords>" --limit 10
    \`\`\`
 
 ### Analysis
@@ -170,7 +170,7 @@ async function writeForensicsDedupPref(ctx: ExtensionCommandContext, enabled: bo
 
   const frontmatter = serializePreferencesToFrontmatter(prefs);
   const raw = existsSync(prefsPath) ? readFileSync(prefsPath, "utf-8") : "";
-  let body = `\n# GSD Skill Preferences\n\nSee \`~/${CONFIG_DIR_NAME}/agent/extensions/workflow/docs/preferences-reference.md\` for full field documentation and examples.\n`;
+  let body = `\n# OTTO Skill Preferences\n\nSee \`~/${CONFIG_DIR_NAME}/agent/extensions/workflow/docs/preferences-reference.md\` for full field documentation and examples.\n`;
   const start = raw.startsWith("---\n") ? 4 : raw.startsWith("---\r\n") ? 5 : -1;
   if (start !== -1) {
     const closingIdx = raw.indexOf("\n---", start);
@@ -198,7 +198,7 @@ export async function handleForensics(
   const basePath = process.cwd();
   const root = workflowRoot(basePath);
   if (!existsSync(root)) {
-    ctx.ui.notify("No GSD state found. Run /gsd auto first.", "warning");
+    ctx.ui.notify("No OTTO state found. Run /otto auto first.", "warning");
     return;
   }
 
@@ -328,10 +328,10 @@ export async function buildForensicReport(basePath: string): Promise<ForensicRep
     }
   }
 
-  // 8. version — use GSD_VERSION env var set by the loader at startup.
+  // 8. version — use OTTO_VERSION env var set by the loader at startup.
   // Extensions run from ~/.otto/agent/extensions/workflow/ at runtime, so path-traversal
   // from import.meta.url would resolve to ~/package.json (wrong on every system).
-  const workflowVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || "unknown";
+  const workflowVersion = process.env.OTTO_VERSION || "unknown";
 
   // 9. Scan journal for flow timeline and structured events
   const journalSummary = scanJournalForForensics(basePath);
@@ -829,9 +829,9 @@ export function detectWorktreeOrphans(
       summary: `${count} worktree orphan(s) detected (${reason})`,
       details:
         reason === "in-progress-unmerged"
-          ? "Auto-mode exited without completing a milestone; live work sits on an unmerged milestone branch. Run `/gsd auto` to resume, or merge manually."
+          ? "Auto-mode exited without completing a milestone; live work sits on an unmerged milestone branch. Run `/otto auto` to resume, or merge manually."
           : reason === "complete-unmerged"
-            ? "A completed milestone's branch was never merged back to main. Run `/gsd doctor fix` to resolve."
+            ? "A completed milestone's branch was never merged back to main. Run `/otto doctor fix` to resolve."
             : `Reason: ${reason}.`,
     });
   }
@@ -846,7 +846,7 @@ export function detectWorktreeOrphans(
       type: "worktree-unmerged-exit",
       severity: "warning",
       summary: `${summary.exitsWithUnmergedWork} auto-exit(s) left milestone work unmerged`,
-      details: `Exit reasons: ${reasonBreakdown || "(none)"} · Producer-side signal for orphaned worktrees. Inspect .gsd/journal/*.jsonl with eventType:"auto-exit" for per-exit detail.`,
+      details: `Exit reasons: ${reasonBreakdown || "(none)"} · Producer-side signal for orphaned worktrees. Inspect .otto/workflow/journal/*.jsonl with eventType:"auto-exit" for per-exit detail.`,
     });
   }
 }
@@ -965,10 +965,10 @@ function saveForensicReport(basePath: string, report: ForensicReport, problemDes
   const redact = (s: string) => redactForGitHub(s, basePath);
 
   const sections: string[] = [
-    `# GSD Forensic Report`,
+    `# OTTO Forensic Report`,
     ``,
     `**Generated:** ${report.timestamp}`,
-    `**GSD Version:** ${report.workflowVersion}`,
+    `**OTTO Version:** ${report.workflowVersion}`,
     `**Active Milestone:** ${report.activeMilestone ?? "none"}`,
     `**Active Slice:** ${report.activeSlice ?? "none"}`,
     `**Active Worktree:** ${report.activeWorktree ?? "none"}`,
@@ -1288,7 +1288,7 @@ function formatReportForPrompt(report: ForensicReport): string {
   } else {
     sections.push(`### Completed Keys: ${report.completedKeys.length}`);
   }
-  sections.push(`### GSD Version: ${report.workflowVersion}`);
+  sections.push(`### OTTO Version: ${report.workflowVersion}`);
   sections.push(`### Active Milestone: ${report.activeMilestone ?? "none"}`);
   sections.push(`### Active Slice: ${report.activeSlice ?? "none"}`);
   if (report.activeWorktree) {
@@ -1316,11 +1316,11 @@ function redactForGitHub(text: string, basePath: string): string {
 
   // Replace absolute paths
   result = result.replace(pathRe(basePath), ".");
-  // Redact GSD_HOME first (when it's outside ~), then OS home.
+  // Redact OTTO_HOME first (when it's outside ~), then OS home.
   // Order matters: longer path must be replaced before the shorter prefix.
   const workflowHomePath = workflowHome();
   if (!workflowHomePath.startsWith(homedir())) {
-    result = result.replace(pathRe(workflowHomePath), "~/.gsd");
+    result = result.replace(pathRe(workflowHomePath), "~/.otto");
   }
   result = result.replace(pathRe(homedir()), "~");
 

@@ -79,7 +79,7 @@ function setupTestEnvironment(): void {
   tempDir = join(tmpdir(), `pre-exec-fail-closed-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(tempDir, { recursive: true });
 
-  const workflowDir = join(tempDir, ".gsd");
+  const workflowDir = join(tempDir, ".otto/workflow");
   mkdirSync(workflowDir, { recursive: true });
 
   const milestonesDir = join(workflowDir, "milestones", "M001", "slices", "S01", "tasks");
@@ -88,7 +88,7 @@ function setupTestEnvironment(): void {
   process.chdir(tempDir);
   _clearWorkflowRootCache();
 
-  dbPath = join(workflowDir, "gsd.db");
+  dbPath = join(workflowDir, "otto.db");
   openDatabase(dbPath);
 }
 
@@ -118,7 +118,7 @@ ${yamlLines.join("\n")}
 
 # Workflow Preferences
 `;
-  writeFileSync(join(tempDir, ".gsd", "PREFERENCES.md"), prefsContent);
+  writeFileSync(join(tempDir, ".otto/workflow", "PREFERENCES.md"), prefsContent);
   invalidateAllCaches();
   _clearWorkflowRootCache();
 }

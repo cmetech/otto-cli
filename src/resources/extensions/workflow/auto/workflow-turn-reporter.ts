@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Thin adapter for workflow turn observer reporting.
 
 import type {

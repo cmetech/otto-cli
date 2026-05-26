@@ -240,40 +240,40 @@ describe("ExtensionRunner.createContext", () => {
 });
 
 describe("ExtensionRunner protected commands", () => {
-	it("resolves /gsd to the bundled Workflow extension even when another extension loads first", () => {
+	it("resolves /otto to the bundled Workflow extension even when another extension loads first", () => {
 		const dir = mkdtempSync(join(tmpdir(), "runner-test-"));
 		try {
 			const sessionManager = SessionManager.create(dir, dir);
 			const authStorage = AuthStorage.create();
 			const modelRegistry = new ModelRegistry(authStorage, join(dir, "models.json"));
 			const runtime = makeMinimalRuntime();
-			const userExt = makeCommandExtension("/tmp/extensions/user-spoof/index.ts", "gsd", "spoof");
-			const workflowExt = makeCommandExtension(`${dir}/extensions/gsd/index.ts`, "gsd", "bundled");
+			const userExt = makeCommandExtension("/tmp/extensions/user-spoof/index.ts", "otto", "spoof");
+			const workflowExt = makeCommandExtension(`${dir}/extensions/workflow/index.ts`, "otto", "bundled");
 			const runner = new ExtensionRunner([userExt, workflowExt], runtime, dir, sessionManager, modelRegistry);
 
-			const command = runner.getCommand("gsd");
+			const command = runner.getCommand("otto");
 			assert.equal(command?.description, "bundled");
 		} finally {
 			rmSync(dir, { recursive: true, force: true });
 		}
 	});
 
-	it("omits spoofed /gsd from registered extension commands", () => {
+	it("omits spoofed /otto from registered extension commands", () => {
 		const dir = mkdtempSync(join(tmpdir(), "runner-test-"));
 		try {
 			const sessionManager = SessionManager.create(dir, dir);
 			const authStorage = AuthStorage.create();
 			const modelRegistry = new ModelRegistry(authStorage, join(dir, "models.json"));
 			const runtime = makeMinimalRuntime();
-			const userExt = makeCommandExtension("/tmp/extensions/user-spoof/index.ts", "gsd", "spoof");
-			const workflowExt = makeCommandExtension(`${dir}/extensions/gsd/index.ts`, "gsd", "bundled");
+			const userExt = makeCommandExtension("/tmp/extensions/user-spoof/index.ts", "otto", "spoof");
+			const workflowExt = makeCommandExtension(`${dir}/extensions/workflow/index.ts`, "otto", "bundled");
 			const runner = new ExtensionRunner([userExt, workflowExt], runtime, dir, sessionManager, modelRegistry);
 
 			const commands = runner.getRegisteredCommands();
 			assert.deepEqual(commands.map((command) => command.description), ["bundled"]);
 			assert.ok(
 				runner.getCommandDiagnostics().some((diagnostic) => diagnostic.message.includes("protected command owner")),
-				"spoofed /gsd conflict should be reported",
+				"spoofed /otto conflict should be reported",
 			);
 		} finally {
 			rmSync(dir, { recursive: true, force: true });

@@ -1,7 +1,7 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Registers journal query tools.
 import { Type } from "@sinclair/typebox";
-import type { ExtensionAPI } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI } from "@otto/pi-coding-agent";
 
 import { queryJournal } from "../journal.js";
 import { logWarning } from "../workflow-logger.js";
@@ -10,12 +10,12 @@ import { resolveCtxCwd } from "./dynamic-tools.js";
 
 export function registerJournalTools(pi: ExtensionAPI): void {
   pi.registerTool({
-    name: "gsd_journal_query",
+    name: "otto_journal_query",
     label: "Query Journal",
     description:
       "Query the structured event journal for auto-mode iterations. " +
       "Returns matching journal entries filtered by flow ID, unit ID, rule name, event type, or time range.",
-    promptSnippet: "Query the GSD event journal with filters (flowId, unitId, rule, eventType, time range, limit)",
+    promptSnippet: "Query the OTTO event journal with filters (flowId, unitId, rule, eventType, time range, limit)",
     promptGuidelines: [
       "Filter by flowId to trace all events from a single auto-mode iteration.",
       "Filter by unitId to reconstruct the causal chain for a specific milestone/slice/task.",
@@ -56,7 +56,7 @@ export function registerJournalTools(pi: ExtensionAPI): void {
         };
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        logWarning("tool", `gsd_journal_query tool failed: ${msg}`);
+        logWarning("tool", `otto_journal_query tool failed: ${msg}`);
         return {
           content: [{ type: "text" as const, text: `Error querying journal: ${msg}` }],
           details: { operation: "journal_query", error: msg } as any,

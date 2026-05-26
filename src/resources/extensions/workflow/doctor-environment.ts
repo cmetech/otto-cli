@@ -39,25 +39,25 @@ const CMD_TIMEOUT = 5_000;
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 /** Worktree sentinel — path segment that marks an auto-worktree directory. */
-const WORKTREE_PATH_SEGMENT = `${join(".gsd", "worktrees")}/`;
+const WORKTREE_PATH_SEGMENT = `${join(".otto/workflow", "worktrees")}/`;
 
 /**
- * Resolve the project root when running inside a `.gsd/worktrees/<name>/`
+ * Resolve the project root when running inside a `.otto/workflow/worktrees/<name>/`
  * auto-worktree. Returns `null` if not in a worktree.
  *
  * Detection order:
- *   1. `GSD_WORKTREE` env var (set by the worktree launcher)
- *   2. `.gsd/worktrees/` segment in basePath
+ *   1. `OTTO_WORKTREE` env var (set by the worktree launcher)
+ *   2. `.otto/workflow/worktrees/` segment in basePath
  */
 function resolveWorktreeProjectRoot(basePath: string): string | null {
-  const envRoot = (process.env.LOOP24_WORKTREE ?? process.env.GSD_WORKTREE);
+  const envRoot = (process.env.OTTO_WORKTREE ?? process.env.OTTO_WORKTREE);
   if (envRoot) return envRoot;
 
   const normalised = basePath.replace(/\\/g, "/");
   const idx = normalised.indexOf(WORKTREE_PATH_SEGMENT.replace(/\\/g, "/"));
   if (idx === -1) return null;
 
-  // Everything before `.gsd/worktrees/` is the project root
+  // Everything before `.otto/workflow/worktrees/` is the project root
   return basePath.slice(0, idx);
 }
 
@@ -555,7 +555,7 @@ export function runEnvironmentChecks(basePath: string): EnvironmentCheckResult[]
 
 /**
  * Run environment checks with git remote check included.
- * Use this for explicit /loop24 doctor invocations, not pre-dispatch gates.
+ * Use this for explicit /otto doctor invocations, not pre-dispatch gates.
  */
 export function runFullEnvironmentChecks(basePath: string): EnvironmentCheckResult[] {
   const results = runEnvironmentChecks(basePath);
@@ -568,7 +568,7 @@ export function runFullEnvironmentChecks(basePath: string): EnvironmentCheckResu
 
 /**
  * Run slow opt-in checks (build and/or test).
- * These are never run on the pre-dispatch gate — only on explicit /loop24 doctor --build/--test.
+ * These are never run on the pre-dispatch gate — only on explicit /otto doctor --build/--test.
  */
 export function runSlowEnvironmentChecks(
   basePath: string,

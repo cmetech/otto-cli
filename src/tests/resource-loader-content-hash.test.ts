@@ -5,14 +5,14 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 /**
- * Regression test for open-gsd/gsd-pi #4787.
+ * Regression test for open-gsd/otto-pi #4787.
  *
  * Background: `computeResourceFingerprint` previously hashed the relative
  * file path + file size only. Same-byte-length edits to bundled prompt
  * templates (e.g. the #4570 retry-cap fix to parallel-research-slices.md)
  * slipped through the fingerprint gate in `initResources`, so existing
  * installs silently kept serving the stale cached copy from
- * `~/.gsd/agent/extensions/gsd/prompts/`.
+ * `~/.otto/workflow/agent/extensions/workflow/prompts/`.
  *
  * The fix hashes file CONTENTS (sha256) instead of just size — any edit,
  * regardless of length, produces a different fingerprint and triggers a

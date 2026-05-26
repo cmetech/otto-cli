@@ -1,4 +1,4 @@
-// LOOP24 - Shared AI provider type definitions
+// OTTO - Shared AI provider type definitions
 import type { AssistantMessageEventStream } from "./utils/event-stream.js";
 
 export type { AssistantMessageEventStream } from "./utils/event-stream.js";

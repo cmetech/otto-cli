@@ -12,10 +12,10 @@ afterEach(() => {
 });
 
 describe("bootstrap deriveState DB guards (#3844)", () => {
-  test("ensureDbOpen creates and opens the project DB when .gsd exists", async (t) => {
+  test("ensureDbOpen creates and opens the project DB when .otto/workflow exists", async (t) => {
     const base = realpathSync(mkdtempSync(join(tmpdir(), "gsd-ensure-db-")));
     t.after(() => rmSync(base, { recursive: true, force: true }));
-    mkdirSync(join(base, ".gsd"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
 
     assert.equal(await ensureDbOpen(base), true);
     assert.equal(isDbAvailable(), true);

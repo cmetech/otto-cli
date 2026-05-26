@@ -84,7 +84,7 @@ export function captureIntegrationBranch(basePath: string, milestoneId: string):
 
 /**
  * Detect the active worktree name from the current working directory.
- * Returns null if not inside a workflow worktree (.gsd/worktrees/<name>/).
+ * Returns null if not inside a workflow worktree (.otto/workflow/worktrees/<name>/).
  */
 export function detectWorktreeName(basePath: string): string | null {
   const normalizedPath = basePath.replaceAll("\\", "/");
@@ -98,13 +98,13 @@ export function detectWorktreeName(basePath: string): string | null {
 /**
  * Resolve the project root from a path that may be inside a worktree.
  * If the path contains a worktrees segment, returns the portion before
- * `/.gsd/`. Otherwise returns the input unchanged.
+ * `/.otto/workflow/`. Otherwise returns the input unchanged.
  *
- * When the worker was spawned with GSD_PROJECT_ROOT set, use that directly —
+ * When the worker was spawned with OTTO_PROJECT_ROOT set, use that directly —
  * the coordinator already knows the real project root unambiguously.
  *
- * When `/.gsd/` in the resolved path is actually the user-level `~/.otto/`
- * (common when `.gsd` is a symlink into `~/.otto/projects/<hash>`), the
+ * When `/.otto/workflow/` in the resolved path is actually the user-level `~/.otto/`
+ * (common when `.otto/workflow` is a symlink into `~/.otto/projects/<hash>`), the
  * string-slice heuristic would return `~` — which is catastrophically wrong.
  * In that case, fall back to reading the worktree's `.git` file, which
  * contains a `gitdir:` pointer to the real project's `.git/worktrees/<name>`,

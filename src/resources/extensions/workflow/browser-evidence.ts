@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Shared browser-observable UAT requirement and evidence detection.
 
 export const BROWSER_REQUIREMENT_RE = /\b(?:browser|file:\/\/|localhost|dom|localstorage|click(?:ing|ed)?|button|visible|screenshot|snapshot|reload(?:ed)?|page refresh|user-visible|strikethrough|search box)\b/i;

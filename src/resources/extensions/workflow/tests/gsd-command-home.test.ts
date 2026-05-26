@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Behavior tests for the state-aware /gsd home menu.
+// Project/App: OTTO
+// File Purpose: Behavior tests for the state-aware /otto home menu.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -36,7 +36,7 @@ function action(model: ReturnType<typeof buildHomeModel>, id: string) {
   return match;
 }
 
-test("/gsd home keeps the stable five user-intent choices", () => {
+test("/otto home keeps the stable five user-intent choices", () => {
   const model = buildHomeModel(baseState());
 
   assert.deepEqual(
@@ -51,7 +51,7 @@ test("/gsd home keeps the stable five user-intent choices", () => {
   );
 });
 
-test("/gsd home recommends step mode for active unblocked work", () => {
+test("/otto home recommends step mode for active unblocked work", () => {
   const model = buildHomeModel(baseState());
 
   assert.equal(action(model, "continue_step").recommended, true);
@@ -60,7 +60,7 @@ test("/gsd home recommends step mode for active unblocked work", () => {
   assert.equal(action(model, "fix_recover").enabled, false);
 });
 
-test("/gsd home makes blockers the top state and disables advancing choices", () => {
+test("/otto home makes blockers the top state and disables advancing choices", () => {
   const model = buildHomeModel(baseState({
     phase: "blocked",
     blockers: ["Milestone M001 is blocked because milestone validation returned needs-attention."],
@@ -74,7 +74,7 @@ test("/gsd home makes blockers the top state and disables advancing choices", ()
   assert.match(action(model, "continue_step").description, /Unavailable/);
 });
 
-test("/gsd home recommends start/configure after all milestones complete", () => {
+test("/otto home recommends start/configure after all milestones complete", () => {
   const model = buildHomeModel(baseState({
     activeMilestone: null,
     activeSlice: null,
@@ -96,7 +96,7 @@ test("showWorkflowHome renders the five-slot home text without an interactive TU
   const base = mkdtempSync(join(tmpdir(), "gsd-home-"));
   const notifications: Array<{ message: string; level: string }> = [];
   try {
-    const milestoneDir = join(base, ".gsd", "milestones", "M001");
+    const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
     mkdirSync(milestoneDir, { recursive: true });
     writeFileSync(
       join(milestoneDir, "M001-ROADMAP.md"),
@@ -122,7 +122,7 @@ test("showWorkflowHome renders the five-slot home text without an interactive TU
     );
 
     const message = notifications.at(-1)?.message ?? "";
-    assert.match(message, /GSD — What now\?/);
+    assert.match(message, /OTTO — What now\?/);
     assert.match(message, /Continue one step/);
     assert.match(message, /Run automatically/);
     assert.match(message, /Review status/);

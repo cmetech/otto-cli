@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Worktree Lifecycle Module — typed-result contract tests for enterMilestone (ADR-016).
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -97,11 +97,11 @@ function makeGitRepoBase(opts?: {
   git(["config", "user.email", "test@test.com"]);
   git(["config", "user.name", "Test"]);
   writeFileSync(join(base, "README.md"), "# test\n");
-  writeFileSync(join(base, ".gitignore"), ".gsd/worktrees/\n");
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  writeFileSync(join(base, ".gitignore"), ".otto/workflow/worktrees/\n");
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   if (opts?.isolation && opts.isolation !== "none") {
     writeFileSync(
-      join(base, ".gsd", "preferences.md"),
+      join(base, ".otto/workflow", "preferences.md"),
       `## Git\n- isolation: ${opts.isolation}\n`,
     );
   }
@@ -130,7 +130,7 @@ function makeCtx(): NotifyCtx & {
 
 function makeDbBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-lifecycle-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -161,13 +161,13 @@ test("enterMilestone returns ok:true mode:worktree on successful create", (t) =>
   if (result.ok) {
     assert.equal(result.mode, "worktree");
     assert.ok(
-      result.path.endsWith("/.gsd/worktrees/M001"),
-      `expected path to end with /.gsd/worktrees/M001, got ${result.path}`,
+      result.path.endsWith("/.otto/workflow/worktrees/M001"),
+      `expected path to end with /.otto/workflow/worktrees/M001, got ${result.path}`,
     );
   }
   assert.ok(
-    s.basePath.endsWith("/.gsd/worktrees/M001"),
-    `expected s.basePath to end with /.gsd/worktrees/M001, got ${s.basePath}`,
+    s.basePath.endsWith("/.otto/workflow/worktrees/M001"),
+    `expected s.basePath to end with /.otto/workflow/worktrees/M001, got ${s.basePath}`,
   );
   // After C3 (#5626) `invalidateAllCaches` is inlined; assertion against
   // `deps.calls` for cache invalidation is no longer possible.
@@ -313,7 +313,7 @@ test("enterMilestone enters existing worktree when path resolves", (t) => {
   const previousCwd = process.cwd();
   const base = makeGitRepoBase({ isolation: "worktree" });
   t.after(() => cleanupRepoBase(base, previousCwd));
-  const wt = join(base, ".gsd", "worktrees", "M001");
+  const wt = join(base, ".otto/workflow", "worktrees", "M001");
   execFileSync("git", ["checkout", "-b", "milestone/M001"], {
     cwd: base,
     stdio: "pipe",
@@ -336,8 +336,8 @@ test("enterMilestone enters existing worktree when path resolves", (t) => {
   if (result.ok) {
     assert.equal(result.mode, "worktree");
     assert.ok(
-      result.path.endsWith("/.gsd/worktrees/M001"),
-      `expected path to end with /.gsd/worktrees/M001, got ${result.path}`,
+      result.path.endsWith("/.otto/workflow/worktrees/M001"),
+      `expected path to end with /.otto/workflow/worktrees/M001, got ${result.path}`,
     );
   }
 });
@@ -345,7 +345,7 @@ test("enterMilestone enters existing worktree when path resolves", (t) => {
 test("enterMilestone returns ok:false reason:lease-conflict when another worker holds the lease", (t) => {
   const base = makeDbBase();
   t.after(() => cleanupDbBase(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   const holder = registerAutoWorker({ projectRootRealpath: base });
   const contender = registerAutoWorker({ projectRootRealpath: base });
@@ -379,7 +379,7 @@ test("enterMilestone is idempotent when already in the milestone worktree", (t) 
   const previousCwd = process.cwd();
   const base = makeGitRepoBase({ isolation: "worktree" });
   t.after(() => cleanupRepoBase(base, previousCwd));
-  const wt = join(base, ".gsd", "worktrees", "M001");
+  const wt = join(base, ".otto/workflow", "worktrees", "M001");
 
   const s = makeSession({
     basePath: wt,
@@ -431,7 +431,7 @@ test("enterMilestone returns ok:false reason:invalid-milestone-id on path traver
 test("exitMilestone forwards preserveWorktree to teardown on non-merge exit", () => {
   let capturedOpts: { preserveBranch?: boolean; preserveWorktree?: boolean } | undefined;
   const s = makeSession({
-    basePath: "/project/.gsd/worktrees/M001",
+    basePath: "/project/.otto/workflow/worktrees/M001",
     originalBasePath: "/project",
   });
   const deps = makeDeps({
@@ -544,7 +544,7 @@ test("degradeToBranchMode marks degraded and notifies on branch-mode failure", (
 test("restoreToProjectRoot restores basePath to originalBasePath and rebuilds git service", () => {
   const s = makeSession();
   s.originalBasePath = "/project";
-  s.basePath = "/project/.gsd/worktrees/M001";
+  s.basePath = "/project/.otto/workflow/worktrees/M001";
   const deps = makeDeps();
   const lifecycle = new WorktreeLifecycle(s, deps);
 
@@ -567,7 +567,7 @@ test("restoreToProjectRoot rebuilds git service via gitServiceFactory at the res
   // factory is invoked with the restored basePath.
   const s = makeSession();
   s.originalBasePath = "/project";
-  s.basePath = "/project/.gsd/worktrees/M001";
+  s.basePath = "/project/.otto/workflow/worktrees/M001";
   const deps = makeDeps();
   const lifecycle = new WorktreeLifecycle(s, deps);
 
@@ -599,7 +599,7 @@ test("restoreToProjectRoot completes session-state restore even when chdir fails
   // cannot be chdir'd into.
   const s = makeSession();
   s.originalBasePath = "/this/path/should/not/exist/in/any/test/env";
-  s.basePath = "/project/.gsd/worktrees/M001";
+  s.basePath = "/project/.otto/workflow/worktrees/M001";
   const deps = makeDeps();
   const lifecycle = new WorktreeLifecycle(s, deps);
 
@@ -693,7 +693,7 @@ test("mergeMilestoneStandalone fails loud when both base paths are empty", () =>
 
 test("resumeFromPausedSession adopts the persisted worktree path when it is a git worktree", (t) => {
   const wtDir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-resume-test-")));
-  writeFileSync(join(wtDir, ".git"), "gitdir: /tmp/gsd-resume-test/.git/worktrees/M001\n");
+  writeFileSync(join(wtDir, ".git"), "gitdir: /tmp/otto-resume-test/.git/worktrees/M001\n");
   t.after(() => { try { rmSync(wtDir, { recursive: true, force: true }); } catch { /* */ } });
 
   const s = makeSession();
@@ -767,7 +767,7 @@ test("adoptOrphanWorktree swaps to worktree path and reverts to base on !merged"
   const previousCwd = process.cwd();
   const base = makeGitRepoBase({ isolation: "worktree" });
   t.after(() => cleanupRepoBase(base, previousCwd));
-  const wt = join(base, ".gsd", "worktrees", "M001");
+  const wt = join(base, ".otto/workflow", "worktrees", "M001");
   execFileSync("git", ["checkout", "-b", "milestone/M001"], { cwd: base, stdio: "pipe" });
   execFileSync("git", ["checkout", "main"], { cwd: base, stdio: "pipe" });
   execFileSync("git", ["worktree", "add", wt, "milestone/M001"], { cwd: base, stdio: "pipe" });
@@ -794,7 +794,7 @@ test("adoptOrphanWorktree holds the swap on merged && active", (t) => {
   const previousCwd = process.cwd();
   const base = makeGitRepoBase({ isolation: "worktree" });
   t.after(() => cleanupRepoBase(base, previousCwd));
-  const wt = join(base, ".gsd", "worktrees", "M001");
+  const wt = join(base, ".otto/workflow", "worktrees", "M001");
   execFileSync("git", ["checkout", "-b", "milestone/M001"], { cwd: base, stdio: "pipe" });
   execFileSync("git", ["checkout", "main"], { cwd: base, stdio: "pipe" });
   execFileSync("git", ["worktree", "add", wt, "milestone/M001"], { cwd: base, stdio: "pipe" });
@@ -817,7 +817,7 @@ test("adoptOrphanWorktree restores prior paths on merged && !active", (t) => {
   const previousCwd = process.cwd();
   const base = makeGitRepoBase({ isolation: "worktree" });
   t.after(() => cleanupRepoBase(base, previousCwd));
-  const wt = join(base, ".gsd", "worktrees", "M001");
+  const wt = join(base, ".otto/workflow", "worktrees", "M001");
   execFileSync("git", ["checkout", "-b", "milestone/M001"], { cwd: base, stdio: "pipe" });
   execFileSync("git", ["checkout", "main"], { cwd: base, stdio: "pipe" });
   execFileSync("git", ["worktree", "add", wt, "milestone/M001"], { cwd: base, stdio: "pipe" });
@@ -974,14 +974,14 @@ test("adoptOrphanWorktree restores prior paths when callback throws", () => {
   const lifecycle = new WorktreeLifecycle(
     s,
     makeDeps({
-      getAutoWorktreePath: () => "/project/.gsd/worktrees/M001",
+      getAutoWorktreePath: () => "/project/.otto/workflow/worktrees/M001",
     }),
   );
 
   assert.throws(
     () =>
       lifecycle.adoptOrphanWorktree("M001", "/project", () => {
-        assert.equal(s.basePath, "/project/.gsd/worktrees/M001");
+        assert.equal(s.basePath, "/project/.otto/workflow/worktrees/M001");
         assert.equal(s.originalBasePath, "/project");
         throw new Error("merge exploded");
       }),

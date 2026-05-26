@@ -1,0 +1,20 @@
+{
+  "name": "@cmetech/otto-engine-linux-x64-gnu",
+  "version": "1.0.1",
+  "description": "OTTO native engine binary for linux-x64-gnu",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "main": "otto_engine.node",
+  "files": [
+    "otto_engine.node"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cmetech/otto_app.git"
+  }
+}

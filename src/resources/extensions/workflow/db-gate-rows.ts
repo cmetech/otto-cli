@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Quality gate row mapper for the workflow database facade.
 
 import type { GateId, GateRow, GateScope, GateStatus, GateVerdict } from "./types.js";

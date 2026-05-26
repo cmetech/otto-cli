@@ -1,9 +1,9 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Complete-milestone tool handler for workflow state and summaries.
 
 // GSD2 complete-milestone tool handler
 /**
- * complete-milestone handler — the core operation behind gsd_complete_milestone.
+ * complete-milestone handler — the core operation behind otto_complete_milestone.
  *
  * Validates all slices are complete, updates milestone status in DB,
  * renders MILESTONE-SUMMARY.md to disk, stores rendered markdown in DB

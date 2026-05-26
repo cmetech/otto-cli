@@ -221,7 +221,7 @@ test("old UnitMetrics without budget fields work with all aggregation functions"
 
 test("initMetrics creates ledger, snapshotUnitMetrics persists across resets", () => {
   const tmpBase = mkdtempSync(join(tmpdir(), "gsd-metrics-test-"));
-  mkdirSync(join(tmpBase, ".gsd"), { recursive: true });
+  mkdirSync(join(tmpBase, ".otto/workflow"), { recursive: true });
 
   try {
     resetMetrics();
@@ -257,7 +257,7 @@ test("initMetrics creates ledger, snapshotUnitMetrics persists across resets", (
     assert.equal(getLedger()!.units[0].id, "M001/S01/T01");
 
     // Verify file content
-    const raw = readFileSync(join(tmpBase, ".gsd", "metrics.json"), "utf-8");
+    const raw = readFileSync(join(tmpBase, ".otto/workflow", "metrics.json"), "utf-8");
     const parsed: MetricsLedger = JSON.parse(raw);
     assert.equal(parsed.version, 1);
     assert.equal(parsed.units.length, 1);
@@ -276,7 +276,7 @@ test("initMetrics creates ledger, snapshotUnitMetrics persists across resets", (
 
 test("snapshotUnitMetrics deduplicates entries with same type+id+startedAt", () => {
   const tmpBase = mkdtempSync(join(tmpdir(), "gsd-metrics-dedup-"));
-  mkdirSync(join(tmpBase, ".gsd"), { recursive: true });
+  mkdirSync(join(tmpBase, ".otto/workflow"), { recursive: true });
   try {
     initMetrics(tmpBase);
     const startedAt = Date.now() - 10000;
@@ -321,7 +321,7 @@ test("snapshotUnitMetrics deduplicates entries with same type+id+startedAt", () 
 
 test("snapshotUnitMetrics handles simulated idle-watchdog duplicate pattern", () => {
   const tmpBase = mkdtempSync(join(tmpdir(), "gsd-metrics-watchdog-"));
-  mkdirSync(join(tmpBase, ".gsd"), { recursive: true });
+  mkdirSync(join(tmpBase, ".otto/workflow"), { recursive: true });
   try {
     initMetrics(tmpBase);
     const startedAt = Date.now() - 60000;
@@ -346,7 +346,7 @@ test("snapshotUnitMetrics handles simulated idle-watchdog duplicate pattern", ()
     assert.equal(getLedger()!.units.length, 1, "10 watchdog snapshots should produce 1 entry, not 10");
 
     // Persist and verify
-    const raw = readFileSync(join(tmpBase, ".gsd", "metrics.json"), "utf-8");
+    const raw = readFileSync(join(tmpBase, ".otto/workflow", "metrics.json"), "utf-8");
     const parsed: MetricsLedger = JSON.parse(raw);
     assert.equal(parsed.units.length, 1);
   } finally {
@@ -359,7 +359,7 @@ test("snapshotUnitMetrics handles simulated idle-watchdog duplicate pattern", ()
 
 test("snapshotUnitMetrics counts toolCall blocks correctly (#1713)", () => {
   const tmpBase = mkdtempSync(join(tmpdir(), "gsd-metrics-toolcall-"));
-  mkdirSync(join(tmpBase, ".gsd"), { recursive: true });
+  mkdirSync(join(tmpBase, ".otto/workflow"), { recursive: true });
 
   try {
     resetMetrics();
@@ -407,7 +407,7 @@ test("snapshotUnitMetrics counts toolCall blocks correctly (#1713)", () => {
 
 test("#1943 initMetrics deduplicates entries loaded from a corrupted disk ledger", () => {
   const tmpBase = mkdtempSync(join(tmpdir(), "gsd-metrics-dedup-load-"));
-  mkdirSync(join(tmpBase, ".gsd"), { recursive: true });
+  mkdirSync(join(tmpBase, ".otto/workflow"), { recursive: true });
 
   try {
     resetMetrics();
@@ -427,7 +427,7 @@ test("#1943 initMetrics deduplicates entries loaded from a corrupted disk ledger
       ],
     };
     writeFileSync(
-      join(tmpBase, ".gsd", "metrics.json"),
+      join(tmpBase, ".otto/workflow", "metrics.json"),
       JSON.stringify(corruptedLedger, null, 2),
     );
 
@@ -450,7 +450,7 @@ test("#1943 initMetrics deduplicates entries loaded from a corrupted disk ledger
     assert.equal(researchEntry!.cost, 1.65, "should keep the latest cost");
 
     // The on-disk file should also be deduplicated
-    const diskRaw = readFileSync(join(tmpBase, ".gsd", "metrics.json"), "utf-8");
+    const diskRaw = readFileSync(join(tmpBase, ".otto/workflow", "metrics.json"), "utf-8");
     const diskLedger: MetricsLedger = JSON.parse(diskRaw);
     assert.equal(diskLedger.units.length, 2, "disk should also have deduplicated entries");
   } finally {
@@ -497,11 +497,11 @@ test("#1943 getProjectTotals reports correct cost after dedup (no 35% inflation)
 
   // After loading through initMetrics (which should dedup), totals should be correct
   const tmpBase = mkdtempSync(join(tmpdir(), "gsd-metrics-cost-inflation-"));
-  mkdirSync(join(tmpBase, ".gsd"), { recursive: true });
+  mkdirSync(join(tmpBase, ".otto/workflow"), { recursive: true });
   try {
     resetMetrics();
     writeFileSync(
-      join(tmpBase, ".gsd", "metrics.json"),
+      join(tmpBase, ".otto/workflow", "metrics.json"),
       JSON.stringify({ version: 1, projectStartedAt: 1700000000000, units: duplicateUnits }, null, 2),
     );
     initMetrics(tmpBase);

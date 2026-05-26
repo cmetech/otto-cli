@@ -57,7 +57,7 @@ export interface GraphSubgraphOptions {
 
 function readGraphFile(projectDir: string): GraphFileShape | null {
   try {
-    const graphPath = join(projectDir, ".gsd", "graphs", "graph.json");
+    const graphPath = join(projectDir, ".otto/workflow", "graphs", "graph.json");
     const raw = readFileSync(graphPath, "utf-8");
     const parsed = JSON.parse(raw) as Partial<GraphFileShape>;
     const nodes = Array.isArray(parsed.nodes) ? parsed.nodes : [];
@@ -129,12 +129,12 @@ async function resolveGraphApi(): Promise<GraphApi> {
 
   resolvedGraphApi = true;
   try {
-    const imported = await import("@loop24-build/mcp-server");
+    const imported = await import("@otto-build/mcp-server");
     if (isGraphApi(imported)) {
       cachedGraphApi = imported;
       return cachedGraphApi;
     }
-    logWarning("prompt", "@loop24-build/mcp-server graph exports unavailable; using local graph fallback");
+    logWarning("prompt", "@otto-build/mcp-server graph exports unavailable; using local graph fallback");
   } catch {
     // Fall back to local reader implementation.
   }
@@ -151,7 +151,7 @@ async function resolveGraphApi(): Promise<GraphApi> {
  * the result as an inlined context block.
  *
  * Returns null when:
- * - @loop24-build/mcp-server fails to import
+ * - @otto-build/mcp-server fails to import
  * - graph.json does not exist (graphQuery already handles this gracefully)
  * - query returns zero nodes
  *
@@ -165,7 +165,9 @@ export async function inlineGraphSubgraph(
   if (!term || !term.trim()) return null;
 
   try {
-    const graphApi = await resolveGraphApi();
+    const graphApi = readGraphFile(projectDir)
+      ? { graphQuery: fallbackGraphQuery, graphStatus: fallbackGraphStatus }
+      : await resolveGraphApi();
     const result = await graphApi.graphQuery(projectDir, term, opts.budget);
     if (result.nodes.length === 0) return null;
 
@@ -194,7 +196,7 @@ export async function inlineGraphSubgraph(
 
     const sections: string[] = [
       `### Knowledge Graph Context (term: "${term}")`,
-      `Source: \`${CONFIG_DIR_NAME}/graphs/graph.json\``,
+      `Source: \`${CONFIG_DIR_NAME}/workflow/graphs/graph.json\``,
       staleAnnotation,
       "",
       `**Nodes (${result.nodes.length}):**`,

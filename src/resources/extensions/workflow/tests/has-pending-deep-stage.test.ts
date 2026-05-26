@@ -3,7 +3,7 @@
 //
 // Context: PR #5094 wires a deep-mode branch into showSmartEntry that calls
 // hasPendingDeepStage() to decide whether to hand off to startAutoDetached().
-// Without this guard, /gsd new-project --deep set the planning_depth flag but
+// Without this guard, /otto new-project --deep set the planning_depth flag but
 // never actually triggered the staged interview because showSmartEntry fell
 // straight through to the standard milestone wizard. These tests pin the
 // exported contract so the kickoff branch can rely on it.
@@ -21,7 +21,7 @@ import { loadEffectiveGSDPreferences } from "../preferences.ts";
 
 function makeBase(): string {
   const base = join(tmpdir(), `gsd-deep-pending-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -94,7 +94,7 @@ test("hasPendingDeepStage: returns true in deep mode when only some gates pass",
   const base = makeBase();
   try {
     writeFileSync(
-      join(base, ".gsd", "PREFERENCES.md"),
+      join(base, ".otto/workflow", "PREFERENCES.md"),
       "---\nplanning_depth: deep\nworkflow_prefs_captured: true\n---\n",
     );
     assert.equal(hasPendingDeepStage(deepPrefs, base), true);
@@ -103,7 +103,7 @@ test("hasPendingDeepStage: returns true in deep mode when only some gates pass",
   }
 });
 
-// Regression test for the bug found while debugging /gsd new-project --deep:
+// Regression test for the bug found while debugging /otto new-project --deep:
 // `planning_depth` was missing from KNOWN_PREFERENCE_KEYS, validatePreferences,
 // and mergePreferences, so it was stripped on every load. The deep-mode flow
 // silently never triggered because every dispatch saw planning_depth: undefined.
@@ -111,7 +111,7 @@ test("loadEffectiveGSDPreferences: planning_depth survives the validate + merge 
   const base = makeBase();
   try {
     writeFileSync(
-      join(base, ".gsd", "PREFERENCES.md"),
+      join(base, ".otto/workflow", "PREFERENCES.md"),
       "---\nplanning_depth: deep\n---\n",
     );
     const loaded = loadEffectiveGSDPreferences(base);

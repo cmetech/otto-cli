@@ -1,7 +1,7 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Theme selector dialog for interactive TUI theme switching.
 
-import { Container, type SelectItem, SelectList, Text } from "@loop24/pi-tui";
+import { Container, type SelectItem, SelectList, Text } from "@otto/pi-tui";
 import { getAvailableThemes, getSelectListTheme } from "../theme/theme.js";
 import { DynamicBorder } from "./dynamic-border.js";
 import { selectorFooter } from "./keybinding-hints.js";

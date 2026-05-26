@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tracks database open attempt and error status for the workflow database facade.
 
 export type DbOpenPhase = "open" | "initSchema" | "vacuum-recovery";

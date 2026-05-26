@@ -78,13 +78,13 @@ describe("git-checkpoint rollback", () => {
     assert.ok(sha);
 
     // Ref should exist
-    const refBefore = git(["for-each-ref", "refs/gsd/checkpoints/unit-3", "--format=%(objectname)"], repo);
+    const refBefore = git(["for-each-ref", "refs/otto/checkpoints/unit-3", "--format=%(objectname)"], repo);
     assert.equal(refBefore, sha);
 
     rollbackToCheckpoint(repo, "unit-3", sha);
 
     // Ref should be cleaned up
-    const refAfter = git(["for-each-ref", "refs/gsd/checkpoints/unit-3", "--format=%(objectname)"], repo);
+    const refAfter = git(["for-each-ref", "refs/otto/checkpoints/unit-3", "--format=%(objectname)"], repo);
     assert.equal(refAfter, "", "checkpoint ref should be removed after rollback");
   });
 
@@ -97,7 +97,7 @@ describe("git-checkpoint rollback", () => {
 
     cleanupCheckpoint(repo, "unit-4");
 
-    const ref = git(["for-each-ref", "refs/gsd/checkpoints/unit-4", "--format=%(objectname)"], repo);
+    const ref = git(["for-each-ref", "refs/otto/checkpoints/unit-4", "--format=%(objectname)"], repo);
     assert.equal(ref, "", "ref should be gone");
   });
 });

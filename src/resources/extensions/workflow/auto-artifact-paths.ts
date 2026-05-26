@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Resolves expected auto-mode artifact paths across project and worktree projections.
 // Auto-mode — Artifact Path Resolution
 //
@@ -169,15 +169,15 @@ export function diagnoseExpectedArtifact(
   const { milestone: mid, slice: sid, task: tid } = parseUnitId(unitId);
   switch (unitType) {
     case "workflow-preferences":
-      return ".gsd/PREFERENCES.md with workflow_prefs_captured: true";
+      return ".otto/workflow/PREFERENCES.md with workflow_prefs_captured: true";
     case "discuss-project":
-      return ".gsd/PROJECT.md (valid project context)";
+      return ".otto/workflow/PROJECT.md (valid project context)";
     case "discuss-requirements":
-      return ".gsd/REQUIREMENTS.md (valid requirements registry)";
+      return ".otto/workflow/REQUIREMENTS.md (valid requirements registry)";
     case "research-decision":
-      return ".gsd/runtime/research-decision.json with decision research|skip";
+      return ".otto/workflow/runtime/research-decision.json with decision research|skip";
     case "research-project":
-      return ".gsd/research/{STACK,FEATURES,ARCHITECTURE,PITFALLS}.md with at least one real research file; blocker-only outputs stop";
+      return ".otto/workflow/research/{STACK,FEATURES,ARCHITECTURE,PITFALLS}.md with at least one real research file; blocker-only outputs stop";
     case "discuss-milestone":
       return `${relMilestoneFile(base, mid, "CONTEXT")} (milestone context from discussion)`;
     case "discuss-slice":
@@ -203,7 +203,7 @@ export function diagnoseExpectedArtifact(
     case "replan-slice":
       return `${relSliceFile(base, mid, sid!, "REPLAN")} + updated ${relSliceFile(base, mid, sid!, "PLAN")}`;
     case "rewrite-docs":
-      return "Active overrides resolved in .gsd/OVERRIDES.md + plan documents updated";
+      return "Active overrides resolved in .otto/workflow/OVERRIDES.md + plan documents updated";
     case "reassess-roadmap":
       return `${relSliceFile(base, mid, sid!, "ASSESSMENT")} (roadmap reassessment)`;
     case "run-uat":

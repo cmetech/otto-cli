@@ -1,4 +1,4 @@
-// LOOP24 — KNOWLEDGE.md parsing helpers shared by the consolidation scanner,
+// OTTO — KNOWLEDGE.md parsing helpers shared by the consolidation scanner,
 // the Patterns/Lessons backfill, and the hybrid projection renderer
 // (ADR-013 Stage 2a/2b).
 //
@@ -55,7 +55,7 @@ export const KNOWLEDGE_SECTIONS: ReadonlyArray<{
   { table: "lessons", heading: "## Lessons Learned", idPrefix: "L" },
 ];
 
-/** Read `.gsd/KNOWLEDGE.md` content if present. Returns "" when absent or unreadable. */
+/** Read `.otto/workflow/KNOWLEDGE.md` content if present. Returns "" when absent or unreadable. */
 export function readKnowledgeMd(basePath: string): string {
   const path = resolveWorkflowRootFile(basePath, "KNOWLEDGE");
   if (!existsSync(path)) return "";
@@ -66,7 +66,7 @@ export function readKnowledgeMd(basePath: string): string {
   }
 }
 
-/** Resolve the canonical `.gsd/KNOWLEDGE.md` path. */
+/** Resolve the canonical `.otto/workflow/KNOWLEDGE.md` path. */
 export function knowledgeMdPath(basePath: string): string {
   return resolveWorkflowRootFile(basePath, "KNOWLEDGE");
 }

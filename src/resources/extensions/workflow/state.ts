@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Runtime state derivation from workflow database and legacy files.
 // Workflow Extension — State Derivation
 // DB-authoritative runtime derivation with explicit legacy filesystem fallback.
@@ -81,7 +81,7 @@ function formatNeedsRemediationBlocker(milestoneId: string): string {
   return [
     `Milestone ${milestoneId} is blocked because milestone validation returned needs-remediation, but all slices are complete.`,
     `Fix options:`,
-    `1. Add remediation slices with \`gsd_reassess_roadmap\`, then run \`${slashCommand("auto")}\``,
+    `1. Add remediation slices with \`otto_reassess_roadmap\`, then run \`${slashCommand("auto")}\``,
     `2. If the finding is acceptable, override it: \`${slashCommand("verdict")} pass --rationale "why this is okay"\``,
     `3. If this should wait, defer it explicitly: \`${slashCommand("park")} ${milestoneId}\``,
   ].join("\n");
@@ -105,7 +105,7 @@ function formatNeedsRemediationBlocker(milestoneId: string): string {
 export function isGhostMilestone(basePath: string, mid: string): boolean {
   // If the milestone has a DB row, it's usually a known milestone — not a ghost.
   // Exception: a "queued" row with no disk artifacts is a phantom from
-  // gsd_milestone_generate_id that was never planned (#3645).
+  // otto_milestone_generate_id that was never planned (#3645).
   if (isDbAvailable()) {
     const dbRow = getMilestone(mid);
     if (dbRow) {
@@ -140,7 +140,7 @@ export function isGhostMilestone(basePath: string, mid: string): boolean {
  * following hold:
  *   1. No DB row exists for `mid` (any status, including "queued") — a DB row
  *      means the milestone was intentionally registered by
- *      `gsd_milestone_generate_id` and may have an in-flight discuss flow.
+ *      `otto_milestone_generate_id` and may have an in-flight discuss flow.
  *      Reusing it would collide with that flow. (#4996 race window)
  *   2. No worktree directory exists at `workflowRoot/worktrees/{mid}` — a worktree
  *      means the milestone is legitimately in-flight.
@@ -213,7 +213,7 @@ async function isTerminalMilestoneSummaryFile(
 // ── deriveState memoization ─────────────────────────────────────────────────
 // Cache the most recent deriveState() result keyed by basePath. Within a single
 // dispatch cycle (~100ms window), repeated calls return the cached value instead
-// of re-reading the entire .gsd/ tree from disk.
+// of re-reading the entire .otto/workflow/ tree from disk.
 
 interface StateCache {
   basePath: string;
@@ -280,7 +280,7 @@ export function invalidateStateCache(): void {
 export async function getActiveMilestoneId(basePath: string): Promise<string | null> {
   // Parallel worker isolation. Normal DB state derivation remains DB-only;
   // lock env vars are execution routing for explicit worker processes.
-  const milestoneLock = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK) : undefined;
+  const milestoneLock = (process.env.OTTO_PARALLEL_WORKER ?? process.env.OTTO_PARALLEL_WORKER) ? (process.env.OTTO_MILESTONE_LOCK ?? process.env.OTTO_MILESTONE_LOCK) : undefined;
   if (milestoneLock) {
     if (isDbAvailable()) {
       const locked = getAllMilestones().find(m => m.id === milestoneLock);
@@ -351,7 +351,7 @@ export interface DeriveStateOptions {
  *
  * When DB is available, queries milestone/slice/task tables directly.
  * Runtime must not silently infer state from markdown. Use explicit recovery
- * or `/loop24 migrate` when markdown is the intended source.
+ * or `/otto migrate` when markdown is the intended source.
  */
 export async function deriveState(
   basePath: string,
@@ -359,7 +359,7 @@ export async function deriveState(
 ): Promise<WorkflowDbState> {
   // Use the canonical project root (when provided) as the cache key so that
   // two calls with different basePath strings (e.g. worktree path vs project
-  // root) but the same canonical .gsd/ share a single cache entry. The same
+  // root) but the same canonical .otto/workflow/ share a single cache entry. The same
   // key is used for both the lookup AND the write below — keying lookup on
   // canonical-root while writing on basePath would silently return stale
   // results across path-form alternation.
@@ -396,7 +396,7 @@ export async function deriveState(
       phase: "pre-planning",
       recentDecisions: [],
       blockers: ["DB unavailable — runtime markdown state derivation is disabled"],
-      nextAction: `Open or create the canonical GSD database before deriving workflow state. If this project only has markdown state, run ${slashCommand("migrate")} explicitly.`,
+      nextAction: `Open or create the canonical OTTO database before deriving workflow state. If this project only has markdown state, run ${slashCommand("migrate")} explicitly.`,
       registry: [],
       requirements: { active: 0, validated: 0, deferred: 0, outOfScope: 0, blocked: 0, total: 0 },
       progress: { milestones: { done: 0, total: 0 } },
@@ -675,13 +675,13 @@ function resolveSliceDependencies(activeMilestoneSlices: SliceRow[]): { activeSl
     activeMilestoneSlices.filter(s => isStatusDone(s.status)).map(s => s.id)
   );
 
-  const sliceLock = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_SLICE_LOCK ?? process.env.GSD_SLICE_LOCK) : undefined;
+  const sliceLock = (process.env.OTTO_PARALLEL_WORKER ?? process.env.OTTO_PARALLEL_WORKER) ? (process.env.OTTO_SLICE_LOCK ?? process.env.OTTO_SLICE_LOCK) : undefined;
   if (sliceLock) {
     const lockedSlice = activeMilestoneSlices.find(s => s.id === sliceLock);
     if (lockedSlice) {
       return { activeSlice: { id: lockedSlice.id, title: lockedSlice.title }, activeSliceRow: lockedSlice };
     } else {
-      logWarning("state", `GSD_SLICE_LOCK=${sliceLock} not found in active slices — worker has no assigned work`);
+      logWarning("state", `OTTO_SLICE_LOCK=${sliceLock} not found in active slices — worker has no assigned work`);
       return { activeSlice: null, activeSliceRow: null };
     }
   }
@@ -720,7 +720,7 @@ export async function deriveStateFromDb(
 
   const allMilestones = getAllMilestones();
 
-  const milestoneLock = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK) : undefined;
+  const milestoneLock = (process.env.OTTO_PARALLEL_WORKER ?? process.env.OTTO_PARALLEL_WORKER) ? (process.env.OTTO_MILESTONE_LOCK ?? process.env.OTTO_MILESTONE_LOCK) : undefined;
   const milestones = milestoneLock
     ? allMilestones.filter(m => m.id === milestoneLock)
     : allMilestones;
@@ -775,11 +775,11 @@ export async function deriveStateFromDb(
   const activeSliceContext = resolveSliceDependencies(activeMilestoneSlices);
   if (!activeSliceContext.activeSlice) {
     // If locked slice wasn't found, it returns null but logs warning, we need to return 'blocked'
-    const sliceLock = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_SLICE_LOCK ?? process.env.GSD_SLICE_LOCK) : undefined;
+    const sliceLock = (process.env.OTTO_PARALLEL_WORKER ?? process.env.OTTO_PARALLEL_WORKER) ? (process.env.OTTO_SLICE_LOCK ?? process.env.OTTO_SLICE_LOCK) : undefined;
     if (sliceLock) {
       return {
         activeMilestone, activeSlice: null, activeTask: null,
-        phase: 'blocked', recentDecisions: [], blockers: [`GSD_SLICE_LOCK=${sliceLock} not found in active milestone slices`],
+        phase: 'blocked', recentDecisions: [], blockers: [`OTTO_SLICE_LOCK=${sliceLock} not found in active milestone slices`],
         nextAction: 'Slice lock references a non-existent slice — check orchestrator dispatch.',
         registry, requirements,
         progress: { milestones: milestoneProgress, slices: sliceProgress },
@@ -948,8 +948,8 @@ export async function _deriveStateImpl(
 ): Promise<WorkflowDbState> {
   // When the caller supplies a canonical project root for reads (e.g.
   // s.canonicalProjectRoot from auto-mode), route all artifact reads through
-  // it. This prevents the worktree-local empty `.gsd/` from being consulted
-  // when the canonical state lives at the project root (or via a `.gsd`
+  // it. This prevents the worktree-local empty `.otto/workflow/` from being consulted
+  // when the canonical state lives at the project root (or via a `.otto/workflow`
   // symlink into the external state dir).
   if (opts?.projectRootForReads) {
     basePath = opts.projectRootForReads;
@@ -960,19 +960,19 @@ export async function _deriveStateImpl(
   const milestoneIds = sortByQueueOrder(diskIds, customOrder);
 
   // ── Parallel worker isolation ──────────────────────────────────────────
-  // When GSD_PARALLEL_WORKER and GSD_MILESTONE_LOCK are set, this process is a parallel worker
+  // When OTTO_PARALLEL_WORKER and OTTO_MILESTONE_LOCK are set, this process is a parallel worker
   // scoped to a single milestone. Filter the milestone list so this worker
   // only sees its assigned milestone (all others are treated as if they
   // don't exist). This gives each worker complete isolation without
   // modifying any other state derivation logic.
-  const milestoneLock = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK) : undefined;
+  const milestoneLock = (process.env.OTTO_PARALLEL_WORKER ?? process.env.OTTO_PARALLEL_WORKER) ? (process.env.OTTO_MILESTONE_LOCK ?? process.env.OTTO_MILESTONE_LOCK) : undefined;
   if (milestoneLock && milestoneIds.includes(milestoneLock)) {
     milestoneIds.length = 0;
     milestoneIds.push(milestoneLock);
   }
 
   // ── Batch-parse file cache ──────────────────────────────────────────────
-  // When the native Rust parser is available, read every .md file under .gsd/
+  // When the native Rust parser is available, read every .md file under .otto/workflow/
   // in one call and build an in-memory content map keyed by absolute path.
   // This eliminates O(N) individual fs.readFile calls during traversal.
   const fileContentCache = new Map<string, string>();
@@ -1443,21 +1443,21 @@ export async function _deriveStateImpl(
   let activeSlice: ActiveRef | null = null;
 
   // ── Slice-level parallel worker isolation ─────────────────────────────
-  // When GSD_PARALLEL_WORKER and GSD_SLICE_LOCK are set, override activeSlice to only the locked slice.
-  const sliceLockLegacy = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_SLICE_LOCK ?? process.env.GSD_SLICE_LOCK) : undefined;
+  // When OTTO_PARALLEL_WORKER and OTTO_SLICE_LOCK are set, override activeSlice to only the locked slice.
+  const sliceLockLegacy = (process.env.OTTO_PARALLEL_WORKER ?? process.env.OTTO_PARALLEL_WORKER) ? (process.env.OTTO_SLICE_LOCK ?? process.env.OTTO_SLICE_LOCK) : undefined;
   if (sliceLockLegacy) {
     const lockedSlice = activeRoadmap.slices.find(s => s.id === sliceLockLegacy);
     if (lockedSlice) {
       activeSlice = { id: lockedSlice.id, title: lockedSlice.title };
     } else {
-      logWarning("state", `GSD_SLICE_LOCK=${sliceLockLegacy} not found in active slices — worker has no assigned work`);
+      logWarning("state", `OTTO_SLICE_LOCK=${sliceLockLegacy} not found in active slices — worker has no assigned work`);
       return {
         activeMilestone,
         activeSlice: null,
         activeTask: null,
         phase: 'blocked',
         recentDecisions: [],
-        blockers: [`GSD_SLICE_LOCK=${sliceLockLegacy} not found in active milestone slices`],
+        blockers: [`OTTO_SLICE_LOCK=${sliceLockLegacy} not found in active milestone slices`],
         nextAction: 'Slice lock references a non-existent slice — check orchestrator dispatch.',
         registry,
         requirements,
@@ -1661,7 +1661,7 @@ export async function _deriveStateImpl(
   }
 
   // ── REPLAN-TRIGGER detection: triage-initiated replan ──────────────────
-  // Manual `/loop24 triage` writes REPLAN-TRIGGER.md when a capture is classified
+  // Manual `/otto triage` writes REPLAN-TRIGGER.md when a capture is classified
   // as "replan". Detect it here and transition to replanning-slice so the
   // dispatch loop picks it up (instead of silently advancing past it).
   if (!blockerTaskId) {

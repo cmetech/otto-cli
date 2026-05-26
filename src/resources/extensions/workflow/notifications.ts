@@ -28,9 +28,9 @@ export function sendDesktopNotification(
 ): void {
   // When a projectName is provided and the title is the default brand,
   // replace it with a project-qualified title for multi-project clarity.
-  // Accept the literal "GSD" too — legacy call sites still pass it pending
-  // a broader sweep of sendDesktopNotification callers (see LOOP24-PATCHES.md).
-  if (projectName && (title === BRAND || title === "GSD")) {
+  // Accept the literal "OTTO" too — legacy call sites still pass it pending
+  // a broader sweep of sendDesktopNotification callers (see OTTO-PATCHES.md).
+  if (projectName && (title === BRAND || title === "OTTO")) {
     title = formatNotificationTitle(projectName);
   }
   const loaded = loadEffectiveGSDPreferences()?.preferences;

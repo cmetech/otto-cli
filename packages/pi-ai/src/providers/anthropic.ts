@@ -82,21 +82,21 @@ export function buildAnthropicClientOptions(
 	// The beta header is deprecated on Opus 4.6 and redundant on Sonnet 4.6, so skip it.
 	const needsInterleavedBeta = interleavedThinking && !supportsAdaptiveThinking(model.id);
 
-	// LOOP24 gateway routing: when LOOP24_GATEWAY_URL is set, all Anthropic
+	// OTTO gateway routing: when OTTO_GATEWAY_URL is set, all Anthropic
 	// traffic flows through our local/internal gateway with Bearer auth.
 	// The gateway handles upstream Anthropic auth, so we send no x-api-key.
 	// Per Phase 1 design — env-var only, no persistent config yet.
-	const loop24GatewayUrl = process.env.LOOP24_GATEWAY_URL?.trim();
-	if (loop24GatewayUrl) {
-		const loop24GatewayToken = process.env.LOOP24_GATEWAY_TOKEN?.trim();
+	const ottoGatewayUrl = process.env.OTTO_GATEWAY_URL?.trim();
+	if (ottoGatewayUrl) {
+		const ottoGatewayToken = process.env.OTTO_GATEWAY_TOKEN?.trim();
 		const betaFeatures: string[] = [];
 		if (needsInterleavedBeta) {
 			betaFeatures.push("interleaved-thinking-2025-05-14");
 		}
 		return {
 			apiKey: null,
-			authToken: loop24GatewayToken ?? apiKey,
-			baseURL: loop24GatewayUrl,
+			authToken: ottoGatewayToken ?? apiKey,
+			baseURL: ottoGatewayUrl,
 			dangerouslyAllowBrowser: true,
 			defaultHeaders: mergeHeaders(
 				{

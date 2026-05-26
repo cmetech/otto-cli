@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-017 missing-completion-timestamp drift handler. Detects
 // tasks/slices/milestones marked complete (status = 'complete' | 'done') in
 // the DB but whose `completed_at` column is null, and where the on-disk

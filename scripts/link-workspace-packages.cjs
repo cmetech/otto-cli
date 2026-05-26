@@ -2,15 +2,15 @@
 /**
  * link-workspace-packages.cjs
  *
- * Creates node_modules/@loop24/* and node_modules/@loop24-build/* symlinks pointing
+ * Creates node_modules/@otto/* and node_modules/@otto-build/* symlinks pointing
  * to shipped packages/* directories.
  *
  * During development, npm workspaces creates these automatically. But in the
  * published tarball, workspace packages are shipped under packages/ (via the
- * "files" field) and the @loop24/* imports in compiled code need node_modules/@loop24/*
+ * "files" field) and the @otto/* imports in compiled code need node_modules/@otto/*
  * to resolve. This script bridges the gap.
  *
- * Runs as part of postinstall (before any ESM code that imports @loop24/*).
+ * Runs as part of postinstall (before any ESM code that imports @otto/*).
  *
  * On Windows without Developer Mode or administrator rights, creating symlinks
  * (even NTFS junctions) can fail with EPERM. In that case we fall back to
@@ -21,8 +21,8 @@ const { resolve, join } = require('path')
 const { getLinkablePackages, REPO_ROOT } = require('./lib/workspace-manifest.cjs')
 
 const scopeDirs = {
-  '@gsd': join(REPO_ROOT, 'node_modules', '@gsd'),
-  '@loop24-build': join(REPO_ROOT, 'node_modules', '@loop24-build'),
+  '@otto': join(REPO_ROOT, 'node_modules', '@otto'),
+  '@otto-build': join(REPO_ROOT, 'node_modules', '@otto-build'),
 }
 
 for (const scopeDir of Object.values(scopeDirs)) {

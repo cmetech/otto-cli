@@ -48,9 +48,9 @@ const TERMINAL_PREFIXES = [
 
 function isManualResolutionNotification(message: string): boolean {
   return (
-    message.includes('resolve manually and re-run /gsd auto') ||
-    message.includes('resolve conflicts manually and run /gsd auto to resume') ||
-    message.includes('resolve and run /gsd auto to resume')
+    message.includes('resolve manually and re-run /otto auto') ||
+    message.includes('resolve conflicts manually and run /otto auto to resume') ||
+    message.includes('resolve and run /otto auto to resume')
   )
 }
 
@@ -400,7 +400,7 @@ test('v1 fallback: manual merge-resolution notification exits blocked', () => {
   const state: EventHandlerState = { completed: false, blocked: false, exitCode: -1, v2Enabled: false }
 
   handleEvent(
-    { type: 'extension_ui_request', method: 'notify', id: 'n1', message: 'Survivor-branch finalization for M001 failed: merge conflict. Resolve manually and re-run /gsd auto.' },
+    { type: 'extension_ui_request', method: 'notify', id: 'n1', message: 'Survivor-branch finalization for M001 failed: merge conflict. Resolve manually and re-run /otto auto.' },
     state,
     client,
   )
@@ -450,14 +450,14 @@ test('handleExtensionUIRequest select prefers safe option when present', () => {
       type: 'extension_ui_request',
       id: 'sel-safe',
       method: 'select',
-      options: ['Quick task (recommended)', 'Not yet: Run /gsd when ready.'],
+      options: ['Quick task (recommended)', 'Not yet: Run /otto when ready.'],
     },
     client,
   )
 
   assert.equal(client.sendUICalls.length, 1)
   assert.equal(client.sendUICalls[0].id, 'sel-safe')
-  assert.equal(client.sendUICalls[0].response.value, 'Not yet: Run /gsd when ready.')
+  assert.equal(client.sendUICalls[0].response.value, 'Not yet: Run /otto when ready.')
 })
 
 test('handleExtensionUIRequest select prefers force start when Auto-mode is running', () => {
@@ -744,7 +744,7 @@ test('multi-turn commands detect blocked command blocks as terminal', () => {
       message: {
         role: 'custom',
         customType: 'gsd-command-block',
-        content: '/gsd auto cannot start new workflow work because M001 is complete but not merged.',
+        content: '/otto auto cannot start new workflow work because M001 is complete but not merged.',
       },
     },
     state,

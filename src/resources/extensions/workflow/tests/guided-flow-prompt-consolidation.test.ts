@@ -6,13 +6,13 @@
  * `buildCompleteSlicePrompt` from `auto-prompts.ts`. This test exercises the
  * consolidated builders against a real fixture and asserts they produce
  * prompts carrying the contract the deleted variants used to enforce:
- *   - the canonical `gsd_*_complete` tool reference,
+ *   - the canonical `otto_*_complete` tool reference,
  *   - the explicit working directory binding,
  *   - the unit identifiers (milestone/slice/task),
  *   - the quality-gate doctrine that was backported into the canonical files
  *     (Q8 Operational Readiness for complete-slice).
  *
- * Failure of this test means the manual `/gsd` flow no longer matches the
+ * Failure of this test means the manual `/otto` flow no longer matches the
  * doctrine the auto-mode pipeline relies on — exactly the drift the PR is
  * supposed to prevent.
  */
@@ -40,12 +40,12 @@ describe("guided-flow → auto-prompts consolidation (#5183)", () => {
 
   beforeEach(() => {
     base = mkdtempSync(join(tmpdir(), "gsd-prompt-consolidation-"));
-    const sliceDir = join(base, ".gsd", "milestones", MID, "slices", SID);
+    const sliceDir = join(base, ".otto/workflow", "milestones", MID, "slices", SID);
     const tasksDir = join(sliceDir, "tasks");
     mkdirSync(tasksDir, { recursive: true });
 
     writeFileSync(
-      join(base, ".gsd", "milestones", MID, `${MID}-ROADMAP.md`),
+      join(base, ".otto/workflow", "milestones", MID, `${MID}-ROADMAP.md`),
       "# Roadmap\n- [ ] **S01: Test slice**\n",
     );
     writeFileSync(
@@ -86,8 +86,8 @@ describe("guided-flow → auto-prompts consolidation (#5183)", () => {
     assert.ok(prompt.includes(TID), "must mention task id");
     assert.ok(prompt.includes(T_TITLE), "must mention task title");
     assert.ok(
-      prompt.includes("gsd_task_complete"),
-      "must instruct calling the canonical gsd_task_complete tool",
+      prompt.includes("otto_task_complete"),
+      "must instruct calling the canonical otto_task_complete tool",
     );
     assert.ok(
       prompt.includes(base),
@@ -107,7 +107,7 @@ describe("guided-flow → auto-prompts consolidation (#5183)", () => {
 
   test("buildExecuteTaskPrompt omits Context Mode when disabled", async () => {
     writeFileSync(
-      join(base, ".gsd", "PREFERENCES.md"),
+      join(base, ".otto/workflow", "PREFERENCES.md"),
       ["---", "context_mode:", "  enabled: false", "---", ""].join("\n"),
     );
 
@@ -124,8 +124,8 @@ describe("guided-flow → auto-prompts consolidation (#5183)", () => {
     assert.ok(prompt.includes(SID), "must mention slice id");
     assert.ok(prompt.includes(S_TITLE), "must mention slice title");
     assert.ok(
-      prompt.includes("gsd_slice_complete"),
-      "must instruct calling gsd_slice_complete (was in guided-complete-slice.md)",
+      prompt.includes("otto_slice_complete"),
+      "must instruct calling otto_slice_complete (was in guided-complete-slice.md)",
     );
     assert.ok(
       prompt.includes(base),

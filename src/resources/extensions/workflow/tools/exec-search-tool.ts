@@ -1,6 +1,6 @@
-// Exec Search Tool — lists and filters prior gsd_exec runs.
+// Exec Search Tool — lists and filters prior otto_exec runs.
 //
-// Scans .gsd/exec/*.meta.json and returns a ranked summary so agents can
+// Scans .otto/workflow/exec/*.meta.json and returns a ranked summary so agents can
 // re-discover past runs without re-executing. Read-only; no DB writes.
 
 import { searchExecHistory, type ExecSearchOptions } from "../exec-history.js";
@@ -19,7 +19,7 @@ export function executeExecSearch(
   opts: { baseDir: string; preferences?: { context_mode?: ContextModeConfig } | null },
 ): ToolExecutionResult {
   if (!isContextModeEnabled(opts.preferences)) {
-    return contextModeDisabledResult("gsd_exec_search");
+    return contextModeDisabledResult("otto_exec_search");
   }
 
   const searchOpts: ExecSearchOptions = {
@@ -32,8 +32,8 @@ export function executeExecSearch(
 
   if (hits.length === 0) {
     return {
-      content: [{ type: "text", text: "No prior gsd_exec runs match those filters." }],
-      details: { operation: "gsd_exec_search", matches: 0 },
+      content: [{ type: "text", text: "No prior otto_exec runs match those filters." }],
+      details: { operation: "otto_exec_search", matches: 0 },
     };
   }
 
@@ -56,7 +56,7 @@ export function executeExecSearch(
   return {
     content: [{ type: "text", text: lines.join("\n") }],
     details: {
-      operation: "gsd_exec_search",
+      operation: "otto_exec_search",
       matches: hits.length,
       results: hits.map((hit) => ({
         id: hit.entry.id,

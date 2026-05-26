@@ -14,7 +14,7 @@ import {
 } from "../auto-prompts.ts";
 
 function writeReactiveFixture(repo: string): void {
-  const gsd = join(repo, ".gsd", "milestones", "M001", "slices", "S01");
+  const gsd = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01");
   mkdirSync(join(gsd, "tasks"), { recursive: true });
   writeFileSync(
     join(gsd, "S01-PLAN.md"),
@@ -116,7 +116,7 @@ test("buildReactiveExecutePrompt omits model instruction when subagentModel is o
 test("buildParallelResearchSlicesPrompt injects subagent model for each slice", async (t) => {
   const repo = mkdtempSync(join(tmpdir(), "gsd-subagent-model-parallel-"));
   t.after(() => rmSync(repo, { recursive: true, force: true }));
-  mkdirSync(join(repo, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+  mkdirSync(join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
 
   const prompt = await buildParallelResearchSlicesPrompt(
     "M001",
@@ -137,10 +137,10 @@ test("buildGateEvaluatePrompt uses nested context guidance and model instruction
     rmSync(repo, { recursive: true, force: true });
   });
 
-  const sliceDir = join(repo, ".gsd", "milestones", "M001", "slices", "S01");
+  const sliceDir = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01");
   mkdirSync(sliceDir, { recursive: true });
   writeFileSync(join(sliceDir, "S01-PLAN.md"), "# S01 Plan\n\n## Verification\n- Run checks.\n");
-  openDatabase(join(repo, ".gsd", "gsd.db"));
+  openDatabase(join(repo, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test Milestone", status: "active", depends_on: [] });
   insertSlice({
     id: "S01",

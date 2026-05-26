@@ -1,9 +1,9 @@
-// LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/extension-input.ts - Extension text input dialog.
+// OTTO + packages/pi-coding-agent/src/modes/interactive/components/extension-input.ts - Extension text input dialog.
 /**
  * Simple text input component for extensions.
  */
 
-import { Container, type Focusable, getEditorKeybindings, Input, Spacer, Text, type TUI } from "@loop24/pi-tui";
+import { Container, type Focusable, getEditorKeybindings, Input, Spacer, Text, type TUI } from "@otto/pi-tui";
 import { theme } from "../theme/theme.js";
 import { CountdownTimer } from "./countdown-timer.js";
 import { DynamicBorder } from "./dynamic-border.js";

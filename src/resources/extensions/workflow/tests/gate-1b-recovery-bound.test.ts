@@ -56,9 +56,9 @@ function mkPi(cap: MockCapture): any {
 
 function mkBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-gate1b-bound-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
     "# M001: Bound Test\n\nContext written by discuss phase.\n",
   );
   return base;
@@ -157,8 +157,8 @@ describe("Gate 1b recovery bound (H1)", () => {
     assert.ok(errorNotify, "at-limit call: ctx.ui.notify('error') must be called");
     assert.match(
       errorNotify.msg,
-      /gsd-debug/i,
-      "error notification must direct user to run /gsd-debug",
+      /otto-debug/i,
+      "error notification must direct user to run /otto-debug",
     );
     assert.match(
       errorNotify.msg,

@@ -1,4 +1,4 @@
-// LOOP24 + Workspace handle: single source of truth for path resolution per milestone
+// OTTO + Workspace handle: single source of truth for path resolution per milestone
 
 import { join, resolve } from "node:path";
 import { type WorkflowPathContract, resolveWorkflowPathContract, normalizeRealPath } from "./paths.js";

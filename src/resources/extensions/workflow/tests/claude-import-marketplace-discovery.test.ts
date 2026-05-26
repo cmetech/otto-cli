@@ -8,7 +8,7 @@
  *
  * Uses temp-dir fixtures — no real marketplace repos required.
  *
- * Fixes: https://github.com/open-gsd/gsd-pi/issues/2717
+ * Fixes: https://github.com/open-gsd/otto-pi/issues/2717
  */
 
 import { describe, it, beforeEach, afterEach } from "node:test";

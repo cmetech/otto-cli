@@ -130,7 +130,7 @@ export interface UpdateCheckOptions {
  * caches the result, and prints a banner if a newer version is available.
  */
 export async function checkForUpdates(options: UpdateCheckOptions = {}): Promise<void> {
-  const currentVersion = options.currentVersion || (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || '0.0.0'
+  const currentVersion = options.currentVersion || (process.env.OTTO_VERSION ?? process.env.OTTO_VERSION) || '0.0.0'
   const cachePath = options.cachePath || CACHE_FILE
   const registryUrl = options.registryUrl || DEFAULT_REGISTRY_URL
   const checkIntervalMs = options.checkIntervalMs ?? CHECK_INTERVAL_MS
@@ -171,7 +171,7 @@ const PROMPT_TIMEOUT_MS = 30_000
  * Returns true if an update was performed, false otherwise.
  */
 export async function checkAndPromptForUpdates(options: UpdateCheckOptions = {}): Promise<boolean> {
-  const currentVersion = options.currentVersion || (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || '0.0.0'
+  const currentVersion = options.currentVersion || (process.env.OTTO_VERSION ?? process.env.OTTO_VERSION) || '0.0.0'
   const cachePath = options.cachePath || CACHE_FILE
   const registryUrl = options.registryUrl || DEFAULT_REGISTRY_URL
   const checkIntervalMs = options.checkIntervalMs ?? CHECK_INTERVAL_MS

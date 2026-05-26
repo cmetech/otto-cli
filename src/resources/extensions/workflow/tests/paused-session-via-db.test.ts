@@ -30,7 +30,7 @@ import {
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-paused-session-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -42,14 +42,14 @@ function cleanup(base: string): void {
 test("readPausedSessionMetadata returns null when no row exists", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   assert.equal(readPausedSessionMetadata(base), null);
 });
 
 test("readPausedSessionMetadata round-trips a real PausedSessionMetadata payload", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   const meta: PausedSessionMetadata = {
     milestoneId: "M001",
@@ -80,7 +80,7 @@ test("readPausedSessionMetadata round-trips a real PausedSessionMetadata payload
 test("readPausedSessionMetadata auto-deletes stale pseudo-milestone pause rows", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   // discuss-milestone with a non-MID-shaped unitId triggers
   // isStalePseudoMilestonePause → returns null + deletes the row.
@@ -100,7 +100,7 @@ test("readPausedSessionMetadata auto-deletes stale pseudo-milestone pause rows",
 test("deleteRuntimeKv on PAUSED_SESSION_KV_KEY removes the row idempotently", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   setRuntimeKv("global", "", PAUSED_SESSION_KV_KEY, { milestoneId: "M001" });
   deleteRuntimeKv("global", "", PAUSED_SESSION_KV_KEY);

@@ -12,7 +12,7 @@ import { appendCapture, markCaptureResolved, loadAllCaptures } from "../captures
 
 test("defer captures without milestone ID are stamped as executed (#3542)", async () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-stamp-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   try {
     appendCapture(base, "Improve error messages");
     const captures = loadAllCaptures(base);

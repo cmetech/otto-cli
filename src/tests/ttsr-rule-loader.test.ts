@@ -16,7 +16,7 @@ import { loadRules } from '../../src/resources/extensions/ttsr/index.js'
 function makeTmpProject(): { cwd: string; globalDir: string; projectDir: string; cleanup: () => void } {
 	const cwd = mkdtempSync(join(tmpdir(), 'ttsr-loader-test-'))
 	const globalDir = join(cwd, '.gsd-global', 'agent', 'rules')
-	const projectDir = join(cwd, '.gsd', 'rules')
+	const projectDir = join(cwd, '.otto/workflow', 'rules')
 	return { cwd, globalDir, projectDir, cleanup: () => rmSync(cwd, { recursive: true, force: true }) }
 }
 
@@ -27,13 +27,13 @@ function writeRule(dir: string, name: string, frontmatter: string, body: string)
 
 // loadRules uses homedir() for global dir — we can't easily override that,
 // so we test the project-local path and the merge logic by testing with
-// a cwd that has .gsd/rules/.
+// a cwd that has .otto/workflow/rules/.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Project-local rule loading
 // ═══════════════════════════════════════════════════════════════════════════
 
-test('loads rule from project .gsd/rules/', (t) => {
+test('loads rule from project .otto/workflow/rules/', (t) => {
 	const { cwd, projectDir, cleanup } = makeTmpProject()
  t.after(() => { cleanup() });
 
@@ -81,11 +81,11 @@ test('skips rules with no condition', (t) => {
 		assert.equal(rules.filter(r => r.name === 'no-condition').length, 0)
 })
 
-test('returns empty array when .gsd/rules/ does not exist', (t) => {
+test('returns empty array when .otto/workflow/rules/ does not exist', (t) => {
 	const { cwd, cleanup } = makeTmpProject()
  t.after(() => { cleanup() });
 
-		// cwd exists but no .gsd/rules/ dir
+		// cwd exists but no .otto/workflow/rules/ dir
 		const rules = loadRules(cwd)
 		// May include global rules from homedir — just verify no crash
 		assert.ok(Array.isArray(rules))

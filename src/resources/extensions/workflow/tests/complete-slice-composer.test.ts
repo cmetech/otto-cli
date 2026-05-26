@@ -19,7 +19,7 @@ import {
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-completeslice-composer-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
   return base;
 }
 
@@ -30,7 +30,7 @@ function cleanup(base: string): void {
 }
 
 function seed(base: string, mid: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: mid, title: "Composer Test", status: "active", depends_on: [] });
   upsertMilestonePlanning(mid, {
     title: "Composer Test",
@@ -68,15 +68,15 @@ function seed(base: string, mid: string): void {
 
 function writeArtifacts(base: string): void {
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     "# M001 Roadmap\n## Slices\n- [x] **S01: First** `risk:low` `depends:[]`\n",
   );
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
     "# S01 Plan\n\nSlice plan body.\n",
   );
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"),
     "---\nid: T01\n---\n# T01 Summary\n\nTask one did the thing.\n",
   );
 }
@@ -126,11 +126,11 @@ test("#4782 phase 3: buildCompleteSlicePrompt handles missing task summaries gra
   seed(base, "M001");
   // Write roadmap + plan but no task summaries
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     "# M001 Roadmap\n## Slices\n- [x] **S01: First** `risk:low` `depends:[]`\n",
   );
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
     "# S01 Plan\n",
   );
 
@@ -160,20 +160,20 @@ test("#4925 review: KNOWLEDGE splices BEFORE templates when no task summaries ex
   // Roadmap + plan only — no T*-SUMMARY.md, so taskIdx must be -1 and the
   // splice falls through to the templates anchor.
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     "# M001 Roadmap\n## Slices\n- [x] **S01: First** `risk:low` `depends:[]`\n",
   );
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
     "# S01 Plan\n",
   );
   // KNOWLEDGE.md with an H3 section whose header matches the slice title
   // keyword "first" — queryKnowledge will return the section, so
   // inlineKnowledgeBudgeted produces a non-null block and the splice
   // path executes.
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "KNOWLEDGE.md"),
+    join(base, ".otto/workflow", "KNOWLEDGE.md"),
     "## Topics\n\n### First-slice notes\n\nNotes that should be inlined.\n",
   );
 

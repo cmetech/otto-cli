@@ -1,8 +1,8 @@
 /**
- * Shared pure formatting utilities — no @loop24/pi-tui dependency.
+ * Shared pure formatting utilities — no @otto/pi-tui dependency.
  *
  * ANSI-aware layout helpers (padRight, joinColumns, centerLine, fitColumns)
- * live in layout-utils.ts to avoid pulling @loop24/pi-tui into modules that
+ * live in layout-utils.ts to avoid pulling @otto/pi-tui into modules that
  * run outside jiti's alias resolution (e.g. HTML report generation via
  * dynamic import in auto-loop).
  */

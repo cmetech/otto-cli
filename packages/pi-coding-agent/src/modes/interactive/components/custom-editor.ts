@@ -1,4 +1,4 @@
-// LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/custom-editor.ts - App-level editor key handling.
+// OTTO + packages/pi-coding-agent/src/modes/interactive/components/custom-editor.ts - App-level editor key handling.
 
 import {
 	Editor,
@@ -8,7 +8,7 @@ import {
 	type TUI,
 	isKittyProtocolActive,
 	matchesKey,
-} from "@loop24/pi-tui";
+} from "@otto/pi-tui";
 import type { AppAction, KeybindingsManager } from "../../../core/keybindings.js";
 
 /**

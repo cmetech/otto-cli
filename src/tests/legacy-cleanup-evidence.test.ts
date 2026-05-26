@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests representative telemetry evidence collection before Phase 8 legacy cleanup deletions.
 
 import assert from "node:assert/strict";

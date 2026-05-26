@@ -15,14 +15,14 @@ function makeTempDir(prefix: string): string {
 
 test("resolvePreferredModelConfig synthesizes heavy routing ceiling when models section is absent", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = makeTempDir("gsd-routing-project-");
   const tempWorkflowHome = makeTempDir("gsd-routing-home-");
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
     writeFileSync(
-      join(tempProject, ".gsd", "PREFERENCES.md"),
+      join(tempProject, ".otto/workflow", "PREFERENCES.md"),
       [
         "---",
         "dynamic_routing:",
@@ -35,7 +35,7 @@ test("resolvePreferredModelConfig synthesizes heavy routing ceiling when models 
       ].join("\n"),
       "utf-8",
     );
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const config = resolvePreferredModelConfig("plan-slice", {
@@ -50,8 +50,8 @@ test("resolvePreferredModelConfig synthesizes heavy routing ceiling when models 
     });
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -59,14 +59,14 @@ test("resolvePreferredModelConfig synthesizes heavy routing ceiling when models 
 
 test("resolvePreferredModelConfig falls back to auto start model when heavy tier is absent", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = makeTempDir("gsd-routing-project-");
   const tempWorkflowHome = makeTempDir("gsd-routing-home-");
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
     writeFileSync(
-      join(tempProject, ".gsd", "PREFERENCES.md"),
+      join(tempProject, ".otto/workflow", "PREFERENCES.md"),
       [
         "---",
         "dynamic_routing:",
@@ -78,7 +78,7 @@ test("resolvePreferredModelConfig falls back to auto start model when heavy tier
       ].join("\n"),
       "utf-8",
     );
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const config = resolvePreferredModelConfig("execute-task", {
@@ -93,8 +93,8 @@ test("resolvePreferredModelConfig falls back to auto start model when heavy tier
     });
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -102,14 +102,14 @@ test("resolvePreferredModelConfig falls back to auto start model when heavy tier
 
 test("resolvePreferredModelConfig keeps explicit phase models as the ceiling", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = makeTempDir("gsd-routing-project-");
   const tempWorkflowHome = makeTempDir("gsd-routing-home-");
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
     writeFileSync(
-      join(tempProject, ".gsd", "PREFERENCES.md"),
+      join(tempProject, ".otto/workflow", "PREFERENCES.md"),
       [
         "---",
         "models:",
@@ -122,7 +122,7 @@ test("resolvePreferredModelConfig keeps explicit phase models as the ceiling", (
       ].join("\n"),
       "utf-8",
     );
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const config = resolvePreferredModelConfig("plan-slice", {
@@ -137,8 +137,8 @@ test("resolvePreferredModelConfig keeps explicit phase models as the ceiling", (
     });
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -146,16 +146,16 @@ test("resolvePreferredModelConfig keeps explicit phase models as the ceiling", (
 
 test("selectAndApplyModel honors explicit phase models without downgrading (#3617)", async () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = makeTempDir("gsd-routing-project-");
   const tempWorkflowHome = makeTempDir("gsd-routing-home-");
   const setModelCalls: string[] = [];
   let beforeModelSelectCalled = false;
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
     writeFileSync(
-      join(tempProject, ".gsd", "PREFERENCES.md"),
+      join(tempProject, ".otto/workflow", "PREFERENCES.md"),
       [
         "---",
         "models:",
@@ -170,7 +170,7 @@ test("selectAndApplyModel honors explicit phase models without downgrading (#361
       ].join("\n"),
       "utf-8",
     );
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const availableModels = [
@@ -216,8 +216,8 @@ test("selectAndApplyModel honors explicit phase models without downgrading (#361
     assert.equal(result.appliedModel?.id, "claude-opus-4-6");
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -225,7 +225,7 @@ test("selectAndApplyModel honors explicit phase models without downgrading (#361
 
 test("selectAndApplyModel escalates dynamic routing tier when retry metadata is provided", async (t) => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = makeTempDir("gsd-routing-retry-project-");
   const tempWorkflowHome = makeTempDir("gsd-routing-retry-home-");
   const setModelCalls: string[] = [];
@@ -233,15 +233,15 @@ test("selectAndApplyModel escalates dynamic routing tier when retry metadata is 
 
   t.after(() => {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   });
 
-  mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+  mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(tempProject, ".gsd", "PREFERENCES.md"),
+    join(tempProject, ".otto/workflow", "PREFERENCES.md"),
     [
       "---",
       "dynamic_routing:",
@@ -256,7 +256,7 @@ test("selectAndApplyModel escalates dynamic routing tier when retry metadata is 
     ].join("\n"),
     "utf-8",
   );
-  process.env.GSD_HOME = tempWorkflowHome;
+  process.env.OTTO_HOME = tempWorkflowHome;
   process.chdir(tempProject);
 
   const availableModels = [
@@ -370,9 +370,9 @@ test("model change notify in selectAndApplyModel is gated behind verbose flag", 
     rmSync(tempProject, { recursive: true, force: true });
   });
 
-  mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+  mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(tempProject, ".gsd", "PREFERENCES.md"),
+    join(tempProject, ".otto/workflow", "PREFERENCES.md"),
     ["---", "models:", "  planning: claude-sonnet-4-6", "---"].join("\n"),
     "utf-8",
   );
@@ -414,9 +414,9 @@ test("selectAndApplyModel re-applies captured thinking level after setModel succ
     rmSync(tempProject, { recursive: true, force: true });
   });
 
-  mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+  mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(tempProject, ".gsd", "PREFERENCES.md"),
+    join(tempProject, ".otto/workflow", "PREFERENCES.md"),
     ["---", "models:", "  planning: claude-sonnet-4-6", "---"].join("\n"),
     "utf-8",
   );

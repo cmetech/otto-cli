@@ -1,5 +1,5 @@
 {
-  "name": "@loop24-build/daemon",
+  "name": "@otto-build/daemon",
   "version": "1.0.1",
   "description": "GSD daemon — background process for project monitoring and Discord integration",
   "license": "MIT",
@@ -29,8 +29,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.52.0",
-    "@loop24-build/contracts": "^1.0.1",
-    "@loop24-build/rpc-client": "^1.0.1",
+    "@otto-build/contracts": "^1.0.1",
+    "@otto-build/rpc-client": "^1.0.1",
     "discord.js": "^14.25.1",
     "yaml": "^2.8.0",
     "zod": "^3.24.0"

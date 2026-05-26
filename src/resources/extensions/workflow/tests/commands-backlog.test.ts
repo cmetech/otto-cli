@@ -9,7 +9,7 @@ import { randomUUID } from "node:crypto";
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-backlog-test-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -18,7 +18,7 @@ function cleanup(base: string): void {
 }
 
 function backlogPath(base: string): string {
-  return join(base, ".gsd", "BACKLOG.md");
+  return join(base, ".otto/workflow", "BACKLOG.md");
 }
 
 function writeBacklog(base: string, content: string): void {

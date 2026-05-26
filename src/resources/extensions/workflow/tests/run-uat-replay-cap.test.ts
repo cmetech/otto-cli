@@ -12,7 +12,7 @@ import { DISPATCH_RULES, getUatCount, incrementUatCount } from "../auto-dispatch
 
 function makeUatProject(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-uat-cap-"));
-  const milestone = join(base, ".gsd", "milestones", "M001");
+  const milestone = join(base, ".otto/workflow", "milestones", "M001");
   mkdirSync(join(milestone, "slices", "S01"), { recursive: true });
   mkdirSync(join(milestone, "slices", "S02"), { recursive: true });
   writeFileSync(
@@ -72,9 +72,9 @@ test("run-uat dispatch stops after three attempts without a verdict", async () =
 
 test("run-uat counter persists across recycled worktree base paths", () => {
   const projectRoot = makeUatProject();
-  const worktreeA = join(projectRoot, ".gsd", "worktrees", "M001-a");
-  const worktreeB = join(projectRoot, ".gsd", "worktrees", "M001-b");
-  const canonicalCounter = join(projectRoot, ".gsd", "runtime", "uat-count-M001-S01.json");
+  const worktreeA = join(projectRoot, ".otto/workflow", "worktrees", "M001-a");
+  const worktreeB = join(projectRoot, ".otto/workflow", "worktrees", "M001-b");
+  const canonicalCounter = join(projectRoot, ".otto/workflow", "runtime", "uat-count-M001-S01.json");
 
   mkdirSync(worktreeA, { recursive: true });
   mkdirSync(worktreeB, { recursive: true });
@@ -83,10 +83,10 @@ test("run-uat counter persists across recycled worktree base paths", () => {
     assert.equal(incrementUatCount(worktreeA, "M001", "S01"), 1);
     assert.equal(incrementUatCount(worktreeB, "M001", "S01"), 2);
     assert.equal(getUatCount(worktreeB, "M001", "S01"), 2);
-    assert.ok(existsSync(canonicalCounter), "counter should be stored under project-root .gsd/runtime");
+    assert.ok(existsSync(canonicalCounter), "counter should be stored under project-root .otto/workflow/runtime");
     assert.ok(
-      !existsSync(join(worktreeA, ".gsd", "runtime", "uat-count-M001-S01.json")),
-      "counter should not be stored under worktree-local .gsd/runtime",
+      !existsSync(join(worktreeA, ".otto/workflow", "runtime", "uat-count-M001-S01.json")),
+      "counter should not be stored under worktree-local .otto/workflow/runtime",
     );
   } finally {
     rmSync(projectRoot, { recursive: true, force: true });

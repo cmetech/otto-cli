@@ -2,7 +2,7 @@
  * Unit tests for the gsd CLI package.
  *
  * Tests the glue code that IS the product:
- * - app-paths resolve to ~/.gsd/
+ * - app-paths resolve to ~/.otto/
  * - loader sets all required env vars
  * - resource-loader syncs bundled resources
  * - wizard loadStoredEnvKeys hydrates env
@@ -32,23 +32,23 @@ function assertExtensionIndexExists(agentDir: string, extensionName: string): vo
 // 1. app-paths
 // ═══════════════════════════════════════════════════════════════════════════
 
-test("app-paths resolve to ~/.gsd/", async () => {
+test("app-paths resolve to ~/.otto/", async () => {
   const { appRoot, agentDir, sessionsDir, authFilePath } = await import("../app-paths.ts");
   // Use homedir() — process.env.HOME is undefined on Windows (uses USERPROFILE instead)
   const { homedir } = await import("node:os");
   const home = homedir();
 
-  assert.equal(appRoot, join(home, ".gsd"), "appRoot is ~/.gsd/");
-  assert.equal(agentDir, join(home, ".gsd", "agent"), "agentDir is ~/.gsd/agent/");
-  assert.equal(sessionsDir, join(home, ".gsd", "sessions"), "sessionsDir is ~/.gsd/sessions/");
-  assert.equal(authFilePath, join(home, ".gsd", "agent", "auth.json"), "authFilePath is ~/.gsd/agent/auth.json");
+  assert.equal(appRoot, join(home, ".otto"), "appRoot is ~/.otto/");
+  assert.equal(agentDir, join(home, ".otto", "agent"), "agentDir is ~/.otto/agent/");
+  assert.equal(sessionsDir, join(home, ".otto", "sessions"), "sessionsDir is ~/.otto/sessions/");
+  assert.equal(authFilePath, join(home, ".otto", "agent", "auth.json"), "authFilePath is ~/.otto/agent/auth.json");
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 2. loader env vars
 // ═══════════════════════════════════════════════════════════════════════════
 
-test("loader sets all 4 GSD_ env vars and PI_PACKAGE_DIR", async (t) => {
+test("loader sets all 4 OTTO_ env vars and PI_PACKAGE_DIR", async (t) => {
   // Run loader in a subprocess that prints env vars and exits before TUI starts
   const script = `
     import { fileURLToPath } from 'url';
@@ -57,19 +57,19 @@ test("loader sets all 4 GSD_ env vars and PI_PACKAGE_DIR", async (t) => {
 
     const pkgDir = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'pkg');
     process.env.PI_PACKAGE_DIR = pkgDir;
-    process.env.GSD_CODING_AGENT_DIR = agentDir;
-    process.env.GSD_BIN_PATH = process.argv[1];
+    process.env.OTTO_CODING_AGENT_DIR = agentDir;
+    process.env.OTTO_BIN_PATH = process.argv[1];
     const resourcesDir = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'resources');
-    process.env.GSD_WORKFLOW_PATH = join(resourcesDir, 'WORKFLOW.md');
-    const exts = ['extensions/gsd/index.ts'].map(r => join(resourcesDir, r));
-    process.env.GSD_BUNDLED_EXTENSION_PATHS = exts.join(delimiter);
+    process.env.OTTO_WORKFLOW_PATH = join(resourcesDir, 'WORKFLOW.md');
+    const exts = ['extensions/workflow/index.ts'].map(r => join(resourcesDir, r));
+    process.env.OTTO_BUNDLED_EXTENSION_PATHS = exts.join(delimiter);
 
     // Print for verification
     console.log('PI_PACKAGE_DIR=' + process.env.PI_PACKAGE_DIR);
-    console.log('GSD_CODING_AGENT_DIR=' + process.env.GSD_CODING_AGENT_DIR);
-    console.log('GSD_BIN_PATH=' + process.env.GSD_BIN_PATH);
-    console.log('GSD_WORKFLOW_PATH=' + process.env.GSD_WORKFLOW_PATH);
-    console.log('GSD_BUNDLED_EXTENSION_PATHS=' + process.env.GSD_BUNDLED_EXTENSION_PATHS);
+    console.log('OTTO_CODING_AGENT_DIR=' + process.env.OTTO_CODING_AGENT_DIR);
+    console.log('OTTO_BIN_PATH=' + process.env.OTTO_BIN_PATH);
+    console.log('OTTO_WORKFLOW_PATH=' + process.env.OTTO_WORKFLOW_PATH);
+    console.log('OTTO_BUNDLED_EXTENSION_PATHS=' + process.env.OTTO_BUNDLED_EXTENSION_PATHS);
     process.exit(0);
   `;
 
@@ -93,7 +93,7 @@ test("loader sets all 4 GSD_ env vars and PI_PACKAGE_DIR", async (t) => {
 
   // Direct logic verification (no subprocess needed)
   const { agentDir: ad } = await import("../app-paths.ts");
-  assert.ok(ad.endsWith(join(".gsd", "agent")), "agentDir ends with .gsd/agent");
+  assert.ok(ad.endsWith(join(".otto", "agent")), "agentDir ends with .otto/agent");
 
   // Verify that the env var is populated at runtime by checking the actual
   // extensions directory has discoverable entry points
@@ -108,7 +108,7 @@ test("loader sets all 4 GSD_ env vars and PI_PACKAGE_DIR", async (t) => {
   const rel = p.slice(bundledExtensionsDir.length + 1);
   return rel.split(/[\\/]/)[0].replace(/\.(?:ts|js)$/, "");
   });
-  for (const core of ["gsd", "bg-shell", "browser-tools", "subagent", "search-the-web"]) {
+  for (const core of ["workflow", "bg-shell", "browser-tools", "subagent", "search-the-web"]) {
   assert.ok(discoveredNames.includes(core), `core extension '${core}' is discoverable`);
   }
 
@@ -218,7 +218,7 @@ test("gsd update and upgrade bypass the managed-resource-mismatch gate; other co
   assert.strictEqual(newer, futureVersion, "gate must surface a newer version when manifest is ahead");
 
   // For non-update commands the predicate is false → cli.ts falls through to the gate.
-  for (const nonUpdate of [undefined, "auto", "config", "doctor", "web", "headless", "updates", "upgrades" /* near-misses */]) {
+  for (const nonUpdate of [undefined, "auto", "config", "doctor", "headless", "updates", "upgrades" /* near-misses */]) {
     assert.strictEqual(
       shouldBypassManagedResourceMismatchGate(nonUpdate),
       false,
@@ -256,7 +256,7 @@ test("managed resource skew ignores legacy manifests from the old npm package", 
   assert.strictEqual(
     getNewerManagedResourceVersion(fakeAgentDir, "1.0.1"),
     null,
-    "old unscoped loop24 resource stamps must not block @cmetech/otto startup",
+    "old unscoped otto resource stamps must not block @cmetech/otto startup",
   );
 });
 
@@ -277,7 +277,7 @@ test("managed resource skew ignores manifests stamped by a different package", a
   assert.strictEqual(
     getNewerManagedResourceVersion(fakeAgentDir, "1.0.1"),
     null,
-    "old loop24 resource stamps must be refreshed instead of treated as newer @ericsson resources",
+    "old otto resource stamps must be refreshed instead of treated as newer @ericsson resources",
   );
 });
 
@@ -324,7 +324,7 @@ test("initResources syncs extensions, agents, and skills to target dir", async (
   initResources(fakeAgentDir);
 
   // Extensions synced
-  assertExtensionIndexExists(fakeAgentDir, "gsd");
+  assertExtensionIndexExists(fakeAgentDir, "workflow");
   assertExtensionIndexExists(fakeAgentDir, "browser-tools");
   assertExtensionIndexExists(fakeAgentDir, "search-the-web");
   assertExtensionIndexExists(fakeAgentDir, "context7");
@@ -341,7 +341,7 @@ test("initResources syncs extensions, agents, and skills to target dir", async (
 
   // Idempotent: run again, no crash
   initResources(fakeAgentDir);
-  assertExtensionIndexExists(fakeAgentDir, "gsd");
+  assertExtensionIndexExists(fakeAgentDir, "workflow");
 });
 
 test("initResources skips copy when managed version matches current version", async (t) => {
@@ -356,7 +356,7 @@ test("initResources skips copy when managed version matches current version", as
   assert.ok(version, "manifest written after first sync");
 
   // Add a marker file to detect whether sync runs again
-  const markerPath = join(fakeAgentDir, "extensions", "gsd", "_marker.txt");
+  const markerPath = join(fakeAgentDir, "extensions", "workflow", "_marker.txt");
   writeFileSync(markerPath, "test-marker");
 
   // Second run: version matches — should skip, marker survives
@@ -382,7 +382,7 @@ test("initResources skips copy when managed version matches current version", as
 
 test("loadStoredEnvKeys hydrates process.env from auth.json", async (t) => {
   const { loadStoredEnvKeys } = await import("../wizard.ts");
-  const { AuthStorage } = await import("@loop24/pi-coding-agent");
+  const { AuthStorage } = await import("@otto/pi-coding-agent");
 
   const tmp = mkdtempSync(join(tmpdir(), "gsd-wizard-test-"));
   const authPath = join(tmp, "auth.json");
@@ -431,7 +431,7 @@ test("loadStoredEnvKeys hydrates process.env from auth.json", async (t) => {
 
 test("loadStoredEnvKeys does not overwrite existing env vars", async (t) => {
   const { loadStoredEnvKeys } = await import("../wizard.ts");
-  const { AuthStorage } = await import("@loop24/pi-coding-agent");
+  const { AuthStorage } = await import("@otto/pi-coding-agent");
 
   const tmp = mkdtempSync(join(tmpdir(), "gsd-wizard-nooverwrite-"));
   const authPath = join(tmp, "auth.json");
@@ -456,18 +456,18 @@ test("loadStoredEnvKeys does not overwrite existing env vars", async (t) => {
 // 6. State derivation — Gap 2
 // ═══════════════════════════════════════════════════════════════════════════
 
-test("deriveState returns pre-planning phase for empty .gsd/ directory", async (t) => {
+test("deriveState returns pre-planning phase for empty .otto/workflow/ directory", async (t) => {
   const { deriveState } = await import("../resources/extensions/workflow/state.ts");
   const tmp = mkdtempSync(join(tmpdir(), "gsd-state-smoke-"));
 
-  // Create minimal .gsd/ structure with no milestones
-  mkdirSync(join(tmp, ".gsd"), { recursive: true });
+  // Create minimal .otto/workflow/ structure with no milestones
+  mkdirSync(join(tmp, ".otto/workflow"), { recursive: true });
 
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
   const state = await deriveState(tmp);
 
   assert.equal(state.phase, "pre-planning",
-    `expected pre-planning phase for empty .gsd/, got: ${state.phase}`);
+    `expected pre-planning phase for empty .otto/workflow/, got: ${state.phase}`);
   assert.equal(state.activeMilestone, null, "no active milestone");
   assert.equal(state.activeSlice, null, "no active slice");
   assert.equal(state.activeTask, null, "no active task");
@@ -478,24 +478,24 @@ test("deriveState returns pre-planning phase for empty .gsd/ directory", async (
   assert.ok(state.nextAction.length > 0, "nextAction is non-empty");
 });
 
-test("deriveState returns pre-planning phase when no .gsd/ directory exists", async (t) => {
+test("deriveState returns pre-planning phase when no .otto/workflow/ directory exists", async (t) => {
   const { deriveState } = await import("../resources/extensions/workflow/state.ts");
-  // Use a temp dir with no .gsd/ subdirectory at all
+  // Use a temp dir with no .otto/workflow/ subdirectory at all
   const tmp = mkdtempSync(join(tmpdir(), "gsd-state-nogsd-"));
 
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
-  // Should not throw — missing .gsd/ is a valid "no project" state
+  // Should not throw — missing .otto/workflow/ is a valid "no project" state
   const state = await deriveState(tmp);
 
   assert.equal(state.phase, "pre-planning",
-    `expected pre-planning phase when .gsd/ absent, got: ${state.phase}`);
+    `expected pre-planning phase when .otto/workflow/ absent, got: ${state.phase}`);
   assert.equal(state.activeMilestone, null, "no active milestone");
 });
 
 test("deriveState shape is structurally complete", async (t) => {
   const { deriveState } = await import("../resources/extensions/workflow/state.ts");
   const tmp = mkdtempSync(join(tmpdir(), "gsd-state-shape-"));
-  mkdirSync(join(tmp, ".gsd"), { recursive: true });
+  mkdirSync(join(tmp, ".otto/workflow"), { recursive: true });
 
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
   const state = await deriveState(tmp);
@@ -523,10 +523,10 @@ test("deriveState shape is structurally complete", async (t) => {
 // 7. Doctor health checks — Gap 3
 // ═══════════════════════════════════════════════════════════════════════════
 
-test("runDoctor completes without throwing on empty .gsd/ directory", async (t) => {
+test("runDoctor completes without throwing on empty .otto/workflow/ directory", async (t) => {
   const { runDoctor } = await import("../resources/extensions/workflow/doctor.ts");
   const tmp = mkdtempSync(join(tmpdir(), "gsd-doctor-smoke-"));
-  mkdirSync(join(tmp, ".gsd"), { recursive: true });
+  mkdirSync(join(tmp, ".otto/workflow"), { recursive: true });
 
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
   // audit-only mode (fix: false) — should never throw
@@ -547,10 +547,10 @@ test("runDoctor completes without throwing on empty .gsd/ directory", async (t) 
 test("runDoctor issue objects have required fields", async (t) => {
   const { runDoctor } = await import("../resources/extensions/workflow/doctor.ts");
   const tmp = mkdtempSync(join(tmpdir(), "gsd-doctor-fields-"));
-  mkdirSync(join(tmp, ".gsd"), { recursive: true });
+  mkdirSync(join(tmp, ".otto/workflow"), { recursive: true });
 
   // Create a milestone dir with no ROADMAP.md to force a missing_roadmap issue
-  const mDir = join(tmp, ".gsd", "milestones", "M001");
+  const mDir = join(tmp, ".otto/workflow", "milestones", "M001");
   mkdirSync(mDir, { recursive: true });
   writeFileSync(join(mDir, "M001-CONTEXT.md"), "# Context\n");
 
@@ -575,7 +575,7 @@ test("runDoctor issue objects have required fields", async (t) => {
 test("runDoctor with fix:false never modifies the filesystem", async (t) => {
   const { runDoctor } = await import("../resources/extensions/workflow/doctor.ts");
   const tmp = mkdtempSync(join(tmpdir(), "gsd-doctor-readonly-"));
-  const workflowDir = join(tmp, ".gsd");
+  const workflowDir = join(tmp, ".otto/workflow");
   mkdirSync(workflowDir, { recursive: true });
 
   // Write a sentinel file — doctor must not delete or modify it

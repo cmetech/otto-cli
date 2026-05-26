@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Custom-engine successful verification reconcile adapter for auto-mode loop.
 
 import type { EngineState, ReconcileResult } from "../engine-types.js";

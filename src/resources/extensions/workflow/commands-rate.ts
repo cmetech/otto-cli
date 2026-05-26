@@ -1,9 +1,9 @@
 /**
- * /loop24 rate — Submit feedback on the last unit's model tier assignment.
+ * /otto rate — Submit feedback on the last unit's model tier assignment.
  * Feeds into the adaptive routing history so future dispatches improve.
  */
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { loadLedgerFromDisk } from "./metrics.js";
 import { recordFeedback, initRoutingHistory } from "./routing-history.js";
 import type { ComplexityTier } from "./complexity-classifier.js";
@@ -19,7 +19,7 @@ export async function handleRate(
 
   if (!rating || !VALID_RATINGS.has(rating)) {
     ctx.ui.notify(
-      "Usage: /gsd rate <over|ok|under>\n" +
+      "Usage: /otto rate <over|ok|under>\n" +
       "  over  — model was overpowered for that task (encourage cheaper)\n" +
       "  ok    — model was appropriate\n" +
       "  under — model was too weak (encourage stronger)",

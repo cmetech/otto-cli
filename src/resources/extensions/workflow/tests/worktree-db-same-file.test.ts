@@ -36,9 +36,9 @@ describe("#2823: reconcileWorktreeDb same-file guard", () => {
   });
 
   test("returns zero result when both paths resolve to the same file", () => {
-    const mainGsd = join(tmpDir, "main", ".gsd");
+    const mainGsd = join(tmpDir, "main", ".otto/workflow");
     mkdirSync(mainGsd, { recursive: true });
-    const mainDbPath = join(mainGsd, "gsd.db");
+    const mainDbPath = join(mainGsd, "otto.db");
 
     openDatabase(mainDbPath);
     insertDecision({
@@ -53,10 +53,11 @@ describe("#2823: reconcileWorktreeDb same-file guard", () => {
       superseded_by: null,
     });
 
-    const wtGsd = join(tmpDir, "worktree", ".gsd");
+    const wtGsd = join(tmpDir, "worktree", ".otto/workflow");
     mkdirSync(join(tmpDir, "worktree"), { recursive: true });
+    mkdirSync(join(tmpDir, "worktree", ".otto"), { recursive: true });
     symlinkSync(mainGsd, wtGsd, "junction");
-    const worktreeDbPath = join(wtGsd, "gsd.db");
+    const worktreeDbPath = join(wtGsd, "otto.db");
 
     assert.ok(existsSync(mainDbPath), "main DB exists");
     assert.ok(existsSync(worktreeDbPath), "worktree DB path exists via symlink");
@@ -70,9 +71,9 @@ describe("#2823: reconcileWorktreeDb same-file guard", () => {
   });
 
   test("returns zero result when both paths are identical strings", () => {
-    const mainGsd = join(tmpDir, "project", ".gsd");
+    const mainGsd = join(tmpDir, "project", ".otto/workflow");
     mkdirSync(mainGsd, { recursive: true });
-    const dbPath = join(mainGsd, "gsd.db");
+    const dbPath = join(mainGsd, "otto.db");
 
     openDatabase(dbPath);
     insertDecision({
@@ -94,9 +95,9 @@ describe("#2823: reconcileWorktreeDb same-file guard", () => {
   });
 
   test("still reconciles when paths are genuinely different files", () => {
-    const mainGsd = join(tmpDir, "main", ".gsd");
+    const mainGsd = join(tmpDir, "main", ".otto/workflow");
     mkdirSync(mainGsd, { recursive: true });
-    const mainDbPath = join(mainGsd, "gsd.db");
+    const mainDbPath = join(mainGsd, "otto.db");
 
     openDatabase(mainDbPath);
     insertDecision({
@@ -112,9 +113,9 @@ describe("#2823: reconcileWorktreeDb same-file guard", () => {
     });
     closeDatabase();
 
-    const wtGsd = join(tmpDir, "worktree", ".gsd");
+    const wtGsd = join(tmpDir, "worktree", ".otto/workflow");
     mkdirSync(wtGsd, { recursive: true });
-    const worktreeDbPath = join(wtGsd, "gsd.db");
+    const worktreeDbPath = join(wtGsd, "otto.db");
 
     openDatabase(worktreeDbPath);
     insertDecision({

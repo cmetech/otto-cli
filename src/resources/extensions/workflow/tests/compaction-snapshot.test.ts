@@ -25,7 +25,7 @@ function cleanup(dir: string): void {
 test('buildSnapshot: renders memories, exec history, and active context', () => {
   const snap = buildSnapshot({
     generatedAt: new Date('2026-04-20T12:00:00.000Z'),
-    activeContext: 'M001 / S01 / T01 — wire gsd_exec',
+    activeContext: 'M001 / S01 / T01 — wire otto_exec',
     memories: [
       { id: 'MEM001', category: 'gotcha', content: 'FTS5 needs Porter tokenizer', confidence: 0.9,
         source_unit_type: null, source_unit_id: null, created_at: '', updated_at: '',
@@ -96,13 +96,13 @@ test('writeCompactionSnapshot + readCompactionSnapshot + executeResume: end-to-e
 
     const contents = readCompactionSnapshot(base);
     assert.ok(contents);
-    assert.match(contents!, /Single-writer DB through gsd-db\.ts/);
+    assert.match(contents!, /Single-writer DB through db\.ts/);
     assert.match(contents!, /M099 resume check/);
 
     const tool = executeResume({}, { baseDir: base });
     assert.ok(!tool.isError);
     assert.equal(tool.details.found, true);
-    assert.match(tool.content[0].text, /Single-writer DB through gsd-db\.ts/);
+    assert.match(tool.content[0].text, /Single-writer DB through db\.ts/);
 
     // also verify the file content matches (without trailing newline)
     const raw = readFileSync(out.path, 'utf-8');

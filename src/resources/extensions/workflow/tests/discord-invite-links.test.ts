@@ -7,12 +7,12 @@ import { join } from "node:path";
  * Validates that all Discord invite links in user-facing files point to valid,
  * consistent invite URLs — not expired vanity links.
  *
- * Regression test for https://github.com/open-gsd/gsd-pi/issues/2699
+ * Regression test for https://github.com/open-gsd/otto-pi/issues/2699
  */
 
 const ROOT = process.cwd();
 
-/** Canonical Discord invite for the GSD community. */
+/** Canonical Discord invite for the OTTO community. */
 const VALID_INVITE = "https://discord.com/invite/nKXTsAcmbT";
 
 /** Files that contain user-facing Discord invite links. */

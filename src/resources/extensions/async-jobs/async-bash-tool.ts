@@ -6,13 +6,13 @@
  * with await_job.
  */
 
-import type { ToolDefinition } from "@loop24/pi-coding-agent";
+import type { ToolDefinition } from "@otto/pi-coding-agent";
 import {
 	getShellConfig,
 	sanitizeCommand,
 	DEFAULT_MAX_BYTES,
 	DEFAULT_MAX_LINES,
-} from "@loop24/pi-coding-agent";
+} from "@otto/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 import { spawn, spawnSync } from "node:child_process";
 import { createWriteStream } from "node:fs";

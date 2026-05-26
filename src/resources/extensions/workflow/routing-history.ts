@@ -24,7 +24,7 @@ export interface RoutingHistoryData {
   version: 1;
   /** Keyed by pattern string, e.g. "execute-task:docs" or "complete-slice" */
   patterns: Record<string, PatternHistory>;
-  /** User feedback entries (from /gsd:rate-unit) */
+  /** User feedback entries (from /otto:rate-unit) */
   feedback: FeedbackEntry[];
   /** Last updated timestamp */
   updatedAt: string;

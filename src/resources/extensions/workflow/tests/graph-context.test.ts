@@ -7,7 +7,7 @@
  *   Group 3: Node formatting (description, confidence, no-description)
  *
  * Testing strategy:
- *   @loop24-build/mcp-server is dynamically imported inside inlineGraphSubgraph().
+ *   @otto-build/mcp-server is dynamically imported inside inlineGraphSubgraph().
  *   Because node:test (v22) does not support mock.module() without the
  *   --experimental-test-module-mocks flag (not enabled in test:unit), we
  *   exercise the real graphQuery/graphStatus functions by controlling the
@@ -15,7 +15,7 @@
  *   approach that avoids all module-level mocking.
  *
  *   Fixture layout per test:
- *     <tmpDir>/.gsd/graphs/graph.json
+ *     <tmpDir>/.otto/workflow/graphs/graph.json
  *
  *   builtAt controls staleness: old timestamp → stale, recent → fresh.
  */
@@ -64,12 +64,12 @@ function freshTimestamp(): string {
 }
 
 /**
- * Creates a temp project directory with a .gsd/graphs/graph.json file.
+ * Creates a temp project directory with a .otto/workflow/graphs/graph.json file.
  * Returns the projectDir path. Caller is responsible for cleanup.
  */
 function makeProjectDir(fixture: GraphFixture): string {
   const projectDir = mkdtempSync(join(tmpdir(), "graph-ctx-test-"));
-  const workflowDir = join(projectDir, ".gsd");
+  const workflowDir = join(projectDir, ".otto/workflow");
   const graphsDir = join(workflowDir, "graphs");
   mkdirSync(graphsDir, { recursive: true });
 
@@ -135,7 +135,7 @@ describe("inlineGraphSubgraph — null returns", () => {
   });
 
   it("returns null (no throw) when graph.json is missing", async () => {
-    // A project dir with no .gsd directory at all — graphQuery returns zero nodes
+    // A project dir with no .otto/workflow directory at all — graphQuery returns zero nodes
     const projectDir = mkdtempSync(join(tmpdir(), "graph-ctx-nofile-"));
     try {
       const result = await inlineGraphSubgraph(projectDir, "auth", { budget: 3000 });
@@ -237,7 +237,7 @@ describe("inlineGraphSubgraph — correct output", () => {
     // Write a graph.json with an invalid builtAt — graphStatus will catch and return {exists: false}
     // inlineGraphSubgraph should still return the node block without stale annotation
     const projectDir = mkdtempSync(join(tmpdir(), "graph-ctx-corrupt-"));
-    const workflowDir = join(projectDir, ".gsd");
+    const workflowDir = join(projectDir, ".otto/workflow");
     const graphsDir = join(workflowDir, "graphs");
     mkdirSync(graphsDir, { recursive: true });
 

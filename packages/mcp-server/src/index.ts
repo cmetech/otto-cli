@@ -1,5 +1,5 @@
 /**
- * @loop24-build/mcp-server — MCP server for the workflow orchestration and project state.
+ * @otto-build/mcp-server — MCP server for the workflow orchestration and project state.
  */
 
 export { SessionManager } from './session-manager.js';

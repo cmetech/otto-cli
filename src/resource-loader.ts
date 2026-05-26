@@ -1,4 +1,4 @@
-import type { DefaultResourceLoader as DefaultResourceLoaderType } from '@loop24/pi-coding-agent'
+import type { DefaultResourceLoader as DefaultResourceLoaderType } from '@otto/pi-coding-agent'
 import { createHash } from 'node:crypto'
 import { homedir } from 'node:os'
 import { chmodSync, copyFileSync, cpSync, existsSync, lstatSync, mkdirSync, openSync, closeSync, readFileSync, readlinkSync, readdirSync, rmSync, statSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
@@ -9,12 +9,12 @@ import { discoverExtensionEntryPaths } from './extension-discovery.js'
 import { loadRegistry, readManifestFromEntryPath, isExtensionEnabled, ensureRegistryEntries } from './extension-registry.js'
 import { resolveBundledResourcesDirFromPackageRoot } from './bundled-resource-path.js'
 
-type PiCodingAgentModule = typeof import('@loop24/pi-coding-agent')
+type PiCodingAgentModule = typeof import('@otto/pi-coding-agent')
 
 let piCodingAgentModulePromise: Promise<PiCodingAgentModule> | undefined
 
 function loadPiCodingAgentModule(): Promise<PiCodingAgentModule> {
-  return (piCodingAgentModulePromise ??= import('@loop24/pi-coding-agent'))
+  return (piCodingAgentModulePromise ??= import('@otto/pi-coding-agent'))
 }
 
 // Resolve resources directory — prefer dist/resources/ (stable, set at build time)
@@ -68,8 +68,8 @@ function getManagedResourceManifestPath(agentDir: string): string {
 }
 
 function getBundledWorkflowVersion(): string {
-  // Prefer LOOP24_VERSION env var (set once by loader.ts) to avoid re-reading package.json
-  const envVersion = process.env.LOOP24_VERSION ?? process.env.GSD_VERSION
+  // Prefer OTTO_VERSION env var (set once by loader.ts) to avoid re-reading package.json
+  const envVersion = process.env.OTTO_VERSION
   if (envVersion && envVersion !== '0.0.0') {
     return envVersion
   }
@@ -349,13 +349,13 @@ function copyDirRecursive(src: string, dest: string): void {
  * Native ESM `import()` ignores NODE_PATH — it resolves packages by walking
  * up the directory tree from the importing file. Extension files synced to
  * ~/.otto/agent/extensions/ have no ancestor node_modules, so imports of
- * @loop24/* packages fail. The symlink makes Node's standard resolution find
+ * @otto/* packages fail. The symlink makes Node's standard resolution find
  * them without requiring every call site to use jiti.
  *
  * Layout differences by install method:
  * - Source/monorepo: packageRoot/node_modules has everything → simple symlink
- * - npm/bun global: deps hoisted to dirname(packageRoot), including @loop24/* → simple symlink
- * - pnpm global: external deps hoisted, but @loop24/* stays in packageRoot/node_modules
+ * - npm/bun global: deps hoisted to dirname(packageRoot), including @otto/* → simple symlink
+ * - pnpm global: external deps hoisted, but @otto/* stays in packageRoot/node_modules
  *   → merged directory with symlinks from both roots (#3529, #3564)
  */
 function ensureNodeModulesSymlink(agentDir: string): void {
@@ -370,7 +370,7 @@ function ensureNodeModulesSymlink(agentDir: string): void {
     return
   }
 
-  // Global install: check if workspace scopes (@loop24/*) are hoisted.
+  // Global install: check if workspace scopes (@otto/*) are hoisted.
   // npm/bun hoist everything; pnpm keeps workspace packages internal.
   if (!hasMissingWorkspaceScopes(hoistedNodeModules, internalNodeModules)) {
     // Everything is hoisted — simple symlink to parent node_modules
@@ -382,12 +382,12 @@ function ensureNodeModulesSymlink(agentDir: string): void {
   reconcileMergedNodeModules(agentNodeModules, hoistedNodeModules, internalNodeModules)
 }
 
-/** Check if any @gsd* scopes exist in internal but not in hoisted node_modules */
+/** Check if any workspace scopes exist in internal but not in hoisted node_modules */
 export function hasMissingWorkspaceScopes(hoisted: string, internal: string): boolean {
   if (!existsSync(internal)) return false
   try {
     for (const entry of readdirSync(internal, { withFileTypes: true })) {
-      if (entry.isDirectory() && entry.name.startsWith('@gsd') &&
+      if (entry.isDirectory() && (entry.name === '@otto' || entry.name === '@otto-build') &&
           !existsSync(join(hoisted, entry.name))) {
         return true
       }
@@ -421,8 +421,8 @@ function reconcileSymlink(link: string, target: string): void {
 
 /**
  * Create a real node_modules directory containing symlinks from both the
- * hoisted root (external deps) and internal root (@loop24/* workspace packages).
- * Used for pnpm global installs where @loop24/* isn't hoisted.
+ * hoisted root (external deps) and internal root (@otto/* workspace packages).
+ * Used for pnpm global installs where @otto/* isn't hoisted.
  */
 export function reconcileMergedNodeModules(
   agentNodeModules: string,
@@ -464,7 +464,7 @@ export function reconcileMergedNodeModules(
   }
 
   // Overlay internal node_modules entries that weren't hoisted.
-  // This covers @loop24/* workspace packages AND optional deps like
+  // This covers @otto/* workspace packages AND optional deps like
   // @anthropic-ai/claude-agent-sdk that npm keeps internal.
   try {
     for (const entry of readdirSync(internal, { withFileTypes: true })) {
@@ -602,7 +602,7 @@ export function initResources(agentDir: string, skillsDir: string = join(homedir
 
   // Ensure ~/.otto/agent/node_modules symlinks to the agent's node_modules on EVERY
   // launch, not just during resource syncs. A stale/broken symlink makes ALL
-  // extensions fail to resolve @loop24/* packages.
+  // extensions fail to resolve @otto/* packages.
   ensureNodeModulesSymlink(agentDir)
 
   // Migrate legacy skills on every launch (not gated by manifest) so that
@@ -627,20 +627,21 @@ export function initResources(agentDir: string, skillsDir: string = join(homedir
   syncResourceDir(join(resourcesDir, 'agents'), join(agentDir, 'agents'))
   syncResourceDir(join(resourcesDir, 'skills'), skillsDir)
 
-  // Sync WORKFLOW.md to agentDir as a fallback for when LOOP24_WORKFLOW_PATH /
-  // GSD_WORKFLOW_PATH env var is not set (e.g. fork/dev builds, alternative entry points).
+  // Sync WORKFLOW.md to agentDir as a fallback for when OTTO_WORKFLOW_PATH /
+  // OTTO_WORKFLOW_PATH env var is not set (e.g. fork/dev builds, alternative entry points).
   const workflowSrc = join(resourcesDir, 'WORKFLOW.md')
   if (existsSync(workflowSrc)) {
     try { copyFileSync(workflowSrc, join(agentDir, 'WORKFLOW.md')) } catch { /* non-fatal */ }
   }
 
-  // The loop24 extension imports ../../brand-colors.js, which in the bundled
-  // resources tree resolves to dist/resources/brand-colors.js but in the
-  // installed layout would resolve to agentDir/brand-colors.js — copy it so
-  // that path resolves at extension load.
-  const brandColorsSrc = join(resourcesDir, 'brand-colors.js')
-  if (existsSync(brandColorsSrc)) {
-    try { copyFileSync(brandColorsSrc, join(agentDir, 'brand-colors.js')) } catch { /* non-fatal */ }
+  // Extensions may import ../../brand*.js. In the bundled resources tree those
+  // resolve under dist/resources/, but in the installed layout they resolve to
+  // agentDir/. Copy root resource modules so those imports load after sync.
+  for (const fileName of ['brand.js', 'brand-colors.js']) {
+    const src = join(resourcesDir, fileName)
+    if (existsSync(src)) {
+      try { copyFileSync(src, join(agentDir, fileName)) } catch { /* non-fatal */ }
+    }
   }
 
   // Ensure all newly copied files are owner-writable so the next run can

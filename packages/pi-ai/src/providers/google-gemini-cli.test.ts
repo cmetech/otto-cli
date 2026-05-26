@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests Google Gemini CLI compatible provider behavior.
 
 import test from "node:test";

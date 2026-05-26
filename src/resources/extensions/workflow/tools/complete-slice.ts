@@ -1,8 +1,8 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Complete-slice tool handler for workflow state and summaries.
 
 /**
- * complete-slice handler — the core operation behind gsd_slice_complete.
+ * complete-slice handler — the core operation behind otto_slice_complete.
  *
  * Validates inputs, checks all tasks are complete, writes slice row to DB in
  * a transaction, then (outside the transaction) renders SUMMARY.md + UAT.md
@@ -537,7 +537,7 @@ export async function handleCompleteSlice(
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   (async () => {
     try {
-      const graphMod = await import("@loop24-build/mcp-server") as unknown as Partial<{
+      const graphMod = await import("@otto-build/mcp-server") as unknown as Partial<{
         buildGraph: (dir: string) => Promise<{ nodes: unknown[]; edges: unknown[]; builtAt: string }>;
         writeGraph: (workflowRoot: string, graph: unknown) => Promise<void>;
         resolveWorkflowRoot: (basePath: string) => string;
@@ -547,7 +547,7 @@ export async function handleCompleteSlice(
         || typeof graphMod.writeGraph !== "function"
         || typeof graphMod.resolveWorkflowRoot !== "function"
       ) {
-        throw new Error("graph helpers unavailable from @loop24-build/mcp-server");
+        throw new Error("graph helpers unavailable from @otto-build/mcp-server");
       }
       const g = await graphMod.buildGraph(artifactBasePath);
       await graphMod.writeGraph(graphMod.resolveWorkflowRoot(artifactBasePath), g);

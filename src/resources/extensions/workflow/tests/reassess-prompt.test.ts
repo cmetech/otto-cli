@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-// loadPrompt reads from ~/.gsd/agent/extensions/gsd/prompts/ (main checkout).
+// loadPrompt reads from ~/.otto/workflow/agent/extensions/workflow/prompts/ (main checkout).
 // In a worktree the file may not exist there yet, so we resolve prompts
 // relative to this test file's location (the worktree copy).
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -34,8 +34,8 @@ test('reassess-roadmap prompt loads and substitutes', () => {
       workingDirectory: "/tmp/test-project",
       milestoneId: "M099",
       completedSliceId: "S03",
-      assessmentPath: ".gsd/milestones/M099/slices/S03/S03-ASSESSMENT.md",
-      roadmapPath: ".gsd/milestones/M099/M099-ROADMAP.md",
+      assessmentPath: ".otto/workflow/milestones/M099/slices/S03/S03-ASSESSMENT.md",
+      roadmapPath: ".otto/workflow/milestones/M099/M099-ROADMAP.md",
       inlinedContext: "--- test inlined context block ---",
     };
 
@@ -55,8 +55,8 @@ test('reassess-roadmap prompt loads and substitutes', () => {
     // Verify all test variables were substituted into the output
     assert.ok(result.includes("M099"), "prompt contains milestoneId 'M099'");
     assert.ok(result.includes("S03"), "prompt contains completedSliceId 'S03'");
-    assert.ok(result.includes(".gsd/milestones/M099/slices/S03/S03-ASSESSMENT.md"), "prompt contains assessmentPath");
-    assert.ok(result.includes(".gsd/milestones/M099/M099-ROADMAP.md"), "prompt contains roadmapPath");
+    assert.ok(result.includes(".otto/workflow/milestones/M099/slices/S03/S03-ASSESSMENT.md"), "prompt contains assessmentPath");
+    assert.ok(result.includes(".otto/workflow/milestones/M099/M099-ROADMAP.md"), "prompt contains roadmapPath");
     assert.ok(result.includes("--- test inlined context block ---"), "prompt contains inlinedContext");
 
     // Verify no un-substituted variables remain
@@ -73,8 +73,8 @@ test('reassess-roadmap contains coverage-check instruction', () => {
       workingDirectory: "/tmp/test-project",
       milestoneId: "M001",
       completedSliceId: "S01",
-      assessmentPath: ".gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md",
-      roadmapPath: ".gsd/milestones/M001/M001-ROADMAP.md",
+      assessmentPath: ".otto/workflow/milestones/M001/slices/S01/S01-ASSESSMENT.md",
+      roadmapPath: ".otto/workflow/milestones/M001/M001-ROADMAP.md",
       inlinedContext: "context",
     });
 
@@ -112,8 +112,8 @@ test('coverage-check requires at-least-one semantics', () => {
       workingDirectory: "/tmp/test-project",
       milestoneId: "M001",
       completedSliceId: "S01",
-      assessmentPath: ".gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md",
-      roadmapPath: ".gsd/milestones/M001/M001-ROADMAP.md",
+      assessmentPath: ".otto/workflow/milestones/M001/slices/S01/S01-ASSESSMENT.md",
+      roadmapPath: ".otto/workflow/milestones/M001/M001-ROADMAP.md",
       inlinedContext: "context",
     });
 

@@ -24,12 +24,12 @@ import { createWorktree } from "../worktree-manager.ts";
 
 function createFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), 'gsd-park-test-'));
-  mkdirSync(join(base, '.gsd', 'milestones'), { recursive: true });
+  mkdirSync(join(base, '.otto/workflow', 'milestones'), { recursive: true });
   return base;
 }
 
 function createMilestone(base: string, mid: string, opts?: { withRoadmap?: boolean; withSummary?: boolean; dependsOn?: string[] }): void {
-  const mDir = join(base, '.gsd', 'milestones', mid);
+  const mDir = join(base, '.otto/workflow', 'milestones', mid);
   mkdirSync(mDir, { recursive: true });
 
   if (opts?.dependsOn) {
@@ -84,7 +84,7 @@ function run(cmd: string, cwd: string): string {
 
 function initGitRepo(base: string): void {
   writeFileSync(join(base, "README.md"), "# test\n", "utf-8");
-  writeFileSync(join(base, ".gsd", "STATE.md"), "# State\n", "utf-8");
+  writeFileSync(join(base, ".otto/workflow", "STATE.md"), "# State\n", "utf-8");
   run("git init", base);
   run("git config user.email test@test.com", base);
   run("git config user.name Test", base);
@@ -194,7 +194,7 @@ test('discardMilestone removes directory', async () => {
       createMilestone(base, 'M001', { withRoadmap: true });
       clearCaches();
 
-      const mDir = join(base, '.gsd', 'milestones', 'M001');
+      const mDir = join(base, '.otto/workflow', 'milestones', 'M001');
       assert.ok(existsSync(mDir), 'milestone dir exists before discard');
 
       const success = discardMilestone(base, 'M001');
@@ -214,7 +214,7 @@ test('discardMilestone updates queue order', () => {
       clearCaches();
 
       // Write a queue order that includes M001
-      const queuePath = join(base, '.gsd', 'QUEUE-ORDER.json');
+      const queuePath = join(base, '.otto/workflow', 'QUEUE-ORDER.json');
       writeFileSync(queuePath, JSON.stringify({ order: ['M001', 'M002'], updatedAt: new Date().toISOString() }), 'utf-8');
 
       discardMilestone(base, 'M001');
@@ -235,7 +235,7 @@ test('discardMilestone removes DB rows, worktree, and milestone branch', () => {
       initGitRepo(base);
       clearCaches();
 
-      assert.ok(openDatabase(join(base, '.gsd', 'gsd.db')), 'database opens');
+      assert.ok(openDatabase(join(base, '.otto/workflow', 'otto.db')), 'database opens');
       insertMilestone({ id: 'M001', title: 'Discard me', status: 'active' });
       insertSlice({ milestoneId: 'M001', id: 'S01', title: 'Only slice', status: 'pending' });
       insertTask({ milestoneId: 'M001', sliceId: 'S01', id: 'T01', title: 'Only task', status: 'pending' });

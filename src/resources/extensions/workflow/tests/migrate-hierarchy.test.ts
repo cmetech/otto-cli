@@ -25,12 +25,12 @@ import assert from 'node:assert/strict';
 
 function createFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), 'gsd-migrate-hier-'));
-  mkdirSync(join(base, '.gsd', 'milestones'), { recursive: true });
+  mkdirSync(join(base, '.otto/workflow', 'milestones'), { recursive: true });
   return base;
 }
 
 function writeFile(base: string, relativePath: string, content: string): void {
-  const full = join(base, '.gsd', relativePath);
+  const full = join(base, '.otto/workflow', relativePath);
   mkdirSync(join(full, '..'), { recursive: true });
   writeFileSync(full, content);
 }
@@ -281,7 +281,7 @@ test('migrate-hier: ghost milestone skipped', () => {
       // M001: real milestone
       writeFile(base, 'milestones/M001/M001-ROADMAP.md', ROADMAP_2_SLICES);
       // M002: ghost — just an empty dir (no CONTEXT, ROADMAP, or SUMMARY)
-      mkdirSync(join(base, '.gsd', 'milestones', 'M002'), { recursive: true });
+      mkdirSync(join(base, '.otto/workflow', 'milestones', 'M002'), { recursive: true });
 
       openDatabase(':memory:');
       const counts = migrateHierarchyToDb(base);

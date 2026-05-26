@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for blocking completed-but-unmerged milestone branches.
 
 import test from "node:test";
@@ -19,8 +19,8 @@ import {
 import { cleanup, git, makeTempRepo } from "./test-utils.ts";
 
 function seedMilestone(base: string, id: string, status = "complete"): void {
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id, title: `${id}: Test milestone`, status });
 }
 
@@ -60,7 +60,7 @@ test("findUnmergedCompletedMilestones ignores projection-only branch diffs", asy
     commitBranchFile(
       base,
       "milestone/M009",
-      ".gsd/milestones/M009/M009-SUMMARY.md",
+      ".otto/workflow/milestones/M009/M009-SUMMARY.md",
       "# M009 complete\n",
     );
 
@@ -85,14 +85,14 @@ test("formatUnmergedMilestoneBlockMessage includes files, branch, and dirty over
 
     const message = formatUnmergedMilestoneBlockMessage(blocker, "next");
 
-    assert.match(message, /\/gsd next cannot start new workflow work/);
+    assert.match(message, /\/otto next cannot start new workflow work/);
     assert.match(message, /M010 is complete but not merged/);
     assert.match(message, /Branch: milestone\/M010/);
     assert.match(message, /Target: main/);
     assert.match(message, /index\.html/);
     assert.match(message, /Project-root dirty files overlap/);
     assert.match(message, /Commit, stash, or discard/);
-    assert.match(message, /\/gsd dispatch complete-milestone M010/);
+    assert.match(message, /\/otto dispatch complete-milestone M010/);
   } finally {
     closeDatabase();
     cleanup(base);

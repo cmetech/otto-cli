@@ -1,4 +1,4 @@
-// GSD MCP Server — .gsd/ path cache tests
+// GSD MCP Server — .otto/workflow/ path cache tests
 
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -31,7 +31,7 @@ describe('reader path caches', () => {
   it('returns defensive copies of cached milestone and slice ids', () => {
     const tmp = makeTempDir('gsd-path-cache');
     try {
-      const workflowRoot = join(tmp, '.gsd');
+      const workflowRoot = join(tmp, '.otto', 'workflow');
       mkdirSync(join(workflowRoot, 'milestones', 'M001', 'slices', 'S01'), { recursive: true });
       mkdirSync(join(workflowRoot, 'milestones', 'M002'), { recursive: true });
 
@@ -50,7 +50,7 @@ describe('reader path caches', () => {
   it('returns defensive copies of cached task file objects', () => {
     const tmp = makeTempDir('gsd-path-task-cache');
     try {
-      const workflowRoot = join(tmp, '.gsd');
+      const workflowRoot = join(tmp, '.otto', 'workflow');
       writeFixture(workflowRoot, 'milestones/M001/slices/S01/tasks/T01-PLAN.md', '# T01');
 
       const taskFiles = findTaskFiles(workflowRoot, 'M001', 'S01');

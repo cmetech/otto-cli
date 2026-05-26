@@ -1,9 +1,9 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: System prompt and hidden context bootstrap for agent sessions.
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 
-import type { ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionContext } from "@otto/pi-coding-agent";
 
 import { logWarning } from "../workflow-logger.js";
 import { debugTime } from "../debug-logger.js";
@@ -53,7 +53,7 @@ export const BUNDLED_SKILL_TRIGGERS: Array<{ trigger: string; skill: string }> =
   { trigger: "Block completion claims until verification evidence has been produced in this message", skill: "verify-before-complete" },
   { trigger: "Create a Model Context Protocol (MCP) server — tool design, error handling, Inspector testing, evals", skill: "create-mcp-server" },
   { trigger: "Write documentation, proposals, specs, RFCs, or READMEs for a fresh reader", skill: "write-docs" },
-  { trigger: "Post-mortem a failed auto-mode run using .gsd/activity, .gsd/journal, and .gsd/metrics.json", skill: "forensics" },
+  { trigger: "Post-mortem a failed auto-mode run using .otto/workflow/activity, .otto/workflow/journal, and .otto/workflow/metrics.json", skill: "forensics" },
   { trigger: "Prepare a clean cross-session handoff — continue.md + summary updates (pause/resume work)", skill: "handoff" },
   { trigger: "Security review with STRIDE threat modeling and exploit-scenario reporting", skill: "security-review" },
   { trigger: "HTTP/REST/GraphQL API design — verbs, status codes, pagination, errors, idempotency, versioning", skill: "api-design" },
@@ -66,7 +66,7 @@ export const BUNDLED_SKILL_TRIGGERS: Array<{ trigger: string; skill: string }> =
   { trigger: "Browser automation — open sites, fill forms, click, screenshot, scrape, or test web apps programmatically", skill: "agent-browser" },
   { trigger: "Review UI code for Web Interface Guidelines compliance — UX, design, and accessibility patterns", skill: "web-design-guidelines" },
   { trigger: "UI/UX patterns reference — animations, CSS, typography, prefetching, icons (file:line findings)", skill: "userinterface-wiki" },
-  { trigger: "Author or refine a GSD skill — SKILL.md structure, frontmatter, and best practices", skill: "create-skill" },
+  { trigger: "Author or refine a OTTO skill — SKILL.md structure, frontmatter, and best practices", skill: "create-skill" },
   { trigger: "Create or debug a Workflow extension — tools, commands, event hooks, custom TUI, providers", skill: "create-extension" },
   { trigger: "Author a YAML workflow definition — steps, triggers, and templates", skill: "create-workflow" },
   { trigger: "Deep code optimization audit — perf anti-patterns, memory leaks, algorithmic complexity, bundle size, I/O, caching, dead code (parallel pattern-based hunt)", skill: "code-optimizer" },
@@ -89,14 +89,14 @@ function buildBundledSkillsTable(): string {
 function warnDeprecatedAgentInstructions(): void {
   const paths = [
     join(workflowHome(), "agent-instructions.md"),
-    join(process.cwd(), ".gsd", "agent-instructions.md"),
+    join(process.cwd(), ".otto/workflow", "agent-instructions.md"),
   ];
   for (const path of paths) {
     if (existsSync(path)) {
       console.warn(
-        `[GSD] DEPRECATED: ${path} is no longer loaded. ` +
+        `[OTTO] DEPRECATED: ${path} is no longer loaded. ` +
         `Migrate your instructions to AGENTS.md (or CLAUDE.md) in the same directory. ` +
-        `See https://github.com/open-gsd/gsd-pi/issues/1492`,
+        `See https://github.com/open-gsd/otto-pi/issues/1492`,
       );
     }
   }
@@ -106,7 +106,7 @@ export async function buildBeforeAgentStartResult(
   event: { prompt: string; systemPrompt: string },
   ctx: ExtensionContext,
 ): Promise<{ systemPrompt: string; message?: { customType: string; content: string; display: false } } | undefined> {
-  if (!existsSync(join(process.cwd(), ".gsd"))) return undefined;
+  if (!existsSync(join(process.cwd(), ".otto/workflow"))) return undefined;
 
   const stopContextTimer = debugTime("context-inject");
   const systemContent = loadPrompt("system", {
@@ -123,7 +123,7 @@ export async function buildBeforeAgentStartResult(
       if (autoEnableCmuxPreferences()) {
         loadedPreferences = loadEffectiveGSDPreferences();
         ctx.ui.notify(
-          "cmux detected — auto-enabled. Run /gsd cmux off to disable.",
+          "cmux detected — auto-enabled. Run /otto cmux off to disable.",
           "info",
         );
       }
@@ -144,7 +144,7 @@ export async function buildBeforeAgentStartResult(
     preferenceBlock = `\n\n${renderPreferencesForSystemPrompt(loadedPreferences.preferences, report.resolutions)}`;
     if (report.warnings.length > 0) {
       ctx.ui.notify(
-        `GSD skill preferences: ${report.warnings.length} unresolved skill${report.warnings.length === 1 ? "" : "s"}: ${report.warnings.join(", ")}`,
+        `OTTO skill preferences: ${report.warnings.length} unresolved skill${report.warnings.length === 1 ? "" : "s"}: ${report.warnings.join(", ")}`,
         "warning",
       );
     }
@@ -157,7 +157,7 @@ export async function buildBeforeAgentStartResult(
     const { backfillDecisionsToMemories } = await import("../memory-backfill.js");
     const written = backfillDecisionsToMemories();
     if (written > 0) {
-      ctx.ui.notify(`GSD: backfilled ${written} decision${written === 1 ? "" : "s"} into the memory store.`, "info");
+      ctx.ui.notify(`OTTO: backfilled ${written} decision${written === 1 ? "" : "s"} into the memory store.`, "info");
     }
   } catch (e) {
     logWarning("bootstrap", `decisions backfill failed: ${(e as Error).message}`);
@@ -171,7 +171,7 @@ export async function buildBeforeAgentStartResult(
     const { backfillKnowledgeToMemories } = await import("../knowledge-backfill.js");
     const writtenK = backfillKnowledgeToMemories(basePath);
     if (writtenK > 0) {
-      ctx.ui.notify(`GSD: backfilled ${writtenK} KNOWLEDGE.md row${writtenK === 1 ? "" : "s"} into the memory store.`, "info");
+      ctx.ui.notify(`OTTO: backfilled ${writtenK} KNOWLEDGE.md row${writtenK === 1 ? "" : "s"} into the memory store.`, "info");
     }
   } catch (e) {
     logWarning("bootstrap", `KNOWLEDGE.md backfill failed: ${(e as Error).message}`);
@@ -196,7 +196,7 @@ export async function buildBeforeAgentStartResult(
   const { block: knowledgeBlock, globalSizeKb } = loadKnowledgeBlock(workflowHome(), basePath);
   if (globalSizeKb > 4) {
     ctx.ui.notify(
-      `GSD: ~/.gsd/agent/KNOWLEDGE.md is ${globalSizeKb.toFixed(1)}KB — consider trimming to keep system prompt lean.`,
+      `OTTO: ~/.otto/workflow/agent/KNOWLEDGE.md is ${globalSizeKb.toFixed(1)}KB — consider trimming to keep system prompt lean.`,
       "warning",
     );
   }
@@ -230,13 +230,13 @@ export async function buildBeforeAgentStartResult(
       const rawContent = rawCodebase.trim();
       if (rawContent) {
         // Cap injection size to ~2 000 tokens to avoid bloating every request.
-        // Full map is always available at .gsd/CODEBASE.md.
+        // Full map is always available at .otto/workflow/CODEBASE.md.
         const generatedMatch = rawContent.match(/Generated: (\S+)/);
         const generatedAt = generatedMatch?.[1] ?? "unknown";
         const content = rawContent.length > DEFAULT_CODEBASE_MAX_CHARS
-          ? rawContent.slice(0, DEFAULT_CODEBASE_MAX_CHARS) + "\n\n*(truncated — see .gsd/CODEBASE.md for full map)*"
+          ? rawContent.slice(0, DEFAULT_CODEBASE_MAX_CHARS) + "\n\n*(truncated — see .otto/workflow/CODEBASE.md for full map)*"
           : rawContent;
-        codebaseBlock = `\n\n[PROJECT CODEBASE — File structure and descriptions (generated ${generatedAt}, auto-refreshed when GSD detects tracked file changes; use /gsd codebase stats for status)]\n\n${content}`;
+        codebaseBlock = `\n\n[PROJECT CODEBASE — File structure and descriptions (generated ${generatedAt}, auto-refreshed when OTTO detects tracked file changes; use /otto codebase stats for status)]\n\n${content}`;
       }
     } catch (e) {
       logWarning("bootstrap", `CODEBASE file read failed: ${(e as Error).message}`);
@@ -264,7 +264,7 @@ export async function buildBeforeAgentStartResult(
   // Keeping it out of `fullSystem` preserves provider prompt-cache stability
   // for the static system/tool prefix. The dynamic memory block rides the
   // volatile context message instead. (#5019)
-  const fullSystem = `${event.systemPrompt}\n\n[SYSTEM CONTEXT — GSD]\n\n${systemContent}${preferenceBlock}${knowledgeBlock}${codebaseBlock}${newSkillsBlock}${worktreeBlock}${subagentModelBlock}`;
+  const fullSystem = `${event.systemPrompt}\n\n[SYSTEM CONTEXT — OTTO]\n\n${systemContent}${preferenceBlock}${knowledgeBlock}${codebaseBlock}${newSkillsBlock}${worktreeBlock}${subagentModelBlock}`;
 
   stopContextTimer({
     systemPromptSize: fullSystem.length,
@@ -322,7 +322,7 @@ export function buildContextMessage(opts: {
 }
 
 function getContextMessageCharLimit(): number | null {
-  const raw = process.env.PI_GSD_CONTEXT_MAX_CHARS;
+  const raw = process.env.PI_OTTO_CONTEXT_MAX_CHARS;
   if (!raw) return DEFAULT_CONTEXT_MESSAGE_MAX_CHARS;
   if (raw === "0") return null;
   const parsed = Number(raw);
@@ -334,14 +334,14 @@ function getContextMessageCharLimit(): number | null {
 
 function limitContextMessageContent(content: string, limit: number | null): string {
   if (!limit || content.length <= limit) return content;
-  const suffix = "\n\n[GSD Context Truncated]\nFull context is available from the referenced .gsd files and tools; read on demand only if this excerpt lacks required evidence.";
+  const suffix = "\n\n[OTTO Context Truncated]\nFull context is available from the referenced .otto/workflow files and tools; read on demand only if this excerpt lacks required evidence.";
   const headBudget = Math.max(0, limit - suffix.length);
   return `${content.slice(0, headBudget).trimEnd()}${suffix}`;
 }
 
 function markMemoryContextSupplied(memoryContent: string): string {
   if (!memoryContent) return "";
-  return `[GSD Context Metadata]\n- Memory supplied: yes\n\n${memoryContent}`;
+  return `[OTTO Context Metadata]\n- Memory supplied: yes\n\n${memoryContent}`;
 }
 
 /**
@@ -398,7 +398,7 @@ export async function loadMemoryBlock(
     const formatted = formatMemoriesForPrompt(merged, CHAR_BUDGET);
     if (!formatted) return "";
 
-    return `\n\n[MEMORY — Critical and prompt-relevant memories from the GSD memory store]\n\n${formatted}`;
+    return `\n\n[MEMORY — Critical and prompt-relevant memories from the OTTO memory store]\n\n${formatted}`;
   } catch (e) {
     logWarning("bootstrap", `memory block fetch failed: ${(e as Error).message}`);
     return "";
@@ -424,7 +424,7 @@ export function loadKnowledgeBlock(workflowHomeDir: string, cwd: string): { bloc
     }
   }
 
-  // 2. Project knowledge (.gsd/KNOWLEDGE.md) — project-specific.
+  // 2. Project knowledge (.otto/workflow/KNOWLEDGE.md) — project-specific.
   //    ADR-013 Stage 2b: Patterns and Lessons are projected from the
   //    memories table and already reach the LLM via loadMemoryBlock. Inject
   //    only the intro prose + `## Rules` section here to avoid duplicating
@@ -460,7 +460,7 @@ export function loadKnowledgeBlock(workflowHomeDir: string, cwd: string): { bloc
 }
 
 function getKnowledgeCharLimit(): number | null {
-  const raw = process.env.PI_GSD_KNOWLEDGE_MAX_CHARS;
+  const raw = process.env.PI_OTTO_KNOWLEDGE_MAX_CHARS;
   if (!raw) return DEFAULT_KNOWLEDGE_MAX_CHARS;
   if (raw === "0") return null;
   const parsed = Number(raw);
@@ -490,13 +490,13 @@ function buildWorktreeContextBlock(): string {
       `IMPORTANT: Ignore the "Current working directory" shown earlier in this prompt.`,
       `The actual current working directory is: ${toPosixPath(process.cwd())}`,
       "",
-      `You are working inside a GSD worktree.`,
+      `You are working inside a OTTO worktree.`,
       `- Worktree name: ${worktreeName}`,
       `- Worktree path (this is the real cwd): ${toPosixPath(process.cwd())}`,
       `- Main project: ${toPosixPath(worktreeMainCwd)}`,
       `- Branch: worktree/${worktreeName}`,
       "",
-      "All file operations, bash commands, and GSD state resolve against the worktree path above.",
+      "All file operations, bash commands, and OTTO state resolve against the worktree path above.",
       "Use /worktree merge to merge changes back. Use /worktree return to switch back to the main tree.",
     ].join("\n");
   }
@@ -509,14 +509,14 @@ function buildWorktreeContextBlock(): string {
       `IMPORTANT: Ignore the "Current working directory" shown earlier in this prompt.`,
       `The actual current working directory is: ${toPosixPath(process.cwd())}`,
       "",
-      "You are working inside a GSD auto-worktree.",
+      "You are working inside a OTTO auto-worktree.",
       `- Milestone worktree: ${autoWorktree.worktreeName}`,
       `- Worktree path (this is the real cwd): ${toPosixPath(process.cwd())}`,
       `- Main project: ${toPosixPath(autoWorktree.originalBase)}`,
       `- Branch: ${autoWorktree.branch}`,
       "",
-      "All file operations, bash commands, and GSD state resolve against the worktree path above.",
-      "Write every .gsd artifact in the worktree path above, never in the main project tree.",
+      "All file operations, bash commands, and OTTO state resolve against the worktree path above.",
+      "Write every .otto/workflow artifact in the worktree path above, never in the main project tree.",
     ].join("\n");
   }
 
@@ -605,7 +605,7 @@ async function buildTaskExecutionContextInjection(
   const overridesSection = formatOverridesSection(activeOverrides);
 
   return [
-    "[GSD Guided Execute Context]",
+    "[OTTO Guided Execute Context]",
     "Use this injected context as startup context for guided task execution. Treat the inlined task plan as the authoritative local execution contract. Use source artifacts to verify details and run checks.",
     overridesSection, "",
     "",
@@ -759,7 +759,7 @@ export function buildForensicsContextInjection(basePath: string, prompt: string)
  * is complete or the session expires.
  */
 export function clearForensicsMarker(basePath: string): void {
-  const markerPath = join(basePath, ".gsd", "runtime", "active-forensics.json");
+  const markerPath = join(basePath, ".otto/workflow", "runtime", "active-forensics.json");
   if (existsSync(markerPath)) {
     try {
       unlinkSync(markerPath);

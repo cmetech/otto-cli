@@ -124,11 +124,11 @@ function stripAnsi(s: string): string {
   return s.replace(/\x1b\[[0-9;]*[A-Za-z]/g, "");
 }
 
-/** Bootstrap a temp directory with .gsd/ structure (milestones + runtime). */
+/** Bootstrap a temp directory with .otto/workflow/ structure (milestones + runtime). */
 function createTempWithGsd(prefix: string): string {
   const dir = mkdtempSync(join(tmpdir(), prefix));
-  mkdirSync(join(dir, ".gsd", "milestones"), { recursive: true });
-  mkdirSync(join(dir, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow", "milestones"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow", "runtime"), { recursive: true });
   return dir;
 }
 

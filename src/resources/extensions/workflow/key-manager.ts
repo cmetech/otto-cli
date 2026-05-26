@@ -1,17 +1,17 @@
 /**
- * API Key Manager — /loop24 keys
+ * API Key Manager — /otto keys
  *
  * Comprehensive CLI for managing API keys: list, add, remove, test, rotate, doctor.
  * Works with AuthStorage from pi-coding-agent — no core package changes needed.
  */
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 import {
   AuthStorage,
   type AuthCredential,
   type ApiKeyCredential,
   type OAuthCredential,
-} from "@loop24/pi-coding-agent";
+} from "@otto/pi-coding-agent";
 import { existsSync, statSync, chmodSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { mkdirSync } from "node:fs";
@@ -910,7 +910,7 @@ export function formatDoctorFindings(findings: DoctorFinding[]): string {
 // ─── Main Handler ───────────────────────────────────────────────────────────────
 
 /**
- * Main entry point for /loop24 keys [subcommand].
+ * Main entry point for /otto keys [subcommand].
  */
 export async function handleKeys(
   args: string,

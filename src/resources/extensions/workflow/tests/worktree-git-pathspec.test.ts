@@ -12,10 +12,10 @@ function run(cmd: string, args: string[], cwd: string): string {
 }
 
 describe("worktree git pathspec", () => {
-  test("skips external GSD bookkeeping directories outside the git work-tree", () => {
+  test("skips external OTTO bookkeeping directories outside the git work-tree", () => {
     const root = realpathSync(mkdtempSync(join(tmpdir(), "gsd-pathspec-")));
     const repo = join(root, "project");
-    const externalGsd = join(root, ".gsd", "projects", "abc123");
+    const externalGsd = join(root, ".otto/workflow", "projects", "abc123");
 
     try {
       mkdirSync(repo, { recursive: true });

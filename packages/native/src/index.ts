@@ -1,5 +1,5 @@
 /**
- * @loop24/native — High-performance Rust modules exposed via N-API.
+ * @otto/native — High-performance Rust modules exposed via N-API.
  *
  * Modules:
  * - clipboard: native clipboard access (text + image)

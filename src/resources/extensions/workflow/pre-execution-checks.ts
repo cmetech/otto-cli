@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Pre-execution validation checks for task plans.
 
 /**
@@ -52,7 +52,7 @@ function inputExistsOnDisk(
 
   // Worktree mode: a referenced file may live at the canonical project root
   // rather than inside the isolated worktree checkout — either project
-  // metadata (.gsd/...) or source from already-merged work that has not yet
+  // metadata (.otto/workflow/...) or source from already-merged work that has not yet
   // reached this worktree. Accept either as satisfying the input.
   if (context?.canonicalProjectRoot) {
     if (existsSync(resolve(context.canonicalProjectRoot, normalizedFile))) return true;
@@ -73,7 +73,7 @@ function inputExistsOnDisk(
   try {
     for (const entry of readdirSync(basePath, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue;
-      if (entry.name === ".git" || entry.name === ".gsd" || entry.name === "node_modules") continue;
+      if (entry.name === ".git" || entry.name === ".otto" || entry.name === "node_modules") continue;
       if (existsSync(resolve(basePath, entry.name, normalizedFile))) {
         matches += 1;
         if (matches > 1) return false;
@@ -439,7 +439,7 @@ function extractPathFromAnnotation(raw: string): string {
   // like a path or URL. Handles prose-annotated bullets such as:
   //   `path/` directory listing (...)
   //   Prefix prose `https://...` suffix prose
-  //   Citing `.gsd/REQUIREMENTS.md` mid-sentence
+  //   Citing `.otto/workflow/REQUIREMENTS.md` mid-sentence
   // Skips non-path backticked tokens like `note` or `npm test`.
   const backtickTokens = trimmed.matchAll(/`([^`]+)`/g);
   for (const match of backtickTokens) {

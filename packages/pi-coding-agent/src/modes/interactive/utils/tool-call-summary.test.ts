@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Compact tool-call summary regression tests.
 
 import assert from "node:assert/strict";

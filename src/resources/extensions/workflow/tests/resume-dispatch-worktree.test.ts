@@ -18,7 +18,7 @@ import { resolvePausedResumeBasePath } from "../worktree-lifecycle.ts";
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-resume-wt-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
   return base;
 }
 
@@ -32,7 +32,7 @@ function writePausedSession(
   worktreePath: string | null,
 ): void {
   writeFileSync(
-    join(base, ".gsd", "runtime", "paused-session.json"),
+    join(base, ".otto/workflow", "runtime", "paused-session.json"),
     JSON.stringify({
       milestoneId,
       originalBasePath: base,
@@ -45,7 +45,7 @@ function writePausedSession(
 }
 
 function makeWorktreePath(base: string, milestoneId: string): string {
-  return join(base, ".gsd", "worktrees", milestoneId);
+  return join(base, ".otto/workflow", "worktrees", milestoneId);
 }
 
 function setupWorktreeOnDisk(wt: string): void {
@@ -91,7 +91,7 @@ test("read paused-session metadata round-trips worktreePath from paused-session.
     setupWorktreeOnDisk(wt);
     writePausedSession(base, "M001-test", wt);
 
-    const pausedPath = join(base, ".gsd", "runtime", "paused-session.json");
+    const pausedPath = join(base, ".otto/workflow", "runtime", "paused-session.json");
     const meta = JSON.parse(readFileSync(pausedPath, "utf-8"));
 
     assert.equal(meta.milestoneId, "M001-test");

@@ -32,19 +32,19 @@ const tempDirs = new Set<string>();
 
 function createBasePath(): string {
   const basePath = mkdtempSync(join(tmpdir(), "gsd-uok-planv2-"));
-  mkdirSync(join(basePath, ".gsd", "milestones", MILESTONE_ID), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow", "milestones", MILESTONE_ID), { recursive: true });
   tempDirs.add(basePath);
   return basePath;
 }
 
 function writeMilestoneFile(basePath: string, suffix: string, content: string): void {
-  const milestoneDir = join(basePath, ".gsd", "milestones", MILESTONE_ID);
+  const milestoneDir = join(basePath, ".otto/workflow", "milestones", MILESTONE_ID);
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(join(milestoneDir, `${MILESTONE_ID}-${suffix}.md`), `${content}\n`, "utf-8");
 }
 
 function writeSliceFile(basePath: string, suffix: string, content: string): void {
-  const sliceDir = join(basePath, ".gsd", "milestones", MILESTONE_ID, "slices", SLICE_ID);
+  const sliceDir = join(basePath, ".otto/workflow", "milestones", MILESTONE_ID, "slices", SLICE_ID);
   mkdirSync(sliceDir, { recursive: true });
   writeFileSync(join(sliceDir, `${SLICE_ID}-${suffix}.md`), `${content}\n`, "utf-8");
 }
@@ -165,8 +165,8 @@ test("plan-v2 gate accepts finalized context from project-root fallback", () => 
   writeMilestoneFile(projectRoot, "CONTEXT", "Finalized context in project root.");
   writeMilestoneFile(worktreeBase, "CONTEXT-DRAFT", "Draft context in worktree.");
 
-  const prevProjectRoot = process.env.GSD_PROJECT_ROOT;
-  process.env.GSD_PROJECT_ROOT = projectRoot;
+  const prevProjectRoot = process.env.OTTO_PROJECT_ROOT;
+  process.env.OTTO_PROJECT_ROOT = projectRoot;
   try {
     const compiled = ensurePlanV2Graph(worktreeBase, buildState("executing"));
     assert.equal(compiled.ok, true);
@@ -174,9 +174,9 @@ test("plan-v2 gate accepts finalized context from project-root fallback", () => 
     assert.equal(hasFinalizedMilestoneContext(worktreeBase, MILESTONE_ID), true);
   } finally {
     if (prevProjectRoot === undefined) {
-      delete process.env.GSD_PROJECT_ROOT;
+      delete process.env.OTTO_PROJECT_ROOT;
     } else {
-      process.env.GSD_PROJECT_ROOT = prevProjectRoot;
+      process.env.OTTO_PROJECT_ROOT = prevProjectRoot;
     }
   }
 });

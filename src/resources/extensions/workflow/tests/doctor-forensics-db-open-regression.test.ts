@@ -13,23 +13,23 @@ test("#5194 forensics opens DB before computing completion counts", async (t) =>
   const base = mkdtempSync(join(tmpdir(), "gsd-forensics-db-open-"));
   t.after(() => rmSync(base, { recursive: true, force: true }));
 
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   closeDatabase();
 
   const report = await buildForensicReport(base);
-  assert.ok(report.dbCompletionCounts, "forensics should expose DB completion counts when .gsd exists");
+  assert.ok(report.dbCompletionCounts, "forensics should expose DB completion counts when .otto/workflow exists");
   assert.equal(report.dbCompletionCounts?.milestonesTotal, 0);
   assert.equal(report.dbCompletionCounts?.slicesTotal, 0);
   assert.equal(report.dbCompletionCounts?.tasksTotal, 0);
 });
 
-test("#5194 doctor command does not emit false db_unavailable when gsd.db exists", async (t) => {
+test("#5194 doctor command does not emit false db_unavailable when otto.db exists", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-doctor-db-open-"));
   t.after(() => rmSync(base, { recursive: true, force: true }));
 
-  const workflowDir = join(base, ".gsd");
+  const workflowDir = join(base, ".otto/workflow");
   mkdirSync(workflowDir, { recursive: true });
-  writeFileSync(join(workflowDir, "gsd.db"), "");
+  writeFileSync(join(workflowDir, "otto.db"), "");
   closeDatabase();
 
   const notifications: string[] = [];

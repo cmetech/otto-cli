@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Behavior tests for auto-loop cleanup after paused provider exits.
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -29,7 +29,7 @@ test("cleanupAfterLoopExit preserves paused auto badge after provider pause", as
   autoSession.reset();
   autoSession.active = true;
   autoSession.paused = true;
-  autoSession.basePath = join(base, ".gsd", "worktrees", "M001");
+  autoSession.basePath = join(base, ".otto/workflow", "worktrees", "M001");
   autoSession.originalBasePath = base;
 
   try {
@@ -55,7 +55,7 @@ test("cleanupAfterLoopExit preserves paused auto badge after provider pause", as
 
 test("cleanupAfterLoopExit preserves paused worktree session and visible failure output", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-paused-session-preserve-"));
-  const worktree = join(base, ".gsd", "worktrees", "M001");
+  const worktree = join(base, ".otto/workflow", "worktrees", "M001");
   const previousCwd = process.cwd();
   const newSessionWorkspaces: string[] = [];
   let restoreCalls = 0;
@@ -204,8 +204,8 @@ test("pauseAuto preserves artifact retry counts across pause/resume", async () =
 test("pauseAuto marks active worker as stopping and clears workerId", async () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-pause-worker-stop-"));
   const previousCwd = process.cwd();
-  const dbPath = join(base, ".gsd", "gsd.db");
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  const dbPath = join(base, ".otto/workflow", "otto.db");
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
 
   autoSession.reset();
   autoSession.active = true;
@@ -238,9 +238,9 @@ test("pauseAuto records the expected worktree path when paused from project root
 
   autoSession.reset();
   try {
-    mkdirSync(join(base, ".gsd"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
     writeFileSync(
-      join(base, ".gsd", "PREFERENCES.md"),
+      join(base, ".otto/workflow", "PREFERENCES.md"),
       "---\nversion: 1\ngit:\n  isolation: worktree\n---\n",
       "utf-8",
     );
@@ -250,7 +250,7 @@ test("pauseAuto records the expected worktree path when paused from project root
     writeFileSync(join(base, "README.md"), "# Test Project\n", "utf-8");
     runGit(["add", "."], base);
     runGit(["commit", "-m", "chore: init"], base);
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     process.chdir(base);
 
     autoSession.active = true;
@@ -262,7 +262,7 @@ test("pauseAuto records the expected worktree path when paused from project root
 
     const meta = readPausedSessionMetadata(base);
     assert.ok(meta);
-    assert.equal(meta.worktreePath, join(base, ".gsd", "worktrees", "M001"));
+    assert.equal(meta.worktreePath, join(base, ".otto/workflow", "worktrees", "M001"));
   } finally {
     autoSession.reset();
     try {
@@ -277,7 +277,7 @@ test("pauseAuto records the expected worktree path when paused from project root
 
 test("cleanupAfterLoopExit preserves step-mode surface and worktree session after completed step", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-step-surface-"));
-  const worktree = join(base, ".gsd", "worktrees", "M001");
+  const worktree = join(base, ".otto/workflow", "worktrees", "M001");
   const previousCwd = process.cwd();
   const statusCalls: unknown[] = [];
   const widgetCalls: unknown[] = [];
@@ -341,7 +341,7 @@ test("cleanupAfterLoopExit preserves step-mode surface and worktree session afte
 
 test("cleanupAfterLoopExit restores project root through lifecycle and preserves chdir", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-cleanup-lifecycle-"));
-  const worktree = join(base, ".gsd", "worktrees", "M001");
+  const worktree = join(base, ".otto/workflow", "worktrees", "M001");
   const previousCwd = process.cwd();
   let restoreCalls = 0;
   const originalRestore = WorktreeLifecycle.prototype.restoreToProjectRoot;
@@ -377,7 +377,7 @@ test("cleanupAfterLoopExit restores project root through lifecycle and preserves
 
 test("cleanupAfterLoopExit keeps cleanup best-effort when lifecycle restore throws", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-cleanup-restore-throw-"));
-  const worktree = join(base, ".gsd", "worktrees", "M001");
+  const worktree = join(base, ".otto/workflow", "worktrees", "M001");
   const previousCwd = process.cwd();
   let restoreCalls = 0;
   // ADR-016 phase 3 (#5693): the real `restoreToProjectRoot` assigns
@@ -446,7 +446,7 @@ test("stopAuto foreground completion closeout reroots session and installs the d
     restoreCalls += 1;
     return originalRestore.call(this);
   });
-  const milestoneDir = join(base, ".gsd", "milestones", "M003");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M003");
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(join(milestoneDir, "M003-SUMMARY.md"), [
     "---",
@@ -496,7 +496,7 @@ test("stopAuto foreground completion closeout reroots session and installs the d
 
   autoSession.active = true;
   autoSession.paused = false;
-  autoSession.basePath = join(base, ".gsd", "worktrees", "M003");
+  autoSession.basePath = join(base, ".otto/workflow", "worktrees", "M003");
   autoSession.originalBasePath = base;
   autoSession.currentMilestoneId = "M003";
   autoSession.autoStartTime = Date.now() - 60_000;
@@ -566,7 +566,7 @@ test("stopAuto foreground completion closeout reroots session and installs the d
     assert.match(rollup, /Budget tracking/);
     assert.match(rollup, /Users can see what shipped without opening a fresh session/);
     assert.ok(
-      notifications.every(message => !message.includes("/gsd auto to resume")),
+      notifications.every(message => !message.includes("/otto auto to resume")),
       "completion stop notification must not tell users to resume a finished auto run",
     );
     assert.ok(
@@ -602,10 +602,10 @@ test("stopAuto foreground completion closeout reroots session and installs the d
 test("stopAuto completion closeout emits a headless terminal notification without replacing the final widget", async () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-headless-completion-stop-"));
   const previousCwd = process.cwd();
-  const previousHeadless = process.env.GSD_HEADLESS;
+  const previousHeadless = process.env.OTTO_HEADLESS;
   const widgetCalls: Array<[string, unknown]> = [];
   const notifications: string[] = [];
-  const milestoneDir = join(base, ".gsd", "milestones", "M003");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M003");
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(join(milestoneDir, "M003-SUMMARY.md"), [
     "---",
@@ -625,10 +625,10 @@ test("stopAuto completion closeout emits a headless terminal notification withou
   insertMilestone({ id: "M003", title: "Budget tracking", status: "complete" });
   insertSlice({ id: "S01", milestoneId: "M003", title: "Complete slice", status: "complete", sequence: 1 });
 
-  process.env.GSD_HEADLESS = "1";
+  process.env.OTTO_HEADLESS = "1";
   autoSession.active = true;
   autoSession.paused = false;
-  autoSession.basePath = join(base, ".gsd", "worktrees", "M003");
+  autoSession.basePath = join(base, ".otto/workflow", "worktrees", "M003");
   autoSession.originalBasePath = base;
   autoSession.currentMilestoneId = "M003";
   autoSession.autoStartTime = Date.now() - 60_000;
@@ -676,9 +676,9 @@ test("stopAuto completion closeout emits a headless terminal notification withou
     );
   } finally {
     if (previousHeadless === undefined) {
-      delete process.env.GSD_HEADLESS;
+      delete process.env.OTTO_HEADLESS;
     } else {
-      process.env.GSD_HEADLESS = previousHeadless;
+      process.env.OTTO_HEADLESS = previousHeadless;
     }
     try { closeDatabase(); } catch { /* noop */ }
     autoSession.reset();
@@ -699,7 +699,7 @@ test("stopAuto foreground all-complete closeout leaves a durable roll-up as the 
 
   autoSession.active = true;
   autoSession.paused = false;
-  autoSession.basePath = join(base, ".gsd", "worktrees", "M007");
+  autoSession.basePath = join(base, ".otto/workflow", "worktrees", "M007");
   autoSession.originalBasePath = base;
   autoSession.currentMilestoneId = "M007";
   autoSession.autoStartTime = Date.now() - 60_000;

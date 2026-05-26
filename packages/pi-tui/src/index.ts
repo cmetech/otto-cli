@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Public exports for the pi-tui package.
 
 // Style primitives

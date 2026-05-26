@@ -1,5 +1,5 @@
 /**
- * Regression test for #4375: gsd_skip_slice must cascade "skipped" status to
+ * Regression test for #4375: otto_skip_slice must cascade "skipped" status to
  * all non-closed tasks in the slice.
  *
  * Without the cascade, executeCompleteMilestone's deep-task check finds

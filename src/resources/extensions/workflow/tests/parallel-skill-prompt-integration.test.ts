@@ -20,7 +20,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-import { loadSkills } from "@loop24/pi-coding-agent";
+import { loadSkills } from "@otto/pi-coding-agent";
 import {
   buildResearchSlicePrompt,
   buildParallelResearchSlicesPrompt,
@@ -37,7 +37,7 @@ function setupProjectWithSkill(): string {
   tmpDirs.push(base);
 
   // Milestone roadmap — buildResearchSlicePrompt inlines the roadmap excerpt.
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   mkdirSync(join(milestoneDir, "slices", "S01"), { recursive: true });
   mkdirSync(join(milestoneDir, "slices", "S02"), { recursive: true });
   writeFileSync(
@@ -57,9 +57,9 @@ function setupProjectWithSkill(): string {
   );
 
   // Project preferences — buildSkillActivationBlock picks these up via
-  // loadEffectiveGSDPreferences(), which reads from `${cwd}/.gsd/PREFERENCES.md`.
+  // loadEffectiveGSDPreferences(), which reads from `${cwd}/.otto/workflow/PREFERENCES.md`.
   writeFileSync(
-    join(base, ".gsd", "PREFERENCES.md"),
+    join(base, ".otto/workflow", "PREFERENCES.md"),
     ["---", `always_use_skills:`, `  - ${SKILL_NAME}`, "---", ""].join("\n"),
     "utf-8",
   );

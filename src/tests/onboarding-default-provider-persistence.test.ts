@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
-const resolveTsPath = join(process.cwd(), "src", "resources", "extensions", "gsd", "tests", "resolve-ts.mjs")
+const resolveTsPath = join(process.cwd(), "src", "resources", "extensions", "workflow", "tests", "resolve-ts.mjs")
 
 function runOnboardingFlow(workflowHome: string, answers: string[]): void {
   execFileSync(
@@ -42,7 +42,7 @@ function runOnboardingFlow(workflowHome: string, answers: string[]): void {
         if (!configured) throw new Error("onboarding flow did not complete");
       `,
     ],
-    { env: { ...process.env, GSD_HOME: workflowHome }, stdio: "pipe" },
+    { env: { ...process.env, OTTO_HOME: workflowHome }, stdio: "pipe" },
   )
 }
 

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Plans milestone roadmap state through DB-backed workflow tools.
 
 import { clearParseCache } from "../files.js";
@@ -250,7 +250,7 @@ export async function handlePlanMilestone(
         const incomingSliceIds = new Set(params.slices.map(s => s.sliceId));
         const droppedCompleted = completedSlices.filter(s => !incomingSliceIds.has(s.id));
         if (droppedCompleted.length > 0) {
-          guardError = `cannot re-plan milestone ${params.milestoneId}: ${droppedCompleted.length} completed slice(s) would be dropped (${droppedCompleted.map(s => s.id).join(", ")}). Use gsd_reassess_roadmap to modify the roadmap.`;
+          guardError = `cannot re-plan milestone ${params.milestoneId}: ${droppedCompleted.length} completed slice(s) would be dropped (${droppedCompleted.map(s => s.id).join(", ")}). Use otto_reassess_roadmap to modify the roadmap.`;
           return;
         }
       }

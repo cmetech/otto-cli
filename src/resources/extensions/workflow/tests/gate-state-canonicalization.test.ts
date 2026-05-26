@@ -1,4 +1,4 @@
-// GSD Gate State Canonicalization Tests
+// OTTO Gate State Canonicalization Tests
 // Regression tests for #4950: canonical omitted state and GateVerdict type narrowing.
 
 import { describe, test, beforeEach, afterEach } from "node:test";
@@ -25,7 +25,7 @@ describe("gate-state canonicalization (#4950)", () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(join(tmpdir(), "gate-canon-test-"));
-    dbPath = join(tmpDir, "gsd.db");
+    dbPath = join(tmpDir, "otto.db");
     openDatabase(dbPath);
     insertMilestone({ id: "M001", title: "Test Milestone", status: "active" });
     insertSlice({

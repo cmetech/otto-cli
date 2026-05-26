@@ -1,7 +1,7 @@
 //  reopen-milestone tool handler
 
 /**
- * reopen-milestone handler — the core operation behind gsd_milestone_reopen.
+ * reopen-milestone handler — the core operation behind otto_milestone_reopen.
  *
  * Resets a closed milestone back to "active", all of its slices to
  * "in_progress", and all tasks to "pending". Cleans up stale filesystem

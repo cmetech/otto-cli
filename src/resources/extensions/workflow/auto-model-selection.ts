@@ -4,9 +4,9 @@
  * and fallback chains.
  */
 
-import type { Api, Model } from "@loop24/pi-ai";
-import { getProviderCapabilities } from "@loop24/pi-ai";
-import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
+import type { Api, Model } from "@otto/pi-ai";
+import { getProviderCapabilities } from "@otto/pi-ai";
+import type { ExtensionAPI, ExtensionContext } from "@otto/pi-coding-agent";
 import type { WorkflowPreferences } from "./preferences.js";
 import { resolveModelWithFallbacksForUnit, resolveDynamicRoutingConfig } from "./preferences.js";
 import type { ComplexityTier } from "./complexity-classifier.js";
@@ -180,7 +180,7 @@ export async function selectAndApplyModel(
   /** When false (interactive/guided-flow), skip dynamic routing and use the session model.
    *  Dynamic routing only applies in auto-mode where cost optimization is expected. (#3962) */
   isAutoMode = true,
-  /** Explicit /loop24 model pin captured at bootstrap for long-running auto loops. */
+  /** Explicit /otto model pin captured at bootstrap for long-running auto loops. */
   sessionModelOverride?: { provider: string; id: string } | null,
   /** Thinking level captured at auto-mode start and re-applied after model swaps. */
   autoModeStartThinkingLevel?: ReturnType<ExtensionAPI["getThinkingLevel"]> | null,
@@ -491,7 +491,7 @@ export async function selectAndApplyModel(
       }
 
       // Skip models the provider has previously rejected for this account
-      // (issue #4513).  The block is persisted in .gsd/runtime/blocked-models.json
+      // (issue #4513).  The block is persisted in .otto/workflow/runtime/blocked-models.json
       // so it survives /otto auto restarts — without this, the same dead model
       // gets reselected after every restart.
       if (isModelBlocked(basePath, model.provider, model.id)) {

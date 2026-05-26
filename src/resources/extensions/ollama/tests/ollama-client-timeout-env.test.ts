@@ -37,56 +37,56 @@ function withEnv(name: string, value: string | undefined, run: () => void): void
 
 describe("envPositiveInt — defensive fallback", () => {
 	it("returns fallback when var is unset", () => {
-		withEnv("__GSD_TEST_INT__", undefined, () => {
-			assert.equal(envPositiveInt("__GSD_TEST_INT__", 42), 42);
+		withEnv("__OTTO_TEST_INT__", undefined, () => {
+			assert.equal(envPositiveInt("__OTTO_TEST_INT__", 42), 42);
 		});
 	});
 
 	it("returns fallback when var is empty string", () => {
-		withEnv("__GSD_TEST_INT__", "", () => {
-			assert.equal(envPositiveInt("__GSD_TEST_INT__", 42), 42);
+		withEnv("__OTTO_TEST_INT__", "", () => {
+			assert.equal(envPositiveInt("__OTTO_TEST_INT__", 42), 42);
 		});
 	});
 
 	it("returns fallback when var is non-numeric", () => {
-		withEnv("__GSD_TEST_INT__", "abc", () => {
-			assert.equal(envPositiveInt("__GSD_TEST_INT__", 42), 42);
+		withEnv("__OTTO_TEST_INT__", "abc", () => {
+			assert.equal(envPositiveInt("__OTTO_TEST_INT__", 42), 42);
 		});
 	});
 
 	it("returns fallback when var is zero (would silently disable timeout)", () => {
-		withEnv("__GSD_TEST_INT__", "0", () => {
-			assert.equal(envPositiveInt("__GSD_TEST_INT__", 42), 42);
+		withEnv("__OTTO_TEST_INT__", "0", () => {
+			assert.equal(envPositiveInt("__OTTO_TEST_INT__", 42), 42);
 		});
 	});
 
 	it("returns fallback when var is negative", () => {
-		withEnv("__GSD_TEST_INT__", "-100", () => {
-			assert.equal(envPositiveInt("__GSD_TEST_INT__", 42), 42);
+		withEnv("__OTTO_TEST_INT__", "-100", () => {
+			assert.equal(envPositiveInt("__OTTO_TEST_INT__", 42), 42);
 		});
 	});
 
 	it("returns parsed value when var is a positive integer", () => {
-		withEnv("__GSD_TEST_INT__", "5000", () => {
-			assert.equal(envPositiveInt("__GSD_TEST_INT__", 42), 5000);
+		withEnv("__OTTO_TEST_INT__", "5000", () => {
+			assert.equal(envPositiveInt("__OTTO_TEST_INT__", 42), 5000);
 		});
 	});
 
 	it("parses leading digits and discards trailing junk (parseInt semantics)", () => {
-		withEnv("__GSD_TEST_INT__", "1500ms", () => {
-			assert.equal(envPositiveInt("__GSD_TEST_INT__", 42), 1500);
+		withEnv("__OTTO_TEST_INT__", "1500ms", () => {
+			assert.equal(envPositiveInt("__OTTO_TEST_INT__", 42), 1500);
 		});
 	});
 
 	it("clamps values above MAX_TIMER_DELAY_MS to prevent setTimeout overflow", () => {
-		withEnv("__GSD_TEST_INT__", String(MAX_TIMER_DELAY_MS + 1), () => {
-			assert.equal(envPositiveInt("__GSD_TEST_INT__", 42), MAX_TIMER_DELAY_MS);
+		withEnv("__OTTO_TEST_INT__", String(MAX_TIMER_DELAY_MS + 1), () => {
+			assert.equal(envPositiveInt("__OTTO_TEST_INT__", 42), MAX_TIMER_DELAY_MS);
 		});
 	});
 
 	it("accepts MAX_TIMER_DELAY_MS exactly", () => {
-		withEnv("__GSD_TEST_INT__", String(MAX_TIMER_DELAY_MS), () => {
-			assert.equal(envPositiveInt("__GSD_TEST_INT__", 42), MAX_TIMER_DELAY_MS);
+		withEnv("__OTTO_TEST_INT__", String(MAX_TIMER_DELAY_MS), () => {
+			assert.equal(envPositiveInt("__OTTO_TEST_INT__", 42), MAX_TIMER_DELAY_MS);
 		});
 	});
 });

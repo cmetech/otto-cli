@@ -60,7 +60,7 @@ function main() {
 	}
 	process.stderr.write(
 		'\nEvery package marked "gsd.linkable: true" must ship with tests.\n' +
-		'This gate exists because PR #4668 shipped three new @loop24/* packages with zero test\n' +
+		'This gate exists because PR #4668 shipped three new @otto/* packages with zero test\n' +
 		'coverage (the test globs silently excluded them), which hid 14 CRITICAL regressions.\n' +
 		'See PR #4673 revert notes.\n\n' +
 		'To fix: add at least one *.test.ts file to the package, or remove "gsd.linkable" if\n' +

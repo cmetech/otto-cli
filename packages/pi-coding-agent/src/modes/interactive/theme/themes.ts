@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Built-in terminal theme definitions for interactive TUI rendering.
 /**
  * Built-in theme definitions.
@@ -12,7 +12,7 @@
 
 // Re-use the ThemeJson type from the schema module to avoid runtime cycles.
 import type { ThemeJson } from "./theme-schema.js";
-import { loop24Theme } from "./loop24-theme.generated.js";
+import { ottoTheme } from "./otto-theme.generated.js";
 
 // ---------------------------------------------------------------------------
 // Dark theme
@@ -378,16 +378,16 @@ const vivid: ThemeJson = {
 };
 
 // ---------------------------------------------------------------------------
-// Loop24 Signal theme (LOOP24 brand default)
+// Otto Signal theme (OTTO brand default)
 // ---------------------------------------------------------------------------
 //
 // Palette derived from oscar-adminui's customColors (UserThemeOptions.js)
-// and approved during the LOOP24 design brainstorm. Yellow is the primary
+// and approved during the OTTO design brainstorm. Yellow is the primary
 // brand accent, purple is reserved for `.planning/` artifacts, and the
 // status colors are the brand greens/oranges/reds.
 //
-// Canonical source: src/resources/extensions/loop24/theme/loop24.json.
-// The TS form (loop24-theme.generated.ts) is emitted by
+// Canonical source: src/resources/extensions/otto/theme/otto.json.
+// The TS form (otto-theme.generated.ts) is emitted by
 // scripts/generate-theme-const.mjs on prebuild — edit the JSON, not the const.
 // Generator exists because pi-coding-agent's tsconfig rootDir blocks cross-
 // package JSON imports.
@@ -397,7 +397,7 @@ const vivid: ThemeJson = {
 // ---------------------------------------------------------------------------
 
 export const builtinThemes: Record<string, ThemeJson> = {
-	loop24: loop24Theme,
+	otto: ottoTheme,
 	dark,
 	light,
 	"tui-classic": tuiClassic,

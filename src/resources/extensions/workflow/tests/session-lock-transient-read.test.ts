@@ -36,7 +36,7 @@ async function main(): Promise<void> {
   console.log('\n=== 1. readExistingLockDataWithRetry reads file normally ===');
   {
     const base = mkdtempSync(join(tmpdir(), 'gsd-transient-'));
-    mkdirSync(join(base, '.gsd'), { recursive: true });
+    mkdirSync(join(base, '.otto/workflow'), { recursive: true });
 
     try {
       const lockFile = join(workflowRoot(base), 'auto.lock');
@@ -63,7 +63,7 @@ async function main(): Promise<void> {
   console.log('\n=== 2. readExistingLockDataWithRetry returns null for missing file ===');
   {
     const base = mkdtempSync(join(tmpdir(), 'gsd-transient-'));
-    mkdirSync(join(base, '.gsd'), { recursive: true });
+    mkdirSync(join(base, '.otto/workflow'), { recursive: true });
 
     try {
       const lockFile = join(workflowRoot(base), 'auto.lock');
@@ -79,7 +79,7 @@ async function main(): Promise<void> {
   console.log('\n=== 3. readExistingLockDataWithRetry recovers after transient unavailability ===');
   {
     const base = mkdtempSync(join(tmpdir(), 'gsd-transient-'));
-    mkdirSync(join(base, '.gsd'), { recursive: true });
+    mkdirSync(join(base, '.otto/workflow'), { recursive: true });
 
     try {
       const lockFile = join(workflowRoot(base), 'auto.lock');
@@ -116,7 +116,7 @@ async function main(): Promise<void> {
   console.log('\n=== 4. readExistingLockDataWithRetry recovers from transient permission error ===');
   {
     const base = mkdtempSync(join(tmpdir(), 'gsd-transient-'));
-    mkdirSync(join(base, '.gsd'), { recursive: true });
+    mkdirSync(join(base, '.otto/workflow'), { recursive: true });
 
     try {
       const lockFile = join(workflowRoot(base), 'auto.lock');
@@ -153,7 +153,7 @@ async function main(): Promise<void> {
   console.log('\n=== 5. getSessionLockStatus tolerates transient lock file unavailability ===');
   {
     const base = mkdtempSync(join(tmpdir(), 'gsd-transient-'));
-    mkdirSync(join(base, '.gsd'), { recursive: true });
+    mkdirSync(join(base, '.otto/workflow'), { recursive: true });
 
     try {
       const result = acquireSessionLock(base);
@@ -193,7 +193,7 @@ async function main(): Promise<void> {
   console.log('\n=== 6. Default retry params: function works with defaults ===');
   {
     const base = mkdtempSync(join(tmpdir(), 'gsd-transient-'));
-    mkdirSync(join(base, '.gsd'), { recursive: true });
+    mkdirSync(join(base, '.otto/workflow'), { recursive: true });
 
     try {
       const lockFile = join(workflowRoot(base), 'auto.lock');

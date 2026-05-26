@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests workflow MCP launch config, tool surface, and stdio elicitation behavior.
 
 import test from "node:test";
@@ -33,15 +33,15 @@ function extractElicitPayload(request: unknown): ElicitPayload {
 }
 
 test("guided execute-task requires canonical task completion tool", () => {
-  assert.deepEqual(getRequiredWorkflowToolsForGuidedUnit("execute-task"), ["gsd_task_complete"]);
+  assert.deepEqual(getRequiredWorkflowToolsForGuidedUnit("execute-task"), ["otto_task_complete"]);
 });
 
 test("auto execute-task requires canonical task completion tool", () => {
-  assert.deepEqual(getRequiredWorkflowToolsForAutoUnit("execute-task"), ["gsd_task_complete"]);
+  assert.deepEqual(getRequiredWorkflowToolsForAutoUnit("execute-task"), ["otto_task_complete"]);
 });
 
 test("complete-slice requires closeout and execution handoff tools", () => {
-  const expected = ["gsd_slice_complete", "gsd_task_reopen", "gsd_replan_slice"];
+  const expected = ["otto_slice_complete", "otto_task_reopen", "otto_replan_slice"];
   assert.deepEqual(getRequiredWorkflowToolsForGuidedUnit("complete-slice"), expected);
   assert.deepEqual(getRequiredWorkflowToolsForAutoUnit("complete-slice"), expected);
 });
@@ -49,24 +49,24 @@ test("complete-slice requires closeout and execution handoff tools", () => {
 test("deep project setup units declare required workflow MCP tools", () => {
   assert.deepEqual(getRequiredWorkflowToolsForGuidedUnit("discuss-project"), [
     "ask_user_questions",
-    "gsd_summary_save",
+    "otto_summary_save",
   ]);
   assert.deepEqual(getRequiredWorkflowToolsForGuidedUnit("discuss-requirements"), [
     "ask_user_questions",
-    "gsd_requirement_save",
-    "gsd_summary_save",
+    "otto_requirement_save",
+    "otto_summary_save",
   ]);
   assert.deepEqual(getRequiredWorkflowToolsForGuidedUnit("research-decision"), [
     "ask_user_questions",
   ]);
   assert.deepEqual(getRequiredWorkflowToolsForAutoUnit("discuss-project"), [
     "ask_user_questions",
-    "gsd_summary_save",
+    "otto_summary_save",
   ]);
   assert.deepEqual(getRequiredWorkflowToolsForAutoUnit("discuss-requirements"), [
     "ask_user_questions",
-    "gsd_requirement_save",
-    "gsd_summary_save",
+    "otto_requirement_save",
+    "otto_summary_save",
   ]);
   assert.deepEqual(getRequiredWorkflowToolsForAutoUnit("research-decision"), [
     "ask_user_questions",
@@ -75,12 +75,12 @@ test("deep project setup units declare required workflow MCP tools", () => {
 
 test("detectWorkflowMcpLaunchConfig prefers explicit env override", () => {
   const launch = detectWorkflowMcpLaunchConfig("/tmp/project", {
-    GSD_WORKFLOW_MCP_NAME: "workflow-tools",
-    GSD_WORKFLOW_MCP_COMMAND: "node",
-    GSD_WORKFLOW_MCP_ARGS: JSON.stringify(["dist/cli.js"]),
-    GSD_WORKFLOW_MCP_ENV: JSON.stringify({ FOO: "bar" }),
-    GSD_WORKFLOW_MCP_CWD: "/tmp/project",
-    GSD_CLI_PATH: "/tmp/gsd",
+    OTTO_WORKFLOW_MCP_NAME: "workflow-tools",
+    OTTO_WORKFLOW_MCP_COMMAND: "node",
+    OTTO_WORKFLOW_MCP_ARGS: JSON.stringify(["dist/cli.js"]),
+    OTTO_WORKFLOW_MCP_ENV: JSON.stringify({ FOO: "bar" }),
+    OTTO_WORKFLOW_MCP_CWD: "/tmp/project",
+    OTTO_CLI_PATH: "/tmp/otto",
   });
 
   assert.deepEqual(launch, {
@@ -91,77 +91,77 @@ test("detectWorkflowMcpLaunchConfig prefers explicit env override", () => {
     env: launch?.env,
   });
   assert.equal(launch?.env?.FOO, "bar");
-  assert.equal(launch?.env?.GSD_CLI_PATH, "/tmp/gsd");
-  assert.equal(launch?.env?.GSD_BIN_PATH, "/tmp/gsd");
-  assert.equal(launch?.env?.GSD_PERSIST_WRITE_GATE_STATE, "1");
-  assert.equal(launch?.env?.GSD_WORKFLOW_PROJECT_ROOT, "/tmp/project");
-  assert.match(launch?.env?.GSD_WORKFLOW_EXECUTORS_MODULE ?? "", /workflow-tool-executors\.(js|ts)$/);
-  assert.match(launch?.env?.GSD_WORKFLOW_WRITE_GATE_MODULE ?? "", /write-gate\.(js|ts)$/);
+  assert.equal(launch?.env?.OTTO_CLI_PATH, "/tmp/otto");
+  assert.equal(launch?.env?.OTTO_BIN_PATH, "/tmp/otto");
+  assert.equal(launch?.env?.OTTO_PERSIST_WRITE_GATE_STATE, "1");
+  assert.equal(launch?.env?.OTTO_WORKFLOW_PROJECT_ROOT, "/tmp/project");
+  assert.match(launch?.env?.OTTO_WORKFLOW_EXECUTORS_MODULE ?? "", /workflow-tool-executors\.(js|ts)$/);
+  assert.match(launch?.env?.OTTO_WORKFLOW_WRITE_GATE_MODULE ?? "", /write-gate\.(js|ts)$/);
 });
 
 test("detectWorkflowMcpLaunchConfig normalizes explicit workflow MCP env CLI aliases", () => {
   const binOnly = detectWorkflowMcpLaunchConfig("/tmp/project", {
-    GSD_WORKFLOW_MCP_COMMAND: "node",
-    GSD_WORKFLOW_MCP_ENV: JSON.stringify({ GSD_BIN_PATH: "/tmp/gsd-bin" }),
+    OTTO_WORKFLOW_MCP_COMMAND: "node",
+    OTTO_WORKFLOW_MCP_ENV: JSON.stringify({ OTTO_BIN_PATH: "/tmp/otto-bin" }),
   });
-  assert.equal(binOnly?.env?.GSD_CLI_PATH, "/tmp/gsd-bin");
-  assert.equal(binOnly?.env?.GSD_BIN_PATH, "/tmp/gsd-bin");
+  assert.equal(binOnly?.env?.OTTO_CLI_PATH, "/tmp/otto-bin");
+  assert.equal(binOnly?.env?.OTTO_BIN_PATH, "/tmp/otto-bin");
 
   const cliOnly = detectWorkflowMcpLaunchConfig("/tmp/project", {
-    GSD_WORKFLOW_MCP_COMMAND: "node",
-    GSD_WORKFLOW_MCP_ENV: JSON.stringify({ GSD_CLI_PATH: "/tmp/gsd-cli" }),
+    OTTO_WORKFLOW_MCP_COMMAND: "node",
+    OTTO_WORKFLOW_MCP_ENV: JSON.stringify({ OTTO_CLI_PATH: "/tmp/otto-cli" }),
   });
-  assert.equal(cliOnly?.env?.GSD_CLI_PATH, "/tmp/gsd-cli");
-  assert.equal(cliOnly?.env?.GSD_BIN_PATH, "/tmp/gsd-cli");
+  assert.equal(cliOnly?.env?.OTTO_CLI_PATH, "/tmp/otto-cli");
+  assert.equal(cliOnly?.env?.OTTO_BIN_PATH, "/tmp/otto-cli");
 });
 
 test("buildWorkflowMcpServers mirrors explicit launch config", () => {
   const servers = buildWorkflowMcpServers("/tmp/project", {
-    GSD_WORKFLOW_MCP_COMMAND: "node",
-    GSD_WORKFLOW_MCP_ARGS: JSON.stringify(["dist/cli.js"]),
+    OTTO_WORKFLOW_MCP_COMMAND: "node",
+    OTTO_WORKFLOW_MCP_ARGS: JSON.stringify(["dist/cli.js"]),
   });
 
   assert.deepEqual(servers, {
-    "gsd-workflow": {
+    "otto-workflow": {
       command: "node",
       args: ["dist/cli.js"],
-      env: servers?.["gsd-workflow"]?.env,
+      env: servers?.["otto-workflow"]?.env,
     },
   });
-  assert.equal((servers?.["gsd-workflow"]?.env as Record<string, string> | undefined)?.GSD_PERSIST_WRITE_GATE_STATE, "1");
-  assert.equal((servers?.["gsd-workflow"]?.env as Record<string, string> | undefined)?.GSD_WORKFLOW_PROJECT_ROOT, "/tmp/project");
-  assert.match((servers?.["gsd-workflow"]?.env as Record<string, string> | undefined)?.GSD_WORKFLOW_EXECUTORS_MODULE ?? "", /workflow-tool-executors\.(js|ts)$/);
-  assert.match((servers?.["gsd-workflow"]?.env as Record<string, string> | undefined)?.GSD_WORKFLOW_WRITE_GATE_MODULE ?? "", /write-gate\.(js|ts)$/);
+  assert.equal((servers?.["otto-workflow"]?.env as Record<string, string> | undefined)?.OTTO_PERSIST_WRITE_GATE_STATE, "1");
+  assert.equal((servers?.["otto-workflow"]?.env as Record<string, string> | undefined)?.OTTO_WORKFLOW_PROJECT_ROOT, "/tmp/project");
+  assert.match((servers?.["otto-workflow"]?.env as Record<string, string> | undefined)?.OTTO_WORKFLOW_EXECUTORS_MODULE ?? "", /workflow-tool-executors\.(js|ts)$/);
+  assert.match((servers?.["otto-workflow"]?.env as Record<string, string> | undefined)?.OTTO_WORKFLOW_WRITE_GATE_MODULE ?? "", /write-gate\.(js|ts)$/);
 });
 
-test("detectWorkflowMcpLaunchConfig resolves the bundled server from GSD_PROJECT_ROOT", () => {
-  const repoRoot = mkdtempSync(join(tmpdir(), "gsd-workflow-root-"));
-  const worktreeRoot = mkdtempSync(join(tmpdir(), "gsd-workflow-worktree-"));
+test("detectWorkflowMcpLaunchConfig resolves the bundled server from OTTO_PROJECT_ROOT", () => {
+  const repoRoot = mkdtempSync(join(tmpdir(), "otto-workflow-root-"));
+  const worktreeRoot = mkdtempSync(join(tmpdir(), "otto-workflow-worktree-"));
   const cliPath = join(repoRoot, "packages", "mcp-server", "dist", "cli.js");
 
   mkdirSync(join(repoRoot, "packages", "mcp-server", "dist"), { recursive: true });
   writeFileSync(cliPath, "#!/usr/bin/env node\n", "utf-8");
 
   const launch = detectWorkflowMcpLaunchConfig(worktreeRoot, {
-    GSD_PROJECT_ROOT: repoRoot,
+    OTTO_PROJECT_ROOT: repoRoot,
   });
 
   assert.deepEqual(launch, {
-    name: "gsd-workflow",
+    name: "otto-workflow",
     command: process.execPath,
     args: [cliPath],
     cwd: repoRoot,
     env: launch?.env,
   });
-  assert.equal(launch?.env?.GSD_PERSIST_WRITE_GATE_STATE, "1");
-  assert.equal(launch?.env?.GSD_WORKFLOW_PROJECT_ROOT, repoRoot);
-  assert.match(launch?.env?.GSD_WORKFLOW_EXECUTORS_MODULE ?? "", /workflow-tool-executors\.(js|ts)$/);
-  assert.match(launch?.env?.GSD_WORKFLOW_WRITE_GATE_MODULE ?? "", /write-gate\.(js|ts)$/);
+  assert.equal(launch?.env?.OTTO_PERSIST_WRITE_GATE_STATE, "1");
+  assert.equal(launch?.env?.OTTO_WORKFLOW_PROJECT_ROOT, repoRoot);
+  assert.match(launch?.env?.OTTO_WORKFLOW_EXECUTORS_MODULE ?? "", /workflow-tool-executors\.(js|ts)$/);
+  assert.match(launch?.env?.OTTO_WORKFLOW_WRITE_GATE_MODULE ?? "", /write-gate\.(js|ts)$/);
 });
 
-test("detectWorkflowMcpLaunchConfig resolves the bundled server from GSD_BIN_PATH ancestry", () => {
-  const repoRoot = mkdtempSync(join(tmpdir(), "gsd-workflow-root-"));
-  const worktreeRoot = mkdtempSync(join(tmpdir(), "gsd-workflow-worktree-"));
+test("detectWorkflowMcpLaunchConfig resolves the bundled server from OTTO_BIN_PATH ancestry", () => {
+  const repoRoot = mkdtempSync(join(tmpdir(), "otto-workflow-root-"));
+  const worktreeRoot = mkdtempSync(join(tmpdir(), "otto-workflow-worktree-"));
   const cliPath = join(repoRoot, "packages", "mcp-server", "dist", "cli.js");
   const devCliPath = join(repoRoot, "scripts", "dev-cli.js");
 
@@ -171,36 +171,36 @@ test("detectWorkflowMcpLaunchConfig resolves the bundled server from GSD_BIN_PAT
   writeFileSync(devCliPath, "#!/usr/bin/env node\n", "utf-8");
 
   const launch = detectWorkflowMcpLaunchConfig(worktreeRoot, {
-    GSD_BIN_PATH: devCliPath,
+    OTTO_BIN_PATH: devCliPath,
   });
 
   assert.deepEqual(launch, {
-    name: "gsd-workflow",
+    name: "otto-workflow",
     command: process.execPath,
     args: [cliPath],
     cwd: worktreeRoot,
     env: launch?.env,
   });
-  assert.equal(launch?.env?.GSD_CLI_PATH, devCliPath);
-  assert.equal(launch?.env?.GSD_BIN_PATH, devCliPath);
-  assert.equal(launch?.env?.GSD_PERSIST_WRITE_GATE_STATE, "1");
-  assert.equal(launch?.env?.GSD_WORKFLOW_PROJECT_ROOT, worktreeRoot);
-  assert.match(launch?.env?.GSD_WORKFLOW_EXECUTORS_MODULE ?? "", /workflow-tool-executors\.(js|ts)$/);
-  assert.match(launch?.env?.GSD_WORKFLOW_WRITE_GATE_MODULE ?? "", /write-gate\.(js|ts)$/);
+  assert.equal(launch?.env?.OTTO_CLI_PATH, devCliPath);
+  assert.equal(launch?.env?.OTTO_BIN_PATH, devCliPath);
+  assert.equal(launch?.env?.OTTO_PERSIST_WRITE_GATE_STATE, "1");
+  assert.equal(launch?.env?.OTTO_WORKFLOW_PROJECT_ROOT, worktreeRoot);
+  assert.match(launch?.env?.OTTO_WORKFLOW_EXECUTORS_MODULE ?? "", /workflow-tool-executors\.(js|ts)$/);
+  assert.match(launch?.env?.OTTO_WORKFLOW_WRITE_GATE_MODULE ?? "", /write-gate\.(js|ts)$/);
 });
 
-test("detectWorkflowMcpLaunchConfig resolves the bundled server relative to the installed GSD package", () => {
+test("detectWorkflowMcpLaunchConfig resolves the bundled server relative to the installed OTTO package", () => {
   const launch = detectWorkflowMcpLaunchConfig("/tmp/project", {
-    GSD_BIN_PATH: "/tmp/gsd-loader.js",
+    OTTO_BIN_PATH: "/tmp/otto-loader.js",
   });
 
   assert.equal(launch?.command, process.execPath);
   assert.equal(launch?.cwd, "/tmp/project");
-  assert.equal(launch?.env?.GSD_CLI_PATH, "/tmp/gsd-loader.js");
-  assert.equal(launch?.env?.GSD_BIN_PATH, "/tmp/gsd-loader.js");
-  assert.equal(launch?.env?.GSD_WORKFLOW_PROJECT_ROOT, "/tmp/project");
-  assert.match(launch?.env?.GSD_WORKFLOW_EXECUTORS_MODULE ?? "", /workflow-tool-executors\.(js|ts)$/);
-  assert.match(launch?.env?.GSD_WORKFLOW_WRITE_GATE_MODULE ?? "", /write-gate\.(js|ts)$/);
+  assert.equal(launch?.env?.OTTO_CLI_PATH, "/tmp/otto-loader.js");
+  assert.equal(launch?.env?.OTTO_BIN_PATH, "/tmp/otto-loader.js");
+  assert.equal(launch?.env?.OTTO_WORKFLOW_PROJECT_ROOT, "/tmp/project");
+  assert.match(launch?.env?.OTTO_WORKFLOW_EXECUTORS_MODULE ?? "", /workflow-tool-executors\.(js|ts)$/);
+  assert.match(launch?.env?.OTTO_WORKFLOW_WRITE_GATE_MODULE ?? "", /write-gate\.(js|ts)$/);
   assert.equal(typeof launch?.args?.[0], "string");
   assert.match(launch?.args?.[0] ?? "", /packages[\/\\]mcp-server[\/\\](dist[\/\\]cli\.js|src[\/\\]cli\.ts)$/);
   if ((launch?.args?.[0] ?? "").endsWith(".ts")) {
@@ -214,11 +214,11 @@ test("detectWorkflowMcpLaunchConfig resolves the bundled server relative to the 
 
   assert.equal(launch?.command, process.execPath);
   assert.equal(launch?.cwd, "/tmp/project");
-  assert.equal(launch?.env?.GSD_CLI_PATH, undefined);
-  assert.equal(launch?.env?.GSD_BIN_PATH, undefined);
-  assert.equal(launch?.env?.GSD_WORKFLOW_PROJECT_ROOT, "/tmp/project");
-  assert.match(launch?.env?.GSD_WORKFLOW_EXECUTORS_MODULE ?? "", /workflow-tool-executors\.(js|ts)$/);
-  assert.match(launch?.env?.GSD_WORKFLOW_WRITE_GATE_MODULE ?? "", /write-gate\.(js|ts)$/);
+  assert.equal(launch?.env?.OTTO_CLI_PATH, undefined);
+  assert.equal(launch?.env?.OTTO_BIN_PATH, undefined);
+  assert.equal(launch?.env?.OTTO_WORKFLOW_PROJECT_ROOT, "/tmp/project");
+  assert.match(launch?.env?.OTTO_WORKFLOW_EXECUTORS_MODULE ?? "", /workflow-tool-executors\.(js|ts)$/);
+  assert.match(launch?.env?.OTTO_WORKFLOW_WRITE_GATE_MODULE ?? "", /write-gate\.(js|ts)$/);
   assert.equal(typeof launch?.args?.[0], "string");
   assert.match(launch?.args?.[0] ?? "", /packages[\/\\]mcp-server[\/\\](dist[\/\\]cli\.js|src[\/\\]cli\.ts)$/);
   if ((launch?.args?.[0] ?? "").endsWith(".ts")) {
@@ -228,25 +228,25 @@ test("detectWorkflowMcpLaunchConfig resolves the bundled server relative to the 
 });
 
 test("workflow MCP launch config reaches mutation tools over stdio", async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), "gsd-workflow-transport-"));
-  mkdirSync(join(projectRoot, ".gsd"), { recursive: true });
-  // Isolate the spawned MCP server from the developer's real ~/.gsd so it
+  const projectRoot = mkdtempSync(join(tmpdir(), "otto-workflow-transport-"));
+  mkdirSync(join(projectRoot, ".otto/workflow"), { recursive: true });
+  // Isolate the spawned MCP server from the developer's real ~/.otto so it
   // can't pick up a configured Discord/Slack/Telegram channel from global
   // PREFERENCES.md and route ask_user_questions through a remote adapter
   // instead of MCP elicitation.
-  const isolatedWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-workflow-home-"));
+  const isolatedWorkflowHome = mkdtempSync(join(tmpdir(), "otto-workflow-home-"));
 
   const launch = detectWorkflowMcpLaunchConfig(projectRoot, {});
   assert.ok(launch, "expected a workflow MCP launch config");
   assert.match(
-    launch.env?.GSD_WORKFLOW_EXECUTORS_MODULE ?? "",
-    /(dist[\/\\]resources[\/\\]extensions[\/\\]gsd[\/\\]tools[\/\\]workflow-tool-executors\.js|src[\/\\]resources[\/\\]extensions[\/\\]gsd[\/\\]tools[\/\\]workflow-tool-executors\.(js|ts))$/,
+    launch.env?.OTTO_WORKFLOW_EXECUTORS_MODULE ?? "",
+    /(dist[\/\\]resources[\/\\]extensions[\/\\]workflow[\/\\]tools[\/\\]workflow-tool-executors\.js|src[\/\\]resources[\/\\]extensions[\/\\]workflow[\/\\]tools[\/\\]workflow-tool-executors\.(js|ts))$/,
   );
   assert.match(
-    launch.env?.GSD_WORKFLOW_WRITE_GATE_MODULE ?? "",
-    /(dist[\/\\]resources[\/\\]extensions[\/\\]gsd[\/\\]bootstrap[\/\\]write-gate\.js|src[\/\\]resources[\/\\]extensions[\/\\]gsd[\/\\]bootstrap[\/\\]write-gate\.(js|ts))$/,
+    launch.env?.OTTO_WORKFLOW_WRITE_GATE_MODULE ?? "",
+    /(dist[\/\\]resources[\/\\]extensions[\/\\]workflow[\/\\]bootstrap[\/\\]write-gate\.js|src[\/\\]resources[\/\\]extensions[\/\\]workflow[\/\\]bootstrap[\/\\]write-gate\.(js|ts))$/,
   );
-  if ((launch.env?.GSD_WORKFLOW_EXECUTORS_MODULE ?? "").endsWith(".ts")) {
+  if ((launch.env?.OTTO_WORKFLOW_EXECUTORS_MODULE ?? "").endsWith(".ts")) {
     assert.match(launch.env?.NODE_OPTIONS ?? "", /--experimental-strip-types/);
     assert.match(launch.env?.NODE_OPTIONS ?? "", /resolve-ts\.mjs/);
   }
@@ -277,7 +277,7 @@ test("workflow MCP launch config reaches mutation tools over stdio", async () =>
     env: {
       ...process.env,
       ...launch.env,
-      GSD_HOME: isolatedWorkflowHome,
+      OTTO_HOME: isolatedWorkflowHome,
       DISCORD_BOT_TOKEN: "",
       SLACK_BOT_TOKEN: "",
       TELEGRAM_BOT_TOKEN: "",
@@ -291,8 +291,8 @@ test("workflow MCP launch config reaches mutation tools over stdio", async () =>
 
     const tools = await client.listTools(undefined, { timeout: MCP_STDIO_TIMEOUT_MS });
     assert.ok(
-      (tools.tools ?? []).some((tool) => tool.name === "gsd_plan_slice"),
-      "expected workflow MCP surface to expose gsd_plan_slice",
+      (tools.tools ?? []).some((tool) => tool.name === "otto_plan_slice"),
+      "expected workflow MCP surface to expose otto_plan_slice",
     );
     assert.ok(
       (tools.tools ?? []).some((tool) => tool.name === "ask_user_questions"),
@@ -333,7 +333,7 @@ test("workflow MCP launch config reaches mutation tools over stdio", async () =>
 
     const milestoneResult = await client.callTool(
       {
-        name: "gsd_plan_milestone",
+        name: "otto_plan_milestone",
         arguments: {
           projectDir: projectRoot,
           milestoneId: "M001",
@@ -347,7 +347,7 @@ test("workflow MCP launch config reaches mutation tools over stdio", async () =>
               depends: [],
               demo: "Milestone planning succeeds over stdio MCP.",
               goal: "Prove the executor bridge works in the spawned server.",
-              successCriteria: "gsd_plan_slice can write plan artifacts.",
+              successCriteria: "otto_plan_slice can write plan artifacts.",
               proofLevel: "integration",
               integrationClosure: "Stdio MCP client reaches the workflow executor bridge.",
               observabilityImpact: "Regression test covers the spawned-server path.",
@@ -366,7 +366,7 @@ test("workflow MCP launch config reaches mutation tools over stdio", async () =>
 
     const sliceResult = await client.callTool(
       {
-        name: "gsd_plan_slice",
+        name: "otto_plan_slice",
         arguments: {
           projectDir: projectRoot,
           milestoneId: "M001",
@@ -380,7 +380,7 @@ test("workflow MCP launch config reaches mutation tools over stdio", async () =>
               estimate: "10m",
               files: ["src/resources/extensions/workflow/workflow-mcp.ts"],
               verify: "node --test",
-              inputs: [".gsd/milestones/M001/M001-ROADMAP.md"],
+              inputs: [".otto/workflow/milestones/M001/M001-ROADMAP.md"],
               expectedOutput: ["S01-PLAN.md", "T01-PLAN.md"],
             },
           ],
@@ -395,12 +395,12 @@ test("workflow MCP launch config reaches mutation tools over stdio", async () =>
       /Planned slice S01/,
     );
     assert.ok(
-      existsSync(join(projectRoot, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md")),
+      existsSync(join(projectRoot, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md")),
       "expected slice plan artifact to be written through stdio MCP",
     );
     assert.ok(
       existsSync(
-        join(projectRoot, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-PLAN.md"),
+        join(projectRoot, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-PLAN.md"),
       ),
       "expected task plan artifact to be written through stdio MCP",
     );
@@ -412,9 +412,9 @@ test("workflow MCP launch config reaches mutation tools over stdio", async () =>
 });
 
 test("workflow MCP ask_user_questions uses stdio elicitation round-trip", async () => {
-  const projectRoot = mkdtempSync(join(tmpdir(), "gsd-workflow-elicit-"));
-  mkdirSync(join(projectRoot, ".gsd"), { recursive: true });
-  const isolatedWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-workflow-home-"));
+  const projectRoot = mkdtempSync(join(tmpdir(), "otto-workflow-elicit-"));
+  mkdirSync(join(projectRoot, ".otto/workflow"), { recursive: true });
+  const isolatedWorkflowHome = mkdtempSync(join(tmpdir(), "otto-workflow-home-"));
 
   const launch = detectWorkflowMcpLaunchConfig(projectRoot, {});
   assert.ok(launch, "expected a workflow MCP launch config");
@@ -448,7 +448,7 @@ test("workflow MCP ask_user_questions uses stdio elicitation round-trip", async 
     env: {
       ...process.env,
       ...launch.env,
-      GSD_HOME: isolatedWorkflowHome,
+      OTTO_HOME: isolatedWorkflowHome,
       DISCORD_BOT_TOKEN: "",
       SLACK_BOT_TOKEN: "",
       TELEGRAM_BOT_TOKEN: "",
@@ -524,10 +524,10 @@ test("supportsStructuredQuestions disables local workflow MCP questions unless e
     false,
   );
   assert.equal(
-    supportsStructuredQuestions(["mcp__gsd-workflow__ask_user_questions"], {
+    supportsStructuredQuestions(["mcp__otto-workflow__ask_user_questions"], {
       authMode: "externalCli",
       baseUrl: "local://claude-code",
-      env: { GSD_WORKFLOW_MCP_STRUCTURED_QUESTIONS: "1" } as NodeJS.ProcessEnv,
+      env: { OTTO_WORKFLOW_MCP_STRUCTURED_QUESTIONS: "1" } as NodeJS.ProcessEnv,
     }),
     true,
   );
@@ -550,10 +550,10 @@ test("supportsStructuredQuestions disables local workflow MCP questions unless e
 test("transport compatibility passes when required tools fit current MCP surface", () => {
   const error = getWorkflowTransportSupportError(
     "claude-code",
-    ["gsd_task_complete"],
+    ["otto_task_complete"],
     {
       projectRoot: "/tmp/project",
-      env: { GSD_WORKFLOW_MCP_COMMAND: "node" },
+      env: { OTTO_WORKFLOW_MCP_COMMAND: "node" },
       surface: "guided flow",
       unitType: "execute-task",
       authMode: "externalCli",
@@ -567,7 +567,7 @@ test("transport compatibility passes when required tools fit current MCP surface
 test("transport compatibility discovers the bundled MCP server without env overrides", () => {
   const error = getWorkflowTransportSupportError(
     "claude-code",
-    ["gsd_task_complete"],
+    ["otto_task_complete"],
     {
       projectRoot: "/tmp/project",
       env: {},
@@ -584,10 +584,10 @@ test("transport compatibility discovers the bundled MCP server without env overr
 test("transport compatibility now allows auto execute-task over workflow MCP surface", () => {
   const error = getWorkflowTransportSupportError(
     "claude-code",
-    ["gsd_complete_task"],
+    ["otto_complete_task"],
     {
       projectRoot: "/tmp/project",
-      env: { GSD_WORKFLOW_MCP_COMMAND: "node" },
+      env: { OTTO_WORKFLOW_MCP_COMMAND: "node" },
       surface: "auto-mode",
       unitType: "execute-task",
       authMode: "externalCli",
@@ -601,7 +601,7 @@ test("transport compatibility now allows auto execute-task over workflow MCP sur
 test("transport compatibility ignores API-backed providers", () => {
   const error = getWorkflowTransportSupportError(
     "openai-codex",
-    ["gsd_plan_slice"],
+    ["otto_plan_slice"],
     {
       projectRoot: "/tmp/project",
       env: {},
@@ -618,10 +618,10 @@ test("transport compatibility ignores API-backed providers", () => {
 test("transport compatibility now allows plan-slice over workflow MCP surface", () => {
   const error = getWorkflowTransportSupportError(
     "claude-code",
-    ["gsd_plan_slice"],
+    ["otto_plan_slice"],
     {
       projectRoot: "/tmp/project",
-      env: { GSD_WORKFLOW_MCP_COMMAND: "node" },
+      env: { OTTO_WORKFLOW_MCP_COMMAND: "node" },
       surface: "auto-mode",
       unitType: "plan-slice",
       authMode: "externalCli",
@@ -635,10 +635,10 @@ test("transport compatibility now allows plan-slice over workflow MCP surface", 
 test("transport compatibility now allows complete-slice over workflow MCP surface", () => {
   const error = getWorkflowTransportSupportError(
     "claude-code",
-    ["gsd_complete_slice"],
+    ["otto_complete_slice"],
     {
       projectRoot: "/tmp/project",
-      env: { GSD_WORKFLOW_MCP_COMMAND: "node" },
+      env: { OTTO_WORKFLOW_MCP_COMMAND: "node" },
       surface: "auto-mode",
       unitType: "complete-slice",
       authMode: "externalCli",
@@ -652,10 +652,10 @@ test("transport compatibility now allows complete-slice over workflow MCP surfac
 test("transport compatibility now allows reassess-roadmap over workflow MCP surface", () => {
   const error = getWorkflowTransportSupportError(
     "claude-code",
-    ["gsd_milestone_status", "gsd_reassess_roadmap"],
+    ["otto_milestone_status", "otto_reassess_roadmap"],
     {
       projectRoot: "/tmp/project",
-      env: { GSD_WORKFLOW_MCP_COMMAND: "node" },
+      env: { OTTO_WORKFLOW_MCP_COMMAND: "node" },
       surface: "auto-mode",
       unitType: "reassess-roadmap",
       authMode: "externalCli",
@@ -669,10 +669,10 @@ test("transport compatibility now allows reassess-roadmap over workflow MCP surf
 test("transport compatibility now allows gate-evaluate over workflow MCP surface", () => {
   const error = getWorkflowTransportSupportError(
     "claude-code",
-    ["gsd_save_gate_result"],
+    ["otto_save_gate_result"],
     {
       projectRoot: "/tmp/project",
-      env: { GSD_WORKFLOW_MCP_COMMAND: "node" },
+      env: { OTTO_WORKFLOW_MCP_COMMAND: "node" },
       surface: "auto-mode",
       unitType: "gate-evaluate",
       authMode: "externalCli",
@@ -686,10 +686,10 @@ test("transport compatibility now allows gate-evaluate over workflow MCP surface
 test("transport compatibility now allows validate-milestone over workflow MCP surface", () => {
   const error = getWorkflowTransportSupportError(
     "claude-code",
-    ["gsd_milestone_status", "gsd_validate_milestone"],
+    ["otto_milestone_status", "otto_validate_milestone"],
     {
       projectRoot: "/tmp/project",
-      env: { GSD_WORKFLOW_MCP_COMMAND: "node" },
+      env: { OTTO_WORKFLOW_MCP_COMMAND: "node" },
       surface: "auto-mode",
       unitType: "validate-milestone",
       authMode: "externalCli",
@@ -703,10 +703,10 @@ test("transport compatibility now allows validate-milestone over workflow MCP su
 test("transport compatibility now allows complete-milestone over workflow MCP surface", () => {
   const error = getWorkflowTransportSupportError(
     "claude-code",
-    ["gsd_milestone_status", "gsd_complete_milestone"],
+    ["otto_milestone_status", "otto_complete_milestone"],
     {
       projectRoot: "/tmp/project",
-      env: { GSD_WORKFLOW_MCP_COMMAND: "node" },
+      env: { OTTO_WORKFLOW_MCP_COMMAND: "node" },
       surface: "auto-mode",
       unitType: "complete-milestone",
       authMode: "externalCli",
@@ -720,10 +720,10 @@ test("transport compatibility now allows complete-milestone over workflow MCP su
 test("transport compatibility now allows replan-slice over workflow MCP surface", () => {
   const error = getWorkflowTransportSupportError(
     "claude-code",
-    ["gsd_replan_slice"],
+    ["otto_replan_slice"],
     {
       projectRoot: "/tmp/project",
-      env: { GSD_WORKFLOW_MCP_COMMAND: "node" },
+      env: { OTTO_WORKFLOW_MCP_COMMAND: "node" },
       surface: "auto-mode",
       unitType: "replan-slice",
       authMode: "externalCli",
@@ -740,7 +740,7 @@ test("transport compatibility still blocks units whose MCP tools are not exposed
     ["secure_env_collect"],
     {
       projectRoot: "/tmp/project",
-      env: { GSD_WORKFLOW_MCP_COMMAND: "node" },
+      env: { OTTO_WORKFLOW_MCP_COMMAND: "node" },
       surface: "auto-mode",
       unitType: "guided-discussion",
       authMode: "externalCli",
@@ -755,15 +755,15 @@ test("transport compatibility still blocks units whose MCP tools are not exposed
 test("transport compatibility accepts MCP-namespaced runtime tools", () => {
   const error = getWorkflowTransportSupportError(
     "claude-code",
-    ["gsd_summary_save"],
+    ["otto_summary_save"],
     {
       projectRoot: "/tmp/project",
-      env: { GSD_WORKFLOW_MCP_COMMAND: "node" },
+      env: { OTTO_WORKFLOW_MCP_COMMAND: "node" },
       surface: "auto-mode",
       unitType: "research-slice",
       authMode: "externalCli",
       baseUrl: "local://claude-code",
-      activeTools: ["mcp__gsd-workflow__gsd_summary_save"],
+      activeTools: ["mcp__otto-workflow__otto_summary_save"],
     },
   );
 

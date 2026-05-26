@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Validates planning and task template quality-gate content.
 
 import { readFileSync } from "node:fs";

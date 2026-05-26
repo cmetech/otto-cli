@@ -3,7 +3,7 @@
  *
  * Provides on-demand access to MCP servers configured in project files
  * (.mcp.json, .gsd/mcp.json) and the global ~/.otto/mcp.json (or
- * $GSD_HOME/mcp.json) using the @modelcontextprotocol/sdk Client
+ * $OTTO_HOME/mcp.json) using the @modelcontextprotocol/sdk Client
  * directly — no external CLI dependency required.
  *
  * Three tools:
@@ -12,14 +12,14 @@
  *   mcp_call      — Call a tool on an MCP server (lazy connect)
  */
 
-import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@otto/pi-coding-agent";
 import {
 	truncateHead,
 	DEFAULT_MAX_BYTES,
 	DEFAULT_MAX_LINES,
 	formatSize,
-} from "@loop24/pi-coding-agent";
-import { Text } from "@loop24/pi-tui";
+} from "@otto/pi-coding-agent";
+import { Text } from "@otto/pi-tui";
 import { Type } from "@sinclair/typebox";
 import { Client } from "@modelcontextprotocol/sdk/client";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
@@ -214,7 +214,7 @@ async function closeAll(): Promise<void> {
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
 function formatServerList(servers: McpServerConfig[]): string {
-	if (servers.length === 0) return "No MCP servers configured. Add servers to .mcp.json, .gsd/mcp.json, or $GSD_HOME/mcp.json (default: ~/.gsd/mcp.json).";
+	if (servers.length === 0) return "No MCP servers configured. Add servers to .mcp.json, .gsd/mcp.json, or $OTTO_HOME/mcp.json (default: ~/.gsd/mcp.json).";
 
 	const lines: string[] = [`${servers.length} MCP servers configured:\n`];
 
@@ -248,7 +248,7 @@ function formatToolList(serverName: string, tools: McpToolSchema[]): string {
 	return lines.join("\n");
 }
 
-// ─── Status helper (consumed by /loop24 mcp) ─────────────────────────────────────
+// ─── Status helper (consumed by /otto mcp) ─────────────────────────────────────
 
 /**
  * Return the live connection status for a named MCP server.
@@ -277,7 +277,7 @@ export default function (pi: ExtensionAPI) {
 		name: "mcp_servers",
 		label: "MCP Servers",
 		description:
-			"List all available MCP servers configured in project files (.mcp.json, .gsd/mcp.json) or globally ($GSD_HOME/mcp.json, default: ~/.gsd/mcp.json). " +
+			"List all available MCP servers configured in project files (.mcp.json, .gsd/mcp.json) or globally ($OTTO_HOME/mcp.json, default: ~/.gsd/mcp.json). " +
 			"Shows server names, transport type, and connection status. Use mcp_discover to get full tool schemas for a server.",
 		promptSnippet:
 			"List available MCP servers from project configuration",

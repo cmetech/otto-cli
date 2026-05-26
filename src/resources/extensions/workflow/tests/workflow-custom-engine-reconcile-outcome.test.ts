@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Unit tests for custom-engine reconcile outcome side-effect adapter.
 
 import assert from "node:assert/strict";

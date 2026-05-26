@@ -1,10 +1,10 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for parallel monitor overlay rendering and input handling.
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { visibleWidth } from "@loop24/pi-tui";
+import { visibleWidth } from "@otto/pi-tui";
 
 function assertLinesFit(lines: string[], width: number): void {
   for (const line of lines) {

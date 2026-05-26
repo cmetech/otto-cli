@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Milestone and artifact row mappers for the workflow database facade.
 
 export interface MilestoneRow {

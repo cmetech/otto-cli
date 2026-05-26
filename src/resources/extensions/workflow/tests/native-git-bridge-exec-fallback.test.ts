@@ -31,13 +31,13 @@ import { GIT_NO_PROMPT_ENV } from "../git-constants.js";
 // Note: prior static-analysis tests that scanned native-git-bridge.ts for
 // the raw shell-spawn pattern were removed under #4827 — the integration
 // tests below already exercise the fallback path end-to-end with the native
-// module disabled (GSD_ENABLE_NATIVE_GSD_GIT unset). Any cmd.exe PATH
+// module disabled (OTTO_ENABLE_NATIVE_OTTO_GIT unset). Any cmd.exe PATH
 // regression on Windows surfaces through a real fallback failure, not a
 // grep miss in source text.
 
 // ─── Integration tests ────────────────────────────────────────────────────
 // Verify correct runtime behaviour through the fallback path (native module
-// is disabled by default in tests — GSD_ENABLE_NATIVE_GSD_GIT is not set).
+// is disabled by default in tests — OTTO_ENABLE_NATIVE_OTTO_GIT is not set).
 
 function git(args: string[], cwd: string): string {
   return execFileSync("git", args, { cwd, stdio: ["ignore", "pipe", "pipe"], encoding: "utf-8" }).trim();
@@ -196,7 +196,7 @@ process.exit(result.status ?? 1);
   });
 
   test("nativeWorktreeAdd materializes a valid .git marker", (t) => {
-    const wtPath = join(repo, ".gsd", "worktrees", "M001");
+    const wtPath = join(repo, ".otto/workflow", "worktrees", "M001");
     t.after(() => {
       try { git(["worktree", "remove", "--force", wtPath], repo); } catch { /* noop */ }
     });
@@ -211,7 +211,7 @@ process.exit(result.status ?? 1);
   });
 
   test("nativeBranchList strips linked-worktree '+' marker from fallback output", (t) => {
-    const wtPath = join(repo, ".gsd", "worktrees", "M001");
+    const wtPath = join(repo, ".otto/workflow", "worktrees", "M001");
     t.after(() => {
       try { git(["worktree", "remove", "--force", wtPath], repo); } catch { /* noop */ }
     });

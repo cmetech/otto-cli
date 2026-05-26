@@ -36,9 +36,9 @@ function cleanupDb(dbPath: string): void {
 
 function makeProject(): string {
   const basePath = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-gate-proj-'));
-  fs.mkdirSync(path.join(basePath, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'tasks'), { recursive: true });
+  fs.mkdirSync(path.join(basePath, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'tasks'), { recursive: true });
   fs.writeFileSync(
-    path.join(basePath, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md'),
+    path.join(basePath, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md'),
     `# M001\n\n## Slices\n- [ ] **S01: Test** \`risk:low\` \`depends:[]\`\n  - After this: works\n`,
   );
   return basePath;

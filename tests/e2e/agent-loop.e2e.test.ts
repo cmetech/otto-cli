@@ -1,7 +1,7 @@
 /**
- * GSD-2 agent-loop e2e tests.
+ * OTTO-2 agent-loop e2e tests.
  *
- * Drives the real `gsd` binary through scripted prompt → tool → response
+ * Drives the real `otto` binary through scripted prompt → tool → response
  * cycles using the fake LLM provider (packages/pi-ai/src/providers/fake.ts).
  * Three vertical slices in this first cut, per peer review:
  *   T1 - simple text response (happy path)
@@ -29,8 +29,8 @@ import {
 const PRINT_TIMEOUT_MS = 90_000;
 
 function binaryAvailable(): { ok: boolean; reason?: string } {
-	const bin = process.env.GSD_SMOKE_BINARY;
-	if (!bin) return { ok: false, reason: "GSD_SMOKE_BINARY not set; build with `npm run build:core` and re-export." };
+	const bin = process.env.OTTO_SMOKE_BINARY;
+	if (!bin) return { ok: false, reason: "OTTO_SMOKE_BINARY not set; build with `npm run build:core` and re-export." };
 	if (!existsSync(bin)) return { ok: false, reason: `binary not found at ${bin}` };
 	return { ok: true };
 }
@@ -46,7 +46,7 @@ describe("agent loop e2e (fake LLM)", () => {
 		const transcript = writeTranscript([
 			{
 				turn: 1,
-				expect: { modelId: "gsd-fake-model", lastUserText: "ping" },
+				expect: { modelId: "otto-fake-model", lastUserText: "ping" },
 				emit: { kind: "text", text: "pong from fake" },
 			},
 		]);
@@ -86,7 +86,7 @@ describe("agent loop e2e (fake LLM)", () => {
 		const transcript = writeTranscript([
 			{
 				turn: 1,
-				expect: { modelId: "gsd-fake-model", lastUserText: "use a tool" },
+				expect: { modelId: "otto-fake-model", lastUserText: "use a tool" },
 				emit: {
 					kind: "tool_use",
 					calls: [
@@ -110,7 +110,7 @@ describe("agent loop e2e (fake LLM)", () => {
 			prompt: "use a tool",
 			mode: "json",
 			timeoutMs: PRINT_TIMEOUT_MS,
-			extraEnv: { GSD_TOOL_APPROVAL: "auto" },
+			extraEnv: { OTTO_TOOL_APPROVAL: "auto" },
 		});
 
 		const events = parseJsonEvents(result.stdoutClean);

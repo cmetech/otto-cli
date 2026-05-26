@@ -22,7 +22,7 @@ describe("workflowRoot: returns realpath-canonicalized result", () => {
 
   beforeEach(() => {
     projectDir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-root-canon-")));
-    mkdirSync(join(projectDir, ".gsd"), { recursive: true });
+    mkdirSync(join(projectDir, ".otto/workflow"), { recursive: true });
     _clearWorkflowRootCache();
   });
 
@@ -33,11 +33,11 @@ describe("workflowRoot: returns realpath-canonicalized result", () => {
 
   test("workflowRoot from a canonical project path returns a realpath-canonicalized result", () => {
     const result = workflowRoot(projectDir);
-    const canonical = realpathSync(join(projectDir, ".gsd"));
-    assert.equal(result, canonical, "workflowRoot must return the realpath of the .gsd directory");
+    const canonical = realpathSync(join(projectDir, ".otto/workflow"));
+    assert.equal(result, canonical, "workflowRoot must return the realpath of the .otto/workflow directory");
   });
 
-  test("workflowRoot via a symlinked project path returns the realpath-canonicalized .gsd", (t) => {
+  test("workflowRoot via a symlinked project path returns the realpath-canonicalized .otto/workflow", (t) => {
     // Create a symlink pointing to projectDir
     const linkPath = join(tmpdir(), `gsd-root-link-${randomUUID()}`);
     symlinkSync(projectDir, linkPath);
@@ -48,13 +48,13 @@ describe("workflowRoot: returns realpath-canonicalized result", () => {
     _clearWorkflowRootCache();
 
     const result = workflowRoot(linkPath);
-    // The canonical .gsd is under the realpath of projectDir, not the symlink
-    const canonicalGsd = realpathSync(join(projectDir, ".gsd"));
+    // The canonical .otto/workflow is under the realpath of projectDir, not the symlink
+    const canonicalGsd = realpathSync(join(projectDir, ".otto/workflow"));
 
     assert.equal(
       result,
       canonicalGsd,
-      `workflowRoot via symlink ("${linkPath}") must return the realpath'd .gsd ("${canonicalGsd}"), not a symlink-based path`,
+      `workflowRoot via symlink ("${linkPath}") must return the realpath'd .otto/workflow ("${canonicalGsd}"), not a symlink-based path`,
     );
 
     // Also verify that the result does NOT contain the symlink in its path

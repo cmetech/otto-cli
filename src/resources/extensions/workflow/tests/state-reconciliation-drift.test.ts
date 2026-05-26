@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-017 contract tests for drift-driven State Reconciliation.
 // Covers sketch-flag (#5700), merge-state (#5701), stale-render (#5702),
 // stale-worker (#5703), unregistered-milestone (#5704), roadmap-divergence
@@ -60,7 +60,7 @@ function makeState(overrides: Partial<WorkflowDbState> = {}): WorkflowDbState {
 
 function makeFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr017-drift-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S02"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S02"), { recursive: true });
   return base;
 }
 
@@ -81,7 +81,7 @@ test("ADR-017 (#5700): sketch-flag drift detected and repaired end-to-end", asyn
   const base = makeFixtureBase();
   t.after(() => cleanup(base));
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({
     id: "S02",
@@ -99,7 +99,7 @@ test("ADR-017 (#5700): sketch-flag drift detected and repaired end-to-end", asyn
   // Simulate the post-crash scenario: PLAN.md exists on disk but the
   // is_sketch flag is still 1.
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S02", "S02-PLAN.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "slices", "S02", "S02-PLAN.md"),
     "# S02 Plan\n",
   );
   assert.equal(getSlice("M001", "S02")?.is_sketch, 1, "pre: flagged as sketch");
@@ -465,14 +465,14 @@ function makeStaleRoadmapContent(slices: Array<{ id: string; title: string; done
 
 test("ADR-017 (#5702): stale-render drift detected and repaired end-to-end", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr017-render-"));
-  const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+  const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
   mkdirSync(join(sliceDir, "tasks"), { recursive: true });
   t.after(() => {
     try { closeDatabase(); } catch { /* noop */ }
     rmTreeQuiet(base);
   });
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   clearRendererCaches();
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice", status: "pending" });
@@ -503,14 +503,14 @@ test("ADR-017 (#5702): stale-render drift detected and repaired end-to-end", asy
 
 test("ADR-017 (#5702): stale-render detector reason strings match repair contract", (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr017-render-reasons-"));
-  const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+  const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
   mkdirSync(join(sliceDir, "tasks"), { recursive: true });
   t.after(() => {
     try { closeDatabase(); } catch { /* noop */ }
     rmTreeQuiet(base);
   });
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   clearRendererCaches();
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice", status: "complete" });
@@ -525,7 +525,7 @@ test("ADR-017 (#5702): stale-render detector reason strings match repair contrac
   setSliceSummaryMd("M001", "S01", "# S01 Summary\n", "# S01 UAT\n");
 
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     makeStaleRoadmapContent([{ id: "S01", title: "Slice", done: false }]),
   );
   writeFileSync(
@@ -550,7 +550,7 @@ test("ADR-017 (#5702): stale-render detector reason strings match repair contrac
 const DEAD_PID = 999_999_999; // far above any realistic system PID; process.kill(pid, 0) → ESRCH
 
 function writeFakeSessionLock(base: string, pid: number): string {
-  const workflowDir = join(base, ".gsd");
+  const workflowDir = join(base, ".otto/workflow");
   mkdirSync(workflowDir, { recursive: true });
   const lockFile = join(workflowDir, "auto.lock");
   // Mirror SessionLockData minimum shape
@@ -622,7 +622,7 @@ test("ADR-017 (#5703): live worker lock is not cleared", async (t) => {
 
 test("ADR-017 (#5704): unregistered-milestone drift fails closed without importing markdown", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr017-projmd-"));
-  const milestoneDir = join(base, ".gsd", "milestones", "M042");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M042");
   mkdirSync(milestoneDir, { recursive: true });
   // Roadmap with one slice — meaningful content, will be picked up by importer
   writeFileSync(
@@ -643,7 +643,7 @@ test("ADR-017 (#5704): unregistered-milestone drift fails closed without importi
     rmSync(base, { recursive: true, force: true });
   });
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   // Pre-condition: filesystem has the milestone, DB does NOT.
   assert.equal(getMilestone("M042"), null, "pre: DB has no row for M042");
 
@@ -667,7 +667,7 @@ test("ADR-017 (#5704): unregistered-milestone drift fails closed without importi
 
 test("ADR-017 (#5704): registered milestone (DB row present) → no drift", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr017-projmd-clean-"));
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(
     join(milestoneDir, "M001-ROADMAP.md"),
@@ -687,7 +687,7 @@ test("ADR-017 (#5704): registered milestone (DB row present) → no drift", asyn
     rmSync(base, { recursive: true, force: true });
   });
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
 
   const result = await reconcileBeforeDispatch(base, {
@@ -707,7 +707,7 @@ test("ADR-017 (#5704): registered milestone (DB row present) → no drift", asyn
 
 test("ADR-017 (#5705): roadmap-divergence re-renders projection without syncing depends into DB", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr017-roadmap-"));
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   const roadmapPath = join(milestoneDir, "M001-ROADMAP.md");
   mkdirSync(milestoneDir, { recursive: true });
   // ROADMAP.md declares S02 depends on [S01]
@@ -730,7 +730,7 @@ test("ADR-017 (#5705): roadmap-divergence re-renders projection without syncing 
     rmSync(base, { recursive: true, force: true });
   });
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   // Seed DB with S02 depending on []  — diverges from ROADMAP.md
   insertSlice({ id: "S01", milestoneId: "M001", title: "Foundation", status: "pending", risk: "medium", depends: [], demo: "", sequence: 1 });
@@ -759,7 +759,7 @@ test("ADR-017 (#5705): roadmap-divergence re-renders projection without syncing 
 
 test("ADR-017 (#5705): ROADMAP-only slice is removed from projection and not inserted into DB", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr017-roadmap-newslice-"));
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   const roadmapPath = join(milestoneDir, "M001-ROADMAP.md");
   mkdirSync(milestoneDir, { recursive: true });
   // ROADMAP.md declares S01 and S02; DB will only have S01.
@@ -782,7 +782,7 @@ test("ADR-017 (#5705): ROADMAP-only slice is removed from projection and not ins
     rmSync(base, { recursive: true, force: true });
   });
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   // Only insert S01 — S02 is intentionally absent from the DB.
   insertSlice({ id: "S01", milestoneId: "M001", title: "Foundation", status: "pending", risk: "medium", depends: [], demo: "", sequence: 1 });
@@ -808,7 +808,7 @@ test("ADR-017 (#5705): ROADMAP-only slice is removed from projection and not ins
 
 test("ADR-017 (#5705): ROADMAP sequence drift re-renders from DB order without mutating DB", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr017-roadmap-sequence-"));
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   const roadmapPath = join(milestoneDir, "M001-ROADMAP.md");
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(
@@ -830,7 +830,7 @@ test("ADR-017 (#5705): ROADMAP sequence drift re-renders from DB order without m
     rmSync(base, { recursive: true, force: true });
   });
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Foundation", status: "pending", risk: "medium", depends: [], demo: "", sequence: 1 });
   insertSlice({ id: "S02", milestoneId: "M001", title: "Feature", status: "pending", risk: "medium", depends: [], demo: "", sequence: 2 });
@@ -853,7 +853,7 @@ test("ADR-017 (#5705): ROADMAP sequence drift re-renders from DB order without m
 
 test("ADR-017 (#5705): ROADMAP checkbox drift re-renders from DB status without mutating DB", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr017-roadmap-checkbox-"));
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   const roadmapPath = join(milestoneDir, "M001-ROADMAP.md");
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(
@@ -874,7 +874,7 @@ test("ADR-017 (#5705): ROADMAP checkbox drift re-renders from DB status without 
     rmSync(base, { recursive: true, force: true });
   });
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Foundation", status: "pending", risk: "medium", depends: [], demo: "", sequence: 1 });
 
@@ -895,7 +895,7 @@ test("ADR-017 (#5705): ROADMAP checkbox drift re-renders from DB status without 
 
 test("ADR-017 (#5705): in-sync ROADMAP and DB → no roadmap-divergence drift", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr017-roadmap-clean-"));
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(
     join(milestoneDir, "M001-ROADMAP.md"),
@@ -915,7 +915,7 @@ test("ADR-017 (#5705): in-sync ROADMAP and DB → no roadmap-divergence drift", 
     rmSync(base, { recursive: true, force: true });
   });
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Foundation", status: "pending", risk: "low", depends: [], demo: "", sequence: 1 });
 
@@ -936,14 +936,14 @@ test("ADR-017 (#5705): in-sync ROADMAP and DB → no roadmap-divergence drift", 
 
 test("ADR-017 (#5706): task with SUMMARY but null completed_at → backfilled", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr017-completion-task-"));
-  const tasksDir = join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks");
+  const tasksDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks");
   mkdirSync(tasksDir, { recursive: true });
   t.after(() => {
     try { closeDatabase(); } catch { /* noop */ }
     rmSync(base, { recursive: true, force: true });
   });
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice", status: "pending", risk: "low", depends: [], demo: "", sequence: 1 });
   insertTask({ id: "T01", sliceId: "S01", milestoneId: "M001", title: "Task", status: "pending" });
@@ -981,14 +981,14 @@ test("ADR-017 (#5706): task with SUMMARY but null completed_at → backfilled", 
 
 test("ADR-017 (#5706): repair is idempotent — re-running preserves the timestamp", async (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr017-completion-idempotent-"));
-  const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+  const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
   mkdirSync(sliceDir, { recursive: true });
   t.after(() => {
     try { closeDatabase(); } catch { /* noop */ }
     rmSync(base, { recursive: true, force: true });
   });
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice", status: "pending", risk: "low", depends: [], demo: "", sequence: 1 });
   updateSliceStatus("M001", "S01", "complete", undefined);

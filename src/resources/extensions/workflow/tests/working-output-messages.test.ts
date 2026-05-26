@@ -37,7 +37,7 @@ test("generic working messages are flagged", () => {
 test("dashboard messages cannot claim healthy progress while recovering", () => {
   const findings = evaluateWorkingOutputMessage({
     surface: "dashboard",
-    message: "GSD AUTO Progressing well",
+    message: "OTTO AUTO Progressing well",
     context: { health: "recovering", recoveryAttempts: 1 },
   });
 
@@ -64,7 +64,7 @@ test("stalled/provider-error/timeout messages need an action", () => {
 
   const withAction = evaluateWorkingOutputMessage({
     surface: "notification",
-    message: "Provider stalled after 2m. Type /gsd stop or wait for retry.",
+    message: "Provider stalled after 2m. Type /otto stop or wait for retry.",
     context: { health: "stalled" },
   });
   assert.equal(withAction.length, 0);

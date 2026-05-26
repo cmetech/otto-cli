@@ -101,7 +101,7 @@ function logProviderSwitchReport(report: ProviderSwitchReport): void {
 	if (report.thoughtSignaturesDropped > 0) parts.push(`${report.thoughtSignaturesDropped} thought signatures dropped`);
 	// Use process.stderr for debug output — this is observable in verbose/debug modes
 	// without polluting stdout which may be used for structured output (RPC/MCP).
-	if ((process.env.LOOP24_VERBOSE ?? process.env.GSD_VERBOSE) === "1" || process.env.PI_VERBOSE === "1") {
+	if (process.env.OTTO_VERBOSE === "1" || process.env.PI_VERBOSE === "1") {
 		process.stderr.write(`[provider-switch] ${parts.join(", ")}\n`);
 	}
 }

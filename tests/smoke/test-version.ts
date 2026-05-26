@@ -16,11 +16,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, "..", "..");
 const DEFAULT_BINARY = join(REPO_ROOT, "dist", "loader.js");
 
-const binary = process.env.GSD_SMOKE_BINARY || DEFAULT_BINARY;
+const binary = process.env.OTTO_SMOKE_BINARY || DEFAULT_BINARY;
 if (!existsSync(binary)) {
   console.error(
     `Smoke binary not found: ${binary}\n` +
-      `Run \`npm run build\` first, or set GSD_SMOKE_BINARY to an existing binary.`,
+      `Run \`npm run build\` first, or set OTTO_SMOKE_BINARY to an existing binary.`,
   );
   process.exit(77);
 }

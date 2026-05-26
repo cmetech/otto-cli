@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Read-only baseline metrics harness for the long-running refactor program.
 
 import { createHash } from "node:crypto";
@@ -37,18 +37,6 @@ const CONTRACT_SURFACES = [
   {
     surface: "mcp",
     path: "packages/mcp-server/src/types.ts",
-  },
-  {
-    surface: "web",
-    path: "src/web/bridge-service.ts",
-  },
-  {
-    surface: "webStore",
-    path: "web/lib/gsd-workspace-store.tsx",
-  },
-  {
-    surface: "vscode",
-    path: "vscode-extension/src/gsd-client.ts",
   },
 ];
 
@@ -190,8 +178,8 @@ export async function collectBaseline(root, commandSpecs = []) {
     },
     commands: commandTimings,
     startup: {
-      timingEnv: "GSD_STARTUP_TIMING=1",
-      note: "Run a command spec such as --command startup='GSD_STARTUP_TIMING=1 node dist/loader.js --version' after build output exists.",
+      timingEnv: "OTTO_STARTUP_TIMING=1",
+      note: "Run a command spec such as --command startup='OTTO_STARTUP_TIMING=1 node dist/loader.js --version' after build output exists.",
     },
   };
 
@@ -285,11 +273,8 @@ export async function collectWorkspaceMetrics(root) {
   const trackedAreas = [
     "src",
     "packages",
-    "web",
     "scripts",
     "docs",
-    "vscode-extension",
-    "studio",
   ];
   const areas = [];
   for (const area of trackedAreas) {
@@ -318,7 +303,7 @@ export async function collectContractsMetrics(root) {
     surfaces.push({
       ...surface,
       exists: true,
-      usesSharedContracts: content.includes("@loop24-build/contracts"),
+      usesSharedContracts: content.includes("@otto-build/contracts"),
       legacyTypeImports: countLegacyContractImports(content),
     });
   }
@@ -341,10 +326,10 @@ export async function collectContractsMetrics(root) {
 export async function collectProcessMetrics(root) {
   const sourceFiles = await collectFiles(join(root, "src", "resources", "extensions"), file => file.endsWith(".ts"));
   const docFiles = [
-    ...await collectFiles(join(root, "src", "resources", "extensions", "gsd", "docs"), file => file.endsWith(".md")),
+    ...await collectFiles(join(root, "src", "resources", "extensions", "workflow", "docs"), file => file.endsWith(".md")),
     ...await collectFiles(join(root, "docs", "dev"), file => file.endsWith(".md")),
   ];
-  const prEvidencePath = normalizePath(join("src", "resources", "extensions", "gsd", "pr-evidence.ts"));
+  const prEvidencePath = normalizePath(join("src", "resources", "extensions", "workflow", "pr-evidence.ts"));
   const consumerFiles = [];
   const shipPathFiles = [];
 
@@ -581,7 +566,7 @@ export function countLegacyContractImports(value) {
     value,
     /(?:packages\/pi-coding-agent\/src\/modes\/rpc\/rpc-types|src\/modes\/rpc\/rpc-types)/g,
   );
-  const importPattern = /import\s+type\s+\{([^}]+)\}\s+from\s+["']@loop24-build\/rpc-client["']/g;
+  const importPattern = /import\s+type\s+\{([^}]+)\}\s+from\s+["']@otto-build\/rpc-client["']/g;
   for (const match of value.matchAll(importPattern)) {
     const names = match[1]
       .split(",")
@@ -595,7 +580,7 @@ export function countLegacyContractImports(value) {
 export function hasProcessDocConflict(content) {
   return /markdown\s+(?:files?\s+)?(?:are|is)\s+(?:the\s+)?authoritative/i.test(content)
     || /filesystem[-\s]+authoritative/i.test(content)
-    || /\.gsd\/[^\n]*(?:source of truth|authoritative source)/i.test(content);
+    || /\.(?:gsd|otto\/workflow)\/[^\n]*(?:source of truth|authoritative source)/i.test(content);
 }
 
 export function metricSafeLabel(label) {

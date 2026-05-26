@@ -1,7 +1,7 @@
 // Exec Sandbox — tool-output sandboxing for sub-sessions.
 //
 // Runs a script in a subprocess and persists stdout/stderr to
-// `.gsd/exec/<id>.{stdout,stderr,meta.json}`. Only a short digest is
+// `.otto/workflow/exec/<id>.{stdout,stderr,meta.json}`. Only a short digest is
 // returned to the calling agent's context, keeping large outputs
 // (e.g. Playwright snapshots, issue dumps) out of the window.
 //
@@ -25,7 +25,7 @@ export interface ExecSandboxRequest {
 }
 
 export interface ExecSandboxOptions {
-  /** Project root. stdout/stderr persist under `<baseDir>/.gsd/exec/`. */
+  /** Project root. stdout/stderr persist under `<baseDir>/.otto/workflow/exec/`. */
   baseDir: string;
   /** Absolute upper bound for the timeout. */
   clamp_timeout_ms: number;
@@ -132,7 +132,7 @@ function tail(buf: Buffer, chars: number): string {
 
 /**
  * Run a script in a subprocess, capture stdout/stderr to files under
- * `.gsd/exec/<id>.{stdout,stderr,meta.json}`, and return an `ExecSandboxResult`
+ * `.otto/workflow/exec/<id>.{stdout,stderr,meta.json}`, and return an `ExecSandboxResult`
  * containing the digest plus metadata.
  *
  * Errors from spawn failures resolve (not reject) with `exit_code=null`.
@@ -146,7 +146,7 @@ export function runExecSandbox(
   return new Promise((resolveP) => {
     const id = (opts.generateId ?? defaultGenerateId)();
     const now = (opts.now ?? (() => new Date()))();
-    const execDir = resolve(opts.baseDir, ".gsd", "exec");
+    const execDir = resolve(opts.baseDir, ".otto/workflow", "exec");
     if (!existsSync(execDir)) mkdirSync(execDir, { recursive: true });
     const stdoutPath = resolve(execDir, `${id}.stdout`);
     const stderrPath = resolve(execDir, `${id}.stderr`);

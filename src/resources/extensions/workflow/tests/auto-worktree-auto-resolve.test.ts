@@ -1,7 +1,7 @@
 /**
  * auto-worktree-auto-resolve.test.ts — Unit tests for isSafeToAutoResolve.
  *
- * Covers: .gsd/ state files, build artifacts (.tsbuildinfo, .pyc, __pycache__,
+ * Covers: .otto/workflow/ state files, build artifacts (.tsbuildinfo, .pyc, __pycache__,
  * .DS_Store, .map), and rejection of real source files.
  */
 
@@ -14,11 +14,11 @@ import {
 } from "../auto-worktree.ts";
 
 describe("isSafeToAutoResolve", () => {
-  // ─── .gsd/ state files ───────────────────────────────────────────────────
-  test("returns true for .gsd/ prefixed paths", () => {
-    assert.ok(isSafeToAutoResolve(".gsd/STATE.md"));
-    assert.ok(isSafeToAutoResolve(".gsd/milestones/M001/CONTEXT.md"));
-    assert.ok(isSafeToAutoResolve(".gsd/gsd.db"));
+  // ─── .otto/workflow/ state files ───────────────────────────────────────────────────
+  test("returns true for .otto/workflow/ prefixed paths", () => {
+    assert.ok(isSafeToAutoResolve(".otto/workflow/STATE.md"));
+    assert.ok(isSafeToAutoResolve(".otto/workflow/milestones/M001/CONTEXT.md"));
+    assert.ok(isSafeToAutoResolve(".otto/workflow/otto.db"));
   });
 
   // ─── Build artifact patterns ─────────────────────────────────────────────

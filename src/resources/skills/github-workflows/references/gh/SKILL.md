@@ -61,7 +61,7 @@ repository point to a known GitHub host.
 **RULE: Pass `-R` (or `--repo`) on EVERY `gh` command:**
 
 ```bash
-gh <command> -R open-gsd/gsd-pi
+gh <command> -R cmetech/otto-cli
 ```
 
 This applies to ALL `gh` subcommands: `pr`, `issue`, `run`, `api`, `release`, `project`, etc.
@@ -78,47 +78,47 @@ This applies to ALL `gh` subcommands: `pr`, `issue`, `run`, `api`, `release`, `p
 
 ```bash
 # List open PRs
-gh pr list -R open-gsd/gsd-pi
+gh pr list -R cmetech/otto-cli
 
 # View PR details
-gh pr view <number> -R open-gsd/gsd-pi
+gh pr view <number> -R cmetech/otto-cli
 
 # Check PR CI status
-gh pr checks <number> -R open-gsd/gsd-pi
+gh pr checks <number> -R cmetech/otto-cli
 
 # Create PR
-gh pr create -R open-gsd/gsd-pi --title "title" --body "body"
+gh pr create -R cmetech/otto-cli --title "title" --body "body"
 
 # View PR comments
-gh api repos/open-gsd/gsd-pi/pulls/<number>/comments
+gh api repos/cmetech/otto-cli/pulls/<number>/comments
 ```
 
 ### Issues
 
 ```bash
 # List issues
-gh issue list -R open-gsd/gsd-pi
+gh issue list -R cmetech/otto-cli
 
 # List by label
-gh issue list -R open-gsd/gsd-pi --label "priority:p1" --state open
+gh issue list -R cmetech/otto-cli --label "priority:p1" --state open
 
 # Create issue with labels and milestone
 # NOTE: Do NOT use labels for issue classification (bug, feature, etc.)
 # Use labels for metadata (priority, status, auto-generated) only.
 # Issue classification uses GitHub Issue Types, set via GraphQL after creation.
-gh issue create -R open-gsd/gsd-pi \
+gh issue create -R cmetech/otto-cli \
   --title "feat: add feature X" \
   --label "priority:p1" \
   --milestone "v1.0"
 
 # View issue
-gh issue view <number> -R open-gsd/gsd-pi
+gh issue view <number> -R cmetech/otto-cli
 
 # Close issue with comment
-gh issue close <number> -R open-gsd/gsd-pi --comment "Implemented in PR #N"
+gh issue close <number> -R cmetech/otto-cli --comment "Implemented in PR #N"
 
 # Edit labels on issue
-gh issue edit <number> -R open-gsd/gsd-pi \
+gh issue edit <number> -R cmetech/otto-cli \
   --add-label "status:in-progress" \
   --remove-label "status:needs-grooming"
 ```
@@ -129,13 +129,13 @@ gh issue edit <number> -R open-gsd/gsd-pi \
 
 ```bash
 # Step 1: Create the issue (returns URL)
-ISSUE_URL=$(gh issue create -R open-gsd/gsd-pi \
+ISSUE_URL=$(gh issue create -R cmetech/otto-cli \
   --title "..." --body "...")
 
 # Step 2: Set the issue type via GraphQL
 ISSUE_NUM=$(echo "$ISSUE_URL" | grep -oE '[0-9]+$')
-ISSUE_ID=$(gh api graphql -f query='{ repository(owner:"open-gsd",name:"gsd-pi") { issue(number:'"$ISSUE_NUM"') { id } } }' --jq '.data.repository.issue.id')
-TYPE_ID=$(gh api graphql -f query='{ repository(owner:"open-gsd",name:"gsd-pi") { issueTypes(first:20) { nodes { id name } } } }' --jq '.data.repository.issueTypes.nodes[] | select(.name=="Bug") | .id')
+ISSUE_ID=$(gh api graphql -f query='{ repository(owner:"cmetech",name:"otto-cli") { issue(number:'"$ISSUE_NUM"') { id } } }' --jq '.data.repository.issue.id')
+TYPE_ID=$(gh api graphql -f query='{ repository(owner:"cmetech",name:"otto-cli") { issueTypes(first:20) { nodes { id name } } } }' --jq '.data.repository.issueTypes.nodes[] | select(.name=="Bug") | .id')
 gh api graphql -f query='mutation { updateIssue(input:{id:"'"$ISSUE_ID"'",issueTypeId:"'"$TYPE_ID"'"}) { issue { number } } }'
 ```
 
@@ -145,11 +145,11 @@ Replace `"Bug"` with the appropriate type name (`"Feature Request"`, `"Task"`, e
 
 ```bash
 # List all labels
-gh label list -R open-gsd/gsd-pi
+gh label list -R cmetech/otto-cli
 
 # Create label
 gh label create "priority:p1" --color "E99695" \
-  --description "High priority" -R open-gsd/gsd-pi
+  --description "High priority" -R cmetech/otto-cli
 ```
 
 See [labels.md](./references/labels.md) for the full taxonomy and color codes.
@@ -158,14 +158,14 @@ See [labels.md](./references/labels.md) for the full taxonomy and color codes.
 
 ```bash
 # List projects
-gh project list --owner open-gsd
+gh project list --owner cmetech
 
 # Create project
-gh project create --owner open-gsd --title "gsd-pi Backlog"
+gh project create --owner cmetech --title "OTTO Backlog"
 
 # Add issue to project
-gh project item-add 1 --owner open-gsd \
-  --url https://github.com/open-gsd/gsd-pi/issues/42
+gh project item-add 1 --owner cmetech \
+  --url https://github.com/cmetech/otto-cli/issues/42
 ```
 
 See [projects-v2.md](./references/projects-v2.md) for field creation and item editing commands.
@@ -176,14 +176,14 @@ See [projects-v2.md](./references/projects-v2.md) for field creation and item ed
 
 ```bash
 # List milestones
-gh api repos/open-gsd/gsd-pi/milestones
+gh api repos/cmetech/otto-cli/milestones
 
 # Create milestone
-gh api repos/open-gsd/gsd-pi/milestones \
+gh api repos/cmetech/otto-cli/milestones \
   -X POST -f title="v1.0" -f due_on="2026-03-31T00:00:00Z"
 
 # Assign milestone to issue
-gh api repos/open-gsd/gsd-pi/issues/42 \
+gh api repos/cmetech/otto-cli/issues/42 \
   -X PATCH -F milestone=1
 ```
 
@@ -193,49 +193,49 @@ See [milestones.md](./references/milestones.md) for full CRUD reference.
 
 ```bash
 # List recent runs
-gh run list -R open-gsd/gsd-pi --limit 5
+gh run list -R cmetech/otto-cli --limit 5
 
 # View specific run
-gh run view <run-id> -R open-gsd/gsd-pi
+gh run view <run-id> -R cmetech/otto-cli
 
 # View failed job logs
-gh run view <run-id> -R open-gsd/gsd-pi --log-failed
+gh run view <run-id> -R cmetech/otto-cli --log-failed
 ```
 
 ### Releases
 
 ```bash
 # List releases
-gh release list -R open-gsd/gsd-pi
+gh release list -R cmetech/otto-cli
 
 # View latest release
-gh release view --repo open-gsd/gsd-pi
+gh release view --repo cmetech/otto-cli
 ```
 
 ### API (Direct)
 
 ```bash
 # GET request
-gh api repos/open-gsd/gsd-pi
+gh api repos/cmetech/otto-cli
 
 # POST with fields
-gh api repos/open-gsd/gsd-pi/issues -f title="Bug" -f body="Details"
+gh api repos/cmetech/otto-cli/issues -f title="Bug" -f body="Details"
 
 # GraphQL
 gh api graphql -f query='{ viewer { login } }'
 
 # Paginated results
-gh api repos/open-gsd/gsd-pi/contributors --paginate
+gh api repos/cmetech/otto-cli/contributors --paginate
 ```
 
 ### Repository
 
 ```bash
 # Clone
-gh repo clone open-gsd/gsd-pi
+gh repo clone cmetech/otto-cli
 
 # View repo info
-gh repo view -R open-gsd/gsd-pi
+gh repo view -R cmetech/otto-cli
 ```
 
 </gh_commands>
@@ -246,13 +246,13 @@ gh repo view -R open-gsd/gsd-pi
 
 ```bash
 # JSON output
-gh pr list -R open-gsd/gsd-pi --json number,title,state
+gh pr list -R cmetech/otto-cli --json number,title,state
 
 # JQ filtering
-gh pr list -R open-gsd/gsd-pi --json number,title --jq '.[].title'
+gh pr list -R cmetech/otto-cli --json number,title --jq '.[].title'
 
 # Template formatting
-gh pr list -R open-gsd/gsd-pi --json number,title \
+gh pr list -R cmetech/otto-cli --json number,title \
   --template '{{range .}}#{{.number}} {{.title}}{{"\n"}}{{end}}'
 ```
 

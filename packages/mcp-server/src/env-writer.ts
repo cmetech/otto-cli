@@ -1,4 +1,4 @@
-// @loop24-build/mcp-server — Environment variable write utilities
+// @otto-build/mcp-server — Environment variable write utilities
 //
 // Shared helpers for writing env vars to .env files, detecting project
 // destinations, and checking existing keys. Used by secure_env_collect
@@ -148,10 +148,10 @@ export function isSafeEnvVarKey(key: string): boolean {
  * these keys even when isSafeEnvVarKey() would otherwise accept them.
  */
 const SECURITY_SENSITIVE_KEYS = new Set<string>([
-  "GSD_WORKFLOW_EXECUTORS_MODULE",
-  "GSD_WORKFLOW_WRITE_GATE_MODULE",
-  "GSD_WORKFLOW_PROJECT_ROOT",
-  "GSD_CLI_PATH",
+  "OTTO_WORKFLOW_EXECUTORS_MODULE",
+  "OTTO_WORKFLOW_WRITE_GATE_MODULE",
+  "OTTO_WORKFLOW_PROJECT_ROOT",
+  "OTTO_CLI_PATH",
   "NODE_OPTIONS",
   "NODE_PATH",
   "PATH",

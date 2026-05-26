@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Tests for base GSD database schema DDL helper.
+// Project/App: OTTO
+// File Purpose: Tests for base OTTO database schema DDL helper.
 
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";

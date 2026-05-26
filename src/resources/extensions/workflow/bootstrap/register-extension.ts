@@ -1,6 +1,6 @@
-// LOOP24 — Extension registration: wires all workflow tools, commands, and hooks into pi
+// OTTO — Extension registration: wires all workflow tools, commands, and hooks into pi
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { registerExitCommand } from "../exit-command.js";
 import { registerLazyWorktreeCommands } from "../worktree-command-bootstrap.js";
@@ -35,7 +35,7 @@ export function handleRecoverableExtensionProcessError(err: Error): boolean {
       process.exit(0);
     }
     process.stderr.write(
-      `[otto] swallowed EPIPE (syscall=${(err as NodeJS.ErrnoException).syscall ?? "?"}); see ~/.gsd/crash/ for details\n`,
+      `[otto] swallowed EPIPE (syscall=${(err as NodeJS.ErrnoException).syscall ?? "?"}); see ~/.otto/workflow/crash/ for details\n`,
     );
     return true;
   }

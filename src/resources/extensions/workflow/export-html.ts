@@ -69,7 +69,7 @@ export function generateHtmlReport(
 
   return renderHtmlShell({
     title,
-    documentTitle: `GSD Report — ${opts.projectName}${opts.milestoneId ? ` — ${opts.milestoneId}` : ''}`,
+    documentTitle: `OTTO Report — ${opts.projectName}${opts.milestoneId ? ` — ${opts.milestoneId}` : ''}`,
     subtitle: opts.projectPath,
     kind: 'Report',
     version: opts.workflowVersion,

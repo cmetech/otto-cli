@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Auto-mode unit closeout metrics, activity capture, and ghost-run detection.
 
 /**
@@ -7,7 +7,7 @@
  * that appears 6+ times in auto.ts.
  */
 
-import type { ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionContext } from "@otto/pi-coding-agent";
 import { snapshotUnitMetrics } from "./metrics.js";
 import { saveActivityLog } from "./activity-log.js";
 import { logWarning } from "./workflow-logger.js";
@@ -97,7 +97,7 @@ export async function closeoutUnit(
       const llmCallFn = buildMemoryLLMCall(ctx);
       if (llmCallFn) {
         // Awaited: a fire-and-forget here lets memory-extractor writes land in
-        // .gsd/ after closeoutUnit returns but before the milestone merge
+        // .otto/workflow/ after closeoutUnit returns but before the milestone merge
         // runs, which made the working tree appear dirty to `git merge
         // --squash` (root cause class of #4704). Completion latency is now
         // bounded by the extractor's LLM call, which is the acceptable price

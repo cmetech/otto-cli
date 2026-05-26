@@ -1,16 +1,16 @@
 {
-  "name": "@loop24/pi-coding-agent",
+  "name": "@otto/pi-coding-agent",
   "version": "1.0.1",
   "description": "Coding agent CLI (vendored from pi-mono)",
   "type": "module",
   "gsd": {
     "linkable": true,
-    "scope": "@loop24",
+    "scope": "@otto",
     "name": "pi-coding-agent"
   },
   "piConfig": {
     "_comment": "AUTO-SYNCED from root package.json by scripts/sync-piconfig.mjs (runs on prebuild). Do not edit this block directly — edit root package.json and re-run `npm run build` or `npm run sync-piconfig`.",
-    "name": "loop24",
+    "name": "otto",
     "configDir": ".otto",
     "commandNamespace": "otto",
     "brandName": "OTTO"
@@ -28,7 +28,7 @@
     "copy-assets": "node scripts/copy-assets.cjs"
   },
   "dependencies": {
-    "@loop24-build/contracts": "^1.0.1",
+    "@otto-build/contracts": "^1.0.1",
     "@mariozechner/jiti": "^2.6.2",
     "@silvia-odwyer/photon-node": "^0.3.4",
     "chalk": "^5.5.0",

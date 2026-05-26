@@ -2,12 +2,12 @@
  * stash-queued-context-files.test.ts — Regression test for #2505.
  *
  * When mergeMilestoneToMain runs `git stash push --include-untracked`,
- * untracked `.gsd/milestones/M<queued>/` directories created by `/gsd queue`
+ * untracked `.otto/workflow/milestones/M<queued>/` directories created by `/otto queue`
  * are swept into the stash. If stash pop fails (conflict on tracked files),
  * the queued milestone CONTEXT files are permanently lost.
  *
  * The fix: drop `--include-untracked` from the stash push, since the stash
- * only needs to handle tracked dirty files. Untracked `.gsd/` files are
+ * only needs to handle tracked dirty files. Untracked `.otto/workflow/` files are
  * already handled separately by clearProjectRootStateFiles.
  */
 
@@ -39,7 +39,7 @@ const testCwd = process.cwd();
 
 test.before(() => {
   originalHome = process.env.HOME;
-  fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "gsd-fake-home-")));
+  fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "otto-fake-home-")));
   process.env.HOME = fakeHome;
   _clearWorkflowRootCache();
   _resetServiceCache();
@@ -73,13 +73,13 @@ function createTempRepo(): string {
   run("git config user.email test@test.com", dir);
   run("git config user.name Test", dir);
   writeFileSync(join(dir, "README.md"), "# test\n");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
-  writeFileSync(join(dir, ".gsd", "STATE.md"), "version: 1\n");
-  // In projects with tracked .gsd/ files (hasGitTrackedWorkflowFiles=true),
-  // .gsd is NOT added to .gitignore. This means untracked files under
-  // .gsd/ are visible to --include-untracked and get swept into the
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
+  writeFileSync(join(dir, ".otto/workflow", "STATE.md"), "version: 1\n");
+  // In projects with tracked .otto/workflow/ files (hasGitTrackedWorkflowFiles=true),
+  // .otto/workflow is NOT added to .gitignore. This means untracked files under
+  // .otto/workflow/ are visible to --include-untracked and get swept into the
   // stash, destroying queued milestone CONTEXT files (#2505).
-  run("git add -f .gsd/STATE.md", dir);
+  run("git add -f .otto/workflow/STATE.md", dir);
   run("git add .", dir);
   run("git commit -m init", dir);
   run("git branch -M main", dir);
@@ -93,7 +93,8 @@ function createTempRepoWithSymlinkedGsd(): { repo: string; stateDir: string } {
   run("git config user.email test@test.com", repo);
   run("git config user.name Test", repo);
   writeFileSync(join(repo, "README.md"), "# test\n");
-  symlinkSync(stateDir, join(repo, ".gsd"));
+  mkdirSync(join(repo, ".otto"), { recursive: true });
+  symlinkSync(stateDir, join(repo, ".otto/workflow"));
   run("git add README.md", repo);
   run("git commit -m init", repo);
   run("git branch -M main", repo);
@@ -123,14 +124,14 @@ test("#2505: git stash --include-untracked sweeps queued CONTEXT files (demonstr
     run("git config user.email test@test.com", dir);
     run("git config user.name Test", dir);
     writeFileSync(join(dir, "README.md"), "# test\n");
-    mkdirSync(join(dir, ".gsd"), { recursive: true });
-    writeFileSync(join(dir, ".gsd", "STATE.md"), "version: 1\n");
-    run("git add -f .gsd/STATE.md", dir);
+    mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
+    writeFileSync(join(dir, ".otto/workflow", "STATE.md"), "version: 1\n");
+    run("git add -f .otto/workflow/STATE.md", dir);
     run("git add .", dir);
     run("git commit -m init", dir);
 
     // Create queued milestone CONTEXT files (untracked, not gitignored)
-    const m013Dir = join(dir, ".gsd", "milestones", "M013");
+    const m013Dir = join(dir, ".otto/workflow", "milestones", "M013");
     mkdirSync(m013Dir, { recursive: true });
     writeFileSync(
       join(m013Dir, "M013-CONTEXT.md"),
@@ -142,7 +143,7 @@ test("#2505: git stash --include-untracked sweeps queued CONTEXT files (demonstr
 
     // Verify the CONTEXT file is untracked
     const status = run("git status --porcelain", dir);
-    assert.ok(status.includes("?? .gsd/milestones/"), "precondition: M013 dir is untracked");
+    assert.ok(status.includes("?? .otto/workflow/milestones/"), "precondition: M013 dir is untracked");
 
     // Stash WITH --include-untracked (the bug)
     run('git stash push --include-untracked -m "test stash"', dir);
@@ -191,11 +192,11 @@ test("#2505: mergeMilestoneToMain preserves queued CONTEXT files (not swept into
     run("git checkout milestone/M015", wtPath);
     run(`git merge --no-ff "${sliceBranch}" -m "merge S01"`, wtPath);
 
-    // Simulate `/gsd queue` creating queued milestone CONTEXT files at the
-    // project root. These are untracked, and in repos with tracked .gsd/
+    // Simulate `/otto queue` creating queued milestone CONTEXT files at the
+    // project root. These are untracked, and in repos with tracked .otto/workflow/
     // files they are NOT gitignored.
-    const m013Dir = join(repo, ".gsd", "milestones", "M013");
-    const m014Dir = join(repo, ".gsd", "milestones", "M014");
+    const m013Dir = join(repo, ".otto/workflow", "milestones", "M013");
+    const m014Dir = join(repo, ".otto/workflow", "milestones", "M014");
     mkdirSync(m013Dir, { recursive: true });
     mkdirSync(m014Dir, { recursive: true });
     writeFileSync(
@@ -213,7 +214,7 @@ test("#2505: mergeMilestoneToMain preserves queued CONTEXT files (not swept into
     // Verify M013 is untracked (precondition)
     const statusBefore = run("git status --porcelain", repo);
     assert.ok(
-      statusBefore.includes("?? .gsd/milestones/"),
+      statusBefore.includes("?? .otto/workflow/milestones/"),
       "M013 directory is untracked before merge (precondition)",
     );
 
@@ -223,7 +224,7 @@ test("#2505: mergeMilestoneToMain preserves queued CONTEXT files (not swept into
 
     const result = mergeMilestoneToMain(repo, "M015", roadmap);
     assert.ok(
-      result.commitMessage.includes("GSD-Milestone: M015"),
+      result.commitMessage.includes("OTTO-Milestone: M015"),
       "merge should succeed",
     );
 
@@ -283,7 +284,7 @@ test("#2505: mergeMilestoneToMain preserves queued CONTEXT files (not swept into
   }
 });
 
-test("#2505: pre-merge stash handles symlinked .gsd without traversing it", () => {
+test("#2505: pre-merge stash handles symlinked .otto/workflow without traversing it", () => {
   const { repo, stateDir } = createTempRepoWithSymlinkedGsd();
   try {
     const wtPath = createAutoWorktree(repo, "M016");
@@ -309,9 +310,9 @@ test("#2505: pre-merge stash handles symlinked .gsd without traversing it", () =
       { id: "S01", title: "Feature" },
     ]));
 
-    assert.ok(result.commitMessage.includes("GSD-Milestone: M016"), "merge should succeed");
+    assert.ok(result.commitMessage.includes("OTTO-Milestone: M016"), "merge should succeed");
     assert.ok(existsSync(join(repo, "app.ts")), "milestone code merged to main");
-    assert.equal(lstatSync(join(repo, ".gsd")).isSymbolicLink(), true, ".gsd symlink remains in place");
+    assert.equal(lstatSync(join(repo, ".otto/workflow")).isSymbolicLink(), true, ".otto/workflow symlink remains in place");
     assert.ok(existsSync(join(queuedDir, "M017-CONTEXT.md")), "queued context remains in external state");
     assert.equal(readFileSync(join(repo, "README.md"), "utf-8").replace(/\r\n/g, "\n"), "# test\n\nDirty change.\n");
     assert.equal(readFileSync(join(repo, "local-note.txt"), "utf-8"), "local scratch\n");
@@ -335,7 +336,7 @@ test("#2505: back-to-back merges preserve queued CONTEXT files", () => {
     run(`git merge --no-ff "${slice1}" -m "merge S01"`, wt1);
 
     // Create queued milestone CONTEXT file
-    const m013Dir = join(repo, ".gsd", "milestones", "M013");
+    const m013Dir = join(repo, ".otto/workflow", "milestones", "M013");
     mkdirSync(m013Dir, { recursive: true });
     writeFileSync(
       join(m013Dir, "M013-CONTEXT.md"),
@@ -386,13 +387,13 @@ test("#2505: back-to-back merges preserve queued CONTEXT files", () => {
   }
 });
 
-// #4573: When `.gsd` is a gitignored symlink (ADR-002 layout) and the project
-// `.gitignore` contains `.gsd`, `git stash push --include-untracked -- <pathspec>`
+// #4573: When `.otto/workflow` is a gitignored symlink (ADR-002 layout) and the project
+// `.gitignore` contains `.otto/workflow`, `git stash push --include-untracked -- <pathspec>`
 // fatals with "The following paths are ignored by one of your .gitignore files".
-// The prior tests used a symlinked `.gsd` but no `.gitignore`, so this failure
+// The prior tests used a symlinked `.otto/workflow` but no `.gitignore`, so this failure
 // mode was invisible to CI. Fixture must include BOTH the symlink AND the
 // ignore rule to reproduce the bug on pre-fix code.
-test("#4573: gitignored .gsd symlink does not break pre-merge stash", () => {
+test("#4573: gitignored .otto/workflow symlink does not break pre-merge stash", () => {
   const repo = realpathSync(mkdtempSync(join(tmpdir(), "wt-4573-ignored-symlink-")));
   const stateDir = realpathSync(mkdtempSync(join(tmpdir(), "wt-4573-state-")));
   try {
@@ -401,8 +402,9 @@ test("#4573: gitignored .gsd symlink does not break pre-merge stash", () => {
     run("git config user.name Test", repo);
     writeFileSync(join(repo, "README.md"), "# test\n");
     // Matches what BASELINE_PATTERNS in gitignore.ts writes for real projects.
-    writeFileSync(join(repo, ".gitignore"), ".gsd\n.gsd-id\n");
-    symlinkSync(stateDir, join(repo, ".gsd"));
+    writeFileSync(join(repo, ".gitignore"), ".otto/workflow\n.otto/workflow-id\n");
+    mkdirSync(join(repo, ".otto"), { recursive: true });
+    symlinkSync(stateDir, join(repo, ".otto/workflow"));
     run("git add README.md .gitignore", repo);
     run("git commit -m init", repo);
     run("git branch -M main", repo);
@@ -427,14 +429,14 @@ test("#4573: gitignored .gsd symlink does not break pre-merge stash", () => {
     );
 
     assert.ok(
-      result.commitMessage.includes("GSD-Milestone: M001"),
-      "merge must succeed despite gitignored .gsd symlink",
+      result.commitMessage.includes("OTTO-Milestone: M001"),
+      "merge must succeed despite gitignored .otto/workflow symlink",
     );
     assert.ok(existsSync(join(repo, "app.ts")), "milestone code merged to main");
     assert.equal(
-      lstatSync(join(repo, ".gsd")).isSymbolicLink(),
+      lstatSync(join(repo, ".otto/workflow")).isSymbolicLink(),
       true,
-      ".gsd symlink remains in place",
+      ".otto/workflow symlink remains in place",
     );
   } finally {
     cleanupTempPaths(repo, stateDir);

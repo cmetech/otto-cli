@@ -51,7 +51,7 @@ test("shouldAutoPrepareWorkflowMcp stays disabled when neither transport nor pro
   assert.equal(result, false);
 });
 
-test("prepareWorkflowMcpForProject warns with /gsd mcp init guidance when prep fails", () => {
+test("prepareWorkflowMcpForProject warns with /otto mcp init guidance when prep fails", () => {
   const notifications: Array<{ message: string; level: "info" | "warning" | "error" | "success" }> = [];
   const result = prepareWorkflowMcpForProject(
     {
@@ -72,5 +72,5 @@ test("prepareWorkflowMcpForProject warns with /gsd mcp init guidance when prep f
   assert.equal(result, null);
   assert.equal(notifications.length, 1);
   assert.equal(notifications[0].level, "warning");
-  assert.match(notifications[0].message, /Please run \/gsd mcp init \./);
+  assert.match(notifications[0].message, /Please run \/otto mcp init \./);
 });

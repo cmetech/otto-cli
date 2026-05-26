@@ -1,6 +1,6 @@
-// LOOP24 — KNOWLEDGE.md -> memories backfill (ADR-013 Stage 2b).
+// OTTO — KNOWLEDGE.md -> memories backfill (ADR-013 Stage 2b).
 //
-// Idempotent migration of `.gsd/KNOWLEDGE.md` Patterns and Lessons rows into
+// Idempotent migration of `.otto/workflow/KNOWLEDGE.md` Patterns and Lessons rows into
 // the `memories` table. Patterns become memories with `category: "pattern"`;
 // Lessons become memories with `category: "gotcha"` (mirroring the ADR-013
 // line 38 contract). Rules (K###) are NOT migrated — they remain manually

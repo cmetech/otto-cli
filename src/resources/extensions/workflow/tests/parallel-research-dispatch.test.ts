@@ -17,25 +17,25 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-// Point GSD_HOME at a throwaway directory *before* the prompt-loader
+// Point OTTO_HOME at a throwaway directory *before* the prompt-loader
 // module is imported (via the dynamic imports below) so templates
 // resolve from the in-tree prompts/ directory instead of a developer's
-// ~/.gsd/ copy (which may be a stale cached version from a prior
+// ~/.otto/workflow/ copy (which may be a stale cached version from a prior
 // install — see #4784 fallout). Static imports above are hoisted, so
 // `tmpdir` and `join` are already available at this point; the dynamic
 // imports below observe the value we set here. The previous value is
 // captured and restored in an after() hook to avoid leaking module-scope
 // env mutation into other suites if the runner ever moves to a shared
 // process model.
-const previousWorkflowHome = process.env.GSD_HOME;
-process.env.GSD_HOME = process.env.GSD_HOME_TEST_OVERRIDE
+const previousWorkflowHome = process.env.OTTO_HOME;
+process.env.OTTO_HOME = process.env.OTTO_HOME_TEST_OVERRIDE
   ?? join(tmpdir(), `gsd-test-home-${process.pid}-${Date.now()}`);
 
 after(() => {
   if (previousWorkflowHome === undefined) {
-    delete process.env.GSD_HOME;
+    delete process.env.OTTO_HOME;
   } else {
-    process.env.GSD_HOME = previousWorkflowHome;
+    process.env.OTTO_HOME = previousWorkflowHome;
   }
 });
 
@@ -49,7 +49,7 @@ function writeRoadmap(
   mid: string,
   slices: Array<{ id: string; title: string; done?: boolean; depends?: string[] }>,
 ): void {
-  const milestoneDir = join(base, ".gsd", "milestones", mid);
+  const milestoneDir = join(base, ".otto/workflow", "milestones", mid);
   mkdirSync(milestoneDir, { recursive: true });
   const lines = [
     `# ${mid}: Parallel Research Milestone`,
@@ -180,7 +180,7 @@ describe("parallel-research-slices dispatch rule", () => {
       { id: "S01", title: "Alpha" },
       { id: "S02", title: "Beta" },
     ]);
-    const milestoneDir = join(base, ".gsd", "milestones", "M001");
+    const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
     writeFileSync(
       join(milestoneDir, "M001-PARALLEL-BLOCKER.md"),
       "# Parallel research escalated\nPrevious dispatch failed; need per-slice fallback.\n",
@@ -204,7 +204,7 @@ describe("parallel-research-slices dispatch rule", () => {
       { id: "S02", title: "Beta" },
     ]);
     // S01 already has research → only S02 remains → <2 ready → no parallel dispatch
-    const s01Dir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const s01Dir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     mkdirSync(s01Dir, { recursive: true });
     writeFileSync(
       join(s01Dir, "S01-RESEARCH.md"),
@@ -229,7 +229,7 @@ describe("buildParallelResearchSlicesPrompt", () => {
 
   beforeEach(() => {
     base = mkdtempSync(join(tmpdir(), "parallel-research-prompt-"));
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   });
 
   afterEach(() => {

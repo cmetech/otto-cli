@@ -1,12 +1,12 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Parallel worker monitor overlay with width-safe operations-console rendering.
 
 import { existsSync, statSync, readFileSync, openSync, readSync, closeSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
-import type { Theme } from "@loop24/pi-coding-agent";
-import { matchesKey, Key } from "@loop24/pi-tui";
+import type { Theme } from "@otto/pi-coding-agent";
+import { matchesKey, Key } from "@otto/pi-tui";
 
 import { formatDuration } from "../shared/mod.js";
 import { formattedShortcutPair } from "./shortcut-defs.js";
@@ -99,8 +99,8 @@ function tailRead(filePath: string, maxBytes: number): string {
 }
 
 function discoverWorkers(basePath: string): string[] {
-  const parallelDir = join(basePath, ".gsd", "parallel");
-  const worktreeDir = join(basePath, ".gsd", "worktrees");
+  const parallelDir = join(basePath, ".otto/workflow", "parallel");
+  const worktreeDir = join(basePath, ".otto/workflow", "worktrees");
   const mids = new Set<string>();
 
   if (existsSync(parallelDir)) {
@@ -116,7 +116,7 @@ function discoverWorkers(basePath: string): string[] {
   if (existsSync(worktreeDir)) {
     try {
       for (const d of readdirSync(worktreeDir)) {
-        if (d.startsWith("M") && existsSync(join(worktreeDir, d, ".gsd", "auto.lock"))) {
+        if (d.startsWith("M") && existsSync(join(worktreeDir, d, ".otto/workflow", "auto.lock"))) {
           mids.add(d);
         }
       }
@@ -127,7 +127,7 @@ function discoverWorkers(basePath: string): string[] {
 }
 
 function querySliceProgress(basePath: string, mid: string): SliceProgress[] {
-  const workRoot = join(basePath, ".gsd", "worktrees", mid);
+  const workRoot = join(basePath, ".otto/workflow", "worktrees", mid);
   const dbPath = resolveWorkflowPathContract(workRoot, basePath).projectDb;
   if (!existsSync(dbPath)) return [];
 
@@ -146,7 +146,7 @@ function querySliceProgress(basePath: string, mid: string): SliceProgress[] {
 }
 
 function extractCostFromNdjson(basePath: string, mid: string): number {
-  const stdoutPath = join(basePath, ".gsd", "parallel", `${mid}.stdout.log`);
+  const stdoutPath = join(basePath, ".otto/workflow", "parallel", `${mid}.stdout.log`);
   if (!existsSync(stdoutPath)) return 0;
   try {
     const content = readFileSync(stdoutPath, "utf-8");
@@ -168,7 +168,7 @@ function extractCostFromNdjson(basePath: string, mid: string): number {
 }
 
 function queryRecentCompletions(basePath: string, mid: string): string[] {
-  const workRoot = join(basePath, ".gsd", "worktrees", mid);
+  const workRoot = join(basePath, ".otto/workflow", "worktrees", mid);
   const dbPath = resolveWorkflowPathContract(workRoot, basePath).projectDb;
   if (!existsSync(dbPath)) return [];
   try {
@@ -187,12 +187,12 @@ function queryRecentCompletions(basePath: string, mid: string): string[] {
 
 function collectWorkerData(basePath: string): WorkerView[] {
   const mids = discoverWorkers(basePath);
-  const parallelDir = join(basePath, ".gsd", "parallel");
+  const parallelDir = join(basePath, ".otto/workflow", "parallel");
   const workers: WorkerView[] = [];
 
   for (const mid of mids) {
     const status = readJsonSafe<StatusJson>(join(parallelDir, `${mid}.status.json`));
-    const lock = readJsonSafe<AutoLock>(join(basePath, ".gsd", "worktrees", mid, ".gsd", "auto.lock"));
+    const lock = readJsonSafe<AutoLock>(join(basePath, ".otto/workflow", "worktrees", mid, ".otto/workflow", "auto.lock"));
     const slices = querySliceProgress(basePath, mid);
 
     const pid = lock?.pid || status?.pid || 0;
@@ -384,7 +384,7 @@ export class ParallelMonitorOverlay {
     const aliveCount = this.workers.filter((wk) => wk.alive).length;
     const now = new Date().toLocaleTimeString();
 
-    lines.push(t.bold(t.fg("accent", " GSD Parallel Monitor ")));
+    lines.push(t.bold(t.fg("accent", " OTTO Parallel Monitor ")));
     lines.push(
       t.fg("muted", `  ${now}  │  ${aliveCount}/${this.workers.length} alive  │  Total: `) +
       t.bold(`$${totalCost.toFixed(2)}`) +
@@ -395,7 +395,7 @@ export class ParallelMonitorOverlay {
     if (this.workers.length === 0) {
       lines.push("");
       lines.push(t.fg("warning", "  No parallel workers found."));
-      lines.push(t.fg("muted", "  Run /gsd parallel start to begin."));
+      lines.push(t.fg("muted", "  Run /otto parallel start to begin."));
     } else {
       for (const wk of this.workers) {
         lines.push("");

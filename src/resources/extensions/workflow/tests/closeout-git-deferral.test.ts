@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests closeout git action deferral policy for auto-mode units.
 
 import test from "node:test";

@@ -1,5 +1,5 @@
 /**
- * reopen-slice handler — the core operation behind gsd_slice_reopen.
+ * reopen-slice handler — the core operation behind otto_slice_reopen.
  *
  * Resets a completed slice back to "in_progress" and resets ALL of its
  * tasks back to "pending". This is intentional — if you're reopening a

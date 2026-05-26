@@ -63,8 +63,8 @@ const args = process.argv.slice(2);
 
 if (args[0] === "merge" && args[1] === "--squash") {
   const sidecars = [
-    join(process.cwd(), ".gsd", "gsd.db-wal"),
-    join(process.cwd(), ".gsd", "gsd.db-shm"),
+    join(process.cwd(), ".otto/workflow", "otto.db-wal"),
+    join(process.cwd(), ".otto/workflow", "otto.db-shm"),
   ];
   const locked = sidecars.find((path) => existsSync(path));
   if (locked) {
@@ -97,7 +97,7 @@ function createRepo(root: string): { repo: string; worktree: string } {
   git(["init"], repo);
   git(["config", "user.email", "test@test.com"], repo);
   git(["config", "user.name", "Test"], repo);
-  writeFileSync(join(repo, ".gitignore"), ".gsd/\n", "utf-8");
+  writeFileSync(join(repo, ".gitignore"), ".otto/workflow/\n", "utf-8");
   writeFileSync(join(repo, "README.md"), "# test\n", "utf-8");
   git(["add", "."], repo);
   git(["commit", "-m", "init"], repo);
@@ -105,15 +105,15 @@ function createRepo(root: string): { repo: string; worktree: string } {
 
   git(["checkout", "-b", "milestone/M001"], repo);
   writeFileSync(join(repo, "feature.txt"), "milestone change\n", "utf-8");
-  mkdirSync(join(repo, ".gsd"), { recursive: true });
-  writeFileSync(join(repo, ".gsd", "gsd.db-shm"), "milestone placeholder\n", "utf-8");
+  mkdirSync(join(repo, ".otto/workflow"), { recursive: true });
+  writeFileSync(join(repo, ".otto/workflow", "otto.db-shm"), "milestone placeholder\n", "utf-8");
   git(["add", "feature.txt"], repo);
-  git(["add", "-f", ".gsd/gsd.db-shm"], repo);
+  git(["add", "-f", ".otto/workflow/otto.db-shm"], repo);
   git(["commit", "-m", "feat: milestone change"], repo);
   git(["checkout", "main"], repo);
 
   const wt = worktreePath(repo, "M001");
-  mkdirSync(join(repo, ".gsd", "worktrees"), { recursive: true });
+  mkdirSync(join(repo, ".otto/workflow", "worktrees"), { recursive: true });
   git(["worktree", "add", wt, "milestone/M001"], repo);
   return { repo, worktree: wt };
 }
@@ -124,7 +124,7 @@ test("mergeMilestoneToMain keeps the Windows DB cycle closed through squash merg
   const gitEnv = GIT_NO_PROMPT_ENV as NodeJS.ProcessEnv;
   const originalGitEnvPath = gitEnv.PATH;
   const originalHome = process.env.HOME;
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
 
   const root = realpathSync(mkdtempSync(join(tmpdir(), "gsd-db-cycle-")));
   const fakeHome = join(root, "home");
@@ -136,16 +136,16 @@ test("mergeMilestoneToMain keeps the Windows DB cycle closed through squash merg
 
   try {
     process.env.HOME = fakeHome;
-    process.env.GSD_HOME = join(fakeHome, ".gsd");
+    process.env.OTTO_HOME = join(fakeHome, ".otto/workflow");
     _clearWorkflowRootCache();
     _resetServiceCache();
 
     const { repo, worktree } = createRepo(root);
-    mkdirSync(join(repo, ".gsd"), { recursive: true });
+    mkdirSync(join(repo, ".otto/workflow"), { recursive: true });
 
     withPlatform("win32", () => {
-      assert.equal(openDatabase(join(repo, ".gsd", "gsd.db")), true);
-      assert.equal(existsSync(join(repo, ".gsd", "gsd.db-shm")), true);
+      assert.equal(openDatabase(join(repo, ".otto/workflow", "otto.db")), true);
+      assert.equal(existsSync(join(repo, ".otto/workflow", "otto.db-shm")), true);
 
       process.env.PATH = `${bin}${delimiter}${originalPath}`;
       gitEnv.PATH = process.env.PATH;
@@ -168,9 +168,9 @@ test("mergeMilestoneToMain keeps the Windows DB cycle closed through squash merg
       process.env.HOME = originalHome;
     }
     if (originalWorkflowHome === undefined) {
-      delete process.env.GSD_HOME;
+      delete process.env.OTTO_HOME;
     } else {
-      process.env.GSD_HOME = originalWorkflowHome;
+      process.env.OTTO_HOME = originalWorkflowHome;
     }
     _clearWorkflowRootCache();
     _resetServiceCache();

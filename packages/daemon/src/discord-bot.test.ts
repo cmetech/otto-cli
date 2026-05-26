@@ -342,7 +342,7 @@ describe('ChannelManager', () => {
     const mgr = new ChannelManager({ guild: guild as any, logger: logger as any });
 
     const cat = await mgr.resolveCategory();
-    assert.equal(cat.name, 'GSD Projects');
+    assert.equal(cat.name, 'OTTO Projects');
     assert.equal(cat.type, ChannelType.GuildCategory);
   });
 
@@ -363,7 +363,7 @@ describe('ChannelManager', () => {
     // Pre-populate a matching category
     guild._channels.set('existing-cat', {
       id: 'existing-cat',
-      name: 'GSD Projects',
+      name: 'OTTO Projects',
       type: ChannelType.GuildCategory,
       parentId: null,
     });
@@ -552,7 +552,7 @@ describe('command dispatch', () => {
   // pure helpers (buildCommands, formatSessionStatus, isAuthorized).
 
   it('gsd-status with no sessions produces empty message', () => {
-    // Tests the formatSessionStatus path that /gsd-status calls
+    // Tests the formatSessionStatus path that /otto-status calls
     const result = formatSessionStatus([]);
     assert.equal(result, 'No active sessions.');
   });
@@ -733,14 +733,14 @@ describe('Daemon orchestrator wiring', () => {
   });
 });
 
-// ---------- /gsd-start and /gsd-stop logic paths ----------
+// ---------- /otto-start and /otto-stop logic paths ----------
 
-describe('/gsd-start and /gsd-stop logic', () => {
+describe('/otto-start and /otto-stop logic', () => {
   // These test the observable logic paths exercised by the handlers.
   // Since handleWorkflowStart/handleWorkflowStop are private, we test the data layer
   // they depend on — project scanning, session listing, and edge cases.
 
-  it('/gsd-start: scanForProjects returning 0 projects', async () => {
+  it('/otto-start: scanForProjects returning 0 projects', async () => {
     // Simulates the "no projects" path
     const { scanForProjects } = await import('./project-scanner.js');
     // With no scan roots, should return empty
@@ -748,7 +748,7 @@ describe('/gsd-start and /gsd-stop logic', () => {
     assert.equal(projects.length, 0);
   });
 
-  it('/gsd-stop: getAllSessions returns empty when no sessions active', async () => {
+  it('/otto-stop: getAllSessions returns empty when no sessions active', async () => {
     const { SessionManager } = await import('./session-manager.js');
     const dir = tmpDir();
     cleanupDirs.push(dir);
@@ -760,7 +760,7 @@ describe('/gsd-start and /gsd-stop logic', () => {
     await logger.close();
   });
 
-  it('/gsd-stop: filters to active sessions only', () => {
+  it('/otto-stop: filters to active sessions only', () => {
     // Simulate the filter logic used in handleWorkflowStop
     const allSessions: Partial<ManagedSession>[] = [
       { sessionId: 's1', status: 'running', projectName: 'alpha' },
@@ -777,7 +777,7 @@ describe('/gsd-start and /gsd-stop logic', () => {
     assert.deepEqual(active.map((s) => s.projectName), ['alpha', 'gamma', 'epsilon']);
   });
 
-  it('/gsd-start: >25 projects are truncated for select menu', () => {
+  it('/otto-start: >25 projects are truncated for select menu', () => {
     // Simulate the truncation logic
     const projects = Array.from({ length: 30 }, (_, i) => ({
       name: `project-${i}`,

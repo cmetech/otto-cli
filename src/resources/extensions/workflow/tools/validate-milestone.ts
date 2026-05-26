@@ -1,8 +1,8 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Validate-milestone tool handler for workflow quality gates.
 
 /**
- * validate-milestone handler — the core operation behind gsd_validate_milestone.
+ * validate-milestone handler — the core operation behind otto_validate_milestone.
  *
  * Persists milestone validation results to the assessments table and
  * quality_gates table, renders VALIDATION.md to disk, and invalidates caches.

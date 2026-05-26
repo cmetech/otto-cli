@@ -55,7 +55,7 @@ test("git.merge_to_main produces deprecation warning", () => {
 test("getIsolationMode defaults to none when preferences have no isolation setting", () => {
   // Validate the default via validatePreferences: when no isolation is set,
   // preferences.git.isolation is undefined, and getIsolationMode returns "none".
-  // Default changed from "worktree" to "none" so GSD works out of the box
+  // Default changed from "worktree" to "none" so OTTO works out of the box
   // without PREFERENCES.md (#2480).
   const { preferences } = validatePreferences({});
   assert.equal(preferences.git?.isolation, undefined, "no isolation in empty prefs");
@@ -395,12 +395,12 @@ test("disabled_model_providers rejects non-array values", () => {
 
 test("loadEffectiveGSDPreferences preserves disabled_model_providers across merge layers", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-disabled-provider-project-"));
   const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-disabled-provider-home-"));
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
 
     writeFileSync(
       join(tempWorkflowHome, "PREFERENCES.md"),
@@ -415,7 +415,7 @@ test("loadEffectiveGSDPreferences preserves disabled_model_providers across merg
     );
 
     writeFileSync(
-      join(tempProject, ".gsd", "PREFERENCES.md"),
+      join(tempProject, ".otto/workflow", "PREFERENCES.md"),
       [
         "---",
         "version: 1",
@@ -427,7 +427,7 @@ test("loadEffectiveGSDPreferences preserves disabled_model_providers across merg
       "utf-8",
     );
 
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const loaded = loadEffectiveGSDPreferences();
@@ -438,8 +438,8 @@ test("loadEffectiveGSDPreferences preserves disabled_model_providers across merg
     );
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -725,7 +725,7 @@ test("unrecognized format warning is emitted at most once (#2373)", () => {
 });
 
 test("parsePreferencesMarkdown parses heading+list format without frontmatter (#2036)", () => {
-  // A GSD agent recovery session wrote preferences in markdown heading+list
+  // A OTTO agent recovery session wrote preferences in markdown heading+list
   // format instead of YAML frontmatter. Since the heading+list fallback parser
   // was added, this format is now handled gracefully.
   const content = "## Git\n\n- isolation: none\n";
@@ -797,12 +797,12 @@ test("experimental.rtk parses correctly from preferences markdown", () => {
 
 test("loadEffectiveGSDPreferences preserves experimental prefs across global+project merge", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-prefs-project-"));
   const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-prefs-home-"));
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
 
     writeFileSync(
       join(tempWorkflowHome, "preferences.md"),
@@ -817,7 +817,7 @@ test("loadEffectiveGSDPreferences preserves experimental prefs across global+pro
     );
 
     writeFileSync(
-      join(tempProject, ".gsd", "PREFERENCES.md"),
+      join(tempProject, ".otto/workflow", "PREFERENCES.md"),
       [
         "---",
         "version: 1",
@@ -828,7 +828,7 @@ test("loadEffectiveGSDPreferences preserves experimental prefs across global+pro
       "utf-8",
     );
 
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const loaded = loadEffectiveGSDPreferences();
@@ -837,8 +837,8 @@ test("loadEffectiveGSDPreferences preserves experimental prefs across global+pro
     assert.equal(loaded!.preferences.git?.isolation, "none");
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -846,15 +846,15 @@ test("loadEffectiveGSDPreferences preserves experimental prefs across global+pro
 
 test("loadEffectiveGSDPreferences exposes slice_parallel prefs to runtime callers", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-slice-parallel-project-"));
   const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-slice-parallel-home-"));
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
 
     writeFileSync(
-      join(tempProject, ".gsd", "PREFERENCES.md"),
+      join(tempProject, ".otto/workflow", "PREFERENCES.md"),
       [
         "---",
         "version: 1",
@@ -866,7 +866,7 @@ test("loadEffectiveGSDPreferences exposes slice_parallel prefs to runtime caller
       "utf-8",
     );
 
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const loaded = loadEffectiveGSDPreferences();
@@ -875,8 +875,8 @@ test("loadEffectiveGSDPreferences exposes slice_parallel prefs to runtime caller
     assert.equal(loaded!.preferences.slice_parallel?.max_workers, 3);
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -884,12 +884,12 @@ test("loadEffectiveGSDPreferences exposes slice_parallel prefs to runtime caller
 
 test("loadEffectiveGSDPreferences merges min_request_interval_ms with project overriding global (#2996)", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-rate-limit-project-"));
   const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-rate-limit-home-"));
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
 
     writeFileSync(
       join(tempWorkflowHome, "PREFERENCES.md"),
@@ -904,7 +904,7 @@ test("loadEffectiveGSDPreferences merges min_request_interval_ms with project ov
     );
 
     writeFileSync(
-      join(tempProject, ".gsd", "PREFERENCES.md"),
+      join(tempProject, ".otto/workflow", "PREFERENCES.md"),
       [
         "---",
         "version: 1",
@@ -914,7 +914,7 @@ test("loadEffectiveGSDPreferences merges min_request_interval_ms with project ov
       "utf-8",
     );
 
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const loaded = loadEffectiveGSDPreferences();
@@ -923,8 +923,8 @@ test("loadEffectiveGSDPreferences merges min_request_interval_ms with project ov
     assert.equal(loaded!.preferences.budget_ceiling, 45);
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -932,12 +932,12 @@ test("loadEffectiveGSDPreferences merges min_request_interval_ms with project ov
 
 test("loadEffectiveGSDPreferences does not inherit global planning_depth into fresh projects", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-depth-global-project-"));
   const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-depth-global-home-"));
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
 
     writeFileSync(
       join(tempWorkflowHome, "PREFERENCES.md"),
@@ -951,7 +951,7 @@ test("loadEffectiveGSDPreferences does not inherit global planning_depth into fr
       "utf-8",
     );
 
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const loaded = loadEffectiveGSDPreferences();
@@ -960,8 +960,8 @@ test("loadEffectiveGSDPreferences does not inherit global planning_depth into fr
     assert.equal(loaded!.preferences.language, "German", "other global preferences still carry over");
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -969,12 +969,12 @@ test("loadEffectiveGSDPreferences does not inherit global planning_depth into fr
 
 test("loadEffectiveGSDPreferences keeps project-local planning_depth explicit", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-depth-local-project-"));
   const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-depth-local-home-"));
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
 
     writeFileSync(
       join(tempWorkflowHome, "PREFERENCES.md"),
@@ -982,12 +982,12 @@ test("loadEffectiveGSDPreferences keeps project-local planning_depth explicit", 
       "utf-8",
     );
     writeFileSync(
-      join(tempProject, ".gsd", "PREFERENCES.md"),
+      join(tempProject, ".otto/workflow", "PREFERENCES.md"),
       ["---", "version: 1", "planning_depth: light", "---"].join("\n"),
       "utf-8",
     );
 
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const loaded = loadEffectiveGSDPreferences();
@@ -995,8 +995,8 @@ test("loadEffectiveGSDPreferences keeps project-local planning_depth explicit", 
     assert.equal(loaded!.preferences.planning_depth, "light");
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -1004,25 +1004,25 @@ test("loadEffectiveGSDPreferences keeps project-local planning_depth explicit", 
 
 test("preferences paths use canonical uppercase filenames", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-prefs-canonical-project-"));
   const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-prefs-canonical-home-"));
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
-    process.env.GSD_HOME = tempWorkflowHome;
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     assert.equal(basename(getGlobalGSDPreferencesPath()), "PREFERENCES.md");
     assert.ok(
-      getProjectGSDPreferencesPath().endsWith("/.gsd/PREFERENCES.md")
-        || getProjectGSDPreferencesPath().endsWith("\\.gsd\\PREFERENCES.md"),
-      "project preferences path should use .gsd/PREFERENCES.md",
+      getProjectGSDPreferencesPath().endsWith("/.otto/workflow/PREFERENCES.md")
+        || getProjectGSDPreferencesPath().endsWith("\\.otto/workflow\\PREFERENCES.md"),
+      "project preferences path should use .otto/workflow/PREFERENCES.md",
     );
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -1030,28 +1030,28 @@ test("preferences paths use canonical uppercase filenames", () => {
 
 test("explicit base path preference loading survives a deleted cwd (#4498)", (t) => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-prefs-base-project-"));
   const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-prefs-base-home-"));
   const deletedCwd = mkdtempSync(join(tmpdir(), "gsd-prefs-deleted-cwd-"));
 
   t.after(() => {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
     rmSync(deletedCwd, { recursive: true, force: true });
   });
 
-  mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+  mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(tempProject, ".gsd", "PREFERENCES.md"),
+    join(tempProject, ".otto/workflow", "PREFERENCES.md"),
     "---\nversion: 1\nlanguage: Swedish\ngit:\n  isolation: worktree\n---\n",
     "utf-8",
   );
 
-  process.env.GSD_HOME = tempWorkflowHome;
+  process.env.OTTO_HOME = tempWorkflowHome;
   process.chdir(deletedCwd);
   rmSync(deletedCwd, { recursive: true, force: true });
 
@@ -1063,19 +1063,19 @@ test("explicit base path preference loading survives a deleted cwd (#4498)", (t)
 
 test("uppercase PREFERENCES.md wins over legacy lowercase preferences.md", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-prefs-priority-project-"));
   const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-prefs-priority-home-"));
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
 
     writeFileSync(join(tempWorkflowHome, "preferences.md"), "---\nversion: 1\nmode: solo\n---\n", "utf-8");
     writeFileSync(join(tempWorkflowHome, "PREFERENCES.md"), "---\nversion: 1\nmode: team\n---\n", "utf-8");
-    writeFileSync(join(tempProject, ".gsd", "preferences.md"), "---\nversion: 1\nlanguage: German\n---\n", "utf-8");
-    writeFileSync(join(tempProject, ".gsd", "PREFERENCES.md"), "---\nversion: 1\nlanguage: Japanese\n---\n", "utf-8");
+    writeFileSync(join(tempProject, ".otto/workflow", "preferences.md"), "---\nversion: 1\nlanguage: German\n---\n", "utf-8");
+    writeFileSync(join(tempProject, ".otto/workflow", "PREFERENCES.md"), "---\nversion: 1\nlanguage: Japanese\n---\n", "utf-8");
 
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const globalPrefs = loadGlobalGSDPreferences();
@@ -1086,14 +1086,14 @@ test("uppercase PREFERENCES.md wins over legacy lowercase preferences.md", () =>
     assert.equal(projectPrefs!.preferences.language, "Japanese");
     assert.equal(basename(globalPrefs!.path), "PREFERENCES.md");
     assert.ok(
-      projectPrefs!.path.endsWith("/.gsd/PREFERENCES.md")
-        || projectPrefs!.path.endsWith("\\.gsd\\PREFERENCES.md"),
-      "project loader should prefer .gsd/PREFERENCES.md",
+      projectPrefs!.path.endsWith("/.otto/workflow/PREFERENCES.md")
+        || projectPrefs!.path.endsWith("\\.otto/workflow\\PREFERENCES.md"),
+      "project loader should prefer .otto/workflow/PREFERENCES.md",
     );
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -1243,12 +1243,12 @@ test("language: parses from markdown frontmatter", () => {
 
 test("language: project setting overrides global via loadEffectiveGSDPreferences", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-lang-project-"));
   const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-lang-home-"));
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
 
     writeFileSync(
       join(tempWorkflowHome, "preferences.md"),
@@ -1257,12 +1257,12 @@ test("language: project setting overrides global via loadEffectiveGSDPreferences
     );
 
     writeFileSync(
-      join(tempProject, ".gsd", "PREFERENCES.md"),
+      join(tempProject, ".otto/workflow", "PREFERENCES.md"),
       ["---", "version: 1", "language: Japanese", "---"].join("\n"),
       "utf-8",
     );
 
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const loaded = loadEffectiveGSDPreferences();
@@ -1270,8 +1270,8 @@ test("language: project setting overrides global via loadEffectiveGSDPreferences
     assert.equal(loaded!.preferences.language, "Japanese", "project language overrides global");
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }
@@ -1279,12 +1279,12 @@ test("language: project setting overrides global via loadEffectiveGSDPreferences
 
 test("language: global setting used when project has none", () => {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-lang-noproj-"));
   const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-lang-nhome-"));
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
 
     writeFileSync(
       join(tempWorkflowHome, "preferences.md"),
@@ -1293,12 +1293,12 @@ test("language: global setting used when project has none", () => {
     );
 
     writeFileSync(
-      join(tempProject, ".gsd", "PREFERENCES.md"),
+      join(tempProject, ".otto/workflow", "PREFERENCES.md"),
       ["---", "version: 1", "---"].join("\n"),
       "utf-8",
     );
 
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
 
     const loaded = loadEffectiveGSDPreferences();
@@ -1306,8 +1306,8 @@ test("language: global setting used when project has none", () => {
     assert.equal(loaded!.preferences.language, "German", "global language carries over when project omits it");
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }

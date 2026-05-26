@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Unit tests for the Worktree Safety module contract.
 
 import { afterEach, beforeEach, describe, test } from "node:test";
@@ -38,7 +38,7 @@ describe("Worktree Safety module", () => {
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "gsd-worktree-safety-"));
     projectRoot = join(root, "project");
-    unitRoot = join(projectRoot, ".gsd", "worktrees", "M001");
+    unitRoot = join(projectRoot, ".otto/workflow", "worktrees", "M001");
     mkdirSync(unitRoot, { recursive: true });
     writeFileSync(join(unitRoot, ".git"), "gitdir: ../../../.git/worktrees/M001\n", "utf-8");
   });

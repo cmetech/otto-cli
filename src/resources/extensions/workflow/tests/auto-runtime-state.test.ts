@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Auto runtime state snapshot regression tests.
 
 import test from "node:test";
@@ -40,7 +40,7 @@ test("getAutoRuntimeSnapshot includes orchestration phase when available", () =>
 test("clearToolInvocationError clears stale tool error state for active auto sessions", () => {
   autoSession.reset();
   autoSession.active = true;
-  autoSession.lastToolInvocationError = "gsd_task_complete: simulated transient tool error";
+  autoSession.lastToolInvocationError = "otto_task_complete: simulated transient tool error";
 
   clearToolInvocationError();
 

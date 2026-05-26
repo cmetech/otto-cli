@@ -158,12 +158,12 @@ mcp_call(server="my-server", tool="<tool_name>", args={...})
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `GSD_HOME` | `~/.gsd` | 全局 GSD 目录。除非单独覆盖，否则其它路径都从这里派生。影响偏好、skills、sessions 以及项目状态。（v2.39） |
-| `GSD_PROJECT_ID` | （自动哈希） | 覆盖自动生成的项目身份哈希。这样项目状态会写入 `$GSD_HOME/projects/<GSD_PROJECT_ID>/`，而不是计算出的哈希目录。适用于 CI/CD 或多个克隆共享状态。（v2.39） |
-| `GSD_STATE_DIR` | `$GSD_HOME` | 项目状态根目录。控制 `projects/<repo-hash>/` 的创建位置。对项目状态的优先级高于 `GSD_HOME`。 |
-| `GSD_CODING_AGENT_DIR` | `$GSD_HOME/agent` | agent 目录，包含托管资源、扩展和 auth。对 agent 相关路径的优先级高于 `GSD_HOME`。 |
-| `GSD_ALLOWED_COMMAND_PREFIXES` | （内置列表） | 允许用于 `!command` 值解析的命令前缀，逗号分隔。会覆盖 settings.json 中的 `allowedCommandPrefixes`。见 [自定义模型：命令允许列表](custom-models.md#command-allowlist)。 |
-| `GSD_FETCH_ALLOWED_URLS` | （无） | 对 `fetch_page` URL block 免检的 hostnames，逗号分隔。会覆盖 settings.json 中的 `fetchAllowedUrls`。见 [URL Blocking](#url-blocking-fetch_page)。 |
+| `OTTO_HOME` | `~/.gsd` | 全局 GSD 目录。除非单独覆盖，否则其它路径都从这里派生。影响偏好、skills、sessions 以及项目状态。（v2.39） |
+| `OTTO_PROJECT_ID` | （自动哈希） | 覆盖自动生成的项目身份哈希。这样项目状态会写入 `$OTTO_HOME/projects/<OTTO_PROJECT_ID>/`，而不是计算出的哈希目录。适用于 CI/CD 或多个克隆共享状态。（v2.39） |
+| `OTTO_STATE_DIR` | `$OTTO_HOME` | 项目状态根目录。控制 `projects/<repo-hash>/` 的创建位置。对项目状态的优先级高于 `OTTO_HOME`。 |
+| `OTTO_CODING_AGENT_DIR` | `$OTTO_HOME/agent` | agent 目录，包含托管资源、扩展和 auth。对 agent 相关路径的优先级高于 `OTTO_HOME`。 |
+| `OTTO_ALLOWED_COMMAND_PREFIXES` | （内置列表） | 允许用于 `!command` 值解析的命令前缀，逗号分隔。会覆盖 settings.json 中的 `allowedCommandPrefixes`。见 [自定义模型：命令允许列表](custom-models.md#command-allowlist)。 |
+| `OTTO_FETCH_ALLOWED_URLS` | （无） | 对 `fetch_page` URL block 免检的 hostnames，逗号分隔。会覆盖 settings.json 中的 `fetchAllowedUrls`。见 [URL Blocking](#url-blocking-fetch_page)。 |
 
 ## 全部设置
 
@@ -400,10 +400,10 @@ verification_max_retries: 2       # 最大重试次数（默认：2）
 }
 ```
 
-或者设置 `GSD_FETCH_ALLOWED_URLS` 环境变量（逗号分隔）。环境变量优先级高于 settings.json：
+或者设置 `OTTO_FETCH_ALLOWED_URLS` 环境变量（逗号分隔）。环境变量优先级高于 settings.json：
 
 ```bash
-export GSD_FETCH_ALLOWED_URLS="internal-docs.company.com,192.168.1.50"
+export OTTO_FETCH_ALLOWED_URLS="internal-docs.company.com,192.168.1.50"
 ```
 
 被允许的 hostname 会绕过 blocklist 检查。但协议限制依然有效，也就是说 `file://` 和 `ftp://` 仍然不能加入 allowlist。

@@ -31,8 +31,8 @@ import {
 
 function makeTmpBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-consolidation-scan-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   initNotificationStore(base);
   return base;
 }
@@ -52,7 +52,7 @@ function cleanup(base: string): void {
 }
 
 function writeKnowledgeMd(base: string, body: string): void {
-  writeFileSync(join(base, ".gsd", "KNOWLEDGE.md"), body, "utf-8");
+  writeFileSync(join(base, ".otto/workflow", "KNOWLEDGE.md"), body, "utf-8");
 }
 
 // ─── parseKnowledgeRows ─────────────────────────────────────────────────────

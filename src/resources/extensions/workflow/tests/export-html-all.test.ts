@@ -13,7 +13,7 @@ test("handleExport --html --all generates reports for milestones missing from th
   const { loadReportsIndex } = await import("../reports.js");
 
   const tmp = join(tmpdir(), `gsd-export-all-test-${Date.now()}`);
-  const workflowDir = join(tmp, ".gsd");
+  const workflowDir = join(tmp, ".otto/workflow");
   const reportsDir = join(workflowDir, "reports");
   mkdirSync(reportsDir, { recursive: true });
 
@@ -96,8 +96,8 @@ test("report completions include --html and --html --all", async () => {
   };
 
   registerWorkflowCommand(pi as any);
-  const gsd = commands.get("gsd");
-  assert.ok(gsd, "should register /gsd command");
+  const gsd = commands.get("otto");
+  assert.ok(gsd, "should register /otto command");
 
   const completions = gsd.getArgumentCompletions("report --");
   const labels = completions.map((c: any) => c.label);
@@ -109,8 +109,8 @@ test("bare report command defaults to all HTML reports", () => {
   assert.equal(
     normalizeReportExportArgs("report"),
     "--html --all",
-    "bare /gsd report should generate all HTML reports and open the reports index",
+    "bare /otto report should generate all HTML reports and open the reports index",
   );
   assert.equal(normalizeReportExportArgs("report --json"), "--json");
-  assert.equal(normalizeReportExportArgs("export"), "", "legacy /gsd export should keep its existing default");
+  assert.equal(normalizeReportExportArgs("export"), "", "legacy /otto export should keep its existing default");
 });

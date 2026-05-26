@@ -2,7 +2,7 @@
 
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
-import { visibleWidth } from "@loop24/pi-tui";
+import { visibleWidth } from "@otto/pi-tui";
 import { initTheme } from "../theme/theme.js";
 import { UserMessageSelectorComponent } from "./user-message-selector.js";
 

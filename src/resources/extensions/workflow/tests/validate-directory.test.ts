@@ -1,5 +1,5 @@
 /**
- * Unit tests for GSD Directory Validation — safeguards against dangerous directories.
+ * Unit tests for OTTO Directory Validation — safeguards against dangerous directories.
  *
  * Exercises validateDirectory() and assertSafeDirectory() with:
  * - Blocked system paths (/, /usr, /etc, $HOME, C:\Windows)
@@ -122,21 +122,21 @@ test("validateDirectory: subdirectory of home is NOT blocked", () => {
   }
 });
 
-// Regression test for #1317: GSD worktree inside $HOME must not be blocked even
+// Regression test for #1317: OTTO worktree inside $HOME must not be blocked even
 // when the resolved project root equals $HOME (e.g. home dir is a git repo).
-test("validateDirectory: GSD worktree path nested under home is NOT blocked (#1317)", () => {
+test("validateDirectory: OTTO worktree path nested under home is NOT blocked (#1317)", () => {
   const originalHome = process.env.HOME;
   const originalUserProfile = process.env.USERPROFILE;
   const fakeHome = makeTempDir("fake-home");
   process.env.HOME = fakeHome;
   process.env.USERPROFILE = fakeHome;
-  const worktreePath = join(homedir(), ".gsd", "worktrees", "M001");
-  const worktreeRoot = join(fakeHome, ".gsd", "worktrees", "M001");
+  const worktreePath = join(homedir(), ".otto/workflow", "worktrees", "M001");
+  const worktreeRoot = join(fakeHome, ".otto/workflow", "worktrees", "M001");
   mkdirSync(worktreePath, { recursive: true });
   try {
     // The worktree CWD itself is a valid location — it must pass.
     const result = validateDirectory(worktreePath);
-    assert.equal(result.safe, true, "GSD worktree path should be safe to run in");
+    assert.equal(result.safe, true, "OTTO worktree path should be safe to run in");
     assert.equal(result.severity, "ok");
   } finally {
     if (originalHome === undefined) delete process.env.HOME;

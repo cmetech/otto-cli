@@ -22,7 +22,7 @@ test("guided dispatch passes the explicit project root through model and compati
   const explicitRoot = mkdtempSync(join(tmpdir(), "gsd-guided-root-explicit-"));
   const otherRoot = mkdtempSync(join(tmpdir(), "gsd-guided-root-cwd-"));
   const workflowPath = join(explicitRoot, "WORKFLOW.md");
-  const originalWorkflowPath = process.env.GSD_WORKFLOW_PATH;
+  const originalWorkflowPath = process.env.OTTO_WORKFLOW_PATH;
   const originalCwd = process.cwd();
   const seen = {
     prefsRoot: "",
@@ -42,7 +42,7 @@ test("guided dispatch passes the explicit project root through model and compati
   };
 
   const pi = {
-    getActiveTools: () => ["gsd_plan_slice"],
+    getActiveTools: () => ["otto_plan_slice"],
     setActiveTools: () => {},
     sendMessage: () => {
       seen.sent = true;
@@ -51,7 +51,7 @@ test("guided dispatch passes the explicit project root through model and compati
 
   try {
     writeFileSync(workflowPath, "# Workflow\n", "utf-8");
-    process.env.GSD_WORKFLOW_PATH = workflowPath;
+    process.env.OTTO_WORKFLOW_PATH = workflowPath;
     process.chdir(otherRoot);
 
     await _dispatchWorkflowForTest(
@@ -96,9 +96,9 @@ test("guided dispatch passes the explicit project root through model and compati
   } finally {
     process.chdir(originalCwd);
     if (originalWorkflowPath === undefined) {
-      delete process.env.GSD_WORKFLOW_PATH;
+      delete process.env.OTTO_WORKFLOW_PATH;
     } else {
-      process.env.GSD_WORKFLOW_PATH = originalWorkflowPath;
+      process.env.OTTO_WORKFLOW_PATH = originalWorkflowPath;
     }
     rmSync(explicitRoot, { recursive: true, force: true });
     rmSync(otherRoot, { recursive: true, force: true });

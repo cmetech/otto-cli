@@ -1,13 +1,13 @@
 # ADR-009 Implementation Plan
 
-**Related ADR:** [ADR-009-orchestration-kernel-refactor.md](/Users/jeremymcspadden/Github/gsd-2/docs/dev/ADR-009-orchestration-kernel-refactor.md)  
+**Related ADR:** [ADR-009-orchestration-kernel-refactor.md](/Users/jeremymcspadden/Github/otto-2/docs/dev/ADR-009-orchestration-kernel-refactor.md)
 **Status:** Completed (closure baseline established; emergency fallback retained)  
 **Date:** 2026-04-14  
 **Target Window:** 8-10 waves (incremental, no big-bang rewrite)
 
 ## Objective
 
-Implement ADR-009 by migrating GSD orchestration internals to a Unified Orchestration Kernel (UOK) with six control planes:
+Implement ADR-009 by migrating OTTO orchestration internals to a Unified Orchestration Kernel (UOK) with six control planes:
 
 1. Plan
 2. Execution
@@ -142,7 +142,7 @@ Primary targets:
 - `src/resources/extensions/workflow/activity-log.ts`
 - `src/resources/extensions/workflow/metrics.ts`
 - `src/resources/extensions/workflow/workflow-logger.ts`
-- `src/resources/extensions/workflow/gsd-db.ts`
+- `src/resources/extensions/workflow/otto-db.ts`
 
 Deliverables:
 
@@ -429,7 +429,7 @@ Verification:
 
 Expected schema additions:
 
-- audit projection tables in `gsd.db`
+- audit projection tables in `otto.db`
 - gate result persistence tables
 - turn transaction metadata
 
@@ -487,7 +487,7 @@ ADR-009 closure matrix (updated 2026-04-16):
 | 6. Unified audit events provide causal traceability across orchestration, model, tool, git, and test actions. | Complete | Unified audit envelope + emission path wired through UOK observer/kernel entry. (`src/resources/extensions/workflow/uok/audit.ts`, `src/resources/extensions/workflow/uok/kernel.ts`) |
 | 7. Plan v2 can produce a complete unit graph with fail-closed plan gate. | Complete | Plan v2 control plane remains default-on with bounded flow + gate coverage in current planner pipeline. (`src/resources/extensions/workflow/uok/flags.ts`, planning/gate suites) |
 | 8. `burn-max` profile is available and policy-safe. | Complete | Profile and policy bounds are enforced via preferences + model policy filtering. (`src/resources/extensions/workflow/auto-model-selection.ts`, `src/resources/extensions/workflow/preferences-models.ts`) |
-| 9. Legacy orchestration branches are retired or behind emergency-only fallback. | Complete | Legacy path remains only under explicit emergency controls (`uok.legacy_fallback.enabled`, `GSD_UOK_FORCE_LEGACY`, `GSD_UOK_LEGACY_FALLBACK`). (`src/resources/extensions/workflow/uok/flags.ts`) |
+| 9. Legacy orchestration branches are retired or behind emergency-only fallback. | Complete | Legacy path remains only under explicit emergency controls (`uok.legacy_fallback.enabled`, `OTTO_UOK_FORCE_LEGACY`, `OTTO_UOK_LEGACY_FALLBACK`). (`src/resources/extensions/workflow/uok/flags.ts`) |
 | 10. CLI/web/headless behavior remains user-compatible. | Complete | Existing startup/dispatch surfaces preserved; integration coverage remains green in CI. (`src/resources/extensions/workflow/auto.ts`, `src/tests/integration/*.test.ts`) |
 
 Targeted closure/parity tests:

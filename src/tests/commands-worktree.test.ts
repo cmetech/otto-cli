@@ -1,4 +1,4 @@
-// the agent — Unit tests for /gsd worktree formatter and dispatcher
+// the agent — Unit tests for /otto worktree formatter and dispatcher
 import test from "node:test";
 import assert from "node:assert/strict";
 
@@ -11,7 +11,7 @@ function mkStatus(over: Partial<WorktreeStatus>): WorktreeStatus {
   const name = over.name ?? "feat-x";
   return {
     name,
-    path: `/repo/.gsd/worktrees/${name}`,
+    path: `/repo/.otto/workflow/worktrees/${name}`,
     branch: `gsd/${name}`,
     exists: true,
     filesChanged: 0,
@@ -26,14 +26,14 @@ function mkStatus(over: Partial<WorktreeStatus>): WorktreeStatus {
 test("empty list shows hint to create one", () => {
   const out = formatWorktreeList([]);
   assert.match(out, /No worktrees\./);
-  assert.match(out, /gsd -w/);
+  assert.match(out, /otto -w/);
 });
 
 test("clean worktree shows (clean) badge and no diff line", () => {
   const out = formatWorktreeList([mkStatus({ name: "alpha" })]);
   assert.match(out, /alpha \(clean\)/);
   assert.match(out, /branch\s+gsd\/alpha/);
-  assert.match(out, /path\s+\/repo\/\.gsd/);
+  assert.match(out, /path\s+\/repo\/\.otto\/workflow/);
   assert.doesNotMatch(out, /diff\s+/);
 });
 

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for auto-start validation block handling.
 
 import test from "node:test";
@@ -32,15 +32,15 @@ test("auto-start guard blocks validation needs-attention states", () => {
       [
         "Milestone M001 is blocked because milestone validation returned needs-attention.",
         "Fix options:",
-        "1. Review the validation details: `/gsd status`",
-        "2. If you fixed the missing evidence or issue, re-run milestone validation: `/gsd validate-milestone`",
+        "1. Review the validation details: `/otto status`",
+        "2. If you fixed the missing evidence or issue, re-run milestone validation: `/otto validate-milestone`",
       ].join("\n"),
     ],
   }), "auto");
 
   assert.ok(message, "validation block should prevent auto-start");
-  assert.match(message, /\/gsd auto cannot run/);
-  assert.match(message, /\/gsd validate-milestone/);
+  assert.match(message, /\/otto auto cannot run/);
+  assert.match(message, /\/otto validate-milestone/);
 });
 
 test("auto-start guard does not block non-validation blocked states", () => {

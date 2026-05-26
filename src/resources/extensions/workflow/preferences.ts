@@ -14,7 +14,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { workflowRoot } from "./paths.js";
+import { workflowRoot, workflowRootOrNull } from "./paths.js";
 import { parse as parseYaml } from "yaml";
 import type { PostUnitHookConfig, PreDispatchHookConfig, TokenProfile } from "./types.js";
 import type { DynamicRoutingConfig } from "./model-router.js";
@@ -114,16 +114,18 @@ function legacyGlobalPreferencesPath(): string {
   return join(homedir(), ".pi", "agent", "gsd-preferences.md");
 }
 
-function projectPreferencesPath(basePath: string = process.cwd()): string {
-  return join(workflowRoot(basePath), "PREFERENCES.md");
+function projectPreferencesPath(basePath: string = process.cwd()): string | null {
+  const root = workflowRootOrNull(basePath);
+  return root === null ? null : join(root, "PREFERENCES.md");
 }
 // Legacy lowercase files can still exist in older projects. Keep them as a
 // compatibility-only fallback, but route new reads/writes through PREFERENCES.md.
 function legacyGlobalPreferencesPathLowercase(): string {
   return join(workflowHome(), "preferences.md");
 }
-function legacyProjectPreferencesPathLowercase(basePath: string = process.cwd()): string {
-  return join(workflowRoot(basePath), "preferences.md");
+function legacyProjectPreferencesPathLowercase(basePath: string = process.cwd()): string | null {
+  const root = workflowRootOrNull(basePath);
+  return root === null ? null : join(root, "preferences.md");
 }
 
 export function getGlobalGSDPreferencesPath(): string {
@@ -135,7 +137,7 @@ export function getLegacyGlobalGSDPreferencesPath(): string {
 }
 
 export function getProjectGSDPreferencesPath(basePath?: string): string {
-  return projectPreferencesPath(basePath);
+  return projectPreferencesPath(basePath) ?? join(workflowRoot(basePath ?? process.cwd()), "PREFERENCES.md");
 }
 
 
@@ -177,8 +179,11 @@ export function loadGlobalGSDPreferences(): LoadedGSDPreferences | null {
 }
 
 export function loadProjectGSDPreferences(basePath?: string): LoadedGSDPreferences | null {
-  return loadPreferencesFile(projectPreferencesPath(basePath), "project")
-    ?? loadPreferencesFile(legacyProjectPreferencesPathLowercase(basePath), "project");
+  const primary = projectPreferencesPath(basePath);
+  const legacy = legacyProjectPreferencesPathLowercase(basePath);
+  return (primary ? loadPreferencesFile(primary, "project") : null)
+    ?? (legacy ? loadPreferencesFile(legacy, "project") : null)
+    ?? null;
 }
 
 export function loadEffectiveGSDPreferences(
@@ -248,13 +253,14 @@ function stripInheritedPlanningDepth(
 
   // planning_depth is a project bootstrap routing flag, not a user-global
   // preference. A global ~/.otto/PREFERENCES.md value should not make every
-  // fresh repo behave like `/loop24 new-project --deep`.
+  // fresh repo behave like `/otto new-project --deep`.
   const preferences: WorkflowPreferences = { ...loaded.preferences };
   delete preferences.planning_depth;
   return { ...loaded, preferences };
 }
 
-function loadPreferencesFile(path: string, scope: "global" | "project"): LoadedGSDPreferences | null {
+function loadPreferencesFile(path: string | null, scope: "global" | "project"): LoadedGSDPreferences | null {
+  if (!path) return null;
   if (!existsSync(path)) return null;
 
   const raw = readFileSync(path, "utf-8");
@@ -304,8 +310,8 @@ export function parsePreferencesMarkdown(content: string): WorkflowPreferences |
   if (content.trim().length > 0 && !_warnedUnrecognizedFormat) {
     _warnedUnrecognizedFormat = true;
     console.warn(
-      "[GSD] Warning: preferences file has unrecognized format — content does not use YAML frontmatter delimiters (---). " +
-      "Wrap your preferences in --- fences. See https://github.com/open-gsd/gsd-pi/issues/2036",
+      "[OTTO] Warning: preferences file has unrecognized format — content does not use YAML frontmatter delimiters (---). " +
+      "Wrap your preferences in --- fences. See https://github.com/open-gsd/otto-pi/issues/2036",
     );
   }
   return null;
@@ -572,7 +578,7 @@ function mergePreDispatchHooks(
 
 export function renderPreferencesForSystemPrompt(preferences: WorkflowPreferences, resolutions?: Map<string, SkillResolution>): string {
   const validated = validatePreferences(preferences);
-  const lines: string[] = ["## GSD Skill Preferences"];
+  const lines: string[] = ["## OTTO Skill Preferences"];
 
   if (validated.errors.length > 0) {
     lines.push("- Validation: some preference values were ignored because they were invalid.");
@@ -584,7 +590,7 @@ export function renderPreferencesForSystemPrompt(preferences: WorkflowPreference
   preferences = validated.preferences;
 
   lines.push(
-    "- Treat these as explicit skill-selection policy for GSD work.",
+    "- Treat these as explicit skill-selection policy for OTTO work.",
     "- If a listed skill exists and is relevant, load and follow it instead of treating it as a vague suggestion.",
     "- Current user instructions still override these defaults.",
   );

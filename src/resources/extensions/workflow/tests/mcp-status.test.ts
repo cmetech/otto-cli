@@ -174,10 +174,10 @@ describe("formatMcpInitResult", () => {
 
 describe("hasHostMcpTool", () => {
   test("detects host-provided MCP tool prefix for a server", () => {
-    assert.equal(hasHostMcpTool("tools: mcp__gsd-workflow__*", "gsd-workflow"), true);
+    assert.equal(hasHostMcpTool("tools: mcp__otto-workflow__*", "otto-workflow"), true);
   });
 
   test("does not match other servers", () => {
-    assert.equal(hasHostMcpTool("tools: mcp__other-server__*", "gsd-workflow"), false);
+    assert.equal(hasHostMcpTool("tools: mcp__other-server__*", "otto-workflow"), false);
   });
 });

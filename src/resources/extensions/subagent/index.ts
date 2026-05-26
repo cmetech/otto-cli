@@ -17,11 +17,11 @@ import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import type { AgentToolResult } from "@loop24/pi-agent-core";
-import type { Message } from "@loop24/pi-ai";
-import { StringEnum } from "@loop24/pi-ai";
-import { type ExtensionAPI, getMarkdownTheme } from "@loop24/pi-coding-agent";
-import { Container, Markdown, Spacer, Text } from "@loop24/pi-tui";
+import type { AgentToolResult } from "@otto/pi-agent-core";
+import type { Message } from "@otto/pi-ai";
+import { StringEnum } from "@otto/pi-ai";
+import { type ExtensionAPI, getMarkdownTheme } from "@otto/pi-coding-agent";
+import { Container, Markdown, Spacer, Text } from "@otto/pi-tui";
 import { Type } from "@sinclair/typebox";
 import { formatTokenCount } from "../shared/mod.js";
 import { getCurrentPhase } from "../shared/phase-state.js";
@@ -500,11 +500,11 @@ async function runSingleAgent(
 		let wasAborted = false;
 
 		const exitCode = await new Promise<number>((resolve) => {
-			const bundledPaths = ((process.env.LOOP24_BUNDLED_EXTENSION_PATHS ?? process.env.GSD_BUNDLED_EXTENSION_PATHS) ?? "").split(path.delimiter).map(s => s.trim()).filter(Boolean);
+			const bundledPaths = ((process.env.OTTO_BUNDLED_EXTENSION_PATHS ?? process.env.OTTO_BUNDLED_EXTENSION_PATHS) ?? "").split(path.delimiter).map(s => s.trim()).filter(Boolean);
 			const extensionArgs = bundledPaths.flatMap(p => ["--extension", p]);
 			const proc = spawn(
 				process.execPath,
-				[(process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH)!, ...extensionArgs, ...launch.args],
+				[(process.env.OTTO_BIN_PATH ?? process.env.OTTO_BIN_PATH)!, ...extensionArgs, ...launch.args],
 				{ cwd: launch.cwd, env: launch.env, shell: false, stdio: ["ignore", "pipe", "pipe"] },
 			);
 			liveSubagentProcesses.add(proc);
@@ -635,7 +635,7 @@ async function runSingleAgentInCmuxSplit(
 			return runSingleAgent(defaultCwd, agents, agentName, task, cwd, step, signal, onUpdate, makeDetails, modelOverride, contextMode, parentSessionManager, sessionOverride, trackingName);
 		}
 
-		const bundledPaths = ((process.env.LOOP24_BUNDLED_EXTENSION_PATHS ?? process.env.GSD_BUNDLED_EXTENSION_PATHS) ?? "").split(path.delimiter).map((s) => s.trim()).filter(Boolean);
+		const bundledPaths = ((process.env.OTTO_BUNDLED_EXTENSION_PATHS ?? process.env.OTTO_BUNDLED_EXTENSION_PATHS) ?? "").split(path.delimiter).map((s) => s.trim()).filter(Boolean);
 		const extensionArgs = bundledPaths.flatMap((p) => ["--extension", p]);
 		const launch = createSubagentLaunchPlan({
 			agent,
@@ -649,7 +649,7 @@ async function runSingleAgentInCmuxSplit(
 			defaultCwd,
 		});
 		if (launch.session.mode === "fork") currentResult.sessionFile = launch.session.sessionFile;
-		const processArgs = [(process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH)!, ...extensionArgs, ...launch.args];
+		const processArgs = [(process.env.OTTO_BIN_PATH ?? process.env.OTTO_BIN_PATH)!, ...extensionArgs, ...launch.args];
 		// Normalize all paths to forward slashes before embedding in bash strings.
 		// On Windows, backslashes are interpreted as escape characters by bash,
 		// mangling paths like C:\Users\user into C:Useruser (#1436).
@@ -804,7 +804,7 @@ export default function (pi: ExtensionAPI) {
 		handler: async (_args, ctx) => {
 			const discovery = discoverAgents(ctx.cwd, "both");
 			if (discovery.agents.length === 0) {
-				ctx.ui.notify("No agents found. Add .md files to ~/.gsd/agent/agents/ or .gsd/agents/", "warning");
+				ctx.ui.notify("No agents found. Add .md files to ~/.otto/agent/agents/ or .otto/workflow/agents/", "warning");
 				return;
 			}
 			const lines = discovery.agents.map(
@@ -821,7 +821,7 @@ export default function (pi: ExtensionAPI) {
 			"Delegate tasks to specialized subagents with isolated context windows.",
 			"Each subagent is a separate pi process with its own tools, model, and system prompt.",
 			"Modes: single ({ agent, task }), parallel ({ tasks: [{agent, task},...] }), chain ({ chain: [{agent, task},...] } with {previous} placeholder).",
-			"Agents are defined as .md files in ~/.gsd/agent/agents/ (user) or .gsd/agents/ (project).",
+			"Agents are defined as .md files in ~/.otto/agent/agents/ (user) or .otto/workflow/agents/ (project).",
 			"Use the /subagent command to list available agents and their descriptions.",
 			"Use chain mode to pipeline: scout finds context, planner designs, worker implements.",
 		].join(" "),

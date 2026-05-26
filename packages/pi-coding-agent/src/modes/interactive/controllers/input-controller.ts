@@ -1,4 +1,4 @@
-import type { ImageContent } from "@loop24/pi-ai";
+import type { ImageContent } from "@otto/pi-ai";
 import { dispatchSlashCommand } from "../slash-command-handlers.js";
 import type { InteractiveModeStateHost } from "../interactive-mode-state.js";
 import type { ContextualTips } from "../../../core/contextual-tips.js";

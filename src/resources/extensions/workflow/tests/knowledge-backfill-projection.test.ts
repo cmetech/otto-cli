@@ -38,8 +38,8 @@ import { renderKnowledgeProjection } from "../knowledge-projection.ts";
 
 function makeTmpBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-knowledge-stage2b-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   return base;
 }
 
@@ -57,7 +57,7 @@ function cleanup(base: string): void {
 }
 
 function writeKnowledgeMd(base: string, body: string): void {
-  writeFileSync(join(base, ".gsd", "KNOWLEDGE.md"), body, "utf-8");
+  writeFileSync(join(base, ".otto/workflow", "KNOWLEDGE.md"), body, "utf-8");
 }
 
 const FIXTURE = `# Project Knowledge

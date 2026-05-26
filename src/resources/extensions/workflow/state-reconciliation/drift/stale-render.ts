@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-017 stale-render drift handler. Relocated from
 // markdown-renderer.ts as part of issue #5702. detectStaleRenders stays in
 // markdown-renderer.ts (it's a useful diagnostic primitive on its own); only

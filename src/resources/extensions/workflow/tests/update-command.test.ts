@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { COMMAND_NAMESPACE } from "@loop24/pi-coding-agent";
+import { COMMAND_NAMESPACE } from "@otto/pi-coding-agent";
 
 import { registerWorkflowCommand } from "../commands.ts";
 import { handleOpsCommand } from "../commands/handlers/ops.ts";
@@ -34,7 +34,7 @@ function createMockCtx() {
   };
 }
 
-test("/gsd update appears in subcommand completions", () => {
+test("/otto update appears in subcommand completions", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -47,7 +47,7 @@ test("/gsd update appears in subcommand completions", () => {
   assert.equal(updateEntry.label, "update");
 });
 
-test("/gsd upgrade appears in subcommand completions", () => {
+test("/otto upgrade appears in subcommand completions", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -60,7 +60,7 @@ test("/gsd upgrade appears in subcommand completions", () => {
   assert.equal(upgradeEntry.label, "upgrade");
 });
 
-test("/gsd update appears in help description", () => {
+test("/otto update appears in help description", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -68,7 +68,7 @@ test("/gsd update appears in help description", () => {
   assert.ok(gsd?.description?.includes("update"), "description should mention update");
 });
 
-test("/gsd upgrade appears in help description", () => {
+test("/otto upgrade appears in help description", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -76,7 +76,7 @@ test("/gsd upgrade appears in help description", () => {
   assert.ok(gsd?.description?.includes("upgrade"), "description should mention upgrade");
 });
 
-test("/gsd update is listed in completions with correct description", () => {
+test("/otto update is listed in completions with correct description", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -90,13 +90,13 @@ test("/gsd update is listed in completions with correct description", () => {
   );
 });
 
-test("/gsd upgrade routes through the update handler", async () => {
+test("/otto upgrade routes through the update handler", async () => {
   const originalFetch = globalThis.fetch;
-  const originalVersion = process.env.GSD_VERSION;
+  const originalVersion = process.env.OTTO_VERSION;
   const ctx = createMockCtx();
 
   try {
-    process.env.GSD_VERSION = "1.2.3";
+    process.env.OTTO_VERSION = "1.2.3";
     globalThis.fetch = async () => Response.json({ version: "1.2.3" });
 
     const handled = await handleOpsCommand("upgrade", ctx as any, createMockPi() as any);
@@ -109,14 +109,14 @@ test("/gsd upgrade routes through the update handler", async () => {
   } finally {
     globalThis.fetch = originalFetch;
     if (originalVersion === undefined) {
-      delete process.env.GSD_VERSION;
+      delete process.env.OTTO_VERSION;
     } else {
-      process.env.GSD_VERSION = originalVersion;
+      process.env.OTTO_VERSION = originalVersion;
     }
   }
 });
 
-test("/gsd upgrade is listed in completions with correct description", () => {
+test("/otto upgrade is listed in completions with correct description", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -130,7 +130,7 @@ test("/gsd upgrade is listed in completions with correct description", () => {
   );
 });
 
-test("/gsd codebase appears in top-level completions", () => {
+test("/otto codebase appears in top-level completions", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 
@@ -141,7 +141,7 @@ test("/gsd codebase appears in top-level completions", () => {
   assert.match(codebaseEntry.description, /codebase map cache/i);
 });
 
-test("/gsd codebase appears in help description", () => {
+test("/otto codebase appears in help description", () => {
   const pi = createMockPi();
   registerWorkflowCommand(pi as any);
 

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Shared prompt fixture definitions for Phase 0 characterization and Phase 2 reduction targets.
 
 export const promptGoldenUnits = [
@@ -8,7 +8,7 @@ export const promptGoldenUnits = [
     requiredMarkers: [
       "UNIT: Plan Slice S01",
       "Inlined Context",
-      "gsd_plan_slice",
+      "otto_plan_slice",
       "Baseline Slice",
     ],
   },
@@ -21,17 +21,17 @@ export const promptGoldenUnits = [
       "Background process rule",
       "Verification Evidence",
       "blocker_discovered",
-      "gsd_task_complete",
+      "otto_task_complete",
       "Implement baseline harness",
     ],
   },
   {
     unitType: "complete-slice",
-    phase2StartChars: 12412,
+    phase2StartChars: 12584,
     requiredMarkers: [
       "UNIT: Complete Slice S01",
       "Inlined Context",
-      "gsd_slice_complete",
+      "otto_slice_complete",
       "Slice Summary",
     ],
   },

@@ -1,5 +1,5 @@
 /**
- * Regression test for #2379: /gsd queue fails with 429 rate limit on projects
+ * Regression test for #2379: /otto queue fails with 429 rate limit on projects
  * with many completed milestones.
  *
  * The bug: buildExistingMilestonesContext iterates over ALL milestones
@@ -24,7 +24,7 @@ const { assertTrue, assertEq, report } = createTestContext();
 // ─── Fixture: project with many completed milestones ─────────────────────
 
 const tmpBase = mkdtempSync(join(tmpdir(), "gsd-queue-perf-"));
-const gsd = join(tmpBase, ".gsd");
+const gsd = join(tmpBase, ".otto/workflow");
 mkdirSync(join(gsd, "milestones"), { recursive: true });
 
 const COMPLETED_COUNT = 25;

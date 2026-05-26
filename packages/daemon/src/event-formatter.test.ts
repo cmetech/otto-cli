@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder } from 'discord.js';
-import type { RpcExtensionUIRequest, SdkAgentEvent } from '@loop24-build/contracts';
+import type { RpcExtensionUIRequest, SdkAgentEvent } from '@otto-build/contracts';
 import type { PendingBlocker, FormattedEvent } from './types.js';
 import {
   formatToolStart,

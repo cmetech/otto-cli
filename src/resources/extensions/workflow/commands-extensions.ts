@@ -1,12 +1,12 @@
 /**
- * Extensions Command — /loop24 extensions
+ * Extensions Command — /otto extensions
  *
  * Manage the extension registry: list, enable, disable, info, install.
  * Self-contained — no imports outside the extensions tree (extensions are loaded
  * via jiti at runtime from ~/.otto/agent/, not compiled by tsc).
  */
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { homedir, tmpdir } from "node:os";
@@ -209,10 +209,10 @@ export function validateExtensionPackage(packageDir: string): ValidationResult {
     return { valid: false, errors: ["package.json is invalid JSON"], warnings };
   }
 
-  // (a) gsd.extension: true marker (D-12a)
-  const workflowField = pkg.gsd as Record<string, unknown> | undefined;
+  // (a) otto.extension: true marker (D-12a)
+  const workflowField = pkg.otto as Record<string, unknown> | undefined;
   if (workflowField?.extension !== true) {
-    errors.push('package.json missing "gsd": { "extension": true }');
+    errors.push('package.json missing "otto": { "extension": true }');
   }
 
   // (b) pi.extensions entry paths exist and are resolvable (D-12b)
@@ -231,12 +231,12 @@ export function validateExtensionPackage(packageDir: string): ValidationResult {
     }
   }
 
-  // (c) @loop24/* packages must be in peerDependencies, not dependencies/devDependencies (D-12c)
+  // (c) @otto/* packages must be in peerDependencies, not dependencies/devDependencies (D-12c)
   // Mirrors validateExtensionManifest below and extension-validator.ts:checkDependencyPlacement.
   for (const field of ["dependencies", "devDependencies"] as const) {
     const deps = (pkg[field] as Record<string, unknown> | undefined) ?? {};
     for (const dep of Object.keys(deps)) {
-      if (dep.startsWith("@loop24/")) {
+      if (dep.startsWith("@otto/")) {
         errors.push(`"${dep}" must be in peerDependencies, not ${field}`);
       }
     }
@@ -305,20 +305,20 @@ interface ManifestValidationResult {
 function validateExtensionManifest(pkg: unknown, opts: { extensionId?: string; allowWorkflowNamespace?: boolean } = {}): ManifestValidationResult {
   const errors: ManifestValidationError[] = [];
 
-  // Check gsd.extension === true (strict)
+  // Check otto.extension === true (strict)
   if (typeof pkg !== "object" || pkg === null) {
-    errors.push({ code: "MISSING_WORKFLOW_MARKER", message: 'package.json must declare "gsd": { "extension": true } to be recognized as a Workflow extension.', field: "gsd.extension" });
+    errors.push({ code: "MISSING_WORKFLOW_MARKER", message: 'package.json must declare "otto": { "extension": true } to be recognized as a Workflow extension.', field: "otto.extension" });
   } else {
     const obj = pkg as Record<string, unknown>;
-    const gsd = obj.gsd;
+    const gsd = obj.otto;
     if (typeof gsd !== "object" || gsd === null || (gsd as Record<string, unknown>).extension !== true) {
-      errors.push({ code: "MISSING_WORKFLOW_MARKER", message: 'package.json must declare "gsd": { "extension": true } to be recognized as a Workflow extension.', field: "gsd.extension" });
+      errors.push({ code: "MISSING_WORKFLOW_MARKER", message: 'package.json must declare "otto": { "extension": true } to be recognized as a Workflow extension.', field: "otto.extension" });
     }
   }
 
   // Check namespace reservation
   if (opts.extensionId && opts.extensionId.startsWith("gsd.") && opts.allowWorkflowNamespace !== true) {
-    errors.push({ code: "RESERVED_NAMESPACE", message: `Extension ID "${opts.extensionId}" is reserved for GSD core extensions. Use a different namespace for community extensions.`, field: "extensionId" });
+    errors.push({ code: "RESERVED_NAMESPACE", message: `Extension ID "${opts.extensionId}" is reserved for OTTO core extensions. Use a different namespace for community extensions.`, field: "extensionId" });
   }
 
   // Check dependency placement
@@ -328,7 +328,7 @@ function validateExtensionManifest(pkg: unknown, opts: { extensionId?: string; a
       const deps = obj[field];
       if (typeof deps === "object" && deps !== null) {
         for (const pkgName of Object.keys(deps as Record<string, unknown>)) {
-          if (pkgName.startsWith("@loop24/")) {
+          if (pkgName.startsWith("@otto/")) {
             errors.push({ code: "WRONG_DEP_FIELD", message: `"${pkgName}" must not appear in "${field}". Move it to "peerDependencies".`, field });
           }
         }
@@ -452,7 +452,7 @@ function findDependents(targetId: string, installedExtDir: string): string[] {
 
 function handleUninstall(id: string | undefined, ctx: ExtensionCommandContext): void {
   if (!id) {
-    ctx.ui.notify("Usage: /gsd extensions uninstall <id>", "warning");
+    ctx.ui.notify("Usage: /otto extensions uninstall <id>", "warning");
     return;
   }
 
@@ -491,7 +491,7 @@ function handleUninstall(id: string | undefined, ctx: ExtensionCommandContext): 
   if (!result.ok) {
     if (result.reason === "not-found") {
       ctx.ui.notify(
-        `Extension "${id}" not found in registry. Run /gsd extensions list to see installed extensions.`,
+        `Extension "${id}" not found in registry. Run /otto extensions list to see installed extensions.`,
         "warning",
       );
     } else if (result.reason === "rm-failed") {
@@ -506,7 +506,7 @@ function handleUninstall(id: string | undefined, ctx: ExtensionCommandContext): 
       "warning",
     );
   }
-  ctx.ui.notify(`Uninstalled "${id}". Restart GSD to deactivate.`, "info");
+  ctx.ui.notify(`Uninstalled "${id}". Restart OTTO to deactivate.`, "info");
 }
 
 // ─── Update subcommand ───────────────────────────────────────────────────────
@@ -545,7 +545,7 @@ async function updateSingleExtension(
 
   if (!entry || entry.source !== "user") {
     ctx.ui.notify(
-      `Extension "${id}" not found in registry. Run /gsd extensions list to see installed extensions.`,
+      `Extension "${id}" not found in registry. Run /otto extensions list to see installed extensions.`,
       "warning",
     );
     return;
@@ -667,7 +667,7 @@ async function updateAllExtensions(
 
 async function handleInstall(specifier: string | undefined, ctx: ExtensionCommandContext): Promise<void> {
   if (!specifier) {
-    ctx.ui.notify("Usage: /gsd extensions install <npm-package|git-url|local-path>", "warning");
+    ctx.ui.notify("Usage: /otto extensions install <npm-package|git-url|local-path>", "warning");
     return;
   }
 
@@ -689,7 +689,7 @@ async function handleInstall(specifier: string | undefined, ctx: ExtensionComman
 function installFromNpm(specifier: string, installedExtDir: string, ctx: ExtensionCommandContext): void {
   // packDir holds the tarball in tmpdir(). The *extractDir* is staged inside
   // installedExtDir so the final renameSync to destPath stays on a single
-  // filesystem (avoids EXDEV when tmpdir() and ~/.gsd live on different mounts).
+  // filesystem (avoids EXDEV when tmpdir() and ~/.otto live on different mounts).
   const packDir = mkdtempSync(join(tmpdir(), "gsd-install-"));
   let extractDir: string | null = null;
   try {
@@ -723,7 +723,7 @@ function installFromNpm(specifier: string, installedExtDir: string, ctx: Extensi
 
     // Step 6: Commit the registry entry only after the rename succeeds.
     writeInstalledRegistryEntry(validated.id, validated.manifest, specifier, "npm");
-    ctx.ui.notify(`Installed "${validated.id}" v${validated.manifest.version ?? "unknown"}. Restart GSD to activate.`, "info");
+    ctx.ui.notify(`Installed "${validated.id}" v${validated.manifest.version ?? "unknown"}. Restart OTTO to activate.`, "info");
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     ctx.ui.notify(`Failed to install "${specifier}": ${msg}`, "error");
@@ -760,7 +760,7 @@ function installFromGit(gitUrl: string, installedExtDir: string, ctx: ExtensionC
     renameSync(tmpDir, destPath);
 
     writeInstalledRegistryEntry(validated.id, validated.manifest, gitUrl, "git");
-    ctx.ui.notify(`Installed "${validated.id}" v${validated.manifest.version ?? "unknown"}. Restart GSD to activate.`, "info");
+    ctx.ui.notify(`Installed "${validated.id}" v${validated.manifest.version ?? "unknown"}. Restart OTTO to activate.`, "info");
   } catch (err) {
     if (existsSync(tmpDir)) rmSync(tmpDir, { recursive: true, force: true });
     const msg = err instanceof Error ? err.message : String(err);
@@ -795,7 +795,7 @@ function installFromLocal(localPath: string, installedExtDir: string, ctx: Exten
     renameSync(tmpDir, destPath);
 
     writeInstalledRegistryEntry(validated.id, validated.manifest, localPath, "local");
-    ctx.ui.notify(`Installed "${validated.id}" v${validated.manifest.version ?? "unknown"}. Restart GSD to activate.`, "info");
+    ctx.ui.notify(`Installed "${validated.id}" v${validated.manifest.version ?? "unknown"}. Restart OTTO to activate.`, "info");
   } catch (err) {
     if (existsSync(tmpDir)) rmSync(tmpDir, { recursive: true, force: true });
     const msg = err instanceof Error ? err.message : String(err);
@@ -850,7 +850,7 @@ export async function handleExtensions(args: string, ctx: ExtensionCommandContex
   }
 
   ctx.ui.notify(
-    `Unknown: /gsd extensions ${subCmd}. Usage: /gsd extensions [list|enable|disable|info|install|uninstall|update|validate]`,
+    `Unknown: /otto extensions ${subCmd}. Usage: /otto extensions [list|enable|disable|info|install|uninstall|update|validate]`,
     "warning",
   );
 }
@@ -914,13 +914,13 @@ function handleList(ctx: ExtensionCommandContext): void {
 
 function handleEnable(id: string | undefined, ctx: ExtensionCommandContext): void {
   if (!id) {
-    ctx.ui.notify("Usage: /gsd extensions enable <id>", "warning");
+    ctx.ui.notify("Usage: /otto extensions enable <id>", "warning");
     return;
   }
 
   const manifests = discoverManifests();
   if (!manifests.has(id)) {
-    ctx.ui.notify(`Extension "${id}" not found. Run /gsd extensions list to see available extensions.`, "warning");
+    ctx.ui.notify(`Extension "${id}" not found. Run /otto extensions list to see available extensions.`, "warning");
     return;
   }
 
@@ -940,12 +940,12 @@ function handleEnable(id: string | undefined, ctx: ExtensionCommandContext): voi
     ctx.ui.notify(`Extension "${id}" is already enabled.`, "info");
     return;
   }
-  ctx.ui.notify(`Enabled "${id}". Restart GSD to activate.`, "info");
+  ctx.ui.notify(`Enabled "${id}". Restart OTTO to activate.`, "info");
 }
 
 function handleDisable(id: string | undefined, reason: string, ctx: ExtensionCommandContext): void {
   if (!id) {
-    ctx.ui.notify("Usage: /gsd extensions disable <id>", "warning");
+    ctx.ui.notify("Usage: /otto extensions disable <id>", "warning");
     return;
   }
 
@@ -953,7 +953,7 @@ function handleDisable(id: string | undefined, reason: string, ctx: ExtensionCom
   const manifest = manifests.get(id) ?? null;
 
   if (!manifests.has(id)) {
-    ctx.ui.notify(`Extension "${id}" not found. Run /gsd extensions list to see available extensions.`, "warning");
+    ctx.ui.notify(`Extension "${id}" not found. Run /otto extensions list to see available extensions.`, "warning");
     return;
   }
 
@@ -984,12 +984,12 @@ function handleDisable(id: string | undefined, reason: string, ctx: ExtensionCom
     ctx.ui.notify(`Extension "${id}" is already disabled.`, "info");
     return;
   }
-  ctx.ui.notify(`Disabled "${id}". Restart GSD to deactivate.`, "info");
+  ctx.ui.notify(`Disabled "${id}". Restart OTTO to deactivate.`, "info");
 }
 
 function handleInfo(id: string | undefined, ctx: ExtensionCommandContext): void {
   if (!id) {
-    ctx.ui.notify("Usage: /gsd extensions info <id>", "warning");
+    ctx.ui.notify("Usage: /otto extensions info <id>", "warning");
     return;
   }
 
@@ -1063,7 +1063,7 @@ function handleInfo(id: string | undefined, ctx: ExtensionCommandContext): void 
 
 function handleValidate(path: string | undefined, ctx: ExtensionCommandContext): void {
   if (!path) {
-    ctx.ui.notify("Usage: /gsd extensions validate <path>", "warning");
+    ctx.ui.notify("Usage: /otto extensions validate <path>", "warning");
     return;
   }
   const resolved = resolve(path);

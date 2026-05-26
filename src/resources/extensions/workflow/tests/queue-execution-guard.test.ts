@@ -3,16 +3,16 @@
  *
  * When queue phase is active, the agent should only create milestones —
  * not execute work. This guard blocks write/edit/bash tool calls that
- * target source code (non-.gsd/ paths) during queue mode.
+ * target source code (non-.otto/workflow/ paths) during queue mode.
  *
  * Exercises shouldBlockQueueExecution() — a pure function that checks:
  *   (a) queuePhaseActive false → pass (not in queue mode)
  *   (b) toolName is read-only (read, grep, find, ls) → pass
  *   (c) toolName is ask_user_questions → pass (discussion tool)
- *   (d) write/edit to .gsd/ path → pass (planning artifacts)
+ *   (d) write/edit to .otto/workflow/ path → pass (planning artifacts)
  *   (e) write/edit to source path → block
  *   (f) bash command → block (could execute work)
- *   (g) registered GSD tools (gsd_milestone_generate_id, gsd_summary_save) → pass
+ *   (g) registered OTTO tools (otto_milestone_generate_id, otto_summary_save) → pass
  *   (h) unknown custom tools → block
  */
 
@@ -48,30 +48,30 @@ test('queue-guard: allows discussion and planning tools during queue mode', () =
   const r1 = shouldBlockQueueExecution('ask_user_questions', '', true);
   assert.strictEqual(r1.block, false, 'ask_user_questions should pass');
 
-  const r2 = shouldBlockQueueExecution('gsd_milestone_generate_id', '', true);
-  assert.strictEqual(r2.block, false, 'gsd_milestone_generate_id should pass');
+  const r2 = shouldBlockQueueExecution('otto_milestone_generate_id', '', true);
+  assert.strictEqual(r2.block, false, 'otto_milestone_generate_id should pass');
 
-  const r3 = shouldBlockQueueExecution('gsd_summary_save', '', true);
-  assert.strictEqual(r3.block, false, 'gsd_summary_save should pass');
+  const r3 = shouldBlockQueueExecution('otto_summary_save', '', true);
+  assert.strictEqual(r3.block, false, 'otto_summary_save should pass');
 });
 
-// ─── Scenario 4: Write to .gsd/ paths passes (planning artifacts) ──
+// ─── Scenario 4: Write to .otto/workflow/ paths passes (planning artifacts) ──
 
-test('queue-guard: allows writes to .gsd/ paths during queue mode', () => {
-  const r1 = shouldBlockQueueExecution('write', '.gsd/milestones/M001/M001-CONTEXT.md', true);
-  assert.strictEqual(r1.block, false, 'write to .gsd/ should pass');
+test('queue-guard: allows writes to .otto/workflow/ paths during queue mode', () => {
+  const r1 = shouldBlockQueueExecution('write', '.otto/workflow/milestones/M001/M001-CONTEXT.md', true);
+  assert.strictEqual(r1.block, false, 'write to .otto/workflow/ should pass');
 
-  const r2 = shouldBlockQueueExecution('write', '/project/.gsd/PROJECT.md', true);
-  assert.strictEqual(r2.block, false, 'write to .gsd/PROJECT.md should pass');
+  const r2 = shouldBlockQueueExecution('write', '/project/.otto/workflow/PROJECT.md', true);
+  assert.strictEqual(r2.block, false, 'write to .otto/workflow/PROJECT.md should pass');
 
-  const r3 = shouldBlockQueueExecution('edit', '.gsd/QUEUE.md', true);
-  assert.strictEqual(r3.block, false, 'edit to .gsd/QUEUE.md should pass');
+  const r3 = shouldBlockQueueExecution('edit', '.otto/workflow/QUEUE.md', true);
+  assert.strictEqual(r3.block, false, 'edit to .otto/workflow/QUEUE.md should pass');
 
-  const r4 = shouldBlockQueueExecution('write', '.gsd/REQUIREMENTS.md', true);
-  assert.strictEqual(r4.block, false, 'write to .gsd/REQUIREMENTS.md should pass');
+  const r4 = shouldBlockQueueExecution('write', '.otto/workflow/REQUIREMENTS.md', true);
+  assert.strictEqual(r4.block, false, 'write to .otto/workflow/REQUIREMENTS.md should pass');
 
-  const r5 = shouldBlockQueueExecution('write', '.gsd/DECISIONS.md', true);
-  assert.strictEqual(r5.block, false, 'write to .gsd/DECISIONS.md should pass');
+  const r5 = shouldBlockQueueExecution('write', '.otto/workflow/DECISIONS.md', true);
+  assert.strictEqual(r5.block, false, 'write to .otto/workflow/DECISIONS.md should pass');
 });
 
 // ─── Scenario 5: Write/edit to source code paths blocked ──
@@ -134,11 +134,11 @@ test('queue-guard: allows read-only bash commands during queue mode', () => {
   assert.strictEqual(r9.block, false, 'gh issue view should pass');
 });
 
-// ─── Scenario 8: mkdir for .gsd/ milestone directories passes ──
+// ─── Scenario 8: mkdir for .otto/workflow/ milestone directories passes ──
 
-test('queue-guard: allows mkdir for .gsd/ milestone directories', () => {
-  const r1 = shouldBlockQueueExecution('bash', 'mkdir -p .gsd/milestones/M010/slices', true);
-  assert.strictEqual(r1.block, false, 'mkdir -p .gsd/ should pass');
+test('queue-guard: allows mkdir for .otto/workflow/ milestone directories', () => {
+  const r1 = shouldBlockQueueExecution('bash', 'mkdir -p .otto/workflow/milestones/M010/slices', true);
+  assert.strictEqual(r1.block, false, 'mkdir -p .otto/workflow/ should pass');
 });
 
 // ─── Scenario 9: Web search and library tools pass ──

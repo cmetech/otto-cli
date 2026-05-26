@@ -1,5 +1,5 @@
 // Markdown Importer
-// Parses DECISIONS.md, REQUIREMENTS.md, and hierarchy artifacts from a .gsd/ tree,
+// Parses DECISIONS.md, REQUIREMENTS.md, and hierarchy artifacts from a .otto/workflow/ tree,
 // then upserts everything into the SQLite database.
 //
 // Exports: parseDecisionsTable, parseRequirementsSections, migrateFromMarkdown
@@ -311,7 +311,7 @@ const SLICE_SUFFIXES = ['PLAN', 'SUMMARY', 'RESEARCH', 'CONTEXT', 'ASSESSMENT', 
 const TASK_SUFFIXES = ['PLAN', 'SUMMARY', 'CONTINUE', 'CONTEXT', 'RESEARCH'];
 
 /**
- * Import hierarchy artifacts (roadmaps, plans, summaries, etc.) from the .gsd/ tree.
+ * Import hierarchy artifacts (roadmaps, plans, summaries, etc.) from the .otto/workflow/ tree.
  * Walks milestones → slices → tasks directories.
  */
 function importHierarchyArtifacts(workflowDir: string): number {
@@ -494,7 +494,7 @@ function findFileByPrefixAndSuffix(dir: string, idPrefix: string, suffix: string
 // ─── Hierarchy Migration (milestones/slices/tasks from roadmaps+plans) ────
 
 /**
- * Walk .gsd/milestones/ dirs, parse roadmaps and plans, and populate
+ * Walk .otto/workflow/milestones/ dirs, parse roadmaps and plans, and populate
  * the milestones/slices/tasks DB tables.
  *
  * - Milestone title: from roadmap H1 (e.g. "# M001: Title") or CONTEXT.md
@@ -690,7 +690,7 @@ export function migrateHierarchyToDb(basePath: string): {
 // ─── Orchestrator ──────────────────────────────────────────────────────────
 
 /**
- * Import all markdown artifacts from a .gsd/ directory into the database.
+ * Import all markdown artifacts from a .otto/workflow/ directory into the database.
  * Opens the DB if not already open. Wraps all imports in a single transaction.
  * Returns counts of imported items for logging.
  *
@@ -702,7 +702,7 @@ export function migrateFromMarkdown(workflowDir: string): {
   artifacts: number;
   hierarchy: { milestones: number; slices: number; tasks: number };
 } {
-  const dbPath = join(workflowRoot(workflowDir), 'gsd.db');
+  const dbPath = join(workflowRoot(workflowDir), 'otto.db');
 
   // Open DB if not already open
   if (!_getAdapter()) {

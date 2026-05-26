@@ -16,7 +16,7 @@ function cleanup(dir: string): void {
 }
 
 function writeRun(base: string, id: string, overrides: Record<string, unknown> = {}): void {
-  const dir = join(base, '.gsd', 'exec');
+  const dir = join(base, '.otto/workflow', 'exec');
   mkdirSync(dir, { recursive: true });
   const stdoutPath = join(dir, `${id}.stdout`);
   const stderrPath = join(dir, `${id}.stderr`);
@@ -46,7 +46,7 @@ function writeRun(base: string, id: string, overrides: Record<string, unknown> =
   );
 }
 
-test('listExecHistory: returns empty list when .gsd/exec missing', () => {
+test('listExecHistory: returns empty list when .otto/workflow/exec missing', () => {
   const base = freshBase();
   try {
     assert.deepEqual(listExecHistory(base), []);
@@ -58,7 +58,7 @@ test('listExecHistory: returns empty list when .gsd/exec missing', () => {
 test('listExecHistory: skips malformed meta files', () => {
   const base = freshBase();
   try {
-    const dir = join(base, '.gsd', 'exec');
+    const dir = join(base, '.otto/workflow', 'exec');
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, 'bad.meta.json'), '{not-json');
     writeRun(base, 'ok-1');
@@ -102,7 +102,7 @@ test('executeExecSearch: returns helpful empty-state message when no matches', (
   try {
     const result = executeExecSearch({ query: 'missing' }, { baseDir: base });
     assert.ok(!result.isError);
-    assert.match(result.content[0].text, /No prior gsd_exec runs/);
+    assert.match(result.content[0].text, /No prior otto_exec runs/);
   } finally {
     cleanup(base);
   }
@@ -146,7 +146,7 @@ test('safeReadMeta: ignores malicious stdout_path in JSON, derives path from met
   // and derive sibling paths from the actual .meta.json location instead.
   const base = freshBase();
   try {
-    const dir = join(base, '.gsd', 'exec');
+    const dir = join(base, '.otto/workflow', 'exec');
     mkdirSync(dir, { recursive: true });
     const id = 'traversal-test-run';
     const metaPath = join(dir, `${id}.meta.json`);
@@ -206,7 +206,7 @@ test('searchExecHistory: digest_preview is read from derived sibling path, not J
   // not from the JSON-supplied path.
   const base = freshBase();
   try {
-    const dir = join(base, '.gsd', 'exec');
+    const dir = join(base, '.otto/workflow', 'exec');
     mkdirSync(dir, { recursive: true });
     const id = 'preview-traversal-run';
     const metaPath = join(dir, `${id}.meta.json`);

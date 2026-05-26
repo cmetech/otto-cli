@@ -13,8 +13,8 @@ const require = createRequire(import.meta.url);
 const addonDir = path.resolve(__dirname, "..", "..", "..", "..", "native", "addon");
 const platformTag = `${process.platform}-${process.arch}`;
 const candidates = [
-  path.join(addonDir, `gsd_engine.${platformTag}.node`),
-  path.join(addonDir, "gsd_engine.dev.node"),
+  path.join(addonDir, `otto_engine.${platformTag}.node`),
+  path.join(addonDir, "otto_engine.dev.node"),
 ];
 
 let native;
@@ -28,7 +28,7 @@ for (const candidate of candidates) {
 }
 
 if (!native) {
-  console.error("Native addon not found. Run `npm run build:native -w @loop24/native` first.");
+  console.error("Native addon not found. Run `npm run build:native -w @otto/native` first.");
   process.exit(1);
 }
 

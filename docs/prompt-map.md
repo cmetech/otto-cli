@@ -31,7 +31,7 @@ User / gsd auto
  Pi SDK session.run(prompt)
       │
       ▼
- LLM executes → calls gsd_* tools → writes artifacts → STATE.md updated
+ LLM executes → calls otto_* tools → writes artifacts → STATE.md updated
       │
       ▼
  Loop back to auto.ts
@@ -146,8 +146,8 @@ guided-research-project  (deep mode only — 4 parallel subagents)
 | Prompt | Purpose | Key Tools Called |
 |--------|---------|-----------------|
 | `guided-workflow-preferences.md` | Write `.gsd/PREFERENCES.md` with defaults; pre-seeds `research-decision.json`. No user questions. | — |
-| `guided-discuss-project.md` | Interview-style project scoping. Classifies project shape (tiny/small/medium/large). | `ask_user_questions`, `gsd_summary_save(PROJECT)` |
-| `guided-discuss-requirements.md` | Interview-style requirements capture. | `ask_user_questions`, `gsd_requirement_save`, `gsd_summary_save(REQUIREMENTS)` |
+| `guided-discuss-project.md` | Interview-style project scoping. Classifies project shape (tiny/small/medium/large). | `ask_user_questions`, `otto_summary_save(PROJECT)` |
+| `guided-discuss-requirements.md` | Interview-style requirements capture. | `ask_user_questions`, `otto_requirement_save`, `otto_summary_save(REQUIREMENTS)` |
 | `guided-research-decision.md` | Single fixed-question gate: opt into deep research or proceed lean. | `ask_user_questions` → writes `runtime/research-decision.json` |
 | `guided-research-project.md` | Spawns 4 parallel scout subagents (stack, features, architecture, pitfalls). Headless. | `subagent` × 4 |
 
@@ -171,17 +171,17 @@ plan-slice  (per slice, sequential)
 
 | Prompt | Purpose | Key Tools Called |
 |--------|---------|-----------------|
-| `discuss.md` | Interactive milestone discussion. Layered Q&A: Scope → Architecture → Error States → Quality Bar. | `ask_user_questions`, `gsd_summary_save(CONTEXT)` |
-| `guided-discuss-milestone.md` | Same as discuss.md but interview-driven, with draft saves. | `ask_user_questions`, `gsd_summary_save(CONTEXT)` |
-| `discuss-headless.md` | Create milestone CONTEXT from spec with no user interaction. | `gsd_plan_milestone`, `gsd_decision_save` |
-| `research-milestone.md` | Strategic research before planning. Narrates findings. | `gsd_summary_save(RESEARCH)` |
-| `plan-milestone.md` | Decompose milestone into slices. Plans first slice inline if single-slice. | `gsd_plan_milestone`, `gsd_decision_save` |
+| `discuss.md` | Interactive milestone discussion. Layered Q&A: Scope → Architecture → Error States → Quality Bar. | `ask_user_questions`, `otto_summary_save(CONTEXT)` |
+| `guided-discuss-milestone.md` | Same as discuss.md but interview-driven, with draft saves. | `ask_user_questions`, `otto_summary_save(CONTEXT)` |
+| `discuss-headless.md` | Create milestone CONTEXT from spec with no user interaction. | `otto_plan_milestone`, `otto_decision_save` |
+| `research-milestone.md` | Strategic research before planning. Narrates findings. | `otto_summary_save(RESEARCH)` |
+| `plan-milestone.md` | Decompose milestone into slices. Plans first slice inline if single-slice. | `otto_plan_milestone`, `otto_decision_save` |
 | `parallel-research-slices.md` | Spawn one scout subagent per slice simultaneously. Retries once on failure. | `subagent` × N |
-| `plan-slice.md` | Decompose single slice into tasks. Progressive planning: sketches for S02+. | `memory_query`, `gsd_plan_slice` |
-| `refine-slice.md` | Expand sketched slice plan into full task breakdown. | `gsd_plan_slice` |
-| `guided-discuss-slice.md` | Interview-driven slice scoping. | `ask_user_questions`, `gsd_summary_save(CONTEXT)` |
-| `guided-research-slice.md` | Scout a slice. | `memory_query`, `gsd_summary_save(RESEARCH)` |
-| `research-slice.md` | Research a slice (non-guided, auto-mode). | `memory_query`, `gsd_summary_save(RESEARCH)` |
+| `plan-slice.md` | Decompose single slice into tasks. Progressive planning: sketches for S02+. | `memory_query`, `otto_plan_slice` |
+| `refine-slice.md` | Expand sketched slice plan into full task breakdown. | `otto_plan_slice` |
+| `guided-discuss-slice.md` | Interview-driven slice scoping. | `ask_user_questions`, `otto_summary_save(CONTEXT)` |
+| `guided-research-slice.md` | Scout a slice. | `memory_query`, `otto_summary_save(RESEARCH)` |
+| `research-slice.md` | Research a slice (non-guided, auto-mode). | `memory_query`, `otto_summary_save(RESEARCH)` |
 
 ### 5d. Execution Flow
 
@@ -196,9 +196,9 @@ guided-resume-task  (if task was interrupted)
 
 | Prompt | Purpose | Key Tools Called |
 |--------|---------|-----------------|
-| `execute-task.md` | Execute a single task. Inlines full context stack. | `memory_query`, `gsd_task_complete` |
+| `execute-task.md` | Execute a single task. Inlines full context stack. | `memory_query`, `otto_task_complete` |
 | `reactive-execute.md` | Dispatch all ready tasks in parallel subagents. Records failures only when no summary left. | `subagent` × N |
-| `guided-resume-task.md` | Resume interrupted task. Reads `{{sliceId}}-CONTINUE.md` for continuation context. | `gsd_task_complete` |
+| `guided-resume-task.md` | Resume interrupted task. Reads `{{sliceId}}-CONTINUE.md` for continuation context. | `otto_task_complete` |
 | `quick-task.md` | Lightweight task outside milestone structure. No DB tools. | writes `{{summaryPath}}` directly |
 
 ### 5e. Quality Gates
@@ -215,9 +215,9 @@ run-uat  (user acceptance tests)
 
 | Prompt | Purpose | Key Tools Called |
 |--------|---------|-----------------|
-| `gate-evaluate.md` | Spawn one subagent per quality gate in parallel. Verifies `gsd_save_gate_result` called. | `subagent` × N |
-| `validate-milestone.md` | 3 parallel reviewers: (A) requirements, (B) integration, (C) acceptance. | `subagent` × 3, `gsd_validate_milestone` |
-| `run-uat.md` | Execute UAT. Modes: artifact-driven, runtime, browser, human-experience. Runs under `verification` tools policy, so Bash is limited to read-only inspection and build/test verification commands. | `gsd_summary_save(ASSESSMENT)`, verification Bash |
+| `gate-evaluate.md` | Spawn one subagent per quality gate in parallel. Verifies `otto_save_gate_result` called. | `subagent` × N |
+| `validate-milestone.md` | 3 parallel reviewers: (A) requirements, (B) integration, (C) acceptance. | `subagent` × 3, `otto_validate_milestone` |
+| `run-uat.md` | Execute UAT. Modes: artifact-driven, runtime, browser, human-experience. Runs under `verification` tools policy, so Bash is limited to read-only inspection and build/test verification commands. | `otto_summary_save(ASSESSMENT)`, verification Bash |
 
 `run-uat` completion verification requires a canonical verdict in the written `S##-ASSESSMENT.md` (for example `verdict: PASS | FAIL | PARTIAL`). A pre-existing assessment file without `verdict` does not satisfy artifact verification.
 
@@ -235,16 +235,16 @@ complete-milestone
 
 | Prompt | Purpose | Key Tools Called |
 |--------|---------|-----------------|
-| `complete-slice.md` | Close slice after tasks pass. Compress summary. | `gsd_slice_complete`, `gsd_requirement_update` |
-| `reassess-roadmap.md` | Review roadmap post-slice. Validates success-criterion coverage. | `gsd_reassess_roadmap`, `gsd_requirement_update` |
-| `complete-milestone.md` | Close milestone. Persist to DB. | `gsd_complete_milestone`, `gsd_requirement_update`, `capture_thought` |
+| `complete-slice.md` | Close slice after tasks pass. Compress summary. | `otto_slice_complete`, `otto_requirement_update` |
+| `reassess-roadmap.md` | Review roadmap post-slice. Validates success-criterion coverage. | `otto_reassess_roadmap`, `otto_requirement_update` |
+| `complete-milestone.md` | Close milestone. Persist to DB. | `otto_complete_milestone`, `otto_requirement_update`, `capture_thought` |
 
 ### 5g. Maintenance & Repair
 
 | Prompt | Purpose | Key Tools Called |
 |--------|---------|-----------------|
-| `replan-slice.md` | Replan after blocker discovered mid-slice. Preserves completed tasks. | `gsd_replan_slice` |
-| `rethink.md` | Reorder, park, unpark, skip, or discard milestones. | `gsd_skip_slice`, writes `QUEUE-ORDER.json` |
+| `replan-slice.md` | Replan after blocker discovered mid-slice. Preserves completed tasks. | `otto_replan_slice` |
+| `rethink.md` | Reorder, park, unpark, skip, or discard milestones. | `otto_skip_slice`, writes `QUEUE-ORDER.json` |
 | `reassess-roadmap.md` | *(see Completion Flow above)* | — |
 | `rewrite-docs.md` | Apply OVERRIDES.md changes across all planning docs. | — |
 | `review-migration.md` | Audit `.planning → .gsd` migration correctness. | `deriveState` |
@@ -255,7 +255,7 @@ complete-milestone
 | `debug-session-manager.md` | Manage debug session with checkpoint protocol. Structured return headers. | — |
 | `add-tests.md` | Generate tests for completed slices. | skill activation |
 | `triage-captures.md` | Classify user thoughts captured with `capture_thought`. | `ask_user_questions`, updates `CAPTURES.md` |
-| `queue.md` | Add future milestones to queue. | `gsd_milestone_generate_id`, `gsd_summary_save(CONTEXT)`, updates `QUEUE.md` |
+| `queue.md` | Add future milestones to queue. | `otto_milestone_generate_id`, `otto_summary_save(CONTEXT)`, updates `QUEUE.md` |
 
 ### 5h. Workflow Execution (one-off workflows, not milestone-driven)
 
@@ -429,19 +429,19 @@ LLM sees: "load these skill files and follow their rules for this unit"
 
 | Tool | Persists To |
 |------|------------|
-| `gsd_plan_milestone` | milestones table, slices table |
-| `gsd_plan_slice` | slices table, tasks table |
-| `gsd_task_complete` | tasks table, T##-SUMMARY.md |
-| `gsd_slice_complete` | slices table, S##-SUMMARY.md |
-| `gsd_complete_milestone` | milestones table, M##-SUMMARY.md |
-| `gsd_validate_milestone` | milestones table (validation verdict) |
-| `gsd_reassess_roadmap` | slices table (reorder, add, remove) |
-| `gsd_replan_slice` | tasks table (replace incomplete tasks) |
-| `gsd_skip_slice` | slices table (status = skipped) |
-| `gsd_requirement_save` | requirements table |
-| `gsd_requirement_update` | requirements table |
-| `gsd_summary_save` | artifact files + DB reference |
-| `gsd_decision_save` | memories table (`architecture` rows) + DECISIONS.md projection |
+| `otto_plan_milestone` | milestones table, slices table |
+| `otto_plan_slice` | slices table, tasks table |
+| `otto_task_complete` | tasks table, T##-SUMMARY.md |
+| `otto_slice_complete` | slices table, S##-SUMMARY.md |
+| `otto_complete_milestone` | milestones table, M##-SUMMARY.md |
+| `otto_validate_milestone` | milestones table (validation verdict) |
+| `otto_reassess_roadmap` | slices table (reorder, add, remove) |
+| `otto_replan_slice` | tasks table (replace incomplete tasks) |
+| `otto_skip_slice` | slices table (status = skipped) |
+| `otto_requirement_save` | requirements table |
+| `otto_requirement_update` | requirements table |
+| `otto_summary_save` | artifact files + DB reference |
+| `otto_decision_save` | memories table (`architecture` rows) + DECISIONS.md projection |
 | `capture_thought` | memories table; KNOWLEDGE.md projection for Patterns/Lessons |
 | `memory_query` | READ — queries memories / memory indexes |
 | `ask_user_questions` | blocks until user responds; no DB write |
@@ -498,5 +498,5 @@ Priority  Rule                                          Fires When
 - **Dashed →** = "reads from" 
 - **×N** = spawns N parallel subagents each running that prompt
 - **[gate]** = requires explicit user confirmation before proceeding
-- **DB** = persists to `gsd.db` via a `gsd_*` tool call
+- **DB** = persists to `otto.db` via a `otto_*` tool call
 - **Headless** = no `ask_user_questions` calls; autonomous judgment

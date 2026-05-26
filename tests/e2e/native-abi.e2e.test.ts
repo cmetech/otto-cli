@@ -1,7 +1,7 @@
 /**
- * GSD-2 native TS↔Rust ABI smoke.
+ * OTTO-2 native TS↔Rust ABI smoke.
  *
- * Loads `@gsd/native` from a fresh node:test worker and exercises a few
+ * Loads `@otto/native` from a fresh node:test worker and exercises a few
  * core entrypoints — grep (ripgrep), xxHash32, fuzzyFind, glob. Catches:
  *
  *   - missing or mismatched per-platform prebuilt binaries
@@ -13,7 +13,7 @@
  * suite adds *e2e-layer* coverage so a build that ships broken bindings
  * fails the same gate that other vertical e2e flows do.
  *
- * Skip path: if `@gsd/native` cannot be resolved (e.g. running this file
+ * Skip path: if `@otto/native` cannot be resolved (e.g. running this file
  * in isolation without a workspace install), the suite skips with a
  * clear message rather than crashing.
  */
@@ -41,12 +41,12 @@ interface NativeShape {
 
 async function tryLoadNative(): Promise<{ ok: true; mod: NativeShape } | { ok: false; reason: string }> {
 	try {
-		const mod = (await import("@gsd/native")) as unknown as NativeShape;
+		const mod = (await import("@otto/native")) as unknown as NativeShape;
 		return { ok: true, mod };
 	} catch (err) {
 		return {
 			ok: false,
-			reason: `@gsd/native not resolvable in this environment: ${(err as Error).message}`,
+			reason: `@otto/native not resolvable in this environment: ${(err as Error).message}`,
 		};
 	}
 }
@@ -62,7 +62,7 @@ describe("native TS↔Rust ABI smoke", () => {
 			isNativeAddonLoaded?: () => boolean;
 		};
 		if (typeof isNativeAddonLoaded === "function" && !isNativeAddonLoaded()) {
-			t.skip("@opengsd/engine-* optional dependency not installed — JS fallback only");
+			t.skip("@cmetech/otto-engine-* optional dependency not installed — JS fallback only");
 			return;
 		}
 		const input = "the quick brown fox jumps over the lazy dog";
@@ -92,11 +92,11 @@ describe("native TS↔Rust ABI smoke", () => {
 			isNativeAddonLoaded?: () => boolean;
 		};
 		if (typeof searchContent !== "function") {
-			t.skip("@gsd/native.searchContent not exported in this build");
+			t.skip("@otto/native.searchContent not exported in this build");
 			return;
 		}
 		if (typeof isNativeAddonLoaded === "function" && !isNativeAddonLoaded()) {
-			t.skip("@opengsd/engine-* optional dependency not installed — JS fallback only");
+			t.skip("@cmetech/otto-engine-* optional dependency not installed — JS fallback only");
 			return;
 		}
 

@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "piConfig": {
     "_comment": "AUTO-SYNCED from root package.json by scripts/sync-piconfig.mjs (runs on prebuild). Do not edit this block directly — edit root package.json and re-run `npm run build` or `npm run sync-piconfig`.",
-    "name": "loop24",
+    "name": "otto",
     "configDir": ".otto",
     "commandNamespace": "otto",
     "brandName": "OTTO"

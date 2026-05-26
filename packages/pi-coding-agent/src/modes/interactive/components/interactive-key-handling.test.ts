@@ -9,7 +9,7 @@ import {
 	TUI,
 	type EditorTheme,
 	type Terminal,
-} from "@loop24/pi-tui";
+} from "@otto/pi-tui";
 import { KeybindingsManager } from "../../../core/keybindings.js";
 import { initTheme } from "../theme/theme.js";
 import { CustomEditor } from "./custom-editor.js";

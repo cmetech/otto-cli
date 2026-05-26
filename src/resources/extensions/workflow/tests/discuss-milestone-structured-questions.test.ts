@@ -36,11 +36,11 @@ function makeContext(
 }
 
 function setHeadless(t: { after: (fn: () => void) => void }): void {
-  const previous = process.env.GSD_HEADLESS;
-  process.env.GSD_HEADLESS = "1";
+  const previous = process.env.OTTO_HEADLESS;
+  process.env.OTTO_HEADLESS = "1";
   t.after(() => {
-    if (previous === undefined) delete process.env.GSD_HEADLESS;
-    else process.env.GSD_HEADLESS = previous;
+    if (previous === undefined) delete process.env.OTTO_HEADLESS;
+    else process.env.OTTO_HEADLESS = previous;
   });
 }
 
@@ -72,7 +72,7 @@ test("auto-dispatch preserves structuredQuestionsAvailable=false for discuss-mil
   );
 });
 
-test("auto-dispatch uses discuss-headless prompt when GSD_HEADLESS is set", async (t) => {
+test("auto-dispatch uses discuss-headless prompt when OTTO_HEADLESS is set", async (t) => {
   const tmp = mkdtempSync(join(tmpdir(), "gsd-discuss-milestone-headless-"));
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
 
@@ -86,7 +86,7 @@ test("auto-dispatch uses discuss-headless prompt when GSD_HEADLESS is set", asyn
   assert.doesNotMatch(result.prompt, /\*\*Structured questions available: true\*\*/);
 });
 
-test("auto-dispatch uses discuss-headless prompt for needs-discussion when GSD_HEADLESS is set", async (t) => {
+test("auto-dispatch uses discuss-headless prompt for needs-discussion when OTTO_HEADLESS is set", async (t) => {
   const tmp = mkdtempSync(join(tmpdir(), "gsd-discuss-milestone-headless-"));
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
 
@@ -100,7 +100,7 @@ test("auto-dispatch uses discuss-headless prompt for needs-discussion when GSD_H
   assert.doesNotMatch(result.prompt, /\*\*Structured questions available: true\*\*/);
 });
 
-test("auto-dispatch uses discuss-headless prompt for executing when GSD_HEADLESS is set", async (t) => {
+test("auto-dispatch uses discuss-headless prompt for executing when OTTO_HEADLESS is set", async (t) => {
   const tmp = mkdtempSync(join(tmpdir(), "gsd-discuss-milestone-headless-"));
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
 

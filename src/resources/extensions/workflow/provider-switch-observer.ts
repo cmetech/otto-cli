@@ -1,19 +1,19 @@
-// LOOP24 — ADR-005 Phase 3b: surface ProviderSwitchReport from pi-ai.
+// OTTO — ADR-005 Phase 3b: surface ProviderSwitchReport from pi-ai.
 //
 // pi-ai builds a ProviderSwitchReport on every cross-provider transform but
-// only logs it to stderr when GSD_VERBOSE=1. This module installs a
+// only logs it to stderr when OTTO_VERBOSE=1. This module installs a
 // single-subscriber observer that surfaces non-empty reports through the agent's
 // three usual telemetry surfaces:
 //
 //   1. UOK audit event (category model-policy, type provider-switch) — only
 //      when an auto trace is active.
-//   2. Persistent notification (.gsd/notifications.jsonl, severity warning) —
+//   2. Persistent notification (.otto/workflow/notifications.jsonl, severity warning) —
 //      whenever the basePath is known, so users see the loss in the
-//      dashboard / status surface without GSD_VERBOSE.
+//      dashboard / status surface without OTTO_VERBOSE.
 //   3. In-memory counter, exposed via getProviderSwitchStats() so any
 //      caller (dashboard, doctor, tests) can read the rollup.
 
-import { setProviderSwitchObserver, type ProviderSwitchReport } from "@loop24/pi-ai";
+import { setProviderSwitchObserver, type ProviderSwitchReport } from "@otto/pi-ai";
 
 import { autoSession } from "./auto-runtime-state.js";
 import { appendNotification } from "./notification-store.js";

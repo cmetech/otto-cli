@@ -1,4 +1,4 @@
-// LOOP24 — Extension Sort: Topological dependency ordering
+// OTTO — Extension Sort: Topological dependency ordering
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 
 import { readManifestFromEntryPath } from "./extension-manifest.js";

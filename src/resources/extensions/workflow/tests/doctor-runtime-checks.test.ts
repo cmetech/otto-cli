@@ -26,9 +26,9 @@ test("doctor fix respects git.manage_gitignore false (#4161)", async (t) => {
   const dir = createGitProject();
   t.after(() => rmSync(dir, { recursive: true, force: true }));
 
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(dir, ".gsd", "PREFERENCES.md"),
+    join(dir, ".otto/workflow", "PREFERENCES.md"),
     "---\nversion: 1\ngit:\n  manage_gitignore: false\n---\n",
     "utf-8",
   );
@@ -43,5 +43,5 @@ test("doctor fix respects git.manage_gitignore false (#4161)", async (t) => {
   await runDoctor(dir, { fix: true });
 
   assert.equal(readFileSync(join(dir, ".gitignore"), "utf-8"), "node_modules/\n");
-  assert.equal(existsSync(join(dir, ".gsd", "PREFERENCES.md")), true);
+  assert.equal(existsSync(join(dir, ".otto/workflow", "PREFERENCES.md")), true);
 });

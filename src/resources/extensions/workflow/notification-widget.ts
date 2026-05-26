@@ -4,7 +4,7 @@
 // unread=0. Key sorts late so the chip renders to the right of other
 // extension statuses.
 
-import type { ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionContext } from "@otto/pi-coding-agent";
 
 import { getUnreadCount, onNotificationStoreChange } from "./notification-store.js";
 import { formattedShortcutPair } from "./shortcut-defs.js";

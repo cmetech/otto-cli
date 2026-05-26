@@ -2,7 +2,7 @@
 // KNOWLEDGE.md to avoid duplicating Patterns + Lessons content already
 // injected via loadMemoryBlock (Stage 2b cutover).
 //
-// Global KNOWLEDGE.md (~/.gsd/agent/KNOWLEDGE.md) is NOT memory-projected
+// Global KNOWLEDGE.md (~/.otto/workflow/agent/KNOWLEDGE.md) is NOT memory-projected
 // and still passes through with all three sections intact.
 
 import test from "node:test";
@@ -16,7 +16,7 @@ import { extractIntroAndRules } from "../knowledge-parser.ts";
 
 function makeTmpProject(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-knowledge-rules-only-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -105,7 +105,7 @@ test("loadKnowledgeBlock trims project KNOWLEDGE.md to intro + Rules", () => {
   const base = makeTmpProject();
   const home = makeTmpHome();
   try {
-    writeFileSync(join(base, ".gsd", "KNOWLEDGE.md"), FULL_KNOWLEDGE, "utf-8");
+    writeFileSync(join(base, ".otto/workflow", "KNOWLEDGE.md"), FULL_KNOWLEDGE, "utf-8");
     const { block } = loadKnowledgeBlock(home, base);
 
     assert.match(block, /## Project Knowledge/);
@@ -145,7 +145,7 @@ test("loadKnowledgeBlock with both global and project: global keeps full content
   const home = makeTmpHome();
   try {
     writeFileSync(join(home, "agent", "KNOWLEDGE.md"), FULL_KNOWLEDGE, "utf-8");
-    writeFileSync(join(base, ".gsd", "KNOWLEDGE.md"), FULL_KNOWLEDGE, "utf-8");
+    writeFileSync(join(base, ".otto/workflow", "KNOWLEDGE.md"), FULL_KNOWLEDGE, "utf-8");
     const { block } = loadKnowledgeBlock(home, base);
 
     // Both sections present.
@@ -188,7 +188,7 @@ test("loadKnowledgeBlock injects only Rules when project KNOWLEDGE.md has no Pat
   const home = makeTmpHome();
   try {
     writeFileSync(
-      join(base, ".gsd", "KNOWLEDGE.md"),
+      join(base, ".otto/workflow", "KNOWLEDGE.md"),
       `# Project Knowledge
 
 ## Rules

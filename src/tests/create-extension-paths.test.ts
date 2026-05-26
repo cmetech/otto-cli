@@ -1,11 +1,11 @@
 /**
  * Validates that the create-extension skill documentation uses the correct
  * community extension install path (~/.pi/agent/extensions/) instead of the
- * bundled-only path (~/.gsd/agent/extensions/).
+ * bundled-only path (~/.otto/workflow/agent/extensions/).
  *
- * Bug: https://github.com/open-gsd/gsd-pi/issues/3131
+ * Bug: https://github.com/open-gsd/otto-pi/issues/3131
  *
- * ~/.gsd/agent/extensions/ is reserved for bundled extensions synced from
+ * ~/.otto/workflow/agent/extensions/ is reserved for bundled extensions synced from
  * the gsd-pi package. Community/user extensions must use ~/.pi/agent/extensions/.
  */
 
@@ -45,19 +45,19 @@ test("create-extension docs use ~/.pi/agent/extensions/ for community extensions
   }
 });
 
-test("create-extension docs do NOT direct users to install in ~/.gsd/agent/extensions/", async (t) => {
+test("create-extension docs do NOT direct users to install in ~/.otto/workflow/agent/extensions/", async (t) => {
   for (const { file, label } of docsToCheck) {
-    await t.test(`${label} does not tell users to place extensions in ~/.gsd/agent/extensions/`, () => {
+    await t.test(`${label} does not tell users to place extensions in ~/.otto/workflow/agent/extensions/`, () => {
       const content = readSkillFile(file);
 
-      // ~/.gsd/agent/extensions/ should only appear in context that clearly marks
+      // ~/.otto/workflow/agent/extensions/ should only appear in context that clearly marks
       // it as reserved/bundled, never as an install target for community extensions.
       // We check that it does NOT appear as a "Global extensions:" or "Global:" path directive.
       const lines = content.split("\n");
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        if (line.includes("~/.gsd/agent/extensions/")) {
-          // If the line references ~/.gsd/agent/extensions/, it must be in a
+        if (line.includes("~/.otto/workflow/agent/extensions/")) {
+          // If the line references ~/.otto/workflow/agent/extensions/, it must be in a
           // context explaining it is reserved/bundled — not as an install instruction.
           const context = lines.slice(Math.max(0, i - 2), i + 3).join("\n");
           const isBundledContext =
@@ -66,7 +66,7 @@ test("create-extension docs do NOT direct users to install in ~/.gsd/agent/exten
             context.toLowerCase().includes("synced");
           assert.ok(
             isBundledContext,
-            `${label} line ${i + 1} references ~/.gsd/agent/extensions/ without ` +
+            `${label} line ${i + 1} references ~/.otto/workflow/agent/extensions/ without ` +
             `marking it as bundled/reserved. Context:\n${context}`,
           );
         }

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Closeout git recovery regression tests.
 
 import test from "node:test";
@@ -25,11 +25,11 @@ function makeProject(): string {
   run('git config user.email "test@example.com"', base);
   run('git config user.name "Test User"', base);
   writeFileSync(join(base, "README.md"), "# Test\n", "utf-8");
-  writeFileSync(join(base, ".gitignore"), ".gsd/\n", "utf-8");
+  writeFileSync(join(base, ".gitignore"), ".otto/workflow/\n", "utf-8");
   run("git add README.md .gitignore", base);
   run('git commit -m "chore: init"', base);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   return base;
 }
 
@@ -75,7 +75,7 @@ test("closeout recovery retry commits dirty worktree and clears unresolved failu
 
     assert.equal(result.status, "ok");
     assert.equal(run("git status --porcelain", base), "");
-    assert.match(run("git log -1 --pretty=%B", base), /GSD-Unit: M001\/S01\/T02/);
+    assert.match(run("git log -1 --pretty=%B", base), /OTTO-Unit: M001\/S01\/T02/);
     assert.equal(listUnresolvedCloseoutFailures().length, 0);
   } finally {
     closeDatabase();

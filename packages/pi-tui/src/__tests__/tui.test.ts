@@ -58,7 +58,7 @@ describe("TUI", () => {
 		let value = "input";
 		const tui = new TUI(terminal);
 		tui.addChild({
-			render: () => ["top", `${value}${CURSOR_MARKER}`, "  OTTO  No project loaded - run /otto to start"],
+			render: () => ["top", `${value}${CURSOR_MARKER}`, "  OTTO  No project loaded - cd into a project, then run /otto init"],
 			invalidate() {},
 		});
 		const anyTui = tui as any;

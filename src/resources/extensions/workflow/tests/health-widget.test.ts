@@ -70,12 +70,13 @@ test("detectHealthWidgetProjectState: milestone without metrics returns active",
   assert.equal(detectHealthWidgetProjectState(dir), "active");
 });
 
-test("buildHealthLines: none state shows single onboarding line pointing at /otto", (t) => {
+test("buildHealthLines: none state shows single actionable project onboarding line", (t) => {
   const lines = buildHealthLines(activeData({ projectState: "none" }));
   assert.equal(lines.length, 1, "renders exactly one line");
   // Should not show System OK / Budget / Last commit chrome when there's no project.
   assert.ok(!/System OK|Budget|Last commit/.test(lines[0]!), "no active-project chrome");
-  // Should direct user to bootstrap via /otto.
+  // Should direct user to bootstrap from a project directory.
+  assert.match(lines[0]!, /cd into a project/);
   assert.match(lines[0]!, /\/otto/);
 });
 

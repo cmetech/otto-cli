@@ -9,7 +9,6 @@ import { loadEffectiveGSDPreferences } from "./preferences.js";
 import { nativeIsRepo, nativeLastCommitEpoch, nativeGetCurrentBranch, nativeCommitSubject } from "./native-git-bridge.js";
 import { loadLedgerFromDisk, getProjectTotals } from "./metrics.js";
 import { describeNextUnit, estimateTimeRemaining, updateSliceProgressCache } from "./auto-dashboard.js";
-import { projectRoot } from "./commands/context.js";
 import { deriveState, invalidateStateCache } from "./state.js";
 import {
   buildHealthLines,
@@ -32,6 +31,19 @@ function loadHealthWidgetData(basePath: string): HealthWidgetData {
   let lastCommitMessage: string | null = null;
 
   const projectState = detectHealthWidgetProjectState(basePath);
+  if (projectState === "none") {
+    return {
+      projectState,
+      budgetCeiling,
+      budgetSpent,
+      providerIssue,
+      environmentErrorCount,
+      environmentWarningCount,
+      lastCommitEpoch,
+      lastCommitMessage,
+      lastRefreshed: Date.now(),
+    };
+  }
 
   try {
     const prefs = loadEffectiveGSDPreferences();
@@ -86,6 +98,18 @@ function loadHealthWidgetData(basePath: string): HealthWidgetData {
 
 const REFRESH_INTERVAL_MS = 60_000;
 
+function healthWidgetBasePath(ctx: ExtensionContext): string {
+  const maybeContext = ctx as { cwd?: unknown };
+  if (typeof maybeContext.cwd === "string" && maybeContext.cwd.length > 0) {
+    return maybeContext.cwd;
+  }
+  try {
+    return process.cwd();
+  } catch {
+    return ".";
+  }
+}
+
 /**
  * Initialize the always-on gsd-health widget (belowEditor).
  * Call once from the extension entry point after context is available.
@@ -93,7 +117,7 @@ const REFRESH_INTERVAL_MS = 60_000;
 export function initHealthWidget(ctx: ExtensionContext): void {
   if (!ctx.hasUI) return;
 
-  const basePath = projectRoot();
+  const basePath = healthWidgetBasePath(ctx);
 
   // String-array fallback — used in RPC mode (factory is a no-op there)
   const initialData = loadHealthWidgetData(basePath);

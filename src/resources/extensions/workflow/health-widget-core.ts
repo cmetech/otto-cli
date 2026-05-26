@@ -7,7 +7,7 @@
 
 import { existsSync } from "node:fs";
 import { detectProjectState } from "./detection.js";
-import { workflowRoot } from "./paths.js";
+import { workflowRootOrNull } from "./paths.js";
 import { BRAND } from "./strings.js";
 
 export type HealthWidgetProjectState = "none" | "initialized" | "active";
@@ -27,7 +27,8 @@ export interface HealthWidgetData {
 }
 
 export function detectHealthWidgetProjectState(basePath: string): HealthWidgetProjectState {
-  if (!existsSync(workflowRoot(basePath))) return "none";
+  const root = workflowRootOrNull(basePath);
+  if (!root || !existsSync(root)) return "none";
 
   const { state } = detectProjectState(basePath);
   return state === "v2-gsd" ? "active" : "initialized";
@@ -67,7 +68,7 @@ function truncateMessage(msg: string, maxLen: number): string {
  */
 export function buildHealthLines(data: HealthWidgetData, width?: number): string[] {
   if (data.projectState === "none") {
-    return ["  OTTO  No project loaded — run /otto to start"];
+    return ["  OTTO  No project loaded — cd into a project, then run /otto init"];
   }
 
   if (data.projectState === "initialized") {

@@ -220,6 +220,67 @@ test("session_start does NOT call setFooter or suppress gsd-health when isAutoAc
   assert.equal(healthWidgetHideCount, 0, "gsd-health must NOT be hidden when isAutoActive() is false");
 });
 
+test("session_start from home directory shows no-project health widget without throwing", async (t) => {
+  const fakeHome = join(
+    tmpdir(),
+    `otto-home-session-start-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  );
+  mkdirSync(fakeHome, { recursive: true });
+
+  const originalCwd = process.cwd();
+  const originalHome = process.env.HOME;
+  const originalOttoHome = process.env.OTTO_HOME;
+  process.env.HOME = fakeHome;
+  process.env.OTTO_HOME = join(fakeHome, ".otto");
+  process.chdir(fakeHome);
+  t.after(() => {
+    process.chdir(originalCwd);
+    if (originalHome === undefined) delete process.env.HOME;
+    else process.env.HOME = originalHome;
+    if (originalOttoHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalOttoHome;
+    try { rmSync(fakeHome, { recursive: true, force: true }); } catch { /* best-effort */ }
+  });
+
+  const handlers = new Map<string, (event: unknown, ctx: any) => Promise<void> | void>();
+  const pi = {
+    on(event: string, handler: (event: unknown, ctx: any) => Promise<void> | void) {
+      handlers.set(event, handler);
+    },
+  } as any;
+
+  registerHooks(pi, []);
+
+  const sessionStart = handlers.get("session_start");
+  assert.ok(sessionStart, "session_start handler must be registered");
+
+  const healthWidgetValues: unknown[] = [];
+  await assert.doesNotReject(async () => {
+    await sessionStart!({}, {
+      cwd: fakeHome,
+      hasUI: true,
+      ui: {
+        notify: () => {},
+        setStatus: () => {},
+        setFooter: () => {},
+        setWorkingMessage: () => {},
+        onTerminalInput: () => () => {},
+        setWidget: (key: string, value: unknown) => {
+          if (key === "gsd-health") healthWidgetValues.push(value);
+        },
+      },
+      sessionManager: { getSessionId: () => null },
+      model: null,
+      setCompactionThresholdOverride: () => {},
+    } as any);
+  });
+
+  const initialLines = healthWidgetValues.find(Array.isArray) as string[] | undefined;
+  assert.ok(initialLines, "session_start should publish initial no-project health lines");
+  assert.match(initialLines[0] ?? "", /No project loaded/);
+  assert.match(initialLines[0] ?? "", /cd into a project/);
+});
+
 test("session_start installs the welcome screen as the TUI header", async (t) => {
   const dir = join(
     tmpdir(),

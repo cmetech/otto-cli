@@ -57,6 +57,15 @@ export async function dispatchWorkflowCommand(
       if (isFreshWorkflowWorkCommand(trimmed)) {
         clearFreshWorkflowRunSurfaces(ctx);
       }
+      if (trimmed === "init") {
+        const { workflowRootOrNull } = await import("../paths.js");
+        const cwd = ctx.cwd ?? process.cwd();
+        if (workflowRootOrNull(cwd) === null) {
+          const { runInit } = await import("./handlers/init.js");
+          await runInit(ctx, cwd);
+          return true;
+        }
+      }
       const base = projectRoot();
       if (!isUnmergedMilestoneAllowedCommand(trimmed)) {
         const blockedMessage = await getUnmergedMilestoneBlockMessageForBase(base, trimmed);

@@ -71,12 +71,12 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 if [ ! -f "$REPO_ROOT/package.json" ]; then
-  err "Could not find package.json at $REPO_ROOT — run this script from the loop24-client repo."
+  err "Could not find package.json at $REPO_ROOT — run this script from the otto-cli repo."
   exit 1
 fi
 
-if ! grep -q '"@ericsson/loop24"' "$REPO_ROOT/package.json"; then
-  err "package.json at $REPO_ROOT does not look like loop24-client — refusing to install."
+if ! grep -q '"@cmetech/otto"' "$REPO_ROOT/package.json"; then
+  err "package.json at $REPO_ROOT does not look like otto-cli — refusing to install."
   exit 1
 fi
 

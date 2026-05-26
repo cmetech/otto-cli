@@ -190,13 +190,22 @@ async function doRtkBootstrap(): Promise<void> {
   let rtkStatus: EnsureRtkResult | undefined
   let rtkDisabled = isTruthy(process.env[LOOP24_RTK_DISABLED_ENV] ?? process.env[GSD_RTK_DISABLED_ENV])
 
-  // RTK is opt-in via experimental.rtk preference. Default: disabled.
-  // Honor GSD_RTK_DISABLED if already explicitly set in the environment
-  // (env var takes precedence over preferences for manual override).
+  // RTK is opt-in. Resolution order (highest precedence first):
+  //   1. Env var LOOP24_RTK_DISABLED / GSD_RTK_DISABLED (handled above)
+  //   2. ~/.otto/settings.json experimental.rtk
+  //   3. Project preferences experimental.rtk (only if cwd is inside a project)
+  //   4. Default: disabled
   if (!rtkDisabled) {
-    const { loadEffectiveGSDPreferences } = await import('./resources/extensions/workflow/preferences.js')
-    const prefs = loadEffectiveGSDPreferences()
-    const rtkEnabled = prefs?.preferences.experimental?.rtk === true
+    const { readUserSetting } = await import('./resources/extensions/workflow/user-settings.js')
+    const userRtk = readUserSetting<boolean>('experimental.rtk')
+    let rtkEnabled = userRtk === true
+
+    if (!rtkEnabled) {
+      const { loadEffectiveGSDPreferences } = await import('./resources/extensions/workflow/preferences.js')
+      const prefs = loadEffectiveGSDPreferences()
+      rtkEnabled = prefs?.preferences.experimental?.rtk === true
+    }
+
     if (!rtkEnabled) {
       process.env[LOOP24_RTK_DISABLED_ENV] = '1'
       process.env[GSD_RTK_DISABLED_ENV] = '1'

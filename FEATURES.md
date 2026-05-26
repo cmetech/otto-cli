@@ -31,7 +31,7 @@ This document is task-oriented: it walks through everything you can actually *do
 Requires **Node ≥ 22** on your PATH.
 
 ```bash
-npm install -g @ericsson/loop24
+npm install -g @cmetech/otto
 otto                 # launch the interactive terminal UI
 ```
 

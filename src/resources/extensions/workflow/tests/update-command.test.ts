@@ -125,7 +125,7 @@ test("/gsd upgrade is listed in completions with correct description", () => {
   const upgradeEntry = completions.find((c: any) => c.value === "upgrade");
   assert.ok(upgradeEntry, "upgrade should appear in full completion list");
   assert.ok(
-    upgradeEntry.description.toLowerCase().includes("@ericsson/loop24"),
+    upgradeEntry.description.toLowerCase().includes("@cmetech/otto"),
     "completion description should mention the new package scope",
   );
 });

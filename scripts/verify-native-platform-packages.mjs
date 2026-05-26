@@ -44,7 +44,7 @@ for (const spec of missing) {
 }
 process.stderr.write(
   allowAnyVersion
-    ? "Publish the missing @opengsd/engine-* packages before publishing @ericsson/loop24.\n"
-    : "Run the native binary publish workflow for this version before publishing @ericsson/loop24.\n",
+    ? "Publish the missing @opengsd/engine-* packages before publishing @cmetech/otto.\n"
+    : "Run the native binary publish workflow for this version before publishing @cmetech/otto.\n",
 );
 process.exit(1);

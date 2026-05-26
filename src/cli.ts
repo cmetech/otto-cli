@@ -62,7 +62,7 @@ function exitIfManagedResourcesAreNewer(currentAgentDir: string): void {
   process.stderr.write(
     `[otto] ${chalk.yellow('Version mismatch detected')}\n` +
     `[otto] Synced resources are from ${chalk.bold(`v${managedVersion}`)}, but this \`gsd\` binary is ${chalk.dim(`v${currentVersion}`)}.\n` +
-    `[otto] Run ${chalk.bold('npm install -g @ericsson/loop24@latest')} or ${chalk.bold('gsd upgrade')}, then try again.\n`,
+    `[otto] Run ${chalk.bold('npm install -g @cmetech/otto@latest')} or ${chalk.bold('gsd upgrade')}, then try again.\n`,
   )
   process.exit(1)
 }

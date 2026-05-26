@@ -12,7 +12,7 @@ function findRepoRoot(start: string): string {
 	for (let i = 0; i < 10; i++) {
 		try {
 			const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
-			if (pkg.name === "@ericsson/loop24" && pkg.workspaces) return dir;
+			if (pkg.name === "@cmetech/otto" && pkg.workspaces) return dir;
 		} catch {
 			// Keep walking.
 		}

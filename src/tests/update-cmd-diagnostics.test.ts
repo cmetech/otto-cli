@@ -52,7 +52,7 @@ test("resolveInstallCommand returns bun command when running under Bun (#4145)",
   const orig = (process.versions as Record<string, string | undefined>).bun;
   try {
     (process.versions as Record<string, string | undefined>).bun = "1.0.0";
-    assert.equal(resolveInstallCommand("@ericsson/loop24@latest"), "bun add -g @ericsson/loop24@latest");
+    assert.equal(resolveInstallCommand("@cmetech/otto@latest"), "bun add -g @cmetech/otto@latest");
   } finally {
     if (orig === undefined) {
       delete (process.versions as Record<string, string | undefined>).bun;
@@ -67,7 +67,7 @@ test("resolveInstallCommand returns npm command when not running under Bun (#414
   const orig = (process.versions as Record<string, string | undefined>).bun;
   try {
     delete (process.versions as Record<string, string | undefined>).bun;
-    assert.equal(resolveInstallCommand("@ericsson/loop24@latest"), "npm install -g @ericsson/loop24@latest");
+    assert.equal(resolveInstallCommand("@cmetech/otto@latest"), "npm install -g @cmetech/otto@latest");
   } finally {
     if (orig !== undefined) {
       (process.versions as Record<string, string | undefined>).bun = orig;
@@ -130,7 +130,7 @@ test("isBunInstall detects bun install via argv[1] even when process.versions.bu
 
     // Non-bun path must NOT match
     delete process.env.BUN_INSTALL;
-    process.argv[1] = "/usr/local/lib/node_modules/@ericsson/loop24/dist/loader.js";
+    process.argv[1] = "/usr/local/lib/node_modules/@cmetech/otto/dist/loader.js";
     assert.equal(isBunInstall(), false, "npm global install path should not match");
 
     // Prefix false-positive guard: /.bun/bin-other should not match /.bun/bin
@@ -158,7 +158,7 @@ test("isBunInstall returns true when running under Bun runtime (#4145)", async (
   try {
     (process.versions as Record<string, string | undefined>).bun = "1.0.0";
     // Even with a non-bun argv[1], runtime detection wins
-    process.argv[1] = "/usr/local/lib/node_modules/@ericsson/loop24/dist/loader.js";
+    process.argv[1] = "/usr/local/lib/node_modules/@cmetech/otto/dist/loader.js";
     assert.equal(isBunInstall(), true);
   } finally {
     if (orig === undefined) {

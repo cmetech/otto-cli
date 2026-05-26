@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process'
 import { compareSemver, fetchLatestVersionFromRegistry, resolveInstallCommand } from './update-check.js'
 
-const NPM_PACKAGE = '@ericsson/loop24'
+const NPM_PACKAGE = '@cmetech/otto'
 
 export async function runUpdate(): Promise<void> {
   const current = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || '0.0.0'

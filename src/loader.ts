@@ -140,7 +140,7 @@ if (!existsSync(appRoot)) {
 // GSD_CODING_AGENT_DIR — tells pi's getAgentDir() to return ~/.otto/agent/ instead of ~/.pi/agent/
 process.env.LOOP24_CODING_AGENT_DIR = process.env.GSD_CODING_AGENT_DIR = agentDir
 
-// GSD_PKG_ROOT — absolute path to @ericsson/loop24 package root. Used by deployed extensions
+// GSD_PKG_ROOT — absolute path to @cmetech/otto package root. Used by deployed extensions
 // (e.g. auto.ts resume path) to import modules like resource-loader.js that live
 // in the package tree, not in the deployed ~/.otto/agent/ tree.
 process.env.LOOP24_PKG_ROOT = process.env.GSD_PKG_ROOT = workflowRoot
@@ -267,11 +267,11 @@ if (missingPackages.length > 0) {
   process.stderr.write(
     `\nError: LOOP24 installation is broken — missing packages: ${missing}\n\n` +
     `This is usually caused by one of:\n` +
-    `  • An outdated version installed from npm (run: npm install -g @ericsson/loop24@latest)\n` +
+    `  • An outdated version installed from npm (run: npm install -g @cmetech/otto@latest)\n` +
     `  • The packages/ directory was excluded from the installed tarball\n` +
     `  • A filesystem error prevented linking or copying the workspace packages\n\n` +
     `Fix it by reinstalling:\n\n` +
-    `  npm install -g @ericsson/loop24@latest\n\n` +
+    `  npm install -g @cmetech/otto@latest\n\n` +
     `If the issue persists, please open an issue with the project maintainers.\n`
   )
   process.exit(1)

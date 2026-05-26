@@ -84,9 +84,9 @@ function getBundledWorkflowVersion(): string {
 function getBundledPackageName(): string {
   try {
     const pkg = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf-8'))
-    return typeof pkg?.name === 'string' ? pkg.name : '@ericsson/loop24'
+    return typeof pkg?.name === 'string' ? pkg.name : '@cmetech/otto'
   } catch {
-    return '@ericsson/loop24'
+    return '@cmetech/otto'
   }
 }
 
@@ -581,7 +581,7 @@ function pruneRemovedBundledExtensions(
  *
  * Skips the copy when the managed-resources.json version matches the current
  * version, avoiding ~128ms of synchronous cpSync on every startup.
- * After `npm update -g @ericsson/loop24`, versions will differ and the
+ * After `npm update -g @cmetech/otto`, versions will differ and the
  * copy runs once to land the new resources.
  *
  * Inspectable: `ls ~/.otto/agent/extensions/`

@@ -3,13 +3,13 @@
 /**
  * Interactive Installer
  *
- * Entry point for `npx @ericsson/loop24` or `npx @ericsson/loop24@latest`.
+ * Entry point for `npx @cmetech/otto` or `npx @cmetech/otto@latest`.
  * When invoked directly (not as a postinstall hook), runs the visual
  * installer with full terminal access — banner, spinners, progress.
  *
- * If loop24 is already installed and the user runs `loop24`, this script
- * is NOT invoked — the normal loader.js handles that via the "loop24" bin.
- * This script only fires for `npx @ericsson/loop24` (the package name bin).
+ * If otto is already installed and the user runs `otto`, this script
+ * is NOT invoked — the normal loader.js handles that via the "otto" bin.
+ * This script only fires for `npx @cmetech/otto` (the package name bin).
  */
 
 import { execSync, spawnSync, exec as execCb } from 'child_process'
@@ -51,11 +51,11 @@ try {
   workflowVersion = pkg.version || '0.0.0'
 } catch { /* ignore */ }
 
-// ── Brand strings (templated from package.json so the published @ericsson/loop24
+// ── Brand strings (templated from package.json so the published @cmetech/otto
 // ── package self-describes correctly without hard-coding upstream names) ────────
-let PKG_NAME = '@ericsson/loop24'
-let BRAND = 'LOOP24'
-let CMD = 'loop24'
+let PKG_NAME = '@cmetech/otto'
+let BRAND = 'OTTO'
+let CMD = 'otto'
 try {
   const pkg = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf-8'))
   PKG_NAME = pkg.name || PKG_NAME

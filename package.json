@@ -16,11 +16,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PLACEHOLDER-cmetech/loop24-client.git"
+    "url": "git+https://github.com/cmetech/otto-cli.git"
   },
-  "homepage": "https://github.com/PLACEHOLDER-cmetech/loop24-client#readme",
+  "homepage": "https://github.com/cmetech/otto-cli#readme",
   "bugs": {
-    "url": "https://github.com/PLACEHOLDER-cmetech/loop24-client/issues"
+    "url": "https://github.com/cmetech/otto-cli/issues"
   },
   "type": "module",
   "workspaces": [

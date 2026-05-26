@@ -31,12 +31,12 @@ function writeText(root: string, relativePath: string, value: string): void {
 
 function createFixture(): string {
   const root = mkdtempSync(join(tmpdir(), "open-gsd-version-sync-"));
-  writeJson(root, "package.json", { name: "@ericsson/loop24", version: "1.0.0" });
+  writeJson(root, "package.json", { name: "@cmetech/otto", version: "1.0.0" });
   writeJson(root, "package-lock.json", {
-    name: "@ericsson/loop24",
+    name: "@cmetech/otto",
     version: "1.0.0",
     packages: {
-      "": { name: "@ericsson/loop24", version: "1.0.0" },
+      "": { name: "@cmetech/otto", version: "1.0.0" },
       "extensions/google-search": { name: "@gsd-extensions/google-search", version: "1.0.0" },
       "packages/pi-coding-agent": { name: "@loop24/pi-coding-agent", version: "1.0.0" },
     },
@@ -99,7 +99,7 @@ version = "1.0.0"
 
 test("verifyVersionSync reports every release-owned surface that drifts from root", () => {
   const root = createFixture();
-  writeJson(root, "package.json", { name: "@ericsson/loop24", version: "2.0.0" });
+  writeJson(root, "package.json", { name: "@cmetech/otto", version: "2.0.0" });
 
   const issues = verifyVersionSync(root);
 

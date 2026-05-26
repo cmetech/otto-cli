@@ -25,8 +25,8 @@ see the [README](../README.md).
 
 ```bash
 cd ~/Projects/repos/local             # or wherever you keep clones
-git clone <your-internal-host>/loop24-client.git
-cd loop24-client
+git clone git@github.com:cmetech/otto-cli.git
+cd otto-cli
 ./scripts/install.sh
 ```
 
@@ -50,7 +50,7 @@ The script is **idempotent** — safe to re-run on an existing install. It will 
 ### Manual install (if you want to know exactly what's happening)
 
 ```bash
-cd loop24-client
+cd otto-cli
 npm install
 npm run build
 mkdir -p ~/.local/bin
@@ -81,7 +81,7 @@ otto config all
 LOOP24 has no auto-update yet. To pull the latest:
 
 ```bash
-cd loop24-client
+cd otto-cli
 git pull
 ./scripts/install.sh --no-wizard
 ```
@@ -94,7 +94,7 @@ Remove the symlink and the workspace:
 
 ```bash
 rm -f ~/.local/bin/otto
-rm -rf ~/Projects/repos/local/loop24-client     # adjust to your clone path
+rm -rf ~/Projects/repos/local/otto-cli     # adjust to your clone path
 ```
 
 To also clear user-scoped state (config, prompt history, agent cache):

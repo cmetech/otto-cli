@@ -169,7 +169,7 @@ test("initResources manifest tracks all bundled extension subdirectories includi
 
     assert.equal(
       manifest.packageName,
-      "@ericsson/loop24",
+      "@cmetech/otto",
       "managed resource manifest should be scoped to the package that wrote it",
     );
 

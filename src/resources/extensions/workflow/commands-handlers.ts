@@ -475,7 +475,7 @@ function compareSemverLocal(a: string, b: string): number {
 export async function handleUpdate(ctx: ExtensionCommandContext): Promise<void> {
   const { execSync } = await import("node:child_process");
 
-  const NPM_PACKAGE = "@ericsson/loop24";
+  const NPM_PACKAGE = "@cmetech/otto";
   const current = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || "0.0.0";
 
   ctx.ui.notify(`Current version: v${current}\nChecking npm registry...`, "info");

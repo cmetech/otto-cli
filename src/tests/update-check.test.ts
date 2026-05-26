@@ -67,7 +67,7 @@ test('writeUpdateCache + readUpdateCache round-trips correctly', (t) => {
   const cache = { lastCheck: Date.now(), latestVersion: '3.0.0' }
   writeUpdateCache(cache, cachePath)
   const result = readUpdateCache(cachePath)
-  assert.deepEqual(result, { ...cache, packageName: '@ericsson/loop24' })
+  assert.deepEqual(result, { ...cache, packageName: '@cmetech/otto' })
 })
 
 test('readUpdateCache ignores legacy cache entries without package identity', (t) => {
@@ -258,7 +258,7 @@ test('checkForUpdates ignores fresh legacy gsd-pi cache and fetches scoped packa
     onUpdate: () => { called = true },
   })
 
-  assert.ok(!called, 'legacy 3.0.0 cache must not produce an update banner for @ericsson/loop24')
+  assert.ok(!called, 'legacy 3.0.0 cache must not produce an update banner for @cmetech/otto')
   assert.equal(readUpdateCache(cachePath)?.latestVersion, '1.0.1')
 })
 

@@ -21,7 +21,7 @@ OTTER is the **client CLI** in the loop24 product family. It is what users actua
 
 OTTER is **not** a general-purpose AI assistant. It is a developer agent that also happens to trigger non-coding workflows through Langflow and reach into operational data through OSCAR.
 
-This repo (`@ericsson/loop24`, binary `loop24`) is the **CLI** piece. The diagram above shows where it sits in the larger stack.
+This repo (`@cmetech/otto`, binary `otto`) is the **CLI** piece. The diagram above shows where it sits in the larger stack.
 
 ---
 
@@ -74,15 +74,15 @@ Requires **Node ≥22** on PATH.
 ### Install from npm (recommended)
 
 ```bash
-npm install -g @ericsson/loop24
+npm install -g @cmetech/otto
 otto
 ```
 
 ### Install from source (contributors)
 
 ```bash
-git clone <github-repo>/loop24-client.git
-cd loop24-client
+git clone git@github.com:cmetech/otto-cli.git
+cd otto-cli
 ./scripts/install.sh
 ```
 
@@ -181,7 +181,7 @@ Plans live in [`docs/superpowers/plans/`](docs/superpowers/plans/) — one per p
 
 ## Fork attribution
 
-OTTER (`@ericsson/loop24`) is a **permanent hard fork** of [open-gsd/gsd-pi](https://github.com/open-gsd/gsd-pi) by Lex Christopherson, used under the MIT License. The upstream `gsd-pi` provides the agent core, the terminal UI, the extension system, and the multi-step workflow commands. OTTER adds:
+OTTER (`@cmetech/otto`) is a **permanent hard fork** of [open-gsd/gsd-pi](https://github.com/open-gsd/gsd-pi) by Lex Christopherson, used under the MIT License. The upstream `gsd-pi` provides the agent core, the terminal UI, the extension system, and the multi-step workflow commands. OTTER adds:
 
 - The `loop24` extension (Langflow flow triggers, flow builder, prompt engineer, catalog tools)
 - Gateway routing for LLM traffic

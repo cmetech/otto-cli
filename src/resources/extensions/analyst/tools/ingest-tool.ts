@@ -1,8 +1,8 @@
 import type { ToolDefinition } from "@loop24/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
-import type { DuckDbSession } from "../duckdb-session.ts";
-import { ingestFile } from "../ingest.ts";
-import { classifyIngestPath } from "../path-policy.ts";
+import type { DuckDbSession } from "../duckdb-session.js";
+import { ingestFile } from "../ingest.js";
+import { classifyIngestPath } from "../path-policy.js";
 
 const schema = Type.Object({
 	path: Type.String({ description: "Absolute path to a local data file (.csv, .parquet, .json)." }),

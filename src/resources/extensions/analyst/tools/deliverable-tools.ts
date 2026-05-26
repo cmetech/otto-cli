@@ -1,6 +1,6 @@
 import type { ToolDefinition } from "@loop24/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
-import type { DeliverableStore } from "../deliverables/store.ts";
+import type { DeliverableStore } from "../deliverables/store.js";
 
 const createSchema = Type.Object({
 	name: Type.String({ description: "Human-readable deliverable name (the folder slug derives from this)." }),

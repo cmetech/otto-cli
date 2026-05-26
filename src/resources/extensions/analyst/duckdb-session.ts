@@ -1,5 +1,5 @@
 import { DuckDBInstance } from "@duckdb/node-api";
-import type { DuckConfig } from "./secure-config.ts";
+import type { DuckConfig } from "./secure-config.js";
 
 type Row = Record<string, unknown>;
 

@@ -1,6 +1,6 @@
 import { basename, extname } from "node:path";
-import { DuckDbSession, quoteIdent, type ColumnDef } from "./duckdb-session.ts";
-import { permissiveReadConfig } from "./secure-config.ts";
+import { DuckDbSession, quoteIdent, type ColumnDef } from "./duckdb-session.js";
+import { permissiveReadConfig } from "./secure-config.js";
 
 export interface IngestResult {
 	table: string;

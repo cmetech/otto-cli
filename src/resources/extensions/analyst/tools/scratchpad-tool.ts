@@ -1,7 +1,7 @@
 import type { ToolDefinition } from "@loop24/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
-import type { AsyncJobManager } from "../../async-jobs/job-manager.ts";
-import type { CellResult, ScratchpadRuntime } from "../runtime.ts";
+import type { AsyncJobManager } from "../../async-jobs/job-manager.js";
+import type { CellResult, ScratchpadRuntime } from "../runtime.js";
 
 const schema = Type.Object({
 	code: Type.String({ description: "SQL to run against the analysis database." }),

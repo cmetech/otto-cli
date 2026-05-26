@@ -1,4 +1,4 @@
-import type { DuckDbSession } from "./duckdb-session.ts";
+import type { DuckDbSession } from "./duckdb-session.js";
 
 export interface Cell {
 	code: string;
@@ -56,15 +56,19 @@ export class LocalRuntime implements ScratchpadRuntime {
 		const onAbort = () => this.db.interrupt();
 		signal.addEventListener("abort", onAbort, { once: true });
 
+		let queryPromise: Promise<Record<string, unknown>[]> | undefined;
+		let timedOut = false;
 		try {
 			const timeoutPromise = new Promise<never>((_, reject) => {
 				timer = setTimeout(() => {
+					timedOut = true;
 					this.db.interrupt();
 					reject(new Error(`Cell timed out after ${this.timeoutMs}ms.`));
 				}, this.timeoutMs);
 			});
 
-			const rows = await Promise.race([this.db.query(cell.code), timeoutPromise]);
+			queryPromise = this.db.query(cell.code);
+			const rows = await Promise.race([queryPromise, timeoutPromise]);
 			const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
 			const capped = rows.slice(0, PREVIEW_ROW_CAP);
 			const preview: TablePreview = {
@@ -74,6 +78,14 @@ export class LocalRuntime implements ScratchpadRuntime {
 			};
 			return { stdout: `${rows.length} row(s)`, tables: [preview] };
 		} catch (err) {
+			if (timedOut && queryPromise) {
+				try {
+					await queryPromise;
+				} catch {
+					// The interrupt usually rejects the active query; drain it so the
+					// native handle settles before tests or callers close the database.
+				}
+			}
 			return { stdout: "", error: err instanceof Error ? err.message : String(err) };
 		} finally {
 			if (timer) clearTimeout(timer);

@@ -17,7 +17,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-import { workflowRoot, _clearWorkflowRootCache } from '../paths.ts';
+import { workflowRoot, workflowRootOrNull, _clearWorkflowRootCache } from '../paths.ts';
 
 describe('workflowRoot() refuses ~/.otto as project state when basePath is $HOME (#5187)', () => {
   let fakeHome: string;
@@ -67,6 +67,14 @@ describe('workflowRoot() refuses ~/.otto as project state when basePath is $HOME
     );
   });
 
+  test('workflowRootOrNull returns null for home directory global workflow state', () => {
+    assert.equal(
+      workflowRootOrNull(fakeHome),
+      null,
+      'non-throwing project detection must not treat ~/.otto/workflow as a project',
+    );
+  });
+
   test('does NOT throw for paths under ~/.otto/workflow/projects/<hash>/', () => {
     const projectStateDir = join(fakeHome, '.otto/workflow', 'projects', 'abcdef123456');
     mkdirSync(join(projectStateDir, '.otto/workflow'), { recursive: true });
@@ -74,6 +82,7 @@ describe('workflowRoot() refuses ~/.otto as project state when basePath is $HOME
 
     const resolved = workflowRoot(projectStateDir);
     assert.equal(resolved, join(projectStateDir, '.otto/workflow'));
+    assert.equal(workflowRootOrNull(projectStateDir), join(projectStateDir, '.otto/workflow'));
   });
 
   test('does NOT throw for an unrelated project directory that has its own .otto/workflow', () => {

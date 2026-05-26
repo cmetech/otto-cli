@@ -17,7 +17,7 @@ import { tmpdir } from 'node:os';
 import { ROOT_FILES, resolveWorkflowRootFile } from '../paths.ts';
 import { inlineWorkflowRootFile, inlineKnowledgeBudgeted } from '../auto-prompts.ts';
 import { appendKnowledge } from '../files.ts';
-import { loadKnowledgeBlock } from '../bootstrap/system-context.ts';
+import { buildBeforeAgentStartResult, loadKnowledgeBlock } from '../bootstrap/system-context.ts';
 
 // ─── KNOWLEDGE is registered in ROOT_FILES ─────────────────────────────
 
@@ -176,6 +176,68 @@ test('loadKnowledgeBlock: returns empty block when neither file exists', () => {
   assert.strictEqual(result.globalSizeKb, 0);
 
   rmSync(tmp, { recursive: true, force: true });
+});
+
+test('loadKnowledgeBlock: ignores home-directory global workflow state as project knowledge', (t) => {
+  const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'otto-home-kb-')));
+  const workflowHome = join(tmp, '.otto/workflow');
+  mkdirSync(workflowHome, { recursive: true });
+  writeFileSync(join(workflowHome, 'KNOWLEDGE.md'), 'SHOULD NOT LOAD AS PROJECT KNOWLEDGE');
+
+  const originalHome = process.env.HOME;
+  const originalUserProfile = process.env.USERPROFILE;
+  const originalOttoHome = process.env.OTTO_HOME;
+  process.env.HOME = tmp;
+  process.env.USERPROFILE = tmp;
+  delete process.env.OTTO_HOME;
+  t.after(() => {
+    if (originalHome === undefined) delete process.env.HOME;
+    else process.env.HOME = originalHome;
+    if (originalUserProfile === undefined) delete process.env.USERPROFILE;
+    else process.env.USERPROFILE = originalUserProfile;
+    if (originalOttoHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalOttoHome;
+    rmSync(tmp, { recursive: true, force: true });
+  });
+
+  const result = loadKnowledgeBlock(join(tmp, '.otto'), tmp);
+  assert.strictEqual(result.block, '');
+  assert.strictEqual(result.globalSizeKb, 0);
+});
+
+test('buildBeforeAgentStartResult: no-ops from home directory even when ~/.otto/workflow exists', async (t) => {
+  const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'otto-home-before-agent-')));
+  mkdirSync(join(tmp, '.otto/workflow'), { recursive: true });
+
+  const originalCwd = process.cwd();
+  const originalHome = process.env.HOME;
+  const originalUserProfile = process.env.USERPROFILE;
+  const originalOttoHome = process.env.OTTO_HOME;
+  process.env.HOME = tmp;
+  process.env.USERPROFILE = tmp;
+  delete process.env.OTTO_HOME;
+  process.chdir(tmp);
+  t.after(() => {
+    process.chdir(originalCwd);
+    if (originalHome === undefined) delete process.env.HOME;
+    else process.env.HOME = originalHome;
+    if (originalUserProfile === undefined) delete process.env.USERPROFILE;
+    else process.env.USERPROFILE = originalUserProfile;
+    if (originalOttoHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalOttoHome;
+    rmSync(tmp, { recursive: true, force: true });
+  });
+
+  await assert.doesNotReject(async () => {
+    const result = await buildBeforeAgentStartResult(
+      { prompt: 'some inferencing testing', systemPrompt: 'base system' },
+      {
+        hasUI: true,
+        ui: { notify: () => {} },
+      } as any,
+    );
+    assert.equal(result, undefined);
+  });
 });
 
 test('loadKnowledgeBlock: uses project knowledge alone when no global file', () => {

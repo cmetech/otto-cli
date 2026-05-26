@@ -12,7 +12,7 @@ import { readForensicsMarker } from "../forensics.js";
 import { resolveAllSkillReferences, renderPreferencesForSystemPrompt, loadEffectiveGSDPreferences } from "../preferences.js";
 import { resolveModelWithFallbacksForUnit } from "../preferences-models.js";
 import { resolveSkillReference } from "../preferences-skills.js";
-import { resolveWorkflowRootFile, resolveSliceFile, resolveSlicePath, resolveTaskFile, resolveTaskFiles, resolveTasksDir, relSliceFile, relSlicePath, relTaskFile } from "../paths.js";
+import { resolveWorkflowRootFile, resolveSliceFile, resolveSlicePath, resolveTaskFile, resolveTaskFiles, resolveTasksDir, relSliceFile, relSlicePath, relTaskFile, workflowRootOrNull } from "../paths.js";
 import { extractIntroAndRules } from "../knowledge-parser.js";
 import { ensureCodebaseMapFresh, readCodebaseMap } from "../codebase-generator.js";
 import { hasSkillSnapshot, detectNewSkills, formatSkillsXml } from "../skill-discovery.js";
@@ -106,7 +106,12 @@ export async function buildBeforeAgentStartResult(
   event: { prompt: string; systemPrompt: string },
   ctx: ExtensionContext,
 ): Promise<{ systemPrompt: string; message?: { customType: string; content: string; display: false } } | undefined> {
-  if (!existsSync(join(process.cwd(), ".otto/workflow"))) return undefined;
+  const ctxProjectRoot = (ctx as { projectRoot?: unknown }).projectRoot;
+  const basePath = typeof ctxProjectRoot === "string" && ctxProjectRoot.length > 0
+    ? ctxProjectRoot
+    : process.cwd();
+
+  if (workflowRootOrNull(basePath) === null) return undefined;
 
   const stopContextTimer = debugTime("context-inject");
   const systemContent = loadPrompt("system", {
@@ -131,11 +136,6 @@ export async function buildBeforeAgentStartResult(
   } catch (e) {
     logWarning("bootstrap", `cmux prompt setup skipped: ${(e as Error).message}`);
   }
-
-  const ctxProjectRoot = (ctx as { projectRoot?: unknown }).projectRoot;
-  const basePath = typeof ctxProjectRoot === "string" && ctxProjectRoot.length > 0
-    ? ctxProjectRoot
-    : process.cwd();
 
   let preferenceBlock = "";
   if (loadedPreferences) {
@@ -223,7 +223,7 @@ export async function buildBeforeAgentStartResult(
     logWarning("bootstrap", `CODEBASE refresh failed: ${(e as Error).message}`);
   }
 
-  const codebasePath = resolveWorkflowRootFile(process.cwd(), "CODEBASE");
+  const codebasePath = resolveWorkflowRootFile(basePath, "CODEBASE");
   const rawCodebase = readCodebaseMap(process.cwd());
   if (existsSync(codebasePath) && rawCodebase) {
     try {
@@ -431,8 +431,9 @@ export function loadKnowledgeBlock(workflowHomeDir: string, cwd: string): { bloc
   //    Patterns/Lessons content in the prompt. Rules stay manual per
   //    ADR-013 line 39 and have no memory equivalent.
   let projectKnowledge = "";
-  const knowledgePath = resolveWorkflowRootFile(cwd, "KNOWLEDGE");
-  if (existsSync(knowledgePath)) {
+  const projectRoot = workflowRootOrNull(cwd);
+  const knowledgePath = projectRoot ? resolveWorkflowRootFile(cwd, "KNOWLEDGE") : null;
+  if (knowledgePath && existsSync(knowledgePath)) {
     try {
       const raw = readFileSync(knowledgePath, "utf-8").trim();
       if (raw) projectKnowledge = extractIntroAndRules(raw).trim();
@@ -450,7 +451,7 @@ export function loadKnowledgeBlock(workflowHomeDir: string, cwd: string): { bloc
     parts.push(`## Global Knowledge\nSource: \`${globalKnowledgePath}\`\n\n${globalKnowledge}`);
   }
   if (projectKnowledge) {
-    parts.push(`## Project Knowledge\nSource: \`${knowledgePath}\`\n\n${projectKnowledge}`);
+    parts.push(`## Project Knowledge\nSource: \`${knowledgePath ?? ".otto/workflow/KNOWLEDGE.md"}\`\n\n${projectKnowledge}`);
   }
   const body = limitKnowledgeBlock(parts.join("\n\n"), getKnowledgeCharLimit());
   return {

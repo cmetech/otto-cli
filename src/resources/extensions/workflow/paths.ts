@@ -446,6 +446,17 @@ export function workflowRoot(basePath: string): string {
  * NOT treated as a project — the walk continues upward.
  */
 export function workflowRootOrNull(basePath: string): string | null {
+  const normPath = (p: string): string => {
+    let r: string;
+    try { r = realpathSync.native(p); } catch { r = p; }
+    const s = r.replaceAll("\\", "/").replace(/\/+$/, "");
+    return process.platform === "win32" ? s.toLowerCase() : s;
+  };
+  let homeNorm = "";
+  let workflowHomeNorm = "";
+  try { homeNorm = normPath(homedir()); } catch { /* ignore */ }
+  try { workflowHomeNorm = normPath(workflowHome()); } catch { /* ignore */ }
+
   let cursor: string;
   try {
     cursor = realpathSync.native(basePath);
@@ -475,7 +486,13 @@ export function workflowRootOrNull(basePath: string): string | null {
 
   while (true) {
     const ottoWorkflow = workflowDirUnder(cursor);
-    if (existsSync(ottoWorkflow)) return normalizeRealPath(ottoWorkflow);
+    if (existsSync(ottoWorkflow)) {
+      const cursorNorm = normPath(cursor);
+      const workflowNorm = normPath(ottoWorkflow);
+      if (cursorNorm !== homeNorm && workflowNorm !== workflowHomeNorm) {
+        return normalizeRealPath(ottoWorkflow);
+      }
+    }
 
     if (cursor === boundary) return null;
     const parent = dirname(cursor);

@@ -1,6 +1,6 @@
 // ADR-013 Phase 6 cutover (Stage 3) — destructive lock-in.
 //
-// After this stage, new decisions written via gsd_save_decision land ONLY in
+// After this stage, new decisions written via otto_save_decision land ONLY in
 // the memories table. The decisions table receives no new rows; its existing
 // rows remain for backwards-compat reads until #5756 drops the table.
 //
@@ -37,8 +37,8 @@ import {
 
 function makeTmpBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-decisions-stage3-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   return base;
 }
 
@@ -155,7 +155,7 @@ test("DECISIONS.md projection includes the memory-only decision", async () => {
       base,
     );
 
-    const md = readFileSync(join(base, ".gsd", "DECISIONS.md"), "utf-8");
+    const md = readFileSync(join(base, ".otto/workflow", "DECISIONS.md"), "utf-8");
     assert.match(md, /\| D001 \|/);
     assert.match(md, /Adopt SQLite/);
     assert.match(md, /# Decisions Register/);

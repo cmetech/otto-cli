@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-015 runtime invariant module contract tests.
 
 import test from "node:test";
@@ -62,7 +62,7 @@ test("Tool Contract compiles known Unit prompt and tool policy", () => {
 
   assert.equal(result.ok, true);
   assert.equal(result.ok && result.contract.unitType, "execute-task");
-  assert.deepEqual(result.ok && result.contract.requiredWorkflowTools, ["gsd_task_complete"]);
+  assert.deepEqual(result.ok && result.contract.requiredWorkflowTools, ["otto_task_complete"]);
   assert.equal(result.ok && result.contract.toolsPolicy.mode, "all");
   assert.ok(result.ok && result.contract.validationRules.includes("closeout-tool-present"));
 });

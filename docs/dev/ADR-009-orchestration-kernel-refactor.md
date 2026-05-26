@@ -2,12 +2,12 @@
 
 **Status:** Accepted (implemented; emergency legacy fallback retained)
 **Date:** 2026-04-14
-**Deciders:** Jeremy McSpadden, GSD Core Team
+**Deciders:** Jeremy McSpadden, OTTO Core Team
 **Related:** ADR-001 (worktree architecture), ADR-003 (pipeline simplification), ADR-004 (capability-aware routing), ADR-005 (multi-provider strategy), ADR-008 (tools over MCP)
 
 ## Context
 
-GSD already ships many advanced features:
+OTTO already ships many advanced features:
 
 - dynamic model routing and multi-provider support
 - hooks (`pre_dispatch_hooks`, `post_unit_hooks`)
@@ -34,7 +34,7 @@ The target requirements for the next architecture are:
 
 ## Decision
 
-Refactor GSD into a **Unified Orchestration Kernel (UOK)** with explicit control planes, typed contracts, and an incremental strangler migration. This is a staged architectural replacement of orchestration internals, not a rewrite of user-facing CLI/web/MCP surfaces.
+Refactor OTTO into a **Unified Orchestration Kernel (UOK)** with explicit control planes, typed contracts, and an incremental strangler migration. This is a staged architectural replacement of orchestration internals, not a rewrite of user-facing CLI/web/MCP surfaces.
 
 ### Core Architectural Model
 
@@ -320,7 +320,7 @@ Primary decomposition targets:
 - `auto.ts` -> orchestrator kernel + adapters
 - `auto-prompts.ts` -> plan compiler + prompt renderers
 - `state.ts` -> state query service + immutable state views
-- `gsd-db.ts` -> data access layer + event projection store
+- `otto-db.ts` -> data access layer + event projection store
 - `auto-post-unit.ts` / `auto-verification.ts` -> closeout gate services
 
 ## Acceptance Criteria
@@ -348,7 +348,7 @@ ADR-009 closure is complete, with emergency fallback retained as a release safet
 - CI parity coverage includes explicit kernel-vs-legacy path assertions.
 
 Evidence is tracked in the implementation plan matrix:
-- [ADR-009-IMPLEMENTATION-PLAN.md](/Users/jeremymcspadden/Github/gsd-2/docs/dev/ADR-009-IMPLEMENTATION-PLAN.md)
+- [ADR-009-IMPLEMENTATION-PLAN.md](/Users/jeremymcspadden/Github/otto-2/docs/dev/ADR-009-IMPLEMENTATION-PLAN.md)
 
 ## Consequences
 

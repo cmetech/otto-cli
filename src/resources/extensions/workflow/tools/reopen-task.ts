@@ -1,5 +1,5 @@
 /**
- * reopen-task handler — the core operation behind gsd_task_reopen.
+ * reopen-task handler — the core operation behind otto_task_reopen.
  *
  * Resets a completed task back to "pending" so it can be re-done
  * without manual SQL surgery. The parent slice and milestone must
@@ -79,7 +79,7 @@ export async function handleReopenTask(
       return;
     }
     if (isClosedStatus(slice.status)) {
-      guardError = `cannot reopen task in a closed slice: ${params.sliceId} (status: ${slice.status}) — use gsd_slice_reopen first`;
+      guardError = `cannot reopen task in a closed slice: ${params.sliceId} (status: ${slice.status}) — use otto_slice_reopen first`;
       return;
     }
 

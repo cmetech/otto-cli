@@ -2,8 +2,8 @@
  * List available models with optional fuzzy search and discovery support
  */
 
-import type { Api, Model } from "@loop24/pi-ai";
-import { fuzzyFilter } from "@loop24/pi-tui";
+import type { Api, Model } from "@otto/pi-ai";
+import { fuzzyFilter } from "@otto/pi-tui";
 import type { ModelRegistry } from "../core/model-registry.js";
 
 export interface ListModelsOptions {

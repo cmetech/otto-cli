@@ -1,5 +1,5 @@
 /**
- * LOOP24 Brand Colors — single source of truth.
+ * OTTO Brand Colors — single source of truth.
  *
  * Loader-fast: no runtime parsing, no fs reads, no async — just exported
  * constants. Safe to import from `src/loader.ts` and other early-boot files.
@@ -7,10 +7,10 @@
  * If you change a color here, every visual surface that imports from this
  * module updates on rebuild. Two surfaces remain out of band and must be
  * kept in sync manually:
- *   1. `src/resources/extensions/loop24/theme/loop24.json` — the canonical
+ *   1. `src/resources/extensions/otto/theme/otto.json` — the canonical
  *      JSON palette consumed by the TUI's theme system (cross-package
  *      boundary prevents direct import; see Known Deferred Cleanups item 4).
- *   2. `packages/pi-coding-agent/src/modes/interactive/theme/themes.ts:loop24`
+ *   2. `packages/pi-coding-agent/src/modes/interactive/theme/themes.ts:otto`
  *      — the inlined TypeScript theme const (same boundary problem).
  *   3. `scripts/install.sh` — bash, can't import TypeScript; hex values
  *      annotated inline with comments to make drift obvious in diffs.
@@ -23,7 +23,7 @@
 
 export const BRAND_BLACK_HEX = "#0C0C0C";   // background
 export const BRAND_WHITE_HEX = "#FAFAFA";   // foreground / text
-export const BRAND_YELLOW_HEX = "#FAD22D";  // primary / accent / LOOP24 mark
+export const BRAND_YELLOW_HEX = "#FAD22D";  // primary / accent / OTTO mark
 export const BRAND_BLUE_HEX = "#4D97ED";    // secondary / links / in-progress
 export const BRAND_PURPLE_HEX = "#AF78D2";  // tertiary / .planning/ artifacts
 export const BRAND_GREEN_HEX = "#3FCE8E";   // success

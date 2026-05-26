@@ -23,12 +23,12 @@ const { assertEq, assertTrue, report } = createTestContext();
 
 function createFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-disk-reconcile-"));
-  mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
   return base;
 }
 
 function writeFile(base: string, relativePath: string, content: string): void {
-  const full = join(base, ".gsd", relativePath);
+  const full = join(base, ".otto/workflow", relativePath);
   mkdirSync(join(full, ".."), { recursive: true });
   writeFileSync(full, content);
 }
@@ -60,7 +60,7 @@ async function main(): Promise<void> {
 
   // Set up: M001 in DB, M002 on disk only
   const base = createFixtureBase();
-  const dbPath = join(base, ".gsd", "gsd.db");
+  const dbPath = join(base, ".otto/workflow", "otto.db");
 
   try {
     openDatabase(dbPath);
@@ -101,7 +101,7 @@ async function main(): Promise<void> {
 
   {
     const summaryOnlyBase = createFixtureBase();
-    const summaryOnlyDbPath = join(summaryOnlyBase, ".gsd", "gsd.db");
+    const summaryOnlyDbPath = join(summaryOnlyBase, ".otto/workflow", "otto.db");
 
     try {
       openDatabase(summaryOnlyDbPath);

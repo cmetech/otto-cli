@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Slice-cadence merge and milestone resquash git operations.
 /**
  * Slice-cadence collapse — #4765.
@@ -102,8 +102,8 @@ function buildSliceMergeCommitMessage(milestoneId: string, sliceId: string, mile
   const body = [
     `Slice: ${sliceId}${names.sliceTitle ? ` - ${names.sliceTitle}` : ""}`,
     `Milestone: ${milestoneId}${names.milestoneTitle ? ` - ${names.milestoneTitle}` : ""}`,
-    `GSD-Slice: ${sliceId}`,
-    `GSD-Milestone: ${milestoneId}`,
+    `OTTO-Slice: ${sliceId}`,
+    `OTTO-Milestone: ${milestoneId}`,
     `Branch: ${milestoneBranch}`,
   ];
   return `${subject}\n\n${body.join("\n")}`;
@@ -116,7 +116,7 @@ function buildMilestoneResquashCommitMessage(milestoneId: string, sliceCount: nu
   const subject = milestoneTitle
     ? `feat: ${milestoneTitle} (${milestoneId}, ${sliceCount} slices re-squashed)`
     : `feat: ${milestoneId} (${sliceCount} slices re-squashed)`;
-  return `${subject}\n\nMilestone: ${milestoneId}${milestoneTitle ? ` - ${milestoneTitle}` : ""}\nGSD-Milestone: ${milestoneId}`;
+  return `${subject}\n\nMilestone: ${milestoneId}${milestoneTitle ? ` - ${milestoneTitle}` : ""}\nOTTO-Milestone: ${milestoneId}`;
 }
 
 function advanceMilestoneBranch(

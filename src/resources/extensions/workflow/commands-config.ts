@@ -4,8 +4,8 @@
  * Contains: TOOL_KEYS, loadToolApiKeys, getConfigAuthStorage, handleConfig
  */
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
-import { AuthStorage } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
+import { AuthStorage } from "@otto/pi-coding-agent";
 import { existsSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { workflowHome } from "./home.js";
@@ -61,7 +61,7 @@ let deprecationWarned = false;
 export async function handleConfig(ctx: ExtensionCommandContext): Promise<void> {
   if (!deprecationWarned) {
     ctx.ui.notify(
-      "/gsd config is deprecated and will be removed. Use /gsd keys (manages both LLM and tool API keys).",
+      "/otto config is deprecated and will be removed. Use /otto keys (manages both LLM and tool API keys).",
       "warning",
     );
     deprecationWarned = true;
@@ -70,7 +70,7 @@ export async function handleConfig(ctx: ExtensionCommandContext): Promise<void> 
   const auth = getConfigAuthStorage();
 
   // Show current status
-  const statusLines = ["GSD Tool Configuration\n"];
+  const statusLines = ["OTTO Tool Configuration\n"];
   for (const tool of TOOL_KEYS) {
     const hasKey = !!process.env[tool.env] || !!getStoredToolKey(auth, tool.id);
     statusLines.push(`  ${hasKey ? "\u2713" : "\u2717"} ${tool.label}${hasKey ? "" : ` \u2014 get key at ${tool.hint}`}`);

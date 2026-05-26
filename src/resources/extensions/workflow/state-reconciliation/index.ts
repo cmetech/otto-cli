@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-017 drift-driven State Reconciliation Module entry point.
 // reconcileBeforeDispatch runs before every Dispatch decision and worker spawn.
 

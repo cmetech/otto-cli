@@ -1,4 +1,4 @@
-// GSD Extension — write-intercept unit tests
+// OTTO Extension — write-intercept unit tests
 // Tests isBlockedStateFile() and BLOCKED_WRITE_ERROR constant.
 
 import test from 'node:test';
@@ -7,48 +7,48 @@ import { isBlockedStateFile, BLOCKED_WRITE_ERROR } from '../write-intercept.ts';
 
 // ─── isBlockedStateFile: blocked paths ───────────────────────────────────
 
-test('write-intercept: blocks unix .gsd/STATE.md path', () => {
-  assert.strictEqual(isBlockedStateFile('/project/.gsd/STATE.md'), true);
+test('write-intercept: blocks unix .otto/workflow/STATE.md path', () => {
+  assert.strictEqual(isBlockedStateFile('/project/.otto/workflow/STATE.md'), true);
 });
 
-test('write-intercept: blocks relative path with dir prefix before .gsd/STATE.md', () => {
-  assert.strictEqual(isBlockedStateFile('project/.gsd/STATE.md'), true);
+test('write-intercept: blocks relative path with dir prefix before .otto/workflow/STATE.md', () => {
+  assert.strictEqual(isBlockedStateFile('project/.otto/workflow/STATE.md'), true);
 });
 
-test('write-intercept: blocks bare relative .gsd/STATE.md (no leading separator)', () => {
-  // (^|[/\\]) matches paths that start with .gsd/ — covers the case where write
+test('write-intercept: blocks bare relative .otto/workflow/STATE.md (no leading separator)', () => {
+  // (^|[/\\]) matches paths that start with .otto/workflow/ — covers the case where write
   // tools receive a bare relative path before the file exists (realpathSync fails).
-  assert.strictEqual(isBlockedStateFile('.gsd/STATE.md'), true);
+  assert.strictEqual(isBlockedStateFile('.otto/workflow/STATE.md'), true);
 });
 
-test('write-intercept: blocks nested project .gsd/STATE.md path', () => {
-  assert.strictEqual(isBlockedStateFile('/Users/dev/my-project/.gsd/STATE.md'), true);
+test('write-intercept: blocks nested project .otto/workflow/STATE.md path', () => {
+  assert.strictEqual(isBlockedStateFile('/Users/dev/my-project/.otto/workflow/STATE.md'), true);
 });
 
-test('write-intercept: blocks .gsd/projects/<name>/STATE.md (symlinked projects path)', () => {
-  assert.strictEqual(isBlockedStateFile('/home/user/.gsd/projects/my-project/STATE.md'), true);
+test('write-intercept: blocks .otto/workflow/projects/<name>/STATE.md (symlinked projects path)', () => {
+  assert.strictEqual(isBlockedStateFile('/home/user/.otto/workflow/projects/my-project/STATE.md'), true);
 });
 
 // ─── isBlockedStateFile: allowed paths ───────────────────────────────────
 
-test('write-intercept: allows .gsd/ROADMAP.md', () => {
-  assert.strictEqual(isBlockedStateFile('/project/.gsd/ROADMAP.md'), false);
+test('write-intercept: allows .otto/workflow/ROADMAP.md', () => {
+  assert.strictEqual(isBlockedStateFile('/project/.otto/workflow/ROADMAP.md'), false);
 });
 
-test('write-intercept: allows .gsd/PLAN.md', () => {
-  assert.strictEqual(isBlockedStateFile('/project/.gsd/PLAN.md'), false);
+test('write-intercept: allows .otto/workflow/PLAN.md', () => {
+  assert.strictEqual(isBlockedStateFile('/project/.otto/workflow/PLAN.md'), false);
 });
 
-test('write-intercept: allows .gsd/REQUIREMENTS.md', () => {
-  assert.strictEqual(isBlockedStateFile('/project/.gsd/REQUIREMENTS.md'), false);
+test('write-intercept: allows .otto/workflow/REQUIREMENTS.md', () => {
+  assert.strictEqual(isBlockedStateFile('/project/.otto/workflow/REQUIREMENTS.md'), false);
 });
 
-test('write-intercept: allows .gsd/SUMMARY.md', () => {
-  assert.strictEqual(isBlockedStateFile('/project/.gsd/SUMMARY.md'), false);
+test('write-intercept: allows .otto/workflow/SUMMARY.md', () => {
+  assert.strictEqual(isBlockedStateFile('/project/.otto/workflow/SUMMARY.md'), false);
 });
 
-test('write-intercept: allows .gsd/PROJECT.md', () => {
-  assert.strictEqual(isBlockedStateFile('/project/.gsd/PROJECT.md'), false);
+test('write-intercept: allows .otto/workflow/PROJECT.md', () => {
+  assert.strictEqual(isBlockedStateFile('/project/.otto/workflow/PROJECT.md'), false);
 });
 
 test('write-intercept: allows regular source files', () => {
@@ -56,10 +56,10 @@ test('write-intercept: allows regular source files', () => {
 });
 
 test('write-intercept: allows slice plan files', () => {
-  assert.strictEqual(isBlockedStateFile('/project/.gsd/milestones/M001/slices/S01/S01-PLAN.md'), false);
+  assert.strictEqual(isBlockedStateFile('/project/.otto/workflow/milestones/M001/slices/S01/S01-PLAN.md'), false);
 });
 
-test('write-intercept: does not block files named STATE.md outside .gsd/', () => {
+test('write-intercept: does not block files named STATE.md outside .otto/workflow/', () => {
   assert.strictEqual(isBlockedStateFile('/project/docs/STATE.md'), false);
 });
 
@@ -71,6 +71,6 @@ test('write-intercept: BLOCKED_WRITE_ERROR is a non-empty string', () => {
 });
 
 test('write-intercept: BLOCKED_WRITE_ERROR mentions engine tool calls', () => {
-  assert.ok(BLOCKED_WRITE_ERROR.includes('gsd_task_complete'), 'should mention gsd_task_complete');
+  assert.ok(BLOCKED_WRITE_ERROR.includes('otto_task_complete'), 'should mention otto_task_complete');
   assert.ok(BLOCKED_WRITE_ERROR.includes('engine tool calls'), 'should mention engine tool calls');
 });

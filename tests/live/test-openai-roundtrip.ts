@@ -3,7 +3,7 @@
  * chat completion.  Asserts on HTTP status + response shape, never on
  * sampled content.
  *
- * Model ID is env-driven (`GSD_LIVE_OPENAI_MODEL`) so retirement doesn't
+ * Model ID is env-driven (`OTTO_LIVE_OPENAI_MODEL`) so retirement doesn't
  * require a code change.  Uses `max_completion_tokens` per the current
  * Chat Completions spec (the legacy `max_tokens` is deprecated).
  */
@@ -13,7 +13,7 @@ if (!apiKey) {
   process.exit(77); // POSIX skip convention
 }
 
-const model = process.env.GSD_LIVE_OPENAI_MODEL || "gpt-4o-mini";
+const model = process.env.OTTO_LIVE_OPENAI_MODEL || "gpt-4o-mini";
 
 const response = await fetch("https://api.openai.com/v1/chat/completions", {
   method: "POST",

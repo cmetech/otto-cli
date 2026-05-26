@@ -39,7 +39,7 @@ type ConsecutiveDispatchState = Pick<
  * `state.lastDispatchedKey`, and `state.lastDispatchPhase`.
  *
  * Returns `null` when dispatch is allowed, or a blocker message (including
- * guidance to run `/loop24 resume`) when the cap is reached.
+ * guidance to run `/otto resume`) when the cap is reached.
  */
 export function getConsecutiveDispatchBlocker(
   state: ConsecutiveDispatchState,
@@ -57,7 +57,7 @@ export function getConsecutiveDispatchBlocker(
 
   const count = state.consecutiveDispatchCount.get(key) ?? 0;
   if (count >= CONSECUTIVE_SAME_UNIT_CAP) {
-    return `Cannot dispatch ${unitType} ${unitId}: dispatched ${count} consecutive times; same-unit repeat cap reached. Resolve via /gsd resume.`;
+    return `Cannot dispatch ${unitType} ${unitId}: dispatched ${count} consecutive times; same-unit repeat cap reached. Resolve via /otto resume.`;
   }
 
   state.consecutiveDispatchCount.set(key, count + 1);
@@ -77,12 +77,12 @@ export function getPriorSliceCompletionBlocker(
   const { milestone: targetMid, slice: targetSid } = parseUnitId(unitId);
   if (!targetMid || !targetSid) return null;
 
-  // Parallel worker isolation: when GSD_MILESTONE_LOCK is set, this worker
+  // Parallel worker isolation: when OTTO_MILESTONE_LOCK is set, this worker
   // is scoped to a single milestone. Skip the cross-milestone dependency
   // check — other milestones are being handled by their own workers.
   // Without this, the dispatch guard sees incomplete slices in M010/M011
   // (cloned into the worktree DB) and blocks M012 from ever starting. #2797
-  const milestoneLock = (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK);
+  const milestoneLock = process.env.OTTO_MILESTONE_LOCK;
 
   // Use findMilestoneIds to respect custom queue order.
   // Only check milestones that come BEFORE the target in queue order.

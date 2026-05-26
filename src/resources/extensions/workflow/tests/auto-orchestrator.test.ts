@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Auto Orchestration module contract and ADR-015 invariant sequence tests.
 
 import test from "node:test";
@@ -958,7 +958,7 @@ test("stuck-loop: journal records the stuck-loop reason on advance-blocked", asy
 
 test("wired orchestrator base resolver prefers live project root after worktree cleanup", (t) => {
   const projectRoot = mkdtempSync(join(tmpdir(), "gsd-orch-root-"));
-  const staleWorktreeRoot = join(projectRoot, ".gsd", "worktrees", "M002");
+  const staleWorktreeRoot = join(projectRoot, ".otto/workflow", "worktrees", "M002");
   mkdirSync(join(staleWorktreeRoot, ".bg-shell"), { recursive: true });
   t.after(() => { try { rmSync(projectRoot, { recursive: true, force: true }); } catch { /* */ } });
 
@@ -975,9 +975,9 @@ test("wired orchestrator base resolver prefers live project root after worktree 
 
 test("wired orchestrator base resolver keeps a captured active git worktree", (t) => {
   const projectRoot = mkdtempSync(join(tmpdir(), "gsd-orch-worktree-"));
-  const worktreeRoot = join(projectRoot, ".gsd", "worktrees", "M003");
+  const worktreeRoot = join(projectRoot, ".otto/workflow", "worktrees", "M003");
   mkdirSync(worktreeRoot, { recursive: true });
-  writeFileSync(join(worktreeRoot, ".git"), "gitdir: /tmp/gsd-orch-worktree/.git/worktrees/M003\n");
+  writeFileSync(join(worktreeRoot, ".git"), "gitdir: /tmp/otto-orch-worktree/.git/worktrees/M003\n");
   t.after(() => { try { rmSync(projectRoot, { recursive: true, force: true }); } catch { /* */ } });
 
   assert.equal(

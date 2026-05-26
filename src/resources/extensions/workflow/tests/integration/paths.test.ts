@@ -22,44 +22,44 @@ function initGit(dir: string): void {
 }
 
 describe('paths', () => {
-  test('Case 1: .gsd exists at basePath — fast path', () => {
+  test('Case 1: .otto/workflow exists at basePath — fast path', () => {
     const root = tmp();
     try {
-      mkdirSync(join(root, ".gsd"));
+      mkdirSync(join(root, ".otto/workflow"));
       _clearWorkflowRootCache();
       const result = workflowRoot(root);
-      assert.deepStrictEqual(result, join(root, ".gsd"), "fast path: returns basePath/.gsd");
+      assert.deepStrictEqual(result, join(root, ".otto/workflow"), "fast path: returns basePath/.otto/workflow");
     } finally { cleanup(root); }
   });
 
-  test('Case 2: .gsd exists at git root, cwd is a subdirectory', () => {
+  test('Case 2: .otto/workflow exists at git root, cwd is a subdirectory', () => {
     const root = tmp();
     try {
       initGit(root);
-      mkdirSync(join(root, ".gsd"));
+      mkdirSync(join(root, ".otto/workflow"));
       const sub = join(root, "src", "deep");
       mkdirSync(sub, { recursive: true });
       _clearWorkflowRootCache();
       const result = workflowRoot(sub);
-      assert.deepStrictEqual(result, join(root, ".gsd"), "git-root probe: finds .gsd at git root from subdirectory");
+      assert.deepStrictEqual(result, join(root, ".otto/workflow"), "git-root probe: finds .otto/workflow at git root from subdirectory");
     } finally { cleanup(root); }
   });
 
-  test('Case 3: .gsd in an ancestor — walk-up finds it', () => {
+  test('Case 3: .otto/workflow in an ancestor — walk-up finds it', () => {
     const root = tmp();
     try {
       initGit(root);
       const project = join(root, "project");
-      mkdirSync(join(project, ".gsd"), { recursive: true });
+      mkdirSync(join(project, ".otto/workflow"), { recursive: true });
       const deep = join(project, "src", "deep");
       mkdirSync(deep, { recursive: true });
       _clearWorkflowRootCache();
       const result = workflowRoot(deep);
-      assert.deepStrictEqual(result, join(project, ".gsd"), "walk-up: finds .gsd in ancestor when git root has none");
+      assert.deepStrictEqual(result, join(project, ".otto/workflow"), "walk-up: finds .otto/workflow in ancestor when git root has none");
     } finally { cleanup(root); }
   });
 
-  test('Case 4: .gsd nowhere — fallback returns original basePath/.gsd', () => {
+  test('Case 4: .otto/workflow nowhere — fallback returns original basePath/.otto/workflow', () => {
     const root = tmp();
     try {
       initGit(root);
@@ -67,14 +67,14 @@ describe('paths', () => {
       mkdirSync(sub, { recursive: true });
       _clearWorkflowRootCache();
       const result = workflowRoot(sub);
-      assert.deepStrictEqual(result, join(sub, ".gsd"), "fallback: returns basePath/.gsd when .gsd not found anywhere");
+      assert.deepStrictEqual(result, join(sub, ".otto/workflow"), "fallback: returns basePath/.otto/workflow when .otto/workflow not found anywhere");
     } finally { cleanup(root); }
   });
 
   test('Case 5: cache — second call returns same value without re-probing', () => {
     const root = tmp();
     try {
-      mkdirSync(join(root, ".gsd"));
+      mkdirSync(join(root, ".otto/workflow"));
       _clearWorkflowRootCache();
       const first = workflowRoot(root);
       const second = workflowRoot(root);
@@ -83,16 +83,16 @@ describe('paths', () => {
     } finally { cleanup(root); }
   });
 
-  test('Case 6: .gsd at basePath takes precedence over ancestor .gsd', () => {
+  test('Case 6: .otto/workflow at basePath takes precedence over ancestor .otto/workflow', () => {
     const outer = tmp();
     try {
       initGit(outer);
-      mkdirSync(join(outer, ".gsd"));
+      mkdirSync(join(outer, ".otto/workflow"));
       const inner = join(outer, "nested");
-      mkdirSync(join(inner, ".gsd"), { recursive: true });
+      mkdirSync(join(inner, ".otto/workflow"), { recursive: true });
       _clearWorkflowRootCache();
       const result = workflowRoot(inner);
-      assert.deepStrictEqual(result, join(inner, ".gsd"), "precedence: nearest .gsd wins over ancestor");
+      assert.deepStrictEqual(result, join(inner, ".otto/workflow"), "precedence: nearest .otto/workflow wins over ancestor");
     } finally { cleanup(outer); }
   });
 });

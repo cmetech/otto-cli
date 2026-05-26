@@ -1,4 +1,4 @@
-// ADR-013 Stage 2c — /gsd knowledge write-side redirect tests.
+// ADR-013 Stage 2c — /otto knowledge write-side redirect tests.
 //
 // Locks in four properties of captureKnowledgeEntry / nextKnowledgeId:
 //   1. Pattern entries write a memory row with category="pattern" and a
@@ -26,8 +26,8 @@ import { knowledgeMdPath } from "../knowledge-parser.ts";
 
 function makeTmpBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-knowledge-capture-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   return base;
 }
 

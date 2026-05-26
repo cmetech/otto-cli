@@ -1,7 +1,7 @@
-// Project/App: LOOP24
-// File Purpose: Routes /loop24 commands through global guards and command handlers.
+// Project/App: OTTO
+// File Purpose: Routes /otto commands through global guards and command handlers.
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { homedir } from "node:os";
 import { resolve } from "node:path";
 
@@ -24,7 +24,7 @@ import { clearFreshWorkflowRunSurfaces, isFreshWorkflowWorkCommand } from "../fr
 
 const REQUIRES_PROJECT = new Set([
   "",
-  "next", "auto", "stop", "pause", "status", "visualize", "widget", "brief",
+  "next", "start", "auto", "stop", "pause", "status", "visualize", "widget", "brief",
   "report", "export", "queue", "quick", "discuss", "capture", "triage",
   "dispatch", "verdict", "history", "undo", "undo-task", "reset-slice",
   "rate", "skip", "cleanup", "closeout", "new-milestone", "new-project",

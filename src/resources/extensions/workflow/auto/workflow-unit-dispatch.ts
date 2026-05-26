@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Unit dispatch contract adapter for auto-mode loop.
 
 import type { SidecarItem } from "./session.js";

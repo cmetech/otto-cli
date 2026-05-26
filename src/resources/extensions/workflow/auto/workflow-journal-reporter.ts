@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Thin adapter for auto-mode workflow journal event emission.
 
 import type { JournalEntry, JournalEventType } from "../journal.js";

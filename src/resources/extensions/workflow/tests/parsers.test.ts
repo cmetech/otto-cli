@@ -9,7 +9,7 @@ import { parseTaskPlanFile, parseSummary, parseContinue, parseRequirementCounts,
 
 describe('parsers', () => {
 test('parseRoadmap: full roadmap', () => {
-  const content = `# M001: GSD Extension — Hierarchical Planning
+  const content = `# M001: OTTO Extension — Hierarchical Planning
 
 **Vision:** Build a structured planning system for coding agents.
 
@@ -57,7 +57,7 @@ Consumes from S03:
 
   const r = parseRoadmap(content);
 
-  assert.deepStrictEqual(r.title, 'M001: GSD Extension — Hierarchical Planning', 'roadmap title');
+  assert.deepStrictEqual(r.title, 'M001: OTTO Extension — Hierarchical Planning', 'roadmap title');
   assert.deepStrictEqual(r.vision, 'Build a structured planning system for coding agents.', 'roadmap vision');
   assert.deepStrictEqual(r.successCriteria.length, 3, 'success criteria count');
   assert.deepStrictEqual(r.successCriteria[0], 'All parsers have test coverage', 'first success criterion');

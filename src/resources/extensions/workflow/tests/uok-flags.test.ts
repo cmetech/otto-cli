@@ -52,8 +52,8 @@ test("uok legacy fallback preference forces legacy path", () => {
 });
 
 test("uok legacy fallback env var forces legacy path", () => {
-  const previous = process.env.GSD_UOK_FORCE_LEGACY;
-  process.env.GSD_UOK_FORCE_LEGACY = "1";
+  const previous = process.env.OTTO_UOK_FORCE_LEGACY;
+  process.env.OTTO_UOK_FORCE_LEGACY = "1";
   try {
     const flags = resolveUokFlags({
       uok: {
@@ -63,7 +63,7 @@ test("uok legacy fallback env var forces legacy path", () => {
     assert.equal(flags.enabled, false);
     assert.equal(flags.legacyFallback, true);
   } finally {
-    if (previous === undefined) delete process.env.GSD_UOK_FORCE_LEGACY;
-    else process.env.GSD_UOK_FORCE_LEGACY = previous;
+    if (previous === undefined) delete process.env.OTTO_UOK_FORCE_LEGACY;
+    else process.env.OTTO_UOK_FORCE_LEGACY = previous;
   }
 });

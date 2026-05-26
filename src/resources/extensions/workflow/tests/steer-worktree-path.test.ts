@@ -1,5 +1,5 @@
-// GSD Extension - Steer Worktree Path Resolution Test
-// Worktrees share the canonical project .gsd state root. /gsd steer writes
+// OTTO Extension - Steer Worktree Path Resolution Test
+// Worktrees share the canonical project .otto/workflow state root. /otto steer writes
 // overrides to that canonical root even when invoked with a worktree path.
 
 import { describe, test, beforeEach, afterEach } from "node:test";
@@ -16,31 +16,31 @@ describe("steer worktree path resolution (#3476)", () => {
 
   beforeEach(() => {
     projectRoot = mkdtempSync(join(tmpdir(), "gsd-steer-wt-"));
-    mkdirSync(join(projectRoot, ".gsd"), { recursive: true });
+    mkdirSync(join(projectRoot, ".otto/workflow"), { recursive: true });
 
-    // Simulate a worktree with its own .gsd directory
-    worktreePath = join(projectRoot, ".gsd", "worktrees", "M001");
-    mkdirSync(join(worktreePath, ".gsd"), { recursive: true });
+    // Simulate a worktree with its own .otto/workflow directory
+    worktreePath = join(projectRoot, ".otto/workflow", "worktrees", "M001");
+    mkdirSync(join(worktreePath, ".otto/workflow"), { recursive: true });
   });
 
   afterEach(() => {
     rmSync(projectRoot, { recursive: true, force: true });
   });
 
-  test("appendOverride writes to canonical project .gsd/ when worktree path is used", async () => {
+  test("appendOverride writes to canonical project .otto/workflow/ when worktree path is used", async () => {
     await appendOverride(worktreePath, "Use Postgres instead of SQLite", "M001/S01/T01");
 
-    // Override should be in the canonical project .gsd/
-    const wtOverrides = join(worktreePath, ".gsd", "OVERRIDES.md");
-    const rootOverrides = join(projectRoot, ".gsd", "OVERRIDES.md");
-    assert.ok(!existsSync(wtOverrides), "no override file in worktree-local .gsd/");
-    assert.ok(existsSync(rootOverrides), "override file exists in project root .gsd/");
+    // Override should be in the canonical project .otto/workflow/
+    const wtOverrides = join(worktreePath, ".otto/workflow", "OVERRIDES.md");
+    const rootOverrides = join(projectRoot, ".otto/workflow", "OVERRIDES.md");
+    assert.ok(!existsSync(wtOverrides), "no override file in worktree-local .otto/workflow/");
+    assert.ok(existsSync(rootOverrides), "override file exists in project root .otto/workflow/");
 
     const content = readFileSync(rootOverrides, "utf-8");
     assert.ok(content.includes("Use Postgres instead of SQLite"), "override content is correct");
   });
 
-  test("loadActiveOverrides reads canonical project .gsd/ when worktree path is used", async () => {
+  test("loadActiveOverrides reads canonical project .otto/workflow/ when worktree path is used", async () => {
     await appendOverride(worktreePath, "Switch to JWT auth", "M001/S02/T01");
 
     // Loading from worktree resolves to the canonical project state root.
@@ -57,8 +57,8 @@ describe("steer worktree path resolution (#3476)", () => {
   test("appendOverride falls back to project root when no worktree exists", async () => {
     await appendOverride(projectRoot, "Use Redis cache", "M001/S01/T01");
 
-    const rootOverrides = join(projectRoot, ".gsd", "OVERRIDES.md");
-    assert.ok(existsSync(rootOverrides), "override file exists in project root .gsd/");
+    const rootOverrides = join(projectRoot, ".otto/workflow", "OVERRIDES.md");
+    assert.ok(existsSync(rootOverrides), "override file exists in project root .otto/workflow/");
 
     const content = readFileSync(rootOverrides, "utf-8");
     assert.ok(content.includes("Use Redis cache"), "override content is correct");
@@ -98,8 +98,8 @@ describe("steer worktree path resolution (#3476)", () => {
 
     await appendOverride(targetPath, "Should go to project root", "M001/S01/T01");
 
-    const rootOverrides = join(projectRoot, ".gsd", "OVERRIDES.md");
-    const wtOverrides = join(worktreePath, ".gsd", "OVERRIDES.md");
+    const rootOverrides = join(projectRoot, ".otto/workflow", "OVERRIDES.md");
+    const wtOverrides = join(worktreePath, ".otto/workflow", "OVERRIDES.md");
 
     assert.ok(existsSync(rootOverrides), "override written to project root");
     assert.ok(!existsSync(wtOverrides), "override NOT written to inactive worktree");
@@ -117,7 +117,7 @@ describe("steer worktree path resolution (#3476)", () => {
     // Without a valid .git file, falls back to project root
     await appendOverride(targetPath, "Falls back without .git", "M001/S01/T01");
 
-    const rootOverrides = join(projectRoot, ".gsd", "OVERRIDES.md");
+    const rootOverrides = join(projectRoot, ".otto/workflow", "OVERRIDES.md");
     assert.ok(existsSync(rootOverrides), "override written to project root (no valid .git in worktree)");
   });
 });

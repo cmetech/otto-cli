@@ -1,30 +1,30 @@
 # Git Strategy
 
-GSD uses git for milestone isolation and sequential commits within each milestone. You choose an **isolation mode** that controls where work happens. The strategy is fully automated — you don't need to manage branches manually.
+OTTO uses git for milestone isolation and sequential commits within each milestone. You choose an **isolation mode** that controls where work happens. The strategy is fully automated — you don't need to manage branches manually.
 
 ## Isolation Modes
 
-GSD supports three isolation modes, configured via the `git.isolation` preference:
+OTTO supports three isolation modes, configured via the `git.isolation` preference:
 
 | Mode | Working Directory | Branch | Best For |
 |------|-------------------|--------|----------|
 | `none` (default) | Project root | Current branch (no milestone branch) | Most projects — no isolation overhead |
-| `worktree` | `.gsd/worktrees/<MID>/` | `milestone/<MID>` | Projects that need full file isolation between milestones |
+| `worktree` | `.otto/workflow/worktrees/<MID>/` | `milestone/<MID>` | Projects that need full file isolation between milestones |
 | `branch` | Project root | `milestone/<MID>` | Submodule-heavy repos where worktrees don't work well |
 
 ### `none` Mode (Default)
 
-Work happens directly on your current branch. No worktree, no milestone branch. GSD still commits sequentially with conventional commit messages, but there's no branch isolation.
+Work happens directly on your current branch. No worktree, no milestone branch. OTTO still commits sequentially with conventional commit messages, but there's no branch isolation.
 
 Use this for hot-reload workflows where file isolation breaks dev tooling (e.g., file watchers that only see the project root), or for small projects where branch overhead isn't worth it.
 
 ### `worktree` Mode
 
-Each milestone gets its own git worktree at `.gsd/worktrees/<MID>/` on a `milestone/<MID>` branch. All execution happens inside the worktree. On completion, the worktree is squash-merged to main as one clean commit. The worktree and branch are then cleaned up.
+Each milestone gets its own git worktree at `.otto/workflow/worktrees/<MID>/` on a `milestone/<MID>` branch. All execution happens inside the worktree. On completion, the worktree is squash-merged to main as one clean commit. The worktree and branch are then cleaned up.
 
 This provides full file isolation — changes in a milestone can't interfere with your main working copy.
 
-Worktree mode requires the repository to have at least one commit. If `git.isolation: worktree` is configured in a zero-commit repo with no committed `HEAD`, GSD temporarily runs as `none` so startup can continue. After the first commit exists, the same preference resolves to `worktree`.
+Worktree mode requires the repository to have at least one commit. If `git.isolation: worktree` is configured in a zero-commit repo with no committed `HEAD`, OTTO temporarily runs as `none` so startup can continue. After the first commit exists, the same preference resolves to `worktree`.
 
 ### `branch` Mode
 
@@ -77,16 +77,16 @@ Each worktree operates on its own branch with its own commit history. Merges hap
 
 ### Commit Format
 
-Commits use conventional commit format with GSD metadata in trailers:
+Commits use conventional commit format with OTTO metadata in trailers:
 
 ```
 feat: core type definitions
 
-GSD-Task: M001/S01/T01
+OTTO-Task: M001/S01/T01
 
 feat: markdown parser for plan files
 
-GSD-Task: M001/S01/T02
+OTTO-Task: M001/S01/T02
 ```
 
 ## Worktree Management
@@ -97,8 +97,8 @@ These features apply only in **worktree mode**.
 
 Auto mode creates and manages worktrees automatically:
 
-1. When a milestone starts, a worktree is created at `.gsd/worktrees/<MID>/` on branch `milestone/<MID>`
-2. The project-root SQLite database remains canonical runtime state; artifact/projection files are rendered under the active worktree-local `.gsd/` while execution runs inside that worktree
+1. When a milestone starts, a worktree is created at `.otto/workflow/worktrees/<MID>/` on branch `milestone/<MID>`
+2. The project-root SQLite database remains canonical runtime state; artifact/projection files are rendered under the active worktree-local `.otto/workflow/` while execution runs inside that worktree
    SQLite WAL coordination is single-host only; do not share this runtime across machines, and see `src/resources/extensions/workflow/docs/COORDINATION.md` for the coordination constraints.
 3. All execution happens inside the worktree
 4. On milestone completion, the worktree is squash-merged to the integration branch
@@ -115,16 +115,16 @@ Use the `/worktree` (or `/wt`) command for standalone manual worktree management
 /worktree remove
 ```
 
-Inside an active GSD TUI session, use `/gsd worktree` (or `/gsd wt`) for worktree commands that report through the session UI:
+Inside an active OTTO TUI session, use `/otto worktree` (or `/otto wt`) for worktree commands that report through the session UI:
 
 ```
-/gsd worktree list
-/gsd worktree merge [name]
-/gsd worktree clean
-/gsd worktree remove <name> [--force]
+/otto worktree list
+/otto worktree merge [name]
+/otto worktree clean
+/otto worktree remove <name> [--force]
 ```
 
-`list` shows each worktree's branch, path, diff stats, commit count, and whether it is clean, unmerged, or has uncommitted changes. `merge` brings a worktree back into the detected main branch and removes it afterward; if the worktree has dirty files, GSD tries to auto-commit them before merging. `clean` removes only merged or empty worktrees and keeps anything with pending changes. `remove` refuses to discard unmerged or uncommitted work unless you pass `--force`.
+`list` shows each worktree's branch, path, diff stats, commit count, and whether it is clean, unmerged, or has uncommitted changes. `merge` brings a worktree back into the detected main branch and removes it afterward; if the worktree has dirty files, OTTO tries to auto-commit them before merging. `clean` removes only merged or empty worktrees and keeps anything with pending changes. `remove` refuses to discard unmerged or uncommitted work unless you pass `--force`.
 
 ## Workflow Modes
 
@@ -162,7 +162,7 @@ git:
   pre_merge_check: false      # pre-merge validation
   commit_type: feat           # override commit type prefix
   main_branch: main           # primary branch name
-  commit_docs: true           # commit .gsd/ to git
+  commit_docs: true           # commit .otto/workflow/ to git
   isolation: none             # "none" (default), "worktree", or "branch"
   auto_pr: false              # create PR on milestone completion
   pr_target_branch: develop   # PR target branch (default: main)
@@ -170,7 +170,7 @@ git:
 
 ### Automatic Pull Requests
 
-For teams using Gitflow or branch-based workflows, GSD can automatically create a pull request when a milestone completes:
+For teams using Gitflow or branch-based workflows, OTTO can automatically create a pull request when a milestone completes:
 
 ```yaml
 git:
@@ -184,11 +184,11 @@ This pushes the milestone branch and creates a PR targeting `develop` (or whiche
 
 ### `commit_docs: false`
 
-When set to `false`, GSD adds `.gsd/` to `.gitignore` and keeps all planning artifacts local-only. Useful for teams where only some members use GSD, or when company policy requires a clean repository.
+When set to `false`, OTTO adds `.otto/workflow/` to `.gitignore` and keeps all planning artifacts local-only. Useful for teams where only some members use OTTO, or when company policy requires a clean repository.
 
 ## Self-Healing
 
-GSD includes automatic recovery for common git issues:
+OTTO includes automatic recovery for common git issues:
 
 - **Detached HEAD** — merge and worktree flows now refuse to proceed from a detached project root instead of silently switching branches. Check out the intended integration branch, then resume.
 - **Stale lock files** — removes `.git/index.lock` only after it is older than 5 minutes, so active git operations on large repos are not interrupted.
@@ -196,8 +196,8 @@ GSD includes automatic recovery for common git issues:
 - **Unsafe branch resets** — worktree and branch-mode setup refuses to force-reset a milestone branch if doing so would orphan commits that are not reachable from the start point.
 - **Orphaned worktrees** — detects and offers to clean up abandoned worktrees (worktree mode only)
 
-Run `/gsd doctor` to check git health manually.
+Run `/otto doctor` to check git health manually.
 
 ## Native Git Operations
 
-Since v2.16, GSD uses libgit2 via native bindings for read-heavy operations in the dispatch hot path. This eliminates ~70 process spawns per dispatch cycle, improving auto-mode throughput.
+Since v2.16, OTTO uses libgit2 via native bindings for read-heavy operations in the dispatch hot path. This eliminates ~70 process spawns per dispatch cycle, improving auto-mode throughput.

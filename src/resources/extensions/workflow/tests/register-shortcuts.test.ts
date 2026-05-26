@@ -25,8 +25,8 @@ function cleanup(dir: string): void {
 
 test("dashboard shortcut resolves the project root instead of the current worktree path", async (t) => {
   const projectRoot = makeTempDir("project");
-  const worktreeRoot = join(projectRoot, ".gsd", "worktrees", "M001");
-  mkdirSync(join(projectRoot, ".gsd"), { recursive: true });
+  const worktreeRoot = join(projectRoot, ".otto/workflow", "worktrees", "M001");
+  mkdirSync(join(projectRoot, ".otto/workflow"), { recursive: true });
   mkdirSync(worktreeRoot, { recursive: true });
 
   const originalCwd = process.cwd();
@@ -68,8 +68,8 @@ test("dashboard shortcut resolves the project root instead of the current worktr
   });
 
   assert.ok(customCalls > 0, "shortcut opens the dashboard overlay when project root is resolved");
-  assert.equal(notices.length, 0, "shortcut does not fall back to the missing-.gsd warning");
-  assert.equal(shortcuts.length, 5, "all GSD shortcuts are still registered");
+  assert.equal(notices.length, 0, "shortcut does not fall back to the missing-.otto/workflow warning");
+  assert.equal(shortcuts.length, 5, "all OTTO shortcuts are still registered");
   const keys = shortcuts.map((shortcut) => shortcut.key);
   assert.ok(keys.includes("ctrl+alt+g"), "primary dashboard shortcut is registered");
   assert.ok(keys.includes("ctrl+shift+g"), "fallback dashboard shortcut is registered");
@@ -82,8 +82,8 @@ test("dashboard shortcut resolves the project root instead of the current worktr
 
 test("parallel shortcut passes resolved project root into overlay", async (t) => {
   const base = makeTempDir("parallel-root");
-  const worktreeRoot = join(base, ".gsd", "worktrees", "M001");
-  mkdirSync(join(base, ".gsd", "parallel"), { recursive: true });
+  const worktreeRoot = join(base, ".otto/workflow", "worktrees", "M001");
+  mkdirSync(join(base, ".otto/workflow", "parallel"), { recursive: true });
   mkdirSync(worktreeRoot, { recursive: true });
 
   const originalCwd = process.cwd();

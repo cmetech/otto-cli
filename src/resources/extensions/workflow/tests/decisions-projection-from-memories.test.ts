@@ -32,8 +32,8 @@ import type { Decision } from "../types.ts";
 
 function makeTmpBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-decisions-stage2a-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   return base;
 }
 
@@ -413,7 +413,7 @@ test("saveDecisionToDb writes a DECISIONS.md projection sourced from memories th
       base,
     );
 
-    const md = readFileSync(join(base, ".gsd", "DECISIONS.md"), "utf-8");
+    const md = readFileSync(join(base, ".otto/workflow", "DECISIONS.md"), "utf-8");
     // The projection must include both rows by ID — proving the regen
     // sourced from memories (where dual-write landed them) rather than
     // silently skipping anything.
@@ -445,7 +445,7 @@ test("saveDecisionToDb injects a projection fallback when memory mirror is absen
     assert.equal(result.id, "D001");
     assert.equal(getAllDecisionsFromMemories().some((d) => d.id === "D001"), false);
 
-    const md = readFileSync(join(base, ".gsd", "DECISIONS.md"), "utf-8");
+    const md = readFileSync(join(base, ".otto/workflow", "DECISIONS.md"), "utf-8");
     assert.match(md, /\| D001 \| M001 fallback \| M001 \|  \|  \|  \| Yes \| agent \|/);
   } finally {
     cleanup(base);

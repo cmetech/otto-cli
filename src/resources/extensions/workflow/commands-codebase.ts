@@ -1,11 +1,11 @@
 /**
- * Command — /loop24 codebase
+ * Command — /otto codebase
  *
- * Generate and manage the codebase map (.gsd/CODEBASE.md).
+ * Generate and manage the codebase map (.otto/workflow/CODEBASE.md).
  * Subcommands: generate, update, stats, help
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import {
   generateCodebaseMap,

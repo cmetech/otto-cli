@@ -50,7 +50,7 @@ test('renders version and title', () => {
 })
 
 test('renders OTTO project state or fallback hint', (t) => {
-  const tmp = mkdtempSync(join(tmpdir(), 'loop24-welcome-fallback-'))
+  const tmp = mkdtempSync(join(tmpdir(), 'otto-welcome-fallback-'))
   const origCwd = process.cwd()
   process.chdir(tmp)
   t.after(() => {
@@ -105,7 +105,7 @@ test('omits remote channel when not provided', () => {
 })
 
 test('Project row truncates with ellipsis when milestone text overflows panel width', (t) => {
-  const tmp = mkdtempSync(join(tmpdir(), 'loop24-welcome-test-'))
+  const tmp = mkdtempSync(join(tmpdir(), 'otto-welcome-test-'))
   mkdirSync(join(tmp, CONFIG_DIR_NAME))
   writeFileSync(
     join(tmp, CONFIG_DIR_NAME, 'STATE.md'),
@@ -135,7 +135,7 @@ test('Project row truncates with ellipsis when milestone text overflows panel wi
 })
 
 test('Project row does not truncate short milestone text', (t) => {
-  const tmp = mkdtempSync(join(tmpdir(), 'loop24-welcome-test-'))
+  const tmp = mkdtempSync(join(tmpdir(), 'otto-welcome-test-'))
   mkdirSync(join(tmp, CONFIG_DIR_NAME))
   writeFileSync(join(tmp, CONFIG_DIR_NAME, 'STATE.md'), '**Active Milestone:** M001: Short title\n')
   const origCwd = process.cwd()

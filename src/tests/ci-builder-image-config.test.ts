@@ -1,4 +1,4 @@
-// Project/App: Open GSD
+// Project/App: Open OTTO
 // File Purpose: Regression tests for CI builder image workflow configuration.
 
 import assert from "node:assert/strict";
@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { parse } from "yaml";
 
-const BUILDER_IMAGE = "ghcr.io/open-gsd/gsd-ci-builder";
+const BUILDER_IMAGE = "ghcr.io/open-gsd/otto-ci-builder";
 
 test("publish workflows use the builder image produced by pipeline", () => {
   const prereleasePublish = readWorkflow("npm-publish.yml");

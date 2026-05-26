@@ -3,11 +3,11 @@
 **Status:** Accepted
 **Date:** 2026-03-27
 **Deciders:** Jeremy McSpadden
-**Related:** ADR-004 (capability-aware model routing), ADR-003 (pipeline simplification), [Issue #2790](https://github.com/open-gsd/gsd-pi/issues/2790)
+**Related:** ADR-004 (capability-aware model routing), ADR-003 (pipeline simplification), [Issue #2790](https://github.com/cmetech/otto-cli/issues/2790)
 
 ## Context
 
-PR #2755 lands capability-aware model routing (ADR-004), extending the router from a one-dimensional complexity-tier system to a two-dimensional system that scores models across 7 capability dimensions. GSD can now intelligently pick the best model for a task from a heterogeneous pool.
+PR #2755 lands capability-aware model routing (ADR-004), extending the router from a one-dimensional complexity-tier system to a two-dimensional system that scores models across 7 capability dimensions. OTTO can now intelligently pick the best model for a task from a heterogeneous pool.
 
 But model selection is only one piece of the multi-model puzzle. The system faces structural gaps as users configure diverse provider pools:
 
@@ -34,7 +34,7 @@ Introduce a provider capability registry and tool compatibility layer that integ
 1. **Phase 1:** Provider Capabilities Registry (`packages/pi-ai/src/providers/provider-capabilities.ts`)
 2. **Phase 2:** Tool Compatibility Metadata (extend `ToolDefinition` with `compatibility` field)
 3. **Phase 3:** Tool-compatibility filter in routing pipeline + `ProviderSwitchReport` in `transform-messages.ts`
-4. **Phase 3b:** Export `ProviderSwitchObserver` / `setProviderSwitchObserver` from `@loop24/pi-ai` and install a GSD observer that surfaces non-empty provider-switch reports as audit events, notifications, and in-memory stats.
+4. **Phase 3b:** Export `ProviderSwitchObserver` / `setProviderSwitchObserver` from `@otto/pi-ai` and install a OTTO observer that surfaces non-empty provider-switch reports as audit events, notifications, and in-memory stats.
 5. **Phase 4:** `adjustToolSet` extension hook
 
 ### Provider Switch Visibility
@@ -48,12 +48,12 @@ Introduce a provider capability registry and tool compatibility layer that integ
 - `syntheticToolResultsInserted`
 - `thoughtSignaturesDropped`
 
-`@loop24/pi-ai` exports `ProviderSwitchReport`, `ProviderSwitchObserver`, and `setProviderSwitchObserver(observer)`. The observer is single-subscriber by design; pass `undefined` to clear it. Observers receive only non-empty reports and are invoked synchronously after verbose stderr logging, with observer errors swallowed so telemetry cannot break model streaming.
+`@otto/pi-ai` exports `ProviderSwitchReport`, `ProviderSwitchObserver`, and `setProviderSwitchObserver(observer)`. The observer is single-subscriber by design; pass `undefined` to clear it. Observers receive only non-empty reports and are invoked synchronously after verbose stderr logging, with observer errors swallowed so telemetry cannot break model streaming.
 
-GSD installs its observer during bootstrap. Each non-empty report is surfaced in three places:
+OTTO installs its observer during bootstrap. Each non-empty report is surfaced in three places:
 
 - A UOK audit event when auto-mode trace context is active: `category: "model-policy"`, `type: "provider-switch"`, with the report fields in `payload`.
-- A warning notification via the notification store, so provider-switch context loss is visible without `GSD_VERBOSE=1`.
+- A warning notification via the notification store, so provider-switch context loss is visible without `OTTO_VERBOSE=1`.
 - Process-local rollup stats from `getProviderSwitchStats()` in `src/resources/extensions/workflow/provider-switch-observer.ts`, including totals, per-trace buckets, the last report, and timestamps.
 
 ## Consequences

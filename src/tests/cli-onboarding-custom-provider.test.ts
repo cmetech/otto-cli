@@ -9,7 +9,7 @@ import { SettingsManager } from "../../packages/pi-coding-agent/src/core/setting
 test("SettingsManager reads defaultProvider/defaultModel from the explicit agentDir used by CLI (#3860)", () => {
   const root = mkdtempSync(join(tmpdir(), "gsd-cli-settings-"));
   const cwd = join(root, "project");
-  const agentDir = join(root, ".gsd", "agent");
+  const agentDir = join(root, ".otto/workflow", "agent");
 
   try {
     mkdirSync(cwd, { recursive: true });

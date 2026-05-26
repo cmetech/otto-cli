@@ -8,9 +8,9 @@
 //
 // Clack-only steps (llm/search/remote/tool-keys via the first-run wizard) are
 // surfaced as notifications pointing the user at the canonical per-step
-// commands (/login, /loop24 keys, /loop24 remote) that are already ctx.ui-safe.
+// commands (/login, /otto keys, /otto remote) that are already ctx.ui-safe.
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent"
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent"
 import {
   ONBOARDING_STEPS,
   isValidStepId,

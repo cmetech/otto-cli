@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Helpers for safe auto-mode milestone worktree repair decisions.
 
 import { existsSync, lstatSync, readdirSync, type Stats } from "node:fs";
@@ -20,7 +20,7 @@ const defaultFs: AutoWorktreeRepairFs = {
   readdirSync,
 };
 
-const SAFE_STALE_WORKTREE_ENTRIES = new Set([".gsd", ".DS_Store"]);
+const SAFE_STALE_WORKTREE_ENTRIES = new Set([".otto", ".DS_Store"]);
 
 function isValidMilestoneId(milestoneId: string): boolean {
   return milestoneId.length > 0 && !/[\/\\]|\.\./.test(milestoneId);
@@ -124,7 +124,7 @@ export function assessAutoWorktreeRepairTarget(input: {
   if (unsafeEntries.length > 0) {
     return {
       ok: false,
-      reason: `stale worktree has non-GSD content: ${unsafeEntries.join(", ")}`,
+      reason: `stale worktree has non-OTTO content: ${unsafeEntries.join(", ")}`,
     };
   }
 

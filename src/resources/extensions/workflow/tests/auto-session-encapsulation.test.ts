@@ -33,17 +33,17 @@ function getRuntimeStateTsSource(): string {
   return readFileSync(RUNTIME_STATE_TS_PATH, "utf-8");
 }
 
-test("AutoSession.lockBasePath uses GSD_PROJECT_ROOT for symlink-resolved worktrees", () => {
-  const savedProjectRoot = process.env.GSD_PROJECT_ROOT;
-  process.env.GSD_PROJECT_ROOT = "/real/project";
+test("AutoSession.lockBasePath uses OTTO_PROJECT_ROOT for symlink-resolved worktrees", () => {
+  const savedProjectRoot = process.env.OTTO_PROJECT_ROOT;
+  process.env.OTTO_PROJECT_ROOT = "/real/project";
   try {
     const session = new AutoSession();
-    session.basePath = "/Users/dev/.gsd/projects/abc123/worktrees/M001/slices/S01";
+    session.basePath = "/Users/dev/.otto/workflow/projects/abc123/worktrees/M001/slices/S01";
 
     assert.equal(session.lockBasePath, "/real/project");
   } finally {
-    if (savedProjectRoot === undefined) delete process.env.GSD_PROJECT_ROOT;
-    else process.env.GSD_PROJECT_ROOT = savedProjectRoot;
+    if (savedProjectRoot === undefined) delete process.env.OTTO_PROJECT_ROOT;
+    else process.env.OTTO_PROJECT_ROOT = savedProjectRoot;
   }
 });
 

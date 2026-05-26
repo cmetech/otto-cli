@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for the long-running refactor baseline metrics harness.
 
 import assert from "node:assert/strict";
@@ -110,7 +110,7 @@ test("collectBaseline returns the phase-zero report shape", async () => {
   assert.equal(report.testCompile.cacheFileExists, true);
   assert.equal(report.metrics["testCompile.cacheHit"], 1);
   assert.equal(report.contracts.fixtures.total, 1);
-  assert.equal(report.metrics["contracts.fixtures.sharedBySurface"], 6);
+  assert.equal(report.metrics["contracts.fixtures.sharedBySurface"], 3);
   assert.equal(report.process.prGeneratorConsumers, 3);
   assert.equal(report.metrics["process.prGeneratorConsumers"], 3);
   assert.equal(report.metrics["process.prBodiesMissingIssue"], 0);
@@ -127,7 +127,7 @@ test("collectBaseline returns the phase-zero report shape", async () => {
     assert.equal(typeof report.metrics[metricName], "number", `${metricName} should be indexed as a number`);
   }
   assert.equal(report.workspace.areas.some((area: { area: string }) => area.area === "src"), true);
-  assert.equal(report.startup.timingEnv, "GSD_STARTUP_TIMING=1");
+  assert.equal(report.startup.timingEnv, "OTTO_STARTUP_TIMING=1");
 });
 
 test("buildMetricIndex includes workspace and command metrics", () => {
@@ -238,7 +238,7 @@ test("collectContractsMetrics reports fixture coverage and surface drift", async
 
   assert.equal(metrics.fixtures.total, 1);
   assert.deepEqual(metrics.fixtures.files, ["src/tests/fixtures/contracts-golden-fixtures.ts"]);
-  assert.equal(metrics.fixtures.sharedBySurface, 6);
+  assert.equal(metrics.fixtures.sharedBySurface, 3);
   assert.equal(metrics.surfaceDriftFailures, 0);
   assert.equal(metrics.legacyTypeImportsRemaining, 0);
 });
@@ -328,13 +328,13 @@ test("countMatches counts non-overlapping pattern matches", () => {
 test("countLegacyContractImports ignores rpc-client implementation types", () => {
   assert.equal(
     countLegacyContractImports(`
-      import type { RpcClient } from "@loop24-build/rpc-client";
-      import type { SdkAgentEvent, RpcCostUpdateEvent } from "@loop24-build/rpc-client";
+      import type { RpcClient } from "@otto-build/rpc-client";
+      import type { SdkAgentEvent, RpcCostUpdateEvent } from "@otto-build/rpc-client";
     `),
     2,
   );
   assert.equal(
-    countLegacyContractImports('import type { RpcClientOptions } from "@loop24-build/rpc-client";'),
+    countLegacyContractImports('import type { RpcClientOptions } from "@otto-build/rpc-client";'),
     0,
   );
 });
@@ -343,7 +343,7 @@ test("hasProcessDocConflict flags obsolete state-authority language", () => {
   assert.equal(hasProcessDocConflict("DB is authoritative; markdown is a projection."), false);
   assert.equal(hasProcessDocConflict("Markdown files are the authoritative runtime state."), true);
   assert.equal(hasProcessDocConflict("The filesystem-authoritative model owns status."), true);
-  assert.equal(hasProcessDocConflict(".gsd/ROADMAP.md is the source of truth."), true);
+  assert.equal(hasProcessDocConflict(".otto/workflow/ROADMAP.md is the source of truth."), true);
 });
 
 test("renderSummary includes key sections for human inspection", async () => {
@@ -427,13 +427,10 @@ async function writeContractsSurfaceFixtures(root: string): Promise<void> {
     "packages/pi-coding-agent/src/modes/rpc/rpc-types.ts",
     "packages/rpc-client/src/rpc-types.ts",
     "packages/mcp-server/src/types.ts",
-    "src/web/bridge-service.ts",
-    "web/lib/gsd-workspace-store.tsx",
-    "vscode-extension/src/gsd-client.ts",
   ];
   for (const file of files) {
     await mkdir(dirname(join(root, file)), { recursive: true });
-    await writeFile(join(root, file), 'import type { RpcCommand } from "@loop24-build/contracts";\n');
+    await writeFile(join(root, file), 'import type { RpcCommand } from "@otto-build/contracts";\n');
   }
 }
 

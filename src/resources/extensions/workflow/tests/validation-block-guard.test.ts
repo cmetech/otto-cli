@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for validation-blocked command gating.
 
 import test from "node:test";
@@ -22,10 +22,10 @@ function blockedState(): WorkflowDbState {
       [
         "Milestone M006 is blocked because milestone validation returned needs-attention.",
         "Fix options:",
-        "1. Review the validation details: `/gsd status`",
-        "2. If you fixed the missing evidence or issue, re-run milestone validation: `/gsd validate-milestone`",
-        "3. If the finding is acceptable, override it: `/gsd verdict pass --rationale \"why this is okay\"`",
-        "4. If this should wait, defer it explicitly: `/gsd park M006`",
+        "1. Review the validation details: `/otto status`",
+        "2. If you fixed the missing evidence or issue, re-run milestone validation: `/otto validate-milestone`",
+        "3. If the finding is acceptable, override it: `/otto verdict pass --rationale \"why this is okay\"`",
+        "4. If this should wait, defer it explicitly: `/otto park M006`",
       ].join("\n"),
     ],
     nextAction: "Resolve M006 validation attention before proceeding.",
@@ -96,9 +96,9 @@ test("validation block message includes attempted command and recovery options",
   const message = formatValidationBlockedMessage(blockedState(), "next");
 
   assert.ok(message);
-  assert.match(message, /\/gsd next cannot run/);
-  assert.match(message, /\/gsd status/);
-  assert.match(message, /\/gsd validate-milestone/);
-  assert.match(message, /\/gsd verdict pass --rationale/);
-  assert.match(message, /\/gsd park M006/);
+  assert.match(message, /\/otto next cannot run/);
+  assert.match(message, /\/otto status/);
+  assert.match(message, /\/otto validate-milestone/);
+  assert.match(message, /\/otto verdict pass --rationale/);
+  assert.match(message, /\/otto park M006/);
 });

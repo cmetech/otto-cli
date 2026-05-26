@@ -2,7 +2,7 @@
 /**
  * Sync piConfig from root package.json → workspace + pkg/ package.json.
  *
- * piConfig is the single knob that controls LOOP24's brand strings (name,
+ * piConfig is the single knob that controls OTTO's brand strings (name,
  * configDir, commandNamespace, brandName). It needs to live in THREE
  * package.json files for these three runtime contexts:
  *
@@ -13,7 +13,7 @@
  *      pi-coding-agent's config.js when PI_PACKAGE_DIR is unset (tests,
  *      standalone imports).
  *   3. pkg/package.json — read at runtime because src/loader.ts:84-88
- *      explicitly sets PI_PACKAGE_DIR=pkg/ for the loop24 binary path.
+ *      explicitly sets PI_PACKAGE_DIR=pkg/ for the otto binary path.
  *      Load-bearing for the actual CLI.
  *
  * Mirrors the existing scripts/sync-pkg-version.cjs pattern. Run by `prebuild`

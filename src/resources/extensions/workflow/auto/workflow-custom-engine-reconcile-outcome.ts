@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Applies custom-engine reconcile outcomes to auto-mode loop side effects.
 
 import type { CustomEngineReconcileOutcome } from "./workflow-custom-engine-reconcile.js";

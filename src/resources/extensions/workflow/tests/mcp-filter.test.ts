@@ -67,7 +67,7 @@ describe("computeMcpDisallowedTools", () => {
       "claude-haiku-4-5-20251001",
       undefined,
       ["server-a", "server-b"],
-      "gsd-workflow",
+      "otto-workflow",
     );
     assert.deepEqual(result, []);
   });
@@ -82,7 +82,7 @@ describe("computeMcpDisallowedTools", () => {
       "claude-opus-4-7",
       config,
       ["server-a", "server-b"],
-      "gsd-workflow",
+      "otto-workflow",
     );
     assert.deepEqual(result, []);
   });
@@ -97,7 +97,7 @@ describe("computeMcpDisallowedTools", () => {
       "claude-haiku-4-5-20251001",
       config,
       ["server-a", "server-b", "server-c"],
-      "gsd-workflow",
+      "otto-workflow",
     );
     assert.deepEqual(result.sort(), ["mcp__server-b__*", "mcp__server-c__*"]);
   });
@@ -112,7 +112,7 @@ describe("computeMcpDisallowedTools", () => {
       "claude-haiku-4-5-20251001",
       config,
       ["server-a", "server-b", "server-c"],
-      "gsd-workflow",
+      "otto-workflow",
     );
     assert.deepEqual(result, ["mcp__server-b__*"]);
   });
@@ -130,13 +130,13 @@ describe("computeMcpDisallowedTools", () => {
       "claude-haiku-4-5-20251001",
       config,
       ["server-a", "server-b", "server-c"],
-      "gsd-workflow",
+      "otto-workflow",
     );
     // server-c blocked by allowlist, server-b blocked by blocklist (wins over allowlist)
     assert.deepEqual(result.sort(), ["mcp__server-b__*", "mcp__server-c__*"]);
   });
 
-  it("gsd-workflow implicitly allowed even when not in allowlist (R003)", () => {
+  it("otto-workflow implicitly allowed even when not in allowlist (R003)", () => {
     const config: ClaudeCodeMcpConfig = {
       per_model: {
         "claude-haiku": { allowed_servers: ["server-a"] },
@@ -146,25 +146,25 @@ describe("computeMcpDisallowedTools", () => {
       "claude-haiku-4-5-20251001",
       config,
       ["server-a", "server-b"],
-      "gsd-workflow",
+      "otto-workflow",
     );
-    assert.ok(!result.includes("mcp__gsd-workflow__*"), "gsd-workflow must not be blocked");
+    assert.ok(!result.includes("mcp__otto-workflow__*"), "otto-workflow must not be blocked");
     assert.deepEqual(result, ["mcp__server-b__*"]);
   });
 
-  it("gsd-workflow blocked when explicitly in blocked_servers (R003 override)", () => {
+  it("otto-workflow blocked when explicitly in blocked_servers (R003 override)", () => {
     const config: ClaudeCodeMcpConfig = {
       per_model: {
-        "claude-haiku": { blocked_servers: ["gsd-workflow"] },
+        "claude-haiku": { blocked_servers: ["otto-workflow"] },
       },
     };
     const result = computeMcpDisallowedTools(
       "claude-haiku-4-5-20251001",
       config,
       ["server-a"],
-      "gsd-workflow",
+      "otto-workflow",
     );
-    assert.ok(result.includes("mcp__gsd-workflow__*"), "gsd-workflow must be blocked");
+    assert.ok(result.includes("mcp__otto-workflow__*"), "otto-workflow must be blocked");
   });
 
   it("returns mcp__<name>__* pattern format for each blocked server (R006)", () => {
@@ -177,7 +177,7 @@ describe("computeMcpDisallowedTools", () => {
       "claude-haiku-4-5-20251001",
       config,
       ["my-server", "other-server"],
-      "gsd-workflow",
+      "otto-workflow",
     );
     assert.deepEqual(result.sort(), ["mcp__my-server__*", "mcp__other-server__*"]);
   });
@@ -214,7 +214,7 @@ describe("integration: empirical tool-count reduction", () => {
       "test-model",
       config,
       discovered,
-      "gsd-workflow",
+      "otto-workflow",
     );
 
     // 5 discovered - 1 allowed = 4 blocked
@@ -250,7 +250,7 @@ describe("integration: empirical tool-count reduction", () => {
       "test-model",
       config,
       discovered,
-      "gsd-workflow",
+      "otto-workflow",
     );
 
     assert.deepEqual(disallowedTools, [], "no servers discovered → nothing to block");
@@ -279,7 +279,7 @@ describe("integration: empirical tool-count reduction", () => {
       "gpt-4o",
       config,
       discovered,
-      "gsd-workflow",
+      "otto-workflow",
     );
 
     assert.deepEqual(disallowedTools, [], "unmatched model must produce no blocks");

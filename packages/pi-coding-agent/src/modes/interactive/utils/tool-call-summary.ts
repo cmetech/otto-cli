@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Compact tool-call summaries for transcript tree rows.
 
 import { shortenPath } from "./shorten-path.js";

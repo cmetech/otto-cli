@@ -40,7 +40,7 @@ test("running otto from a fresh tmpdir does not create a .gsd directory", () => 
   const dir = mkdtempSync(join(tmpdir(), "otto-boot-no-gsd-"));
   try {
     spawnOtto(dir);
-    assert.equal(existsSync(join(dir, ".gsd")), false, "must not have created .gsd/ in cwd");
+    assert.equal(existsSync(join(dir, ".otto/workflow")), false, "must not have created .otto/workflow/ in cwd");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

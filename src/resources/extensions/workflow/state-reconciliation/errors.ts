@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-017 typed reconciliation failure for Recovery Classification.
 
 import type { DriftRecord } from "./types.js";

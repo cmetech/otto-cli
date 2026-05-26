@@ -1,7 +1,7 @@
-// Project/App: LOOP24
-// File Purpose: State-aware home menu for the bare /loop24 command.
+// Project/App: OTTO
+// File Purpose: State-aware home menu for the bare /otto command.
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { showNextAction } from "../shared/tui.js";
 import type { NextAction } from "../shared/next-action-ui.js";
@@ -68,7 +68,7 @@ export function buildHomeModel(state: WorkflowDbState): WorkflowHomeModel {
   const canAdvance = hasActiveWork && !blocked && !complete;
 
   return {
-    title: "GSD — What now?",
+    title: "OTTO — What now?",
     summary: [
       complete
         ? `All milestones complete${state.lastCompletedMilestone ? ` after ${state.lastCompletedMilestone.id}: ${state.lastCompletedMilestone.title}` : ""}.`
@@ -170,7 +170,7 @@ export async function showWorkflowHome(
   const state = await deriveState(basePath);
   const model = buildHomeModel(state);
 
-  if (!ctx.hasUI || (process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) === "1") {
+  if (!ctx.hasUI || process.env.OTTO_HEADLESS === "1") {
     ctx.ui.notify(formatHomeText(model), "info");
     return;
   }
@@ -179,7 +179,7 @@ export async function showWorkflowHome(
     title: model.title,
     summary: model.summary,
     actions: model.actions.map(toNextAction),
-    notYetMessage: "Run /gsd when ready.",
+    notYetMessage: "Run /otto when ready.",
   });
 
   if (choice === "not_yet") return;

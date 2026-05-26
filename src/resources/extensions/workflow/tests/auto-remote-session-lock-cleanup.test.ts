@@ -12,7 +12,7 @@ import { readCrashLock } from "../crash-recovery.ts";
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-remote-lock-cleanup-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -51,7 +51,7 @@ test("checkRemoteAutoSession clears stale lock state when lock PID is dead", (t)
   const base = makeBase();
   t.after(() => cleanup(base));
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   const workerId = registerAutoWorker({ projectRootRealpath: normalizeRealPath(base) });
   setWorkerPid(workerId, findDeadPidCandidate());
   expireWorker(workerId);

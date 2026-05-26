@@ -30,18 +30,18 @@ import {
  */
 function makeProjectDir(): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-db-ws-scope-")));
-  // hasWorkflowBootstrapArtifacts checks for .gsd/milestones or .gsd/PREFERENCES.md
-  mkdirSync(join(dir, ".gsd", "milestones"), { recursive: true });
+  // hasWorkflowBootstrapArtifacts checks for .otto/workflow/milestones or .otto/workflow/PREFERENCES.md
+  mkdirSync(join(dir, ".otto/workflow", "milestones"), { recursive: true });
   return dir;
 }
 
 /**
- * Create a worktree path inside a project's .gsd/worktrees/<MID>/ layout.
- * createWorkspace() will detect the /.gsd/worktrees/ segment and resolve the
+ * Create a worktree path inside a project's .otto/workflow/worktrees/<MID>/ layout.
+ * createWorkspace() will detect the /.otto/workflow/worktrees/ segment and resolve the
  * project root back to `projectDir`.
  */
 function makeWorktreeDir(projectDir: string, mid: string): string {
-  const worktreeDir = join(projectDir, ".gsd", "worktrees", mid);
+  const worktreeDir = join(projectDir, ".otto/workflow", "worktrees", mid);
   mkdirSync(worktreeDir, { recursive: true });
   return worktreeDir;
 }

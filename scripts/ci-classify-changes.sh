@@ -21,22 +21,15 @@ echo "$FILES"
 
 is_core_file() {
   case "$1" in
-    src/*|packages/*|native/*|scripts/*|web/*|extensions/*|tests/*|docker/*|Dockerfile|package.json|package-lock.json|tsconfig*.json) return 0 ;;
+    src/*|packages/*|native/*|scripts/*|extensions/*|tests/*|docker/*|Dockerfile|package.json|package-lock.json|tsconfig*.json) return 0 ;;
     packages/*/tsconfig.json) return 0 ;;
-    *) return 1 ;;
-  esac
-}
-
-is_web_file() {
-  case "$1" in
-    web/*|web/package.json|web/package-lock.json) return 0 ;;
     *) return 1 ;;
   esac
 }
 
 is_portability_file() {
   case "$1" in
-    src/*|packages/*|native/*|scripts/*|web/*|package.json|package-lock.json|web/package-lock.json|tsconfig*.json) return 0 ;;
+    src/*|packages/*|native/*|scripts/*|package.json|package-lock.json|tsconfig*.json) return 0 ;;
     packages/*/tsconfig.json) return 0 ;;
     *) return 1 ;;
   esac
@@ -58,7 +51,6 @@ is_docker_file() {
 }
 
 HEAVY_CODE=""
-WEB=""
 PORTABILITY=""
 WINDOWS_E2E=""
 DOCKER=""
@@ -66,9 +58,6 @@ while IFS= read -r file; do
   [ -z "$file" ] && continue
   if is_core_file "$file"; then
     HEAVY_CODE="${HEAVY_CODE}${file}"$'\n'
-  fi
-  if is_web_file "$file"; then
-    WEB="${WEB}${file}"$'\n'
   fi
   if is_portability_file "$file"; then
     PORTABILITY="${PORTABILITY}${file}"$'\n'
@@ -101,13 +90,6 @@ if [ -n "$HEAVY_CODE" ]; then
   echo "$HEAVY_CODE"
 else
   write_output "heavy-code-changed" "false" "No build/runtime-relevant changes — skipping heavy build/test jobs"
-fi
-
-if [ -n "$WEB" ]; then
-  write_output "web-changed" "true" "Web host files changed:"
-  echo "$WEB"
-else
-  write_output "web-changed" "false" "No web host changes — skipping build:web-host"
 fi
 
 if [ -n "$PORTABILITY" ]; then

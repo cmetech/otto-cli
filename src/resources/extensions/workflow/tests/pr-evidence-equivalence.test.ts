@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Golden-fixture equivalence tests pinning PR-body output for buildPrEvidence and formatSwarmLanePRBody.
 
 import test from "node:test";

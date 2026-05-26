@@ -44,12 +44,12 @@ import {
 
 function makeProjectDir(): string {
   const dir = mkdtempSync(join(tmpdir(), "gsd-metrics-sleep-"));
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   return dir;
 }
 
 function metricsPath(base: string): string {
-  return join(base, ".gsd", "metrics.json");
+  return join(base, ".otto/workflow", "metrics.json");
 }
 
 function lockPath(base: string): string {
@@ -87,8 +87,8 @@ function assistantCtx(): any {
 // Writes its PID to stdout once the lock is acquired so the caller can synchronize.
 const LOCK_HOLDER_WORKER = `
 const { openSync, closeSync, writeFileSync, unlinkSync } = require('node:fs');
-const lockPath = process.env.GSD_TEST_LOCK_PATH;
-const holdMs = parseInt(process.env.GSD_TEST_HOLD_MS || '100', 10);
+const lockPath = process.env.OTTO_TEST_LOCK_PATH;
+const holdMs = parseInt(process.env.OTTO_TEST_HOLD_MS || '100', 10);
 
 const deadline = Date.now() + 3000;
 let acquired = false;
@@ -164,8 +164,8 @@ describe("metrics lock retry sleep (M3 follow-up)", () => {
     const child = spawn(process.execPath, ["-e", LOCK_HOLDER_WORKER], {
       env: {
         ...process.env,
-        GSD_TEST_LOCK_PATH: lp,
-        GSD_TEST_HOLD_MS: "100",
+        OTTO_TEST_LOCK_PATH: lp,
+        OTTO_TEST_HOLD_MS: "100",
       },
     });
 

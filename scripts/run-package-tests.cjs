@@ -47,8 +47,8 @@ function commandExists(command, args = ['--version']) {
 function hasNativeAddon() {
 	const platformTag = `${process.platform}-${process.arch}`
 	return (
-		existsSync(join(REPO_ROOT, 'native', 'addon', `gsd_engine.${platformTag}.node`)) ||
-		existsSync(join(REPO_ROOT, 'native', 'addon', 'gsd_engine.dev.node'))
+		existsSync(join(REPO_ROOT, 'native', 'addon', `otto_engine.${platformTag}.node`)) ||
+		existsSync(join(REPO_ROOT, 'native', 'addon', 'otto_engine.dev.node'))
 	)
 }
 
@@ -129,7 +129,7 @@ function main() {
 	const packages = getLinkablePackages()
 	const summary = []
 	for (const pkg of packages) {
-		if (pkg.packageName === '@loop24/native') {
+		if (pkg.packageName === '@otto/native') {
 			const canRunNative = hasNativeAddon() || commandExists('cargo')
 			summary.push({
 				pkg: pkg.packageName,
@@ -155,7 +155,7 @@ function main() {
 	let failureCount = 0
 
 	for (const pkg of packages) {
-		if (pkg.packageName === '@loop24/native') {
+		if (pkg.packageName === '@otto/native') {
 			if (!hasNativeAddon() && !commandExists('cargo')) {
 				process.stderr.write(
 					`Skipping ${pkg.packageName}: no native addon present and \`cargo\` is unavailable in this environment.\n`

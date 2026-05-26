@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Best-effort worker heartbeat adapter for auto-mode loop.
 
 export interface WorkerHeartbeatSession {

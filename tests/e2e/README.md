@@ -1,6 +1,6 @@
-# GSD-2 e2e tests
+# OTTO e2e tests
 
-End-to-end tests that spawn the **real built** `gsd` binary as a child process
+End-to-end tests that spawn the **real built** `otto` binary as a child process
 and exercise it through realistic flows.
 
 These exist to catch regressions that mock-heavy unit/integration tests can't:
@@ -11,10 +11,10 @@ real argv parsing, real env handling, real signal/exit behavior, real I/O.
 ```bash
 npm run build:core
 chmod +x dist/loader.js
-GSD_SMOKE_BINARY="$(pwd)/dist/loader.js" npm run test:e2e
+OTTO_SMOKE_BINARY="$(pwd)/dist/loader.js" npm run test:e2e
 ```
 
-If `GSD_SMOKE_BINARY` is not set, the suite falls back to whatever `gsd`
+If `OTTO_SMOKE_BINARY` is not set, the suite falls back to whatever `otto`
 resolves on PATH (matching the convention used by `tests/live-regression`).
 
 ### Docker e2e (separate suite)
@@ -41,14 +41,14 @@ Docker-relevant changes (Dockerfile, scripts/, package*.json, src/, etc.).
 ```ts
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { createTmpProject, gsdSync, gsdAsync } from "./_shared/index.ts";
+import { createTmpProject, ottoSync, ottoAsync } from "./_shared/index.ts";
 
 describe("my feature", () => {
   test("does the thing", (t) => {
     const project = createTmpProject({ git: true });
     t.after(project.cleanup);
 
-    const result = gsdSync(["some-command"], { cwd: project.dir });
+    const result = ottoSync(["some-command"], { cwd: project.dir });
 
     assert.equal(result.code, 0);
     assert.match(result.stdoutClean, /expected output/);
@@ -58,15 +58,15 @@ describe("my feature", () => {
 
 ## Harness contracts (`_shared/`)
 
-- **`spawn.ts`** — `gsdSync` / `gsdAsync` wrappers. Both:
-  - Resolve `GSD_SMOKE_BINARY` → `node <path>` vs PATH `gsd` automatically.
-  - Strip every `GSD_*` env var inherited from the host (prevents local
+- **`spawn.ts`** — `ottoSync` / `ottoAsync` wrappers. Both:
+  - Resolve `OTTO_SMOKE_BINARY` → `node <path>` vs PATH `otto` automatically.
+  - Strip every `OTTO_*` env var inherited from the host (prevents local
     config leaking into CI).
   - Set `TMPDIR` to the canonical (realpath) tmpdir to avoid the macOS
     `/var` vs `/private/var` symlink mismatch.
-  - Force `GSD_NON_INTERACTIVE=1`.
+  - Force `OTTO_NON_INTERACTIVE=1`.
   - Provide ANSI-stripped output via `result.stdoutClean` / `stderrClean`.
-- **`tmp-project.ts`** — `createTmpProject({ git, gsdSkeleton, files })`
+- **`tmp-project.ts`** — `createTmpProject({ git, ottoWorkflowSkeleton, files })`
   returns `{ dir, cleanup, writeFile }`. Always wire `t.after(cleanup)`.
   `git: true` initializes with `--initial-branch=main` for cross-platform
   determinism.
@@ -79,8 +79,8 @@ describe("my feature", () => {
 - ❌ Reading source files and grepping with regex — see "No source-grep
   tests" in [CONTRIBUTING.md](../../CONTRIBUTING.md). E2e is the wrong layer
   for that anyway.
-- ❌ Spawning `gsd` directly with `child_process.spawn` — bypasses the
-  env-stripping and TMPDIR fix. Always go through `gsdSync` / `gsdAsync`.
+- ❌ Spawning `otto` directly with `child_process.spawn` — bypasses the
+  env-stripping and TMPDIR fix. Always go through `ottoSync` / `ottoAsync`.
 - ❌ Asserting on raw ANSI-coded output. Use `result.stdoutClean`.
 - ❌ Calling real LLM/network APIs. Future phases land a fake-LLM provider
   that replays scripted transcripts; until then, e2e tests must avoid any
@@ -96,7 +96,7 @@ describe("my feature", () => {
 - ✅ Phase 7 (migration smoke)
 - ✅ B (docker runtime smoke against current source)
 - ✅ D (Windows smoke coverage — non-blocking inside the portability job)
-- Dropped: `gsd undo` e2e. Schema rollback is not a shipped feature.
+- Dropped: `otto undo` e2e. Schema rollback is not a shipped feature.
 - Dropped: Studio launch-only e2e. Studio is retired from the CI e2e process.
 
 The suite now covers the originally planned shipped CLI/runtime surfaces. Add

@@ -7,8 +7,8 @@
  */
 process.title = "pi";
 
-import { setBedrockProviderModule } from "@loop24/pi-ai";
-import { bedrockProviderModule } from "@loop24/pi-ai/bedrock-provider";
+import { setBedrockProviderModule } from "@otto/pi-ai";
+import { bedrockProviderModule } from "@otto/pi-ai/bedrock-provider";
 import { EnvHttpProxyAgent, setGlobalDispatcher } from "undici";
 import { installAbortSignalTimeoutReasonListener } from "./cli/abort-signal-timeout.js";
 import { main } from "./main.js";

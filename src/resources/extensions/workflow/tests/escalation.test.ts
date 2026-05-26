@@ -1,4 +1,4 @@
-// GSD Extension — ADR-011 Phase 2 Mid-Execution Escalation tests
+// OTTO Extension — ADR-011 Phase 2 Mid-Execution Escalation tests
 // Covers: artifact write/read, detection, resolution (A|B|accept|reject-blocker),
 // DB claim race, carry-forward injection, schema v16/v17 migration, feature flag.
 
@@ -37,7 +37,7 @@ import type { EscalationOption } from "../types.ts";
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-adr011-p2-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
   return base;
 }
 
@@ -47,7 +47,7 @@ function cleanup(base: string): void {
 }
 
 function writePrefs(base: string, enabled: boolean): void {
-  const path = join(base, ".gsd", "PREFERENCES.md");
+  const path = join(base, ".otto/workflow", "PREFERENCES.md");
   writeFileSync(path, [
     "---",
     "version: 1",
@@ -58,7 +58,7 @@ function writePrefs(base: string, enabled: boolean): void {
 }
 
 function seedCompletedTask(base: string, taskId: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice" });
   insertTask({
@@ -331,7 +331,7 @@ test("ADR-011 P2: listEscalationArtifacts filters to actionable by default", (t)
 test("ADR-011 P2: schema v20 fresh DB has all escalation columns on tasks + source on decisions", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   const adapter = _getAdapter()!;
   const tasksCols = adapter.prepare("PRAGMA table_info(tasks)").all().map((r) => r["name"] as string);
@@ -423,7 +423,7 @@ test("ADR-011 P3: resolve-on-missing-artifact returns not-found without partial 
 test("ADR-011 P3: escalation write + detect latency — 20 tasks, one escalation, detection under 100ms", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice" });
   for (let i = 1; i <= 20; i++) {
@@ -431,7 +431,7 @@ test("ADR-011 P3: escalation write + detect latency — 20 tasks, one escalation
     insertTask({ id: tid, sliceId: "S01", milestoneId: "M001", title: `Task ${i}`, status: "complete" });
   }
   // Escalation on T15 only.
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
   writeEscalationArtifact(base, buildEscalationArtifact({
     taskId: "T15", sliceId: "S01", milestoneId: "M001",
     question: "Q", options: sampleOptions, recommendation: "A", recommendationRationale: "r",
@@ -562,7 +562,7 @@ test("ADR-011 P3 #21: blocker takes priority over escalation when both flags coe
 test("ADR-011 P3 #22: ADR-009 audit envelopes emitted across the escalation lifecycle", (t) => {
   // Verifies that every user-visible escalation event writes a structured
   // audit envelope (eventId, traceId, category, type, ts, payload) to
-  // .gsd/audit/events.jsonl. ADR-009 control-plane consumers depend on this
+  // .otto/workflow/audit/events.jsonl. ADR-009 control-plane consumers depend on this
   // shape. Covered event types:
   //   - escalation-manual-attention-created (on write)
   //   - escalation-user-responded            (on resolve with option)
@@ -591,8 +591,8 @@ test("ADR-011 P3 #22: ADR-009 audit envelopes emitted across the escalation life
   resolveEscalation(base, "M001", "S01", "T51", "reject-blocker", "blocker path");
 
   // Read audit log and parse each JSONL envelope.
-  const logPath = join(base, ".gsd", "audit", "events.jsonl");
-  assert.ok(existsSync(logPath), "audit log must exist at .gsd/audit/events.jsonl");
+  const logPath = join(base, ".otto/workflow", "audit", "events.jsonl");
+  assert.ok(existsSync(logPath), "audit log must exist at .otto/workflow/audit/events.jsonl");
   const lines = readFileSync(logPath, "utf-8").split("\n").filter((l) => l.length > 0);
   const events = lines.map((l) => JSON.parse(l) as Record<string, unknown>);
   const escalationEvents = events.filter((e) => typeof e["type"] === "string" && (e["type"] as string).startsWith("escalation-"));
@@ -634,11 +634,11 @@ test("ADR-011 P3 #23: concurrent escalations across parallel slices — only the
   const base = makeBase();
   t.after(() => cleanup(base));
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice A" });
   insertSlice({ id: "S02", milestoneId: "M001", title: "Slice B" });
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S02", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S02", "tasks"), { recursive: true });
   insertTask({ id: "T60", sliceId: "S01", milestoneId: "M001", title: "Task A", status: "complete" });
   insertTask({ id: "T70", sliceId: "S02", milestoneId: "M001", title: "Task B", status: "complete" });
   insertTask({ id: "T71", sliceId: "S02", milestoneId: "M001", title: "Task B2", status: "complete" });
@@ -760,7 +760,7 @@ test("ADR-011 P3 #25: artifact write failure surfaces, leaves DB flags clean, an
   //      recovery, not replay).
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S09", milestoneId: "M001", title: "Unseeded slice" });
   insertTask({ id: "T90", sliceId: "S09", milestoneId: "M001", title: "T", status: "complete" });
@@ -786,7 +786,7 @@ test("ADR-011 P3 #25: artifact write failure surfaces, leaves DB flags clean, an
   assert.equal(midRow?.escalation_artifact_path, null);
 
   // Audit log must have no escalation-created events from the failed write.
-  const logPath = join(base, ".gsd", "audit", "events.jsonl");
+  const logPath = join(base, ".otto/workflow", "audit", "events.jsonl");
   const preLines = existsSync(logPath)
     ? readFileSync(logPath, "utf-8").split("\n").filter((l) => l.length > 0)
     : [];
@@ -796,7 +796,7 @@ test("ADR-011 P3 #25: artifact write failure surfaces, leaves DB flags clean, an
   // Phase 2 — caller recovers (creates the slice dir), retries.
   // clearPathCache() because resolveSlicePath caches directory reads and
   // the first failed attempt populated a miss for S09.
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S09", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S09", "tasks"), { recursive: true });
   const { clearPathCache } = await import("../paths.ts");
   clearPathCache();
   const path = writeEscalationArtifact(base, artifact);

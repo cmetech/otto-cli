@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Shared capped workflow protocol and doctor-heal prompt payload helpers.
 
 const DEFAULT_WORKFLOW_PROTOCOL_EXCERPT_CHARS = 4_000;
@@ -40,7 +40,7 @@ export function buildWorkflowDispatchContent(opts: {
   maxProtocolChars?: number;
 }): string {
   return [
-    "Read the following GSD workflow protocol excerpt and execute exactly. Use the source path for a full protocol read only if the excerpt lacks a required rule.",
+    "Read the following OTTO workflow protocol excerpt and execute exactly. Use the source path for a full protocol read only if the excerpt lacks a required rule.",
     "",
     buildWorkflowProtocolExcerpt(opts.workflow, opts.workflowPath, { maxChars: opts.maxProtocolChars }),
     "",
@@ -76,13 +76,13 @@ export function buildDoctorHealIssuePayload(
     capText(block, maxIssueChars, "Issue details truncated; inspect the relevant artifact before editing."),
   );
   if (blocks.length > maxIssues) {
-    topBlocks.push(`[${blocks.length - maxIssues} additional actionable issue(s) omitted from prompt. Re-run /gsd doctor heal after this repair pass.]`);
+    topBlocks.push(`[${blocks.length - maxIssues} additional actionable issue(s) omitted from prompt. Re-run /otto doctor heal after this repair pass.]`);
   }
   return capText(topBlocks.join("\n\n"), maxChars, "Structured issue list truncated; repair top actionable issues first and re-run doctor heal.");
 }
 
 function getWorkflowProtocolExcerptLimit(): number {
-  const raw = process.env.PI_GSD_WORKFLOW_PROTOCOL_MAX_CHARS;
+  const raw = process.env.PI_OTTO_WORKFLOW_PROTOCOL_MAX_CHARS;
   if (!raw) return DEFAULT_WORKFLOW_PROTOCOL_EXCERPT_CHARS;
   const parsed = Number(raw);
   if (!Number.isFinite(parsed) || parsed < MIN_WORKFLOW_PROTOCOL_EXCERPT_CHARS) {

@@ -1,5 +1,5 @@
-import type { ThinkingLevel } from "@loop24/pi-agent-core";
-import { Container, type SelectItem, SelectList, Text } from "@loop24/pi-tui";
+import type { ThinkingLevel } from "@otto/pi-agent-core";
+import { Container, type SelectItem, SelectList, Text } from "@otto/pi-tui";
 import { getSelectListTheme } from "../theme/theme.js";
 import { DynamicBorder } from "./dynamic-border.js";
 import { selectorFooter } from "./keybinding-hints.js";

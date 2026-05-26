@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: OTTO-2
 // File Purpose: E2E gate for headless tiny milestone completion through auto-mode.
 
 import { execFileSync } from "node:child_process";
@@ -11,14 +11,14 @@ import { join } from "node:path";
 import {
 	artifactsFor,
 	createTmpProject,
-	gsdSync,
+	ottoSync,
 	parseJsonEvents,
 	writeTranscript,
 } from "./_shared/index.ts";
 
 function binaryAvailable(): { ok: boolean; reason?: string } {
-	const bin = process.env.GSD_SMOKE_BINARY;
-	if (!bin) return { ok: false, reason: "GSD_SMOKE_BINARY not set; build with `npm run build:core` and re-export." };
+	const bin = process.env.OTTO_SMOKE_BINARY;
+	if (!bin) return { ok: false, reason: "OTTO_SMOKE_BINARY not set; build with `npm run build:core` and re-export." };
 	if (!existsSync(bin)) return { ok: false, reason: `binary not found at ${bin}` };
 	return { ok: true };
 }
@@ -37,12 +37,12 @@ function buildTranscript(): string {
 	return writeTranscript([
 		{
 			turn: 1,
-			expect: { modelId: "gsd-fake-model", lastUserText: "Headless Milestone Creation" },
+			expect: { modelId: "otto-fake-model", lastUserText: "Headless Milestone Creation" },
 			emit: {
 				kind: "tool_use",
 				calls: [{
 					id: "project",
-					name: "gsd_summary_save",
+					name: "otto_summary_save",
 					input: {
 						artifact_type: "PROJECT",
 						content: [
@@ -61,12 +61,12 @@ function buildTranscript(): string {
 		},
 		{
 			turn: 2,
-			expect: { hasToolResultFor: "gsd_summary_save" },
+			expect: { hasToolResultFor: "otto_summary_save" },
 			emit: {
 				kind: "tool_use",
 				calls: [{
 					id: "requirement",
-					name: "gsd_requirement_save",
+					name: "otto_requirement_save",
 					input: {
 						class: "core-capability",
 						description: "The source module returns the requested ready value.",
@@ -83,12 +83,12 @@ function buildTranscript(): string {
 		},
 		{
 			turn: 3,
-			expect: { hasToolResultFor: "gsd_requirement_save" },
+			expect: { hasToolResultFor: "otto_requirement_save" },
 			emit: {
 				kind: "tool_use",
 				calls: [{
 					id: "requirements",
-					name: "gsd_summary_save",
+					name: "otto_summary_save",
 					input: {
 						artifact_type: "REQUIREMENTS",
 						content: "# Requirements\n",
@@ -98,7 +98,7 @@ function buildTranscript(): string {
 		},
 		{
 			turn: 4,
-			expect: { hasToolResultFor: "gsd_summary_save" },
+			expect: { hasToolResultFor: "otto_summary_save" },
 			emit: {
 				kind: "tool_use",
 				calls: [{
@@ -131,7 +131,7 @@ function buildTranscript(): string {
 				kind: "tool_use",
 				calls: [{
 					id: "context",
-					name: "gsd_summary_save",
+					name: "otto_summary_save",
 					input: {
 						milestone_id: "M001",
 						artifact_type: "CONTEXT",
@@ -156,12 +156,12 @@ function buildTranscript(): string {
 		},
 		{
 			turn: 6,
-			expect: { hasToolResultFor: "gsd_summary_save" },
+			expect: { hasToolResultFor: "otto_summary_save" },
 			emit: {
 				kind: "tool_use",
 				calls: [{
 					id: "roadmap",
-					name: "gsd_plan_milestone",
+					name: "otto_plan_milestone",
 					input: {
 						milestoneId: "M001",
 						title: "Tiny Source Verification",
@@ -206,7 +206,7 @@ function buildTranscript(): string {
 		},
 		{
 			turn: 7,
-			expect: { hasToolResultFor: "gsd_plan_milestone" },
+			expect: { hasToolResultFor: "otto_plan_milestone" },
 			emit: { kind: "text", text: "Milestone M001 ready." },
 		},
 		{
@@ -215,7 +215,7 @@ function buildTranscript(): string {
 				kind: "tool_use",
 				calls: [{
 					id: "research-slice",
-					name: "gsd_summary_save",
+					name: "otto_summary_save",
 					input: {
 						milestone_id: "M001",
 						slice_id: "S01",
@@ -240,7 +240,7 @@ function buildTranscript(): string {
 		},
 		{
 			turn: 9,
-			expect: { hasToolResultFor: "gsd_summary_save" },
+			expect: { hasToolResultFor: "otto_summary_save" },
 			emit: { kind: "text", text: "Slice S01 researched." },
 		},
 		{
@@ -249,7 +249,7 @@ function buildTranscript(): string {
 				kind: "tool_use",
 				calls: [{
 					id: "plan-slice",
-					name: "gsd_plan_slice",
+					name: "otto_plan_slice",
 					input: {
 						milestoneId: "M001",
 						sliceId: "S01",
@@ -275,7 +275,7 @@ function buildTranscript(): string {
 		},
 		{
 			turn: 11,
-			expect: { hasToolResultFor: "gsd_plan_slice" },
+			expect: { hasToolResultFor: "otto_plan_slice" },
 			emit: { kind: "text", text: "Slice S01 planned." },
 		},
 		{
@@ -314,7 +314,7 @@ function buildTranscript(): string {
 				kind: "tool_use",
 				calls: [{
 					id: "complete-task",
-					name: "gsd_task_complete",
+					name: "otto_task_complete",
 					input: {
 						taskId: "T01",
 						sliceId: "S01",
@@ -339,7 +339,7 @@ function buildTranscript(): string {
 		},
 		{
 			turn: 15,
-			expect: { hasToolResultFor: "gsd_task_complete" },
+			expect: { hasToolResultFor: "otto_task_complete" },
 			emit: { kind: "text", text: "Task T01 complete." },
 		},
 		{
@@ -348,7 +348,7 @@ function buildTranscript(): string {
 				kind: "tool_use",
 				calls: [{
 					id: "complete-slice",
-					name: "gsd_slice_complete",
+					name: "otto_slice_complete",
 					input: {
 						sliceId: "S01",
 						milestoneId: "M001",
@@ -369,7 +369,7 @@ function buildTranscript(): string {
 		},
 		{
 			turn: 17,
-			expect: { hasToolResultFor: "gsd_slice_complete" },
+			expect: { hasToolResultFor: "otto_slice_complete" },
 			emit: { kind: "text", text: "Slice S01 complete." },
 		},
 		{
@@ -378,7 +378,7 @@ function buildTranscript(): string {
 				kind: "tool_use",
 				calls: [{
 					id: "validate-milestone",
-					name: "gsd_validate_milestone",
+					name: "otto_validate_milestone",
 					input: {
 						milestoneId: "M001",
 						verdict: "pass",
@@ -395,7 +395,7 @@ function buildTranscript(): string {
 		},
 		{
 			turn: 19,
-			expect: { hasToolResultFor: "gsd_validate_milestone" },
+			expect: { hasToolResultFor: "otto_validate_milestone" },
 			emit: { kind: "text", text: "Milestone M001 validation complete - verdict: pass." },
 		},
 		{
@@ -404,7 +404,7 @@ function buildTranscript(): string {
 				kind: "tool_use",
 				calls: [{
 					id: "complete-milestone",
-					name: "gsd_complete_milestone",
+					name: "otto_complete_milestone",
 					input: {
 						milestoneId: "M001",
 						title: "Tiny Source Verification",
@@ -425,7 +425,7 @@ function buildTranscript(): string {
 		},
 		{
 			turn: 21,
-			expect: { hasToolResultFor: "gsd_complete_milestone" },
+			expect: { hasToolResultFor: "otto_complete_milestone" },
 			emit: { kind: "text", text: "Milestone M001 complete." },
 		},
 	]);
@@ -463,13 +463,13 @@ describe("tiny milestone completion e2e (fake LLM)", () => {
 		}, null, 2) + "\n");
 
 		const transcript = buildTranscript();
-		const result = gsdSync(
+		const result = ottoSync(
 			[
 				"headless",
 				"--output-format",
 				"stream-json",
 				"--model",
-				"gsd-fake-model",
+				"otto-fake-model",
 				"--timeout",
 				"120000",
 				"--max-restarts",
@@ -485,7 +485,7 @@ describe("tiny milestone completion e2e (fake LLM)", () => {
 				cwd: project.dir,
 				timeoutMs: 150_000,
 				env: {
-					GSD_FAKE_LLM_TRANSCRIPT: transcript,
+					OTTO_FAKE_LLM_TRANSCRIPT: transcript,
 				},
 			},
 		);
@@ -518,11 +518,11 @@ describe("tiny milestone completion e2e (fake LLM)", () => {
 			() => execFileSync("node", ["--test", "test/answer.test.js"], { cwd: project.dir, stdio: "pipe" }),
 			"fixture verification command must pass after milestone completion",
 		);
-		assert.ok(existsSync(join(project.dir, ".gsd", "milestones", "M001", "M001-SUMMARY.md")), "milestone summary artifact is present");
-		assert.ok(existsSync(join(project.dir, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md")), "slice summary artifact is present");
-		assert.ok(existsSync(join(project.dir, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md")), "task summary artifact is present");
+		assert.ok(existsSync(join(project.dir, ".otto", "workflow", "milestones", "M001", "M001-SUMMARY.md")), "milestone summary artifact is present");
+		assert.ok(existsSync(join(project.dir, ".otto", "workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md")), "slice summary artifact is present");
+		assert.ok(existsSync(join(project.dir, ".otto", "workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md")), "task summary artifact is present");
 
-		const db = new DatabaseSync(join(project.dir, ".gsd", "gsd.db"));
+		const db = new DatabaseSync(join(project.dir, ".otto", "workflow", "otto.db"));
 		t.after(() => db.close());
 		assert.equal(
 			scalar(db, "SELECT status AS value FROM milestones WHERE id = :id", { id: "M001" }),

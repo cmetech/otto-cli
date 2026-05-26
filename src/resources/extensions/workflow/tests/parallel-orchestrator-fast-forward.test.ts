@@ -46,9 +46,9 @@ describe("_createMilestoneWorktree fast-forwards reused milestone branches (#554
     writeFileSync(join(repo, "seed.txt"), "seed\n");
     git(repo, "add", "seed.txt");
     git(repo, "commit", "-q", "-m", "initial");
-    // Minimal .gsd/ structure so syncWorkflowStateToWorktree doesn't crash on a
+    // Minimal .otto/workflow/ structure so syncWorkflowStateToWorktree doesn't crash on a
     // bare repo. We don't care if it copies anything — only that the FF ran.
-    mkdirSync(join(repo, ".gsd"), { recursive: true });
+    mkdirSync(join(repo, ".otto/workflow"), { recursive: true });
   });
 
   afterEach(() => {

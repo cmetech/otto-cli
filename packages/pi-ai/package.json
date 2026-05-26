@@ -1,11 +1,11 @@
 {
-  "name": "@loop24/pi-ai",
+  "name": "@otto/pi-ai",
   "version": "1.0.1",
   "description": "Unified LLM API (vendored from pi-mono)",
   "type": "module",
   "gsd": {
     "linkable": true,
-    "scope": "@loop24",
+    "scope": "@otto",
     "name": "pi-ai"
   },
   "main": "./dist/index.js",
@@ -20,8 +20,8 @@
       "import": "./dist/oauth.js"
     },
     "./bedrock-provider": {
-      "types": "./bedrock-provider.d.ts",
-      "import": "./bedrock-provider.js"
+      "types": "./dist/bedrock-provider.d.ts",
+      "import": "./dist/bedrock-provider.js"
     }
   },
   "scripts": {

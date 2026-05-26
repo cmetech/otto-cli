@@ -29,7 +29,6 @@ const EXPLICIT_SUBCOMMANDS = new Set([
   "worktree",
   "wt",
   "sessions",
-  "web",
 ]);
 
 /**
@@ -99,7 +98,6 @@ test("identifies explicitly handled subcommands", () => {
   assert.ok(isExplicitSubcommand("worktree"));
   assert.ok(isExplicitSubcommand("wt"));
   assert.ok(isExplicitSubcommand("sessions"));
-  assert.ok(isExplicitSubcommand("web"));
 });
 
 test("does NOT identify 'auto' as explicit subcommand", () => {

@@ -5,7 +5,7 @@
  * pending, collected, skipped, and existing arrays based on
  * manifest status and environment presence.
  *
- * Uses temp directories with real .gsd/milestones/M001/ structure.
+ * Uses temp directories with real .otto/workflow/milestones/M001/ structure.
  */
 
 import { describe, test, beforeEach, afterEach } from 'node:test';
@@ -21,9 +21,9 @@ function makeTempDir(prefix: string): string {
   return dir;
 }
 
-/** Create the .gsd/milestones/M001/ directory structure and write a secrets manifest. */
+/** Create the .otto/workflow/milestones/M001/ directory structure and write a secrets manifest. */
 function writeManifest(base: string, content: string): void {
-  const mDir = join(base, '.gsd', 'milestones', 'M001');
+  const mDir = join(base, '.otto/workflow', 'milestones', 'M001');
   mkdirSync(mDir, { recursive: true });
   writeFileSync(join(mDir, 'M001-SECRETS.md'), content);
 }
@@ -35,12 +35,12 @@ describe('getManifestStatus: mixed statuses', () => {
   let savedVal: string | undefined;
   beforeEach(() => {
     tmp = makeTempDir('manifest-mixed');
-    savedVal = process.env.GSD_TEST_EXISTING_KEY_001;
-    process.env.GSD_TEST_EXISTING_KEY_001 = 'some-value';
+    savedVal = process.env.OTTO_TEST_EXISTING_KEY_001;
+    process.env.OTTO_TEST_EXISTING_KEY_001 = 'some-value';
   });
   afterEach(() => {
-    delete process.env.GSD_TEST_EXISTING_KEY_001;
-    if (savedVal !== undefined) process.env.GSD_TEST_EXISTING_KEY_001 = savedVal;
+    delete process.env.OTTO_TEST_EXISTING_KEY_001;
+    if (savedVal !== undefined) process.env.OTTO_TEST_EXISTING_KEY_001 = savedVal;
     rmSync(tmp, { recursive: true, force: true });
   });
 
@@ -74,7 +74,7 @@ describe('getManifestStatus: mixed statuses', () => {
 
 1. Not needed
 
-### GSD_TEST_EXISTING_KEY_001
+### OTTO_TEST_EXISTING_KEY_001
 
 **Service:** EnvService
 **Status:** pending
@@ -88,7 +88,7 @@ describe('getManifestStatus: mixed statuses', () => {
     assert.deepStrictEqual(result!.pending, ['PENDING_KEY']);
     assert.deepStrictEqual(result!.collected, ['COLLECTED_KEY']);
     assert.deepStrictEqual(result!.skipped, ['SKIPPED_KEY']);
-    assert.deepStrictEqual(result!.existing, ['GSD_TEST_EXISTING_KEY_001']);
+    assert.deepStrictEqual(result!.existing, ['OTTO_TEST_EXISTING_KEY_001']);
   });
 });
 
@@ -182,7 +182,7 @@ describe('getManifestStatus: simple temp dir tests', () => {
   // ─── Missing manifest ────────────────────────────────────────────────────────
 
   test('missing manifest — returns null', async () => {
-    // No .gsd directory at all
+    // No .otto/workflow directory at all
     const result = await getManifestStatus(tmp, 'M001');
     assert.strictEqual(result, null);
   });
@@ -240,12 +240,12 @@ describe('getManifestStatus: key in env overrides manifest status', () => {
   let savedVal: string | undefined;
   beforeEach(() => {
     tmp = makeTempDir('manifest-override');
-    savedVal = process.env.GSD_TEST_OVERRIDE_KEY;
-    process.env.GSD_TEST_OVERRIDE_KEY = 'already-here';
+    savedVal = process.env.OTTO_TEST_OVERRIDE_KEY;
+    process.env.OTTO_TEST_OVERRIDE_KEY = 'already-here';
   });
   afterEach(() => {
-    delete process.env.GSD_TEST_OVERRIDE_KEY;
-    if (savedVal !== undefined) process.env.GSD_TEST_OVERRIDE_KEY = savedVal;
+    delete process.env.OTTO_TEST_OVERRIDE_KEY;
+    if (savedVal !== undefined) process.env.OTTO_TEST_OVERRIDE_KEY = savedVal;
     rmSync(tmp, { recursive: true, force: true });
   });
 
@@ -255,7 +255,7 @@ describe('getManifestStatus: key in env overrides manifest status', () => {
 **Milestone:** M001
 **Generated:** 2025-06-20T10:00:00Z
 
-### GSD_TEST_OVERRIDE_KEY
+### OTTO_TEST_OVERRIDE_KEY
 
 **Service:** Override
 **Status:** collected
@@ -269,6 +269,6 @@ describe('getManifestStatus: key in env overrides manifest status', () => {
     assert.deepStrictEqual(result!.pending, []);
     assert.deepStrictEqual(result!.collected, []);
     assert.deepStrictEqual(result!.skipped, []);
-    assert.deepStrictEqual(result!.existing, ['GSD_TEST_OVERRIDE_KEY']);
+    assert.deepStrictEqual(result!.existing, ['OTTO_TEST_OVERRIDE_KEY']);
   });
 });

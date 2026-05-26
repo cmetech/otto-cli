@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for host-owned auto-mode verification verdict policy.
 
 import test from "node:test";

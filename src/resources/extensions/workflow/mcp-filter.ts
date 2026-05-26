@@ -71,7 +71,7 @@ export function computeMcpDisallowedTools(
     }
   }
 
-  // gsd-workflow implicit allow: remove unless explicitly in blocked_servers
+  // otto-workflow implicit allow: remove unless explicitly in blocked_servers
   if (workflowServerName && !(entry.blocked_servers ?? []).includes(workflowServerName)) {
     blocked.delete(workflowServerName);
   }

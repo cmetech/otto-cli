@@ -1,6 +1,6 @@
-// LOOP24 — Ecosystem Extension API wrapper
+// OTTO — Ecosystem Extension API wrapper
 // Wraps pi's ExtensionAPI to expose typed workflow context (phase + active unit)
-// to extensions loaded from `./.gsd/extensions/`. The wrapper intercepts only
+// to extensions loaded from `./.otto/workflow/extensions/`. The wrapper intercepts only
 // `on("before_agent_start", ...)` so the agent can dispatch ecosystem handlers AFTER
 // refreshing state — fixing the load-order race where third-party
 // `.pi/extensions/` handlers see a stale module-level snapshot (#3338).
@@ -13,7 +13,7 @@ import type {
   BeforeAgentStartEvent,
   ExtensionAPI,
   ExtensionHandler,
-} from "@loop24/pi-coding-agent";
+} from "@otto/pi-coding-agent";
 
 // Structural mirror of pi's internal BeforeAgentStartEventResult. The internal
 // type is not re-exported from the package root, and constraint #3 forbids

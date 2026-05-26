@@ -3,7 +3,7 @@
  *
  * Schema is the single source of truth for the machine-readable contract
  * between the auditor agent (writes EVAL-REVIEW.md) and downstream
- * consumers (`/gsd ship` pre-warning, future `/gsd eval-fix`). Regex over
+ * consumers (`/otto ship` pre-warning, future `/otto eval-fix`). Regex over
  * LLM prose is explicitly forbidden — every consumer reads the validated
  * frontmatter only.
  */

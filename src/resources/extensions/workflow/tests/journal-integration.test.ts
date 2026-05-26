@@ -304,7 +304,7 @@ test("runDispatch checks prior-slice completion against the project root in work
   const ic = makeIC(deps, {
     s: {
       ...makeSession(),
-      basePath: "/tmp/project/.gsd/worktrees/M029-xoklo9",
+      basePath: "/tmp/project/.otto/workflow/worktrees/M029-xoklo9",
       originalBasePath: "/tmp/project",
     } as any,
   });
@@ -345,9 +345,9 @@ test("runDispatch retries when complete-milestone summary exists on disk and stu
     rmSync(base, { recursive: true, force: true });
   });
 
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   mkdirSync(join(base, "src"), { recursive: true });
-  writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"), "# Summary\nDone.\n");
+  writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"), "# Summary\nDone.\n");
   writeFileSync(join(base, "src", "app.ts"), "export const ok = true;\n");
 
   execFileSync("git", ["init", "-b", "main"], { cwd: base, stdio: "ignore" });
@@ -357,7 +357,7 @@ test("runDispatch retries when complete-milestone summary exists on disk and stu
   execFileSync("git", ["add", "README.md"], { cwd: base, stdio: "ignore" });
   execFileSync("git", ["commit", "-m", "chore: seed"], { cwd: base, stdio: "ignore" });
   execFileSync("git", ["checkout", "-b", "fix/test"], { cwd: base, stdio: "ignore" });
-  execFileSync("git", ["add", ".gsd/milestones/M001/M001-SUMMARY.md", "src/app.ts"], { cwd: base, stdio: "ignore" });
+  execFileSync("git", ["add", ".otto/workflow/milestones/M001/M001-SUMMARY.md", "src/app.ts"], { cwd: base, stdio: "ignore" });
   execFileSync("git", ["commit", "-m", "feat: summary exists but db is stale"], { cwd: base, stdio: "ignore" });
 
   const deps = makeMockDeps(capture, {
@@ -415,10 +415,10 @@ test("runDispatch pauses when execute-task artifacts exist but DB status is stil
     rmSync(base, { recursive: true, force: true });
   });
 
-  const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+  const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
   const tasksDir = join(sliceDir, "tasks");
   mkdirSync(tasksDir, { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice", status: "in_progress" });
   insertTask({ id: "T01", milestoneId: "M001", sliceId: "S01", title: "First task", status: "pending" });
@@ -498,10 +498,10 @@ test("runDispatch pauses at Level 2 when execute-task artifacts exist but DB sta
     rmSync(base, { recursive: true, force: true });
   });
 
-  const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+  const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
   const tasksDir = join(sliceDir, "tasks");
   mkdirSync(tasksDir, { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice", status: "in_progress" });
   insertTask({ id: "T01", milestoneId: "M001", sliceId: "S01", title: "First task", status: "pending" });
@@ -574,10 +574,10 @@ test("runDispatch clears execute-task stuck state when artifacts and DB status a
     rmSync(base, { recursive: true, force: true });
   });
 
-  const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+  const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
   const tasksDir = join(sliceDir, "tasks");
   mkdirSync(tasksDir, { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice", status: "in_progress" });
   insertTask({ id: "T01", milestoneId: "M001", sliceId: "S01", title: "First task", status: "complete" });
@@ -648,10 +648,10 @@ test("runDispatch clears stuck state after Level 1 artifact recovery", async (t)
     rmSync(base, { recursive: true, force: true });
   });
 
-  const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+  const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
   const tasksDir = join(sliceDir, "tasks");
   mkdirSync(tasksDir, { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice", status: "pending" });
   insertTask({ id: "T01", milestoneId: "M001", sliceId: "S01", title: "First task", status: "pending" });
@@ -715,10 +715,10 @@ test("runDispatch escapes Level 2 stuck stop when artifact verifies after cache 
     rmSync(base, { recursive: true, force: true });
   });
 
-  const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+  const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
   const tasksDir = join(sliceDir, "tasks");
   mkdirSync(tasksDir, { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice", status: "pending" });
   insertTask({ id: "T01", milestoneId: "M001", sliceId: "S01", title: "First task", status: "pending" });
@@ -1069,8 +1069,8 @@ test("terminal event is emitted on blocked state", async () => {
 
 test("#4671: plan-v2 missing CONTEXT.md reaches dispatch recovery instead of pausing", async () => {
   const basePath = mkdtempSync(join(tmpdir(), "gsd-4671-predispatch-"));
-  mkdirSync(join(basePath, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
-  openDatabase(join(basePath, ".gsd", "gsd.db"));
+  mkdirSync(join(basePath, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  openDatabase(join(basePath, ".otto/workflow", "otto.db"));
   try {
     insertMilestone({ id: "M001", title: "Test", status: "active" });
     insertSlice({
@@ -1126,12 +1126,12 @@ test("#4671: plan-v2 missing CONTEXT.md reaches dispatch recovery instead of pau
 
 test("plan-v2 empty graph rederives state before pausing", async () => {
   const basePath = mkdtempSync(join(tmpdir(), "gsd-plan-v2-empty-graph-"));
-  mkdirSync(join(basePath, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow", "milestones", "M001"), { recursive: true });
   writeFileSync(
-    join(basePath, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+    join(basePath, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
     "# M001: Test\n\nFinalized context.\n",
   );
-  openDatabase(join(basePath, ".gsd", "gsd.db"));
+  openDatabase(join(basePath, ".otto/workflow", "otto.db"));
   try {
     let deriveCalls = 0;
     let invalidateCalls = 0;
@@ -1189,12 +1189,12 @@ test("plan-v2 empty graph rederives state before pausing", async () => {
 
 test("plan-v2 empty graph pauses after one failed rederive", async () => {
   const basePath = mkdtempSync(join(tmpdir(), "gsd-plan-v2-empty-graph-pause-"));
-  mkdirSync(join(basePath, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow", "milestones", "M001"), { recursive: true });
   writeFileSync(
-    join(basePath, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+    join(basePath, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
     "# M001: Test\n\nFinalized context.\n",
   );
-  openDatabase(join(basePath, ".gsd", "gsd.db"));
+  openDatabase(join(basePath, ".otto/workflow", "otto.db"));
   try {
     let deriveCalls = 0;
     let invalidateCalls = 0;

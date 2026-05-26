@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript, Node ≥22, npm workspaces, Node's built-in test runner (`node --test --experimental-strip-types`), pi-tui (custom TUI), `@anthropic-ai/sdk` (unchanged for Phase 0 — direct Anthropic).
 
-**Scope boundary:** This plan changes only **user-visible** "GSD"/"gsd" references — the registered slash command name, the loader banner, `process.title`, and any prompt strings the model surfaces back to the user. **Internal identifiers** (env var names like `GSD_PKG_ROOT`, internal `customType` strings like `"gsd-add-tests"`, the npm workspace prefix `@gsd/`) are kept as-is for Phase 0 — they are not user-visible in normal usage. A follow-up cleanup phase can address these if desired.
+**Scope boundary:** This plan changes only **user-visible** "GSD"/"gsd" references — the registered slash command name, the loader banner, `process.title`, and any prompt strings the model surfaces back to the user. **Internal identifiers** (env var names like `OTTO_PKG_ROOT`, internal `customType` strings like `"gsd-add-tests"`, the npm workspace prefix `@gsd/`) are kept as-is for Phase 0 — they are not user-visible in normal usage. A follow-up cleanup phase can address these if desired.
 
 **Out of scope for Phase 0:** Gateway routing (Phase 1), the `loop24` extension scaffold and first-run wizard (Phase 2), LangFlow integration (Phases 3-4), prompt-engineer command (Phase 5), distribution (Phases 6-7).
 
@@ -539,7 +539,7 @@ Expected: a list of files containing literal "GSD" strings. **Not all of these a
 - Error messages users will see
 - Banner / startup output
 
-Skip strings in error codes like `"MISSING_GSD_MARKER"` (internal), comments, JSDoc, and type/interface names — those are out of scope for Phase 0.
+Skip strings in error codes like `"MISSING_OTTO_MARKER"` (internal), comments, JSDoc, and type/interface names — those are out of scope for Phase 0.
 
 - [ ] **Step 2: Create the strings module**
 
@@ -664,13 +664,13 @@ if (!existsSync(appRoot)) {
     `  compliant agent for developers ${dim}v${gsdVersion}${reset}\n` +
     `  ${green}Welcome.${reset} Setting up your environment...\n\n`
   )
-  process.env.LOOP24_FIRST_RUN_BANNER = '1'  // new env var; the old GSD_FIRST_RUN_BANNER is also kept for any internal readers — see notes
+  process.env.LOOP24_FIRST_RUN_BANNER = '1'  // new env var; the old OTTO_FIRST_RUN_BANNER is also kept for any internal readers — see notes
 }
 ```
 
 Notes:
 - `gsdRoot` is the existing variable in the loader; keep using it (renaming it to `loop24Root` is internal cleanup we can defer).
-- If the existing code references `process.env.GSD_FIRST_RUN_BANNER` elsewhere, also set that var (mirror to both names) until we sweep it. Leave a `// TODO(loop24): collapse to LOOP24_FIRST_RUN_BANNER after sweep` if doing so.
+- If the existing code references `process.env.OTTO_FIRST_RUN_BANNER` elsewhere, also set that var (mirror to both names) until we sweep it. Leave a `// TODO(loop24): collapse to LOOP24_FIRST_RUN_BANNER after sweep` if doing so.
 
 - [ ] **Step 3: Update `process.title`**
 
@@ -832,7 +832,7 @@ awareness only.
 - Replaced the 'Get Shit Done' cyan banner with the LOOP24 block-ASCII banner rendered in `#FAD22D` (24-bit ANSI).
 - Set `process.title = 'loop24'`.
 - Banner content sourced from `src/resources/extensions/loop24/branding/banner.txt`.
-- Set `process.env.LOOP24_FIRST_RUN_BANNER` in addition to the legacy `GSD_FIRST_RUN_BANNER` (the old name is read elsewhere; will be swept in a later cleanup).
+- Set `process.env.LOOP24_FIRST_RUN_BANNER` in addition to the legacy `OTTO_FIRST_RUN_BANNER` (the old name is read elsewhere; will be swept in a later cleanup).
 
 ### src/help-text.ts (if modified in Task 6 Step 5)
 - Replaced "GSD" mentions with `BRAND_NAME` interpolation.
@@ -842,7 +842,7 @@ awareness only.
 - `commands-bootstrap.ts:273` now registers `COMMAND_NAMESPACE` instead of the literal `"gsd"`.
 - Created `strings.ts` exporting `BRAND`, `CMD`, `slashCommand()`, `STATE_DB_NAME`.
 - Replaced user-facing "GSD" string literals in prompt/help text files with imports from `strings.ts`.
-- Internal references — `customType` strings like `"gsd-add-tests"`, error codes like `"MISSING_GSD_MARKER"`, function names like `registerGSDCommand`, comments — are **not** changed. They are not user-visible. Defer to a later cleanup phase.
+- Internal references — `customType` strings like `"gsd-add-tests"`, error codes like `"MISSING_OTTO_MARKER"`, function names like `registerGSDCommand`, comments — are **not** changed. They are not user-visible. Defer to a later cleanup phase.
 
 ### packages/pi-coding-agent/src/modes/interactive/theme/
 - Added `loop24-signal` theme (JSON in `src/resources/extensions/loop24/theme/loop24.json`).

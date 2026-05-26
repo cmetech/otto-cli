@@ -9,26 +9,28 @@ const ROOT = new URL("../../../../../", import.meta.url);
 export function resolve(specifier, context, nextResolve) {
   // 1. Redirect all workspace package bare imports to source.
   //    CI portability runs don't build any packages/ dist artifacts, so every
-  //    @loop24/* specifier (including transitive ones pulled in by pi-coding-agent
+  //    @otto/* specifier (including transitive ones pulled in by pi-coding-agent
   //    source itself) must resolve to the TypeScript source entrypoint.
   if (specifier === "../../packages/pi-coding-agent/src/index.js") {
     specifier = new URL("packages/pi-coding-agent/src/index.ts", ROOT).href;
-  } else if (specifier === "@loop24/pi-coding-agent") {
+  } else if (specifier === "@otto/pi-coding-agent") {
     specifier = new URL("packages/pi-coding-agent/src/index.ts", ROOT).href;
-  } else if (specifier === "@loop24/pi-ai/oauth") {
+  } else if (specifier === "@otto/pi-ai/oauth") {
     specifier = new URL("packages/pi-ai/src/utils/oauth/index.ts", ROOT).href;
-  } else if (specifier === "@loop24/pi-ai") {
+  } else if (specifier === "@otto/pi-ai") {
     specifier = new URL("packages/pi-ai/src/index.ts", ROOT).href;
-  } else if (specifier === "@loop24/pi-agent-core") {
+  } else if (specifier === "@otto/pi-agent-core") {
     specifier = new URL("packages/pi-agent-core/src/index.ts", ROOT).href;
-  } else if (specifier === "@loop24/pi-tui") {
+  } else if (specifier === "@otto/pi-tui") {
     specifier = new URL("packages/pi-tui/src/index.ts", ROOT).href;
-  } else if (specifier === "@loop24/native") {
+  } else if (specifier === "@otto/native") {
     specifier = new URL("packages/native/src/index.ts", ROOT).href;
-  } else if (specifier.startsWith("@loop24/native/")) {
-    // Sub-path imports like @loop24/native/fd, @loop24/native/text, etc.
-    const subpath = specifier.slice("@loop24/native/".length);
+  } else if (specifier.startsWith("@otto/native/")) {
+    // Sub-path imports like @otto/native/fd, @otto/native/text, etc.
+    const subpath = specifier.slice("@otto/native/".length);
     specifier = new URL(`packages/native/src/${subpath}/index.ts`, ROOT).href;
+  } else if (specifier === "./src/brand.js") {
+    specifier = new URL("src/brand.ts", ROOT).href;
   }
   // 2. Redirect packages/*/dist/ → packages/*/src/ with .js→.ts for strip-types
   //    Also handles local imports — skip rewrite for dist/ paths that are real compiled artifacts.

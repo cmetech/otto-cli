@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Unit tests for cmux integration, layout, and CLI isolation.
 import test, { describe, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
@@ -91,7 +91,7 @@ describe("autoEnableCmuxPreferences", () => {
   beforeEach(() => {
     originalCwd = process.cwd();
     tmp = fs.mkdtempSync(path.join(tmpdir(), "cmux-auto-test-"));
-    fs.mkdirSync(path.join(tmp, ".gsd"), { recursive: true });
+    fs.mkdirSync(path.join(tmp, ".otto/workflow"), { recursive: true });
     process.chdir(tmp);
   });
 
@@ -101,13 +101,13 @@ describe("autoEnableCmuxPreferences", () => {
   });
 
   test("writes cmux.enabled true when preferences file exists with no cmux config", () => {
-    const prefsPath = path.join(tmp, ".gsd", "preferences.md");
+    const prefsPath = path.join(tmp, ".otto/workflow", "preferences.md");
     fs.writeFileSync(prefsPath, [
       "---",
       "version: 1",
       "---",
       "",
-      "# GSD Skill Preferences",
+      "# OTTO Skill Preferences",
     ].join("\n"));
 
     const result = autoEnableCmuxPreferences();
@@ -126,7 +126,7 @@ describe("autoEnableCmuxPreferences", () => {
   });
 
   test("preserves existing cmux sub-preferences when auto-enabling", () => {
-    const prefsPath = path.join(tmp, ".gsd", "preferences.md");
+    const prefsPath = path.join(tmp, ".otto/workflow", "preferences.md");
     fs.writeFileSync(prefsPath, [
       "---",
       "version: 1",
@@ -135,7 +135,7 @@ describe("autoEnableCmuxPreferences", () => {
       "  browser: true",
       "---",
       "",
-      "# GSD Skill Preferences",
+      "# OTTO Skill Preferences",
     ].join("\n"));
 
     const result = autoEnableCmuxPreferences();

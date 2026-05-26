@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for auto-unit closeout activity classification.
 
 import test from "node:test";

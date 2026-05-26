@@ -64,7 +64,7 @@ export interface OrchestratorDeps {
 // System Prompt
 // ---------------------------------------------------------------------------
 
-const SYSTEM_PROMPT = `You are GSD Control — a concise, capable orchestrator for managing GSD (Get Shit Done) coding agent sessions via Discord.
+const SYSTEM_PROMPT = `You are OTTO Control — a concise, capable orchestrator for managing OTTO (Get Shit Done) coding agent sessions via Discord.
 
 You have tools to list projects, start sessions, get status, stop sessions, and inspect session details. Use them to fulfill the user's requests.
 
@@ -93,12 +93,12 @@ const TOOLS: Tool[] = [
   },
   {
     name: 'start_session',
-    description: 'Start a new auto-mode session for a project. Provide the absolute project path. Optionally provide a command to run instead of the default "/gsd auto".',
+    description: 'Start a new auto-mode session for a project. Provide the absolute project path. Optionally provide a command to run instead of the default "/otto auto".',
     input_schema: {
       type: 'object' as const,
       properties: {
         projectPath: { type: 'string', description: 'Absolute path to the project directory' },
-        command: { type: 'string', description: 'Optional command to send instead of "/gsd auto"' },
+        command: { type: 'string', description: 'Optional command to send instead of "/otto auto"' },
       },
       required: ['projectPath'],
     },
@@ -114,7 +114,7 @@ const TOOLS: Tool[] = [
   },
   {
     name: 'stop_session',
-    description: 'Stop a running GSD session. Provide a session ID or project name — fuzzy matching is used to find the session.',
+    description: 'Stop a running OTTO session. Provide a session ID or project name — fuzzy matching is used to find the session.',
     input_schema: {
       type: 'object' as const,
       properties: {

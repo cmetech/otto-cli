@@ -22,8 +22,8 @@ describe('note captures executed in triage resolution (#3578)', () => {
   test('resolved note captures are stamped executed', () => {
     const base = mkdtempSync(join(tmpdir(), 'gsd-note-capture-'));
     try {
-      mkdirSync(join(base, '.gsd'), { recursive: true });
-      writeFileSync(join(base, '.gsd', 'CAPTURES.md'), [
+      mkdirSync(join(base, '.otto/workflow'), { recursive: true });
+      writeFileSync(join(base, '.otto/workflow', 'CAPTURES.md'), [
         '# Captures',
         '',
         '### cap-note',

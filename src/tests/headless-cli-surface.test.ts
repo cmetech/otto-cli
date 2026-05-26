@@ -2,7 +2,7 @@
  * Tests for S02 CLI surface — --output-format, exit codes, HeadlessJsonResult, --resume.
  *
  * Uses extracted parsing logic (mirrors headless.ts) and direct imports from
- * headless-types.ts / headless-events.ts to avoid transitive @loop24/native
+ * headless-types.ts / headless-events.ts to avoid transitive @otto/native
  * import that breaks in test environment.
  */
 

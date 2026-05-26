@@ -1,15 +1,15 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-017 unmerged-merge-state drift handler. Relocated from
 // auto-recovery.ts as part of issue #5701. Owns:
 //   - rebase/cherry-pick/revert leftover cleanup (#4980 HIGH-7)
-//   - MERGE_HEAD / SQUASH_MSG reconciliation with auto-resolve of .gsd/
+//   - MERGE_HEAD / SQUASH_MSG reconciliation with auto-resolve of .otto/workflow/
 //     conflicts (#530, #2542)
 
 import { execFileSync } from "node:child_process";
 import { existsSync, unlinkSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 
-import type { ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionContext } from "@otto/pi-coding-agent";
 
 import { getErrorMessage } from "../../error-utils.js";
 import {
@@ -300,9 +300,9 @@ function reconcileMergeStateCore(
       return "blocked";
     }
   } else {
-    // Still conflicted — try auto-resolving .gsd/ state file conflicts (#530)
-    const workflowConflicts = conflictedFiles.filter((f) => f.startsWith(".gsd/"));
-    const codeConflicts = conflictedFiles.filter((f) => !f.startsWith(".gsd/"));
+    // Still conflicted — try auto-resolving .otto/workflow/ state file conflicts (#530)
+    const workflowConflicts = conflictedFiles.filter((f) => f.startsWith(".otto/workflow/"));
+    const codeConflicts = conflictedFiles.filter((f) => !f.startsWith(".otto/workflow/"));
 
     if (workflowConflicts.length > 0 && codeConflicts.length === 0) {
       let resolved = true;
@@ -312,7 +312,7 @@ function reconcileMergeStateCore(
       } catch (e) {
         logError(
           "recovery",
-          `auto-resolve .gsd/ conflicts failed: ${(e as Error).message}`,
+          `auto-resolve .otto/workflow/ conflicts failed: ${(e as Error).message}`,
         );
         resolved = false;
       }
@@ -320,17 +320,17 @@ function reconcileMergeStateCore(
         try {
           nativeCommit(
             basePath,
-            "chore: auto-resolve .gsd/ state file conflicts",
+            "chore: auto-resolve .otto/workflow/ state file conflicts",
           );
           removeMergeStateFiles(basePath);
           notify(
-            `Auto-resolved ${workflowConflicts.length} .gsd/ state file conflict(s) from prior merge.`,
+            `Auto-resolved ${workflowConflicts.length} .otto/workflow/ state file conflict(s) from prior merge.`,
             "info",
           );
         } catch (e) {
           logError(
             "recovery",
-            `auto-commit .gsd/ conflict resolution failed: ${(e as Error).message}`,
+            `auto-commit .otto/workflow/ conflict resolution failed: ${(e as Error).message}`,
           );
           resolved = false;
         }

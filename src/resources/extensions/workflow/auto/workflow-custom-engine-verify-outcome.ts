@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Applies custom-engine verification outcomes to auto-mode loop side effects.
 
 import type { CustomEngineVerifyRetryOutcome } from "./workflow-custom-engine-retry.js";

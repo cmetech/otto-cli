@@ -1,7 +1,7 @@
 /**
  * Queue Order — Custom milestone execution ordering.
  *
- * Stores an explicit execution order in `.gsd/QUEUE-ORDER.json`.
+ * Stores an explicit execution order in `.otto/workflow/QUEUE-ORDER.json`.
  * When present, `findMilestoneIds()` uses this order instead of
  * the default numeric sort (milestoneIdSort).
  *

@@ -30,8 +30,8 @@ beforeEach(() => {
   run("git config user.email test@test.com", repo);
   run("git config user.name Test", repo);
   writeFileSync(join(repo, "README.md"), "# test\n");
-  writeFileSync(join(repo, ".gitignore"), ".gsd/worktrees/\n");
-  mkdirSync(join(repo, ".gsd"), { recursive: true });
+  writeFileSync(join(repo, ".gitignore"), ".otto/workflow/worktrees/\n");
+  mkdirSync(join(repo, ".otto/workflow"), { recursive: true });
   run("git add .", repo);
   run("git commit -m init", repo);
 });
@@ -44,7 +44,7 @@ afterEach(() => {
 test("mergeMilestoneToMain preserves milestone worktree when pre-teardown dirty guard trips", () => {
   const milestoneId = "M001";
   const milestoneBranch = `milestone/${milestoneId}`;
-  const worktreePath = join(repo, ".gsd", "worktrees", milestoneId);
+  const worktreePath = join(repo, ".otto/workflow", "worktrees", milestoneId);
 
   run(`git checkout -b ${milestoneBranch}`, repo);
   writeFileSync(join(repo, "feature.ts"), "export const feature = true;\n");
@@ -52,12 +52,12 @@ test("mergeMilestoneToMain preserves milestone worktree when pre-teardown dirty 
   run("git commit -m 'feat: milestone work'", repo);
   run("git checkout main", repo);
 
-  mkdirSync(join(repo, ".gsd", "milestones", milestoneId), { recursive: true });
-  writeFileSync(join(repo, ".gsd", "milestones", milestoneId, `${milestoneId}-ROADMAP.md`), roadmap(milestoneId));
+  mkdirSync(join(repo, ".otto/workflow", "milestones", milestoneId), { recursive: true });
+  writeFileSync(join(repo, ".otto/workflow", "milestones", milestoneId, `${milestoneId}-ROADMAP.md`), roadmap(milestoneId));
   run(`git worktree add ${worktreePath} ${milestoneBranch}`, repo);
 
-  mkdirSync(join(worktreePath, ".gsd", "activity"), { recursive: true });
-  writeFileSync(join(worktreePath, ".gsd", "activity", "runtime.jsonl"), '{"runtime":true}\n');
+  mkdirSync(join(worktreePath, ".otto/workflow", "activity"), { recursive: true });
+  writeFileSync(join(worktreePath, ".otto/workflow", "activity", "runtime.jsonl"), '{"runtime":true}\n');
 
   process.chdir(worktreePath);
 

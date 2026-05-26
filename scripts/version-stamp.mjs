@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Development prerelease version stamping.
 import { readFileSync, writeFileSync } from "fs";
 import { execFileSync, execSync } from "child_process";

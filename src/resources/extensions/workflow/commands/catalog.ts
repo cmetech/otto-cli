@@ -58,10 +58,10 @@ export const TOP_LEVEL_SUBCOMMANDS: readonly WorkflowCommandDefinition[] = [
   { cmd: "logs", desc: "Browse activity logs, debug logs, and metrics" },
   { cmd: "debug", desc: `Create and inspect persistent ${slashCommand("debug")} sessions` },
   { cmd: "forensics", desc: "Examine execution logs" },
-  { cmd: "init", desc: "Project init wizard — detect, configure, bootstrap .gsd/" },
+  { cmd: "init", desc: "Project init wizard — detect, configure, bootstrap .otto/workflow/" },
   { cmd: "setup", desc: "Configuration hub: status + sub-routes (llm, model, search, remote, keys, prefs, onboarding)" },
   { cmd: "onboarding", desc: "Re-run the setup wizard  [--resume|--reset|--step <name>]" },
-  { cmd: "migrate", desc: "Migrate a v1 .planning directory to DB-backed .gsd with backup + audit" },
+  { cmd: "migrate", desc: "Migrate a v1 .planning directory to DB-backed .otto/workflow with backup + audit" },
   { cmd: "remote", desc: "Control remote auto-mode" },
   { cmd: "steer", desc: "Hard-steer plan documents during execution" },
   { cmd: "inspect", desc: "Show SQLite DB diagnostics" },
@@ -82,12 +82,12 @@ export const TOP_LEVEL_SUBCOMMANDS: readonly WorkflowCommandDefinition[] = [
   { cmd: "mcp", desc: "MCP server status, connectivity, and local config bootstrap (status, check, init)" },
   { cmd: "rethink", desc: "Conversational project reorganization — reorder, park, discard, add milestones" },
   { cmd: "workflow", desc: "Custom workflow lifecycle (new, run, list, info, install, uninstall, validate, pause, resume) or run <name> directly" },
-  { cmd: "codebase", desc: "Generate, refresh, and inspect the codebase map cache (.gsd/CODEBASE.md)" },
+  { cmd: "codebase", desc: "Generate, refresh, and inspect the codebase map cache (.otto/workflow/CODEBASE.md)" },
   { cmd: "ship", desc: "Create PR from milestone artifacts and open for review" },
   { cmd: "do", desc: `Route freeform text to the right ${BRAND} command` },
   { cmd: "session-report", desc: "Session cost, tokens, and work summary" },
   { cmd: "backlog", desc: "Manage backlog items (add, promote, remove, list)" },
-  { cmd: "pr-branch", desc: "Create clean PR branch filtering .gsd/ commits" },
+  { cmd: "pr-branch", desc: "Create clean PR branch filtering .otto/workflow/ commits" },
   { cmd: "add-tests", desc: "Generate tests for completed slices" },
   { cmd: "scan", desc: "Rapid codebase assessment — lightweight alternative to full map (--focus tech|arch|quality|concerns|tech+arch)" },
   { cmd: "language", desc: `Set or clear the global response language (e.g. ${slashCommand("language")} Chinese)` },
@@ -205,7 +205,7 @@ const NESTED_COMPLETIONS: CompletionMap = {
     { cmd: "branches", desc: "Remove merged milestone and legacy branches" },
     { cmd: "snapshots", desc: "Remove old execution snapshots" },
     { cmd: "worktrees", desc: "Remove merged/safe-to-delete worktrees" },
-    { cmd: "projects", desc: "Audit orphaned ~/.gsd/projects/ state directories" },
+    { cmd: "projects", desc: "Audit orphaned ~/.otto/workflow/projects/ state directories" },
     { cmd: "projects --fix", desc: "Delete orphaned project state directories (cannot be undone)" },
   ],
   closeout: [
@@ -226,7 +226,7 @@ const NESTED_COMPLETIONS: CompletionMap = {
     { cmd: "refactor", desc: "Inventory, plan waves, migrate, verify" },
     { cmd: "security-audit", desc: "Scan, triage, remediate, re-scan" },
     { cmd: "dep-upgrade", desc: "Assess, upgrade, fix breaks, verify" },
-    { cmd: "full-project", desc: "Complete GSD workflow with full ceremony" },
+    { cmd: "full-project", desc: "Complete OTTO workflow with full ceremony" },
     { cmd: "resume", desc: "Resume an in-progress workflow" },
     { cmd: "--list", desc: "List all available templates" },
     { cmd: "--dry-run", desc: "Preview workflow without executing" },
@@ -249,7 +249,7 @@ const NESTED_COMPLETIONS: CompletionMap = {
   mcp: [
     { cmd: "status", desc: "Show all MCP server statuses (default)" },
     { cmd: "check", desc: "Detailed status for a specific server" },
-    { cmd: "init", desc: "Write .mcp.json for the local GSD workflow MCP server" },
+    { cmd: "init", desc: "Write .mcp.json for the local OTTO workflow MCP server" },
   ],
   doctor: [
     { cmd: "fix", desc: "Auto-fix detected issues" },
@@ -308,7 +308,7 @@ const NESTED_COMPLETIONS: CompletionMap = {
   ],
   "session-report": [
     { cmd: "--json", desc: "Machine-readable JSON output" },
-    { cmd: "--save", desc: "Save report to .gsd/reports/" },
+    { cmd: "--save", desc: "Save report to .otto/workflow/reports/" },
   ],
   backlog: [
     { cmd: "add", desc: "Add item to backlog" },
@@ -387,13 +387,13 @@ function normalizePathForCompare(path: string): string {
 }
 
 function findWorktreeSegment(normalizedPath: string): { workflowIdx: number; afterWorktrees: number } | null {
-  const directMarker = "/.gsd/worktrees/";
+  const directMarker = "/.otto/workflow/worktrees/";
   const directIdx = normalizedPath.indexOf(directMarker);
   if (directIdx !== -1) {
     return { workflowIdx: directIdx, afterWorktrees: directIdx + directMarker.length };
   }
 
-  const symlinkMatch = normalizedPath.match(/\/\.gsd\/projects\/[a-f0-9]+\/worktrees\//);
+  const symlinkMatch = normalizedPath.match(/\/\.otto\/workflow\/projects\/[a-f0-9]+\/worktrees\//);
   if (symlinkMatch?.index !== undefined) {
     return { workflowIdx: symlinkMatch.index, afterWorktrees: symlinkMatch.index + symlinkMatch[0].length };
   }
@@ -433,7 +433,7 @@ function resolveProjectRootFromGitFile(worktreePath: string): string | null {
 }
 
 function resolveProjectRootForCompletion(basePath: string): string {
-  const envProjectRoot = process.env.LOOP24_PROJECT_ROOT ?? process.env.GSD_PROJECT_ROOT;
+  const envProjectRoot = process.env.OTTO_PROJECT_ROOT;
   if (envProjectRoot) return envProjectRoot;
 
   const normalizedPath = normalizePathForCompare(basePath);
@@ -441,12 +441,12 @@ function resolveProjectRootForCompletion(basePath: string): string {
   if (!segment) return basePath;
 
   const separator = basePath.includes("\\") ? "\\" : "/";
-  const workflowMarker = `${separator}.gsd${separator}`;
+  const workflowMarker = `${separator}.otto${separator}workflow${separator}`;
   const workflowIdx = basePath.indexOf(workflowMarker);
   const candidate = workflowIdx !== -1 ? basePath.slice(0, workflowIdx) : basePath.slice(0, segment.workflowIdx);
 
   const normalizedWorkflowHome = normalizePathForCompare(workflowHome());
-  const candidateWorkflowPath = normalizePathForCompare(join(candidate, ".gsd"));
+  const candidateWorkflowPath = normalizePathForCompare(join(candidate, ".otto/workflow"));
   if (candidateWorkflowPath === normalizedWorkflowHome || candidateWorkflowPath.startsWith(`${normalizedWorkflowHome}/`)) {
     return resolveProjectRootFromGitFile(basePath) ?? basePath;
   }
@@ -514,7 +514,7 @@ export function getWorkflowArgumentCompletions(prefix: string) {
   // Workflow definition-name completion for `workflow run <name>` and `workflow validate <name>`
   if (command === "workflow" && (subcommand === "run" || subcommand === "validate") && parts.length <= 3) {
     try {
-      const defsDir = join(resolveProjectRootForCompletion(process.cwd()), ".gsd", "workflow-defs");
+      const defsDir = join(resolveProjectRootForCompletion(process.cwd()), ".otto/workflow", "workflow-defs");
       if (existsSync(defsDir)) {
         return readdirSync(defsDir)
           .filter((f) => f.endsWith(".yaml") && f.startsWith(third))
@@ -533,7 +533,7 @@ export function getWorkflowArgumentCompletions(prefix: string) {
     return [];
   }
 
-  // Completion for `/loop24 workflow info <name>` — list all discoverable plugins (project + global).
+  // Completion for `/otto workflow info <name>` — list all discoverable plugins (project + global).
   if (command === "workflow" && subcommand === "info" && parts.length <= 3) {
     const results: WorkflowCommandDefinition[] = [];
     const seen = new Set<string>();
@@ -552,8 +552,8 @@ export function getWorkflowArgumentCompletions(prefix: string) {
     };
     try {
       const base = resolveProjectRootForCompletion(process.cwd());
-      scanDir(join(base, ".gsd", "workflows"), "project");
-      scanDir(join(base, ".gsd", "workflow-defs"), "project-legacy");
+      scanDir(join(base, ".otto/workflow", "workflows"), "project");
+      scanDir(join(base, ".otto/workflow", "workflow-defs"), "project-legacy");
       scanDir(join(workflowHome(), "workflows"), "global");
     } catch { /* ignore */ }
     // Also include bundled template names.

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Memory-pressure measurement adapter for auto-mode loop.
 
 import { createRequire } from "node:module";

@@ -70,7 +70,7 @@ describe("headless milestone bootstrap — parity with interactive flow", () => 
       "PROJECT artifact",
       "REQUIREMENTS artifact",
       "`{{contextPath}}`",
-      "`gsd_plan_milestone`",
+      "`otto_plan_milestone`",
     ]) {
       assert.ok(
         new RegExp(`- \\[ \\] [^\\n]*${artifact.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`).test(section),
@@ -86,10 +86,10 @@ describe("headless milestone bootstrap — parity with interactive flow", () => 
       "single-milestone pre-condition must include the 'do not announce intent' guard",
     );
     assert.ok(/Next steps:/.test(section), "single-milestone handoff must include next steps");
-    assert.ok(/\/gsd auto/.test(section), "single-milestone handoff must mention /gsd auto");
-    assert.ok(/\/gsd status/.test(section), "single-milestone handoff must mention /gsd status");
-    assert.ok(/\/gsd visualize/.test(section), "single-milestone handoff must mention /gsd visualize");
-    assert.ok(/\/gsd notifications/.test(section), "single-milestone handoff must mention /gsd notifications");
+    assert.ok(/\/otto auto/.test(section), "single-milestone handoff must mention /otto auto");
+    assert.ok(/\/otto status/.test(section), "single-milestone handoff must mention /otto status");
+    assert.ok(/\/otto visualize/.test(section), "single-milestone handoff must mention /otto visualize");
+    assert.ok(/\/otto notifications/.test(section), "single-milestone handoff must mention /otto notifications");
   });
 
   test("discuss-headless multi-milestone pre-condition uses the non-bypassable checkbox format", () => {
@@ -105,8 +105,8 @@ describe("headless milestone bootstrap — parity with interactive flow", () => 
     for (const artifact of [
       "PROJECT artifact",
       "REQUIREMENTS artifact",
-      "`gsd_plan_milestone`",
-      "`.gsd/DISCUSSION-MANIFEST.json`",
+      "`otto_plan_milestone`",
+      "`.otto/workflow/DISCUSSION-MANIFEST.json`",
     ]) {
       const escaped = artifact.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       assert.ok(
@@ -119,9 +119,9 @@ describe("headless milestone bootstrap — parity with interactive flow", () => 
       "multi-milestone pre-condition must still enforce gates_completed === total",
     );
     assert.ok(/Next steps:/.test(multiSection), "multi-milestone handoff must include next steps");
-    assert.ok(/\/gsd auto/.test(multiSection), "multi-milestone handoff must mention /gsd auto");
-    assert.ok(/\/gsd status/.test(multiSection), "multi-milestone handoff must mention /gsd status");
-    assert.ok(/\/gsd visualize/.test(multiSection), "multi-milestone handoff must mention /gsd visualize");
-    assert.ok(/\/gsd notifications/.test(multiSection), "multi-milestone handoff must mention /gsd notifications");
+    assert.ok(/\/otto auto/.test(multiSection), "multi-milestone handoff must mention /otto auto");
+    assert.ok(/\/otto status/.test(multiSection), "multi-milestone handoff must mention /otto status");
+    assert.ok(/\/otto visualize/.test(multiSection), "multi-milestone handoff must mention /otto visualize");
+    assert.ok(/\/otto notifications/.test(multiSection), "multi-milestone handoff must mention /otto notifications");
   });
 });

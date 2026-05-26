@@ -107,12 +107,12 @@ describe("style", () => {
 		const plain = style()
 			.border("open")
 			.bottomRule(false)
-			.title("GSD")
+			.title("OTTO")
 			.render(["a turn of conversation"], 40)
 			.map((line) => stripAnsi(line));
 
 		// Top rule, then body — and no trailing rule line.
-		assert.ok(plain[0].includes("GSD"));
+		assert.ok(plain[0].includes("OTTO"));
 		assert.equal(plain[plain.length - 1].trimEnd(), "a turn of conversation");
 		assert.ok(
 			!/^─+$/.test(plain[plain.length - 1]),
@@ -136,12 +136,12 @@ describe("style", () => {
 	test("open border truncates long right titles to the requested width", () => {
 		const plain = style()
 			.border("open")
-			.title("GSD")
+			.title("OTTO")
 			.titleRight("x".repeat(80))
 			.render(["output"], 40)
 			.map((line) => stripAnsi(line));
 
-		assert.ok(plain[0].includes("GSD"));
+		assert.ok(plain[0].includes("OTTO"));
 		assert.equal(visibleWidth(plain[0]), 40);
 	});
 

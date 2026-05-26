@@ -1,4 +1,4 @@
-// LOOP24 + Visual Brief prompt construction
+// OTTO + Visual Brief prompt construction
 
 import {
 	createVisualBriefArtifactPolicy,

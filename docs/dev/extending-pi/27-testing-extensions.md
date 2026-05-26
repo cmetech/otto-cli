@@ -276,17 +276,17 @@ Key points:
 Some extensions read environment variables. Control them in tests:
 
 ```typescript
-test("respects GSD_DEBUG env var", async () => {
-  const original = process.env.GSD_DEBUG;
+test("respects OTTO_DEBUG env var", async () => {
+  const original = process.env.OTTO_DEBUG;
   try {
-    process.env.GSD_DEBUG = "1";
-    // ... run extension code that checks GSD_DEBUG ...
+    process.env.OTTO_DEBUG = "1";
+    // ... run extension code that checks OTTO_DEBUG ...
     // ... assert debug behavior ...
   } finally {
     if (original === undefined) {
-      delete process.env.GSD_DEBUG;
+      delete process.env.OTTO_DEBUG;
     } else {
-      process.env.GSD_DEBUG = original;
+      process.env.OTTO_DEBUG = original;
     }
   }
 });

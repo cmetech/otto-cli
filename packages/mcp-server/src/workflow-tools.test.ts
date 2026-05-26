@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Tests packaged workflow tools exposed by the GSD MCP server.
+// Project/App: OTTO
+// File Purpose: Tests packaged workflow tools exposed by the OTTO MCP server.
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
@@ -32,7 +32,7 @@ import {
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-mcp-workflow-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto", "workflow"), { recursive: true });
   return base;
 }
 
@@ -51,7 +51,7 @@ function cleanup(base: string): void {
 }
 
 function seedContextModeFixture(base: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto", "workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Context Mode", status: "active", depends_on: [] });
   upsertMilestonePlanning("M001", {
     title: "Context Mode",
@@ -78,20 +78,20 @@ function seedContextModeFixture(base: string): void {
     demo: "",
     sequence: 1,
   });
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+  mkdirSync(join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto", "workflow", "milestones", "M001", "M001-ROADMAP.md"),
     "# M001\n\n## Slices\n\n- [x] **S01: Contract** `risk:low` `depends:[]`\n",
     "utf-8",
   );
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md"),
+    join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md"),
     "# S01 Summary\n\n**Context mode contract is ready for reassessment.**\n",
     "utf-8",
   );
   writeFileSync(
-    join(base, ".gsd", "last-snapshot.md"),
-    "# GSD context snapshot\n\nContext mode resume evidence.\n",
+    join(base, ".otto", "workflow", "last-snapshot.md"),
+    "# OTTO context snapshot\n\nContext mode resume evidence.\n",
     "utf-8",
   );
 }
@@ -100,9 +100,9 @@ function writeWriteGateSnapshot(
   base: string,
   snapshot: { verifiedDepthMilestones?: string[]; activeQueuePhase?: boolean; pendingGateId?: string | null },
 ): void {
-  mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(base, ".otto", "workflow", "runtime"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "runtime", "write-gate-state.json"),
+    join(base, ".otto", "workflow", "runtime", "write-gate-state.json"),
     JSON.stringify(
       {
         verifiedDepthMilestones: snapshot.verifiedDepthMilestones ?? [],
@@ -155,11 +155,11 @@ function cacheBustedWorkflowToolsImport(tag: string): string {
 }
 
 const workflowBridgeExtension = import.meta.url.includes("/dist-test/") ? "js" : "ts";
-process.env.GSD_WORKFLOW_EXECUTORS_MODULE ??= fileURLToPath(new URL(
+process.env.OTTO_WORKFLOW_EXECUTORS_MODULE ??= fileURLToPath(new URL(
   `../../../src/resources/extensions/workflow/tools/workflow-tool-executors.${workflowBridgeExtension}`,
   import.meta.url,
 ));
-process.env.GSD_WORKFLOW_WRITE_GATE_MODULE ??= fileURLToPath(new URL(
+process.env.OTTO_WORKFLOW_WRITE_GATE_MODULE ??= fileURLToPath(new URL(
   `../../../src/resources/extensions/workflow/bootstrap/write-gate.${workflowBridgeExtension}`,
   import.meta.url,
 ));
@@ -178,10 +178,10 @@ describe("workflow MCP tools", () => {
     registerWorkflowTools(server as any);
 
     const toolNames = server.tools.map((t) => t.name);
-    assert.ok(toolNames.includes("gsd_task_reopen"));
-    assert.ok(toolNames.includes("gsd_reopen_task"));
+    assert.ok(toolNames.includes("otto_task_reopen"));
+    assert.ok(toolNames.includes("otto_reopen_task"));
 
-    const taskReopen = server.tools.find((t) => t.name === "gsd_task_reopen");
+    const taskReopen = server.tools.find((t) => t.name === "otto_task_reopen");
     assert.ok(taskReopen);
     assert.ok("milestoneId" in taskReopen.params);
     assert.ok("sliceId" in taskReopen.params);
@@ -213,12 +213,12 @@ describe("workflow MCP tools", () => {
     );
   });
 
-  it("gsd_summary_save writes artifact through the shared executor", async () => {
+  it("otto_summary_save writes artifact through the shared executor", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const tool = server.tools.find((t) => t.name === "gsd_summary_save");
+      const tool = server.tools.find((t) => t.name === "otto_summary_save");
       assert.ok(tool, "summary tool should be registered");
       const originalCwd = process.cwd();
 
@@ -234,7 +234,7 @@ describe("workflow MCP tools", () => {
       assert.match(text, /Saved SUMMARY artifact/);
       assert.equal(process.cwd(), originalCwd, "workflow MCP tools should not mutate process.cwd");
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md")),
         "summary file should exist on disk",
       );
     } finally {
@@ -242,13 +242,13 @@ describe("workflow MCP tools", () => {
     }
   });
 
-  it("gsd_exec runs by default, preserves cwd, and returns structured metadata", async () => {
+  it("otto_exec runs by default, preserves cwd, and returns structured metadata", async () => {
     const base = makeTmpBase();
     const originalCwd = process.cwd();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const tool = server.tools.find((t) => t.name === "gsd_exec");
+      const tool = server.tools.find((t) => t.name === "otto_exec");
       assert.ok(tool, "exec tool should be registered");
 
       const result = await tool!.handler({
@@ -261,10 +261,10 @@ describe("workflow MCP tools", () => {
       const record = result as any;
       assert.equal(record.isError, false);
       assert.match(record.content[0].text as string, /context mode default on/);
-      assert.equal(record.structuredContent.operation, "gsd_exec");
+      assert.equal(record.structuredContent.operation, "otto_exec");
       assert.equal(record.structuredContent.runtime, "node");
       assert.ok(existsSync(record.structuredContent.stdout_path), "stdout should be persisted");
-      assert.equal(process.cwd(), originalCwd, "gsd_exec must not mutate process.cwd");
+      assert.equal(process.cwd(), originalCwd, "otto_exec must not mutate process.cwd");
       assert.match(
         readFileSync(record.structuredContent.stdout_path, "utf-8"),
         new RegExp(base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")),
@@ -275,17 +275,17 @@ describe("workflow MCP tools", () => {
     }
   });
 
-  it("gsd_exec returns an MCP error when context mode is disabled", async () => {
+  it("otto_exec returns an MCP error when context mode is disabled", async () => {
     const base = makeTmpBase();
     try {
       writeFileSync(
-        join(base, ".gsd", "PREFERENCES.md"),
+        join(base, ".otto", "workflow", "PREFERENCES.md"),
         "---\ncontext_mode:\n  enabled: false\n---\n",
         "utf-8",
       );
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const tool = server.tools.find((t) => t.name === "gsd_exec");
+      const tool = server.tools.find((t) => t.name === "otto_exec");
       assert.ok(tool, "exec tool should be registered");
 
       const result = await tool!.handler({
@@ -301,13 +301,13 @@ describe("workflow MCP tools", () => {
     }
   });
 
-  it("gsd_exec is blocked by the MCP discussion-gate write gate", async () => {
+  it("otto_exec is blocked by the MCP discussion-gate write gate", async () => {
     const base = makeTmpBase();
     try {
       writeWriteGateSnapshot(base, { pendingGateId: "depth_verification_M001_confirm" });
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const tool = server.tools.find((t) => t.name === "gsd_exec");
+      const tool = server.tools.find((t) => t.name === "otto_exec");
       assert.ok(tool, "exec tool should be registered");
 
       const result = await tool!.handler({
@@ -322,13 +322,13 @@ describe("workflow MCP tools", () => {
     }
   });
 
-  it("gsd_exec_search finds a prior gsd_exec run", async () => {
+  it("otto_exec_search finds a prior otto_exec run", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const execTool = server.tools.find((t) => t.name === "gsd_exec");
-      const searchTool = server.tools.find((t) => t.name === "gsd_exec_search");
+      const execTool = server.tools.find((t) => t.name === "otto_exec");
+      const searchTool = server.tools.find((t) => t.name === "otto_exec_search");
       assert.ok(execTool, "exec tool should be registered");
       assert.ok(searchTool, "exec search tool should be registered");
 
@@ -345,25 +345,25 @@ describe("workflow MCP tools", () => {
       });
 
       assert.match((result as any).content[0].text as string, /find-me-later/);
-      assert.equal((result as any).structuredContent.operation, "gsd_exec_search");
+      assert.equal((result as any).structuredContent.operation, "otto_exec_search");
       assert.equal((result as any).structuredContent.matches, 1);
-      assert.match((result as any).structuredContent.results[0].stdout_path, /\.gsd[\\/]exec[\\/].*\.stdout$/);
+      assert.match((result as any).structuredContent.results[0].stdout_path, /\.otto[\\/]workflow[\\/]exec[\\/].*\.stdout$/);
     } finally {
       cleanup(base);
     }
   });
 
-  it("gsd_exec_search returns an MCP error when context mode is disabled", async () => {
+  it("otto_exec_search returns an MCP error when context mode is disabled", async () => {
     const base = makeTmpBase();
     try {
       writeFileSync(
-        join(base, ".gsd", "PREFERENCES.md"),
+        join(base, ".otto", "workflow", "PREFERENCES.md"),
         "---\ncontext_mode:\n  enabled: false\n---\n",
         "utf-8",
       );
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const tool = server.tools.find((t) => t.name === "gsd_exec_search");
+      const tool = server.tools.find((t) => t.name === "otto_exec_search");
       assert.ok(tool, "exec search tool should be registered");
 
       const result = await tool!.handler({ projectDir: base, query: "anything" });
@@ -375,44 +375,44 @@ describe("workflow MCP tools", () => {
     }
   });
 
-  it("gsd_resume reads the context snapshot", async () => {
+  it("otto_resume reads the context snapshot", async () => {
     const base = makeTmpBase();
     try {
       writeFileSync(
-        join(base, ".gsd", "last-snapshot.md"),
-        "# GSD context snapshot\n\nResume from here.\n",
+        join(base, ".otto", "workflow", "last-snapshot.md"),
+        "# OTTO context snapshot\n\nResume from here.\n",
         "utf-8",
       );
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const tool = server.tools.find((t) => t.name === "gsd_resume");
+      const tool = server.tools.find((t) => t.name === "otto_resume");
       assert.ok(tool, "resume tool should be registered");
 
       const result = await tool!.handler({ projectDir: base });
 
       assert.match((result as any).content[0].text as string, /Resume from here/);
       assert.deepEqual((result as any).structuredContent, {
-        operation: "gsd_resume",
+        operation: "otto_resume",
         found: true,
-        bytes: Buffer.byteLength("# GSD context snapshot\n\nResume from here.\n", "utf-8"),
+        bytes: Buffer.byteLength("# OTTO context snapshot\n\nResume from here.\n", "utf-8"),
       });
     } finally {
       cleanup(base);
     }
   });
 
-  it("gsd_resume returns an MCP error when context mode is disabled", async () => {
+  it("otto_resume returns an MCP error when context mode is disabled", async () => {
     const base = makeTmpBase();
     try {
       writeFileSync(
-        join(base, ".gsd", "PREFERENCES.md"),
+        join(base, ".otto", "workflow", "PREFERENCES.md"),
         "---\ncontext_mode:\n  enabled: false\n---\n",
         "utf-8",
       );
-      writeFileSync(join(base, ".gsd", "last-snapshot.md"), "# GSD context snapshot\n\nHidden.\n", "utf-8");
+      writeFileSync(join(base, ".otto", "workflow", "last-snapshot.md"), "# OTTO context snapshot\n\nHidden.\n", "utf-8");
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const tool = server.tools.find((t) => t.name === "gsd_resume");
+      const tool = server.tools.find((t) => t.name === "otto_resume");
       assert.ok(tool, "resume tool should be registered");
 
       const result = await tool!.handler({ projectDir: base });
@@ -432,9 +432,9 @@ describe("workflow MCP tools", () => {
 
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const execTool = server.tools.find((t) => t.name === "gsd_exec");
-      const searchTool = server.tools.find((t) => t.name === "gsd_exec_search");
-      const resumeTool = server.tools.find((t) => t.name === "gsd_resume");
+      const execTool = server.tools.find((t) => t.name === "otto_exec");
+      const searchTool = server.tools.find((t) => t.name === "otto_exec_search");
+      const resumeTool = server.tools.find((t) => t.name === "otto_resume");
       assert.ok(execTool, "exec tool should be registered");
       assert.ok(searchTool, "exec search tool should be registered");
       assert.ok(resumeTool, "resume tool should be registered");
@@ -456,14 +456,14 @@ describe("workflow MCP tools", () => {
         purpose: "context-contract-e2e",
       });
       assert.equal((execResult as any).isError, false);
-      assert.equal((execResult as any).structuredContent.operation, "gsd_exec");
+      assert.equal((execResult as any).structuredContent.operation, "otto_exec");
       assert.ok(existsSync((execResult as any).structuredContent.stdout_path), "stdout should be persisted");
 
       const searchResult = await searchTool!.handler({
         projectDir: base,
         query: "context-contract-e2e",
       });
-      assert.equal((searchResult as any).structuredContent.operation, "gsd_exec_search");
+      assert.equal((searchResult as any).structuredContent.operation, "otto_exec_search");
       assert.equal((searchResult as any).structuredContent.matches, 1);
       assert.equal(
         (searchResult as any).structuredContent.results[0].stdout_path,
@@ -473,13 +473,13 @@ describe("workflow MCP tools", () => {
 
       const resumeResult = await resumeTool!.handler({ projectDir: base });
       assert.deepEqual((resumeResult as any).structuredContent, {
-        operation: "gsd_resume",
+        operation: "otto_resume",
         found: true,
-        bytes: Buffer.byteLength("# GSD context snapshot\n\nContext mode resume evidence.\n", "utf-8"),
+        bytes: Buffer.byteLength("# OTTO context snapshot\n\nContext mode resume evidence.\n", "utf-8"),
       });
       assert.match((resumeResult as any).content[0].text as string, /Context mode resume evidence/);
 
-      const worktree = join(base, ".gsd", "worktrees", "M001");
+      const worktree = join(base, ".otto", "workflow", "worktrees", "M001");
       mkdirSync(worktree, { recursive: true });
       const rootSafetyResult = await execTool!.handler({
         projectDir: worktree,
@@ -489,7 +489,7 @@ describe("workflow MCP tools", () => {
       assertToolError(rootSafetyResult, /original project root/);
 
       writeFileSync(
-        join(base, ".gsd", "PREFERENCES.md"),
+        join(base, ".otto", "workflow", "PREFERENCES.md"),
         "---\ncontext_mode:\n  enabled: false\n---\n",
         "utf-8",
       );
@@ -512,12 +512,12 @@ describe("workflow MCP tools", () => {
     }
   });
 
-  it("gsd_summary_save supports root-level PROJECT artifacts without milestone_id", async () => {
+  it("otto_summary_save supports root-level PROJECT artifacts without milestone_id", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const tool = server.tools.find((t) => t.name === "gsd_summary_save");
+      const tool = server.tools.find((t) => t.name === "otto_summary_save");
       assert.ok(tool, "summary tool should be registered");
 
       const milestoneParam = tool!.params.milestone_id as { isOptional?: () => boolean };
@@ -547,11 +547,11 @@ describe("workflow MCP tools", () => {
       const text = (result as any).content[0].text as string;
       assert.match(text, /Saved PROJECT artifact/);
       assert.ok(
-        existsSync(join(base, ".gsd", "PROJECT.md")),
+        existsSync(join(base, ".otto", "workflow", "PROJECT.md")),
         "root project artifact should exist on disk",
       );
       assert.equal(
-        readFileSync(join(base, ".gsd", "PROJECT.md"), "utf-8"),
+        readFileSync(join(base, ".otto", "workflow", "PROJECT.md"), "utf-8"),
         projectFixture,
       );
     } finally {
@@ -559,12 +559,12 @@ describe("workflow MCP tools", () => {
     }
   });
 
-  it("gsd_summary_save rejects milestone-scoped artifacts without milestone_id", async () => {
+  it("otto_summary_save rejects milestone-scoped artifacts without milestone_id", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const tool = server.tools.find((t) => t.name === "gsd_summary_save");
+      const tool = server.tools.find((t) => t.name === "otto_summary_save");
       assert.ok(tool, "summary tool should be registered");
 
       const result = await tool!.handler({
@@ -583,13 +583,13 @@ describe("workflow MCP tools", () => {
     }
   });
 
-  it("gsd_summary_save renders root REQUIREMENTS from DB rows, not provided markdown", async () => {
+  it("otto_summary_save renders root REQUIREMENTS from DB rows, not provided markdown", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const requirementTool = server.tools.find((t) => t.name === "gsd_requirement_save");
-      const summaryTool = server.tools.find((t) => t.name === "gsd_summary_save");
+      const requirementTool = server.tools.find((t) => t.name === "otto_requirement_save");
+      const summaryTool = server.tools.find((t) => t.name === "otto_summary_save");
       assert.ok(requirementTool, "requirement tool should be registered");
       assert.ok(summaryTool, "summary tool should be registered");
 
@@ -614,7 +614,7 @@ describe("workflow MCP tools", () => {
       const text = (result as any).content[0].text as string;
       assert.match(text, /Saved REQUIREMENTS artifact/);
 
-      const requirementsPath = join(base, ".gsd", "REQUIREMENTS.md");
+      const requirementsPath = join(base, ".otto", "workflow", "REQUIREMENTS.md");
       const markdown = readFileSync(requirementsPath, "utf-8");
       assert.match(markdown, /MCP user can add a task/);
       assert.doesNotMatch(markdown, /R999|Wrong markdown source|This content must not become canonical/);
@@ -636,12 +636,12 @@ describe("workflow MCP tools", () => {
   it("rejects workflow tool calls outside the configured project root", async () => {
     const base = makeTmpBase();
     const otherBase = makeTmpBase();
-    const prevRoot = process.env.GSD_WORKFLOW_PROJECT_ROOT;
+    const prevRoot = process.env.OTTO_WORKFLOW_PROJECT_ROOT;
     try {
-      process.env.GSD_WORKFLOW_PROJECT_ROOT = base;
+      process.env.OTTO_WORKFLOW_PROJECT_ROOT = base;
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const tool = server.tools.find((t) => t.name === "gsd_summary_save");
+      const tool = server.tools.find((t) => t.name === "otto_summary_save");
       assert.ok(tool, "summary tool should be registered");
 
       const result = await tool!.handler({
@@ -653,9 +653,9 @@ describe("workflow MCP tools", () => {
       assertToolError(result, /configured workflow project root/);
     } finally {
       if (prevRoot === undefined) {
-        delete process.env.GSD_WORKFLOW_PROJECT_ROOT;
+        delete process.env.OTTO_WORKFLOW_PROJECT_ROOT;
       } else {
-        process.env.GSD_WORKFLOW_PROJECT_ROOT = prevRoot;
+        process.env.OTTO_WORKFLOW_PROJECT_ROOT = prevRoot;
       }
       cleanup(base);
       cleanup(otherBase);
@@ -664,17 +664,17 @@ describe("workflow MCP tools", () => {
 
   it("rejects non-file executor module URLs", async () => {
     const base = makeTmpBase();
-    const prevModule = process.env.GSD_WORKFLOW_EXECUTORS_MODULE;
-    const prevRoot = process.env.GSD_WORKFLOW_PROJECT_ROOT;
+    const prevModule = process.env.OTTO_WORKFLOW_EXECUTORS_MODULE;
+    const prevRoot = process.env.OTTO_WORKFLOW_PROJECT_ROOT;
     try {
-      process.env.GSD_WORKFLOW_PROJECT_ROOT = base;
-      process.env.GSD_WORKFLOW_EXECUTORS_MODULE = "data:text/javascript,export default {}";
+      process.env.OTTO_WORKFLOW_PROJECT_ROOT = base;
+      process.env.OTTO_WORKFLOW_EXECUTORS_MODULE = "data:text/javascript,export default {}";
       const { registerWorkflowTools: freshRegisterWorkflowTools } = await import(
         cacheBustedWorkflowToolsImport("bad-module")
       );
       const server = makeMockServer();
       freshRegisterWorkflowTools(server as any);
-      const tool = server.tools.find((t) => t.name === "gsd_summary_save");
+      const tool = server.tools.find((t) => t.name === "otto_summary_save");
       assert.ok(tool, "summary tool should be registered");
 
       const result = await tool!.handler({
@@ -686,14 +686,14 @@ describe("workflow MCP tools", () => {
       assertToolError(result, /only supports file: URLs or filesystem paths/);
     } finally {
       if (prevModule === undefined) {
-        delete process.env.GSD_WORKFLOW_EXECUTORS_MODULE;
+        delete process.env.OTTO_WORKFLOW_EXECUTORS_MODULE;
       } else {
-        process.env.GSD_WORKFLOW_EXECUTORS_MODULE = prevModule;
+        process.env.OTTO_WORKFLOW_EXECUTORS_MODULE = prevModule;
       }
       if (prevRoot === undefined) {
-        delete process.env.GSD_WORKFLOW_PROJECT_ROOT;
+        delete process.env.OTTO_WORKFLOW_PROJECT_ROOT;
       } else {
-        process.env.GSD_WORKFLOW_PROJECT_ROOT = prevRoot;
+        process.env.OTTO_WORKFLOW_PROJECT_ROOT = prevRoot;
       }
       cleanup(base);
     }
@@ -702,16 +702,16 @@ describe("workflow MCP tools", () => {
   it("blocks workflow mutation tools while a discussion gate is pending", async () => {
     const base = makeTmpBase();
     try {
-      mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+      mkdirSync(join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
       writeFileSync(
-        join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+        join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
         "# S01\n\n- [ ] **T01: Demo** `est:5m`\n",
       );
       writeWriteGateSnapshot(base, { pendingGateId: "depth_verification_M001_confirm" });
 
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const taskTool = server.tools.find((t) => t.name === "gsd_task_complete");
+      const taskTool = server.tools.find((t) => t.name === "otto_task_complete");
       assert.ok(taskTool, "task tool should be registered");
 
       const result = await taskTool!.handler({
@@ -732,16 +732,16 @@ describe("workflow MCP tools", () => {
   it("blocks workflow mutation tools during queue mode", async () => {
     const base = makeTmpBase();
     try {
-      mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+      mkdirSync(join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
       writeFileSync(
-        join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+        join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
         "# S01\n\n- [ ] **T01: Demo** `est:5m`\n",
       );
       writeWriteGateSnapshot(base, { activeQueuePhase: true });
 
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const taskTool = server.tools.find((t) => t.name === "gsd_task_complete");
+      const taskTool = server.tools.find((t) => t.name === "otto_task_complete");
       assert.ok(taskTool, "task tool should be registered");
 
       const result = await taskTool!.handler({
@@ -753,25 +753,25 @@ describe("workflow MCP tools", () => {
         narrative: "Did the work",
         verification: "npm test",
       });
-      assertToolError(result, /planning tool .* not executes work|Cannot gsd_task_complete|Unknown tools are not permitted during queue mode/);
+      assertToolError(result, /planning tool .* not executes work|Cannot otto_task_complete|Unknown tools are not permitted during queue mode/);
     } finally {
       cleanup(base);
     }
   });
 
-  it("gsd_task_complete and gsd_milestone_status work end-to-end", async () => {
+  it("otto_task_complete and otto_milestone_status work end-to-end", async () => {
     const base = makeTmpBase();
     try {
-      mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+      mkdirSync(join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
       writeFileSync(
-        join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+        join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
         "# S01\n\n- [ ] **T01: Demo** `est:5m`\n",
       );
 
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const taskTool = server.tools.find((t) => t.name === "gsd_task_complete");
-      const statusTool = server.tools.find((t) => t.name === "gsd_milestone_status");
+      const taskTool = server.tools.find((t) => t.name === "otto_task_complete");
+      const statusTool = server.tools.find((t) => t.name === "otto_milestone_status");
       assert.ok(taskTool, "task tool should be registered");
       assert.ok(statusTool, "status tool should be registered");
 
@@ -787,7 +787,7 @@ describe("workflow MCP tools", () => {
 
       assert.match((taskResult as any).content[0].text as string, /Completed task T01/);
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md")),
         "task summary should be written to disk",
       );
 
@@ -804,15 +804,15 @@ describe("workflow MCP tools", () => {
     }
   });
 
-  it("gsd_skip_slice cascades pending/active tasks to skipped", async () => {
+  it("otto_skip_slice cascades pending/active tasks to skipped", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const milestoneTool = server.tools.find((t) => t.name === "gsd_plan_milestone");
-      const sliceTool = server.tools.find((t) => t.name === "gsd_plan_slice");
-      const planTaskTool = server.tools.find((t) => t.name === "gsd_plan_task");
-      const skipTool = server.tools.find((t) => t.name === "gsd_skip_slice");
+      const milestoneTool = server.tools.find((t) => t.name === "otto_plan_milestone");
+      const sliceTool = server.tools.find((t) => t.name === "otto_plan_slice");
+      const planTaskTool = server.tools.find((t) => t.name === "otto_plan_task");
+      const skipTool = server.tools.find((t) => t.name === "otto_skip_slice");
       assert.ok(milestoneTool, "milestone planning tool should be registered");
       assert.ok(sliceTool, "slice planning tool should be registered");
       assert.ok(planTaskTool, "task planning tool should be registered");
@@ -831,7 +831,7 @@ describe("workflow MCP tools", () => {
             depends: [],
             demo: "Tasks are skipped when slice is skipped.",
             goal: "Create pending tasks and skip the slice.",
-            successCriteria: "Tasks become skipped after gsd_skip_slice.",
+            successCriteria: "Tasks become skipped after otto_skip_slice.",
             proofLevel: "integration",
             integrationClosure: "MCP skip tool updates slice and tasks together.",
             observabilityImpact: "Regression test guards pending-task dead-end.",
@@ -918,20 +918,20 @@ describe("workflow MCP tools", () => {
     }
   });
 
-  it("#4477 gsd_task_complete forwards every schema field to the executor (regression for destructure-rebuild bug class)", async () => {
+  it("#4477 otto_task_complete forwards every schema field to the executor (regression for destructure-rebuild bug class)", async () => {
     // Locks in the class-fix from PR #4477 review: handleTaskComplete previously
     // destructured args into a hand-listed set of fields and rebuilt the call
     // payload, which silently dropped ADR-011's `escalation` field (and any
     // future schema field added without updating the rebuild). The fix passes
     // `args` through directly, matching the spread pattern of sibling
     // handlers. This test verifies the contract by injecting a mock executor
-    // module that captures the args, calling gsd_task_complete with an
+    // module that captures the args, calling otto_task_complete with an
     // `escalation` payload, and asserting the field reached the executor.
     const base = makeTmpBase();
     const capturePath = join(base, "captured-args.json");
     const mockModulePath = join(base, "mock-executors.mjs");
-    const prevModule = process.env.GSD_WORKFLOW_EXECUTORS_MODULE;
-    const prevCapture = process.env.GSD_TEST_TASK_COMPLETE_CAPTURE_PATH;
+    const prevModule = process.env.OTTO_WORKFLOW_EXECUTORS_MODULE;
+    const prevCapture = process.env.OTTO_TEST_TASK_COMPLETE_CAPTURE_PATH;
     try {
       // Mock module: implements the WorkflowToolExecutors shape.
       // executeTaskComplete writes its received args to disk for assertion.
@@ -957,7 +957,7 @@ export const executeSliceReopen = noop;
 export const executeMilestoneReopen = noop;
 
 export const executeTaskComplete = async (params, projectDir) => {
-  const capturePath = process.env.GSD_TEST_TASK_COMPLETE_CAPTURE_PATH;
+  const capturePath = process.env.OTTO_TEST_TASK_COMPLETE_CAPTURE_PATH;
   if (capturePath) {
     writeFileSync(capturePath, JSON.stringify({ params, projectDir }, null, 2));
   }
@@ -968,8 +968,8 @@ export const executeTaskComplete = async (params, projectDir) => {
 };
 `;
       writeFileSync(mockModulePath, mockSource, "utf-8");
-      process.env.GSD_WORKFLOW_EXECUTORS_MODULE = mockModulePath;
-      process.env.GSD_TEST_TASK_COMPLETE_CAPTURE_PATH = capturePath;
+      process.env.OTTO_WORKFLOW_EXECUTORS_MODULE = mockModulePath;
+      process.env.OTTO_TEST_TASK_COMPLETE_CAPTURE_PATH = capturePath;
 
       // Fresh import bypasses the cached workflowToolExecutorsPromise so the
       // mock module is actually loaded for this test.
@@ -978,7 +978,7 @@ export const executeTaskComplete = async (params, projectDir) => {
       );
       const server = makeMockServer();
       freshRegisterWorkflowTools(server as any);
-      const taskTool = server.tools.find((t) => t.name === "gsd_task_complete");
+      const taskTool = server.tools.find((t) => t.name === "otto_task_complete");
       assert.ok(taskTool, "task tool should be registered");
 
       // Mirrors the ADR-011 escalation schema: question + 2-4 options
@@ -1038,31 +1038,31 @@ export const executeTaskComplete = async (params, projectDir) => {
       );
     } finally {
       if (prevModule === undefined) {
-        delete process.env.GSD_WORKFLOW_EXECUTORS_MODULE;
+        delete process.env.OTTO_WORKFLOW_EXECUTORS_MODULE;
       } else {
-        process.env.GSD_WORKFLOW_EXECUTORS_MODULE = prevModule;
+        process.env.OTTO_WORKFLOW_EXECUTORS_MODULE = prevModule;
       }
       if (prevCapture === undefined) {
-        delete process.env.GSD_TEST_TASK_COMPLETE_CAPTURE_PATH;
+        delete process.env.OTTO_TEST_TASK_COMPLETE_CAPTURE_PATH;
       } else {
-        process.env.GSD_TEST_TASK_COMPLETE_CAPTURE_PATH = prevCapture;
+        process.env.OTTO_TEST_TASK_COMPLETE_CAPTURE_PATH = prevCapture;
       }
       cleanup(base);
     }
   });
 
-  it("gsd_complete_task alias delegates to gsd_task_complete behavior", async () => {
+  it("otto_complete_task alias delegates to otto_task_complete behavior", async () => {
     const base = makeTmpBase();
     try {
-      mkdirSync(join(base, ".gsd", "milestones", "M002", "slices", "S02"), { recursive: true });
+      mkdirSync(join(base, ".otto", "workflow", "milestones", "M002", "slices", "S02"), { recursive: true });
       writeFileSync(
-        join(base, ".gsd", "milestones", "M002", "slices", "S02", "S02-PLAN.md"),
+        join(base, ".otto", "workflow", "milestones", "M002", "slices", "S02", "S02-PLAN.md"),
         "# S02\n\n- [ ] **T02: Demo** `est:5m`\n",
       );
 
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const aliasTool = server.tools.find((t) => t.name === "gsd_complete_task");
+      const aliasTool = server.tools.find((t) => t.name === "otto_complete_task");
       assert.ok(aliasTool, "task completion alias should be registered");
 
       const result = await aliasTool!.handler({
@@ -1077,7 +1077,7 @@ export const executeTaskComplete = async (params, projectDir) => {
 
       assert.match((result as any).content[0].text as string, /Completed task T02/);
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M002", "slices", "S02", "tasks", "T02-SUMMARY.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M002", "slices", "S02", "tasks", "T02-SUMMARY.md")),
         "alias should write task summary to disk",
       );
     } finally {
@@ -1085,13 +1085,13 @@ export const executeTaskComplete = async (params, projectDir) => {
     }
   });
 
-  it("gsd_plan_milestone and gsd_plan_slice work end-to-end", async () => {
+  it("otto_plan_milestone and otto_plan_slice work end-to-end", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const milestoneTool = server.tools.find((t) => t.name === "gsd_plan_milestone");
-      const sliceTool = server.tools.find((t) => t.name === "gsd_plan_slice");
+      const milestoneTool = server.tools.find((t) => t.name === "otto_plan_milestone");
+      const sliceTool = server.tools.find((t) => t.name === "otto_plan_slice");
       assert.ok(milestoneTool, "milestone planning tool should be registered");
       assert.ok(sliceTool, "slice planning tool should be registered");
 
@@ -1130,18 +1130,18 @@ export const executeTaskComplete = async (params, projectDir) => {
             estimate: "15m",
             files: ["src/resources/extensions/workflow/tools/workflow-tool-executors.ts"],
             verify: "node --test",
-            inputs: [".gsd/milestones/M001/M001-ROADMAP.md"],
+            inputs: [".otto/workflow/milestones/M001/M001-ROADMAP.md"],
             expectedOutput: ["S01-PLAN.md", "T01-PLAN.md"],
           },
         ],
       });
       assert.match((sliceResult as any).content[0].text as string, /Planned slice S01/);
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md")),
         "slice plan should exist on disk",
       );
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-PLAN.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-PLAN.md")),
         "task plan should exist on disk",
       );
     } finally {
@@ -1163,7 +1163,7 @@ export const executeTaskComplete = async (params, projectDir) => {
       };
 
       // Empty sliceId top-level
-      await expectRejection("gsd_plan_slice", {
+      await expectRejection("otto_plan_slice", {
         projectDir: base,
         milestoneId: "M001",
         sliceId: "",
@@ -1172,7 +1172,7 @@ export const executeTaskComplete = async (params, projectDir) => {
       }, "sliceId");
 
       // Empty task verify inside tasks array
-      await expectRejection("gsd_plan_slice", {
+      await expectRejection("otto_plan_slice", {
         projectDir: base,
         milestoneId: "M001",
         sliceId: "S01",
@@ -1192,7 +1192,7 @@ export const executeTaskComplete = async (params, projectDir) => {
       }, "verify");
 
       // Empty element inside files[] array
-      await expectRejection("gsd_plan_slice", {
+      await expectRejection("otto_plan_slice", {
         projectDir: base,
         milestoneId: "M001",
         sliceId: "S01",
@@ -1211,8 +1211,8 @@ export const executeTaskComplete = async (params, projectDir) => {
         ],
       }, "files");
 
-      // Empty milestoneId on gsd_plan_task
-      await expectRejection("gsd_plan_task", {
+      // Empty milestoneId on otto_plan_task
+      await expectRejection("otto_plan_task", {
         projectDir: base,
         milestoneId: "",
         sliceId: "S01",
@@ -1227,7 +1227,7 @@ export const executeTaskComplete = async (params, projectDir) => {
       }, "milestoneId");
 
       // Empty observabilityImpact explicitly rejected (optional-but-non-empty)
-      await expectRejection("gsd_plan_task", {
+      await expectRejection("otto_plan_task", {
         projectDir: base,
         milestoneId: "M001",
         sliceId: "S01",
@@ -1242,8 +1242,8 @@ export const executeTaskComplete = async (params, projectDir) => {
         observabilityImpact: "   ",
       }, "observabilityImpact");
 
-      // Empty assessment on gsd_reassess_roadmap
-      await expectRejection("gsd_reassess_roadmap", {
+      // Empty assessment on otto_reassess_roadmap
+      await expectRejection("otto_reassess_roadmap", {
         projectDir: base,
         milestoneId: "M001",
         completedSliceId: "S01",
@@ -1252,8 +1252,8 @@ export const executeTaskComplete = async (params, projectDir) => {
         sliceChanges: { modified: [], added: [], removed: [] },
       }, "assessment");
 
-      // Empty keyRisks[i].risk on gsd_plan_milestone top-level arrays
-      await expectRejection("gsd_plan_milestone", {
+      // Empty keyRisks[i].risk on otto_plan_milestone top-level arrays
+      await expectRejection("otto_plan_milestone", {
         projectDir: base,
         milestoneId: "M001",
         title: "T",
@@ -1262,8 +1262,8 @@ export const executeTaskComplete = async (params, projectDir) => {
         keyRisks: [{ risk: "", whyItMatters: "because." }],
       }, "risk");
 
-      // Empty blockerDescription on gsd_replan_slice
-      await expectRejection("gsd_replan_slice", {
+      // Empty blockerDescription on otto_replan_slice
+      await expectRejection("otto_replan_slice", {
         projectDir: base,
         milestoneId: "M001",
         sliceId: "S01",
@@ -1274,8 +1274,8 @@ export const executeTaskComplete = async (params, projectDir) => {
         removedTaskIds: [],
       }, "blockerDescription");
 
-      // Empty milestoneId on gsd_task_complete
-      await expectRejection("gsd_task_complete", {
+      // Empty milestoneId on otto_task_complete
+      await expectRejection("otto_task_complete", {
         projectDir: base,
         taskId: "T01",
         sliceId: "S01",
@@ -1289,12 +1289,12 @@ export const executeTaskComplete = async (params, projectDir) => {
     }
   });
 
-  it("gsd_plan_milestone rejects empty slice fields up front with all violations", async () => {
+  it("otto_plan_milestone rejects empty slice fields up front with all violations", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const milestoneTool = server.tools.find((t) => t.name === "gsd_plan_milestone");
+      const milestoneTool = server.tools.find((t) => t.name === "otto_plan_milestone");
       assert.ok(milestoneTool, "milestone planning tool should be registered");
 
       const result = await milestoneTool!.handler({
@@ -1329,7 +1329,7 @@ export const executeTaskComplete = async (params, projectDir) => {
     }
   });
 
-  it("gsd_plan_milestone rejects a full slice with missing heavy fields via a behavioral round-trip", async () => {
+  it("otto_plan_milestone rejects a full slice with missing heavy fields via a behavioral round-trip", async () => {
     // Behavioral guard for the full-vs-sketch conditional. The original
     // regression (invisible "required unless isSketch" requirement) is
     // surfaced to users through two distinct runtime channels:
@@ -1345,7 +1345,7 @@ export const executeTaskComplete = async (params, projectDir) => {
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const milestoneTool = server.tools.find((t) => t.name === "gsd_plan_milestone");
+      const milestoneTool = server.tools.find((t) => t.name === "otto_plan_milestone");
       assert.ok(milestoneTool, "milestone planning tool should be registered");
 
       // Arm 1: full slice (isSketch omitted) with the heavy fields missing
@@ -1408,12 +1408,12 @@ export const executeTaskComplete = async (params, projectDir) => {
     }
   });
 
-  it("gsd_plan_milestone requires sketchScope when isSketch=true and skips heavy fields", async () => {
+  it("otto_plan_milestone requires sketchScope when isSketch=true and skips heavy fields", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const milestoneTool = server.tools.find((t) => t.name === "gsd_plan_milestone");
+      const milestoneTool = server.tools.find((t) => t.name === "otto_plan_milestone");
       assert.ok(milestoneTool, "milestone planning tool should be registered");
 
       const emptySketchResult = await milestoneTool!.handler({
@@ -1460,12 +1460,12 @@ export const executeTaskComplete = async (params, projectDir) => {
     }
   });
 
-  it("gsd_requirement_save opens the DB before inline requirement writes", async () => {
+  it("otto_requirement_save opens the DB before inline requirement writes", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const requirementTool = server.tools.find((t) => t.name === "gsd_requirement_save");
+      const requirementTool = server.tools.find((t) => t.name === "otto_requirement_save");
       assert.ok(requirementTool, "requirement tool should be registered");
 
       closeDatabase();
@@ -1482,7 +1482,7 @@ export const executeTaskComplete = async (params, projectDir) => {
       });
 
       assert.match((result as any).content[0].text as string, /Saved requirement R\d+/);
-      assert.ok(existsSync(join(base, ".gsd", "REQUIREMENTS.md")), "REQUIREMENTS.md should be written to disk");
+      assert.ok(existsSync(join(base, ".otto", "workflow", "REQUIREMENTS.md")), "REQUIREMENTS.md should be written to disk");
       const row = _getAdapter()!
         .prepare("SELECT id, class, description FROM requirements WHERE description = ?")
         .get("Inline MCP requirement save regression") as Record<string, unknown> | undefined;
@@ -1493,17 +1493,17 @@ export const executeTaskComplete = async (params, projectDir) => {
     }
   });
 
-  it("gsd_milestone_generate_id skips DB-only queued milestone rows", async () => {
+  it("otto_milestone_generate_id skips DB-only queued milestone rows", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const tool = server.tools.find((t) => t.name === "gsd_milestone_generate_id");
+      const tool = server.tools.find((t) => t.name === "otto_milestone_generate_id");
       assert.ok(tool, "milestone ID tool should be registered");
 
       const first = await tool!.handler({ projectDir: base });
       assert.equal((first as any).content[0].text, "M001");
-      assert.ok(!existsSync(join(base, ".gsd", "milestones", "M001")), "ID generation should not create a milestone dir");
+      assert.ok(!existsSync(join(base, ".otto", "workflow", "milestones", "M001")), "ID generation should not create a milestone dir");
 
       closeDatabase();
 
@@ -1519,14 +1519,14 @@ export const executeTaskComplete = async (params, projectDir) => {
     }
   });
 
-  it("gsd_plan_task reopens the DB before inline task planning writes", async () => {
+  it("otto_plan_task reopens the DB before inline task planning writes", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const milestoneTool = server.tools.find((t) => t.name === "gsd_plan_milestone");
-      const sliceTool = server.tools.find((t) => t.name === "gsd_plan_slice");
-      const taskTool = server.tools.find((t) => t.name === "gsd_plan_task");
+      const milestoneTool = server.tools.find((t) => t.name === "otto_plan_milestone");
+      const sliceTool = server.tools.find((t) => t.name === "otto_plan_slice");
+      const taskTool = server.tools.find((t) => t.name === "otto_plan_task");
       assert.ok(milestoneTool, "milestone planning tool should be registered");
       assert.ok(sliceTool, "slice planning tool should be registered");
       assert.ok(taskTool, "task planning tool should be registered");
@@ -1542,7 +1542,7 @@ export const executeTaskComplete = async (params, projectDir) => {
             title: "Inline task planning",
             risk: "medium",
             depends: [],
-            demo: "Inline gsd_plan_task reopens the DB after it was closed.",
+            demo: "Inline otto_plan_task reopens the DB after it was closed.",
             goal: "Preserve MCP task planning after the DB adapter is closed.",
             successCriteria: "The second task plan persists after a closed DB is reopened.",
             proofLevel: "integration",
@@ -1588,7 +1588,7 @@ export const executeTaskComplete = async (params, projectDir) => {
 
       assert.match((result as any).content[0].text as string, /Planned task T11/);
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M010", "slices", "S10", "tasks", "T11-PLAN.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M010", "slices", "S10", "tasks", "T11-PLAN.md")),
         "T11 plan should be written after reopening the DB",
       );
     } finally {
@@ -1596,16 +1596,16 @@ export const executeTaskComplete = async (params, projectDir) => {
     }
   });
 
-  it("gsd_replan_slice and gsd_slice_replan work end-to-end", async () => {
+  it("otto_replan_slice and otto_slice_replan work end-to-end", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const milestoneTool = server.tools.find((t) => t.name === "gsd_plan_milestone");
-      const sliceTool = server.tools.find((t) => t.name === "gsd_plan_slice");
-      const taskTool = server.tools.find((t) => t.name === "gsd_task_complete");
-      const canonicalTool = server.tools.find((t) => t.name === "gsd_replan_slice");
-      const aliasTool = server.tools.find((t) => t.name === "gsd_slice_replan");
+      const milestoneTool = server.tools.find((t) => t.name === "otto_plan_milestone");
+      const sliceTool = server.tools.find((t) => t.name === "otto_plan_slice");
+      const taskTool = server.tools.find((t) => t.name === "otto_task_complete");
+      const canonicalTool = server.tools.find((t) => t.name === "otto_replan_slice");
+      const aliasTool = server.tools.find((t) => t.name === "otto_slice_replan");
       assert.ok(milestoneTool, "milestone planning tool should be registered");
       assert.ok(sliceTool, "slice planning tool should be registered");
       assert.ok(taskTool, "task completion tool should be registered");
@@ -1726,11 +1726,11 @@ export const executeTaskComplete = async (params, projectDir) => {
       });
       assert.match((aliasResult as any).content[0].text as string, /Replanned slice S09/);
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M099", "slices", "S09", "S09-REPLAN.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M099", "slices", "S09", "S09-REPLAN.md")),
         "replan artifact should exist on disk",
       );
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M099", "slices", "S09", "S09-PLAN.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M099", "slices", "S09", "S09-PLAN.md")),
         "updated plan should exist on disk",
       );
       const removedTask = _getAdapter()!.prepare(
@@ -1742,16 +1742,16 @@ export const executeTaskComplete = async (params, projectDir) => {
     }
   });
 
-  it("gsd_slice_complete and gsd_complete_slice work end-to-end", async () => {
+  it("otto_slice_complete and otto_complete_slice work end-to-end", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const milestoneTool = server.tools.find((t) => t.name === "gsd_plan_milestone");
-      const sliceTool = server.tools.find((t) => t.name === "gsd_plan_slice");
-      const taskTool = server.tools.find((t) => t.name === "gsd_task_complete");
-      const canonicalTool = server.tools.find((t) => t.name === "gsd_slice_complete");
-      const aliasTool = server.tools.find((t) => t.name === "gsd_complete_slice");
+      const milestoneTool = server.tools.find((t) => t.name === "otto_plan_milestone");
+      const sliceTool = server.tools.find((t) => t.name === "otto_plan_slice");
+      const taskTool = server.tools.find((t) => t.name === "otto_task_complete");
+      const canonicalTool = server.tools.find((t) => t.name === "otto_slice_complete");
+      const aliasTool = server.tools.find((t) => t.name === "otto_complete_slice");
       assert.ok(milestoneTool, "milestone planning tool should be registered");
       assert.ok(sliceTool, "slice planning tool should be registered");
       assert.ok(taskTool, "task completion tool should be registered");
@@ -1878,11 +1878,11 @@ export const executeTaskComplete = async (params, projectDir) => {
       });
       assert.match((aliasResult as any).content[0].text as string, /Completed slice S04/);
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M004", "slices", "S04", "S04-SUMMARY.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M004", "slices", "S04", "S04-SUMMARY.md")),
         "alias should write slice summary to disk",
       );
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M004", "slices", "S04", "S04-UAT.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M004", "slices", "S04", "S04-UAT.md")),
         "alias should write slice UAT to disk",
       );
     } finally {
@@ -1890,17 +1890,17 @@ export const executeTaskComplete = async (params, projectDir) => {
     }
   });
 
-  it("gsd_validate_milestone and gsd_milestone_complete work end-to-end", async () => {
+  it("otto_validate_milestone and otto_milestone_complete work end-to-end", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const milestoneTool = server.tools.find((t) => t.name === "gsd_plan_milestone");
-      const sliceTool = server.tools.find((t) => t.name === "gsd_plan_slice");
-      const taskTool = server.tools.find((t) => t.name === "gsd_task_complete");
-      const completeSliceTool = server.tools.find((t) => t.name === "gsd_slice_complete");
-      const validateTool = server.tools.find((t) => t.name === "gsd_validate_milestone");
-      const completeMilestoneAlias = server.tools.find((t) => t.name === "gsd_milestone_complete");
+      const milestoneTool = server.tools.find((t) => t.name === "otto_plan_milestone");
+      const sliceTool = server.tools.find((t) => t.name === "otto_plan_slice");
+      const taskTool = server.tools.find((t) => t.name === "otto_task_complete");
+      const completeSliceTool = server.tools.find((t) => t.name === "otto_slice_complete");
+      const validateTool = server.tools.find((t) => t.name === "otto_validate_milestone");
+      const completeMilestoneAlias = server.tools.find((t) => t.name === "otto_milestone_complete");
       assert.ok(milestoneTool, "milestone planning tool should be registered");
       assert.ok(sliceTool, "slice planning tool should be registered");
       assert.ok(taskTool, "task completion tool should be registered");
@@ -1989,11 +1989,11 @@ export const executeTaskComplete = async (params, projectDir) => {
       });
       assert.match((completionResult as any).content[0].text as string, /Completed milestone M005/);
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M005", "M005-VALIDATION.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M005", "M005-VALIDATION.md")),
         "validation artifact should exist on disk",
       );
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M005", "M005-SUMMARY.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M005", "M005-SUMMARY.md")),
         "milestone summary should exist on disk",
       );
     } finally {
@@ -2001,18 +2001,18 @@ export const executeTaskComplete = async (params, projectDir) => {
     }
   });
 
-  it("gsd_reassess_roadmap, gsd_roadmap_reassess, and gsd_save_gate_result work end-to-end", async () => {
+  it("otto_reassess_roadmap, otto_roadmap_reassess, and otto_save_gate_result work end-to-end", async () => {
     const base = makeTmpBase();
     try {
       const server = makeMockServer();
       registerWorkflowTools(server as any);
-      const milestoneTool = server.tools.find((t) => t.name === "gsd_plan_milestone");
-      const sliceTool = server.tools.find((t) => t.name === "gsd_plan_slice");
-      const taskTool = server.tools.find((t) => t.name === "gsd_task_complete");
-      const completeSliceTool = server.tools.find((t) => t.name === "gsd_slice_complete");
-      const reassessTool = server.tools.find((t) => t.name === "gsd_reassess_roadmap");
-      const reassessAlias = server.tools.find((t) => t.name === "gsd_roadmap_reassess");
-      const gateTool = server.tools.find((t) => t.name === "gsd_save_gate_result");
+      const milestoneTool = server.tools.find((t) => t.name === "otto_plan_milestone");
+      const sliceTool = server.tools.find((t) => t.name === "otto_plan_slice");
+      const taskTool = server.tools.find((t) => t.name === "otto_task_complete");
+      const completeSliceTool = server.tools.find((t) => t.name === "otto_slice_complete");
+      const reassessTool = server.tools.find((t) => t.name === "otto_reassess_roadmap");
+      const reassessAlias = server.tools.find((t) => t.name === "otto_roadmap_reassess");
+      const gateTool = server.tools.find((t) => t.name === "otto_save_gate_result");
       assert.ok(milestoneTool, "milestone planning tool should be registered");
       assert.ok(sliceTool, "slice planning tool should be registered");
       assert.ok(taskTool, "task completion tool should be registered");
@@ -2168,11 +2168,11 @@ export const executeTaskComplete = async (params, projectDir) => {
       });
       assert.match((reassessAliasResult as any).content[0].text as string, /Reassessed roadmap for milestone M006 after S06/);
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M006", "slices", "S06", "S06-ASSESSMENT.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M006", "slices", "S06", "S06-ASSESSMENT.md")),
         "assessment artifact should exist on disk",
       );
       assert.ok(
-        existsSync(join(base, ".gsd", "milestones", "M006", "M006-ROADMAP.md")),
+        existsSync(join(base, ".otto", "workflow", "milestones", "M006", "M006-ROADMAP.md")),
         "roadmap artifact should exist on disk",
       );
     } finally {
@@ -2226,9 +2226,9 @@ describe("validateProjectDir", () => {
     const linkInside = join(allowedRoot, "escape-link");
     symlinkSync(outside, linkInside, "dir");
 
-    const prevRoot = process.env.GSD_WORKFLOW_PROJECT_ROOT;
+    const prevRoot = process.env.OTTO_WORKFLOW_PROJECT_ROOT;
     try {
-      process.env.GSD_WORKFLOW_PROJECT_ROOT = allowedRoot;
+      process.env.OTTO_WORKFLOW_PROJECT_ROOT = allowedRoot;
       assert.throws(
         () => validateProjectDir(linkInside),
         /configured workflow project root/,
@@ -2236,9 +2236,9 @@ describe("validateProjectDir", () => {
       );
     } finally {
       if (prevRoot === undefined) {
-        delete process.env.GSD_WORKFLOW_PROJECT_ROOT;
+        delete process.env.OTTO_WORKFLOW_PROJECT_ROOT;
       } else {
-        process.env.GSD_WORKFLOW_PROJECT_ROOT = prevRoot;
+        process.env.OTTO_WORKFLOW_PROJECT_ROOT = prevRoot;
       }
       cleanup(allowedRoot);
       cleanup(outside);
@@ -2253,16 +2253,16 @@ describe("validateProjectDir", () => {
     const canonicalRoot = realpathSync(allowedRoot);
     const futureWorktree = join(canonicalRoot, "worktrees", "M999-not-yet-created");
 
-    const prevRoot = process.env.GSD_WORKFLOW_PROJECT_ROOT;
+    const prevRoot = process.env.OTTO_WORKFLOW_PROJECT_ROOT;
     try {
-      process.env.GSD_WORKFLOW_PROJECT_ROOT = canonicalRoot;
+      process.env.OTTO_WORKFLOW_PROJECT_ROOT = canonicalRoot;
       const result = validateProjectDir(futureWorktree);
       assert.equal(result, futureWorktree, "ENOENT should fall back to the lexical path, not throw");
     } finally {
       if (prevRoot === undefined) {
-        delete process.env.GSD_WORKFLOW_PROJECT_ROOT;
+        delete process.env.OTTO_WORKFLOW_PROJECT_ROOT;
       } else {
-        process.env.GSD_WORKFLOW_PROJECT_ROOT = prevRoot;
+        process.env.OTTO_WORKFLOW_PROJECT_ROOT = prevRoot;
       }
       cleanup(allowedRoot);
     }
@@ -2273,40 +2273,40 @@ describe("validateProjectDir", () => {
     const child = join(allowedRoot, "child");
     mkdirSync(child, { recursive: true });
 
-    const prevRoot = process.env.GSD_WORKFLOW_PROJECT_ROOT;
+    const prevRoot = process.env.OTTO_WORKFLOW_PROJECT_ROOT;
     try {
-      process.env.GSD_WORKFLOW_PROJECT_ROOT = allowedRoot;
+      process.env.OTTO_WORKFLOW_PROJECT_ROOT = allowedRoot;
       const result = validateProjectDir(child);
       // realpath may canonicalize macOS /var → /private/var; assert it ends with our child segment.
       assert.ok(result.endsWith("child"), `expected resolved path to end with 'child', got ${result}`);
     } finally {
       if (prevRoot === undefined) {
-        delete process.env.GSD_WORKFLOW_PROJECT_ROOT;
+        delete process.env.OTTO_WORKFLOW_PROJECT_ROOT;
       } else {
-        process.env.GSD_WORKFLOW_PROJECT_ROOT = prevRoot;
+        process.env.OTTO_WORKFLOW_PROJECT_ROOT = prevRoot;
       }
       cleanup(allowedRoot);
     }
   });
 
-  it("accepts a worktree under the allowed root external .gsd state target", () => {
+  it("accepts a worktree under the allowed root external .otto/workflow state target", () => {
     const allowedRoot = makeTmpBase();
     const externalState = makeTmpBase();
     const worktree = join(externalState, "worktrees", "M001");
     mkdirSync(worktree, { recursive: true });
-    rmSync(join(allowedRoot, ".gsd"), { recursive: true, force: true });
-    symlinkSync(externalState, join(allowedRoot, ".gsd"), "dir");
+    rmSync(join(allowedRoot, ".otto", "workflow"), { recursive: true, force: true });
+    symlinkSync(externalState, join(allowedRoot, ".otto", "workflow"), "dir");
 
-    const prevRoot = process.env.GSD_WORKFLOW_PROJECT_ROOT;
+    const prevRoot = process.env.OTTO_WORKFLOW_PROJECT_ROOT;
     try {
-      process.env.GSD_WORKFLOW_PROJECT_ROOT = allowedRoot;
+      process.env.OTTO_WORKFLOW_PROJECT_ROOT = allowedRoot;
       const result = validateProjectDir(worktree);
       assert.equal(result, realpathSync(worktree));
     } finally {
       if (prevRoot === undefined) {
-        delete process.env.GSD_WORKFLOW_PROJECT_ROOT;
+        delete process.env.OTTO_WORKFLOW_PROJECT_ROOT;
       } else {
-        process.env.GSD_WORKFLOW_PROJECT_ROOT = prevRoot;
+        process.env.OTTO_WORKFLOW_PROJECT_ROOT = prevRoot;
       }
       cleanup(allowedRoot);
       cleanup(externalState);
@@ -2319,21 +2319,21 @@ describe("validateProjectDir", () => {
     const sibling = `${externalState}-sibling`;
     const siblingWorktree = join(sibling, "worktrees", "M001");
     mkdirSync(siblingWorktree, { recursive: true });
-    rmSync(join(allowedRoot, ".gsd"), { recursive: true, force: true });
-    symlinkSync(externalState, join(allowedRoot, ".gsd"), "dir");
+    rmSync(join(allowedRoot, ".otto", "workflow"), { recursive: true, force: true });
+    symlinkSync(externalState, join(allowedRoot, ".otto", "workflow"), "dir");
 
-    const prevRoot = process.env.GSD_WORKFLOW_PROJECT_ROOT;
+    const prevRoot = process.env.OTTO_WORKFLOW_PROJECT_ROOT;
     try {
-      process.env.GSD_WORKFLOW_PROJECT_ROOT = allowedRoot;
+      process.env.OTTO_WORKFLOW_PROJECT_ROOT = allowedRoot;
       assert.throws(
         () => validateProjectDir(siblingWorktree),
         /configured workflow project root/,
       );
     } finally {
       if (prevRoot === undefined) {
-        delete process.env.GSD_WORKFLOW_PROJECT_ROOT;
+        delete process.env.OTTO_WORKFLOW_PROJECT_ROOT;
       } else {
-        process.env.GSD_WORKFLOW_PROJECT_ROOT = prevRoot;
+        process.env.OTTO_WORKFLOW_PROJECT_ROOT = prevRoot;
       }
       cleanup(allowedRoot);
       cleanup(externalState);

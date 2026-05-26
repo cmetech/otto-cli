@@ -46,7 +46,7 @@ import assert from 'node:assert/strict';
 
 function makeTmpDir(): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-renderer-'));
-  fs.mkdirSync(path.join(dir, '.gsd'), { recursive: true });
+  fs.mkdirSync(path.join(dir, '.otto/workflow'), { recursive: true });
   return dir;
 }
 
@@ -68,7 +68,7 @@ function clearAllCaches(): void {
  * so that path resolvers work correctly.
  */
 function scaffoldDirs(tmpDir: string, mid: string, sliceIds: string[]): void {
-  const msDir = path.join(tmpDir, '.gsd', 'milestones', mid);
+  const msDir = path.join(tmpDir, '.otto/workflow', 'milestones', mid);
   fs.mkdirSync(msDir, { recursive: true });
 
   for (const sid of sliceIds) {
@@ -245,7 +245,7 @@ test('── markdown-renderer: getArtifact accessor ──', () => {
 
 test('── markdown-renderer: renderRoadmapCheckboxes round-trip ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -262,7 +262,7 @@ test('── markdown-renderer: renderRoadmapCheckboxes round-trip ──', asyn
       { id: 'S01', title: 'Core setup', done: false },
       { id: 'S02', title: 'Rendering', done: false },
     ]);
-    const roadmapPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md');
+    const roadmapPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md');
     fs.writeFileSync(roadmapPath, roadmapContent);
     clearAllCaches();
 
@@ -297,7 +297,7 @@ test('── markdown-renderer: renderRoadmapCheckboxes round-trip ──', asyn
 
 test('── markdown-renderer: renderRoadmapCheckboxes bidirectional ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -314,7 +314,7 @@ test('── markdown-renderer: renderRoadmapCheckboxes bidirectional ──', a
       { id: 'S01', title: 'Core setup', done: true },
       { id: 'S02', title: 'Rendering', done: false },
     ]);
-    const roadmapPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md');
+    const roadmapPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md');
     fs.writeFileSync(roadmapPath, roadmapContent);
     clearAllCaches();
 
@@ -341,7 +341,7 @@ test('── markdown-renderer: renderRoadmapCheckboxes bidirectional ──', a
 
 test('── markdown-renderer: renderPlanCheckboxes round-trip ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -360,7 +360,7 @@ test('── markdown-renderer: renderPlanCheckboxes round-trip ──', async (
       { id: 'T02', title: 'Second task', done: false },
       { id: 'T03', title: 'Third task', done: false },
     ]);
-    const planPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
+    const planPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
     fs.writeFileSync(planPath, planContent);
     clearAllCaches();
 
@@ -387,7 +387,7 @@ test('── markdown-renderer: renderPlanCheckboxes round-trip ──', async (
 
 test('── markdown-renderer: renderPlanCheckboxes bidirectional ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -404,7 +404,7 @@ test('── markdown-renderer: renderPlanCheckboxes bidirectional ──', asyn
       { id: 'T01', title: 'First task', done: true },   // checked but DB says pending
       { id: 'T02', title: 'Second task', done: false },  // unchecked but DB says done
     ]);
-    const planPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
+    const planPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
     fs.writeFileSync(planPath, planContent);
     clearAllCaches();
 
@@ -427,7 +427,7 @@ test('── markdown-renderer: renderPlanCheckboxes bidirectional ──', asyn
 
 test('── markdown-renderer: renderPlanFromDb creates parse-compatible slice plan + task plan files ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -504,7 +504,7 @@ test('── markdown-renderer: renderPlanFromDb creates parse-compatible slice 
     assert.ok(planArtifact !== null, 'slice plan artifact stored in DB');
     assert.ok(planArtifact!.full_content.includes('## Tasks'), 'stored plan artifact contains task section');
 
-    const taskPlanPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T01-PLAN.md');
+    const taskPlanPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T01-PLAN.md');
     const taskPlanContent = fs.readFileSync(taskPlanPath, 'utf-8');
     const taskPlanFile = parseTaskPlanFile(taskPlanContent);
     assert.strictEqual(taskPlanFile.frontmatter.estimated_steps, 1, 'task plan frontmatter exposes estimated_steps');
@@ -526,7 +526,7 @@ test('── markdown-renderer: renderPlanFromDb creates parse-compatible slice 
 
 test('── markdown-renderer: slice plan summarizes task descriptions without leaking nested headings ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -585,7 +585,7 @@ test('── markdown-renderer: slice plan summarizes task descriptions without 
     assert.strictEqual((planContent.match(/^## Must-Haves$/gm) ?? []).length, 1, 'slice plan has only its own Must-Haves heading');
     assert.strictEqual(parsedPlan.tasks[0].description.trim(), 'Create the static app files.');
 
-    const taskPlanContent = fs.readFileSync(path.join(tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'tasks', 'T01-PLAN.md'), 'utf-8');
+    const taskPlanContent = fs.readFileSync(path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'tasks', 'T01-PLAN.md'), 'utf-8');
     assert.match(taskPlanContent, /^## Steps$/m, 'task plan keeps detailed headings for executors');
     assert.match(taskPlanContent, /^## Must-Haves$/m, 'task plan keeps detailed task must-haves');
   } finally {
@@ -596,7 +596,7 @@ test('── markdown-renderer: slice plan summarizes task descriptions without 
 
 test('── markdown-renderer: renderTaskPlanFromDb throws for missing task ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -626,7 +626,7 @@ test('── markdown-renderer: renderTaskPlanFromDb throws for missing task ─
 
 test('── markdown-renderer: renderTaskSummary round-trip ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -651,7 +651,7 @@ test('── markdown-renderer: renderTaskSummary round-trip ──', async () =
 
     // Verify file exists on disk
     const summaryPath = path.join(
-      tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'tasks', 'T01-SUMMARY.md',
+      tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'tasks', 'T01-SUMMARY.md',
     );
     assert.ok(fs.existsSync(summaryPath), 'T01-SUMMARY.md written to disk');
 
@@ -673,7 +673,7 @@ test('── markdown-renderer: renderTaskSummary round-trip ──', async () =
 
 test('── markdown-renderer: renderTaskSummary skips empty ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -705,7 +705,7 @@ test('── markdown-renderer: renderTaskSummary skips empty ──', async () 
 
 test('── markdown-renderer: renderSliceSummary round-trip ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -731,7 +731,7 @@ test('── markdown-renderer: renderSliceSummary round-trip ──', async () 
 
     // Verify SUMMARY file
     const summaryPath = path.join(
-      tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-SUMMARY.md',
+      tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-SUMMARY.md',
     );
     assert.ok(fs.existsSync(summaryPath), 'S01-SUMMARY.md written to disk');
 
@@ -740,7 +740,7 @@ test('── markdown-renderer: renderSliceSummary round-trip ──', async () 
 
     // Verify UAT file
     const uatPath = path.join(
-      tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-UAT.md',
+      tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-UAT.md',
     );
     assert.ok(fs.existsSync(uatPath), 'S01-UAT.md written to disk');
 
@@ -758,7 +758,7 @@ test('── markdown-renderer: renderSliceSummary round-trip ──', async () 
 
 test('── markdown-renderer: renderAllFromDb produces all files ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -784,7 +784,7 @@ test('── markdown-renderer: renderAllFromDb produces all files ──', asyn
       { id: 'S02', title: 'Render', done: false },
     ]);
     fs.writeFileSync(
-      path.join(tmpDir, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md'),
+      path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md'),
       roadmap1,
     );
 
@@ -792,7 +792,7 @@ test('── markdown-renderer: renderAllFromDb produces all files ──', asyn
       { id: 'S01', title: 'Future', done: false },
     ]);
     fs.writeFileSync(
-      path.join(tmpDir, '.gsd', 'milestones', 'M002', 'M002-ROADMAP.md'),
+      path.join(tmpDir, '.otto/workflow', 'milestones', 'M002', 'M002-ROADMAP.md'),
       roadmap2,
     );
 
@@ -800,7 +800,7 @@ test('── markdown-renderer: renderAllFromDb produces all files ──', asyn
       { id: 'T01', title: 'DB', done: false },
     ]);
     fs.writeFileSync(
-      path.join(tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md'),
+      path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md'),
       plan1,
     );
 
@@ -808,7 +808,7 @@ test('── markdown-renderer: renderAllFromDb produces all files ──', asyn
       { id: 'T01', title: 'Renderer', done: false },
     ]);
     fs.writeFileSync(
-      path.join(tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md'),
+      path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md'),
       plan2,
     );
 
@@ -816,7 +816,7 @@ test('── markdown-renderer: renderAllFromDb produces all files ──', asyn
       { id: 'T01', title: 'Future task', done: false },
     ]);
     fs.writeFileSync(
-      path.join(tmpDir, '.gsd', 'milestones', 'M002', 'slices', 'S01', 'S01-PLAN.md'),
+      path.join(tmpDir, '.otto/workflow', 'milestones', 'M002', 'slices', 'S01', 'S01-PLAN.md'),
       plan3,
     );
 
@@ -829,7 +829,7 @@ test('── markdown-renderer: renderAllFromDb produces all files ──', asyn
 
     // Verify M001 roadmap has S01 checked
     const m1Roadmap = fs.readFileSync(
-      path.join(tmpDir, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md'), 'utf-8',
+      path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md'), 'utf-8',
     );
     clearAllCaches();
     const parsed1 = parseRoadmap(m1Roadmap);
@@ -838,7 +838,7 @@ test('── markdown-renderer: renderAllFromDb produces all files ──', asyn
 
     // Verify M001/S01 plan has T01 checked
     const m1s1Plan = fs.readFileSync(
-      path.join(tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md'), 'utf-8',
+      path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md'), 'utf-8',
     );
     clearAllCaches();
     const parsedPlan = parsePlan(m1s1Plan);
@@ -846,7 +846,7 @@ test('── markdown-renderer: renderAllFromDb produces all files ──', asyn
 
     // Verify task summary written
     const taskSummaryPath = path.join(
-      tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'tasks', 'T01-SUMMARY.md',
+      tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'tasks', 'T01-SUMMARY.md',
     );
     assert.ok(fs.existsSync(taskSummaryPath), 'T01 summary written by renderAll');
   } finally {
@@ -861,7 +861,7 @@ test('── markdown-renderer: renderAllFromDb produces all files ──', asyn
 
 test('── markdown-renderer: missing artifact regenerates from DB without importing disk projection ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -875,7 +875,7 @@ test('── markdown-renderer: missing artifact regenerates from DB without imp
     const roadmapContent = makeRoadmapContent([
       { id: 'S01', title: 'Core', done: false },
     ]) + '\n\nDISK_ONLY_SENTINEL';
-    const roadmapPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md');
+    const roadmapPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md');
     fs.writeFileSync(roadmapPath, roadmapContent);
     clearAllCaches();
 
@@ -905,7 +905,7 @@ test('── markdown-renderer: missing artifact regenerates from DB without imp
 
 test('── markdown-renderer: stale roadmap artifact regenerates from DB rows ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -923,7 +923,7 @@ test('── markdown-renderer: stale roadmap artifact regenerates from DB rows 
       status: 'complete',
     });
 
-    const roadmapPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md');
+    const roadmapPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md');
     const staleContent = makeRoadmapContent([
       { id: 'S01', title: 'Stale Artifact Title', done: false },
     ]) + '\n\nSTALE_ARTIFACT_SENTINEL';
@@ -982,7 +982,7 @@ test('── markdown-renderer: stderr warning on missing content ──', async
 
 test('── markdown-renderer: detectStaleRenders finds plan checkbox mismatch ──', () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -1002,7 +1002,7 @@ test('── markdown-renderer: detectStaleRenders finds plan checkbox mismatch 
       { id: 'T01', title: 'First task', done: true },
       { id: 'T02', title: 'Second task', done: false },
     ]);
-    const planPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
+    const planPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
     fs.writeFileSync(planPath, planContent);
     clearAllCaches();
 
@@ -1031,7 +1031,7 @@ test('── markdown-renderer: detectStaleRenders finds plan checkbox mismatch 
 
 test('── markdown-renderer: repairStaleRenders fixes plan and second detect returns empty ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -1049,7 +1049,7 @@ test('── markdown-renderer: repairStaleRenders fixes plan and second detect 
       { id: 'T01', title: 'First task', done: false },
       { id: 'T02', title: 'Second task', done: false },
     ]);
-    const planPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
+    const planPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
     fs.writeFileSync(planPath, planContent);
     clearAllCaches();
 
@@ -1082,7 +1082,7 @@ test('── markdown-renderer: repairStaleRenders fixes plan and second detect 
 
 test('── markdown-renderer: detectStaleRenders finds roadmap checkbox mismatch ──', () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -1098,7 +1098,7 @@ test('── markdown-renderer: detectStaleRenders finds roadmap checkbox mismat
       { id: 'S01', title: 'Core', done: false },
       { id: 'S02', title: 'Render', done: false },
     ]);
-    const roadmapPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md');
+    const roadmapPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md');
     fs.writeFileSync(roadmapPath, roadmapContent);
     clearAllCaches();
 
@@ -1120,7 +1120,7 @@ test('── markdown-renderer: detectStaleRenders finds roadmap checkbox mismat
 
 test('── markdown-renderer: detectStaleRenders finds missing task summary ──', () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -1147,7 +1147,7 @@ test('── markdown-renderer: detectStaleRenders finds missing task summary �
     const planContent = makePlanContent('S01', [
       { id: 'T01', title: 'Task', done: true },
     ]);
-    const planPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
+    const planPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
     fs.writeFileSync(planPath, planContent);
     clearAllCaches();
 
@@ -1167,7 +1167,7 @@ test('── markdown-renderer: detectStaleRenders finds missing task summary �
 
 test('── markdown-renderer: repairStaleRenders writes missing task summary ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -1191,7 +1191,7 @@ test('── markdown-renderer: repairStaleRenders writes missing task summary �
     const planContent = makePlanContent('S01', [
       { id: 'T01', title: 'Task', done: true },
     ]);
-    const planPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
+    const planPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
     fs.writeFileSync(planPath, planContent);
     clearAllCaches();
 
@@ -1201,7 +1201,7 @@ test('── markdown-renderer: repairStaleRenders writes missing task summary �
 
     // Verify file written
     const summaryPath = path.join(
-      tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'tasks', 'T01-SUMMARY.md',
+      tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'tasks', 'T01-SUMMARY.md',
     );
     assert.ok(fs.existsSync(summaryPath), 'T01-SUMMARY.md should exist after repair');
 
@@ -1222,7 +1222,7 @@ test('── markdown-renderer: repairStaleRenders writes missing task summary �
 
 test('── markdown-renderer: repairStaleRenders idempotency — fully synced returns 0 ──', async () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 
@@ -1237,7 +1237,7 @@ test('── markdown-renderer: repairStaleRenders idempotency — fully synced 
     const planContent = makePlanContent('S01', [
       { id: 'T01', title: 'Task', done: true },
     ]);
-    const planPath = path.join(tmpDir, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
+    const planPath = path.join(tmpDir, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-PLAN.md');
     fs.writeFileSync(planPath, planContent);
     clearAllCaches();
 
@@ -1256,7 +1256,7 @@ test('── markdown-renderer: repairStaleRenders idempotency — fully synced 
 
 test('── markdown-renderer: detectStaleRenders finds missing slice summary and UAT ──', () => {
   const tmpDir = makeTmpDir();
-  const dbPath = path.join(tmpDir, '.gsd', 'gsd.db');
+  const dbPath = path.join(tmpDir, '.otto/workflow', 'otto.db');
   openDatabase(dbPath);
   clearAllCaches();
 

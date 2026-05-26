@@ -1,4 +1,4 @@
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { saveFile } from "./files.js";
 import {
@@ -31,7 +31,7 @@ export function autoEnableCmuxPreferences(): boolean {
   prefs.version = prefs.version || 1;
 
   const frontmatter = serializePreferencesToFrontmatter(prefs);
-  let body = "\n# GSD Skill Preferences\n\nSee `~/.gsd/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
+  let body = "\n# OTTO Skill Preferences\n\nSee `~/.otto/workflow/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
   const preserved = extractBodyAfterFrontmatter(readFileSync(path, "utf-8"));
   if (preserved) body = preserved;
 
@@ -61,7 +61,7 @@ async function writeProjectCmuxPreferences(
   prefs.version = prefs.version || 1;
 
   const frontmatter = serializePreferencesToFrontmatter(prefs);
-  let body = "\n# GSD Skill Preferences\n\nSee `~/.gsd/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
+  let body = "\n# OTTO Skill Preferences\n\nSee `~/.otto/workflow/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
   if (existsSync(path)) {
     const preserved = extractBodyAfterFrontmatter(readFileSync(path, "utf-8"));
     if (preserved) body = preserved;
@@ -176,7 +176,7 @@ export async function handleCmux(args: string, ctx: ExtensionCommandContext): Pr
   }
 
   ctx.ui.notify(
-    "Usage: /gsd cmux <status|on|off|notifications on|notifications off|sidebar on|sidebar off|splits on|splits off|browser on|browser off>",
+    "Usage: /otto cmux <status|on|off|notifications on|notifications off|sidebar on|sidebar off|splits on|splits off|browser on|browser off>",
     "info",
   );
 }

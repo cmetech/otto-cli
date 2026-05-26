@@ -1,13 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-// Test the filtering logic used by /gsd pr-branch.
+// Test the filtering logic used by /otto pr-branch.
 // Full integration requires git operations, so we test the path filtering.
 
-test("pr-branch: identifies .gsd/ paths", () => {
+test("pr-branch: identifies .otto/workflow/ paths", () => {
   const files = [
-    ".gsd/milestones/M001/ROADMAP.md",
-    ".gsd/metrics.json",
+    ".otto/workflow/milestones/M001/ROADMAP.md",
+    ".otto/workflow/metrics.json",
     "src/main.ts",
     "package.json",
     ".planning/PLAN.md",
@@ -15,21 +15,21 @@ test("pr-branch: identifies .gsd/ paths", () => {
   ];
 
   const codeFiles = files.filter(
-    (f) => !f.startsWith(".gsd/") && !f.startsWith(".planning/") && f !== "PLAN.md",
+    (f) => !f.startsWith(".otto/workflow/") && !f.startsWith(".planning/") && f !== "PLAN.md",
   );
 
   assert.deepEqual(codeFiles, ["src/main.ts", "package.json"]);
 });
 
-test("pr-branch: all .gsd/ files returns empty", () => {
+test("pr-branch: all .otto/workflow/ files returns empty", () => {
   const files = [
-    ".gsd/milestones/M001/ROADMAP.md",
-    ".gsd/metrics.json",
-    ".gsd/BACKLOG.md",
+    ".otto/workflow/milestones/M001/ROADMAP.md",
+    ".otto/workflow/metrics.json",
+    ".otto/workflow/BACKLOG.md",
   ];
 
   const codeFiles = files.filter(
-    (f) => !f.startsWith(".gsd/") && !f.startsWith(".planning/") && f !== "PLAN.md",
+    (f) => !f.startsWith(".otto/workflow/") && !f.startsWith(".planning/") && f !== "PLAN.md",
   );
 
   assert.equal(codeFiles.length, 0);
@@ -37,13 +37,13 @@ test("pr-branch: all .gsd/ files returns empty", () => {
 
 test("pr-branch: mixed commits with code changes", () => {
   const files = [
-    ".gsd/milestones/M001/ROADMAP.md",
+    ".otto/workflow/milestones/M001/ROADMAP.md",
     "src/auth.ts",
     "src/auth.test.ts",
   ];
 
   const hasCodeChanges = files.some(
-    (f) => !f.startsWith(".gsd/") && !f.startsWith(".planning/") && f !== "PLAN.md",
+    (f) => !f.startsWith(".otto/workflow/") && !f.startsWith(".planning/") && f !== "PLAN.md",
   );
 
   assert.ok(hasCodeChanges);

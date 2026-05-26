@@ -1,7 +1,7 @@
 /**
  * merge-conflict-stops-loop.test.ts — #2330
  *
- * When a squash merge has real code conflicts (not just .gsd/ files),
+ * When a squash merge has real code conflicts (not just .otto/workflow/ files),
  * the merge used to retry forever because `MergeConflictError` was
  * caught silently in `mergeAndExit`. The fix:
  *
@@ -146,12 +146,12 @@ describe("WorktreeResolver.mergeAndExit re-throws MergeConflictError (#2330)", (
   beforeEach(() => {
     baseDir = mkdtempSync(join(tmpdir(), "merge-conflict-stops-loop-"));
     // Fake out a milestone directory so mergeAndExit reaches mergeMilestoneToMain.
-    mkdirSync(join(baseDir, ".gsd", "milestones", "M001"), { recursive: true });
+    mkdirSync(join(baseDir, ".otto/workflow", "milestones", "M001"), { recursive: true });
     // ADR-016 phase 2 / C1 (#5624): worktree-lifecycle.ts now calls
     // node:fs.readFileSync directly (the dep was retired), so the roadmap
     // file must exist on disk for the test to reach mergeMilestoneToMain.
     writeFileSync(
-      join(baseDir, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+      join(baseDir, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
       "# M001\n",
     );
     // ADR-016 phase 2 / C3 (#5626): `getIsolationMode` is also inlined.
@@ -160,7 +160,7 @@ describe("WorktreeResolver.mergeAndExit re-throws MergeConflictError (#2330)", (
     // `mergeMilestoneToMain` is reached. Write a preferences file so the
     // standalone routes through worktree-mode merge.
     writeFileSync(
-      join(baseDir, ".gsd", "preferences.md"),
+      join(baseDir, ".otto/workflow", "preferences.md"),
       "## Git\n- isolation: worktree\n",
     );
   });
@@ -180,7 +180,7 @@ describe("WorktreeResolver.mergeAndExit re-throws MergeConflictError (#2330)", (
 
   test("propagates MergeConflictError with conflicted file list", () => {
     const conflicted = ["src/feature.ts", "README.md"];
-    const roadmapPath = join(baseDir, ".gsd", "milestones", "M001", "M001-ROADMAP.md");
+    const roadmapPath = join(baseDir, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md");
     const deps = makeDeps({
       resolveMilestoneFile: (_base: string, _mid: string, type: string) =>
         type === "ROADMAP" ? roadmapPath : null,
@@ -210,7 +210,7 @@ describe("WorktreeResolver.mergeAndExit re-throws MergeConflictError (#2330)", (
   });
 
   test("propagates non-conflict errors too (#4380 — never swallow silently)", () => {
-    const roadmapPath = join(baseDir, ".gsd", "milestones", "M001", "M001-ROADMAP.md");
+    const roadmapPath = join(baseDir, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md");
     class FakePermError extends Error {}
     const deps = makeDeps({
       resolveMilestoneFile: (_base: string, _mid: string, type: string) =>
@@ -237,7 +237,7 @@ describe("WorktreeResolver.mergeAndExit re-throws MergeConflictError (#2330)", (
   });
 
   test("successful merge does not throw", () => {
-    const roadmapPath = join(baseDir, ".gsd", "milestones", "M001", "M001-ROADMAP.md");
+    const roadmapPath = join(baseDir, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md");
     const deps = makeDeps({
       resolveMilestoneFile: (_base: string, _mid: string, type: string) =>
         type === "ROADMAP" ? roadmapPath : null,

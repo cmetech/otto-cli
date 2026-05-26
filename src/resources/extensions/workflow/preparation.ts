@@ -868,14 +868,14 @@ const MAX_PRIOR_CONTEXT_CHARS = 6000;
 /**
  * Aggregate prior context from workflow artifacts.
  *
- * Reads DECISIONS.md, REQUIREMENTS.md, KNOWLEDGE.md from the .gsd directory
+ * Reads DECISIONS.md, REQUIREMENTS.md, KNOWLEDGE.md from the .otto/workflow directory
  * and milestone summaries from each milestone's MILESTONE-SUMMARY.md file.
  *
- * @param basePath - Root directory of the project (contains .gsd/)
+ * @param basePath - Root directory of the project (contains .otto/workflow/)
  * @returns PriorContextBrief with aggregated context
  */
 export async function aggregatePriorContext(basePath: string): Promise<PriorContextBrief> {
-  const workflowPath = join(basePath, ".gsd");
+  const workflowPath = join(basePath, ".otto/workflow");
 
   // Load decisions
   const decisionsContent = await loadFile(join(workflowPath, "DECISIONS.md"));

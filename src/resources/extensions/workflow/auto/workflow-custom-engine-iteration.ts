@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Custom-engine iteration-data adapter for auto-mode loop.
 
 import type { WorkflowDbState } from "../types.js";

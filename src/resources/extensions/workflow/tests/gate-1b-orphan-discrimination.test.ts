@@ -2,9 +2,9 @@
  * the agent / guided-flow — regression tests for Gate 1b orphan discrimination
  *
  * Gate 1b in checkAutoStartAfterDiscuss discriminates between two "queued" states:
- *   (a) plan-blocked: discuss completed (CONTEXT.md on disk), but gsd_plan_milestone
+ *   (a) plan-blocked: discuss completed (CONTEXT.md on disk), but otto_plan_milestone
  *       was hard-blocked by the depth-verification gate.  DB row stuck at "queued".
- *       → emit recovery hint directing the LLM to retry gsd_plan_milestone.
+ *       → emit recovery hint directing the LLM to retry otto_plan_milestone.
  *   (b) discuss-incomplete: discuss did not finish, no CONTEXT.md, DB row "queued".
  *       → silent block (no recovery hint).
  */
@@ -59,11 +59,11 @@ function mkPi(cap: MockCapture): any {
 }
 
 /**
- * Create a minimal temp tree with a .gsd/milestones/M001 directory.
+ * Create a minimal temp tree with a .otto/workflow/milestones/M001 directory.
  */
 function mkBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-gate1b-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   return base;
 }
 
@@ -95,7 +95,7 @@ describe("Gate 1b orphan discrimination in checkAutoStartAfterDiscuss", () => {
 
     // CONTEXT.md on disk (discuss phase completed)
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
       "# M001: Test Milestone\n\nContext written by discuss phase.\n",
     );
 
@@ -130,8 +130,8 @@ describe("Gate 1b orphan discrimination in checkAutoStartAfterDiscuss", () => {
     );
     assert.match(
       cap.messages[0].payload.content,
-      /gsd_plan_milestone/,
-      "recovery message content must mention gsd_plan_milestone",
+      /otto_plan_milestone/,
+      "recovery message content must mention otto_plan_milestone",
     );
 
     // User must be notified via ctx.ui.notify

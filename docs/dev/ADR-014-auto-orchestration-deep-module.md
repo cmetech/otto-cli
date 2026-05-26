@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-05-03
-**Author:** GSD architecture review
+**Author:** OTTO architecture review
 **Related:** ADR-009 (orchestration kernel refactor), ADR-010 (clean seam architecture)
 
 ## Context

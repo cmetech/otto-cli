@@ -21,7 +21,7 @@ import {
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-runuat-composer-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
   return base;
 }
 
@@ -32,7 +32,7 @@ function cleanup(base: string): void {
 }
 
 function seed(base: string, mid: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: mid, title: "Test", status: "active", depends_on: [] });
   upsertMilestonePlanning(mid, {
     title: "Test Milestone",
@@ -83,10 +83,10 @@ test("#4782 phase 3: buildRunUatPrompt inlines UAT and keeps summary/project con
   // ever re-reads disk (the bug fixed in fcf3bfbe), this test fails
   // because the prompt would contain "stale on-disk body" instead of
   // "fresh in-memory snapshot" (#4925 follow-up review).
-  const uatRel = ".gsd/milestones/M001/slices/S01/S01-UAT.md";
+  const uatRel = ".otto/workflow/milestones/M001/slices/S01/S01-UAT.md";
   writeFileSync(join(base, uatRel), "# S01 UAT\n\n- stale on-disk body\n");
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md"),
     "---\nid: S01\nparent: M001\n---\n# S01 Summary\n**One-liner**\n\n## What Happened\nShip.\n",
   );
 
@@ -121,7 +121,7 @@ test("#4782 phase 3: buildRunUatPrompt inlines UAT and keeps summary/project con
   assert.ok(!prompt.includes("## What Happened\nShip."), "run-uat should not inline full slice summary body");
 
   // Project path is advertised on-demand; full project body is not inlined.
-  assert.match(prompt, /\.gsd\/PROJECT\.md/);
+  assert.match(prompt, /\.otto\/workflow\/PROJECT\.md/);
   assert.ok(!prompt.includes("Run-UAT composer fixture project"), "run-uat should not inline full project context");
 });
 
@@ -132,7 +132,7 @@ test("#4782 phase 3: buildRunUatPrompt omits optional slice summary when file is
 
   seed(base, "M001");
 
-  const uatRel = ".gsd/milestones/M001/slices/S01/S01-UAT.md";
+  const uatRel = ".otto/workflow/milestones/M001/slices/S01/S01-UAT.md";
   writeFileSync(join(base, uatRel), "# S01 UAT\n");
   // No SUMMARY.md written — composer should skip the slice-summary key.
 

@@ -34,8 +34,8 @@ import { isCommand, handleCommand, type CommandSender } from "../commands.ts";
 function makeBasePath(): string {
   const dir = mkdtempSync(join(tmpdir(), "gsd-cmd-test-"));
   // Create minimal .gsd directory structure
-  mkdirSync(join(dir, ".gsd", "activity"), { recursive: true });
-  mkdirSync(join(dir, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(dir, ".otto", "workflow", "activity"), { recursive: true });
+  mkdirSync(join(dir, ".otto", "workflow", "runtime"), { recursive: true });
   return dir;
 }
 
@@ -127,7 +127,7 @@ test("/status reads paused-session.json when present", async (t) => {
     pausedAt: "2026-01-01T12:00:00.000Z",
   };
   writeFileSync(
-    join(dir, ".gsd", "runtime", "paused-session.json"),
+    join(dir, ".otto", "workflow", "runtime", "paused-session.json"),
     JSON.stringify(pausedMeta),
     "utf-8",
   );
@@ -162,7 +162,7 @@ test("/pause writes a stop capture to CAPTURES.md", async (t) => {
   );
 
   // CAPTURES.md should exist
-  const capturesPath = join(dir, ".gsd", "CAPTURES.md");
+  const capturesPath = join(dir, ".otto", "workflow", "CAPTURES.md");
   assert.ok(existsSync(capturesPath), "Expected CAPTURES.md to be created by /pause");
 
   // The file should contain a stop classification
@@ -246,7 +246,7 @@ test("/log 3 limits output to last 3 entries", async (t) => {
   t.after(() => rmSync(dir, { recursive: true, force: true }));
 
   // Write 5 fake activity log files
-  const activityDir = join(dir, ".gsd", "activity");
+  const activityDir = join(dir, ".otto", "workflow", "activity");
   for (let i = 1; i <= 5; i++) {
     writeFileSync(
       join(activityDir, `00${i}-execute-task-M001-S01-T0${i}.jsonl`),

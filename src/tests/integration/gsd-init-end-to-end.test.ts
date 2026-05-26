@@ -20,12 +20,13 @@ test("end-to-end: runInit in a fresh dir produces a valid project", async () => 
   const ctx = makeCtx();
   try {
     await runInit(ctx as any, dir);
-    assert.ok(existsSync(join(dir, ".gsd")));
-    const manifest = JSON.parse(readFileSync(join(dir, ".gsd", "manifest.json"), "utf-8"));
+    assert.ok(existsSync(join(dir, ".otto", "workflow")));
+    assert.equal(existsSync(join(dir, ".gsd")), false);
+    const manifest = JSON.parse(readFileSync(join(dir, ".otto", "workflow", "manifest.json"), "utf-8"));
     assert.equal(manifest.version, 1);
     assert.ok(manifest.createdAt);
     assert.ok(manifest.otto);
-    assert.equal(typeof readFileSync(join(dir, ".gsd", "STATE.md"), "utf-8"), "string");
+    assert.equal(typeof readFileSync(join(dir, ".otto", "workflow", "STATE.md"), "utf-8"), "string");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

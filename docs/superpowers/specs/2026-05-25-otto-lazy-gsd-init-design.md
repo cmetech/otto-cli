@@ -168,7 +168,7 @@ user types: /gsd plan
 ```
 
 **RTK preference resolution order (highest precedence first):**
-1. Env var: `LOOP24_RTK_DISABLED` / `GSD_RTK_DISABLED` (existing escape hatch)
+1. Env var: `LOOP24_RTK_DISABLED` / `OTTO_RTK_DISABLED` (existing escape hatch)
 2. User settings: `~/.otto/settings.json#experimental.rtk`
 3. Project settings (only consulted if a project marker is detected):
    - `<cwd-walk>/.otto/workflow/preferences.json#experimental.rtk` (preferred)
@@ -260,7 +260,7 @@ that directory as "not a project" and keep walking up.
 - **Per-project RTK opt-in:** Users who set `experimental.rtk: true` in
   `<project>/.gsd/preferences.json` keep that behavior. The same flag can
   now also be set globally in `~/.otto/settings.json`.
-- **`LOOP24_RTK_DISABLED` / `GSD_RTK_DISABLED` env vars:** Unchanged — still
+- **`LOOP24_RTK_DISABLED` / `OTTO_RTK_DISABLED` env vars:** Unchanged — still
   the highest-precedence override.
 
 ### 9.1 Forward-compatibility: `.gsd/` → `.otto/workflow/` rebrand

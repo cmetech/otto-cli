@@ -1,6 +1,6 @@
-// LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/branch-summary-message.ts - Branch summary message renderer.
+// OTTO + packages/pi-coding-agent/src/modes/interactive/components/branch-summary-message.ts - Branch summary message renderer.
 
-import { Box, Markdown, type MarkdownTheme, Spacer, Text } from "@loop24/pi-tui";
+import { Box, Markdown, type MarkdownTheme, Spacer, Text } from "@otto/pi-tui";
 import type { BranchSummaryMessage } from "../../../core/messages.js";
 import { getMarkdownTheme, theme } from "../theme/theme.js";
 import { CollapsibleMessageComponent } from "./collapsible-message.js";

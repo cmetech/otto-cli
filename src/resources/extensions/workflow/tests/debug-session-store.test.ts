@@ -20,12 +20,12 @@ import {
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-debug-session-store-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
 describe("debug-session-store: create/list/load/update", () => {
-  test("creates first session under .gsd/debug/sessions with deterministic metadata", () => {
+  test("creates first session under .otto/workflow/debug/sessions with deterministic metadata", () => {
     const base = makeBase();
     try {
       const created = createDebugSession(base, {
@@ -34,9 +34,9 @@ describe("debug-session-store: create/list/load/update", () => {
       });
 
       assert.equal(created.session.slug, "login-fails-on-safari");
-      assert.ok(created.artifactPath.includes(join(".gsd", "debug", "sessions")));
+      assert.ok(created.artifactPath.includes(join(".otto/workflow", "debug", "sessions")));
       assert.ok(created.artifactPath.endsWith("login-fails-on-safari.json"));
-      assert.ok(created.session.logPath.includes(join(".gsd", "debug")));
+      assert.ok(created.session.logPath.includes(join(".otto/workflow", "debug")));
       assert.ok(!created.session.logPath.includes(join("debug", "sessions")));
       assert.equal(created.session.status, "active");
       assert.equal(created.session.phase, "queued");
@@ -306,7 +306,7 @@ describe("debug-session-store: checkpoint and tddGate fields", () => {
         phase: "queued",
         createdAt: 1000,
         updatedAt: 1000,
-        logPath: join(base, ".gsd", "debug", "legacy-session.log"),
+        logPath: join(base, ".otto/workflow", "debug", "legacy-session.log"),
         lastError: null,
       };
       writeFileSync(join(sessionsDir, "legacy-session.json"), JSON.stringify(artifact, null, 2), "utf-8");
@@ -336,7 +336,7 @@ describe("debug-session-store: checkpoint and tddGate fields", () => {
         phase: "queued",
         createdAt: 1000,
         updatedAt: 1000,
-        logPath: join(base, ".gsd", "debug", "bad-checkpoint.log"),
+        logPath: join(base, ".otto/workflow", "debug", "bad-checkpoint.log"),
         lastError: null,
         checkpoint: { type: "human-verify", summary: "Something" /* awaitingResponse missing */ },
       };
@@ -366,7 +366,7 @@ describe("debug-session-store: checkpoint and tddGate fields", () => {
         phase: "queued",
         createdAt: 1000,
         updatedAt: 1000,
-        logPath: join(base, ".gsd", "debug", "bad-tddgate.log"),
+        logPath: join(base, ".otto/workflow", "debug", "bad-tddgate.log"),
         lastError: null,
         tddGate: { testFile: "some.test.ts" /* enabled and phase missing */ },
       };
@@ -450,7 +450,7 @@ describe("debug-session-store: specialistReview field", () => {
         phase: "queued",
         createdAt: 1000,
         updatedAt: 1000,
-        logPath: join(base, ".gsd", "debug", "legacy-no-specialist.log"),
+        logPath: join(base, ".otto/workflow", "debug", "legacy-no-specialist.log"),
         lastError: null,
       };
       writeFileSync(join(sessionsDir, "legacy-no-specialist.json"), JSON.stringify(artifact, null, 2), "utf-8");
@@ -477,7 +477,7 @@ describe("debug-session-store: specialistReview field", () => {
         phase: "queued",
         createdAt: 1000,
         updatedAt: 1000,
-        logPath: join(base, ".gsd", "debug", "bad-specialist-empty.log"),
+        logPath: join(base, ".otto/workflow", "debug", "bad-specialist-empty.log"),
         lastError: null,
         specialistReview: {},
       };
@@ -506,7 +506,7 @@ describe("debug-session-store: specialistReview field", () => {
         phase: "queued",
         createdAt: 1000,
         updatedAt: 1000,
-        logPath: join(base, ".gsd", "debug", "bad-specialist-types.log"),
+        logPath: join(base, ".otto/workflow", "debug", "bad-specialist-types.log"),
         lastError: null,
         specialistReview: {
           hint: "Check something",
@@ -541,7 +541,7 @@ describe("debug-session-store: specialistReview field", () => {
         phase: "queued",
         createdAt: 1000,
         updatedAt: 1000,
-        logPath: join(base, ".gsd", "debug", "specialist-extra-fields.log"),
+        logPath: join(base, ".otto/workflow", "debug", "specialist-extra-fields.log"),
         lastError: null,
         specialistReview: {
           hint: "Look at caching layer",

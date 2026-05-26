@@ -55,13 +55,13 @@ function setupTestEnvironment(): void {
   tempDir = join(tmpdir(), `validate-milestone-guard-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(tempDir, { recursive: true });
 
-  const milestoneDir = join(tempDir, ".gsd", "milestones", "M001");
+  const milestoneDir = join(tempDir, ".otto/workflow", "milestones", "M001");
   mkdirSync(milestoneDir, { recursive: true });
 
   process.chdir(tempDir);
   _clearWorkflowRootCache();
 
-  dbPath = join(tempDir, ".gsd", "gsd.db");
+  dbPath = join(tempDir, ".otto/workflow", "otto.db");
   openDatabase(dbPath);
   invalidateAllCaches();
 }
@@ -73,7 +73,7 @@ function cleanupTestEnvironment(): void {
 }
 
 function writeValidationFile(verdict: string): void {
-  const path = join(tempDir, ".gsd", "milestones", "M001", "M001-VALIDATION.md");
+  const path = join(tempDir, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md");
   const content = `---
 verdict: ${verdict}
 remediation_round: 1
@@ -89,11 +89,11 @@ Test fixture
 }
 
 function writeWorktreeValidationFile(verdict: string): void {
-  const worktreeRoot = join(tempDir, ".gsd", "worktrees", "M001");
-  mkdirSync(join(worktreeRoot, ".gsd", "milestones", "M001"), { recursive: true });
+  const worktreeRoot = join(tempDir, ".otto/workflow", "worktrees", "M001");
+  mkdirSync(join(worktreeRoot, ".otto/workflow", "milestones", "M001"), { recursive: true });
   writeFileSync(join(worktreeRoot, ".git"), "gitdir: ../.git/worktrees/M001\n", "utf-8");
   writeFileSync(
-    join(worktreeRoot, ".gsd", "milestones", "M001", "M001-VALIDATION.md"),
+    join(worktreeRoot, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md"),
     `---
 verdict: ${verdict}
 remediation_round: 1
@@ -237,7 +237,7 @@ describe("validate-milestone stuck-loop guard (#4094)", () => {
     assert.equal(pauseAutoMock.mock.callCount(), 0);
     assert.ok(s.pendingVerificationRetry);
     assert.equal(s.pendingVerificationRetry!.unitId, "M001");
-    assert.match(s.pendingVerificationRetry!.failureContext, /gsd_validate_milestone/);
+    assert.match(s.pendingVerificationRetry!.failureContext, /otto_validate_milestone/);
     assert.equal(s.pendingVerificationRetry!.attempt, 1);
   });
 
@@ -245,7 +245,7 @@ describe("validate-milestone stuck-loop guard (#4094)", () => {
     insertMilestone({ id: "M001" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Slice 1", status: "complete" });
 
-    const path = join(tempDir, ".gsd", "milestones", "M001", "M001-VALIDATION.md");
+    const path = join(tempDir, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md");
     writeFileSync(path, "", "utf-8");
     invalidateAllCaches();
 
@@ -269,7 +269,7 @@ describe("validate-milestone stuck-loop guard (#4094)", () => {
     insertSlice({ id: "S01", milestoneId: "M001", title: "Slice 1", status: "complete" });
     insertSlice({ id: "S02", milestoneId: "M001", title: "Remediation", status: "queued" });
 
-    const path = join(tempDir, ".gsd", "milestones", "M001", "M001-VALIDATION.md");
+    const path = join(tempDir, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md");
     writeFileSync(path, "", "utf-8");
     invalidateAllCaches();
 
@@ -281,12 +281,12 @@ describe("validate-milestone stuck-loop guard (#4094)", () => {
       {
         role: "assistant",
         content: [
-          { type: "toolCall", name: "gsd_reassess_roadmap" },
+          { type: "toolCall", name: "otto_reassess_roadmap" },
         ],
       },
       {
         role: "toolResult",
-        toolName: "gsd_reassess_roadmap",
+        toolName: "otto_reassess_roadmap",
         isError: false,
       },
     ];

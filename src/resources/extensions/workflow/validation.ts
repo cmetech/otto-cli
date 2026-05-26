@@ -23,7 +23,7 @@ export function validateTitle(title: string): string | null {
     const found: string[] = [];
     if (/[\u2014\u2013]/.test(title)) found.push("em/en dash (\u2014 or \u2013)");
     if (/\//.test(title)) found.push("forward slash (/)");
-    return `title contains ${found.join(" and ")}, which conflict with GSD state document delimiters`;
+    return `title contains ${found.join(" and ")}, which conflict with OTTO state document delimiters`;
   }
   return null;
 }

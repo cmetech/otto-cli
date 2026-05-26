@@ -30,7 +30,7 @@ describe('repo-identity-worktree', () => {
   before(() => {
     base = realpathSync(mkdtempSync(join(tmpdir(), "gsd-repo-identity-")));
     stateDir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-state-")));
-    process.env.GSD_STATE_DIR = stateDir;
+    process.env.OTTO_STATE_DIR = stateDir;
 
     run("git init -b main", base);
     run('git config user.name "Pi Test"', base);
@@ -40,59 +40,59 @@ describe('repo-identity-worktree', () => {
     run("git add README.md", base);
     run('git commit -m "chore: init"', base);
 
-    worktreePath = join(base, ".gsd", "worktrees", "M001");
+    worktreePath = join(base, ".otto/workflow", "worktrees", "M001");
     run(`git worktree add -b milestone/M001 ${worktreePath}`, base);
 
     expectedExternalState = externalWorkflowRoot(base);
   });
 
   after(() => {
-    delete process.env.GSD_PROJECT_ID;
-    delete process.env.GSD_STATE_DIR;
+    delete process.env.OTTO_PROJECT_ID;
+    delete process.env.OTTO_STATE_DIR;
     rmSync(base, { recursive: true, force: true });
     rmSync(stateDir, { recursive: true, force: true });
   });
 
 test('ensureWorkflowSymlink points worktree at main repo external state dir', () => {
     const mainState = ensureWorkflowSymlink(base);
-    assert.deepStrictEqual(mainState, realpathSync(join(base, ".gsd")), "ensureWorkflowSymlink(base) returns the current main repo .gsd target");
+    assert.deepStrictEqual(mainState, realpathSync(join(base, ".otto/workflow")), "ensureWorkflowSymlink(base) returns the current main repo .otto/workflow target");
     const worktreeState = ensureWorkflowSymlink(worktreePath);
     assert.deepStrictEqual(worktreeState, expectedExternalState, "worktree symlink target matches main repo external state dir");
-    assert.ok(existsSync(join(worktreePath, ".gsd")), "worktree .gsd exists");
-    assert.ok(lstatSync(join(worktreePath, ".gsd")).isSymbolicLink(), "worktree .gsd is a symlink");
-    assert.deepStrictEqual(realpathSync(join(worktreePath, ".gsd")), realpathSync(expectedExternalState), "worktree .gsd symlink resolves to main repo external state dir");
+    assert.ok(existsSync(join(worktreePath, ".otto/workflow")), "worktree .otto/workflow exists");
+    assert.ok(lstatSync(join(worktreePath, ".otto/workflow")).isSymbolicLink(), "worktree .otto/workflow is a symlink");
+    assert.deepStrictEqual(realpathSync(join(worktreePath, ".otto/workflow")), realpathSync(expectedExternalState), "worktree .otto/workflow symlink resolves to main repo external state dir");
 });
 
 test('ensureWorkflowSymlink heals stale worktree symlinks', () => {
     const staleState = join(stateDir, "projects", "stale-worktree-state");
     mkdirSync(staleState, { recursive: true });
-    rmSync(join(worktreePath, ".gsd"), { recursive: true, force: true });
-    symlinkSync(staleState, join(worktreePath, ".gsd"), "junction");
+    rmSync(join(worktreePath, ".otto/workflow"), { recursive: true, force: true });
+    symlinkSync(staleState, join(worktreePath, ".otto/workflow"), "junction");
     const healedState = ensureWorkflowSymlink(worktreePath);
     assert.deepStrictEqual(healedState, expectedExternalState, "stale worktree symlink is repaired to canonical external state dir");
-    assert.deepStrictEqual(realpathSync(join(worktreePath, ".gsd")), realpathSync(expectedExternalState), "healed worktree symlink resolves to canonical external state dir");
+    assert.deepStrictEqual(realpathSync(join(worktreePath, ".otto/workflow")), realpathSync(expectedExternalState), "healed worktree symlink resolves to canonical external state dir");
 });
 
-test('ensureWorkflowSymlink preserves worktree .gsd directories', () => {
-    rmSync(join(worktreePath, ".gsd"), { recursive: true, force: true });
-    mkdirSync(join(worktreePath, ".gsd", "milestones"), { recursive: true });
-    writeFileSync(join(worktreePath, ".gsd", "milestones", "stale.txt"), "stale\n", "utf-8");
+test('ensureWorkflowSymlink preserves worktree .otto/workflow directories', () => {
+    rmSync(join(worktreePath, ".otto/workflow"), { recursive: true, force: true });
+    mkdirSync(join(worktreePath, ".otto/workflow", "milestones"), { recursive: true });
+    writeFileSync(join(worktreePath, ".otto/workflow", "milestones", "stale.txt"), "stale\n", "utf-8");
     const preservedDirState = ensureWorkflowSymlink(worktreePath);
-    assert.deepStrictEqual(preservedDirState, join(worktreePath, ".gsd"), "worktree .gsd directory is left in place for sync-based refresh");
-    assert.ok(lstatSync(join(worktreePath, ".gsd")).isDirectory(), "worktree .gsd directory remains a directory");
-    assert.ok(existsSync(join(worktreePath, ".gsd", "milestones", "stale.txt")), "existing worktree .gsd directory contents remain available for sync logic");
+    assert.deepStrictEqual(preservedDirState, join(worktreePath, ".otto/workflow"), "worktree .otto/workflow directory is left in place for sync-based refresh");
+    assert.ok(lstatSync(join(worktreePath, ".otto/workflow")).isDirectory(), "worktree .otto/workflow directory remains a directory");
+    assert.ok(existsSync(join(worktreePath, ".otto/workflow", "milestones", "stale.txt")), "existing worktree .otto/workflow directory contents remain available for sync logic");
 });
 
-test('GSD_PROJECT_ID overrides computed repo hash', () => {
-    process.env.GSD_PROJECT_ID = "my-project";
-    assert.deepStrictEqual(repoIdentity(base), "my-project", "repoIdentity returns GSD_PROJECT_ID when set");
-    assert.deepStrictEqual(externalWorkflowRoot(base), join(stateDir, "projects", "my-project"), "externalWorkflowRoot uses GSD_PROJECT_ID");
-    delete process.env.GSD_PROJECT_ID;
+test('OTTO_PROJECT_ID overrides computed repo hash', () => {
+    process.env.OTTO_PROJECT_ID = "my-project";
+    assert.deepStrictEqual(repoIdentity(base), "my-project", "repoIdentity returns OTTO_PROJECT_ID when set");
+    assert.deepStrictEqual(externalWorkflowRoot(base), join(stateDir, "projects", "my-project"), "externalWorkflowRoot uses OTTO_PROJECT_ID");
+    delete process.env.OTTO_PROJECT_ID;
 });
 
-test('GSD_PROJECT_ID falls back to hash when unset', () => {
+test('OTTO_PROJECT_ID falls back to hash when unset', () => {
     const hashIdentity = repoIdentity(base);
-    assert.ok(/^[0-9a-f]{12}$/.test(hashIdentity), "repoIdentity returns 12-char hex hash when GSD_PROJECT_ID is unset");
+    assert.ok(/^[0-9a-f]{12}$/.test(hashIdentity), "repoIdentity returns 12-char hex hash when OTTO_PROJECT_ID is unset");
 });
 
 test('readRepoMeta returns null for malformed metadata', () => {
@@ -111,7 +111,7 @@ test('ensureWorkflowSymlink refreshes repo-meta gitRoot after repo move with fix
       run("git add README.md", moveRepo);
       run('git commit -m "chore: init move repo"', moveRepo);
 
-      process.env.GSD_PROJECT_ID = "fixed-project";
+      process.env.OTTO_PROJECT_ID = "fixed-project";
       const fixedExternal = ensureWorkflowSymlink(moveRepo);
       const before = readRepoMeta(fixedExternal);
       assert.ok(before !== null, "repo metadata exists before repo move");
@@ -129,10 +129,10 @@ test('ensureWorkflowSymlink refreshes repo-meta gitRoot after repo move with fix
       assert.deepStrictEqual(after!.createdAt, before!.createdAt, "repo metadata preserves createdAt on refresh");
 
       rmSync(movedBase, { recursive: true, force: true });
-      delete process.env.GSD_PROJECT_ID;
+      delete process.env.OTTO_PROJECT_ID;
 });
 
-test('isInheritedRepo detects subdirectory of parent repo without .gsd (#1639)', () => {
+test('isInheritedRepo detects subdirectory of parent repo without .otto/workflow (#1639)', () => {
       const parentRepo = realpathSync(mkdtempSync(join(tmpdir(), "gsd-inherited-parent-")));
       run("git init -b main", parentRepo);
       run('git config user.name "Pi Test"', parentRepo);
@@ -143,10 +143,10 @@ test('isInheritedRepo detects subdirectory of parent repo without .gsd (#1639)',
 
       const subdir = join(parentRepo, "newproject");
       mkdirSync(subdir, { recursive: true });
-      assert.ok(isInheritedRepo(subdir), "subdirectory of parent repo without .gsd is inherited");
+      assert.ok(isInheritedRepo(subdir), "subdirectory of parent repo without .otto/workflow is inherited");
 
-      mkdirSync(join(parentRepo, ".gsd"), { recursive: true });
-      assert.ok(!isInheritedRepo(subdir), "subdirectory of parent repo WITH .gsd is NOT inherited");
+      mkdirSync(join(parentRepo, ".otto/workflow"), { recursive: true });
+      assert.ok(!isInheritedRepo(subdir), "subdirectory of parent repo WITH .otto/workflow is NOT inherited");
 
       assert.ok(!isInheritedRepo(parentRepo), "git root is not inherited");
 
@@ -184,7 +184,7 @@ test('subdirectory of parent repo gets unique identity after git init (#1639)', 
       rmSync(parentRepo, { recursive: true, force: true });
 });
 
-test('ensureWorkflowSymlink from subdirectory does not create .gsd in subdir when git-root .gsd exists (#2380)', () => {
+test('ensureWorkflowSymlink from subdirectory does not create .otto/workflow in subdir when git-root .otto/workflow exists (#2380)', () => {
     const repo = realpathSync(mkdtempSync(join(tmpdir(), "gsd-subdir-symlink-")));
     run("git init -b main", repo);
     run('git config user.name "Pi Test"', repo);
@@ -194,24 +194,24 @@ test('ensureWorkflowSymlink from subdirectory does not create .gsd in subdir whe
     run("git add README.md", repo);
     run('git commit -m "init"', repo);
 
-    // Set up .gsd symlink at the git root (normal project initialisation)
+    // Set up .otto/workflow symlink at the git root (normal project initialisation)
     ensureWorkflowSymlink(repo);
-    assert.ok(existsSync(join(repo, ".gsd")), "root .gsd exists after ensureWorkflowSymlink");
-    assert.ok(lstatSync(join(repo, ".gsd")).isSymbolicLink(), "root .gsd is a symlink");
+    assert.ok(existsSync(join(repo, ".otto/workflow")), "root .otto/workflow exists after ensureWorkflowSymlink");
+    assert.ok(lstatSync(join(repo, ".otto/workflow")).isSymbolicLink(), "root .otto/workflow is a symlink");
 
     // Create a subdirectory and call ensureWorkflowSymlink from there
     const subdir = join(repo, "src", "lib");
     mkdirSync(subdir, { recursive: true });
     ensureWorkflowSymlink(subdir);
 
-    // ensureWorkflowSymlink should NOT create a .gsd in the subdirectory
-    // because the git root already has a valid .gsd symlink.
-    assert.ok(!existsSync(join(subdir, ".gsd")), "no .gsd created in subdirectory when git-root .gsd exists (#2380)");
-    assert.ok(!existsSync(join(repo, "src", ".gsd")), "no .gsd created in intermediate directory");
+    // ensureWorkflowSymlink should NOT create a .otto/workflow in the subdirectory
+    // because the git root already has a valid .otto/workflow symlink.
+    assert.ok(!existsSync(join(subdir, ".otto/workflow")), "no .otto/workflow created in subdirectory when git-root .otto/workflow exists (#2380)");
+    assert.ok(!existsSync(join(repo, "src", ".otto/workflow")), "no .otto/workflow created in intermediate directory");
 
-    // The root .gsd should still be intact
-    assert.ok(existsSync(join(repo, ".gsd")), "root .gsd still exists");
-    assert.ok(lstatSync(join(repo, ".gsd")).isSymbolicLink(), "root .gsd is still a symlink");
+    // The root .otto/workflow should still be intact
+    assert.ok(existsSync(join(repo, ".otto/workflow")), "root .otto/workflow still exists");
+    assert.ok(lstatSync(join(repo, ".otto/workflow")).isSymbolicLink(), "root .otto/workflow is still a symlink");
 
     rmSync(repo, { recursive: true, force: true });
 });
@@ -245,12 +245,13 @@ test('ensureWorkflowSymlink prefers marker directory when marker/computed identi
     const markerPath = join(stateDir, "projects", markerId);
     mkdirSync(markerPath, { recursive: true });
     writeFileSync(join(markerPath, "marker-state.txt"), "marker\n", "utf-8");
-    writeFileSync(join(repo, ".gsd-id"), `${markerId}\n`, "utf-8");
+    mkdirSync(join(repo, ".otto"), { recursive: true });
+    writeFileSync(join(repo, ".otto/workflow-id"), `${markerId}\n`, "utf-8");
 
     const resolved = ensureWorkflowSymlink(repo);
     assert.deepStrictEqual(resolved, markerPath, "marker-backed state directory is preferred in split-brain condition");
-    assert.deepStrictEqual(realpathSync(join(repo, ".gsd")), realpathSync(markerPath), ".gsd symlink resolves to marker-backed state directory");
-    assert.deepStrictEqual(readFileSync(join(repo, ".gsd-id"), "utf-8").trim(), markerId, ".gsd-id marker persists the marker-backed identity");
+    assert.deepStrictEqual(realpathSync(join(repo, ".otto/workflow")), realpathSync(markerPath), ".otto/workflow symlink resolves to marker-backed state directory");
+    assert.deepStrictEqual(readFileSync(join(repo, ".otto/workflow-id"), "utf-8").trim(), markerId, ".otto/workflow-id marker persists the marker-backed identity");
 
     rmSync(repo, { recursive: true, force: true });
 });

@@ -1,10 +1,10 @@
-// Project/App: LOOP24
-// File Purpose: Unit tests for shared GSD TUI render helpers.
+// Project/App: OTTO
+// File Purpose: Unit tests for shared OTTO TUI render helpers.
 
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 
-import { visibleWidth } from "@loop24/pi-tui";
+import { visibleWidth } from "@otto/pi-tui";
 import {
   padRightVisible,
   renderFrame,

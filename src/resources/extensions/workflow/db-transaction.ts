@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Transaction depth helper for the workflow database facade.
 
 export interface DbTransactionControls {

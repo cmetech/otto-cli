@@ -414,9 +414,9 @@ interface PausedSessionMeta {
 }
 
 function workflowRootPath(basePath: string): string {
-  // Inline resolution: .gsd lives directly under basePath.
+  // Inline resolution: .otto/workflow lives directly under basePath.
   // Avoids importing paths.ts to keep this module's dependency surface small.
-  return join(basePath, ".gsd");
+  return join(basePath, ".otto", "workflow");
 }
 
 function readPausedSession(basePath: string): PausedSessionMeta | null {

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Verification evidence row contract for workflow database consumers.
 
 export interface VerificationEvidenceRow {

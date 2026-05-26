@@ -1,7 +1,7 @@
 /**
  * run-manager.ts — Create and list isolated workflow run directories.
  *
- * Each run lives under `.gsd/workflow-runs/<name>/<timestamp>/` and contains:
+ * Each run lives under `.otto/workflow/workflow-runs/<name>/<timestamp>/` and contains:
  * - DEFINITION.yaml — frozen snapshot of the workflow definition at run-creation time
  * - GRAPH.yaml — initialized step graph with all steps pending
  * - PARAMS.json — (optional) parameter overrides used for this run
@@ -85,7 +85,7 @@ export function createRunFromDefinition(
     : substituteParams(rawDef);
 
   const timestamp = makeTimestamp();
-  const runDir = join(basePath, ".gsd", RUNS_DIR, defName, timestamp);
+  const runDir = join(basePath, ".otto/workflow", RUNS_DIR, defName, timestamp);
   mkdirSync(runDir, { recursive: true });
 
   writeFileSync(join(runDir, "DEFINITION.yaml"), stringify(def), "utf-8");
@@ -109,9 +109,9 @@ export function createRunFromDefinition(
  *
  * Resolution order:
  *   1. Plugin resolver (project → global → bundled), YAML format only.
- *   2. Legacy `.gsd/workflow-defs/<defName>.yaml`.
+ *   2. Legacy `.otto/workflow/workflow-defs/<defName>.yaml`.
  *
- * Creates `<basePath>/.gsd/workflow-runs/<defName>/<timestamp>/` containing
+ * Creates `<basePath>/.otto/workflow/workflow-runs/<defName>/<timestamp>/` containing
  * DEFINITION.yaml (frozen), GRAPH.yaml (initialized), and optional PARAMS.json.
  *
  * @throws Error if no matching definition is found anywhere.
@@ -127,15 +127,15 @@ export function createRun(
     return createRunFromDefinition(basePath, defName, plugin.path, overrides);
   }
 
-  // Fall back to legacy `.gsd/workflow-defs/<defName>.yaml`.
-  const defsDir = join(basePath, ".gsd", DEFS_DIR);
+  // Fall back to legacy `.otto/workflow/workflow-defs/<defName>.yaml`.
+  const defsDir = join(basePath, ".otto/workflow", DEFS_DIR);
   const rawDef = loadDefinition(defsDir, defName);
   const def: WorkflowDefinition = overrides
     ? substituteParams(rawDef, overrides)
     : substituteParams(rawDef);
 
   const timestamp = makeTimestamp();
-  const runDir = join(basePath, ".gsd", RUNS_DIR, defName, timestamp);
+  const runDir = join(basePath, ".otto/workflow", RUNS_DIR, defName, timestamp);
   mkdirSync(runDir, { recursive: true });
 
   writeFileSync(join(runDir, "DEFINITION.yaml"), stringify(def), "utf-8");
@@ -157,7 +157,7 @@ export function createRun(
 /**
  * List existing workflow runs with metadata.
  *
- * Scans `<basePath>/.gsd/workflow-runs/` for run directories. Each run's
+ * Scans `<basePath>/.otto/workflow/workflow-runs/` for run directories. Each run's
  * GRAPH.yaml is read to derive step counts and overall status.
  *
  * @param basePath — project root directory
@@ -165,7 +165,7 @@ export function createRun(
  * @returns Array of run metadata, sorted newest-first within each definition
  */
 export function listRuns(basePath: string, defName?: string): RunMetadata[] {
-  const runsRoot = join(basePath, ".gsd", RUNS_DIR);
+  const runsRoot = join(basePath, ".otto/workflow", RUNS_DIR);
   if (!existsSync(runsRoot)) return [];
 
   const results: RunMetadata[] = [];

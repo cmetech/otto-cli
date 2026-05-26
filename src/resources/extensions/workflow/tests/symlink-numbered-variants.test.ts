@@ -1,9 +1,9 @@
 /**
  * Tests for macOS numbered symlink variant cleanup (#2205).
  *
- * macOS can rename `.gsd` to `.gsd 2`, `.gsd 3`, etc. when a directory
+ * macOS can rename `.otto/workflow` to `.otto/workflow 2`, `.otto/workflow 3`, etc. when a directory
  * already exists at the target path. ensureWorkflowSymlink() must detect and
- * remove these numbered variants so the real `.gsd` symlink is always
+ * remove these numbered variants so the real `.otto/workflow` symlink is always
  * the one in use.
  */
 
@@ -36,7 +36,7 @@ describe('symlink-numbered-variants', async () => {
   const stateDir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-state-variants-")));
 
   try {
-    process.env.GSD_STATE_DIR = stateDir;
+    process.env.OTTO_STATE_DIR = stateDir;
 
     // Set up a minimal git repo
     run("git init -b main", base);
@@ -50,95 +50,95 @@ describe('symlink-numbered-variants', async () => {
     const externalPath = externalWorkflowRoot(base);
 
     // ── Test: numbered variant directories are cleaned up ──────────────
-    console.log("\n=== ensureWorkflowSymlink removes numbered .gsd variants (#2205) ===");
+    console.log("\n=== ensureWorkflowSymlink removes numbered .otto/workflow variants (#2205) ===");
     {
-      // Simulate macOS creating numbered variants: ".gsd 2", ".gsd 3"
-      mkdirSync(join(base, ".gsd 2"), { recursive: true });
-      mkdirSync(join(base, ".gsd 3"), { recursive: true });
-      mkdirSync(join(base, ".gsd 4"), { recursive: true });
+      // Simulate macOS creating numbered variants: ".otto/workflow 2", ".otto/workflow 3"
+      mkdirSync(join(base, ".otto/workflow 2"), { recursive: true });
+      mkdirSync(join(base, ".otto/workflow 3"), { recursive: true });
+      mkdirSync(join(base, ".otto/workflow 4"), { recursive: true });
 
       const result = ensureWorkflowSymlink(base);
       assert.deepStrictEqual(result, externalPath, "ensureWorkflowSymlink returns external path");
-      assert.ok(existsSync(join(base, ".gsd")), ".gsd exists after ensureWorkflowSymlink");
-      assert.ok(lstatSync(join(base, ".gsd")).isSymbolicLink(), ".gsd is a symlink");
+      assert.ok(existsSync(join(base, ".otto/workflow")), ".otto/workflow exists after ensureWorkflowSymlink");
+      assert.ok(lstatSync(join(base, ".otto/workflow")).isSymbolicLink(), ".otto/workflow is a symlink");
 
       // The numbered variants must have been removed
-      assert.ok(!existsSync(join(base, ".gsd 2")), '".gsd 2" directory was cleaned up');
-      assert.ok(!existsSync(join(base, ".gsd 3")), '".gsd 3" directory was cleaned up');
-      assert.ok(!existsSync(join(base, ".gsd 4")), '".gsd 4" directory was cleaned up');
+      assert.ok(!existsSync(join(base, ".otto/workflow 2")), '".otto/workflow 2" directory was cleaned up');
+      assert.ok(!existsSync(join(base, ".otto/workflow 3")), '".otto/workflow 3" directory was cleaned up');
+      assert.ok(!existsSync(join(base, ".otto/workflow 4")), '".otto/workflow 4" directory was cleaned up');
     }
 
     // ── Test: numbered variant symlinks are cleaned up ─────────────────
     console.log("\n=== ensureWorkflowSymlink removes numbered symlink variants ===");
     {
       // Clean slate
-      rmSync(join(base, ".gsd"), { recursive: true, force: true });
+      rmSync(join(base, ".otto/workflow"), { recursive: true, force: true });
 
-      // Simulate: ".gsd 2" is a symlink to the correct target (the real .gsd)
-      // and ".gsd" doesn't exist — this is the actual macOS scenario
+      // Simulate: ".otto/workflow 2" is a symlink to the correct target (the real .otto/workflow)
+      // and ".otto/workflow" doesn't exist — this is the actual macOS scenario
       const staleTarget = join(stateDir, "projects", "stale-target");
       mkdirSync(staleTarget, { recursive: true });
-      symlinkSync(externalPath, join(base, ".gsd 2"), "junction");
-      symlinkSync(staleTarget, join(base, ".gsd 3"), "junction");
+      symlinkSync(externalPath, join(base, ".otto/workflow 2"), "junction");
+      symlinkSync(staleTarget, join(base, ".otto/workflow 3"), "junction");
 
       const result = ensureWorkflowSymlink(base);
       assert.deepStrictEqual(result, externalPath, "ensureWorkflowSymlink returns external path when variants exist");
-      assert.ok(existsSync(join(base, ".gsd")), ".gsd exists");
-      assert.ok(lstatSync(join(base, ".gsd")).isSymbolicLink(), ".gsd is a symlink");
+      assert.ok(existsSync(join(base, ".otto/workflow")), ".otto/workflow exists");
+      assert.ok(lstatSync(join(base, ".otto/workflow")).isSymbolicLink(), ".otto/workflow is a symlink");
 
-      assert.ok(!existsSync(join(base, ".gsd 2")), '".gsd 2" symlink variant was cleaned up');
-      assert.ok(!existsSync(join(base, ".gsd 3")), '".gsd 3" symlink variant was cleaned up');
+      assert.ok(!existsSync(join(base, ".otto/workflow 2")), '".otto/workflow 2" symlink variant was cleaned up');
+      assert.ok(!existsSync(join(base, ".otto/workflow 3")), '".otto/workflow 3" symlink variant was cleaned up');
     }
 
-    // ── Test: real .gsd directory blocks symlink, but variants still cleaned ──
-    console.log("\n=== ensureWorkflowSymlink cleans variants even when .gsd is a real directory ===");
+    // ── Test: real .otto/workflow directory blocks symlink, but variants still cleaned ──
+    console.log("\n=== ensureWorkflowSymlink cleans variants even when .otto/workflow is a real directory ===");
     {
       // Clean slate
-      rmSync(join(base, ".gsd"), { recursive: true, force: true });
+      rmSync(join(base, ".otto/workflow"), { recursive: true, force: true });
 
-      // .gsd is a real directory (git-tracked) and numbered variants exist
-      mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
-      writeFileSync(join(base, ".gsd", "milestones", "M001.md"), "# M001\n", "utf-8");
-      mkdirSync(join(base, ".gsd 2"), { recursive: true });
-      mkdirSync(join(base, ".gsd 3"), { recursive: true });
+      // .otto/workflow is a real directory (git-tracked) and numbered variants exist
+      mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
+      writeFileSync(join(base, ".otto/workflow", "milestones", "M001.md"), "# M001\n", "utf-8");
+      mkdirSync(join(base, ".otto/workflow 2"), { recursive: true });
+      mkdirSync(join(base, ".otto/workflow 3"), { recursive: true });
 
       const result = ensureWorkflowSymlink(base);
-      // When .gsd is a real directory, ensureWorkflowSymlink preserves it
-      assert.deepStrictEqual(result, join(base, ".gsd"), "real .gsd directory preserved");
-      assert.ok(lstatSync(join(base, ".gsd")).isDirectory(), ".gsd remains a directory");
+      // When .otto/workflow is a real directory, ensureWorkflowSymlink preserves it
+      assert.deepStrictEqual(result, join(base, ".otto/workflow"), "real .otto/workflow directory preserved");
+      assert.ok(lstatSync(join(base, ".otto/workflow")).isDirectory(), ".otto/workflow remains a directory");
 
       // But the numbered variants should still be cleaned up
-      assert.ok(!existsSync(join(base, ".gsd 2")), '".gsd 2" cleaned even when .gsd is a directory');
-      assert.ok(!existsSync(join(base, ".gsd 3")), '".gsd 3" cleaned even when .gsd is a directory');
+      assert.ok(!existsSync(join(base, ".otto/workflow 2")), '".otto/workflow 2" cleaned even when .otto/workflow is a directory');
+      assert.ok(!existsSync(join(base, ".otto/workflow 3")), '".otto/workflow 3" cleaned even when .otto/workflow is a directory');
     }
 
     // ── Test: only numeric-suffixed variants are removed ───────────────
-    console.log("\n=== ensureWorkflowSymlink only removes .gsd + space + digit variants ===");
+    console.log("\n=== ensureWorkflowSymlink only removes .otto/workflow + space + digit variants ===");
     {
-      rmSync(join(base, ".gsd"), { recursive: true, force: true });
+      rmSync(join(base, ".otto/workflow"), { recursive: true, force: true });
 
       // These should NOT be touched
-      mkdirSync(join(base, ".gsd-backup"), { recursive: true });
-      mkdirSync(join(base, ".gsd_old"), { recursive: true });
+      mkdirSync(join(base, ".otto/workflow-backup"), { recursive: true });
+      mkdirSync(join(base, ".otto_old"), { recursive: true });
 
       // These SHOULD be removed (macOS collision pattern)
-      mkdirSync(join(base, ".gsd 2"), { recursive: true });
-      mkdirSync(join(base, ".gsd 10"), { recursive: true });
+      mkdirSync(join(base, ".otto/workflow 2"), { recursive: true });
+      mkdirSync(join(base, ".otto/workflow 10"), { recursive: true });
 
       ensureWorkflowSymlink(base);
 
-      assert.ok(existsSync(join(base, ".gsd-backup")), ".gsd-backup is NOT removed");
-      assert.ok(existsSync(join(base, ".gsd_old")), ".gsd_old is NOT removed");
-      assert.ok(!existsSync(join(base, ".gsd 2")), '".gsd 2" removed');
-      assert.ok(!existsSync(join(base, ".gsd 10")), '".gsd 10" removed');
+      assert.ok(existsSync(join(base, ".otto/workflow-backup")), ".otto/workflow-backup is NOT removed");
+      assert.ok(existsSync(join(base, ".otto_old")), ".otto_old is NOT removed");
+      assert.ok(!existsSync(join(base, ".otto/workflow 2")), '".otto/workflow 2" removed');
+      assert.ok(!existsSync(join(base, ".otto/workflow 10")), '".otto/workflow 10" removed');
 
       // Cleanup non-variant dirs
-      rmSync(join(base, ".gsd-backup"), { recursive: true, force: true });
-      rmSync(join(base, ".gsd_old"), { recursive: true, force: true });
+      rmSync(join(base, ".otto/workflow-backup"), { recursive: true, force: true });
+      rmSync(join(base, ".otto_old"), { recursive: true, force: true });
     }
 
   } finally {
-    delete process.env.GSD_STATE_DIR;
+    delete process.env.OTTO_STATE_DIR;
     try { rmSync(base, { recursive: true, force: true }); } catch { /* ignore */ }
     try { rmSync(stateDir, { recursive: true, force: true }); } catch { /* ignore */ }
   }

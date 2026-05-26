@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Persistence adapter for custom workflow verification retry counts.
 
 import { readFileSync, mkdirSync, unlinkSync } from "node:fs";

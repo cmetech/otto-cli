@@ -1,4 +1,4 @@
-// GSD Extension — Regression test for #4996: deferred milestone dir creation
+// OTTO Extension — Regression test for #4996: deferred milestone dir creation
 
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
@@ -14,7 +14,7 @@ import { closeDatabase, openDatabase } from "../db.ts";
 
 function makeBase(prefix = "gsd-deferred-dir-"): string {
   const base = mkdtempSync(join(tmpdir(), prefix));
-  mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
   return base;
 }
 
@@ -39,7 +39,7 @@ describe("deferred milestone dir creation (#4996)", () => {
 
     const ids = findMilestoneIds(base);
     assert.equal(ids.length, 0);
-    assert.ok(!existsSync(join(base, ".gsd", "milestones", "M001")));
+    assert.ok(!existsSync(join(base, ".otto/workflow", "milestones", "M001")));
   });
 
   it("(b) abandoned discuss flow leaves no orphan", () => {
@@ -47,7 +47,7 @@ describe("deferred milestone dir creation (#4996)", () => {
     const nextId = nextMilestoneIdReserved(findMilestoneIds(base), false, base);
     assert.equal(nextId, "M001");
 
-    const m001Dir = join(base, ".gsd", "milestones", "M001");
+    const m001Dir = join(base, ".otto/workflow", "milestones", "M001");
     assert.ok(!existsSync(m001Dir));
     assert.equal(isReusableGhostMilestone(base, "M001"), false);
     assert.ok(!findMilestoneIds(base).includes("M001"));
@@ -55,11 +55,11 @@ describe("deferred milestone dir creation (#4996)", () => {
 
   it("(c) a stub dir left from a previous bug is reusable", () => {
     base = makeBase();
-    openDatabase(join(base, ".gsd", "gsd.db"));
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices"), { recursive: true });
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices"), { recursive: true });
 
     assert.equal(isReusableGhostMilestone(base, "M001"), true);
     assert.equal(nextMilestoneIdReserved(findMilestoneIds(base), false, base), "M001");
-    assert.ok(!existsSync(join(base, ".gsd", "milestones", "M002")));
+    assert.ok(!existsSync(join(base, ".otto/workflow", "milestones", "M002")));
   });
 });

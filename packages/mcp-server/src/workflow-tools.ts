@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Registers packaged workflow tools exposed by the MCP server.
 
 /**
@@ -10,7 +10,7 @@ import { homedir } from "node:os";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { z } from "zod";
-import { WORKFLOW_TOOL_NAMES as CONTRACT_WORKFLOW_TOOL_NAMES } from "@loop24-build/contracts";
+import { WORKFLOW_TOOL_NAMES as CONTRACT_WORKFLOW_TOOL_NAMES } from "@otto-build/contracts";
 
 import { logAliasUsage } from "./alias-telemetry.js";
 
@@ -300,7 +300,7 @@ let workflowExecutionQueue: Promise<void> = Promise.resolve();
 let workflowWriteGatePromise: Promise<WorkflowWriteGateModule> | null = null;
 
 function getAllowedProjectRoot(env: NodeJS.ProcessEnv = process.env): string | null {
-  const configuredRoot = env.GSD_WORKFLOW_PROJECT_ROOT?.trim();
+  const configuredRoot = env.OTTO_WORKFLOW_PROJECT_ROOT?.trim();
   return configuredRoot ? resolve(configuredRoot) : null;
 }
 
@@ -310,16 +310,16 @@ function isWithinRoot(candidatePath: string, rootPath: string): boolean {
 }
 
 /**
- * Resolve the symlink target of `<allowedRoot>/.gsd` when it points into the
- * external state layout (`~/.loop24/projects/<hash>/`). Returns the realpath of
+ * Resolve the symlink target of `<allowedRoot>/.otto/workflow` when it points into the
+ * external state layout (`~/.otto/projects/<hash>/`). Returns the realpath of
  * that target so callers can accept worktree paths that live under
- * `<external-state>/worktrees/<MID>/`. Returns null when `.gsd` is absent or
+ * `<external-state>/worktrees/<MID>/`. Returns null when `.otto/workflow` is absent or
  * resolution fails — the caller should fall back to the direct containment
  * check in that case.
  */
 function resolveExternalStateRoot(allowedRoot: string): string | null {
   try {
-    return realpathSync(join(allowedRoot, ".gsd"));
+    return realpathSync(join(allowedRoot, ".otto", "workflow"));
   } catch {
     return null;
   }
@@ -343,10 +343,10 @@ export function validateProjectDir(projectDir: string, env: NodeJS.ProcessEnv = 
   const resolvedAllowedRoot = safeRealpath(allowedRoot);
   if (isWithinRoot(resolvedProjectDir, resolvedAllowedRoot)) return resolvedProjectDir;
 
-  // External state layout: `<allowedRoot>/.gsd` may be a symlink into
-  // `~/.loop24/projects/<hash>/`, and auto-worktrees live under
-  // `~/.loop24/projects/<hash>/worktrees/<MID>/`. Accept candidates that are
-  // under the realpath of `<allowedRoot>/.gsd` — they belong to this project
+  // External state layout: `<allowedRoot>/.otto/workflow` may be a symlink into
+  // `~/.otto/projects/<hash>/`, and auto-worktrees live under
+  // `~/.otto/projects/<hash>/worktrees/<MID>/`. Accept candidates that are
+  // under the realpath of `<allowedRoot>/.otto/workflow` — they belong to this project
   // even though their absolute path is outside allowedRoot (#issue-a44).
   const externalRoot = resolveExternalStateRoot(resolvedAllowedRoot);
   if (externalRoot && isWithinRoot(resolvedProjectDir, externalRoot)) {
@@ -390,22 +390,22 @@ function extractMilestoneId(parsed: Record<string, unknown>): string | null {
 
 /**
  * If an auto-worktree exists for the given milestone under
- * `<projectRoot>/.loop24/worktrees/<milestoneId>/`, return that path as the
+ * `<projectRoot>/.otto/worktrees/<milestoneId>/`, return that path as the
  * basePath the tool should write against. Returns null when no worktree
  * exists for this milestone, leaving the caller to use the project root.
  *
  * This unbreaks the external-state layout where the MCP server's process.cwd()
  * is the project root (set at Claude Code launch) but auto-mode is actually
  * working inside a per-milestone worktree. Without this, tool writes go to
- * the shared project `.loop24/` and auto-mode's verifyExpectedArtifact (which
- * uses the worktree `.loop24/`) fails, triggering a guaranteed retry per unit.
+ * the shared project `.otto/` and auto-mode's verifyExpectedArtifact (which
+ * uses the worktree `.otto/`) fails, triggering a guaranteed retry per unit.
  */
 function resolveActiveWorktreeBasePath(
   projectRoot: string,
   milestoneId: string | null,
 ): string | null {
   if (!milestoneId) return null;
-  const wtPath = join(projectRoot, ".gsd", "worktrees", milestoneId);
+  const wtPath = join(projectRoot, ".otto", "workflow", "worktrees", milestoneId);
   if (!existsSync(wtPath)) return null;
   // Sanity check: a real git worktree has a `.git` file with a gitdir pointer.
   // Bare directories without it shouldn't hijack the write path.
@@ -415,11 +415,11 @@ function resolveActiveWorktreeBasePath(
 
 /**
  * Fallback when the tool call has no milestoneId: if exactly one auto-worktree
- * exists under `<projectRoot>/.loop24/worktrees/`, treat it as the active one.
+ * exists under `<projectRoot>/.otto/worktrees/`, treat it as the active one.
  * Multiple worktrees → ambiguous, return null and let writes go to project root.
  */
 function resolveSoleActiveWorktree(projectRoot: string): string | null {
-  const worktreesDir = join(projectRoot, ".gsd", "worktrees");
+  const worktreesDir = join(projectRoot, ".otto", "workflow", "worktrees");
   if (!existsSync(worktreesDir)) return null;
   let entries: string[];
   try {
@@ -469,7 +469,7 @@ function parseWorkflowArgs<T extends { projectDir?: string }>(
 
   // Defense-in-depth: refuse when the resolved candidate is the user's home
   // directory. The MCP server's process.cwd() can be $HOME if launched from
-  // an unusual context; honoring it would write project artifacts into ~/.gsd.
+  // an unusual context; honoring it would write project artifacts into ~/.otto/workflow.
   if (isHomeDirectory(projectRootCandidate)) {
     throw new Error(
       `projectDir resolves to the user's home directory (${projectRootCandidate}). ` +
@@ -480,8 +480,8 @@ function parseWorkflowArgs<T extends { projectDir?: string }>(
   const projectRoot = validateProjectDir(projectRootCandidate);
 
   // Step 2: if this tool call is scoped to a milestone that has an active
-  // auto-worktree, re-route writes to the worktree's .gsd rather than the
-  // project's shared .gsd. auto-mode's verifyExpectedArtifact runs against
+  // auto-worktree, re-route writes to the worktree's .otto/workflow rather than the
+  // project's shared .otto/workflow. auto-mode's verifyExpectedArtifact runs against
   // the worktree, and a mismatch here causes every unit to retry once.
   // When the agent omits milestoneId, fall back to the sole live worktree
   // if exactly one exists — that's the active auto-mode session.
@@ -572,12 +572,12 @@ function buildBridgeImportCandidates(relativePath: string): string[] {
 
 function getWriteGateModuleCandidates(): string[] {
   const candidates: string[] = [];
-  const explicitModule = (process.env.LOOP24_WORKFLOW_WRITE_GATE_MODULE ?? process.env.GSD_WORKFLOW_WRITE_GATE_MODULE)?.trim();
+  const explicitModule = process.env.OTTO_WORKFLOW_WRITE_GATE_MODULE?.trim();
   if (explicitModule) {
     if (/^[a-z]{2,}:/i.test(explicitModule) && !explicitModule.startsWith("file:")) {
-      throw new Error("GSD_WORKFLOW_WRITE_GATE_MODULE only supports file: URLs or filesystem paths.");
+      throw new Error("OTTO_WORKFLOW_WRITE_GATE_MODULE only supports file: URLs or filesystem paths.");
     }
-    warnCustomWorkflowModule("GSD_WORKFLOW_WRITE_GATE_MODULE", explicitModule);
+    warnCustomWorkflowModule("OTTO_WORKFLOW_WRITE_GATE_MODULE", explicitModule);
     candidates.push(explicitModule.startsWith("file:") ? explicitModule : toFileUrl(explicitModule));
   }
 
@@ -596,8 +596,8 @@ function toFileUrl(modulePath: string): string {
 const warnedCustomWorkflowModuleVars = new Set<string>();
 
 /**
- * Emit a one-time stderr warning when GSD_WORKFLOW_EXECUTORS_MODULE or
- * GSD_WORKFLOW_WRITE_GATE_MODULE is set. These overrides exist for dev/test
+ * Emit a one-time stderr warning when OTTO_WORKFLOW_EXECUTORS_MODULE or
+ * OTTO_WORKFLOW_WRITE_GATE_MODULE is set. These overrides exist for dev/test
  * use, but they let the env owner load arbitrary local modules. The warning
  * makes accidental or hostile use loud rather than silent.
  */
@@ -655,12 +655,12 @@ async function loadProjectPreferences(projectDir: string): Promise<unknown | nul
 
 function getWorkflowExecutorModuleCandidates(env: NodeJS.ProcessEnv = process.env): string[] {
   const candidates: string[] = [];
-  const explicitModule = env.GSD_WORKFLOW_EXECUTORS_MODULE?.trim();
+  const explicitModule = env.OTTO_WORKFLOW_EXECUTORS_MODULE?.trim();
   if (explicitModule) {
     if (/^[a-z]{2,}:/i.test(explicitModule) && !explicitModule.startsWith("file:")) {
-      throw new Error("GSD_WORKFLOW_EXECUTORS_MODULE only supports file: URLs or filesystem paths.");
+      throw new Error("OTTO_WORKFLOW_EXECUTORS_MODULE only supports file: URLs or filesystem paths.");
     }
-    warnCustomWorkflowModule("GSD_WORKFLOW_EXECUTORS_MODULE", explicitModule);
+    warnCustomWorkflowModule("OTTO_WORKFLOW_EXECUTORS_MODULE", explicitModule);
     candidates.push(explicitModule.startsWith("file:") ? explicitModule : toFileUrl(explicitModule));
   }
 
@@ -690,7 +690,7 @@ async function getWorkflowToolExecutors(): Promise<WorkflowToolExecutors> {
 
       throw new Error(
         "Unable to load GSD workflow executor bridge for MCP mutation tools. " +
-        "Set GSD_WORKFLOW_EXECUTORS_MODULE to an importable workflow-tool-executors module, " +
+        "Set OTTO_WORKFLOW_EXECUTORS_MODULE to an importable workflow-tool-executors module, " +
         "or run the MCP server from a GSD checkout that includes src/resources/extensions/workflow/tools/workflow-tool-executors.(js|ts). " +
         `Attempts: ${attempts.join("; ")}`,
       );
@@ -743,7 +743,7 @@ export const WORKFLOW_TOOL_NAMES = CONTRACT_WORKFLOW_TOOL_NAMES;
 const DEFAULT_WORKFLOW_OP_TIMEOUT_MS = 5 * 60 * 1000;
 
 function getWorkflowOpTimeoutMs(env: NodeJS.ProcessEnv = process.env): number {
-  const raw = env.GSD_MCP_WORKFLOW_TIMEOUT_MS?.trim();
+  const raw = env.OTTO_MCP_WORKFLOW_TIMEOUT_MS?.trim();
   if (!raw) return DEFAULT_WORKFLOW_OP_TIMEOUT_MS;
   const parsed = Number.parseInt(raw, 10);
   if (!Number.isFinite(parsed) || parsed < 0) return DEFAULT_WORKFLOW_OP_TIMEOUT_MS;
@@ -825,7 +825,7 @@ async function runSerializedWorkflowOperation<T>(fn: () => Promise<T>): Promise<
     let timer: NodeJS.Timeout | undefined;
     const timeoutPromise = new Promise<never>((_, reject) => {
       timer = setTimeout(() => {
-        reject(new Error(`Workflow operation exceeded ${timeoutMs}ms deadline (GSD_MCP_WORKFLOW_TIMEOUT_MS)`));
+        reject(new Error(`Workflow operation exceeded ${timeoutMs}ms deadline (OTTO_MCP_WORKFLOW_TIMEOUT_MS)`));
       }, timeoutMs);
     });
     try {
@@ -848,7 +848,7 @@ async function runSerializedWorkflowDbOperation<T>(
     );
     const dbAvailable = await ensureDbOpen(projectDir);
     if (!dbAvailable) {
-      throw new Error("GSD database is not available");
+      throw new Error("OTTO database is not available");
     }
     return fn();
   });
@@ -886,7 +886,7 @@ async function handleTaskComplete(
   projectDir: string,
   args: Omit<z.infer<typeof taskCompleteSchema>, "projectDir">,
 ): Promise<unknown> {
-  await enforceWorkflowWriteGate("gsd_task_complete", projectDir, args.milestoneId);
+  await enforceWorkflowWriteGate("otto_task_complete", projectDir, args.milestoneId);
   const { executeTaskComplete } = await getWorkflowToolExecutors();
   // Pass `args` through directly rather than destructure-then-rebuild. The
   // previous implementation re-listed each field, which silently dropped
@@ -903,7 +903,7 @@ async function handleTaskReopen(
   projectDir: string,
   args: Omit<z.infer<typeof taskReopenSchema>, "projectDir">,
 ): Promise<unknown> {
-  await enforceWorkflowWriteGate("gsd_task_reopen", projectDir, args.milestoneId);
+  await enforceWorkflowWriteGate("otto_task_reopen", projectDir, args.milestoneId);
   const { executeTaskReopen } = await getWorkflowToolExecutors();
   return adaptExecutorResult(
     await runSerializedWorkflowOperation(() => executeTaskReopen(args, projectDir)),
@@ -914,7 +914,7 @@ async function handleSliceReopen(
   projectDir: string,
   args: Omit<z.infer<typeof sliceReopenSchema>, "projectDir">,
 ): Promise<unknown> {
-  await enforceWorkflowWriteGate("gsd_slice_reopen", projectDir, args.milestoneId);
+  await enforceWorkflowWriteGate("otto_slice_reopen", projectDir, args.milestoneId);
   const { executeSliceReopen } = await getWorkflowToolExecutors();
   return adaptExecutorResult(
     await runSerializedWorkflowOperation(() => executeSliceReopen(args, projectDir)),
@@ -925,7 +925,7 @@ async function handleMilestoneReopen(
   projectDir: string,
   args: Omit<z.infer<typeof milestoneReopenSchema>, "projectDir">,
 ): Promise<unknown> {
-  await enforceWorkflowWriteGate("gsd_milestone_reopen", projectDir, args.milestoneId);
+  await enforceWorkflowWriteGate("otto_milestone_reopen", projectDir, args.milestoneId);
   const { executeMilestoneReopen } = await getWorkflowToolExecutors();
   return adaptExecutorResult(
     await runSerializedWorkflowOperation(() => executeMilestoneReopen(args, projectDir)),
@@ -936,7 +936,7 @@ async function handleSliceComplete(
   projectDir: string,
   args: z.infer<typeof sliceCompleteSchema>,
 ): Promise<unknown> {
-  await enforceWorkflowWriteGate("gsd_slice_complete", projectDir, args.milestoneId);
+  await enforceWorkflowWriteGate("otto_slice_complete", projectDir, args.milestoneId);
   const { executeSliceComplete } = await getWorkflowToolExecutors();
   const { projectDir: _projectDir, ...params } = args;
   return adaptExecutorResult(
@@ -948,7 +948,7 @@ async function handleReplanSlice(
   projectDir: string,
   args: z.infer<typeof replanSliceSchema>,
 ): Promise<unknown> {
-  await enforceWorkflowWriteGate("gsd_replan_slice", projectDir, args.milestoneId);
+  await enforceWorkflowWriteGate("otto_replan_slice", projectDir, args.milestoneId);
   const { executeReplanSlice } = await getWorkflowToolExecutors();
   const { projectDir: _projectDir, ...params } = args;
   return adaptExecutorResult(
@@ -960,7 +960,7 @@ async function handleCompleteMilestone(
   projectDir: string,
   args: z.infer<typeof completeMilestoneSchema>,
 ): Promise<unknown> {
-  await enforceWorkflowWriteGate("gsd_complete_milestone", projectDir, args.milestoneId);
+  await enforceWorkflowWriteGate("otto_complete_milestone", projectDir, args.milestoneId);
   const { executeCompleteMilestone } = await getWorkflowToolExecutors();
   const { projectDir: _projectDir, ...params } = args;
   return adaptExecutorResult(
@@ -972,7 +972,7 @@ async function handleValidateMilestone(
   projectDir: string,
   args: z.infer<typeof validateMilestoneSchema>,
 ): Promise<unknown> {
-  await enforceWorkflowWriteGate("gsd_validate_milestone", projectDir, args.milestoneId);
+  await enforceWorkflowWriteGate("otto_validate_milestone", projectDir, args.milestoneId);
   const { executeValidateMilestone } = await getWorkflowToolExecutors();
   const { projectDir: _projectDir, ...params } = args;
   return adaptExecutorResult(
@@ -984,7 +984,7 @@ async function handleReassessRoadmap(
   projectDir: string,
   args: z.infer<typeof reassessRoadmapSchema>,
 ): Promise<unknown> {
-  await enforceWorkflowWriteGate("gsd_reassess_roadmap", projectDir, args.milestoneId);
+  await enforceWorkflowWriteGate("otto_reassess_roadmap", projectDir, args.milestoneId);
   const { executeReassessRoadmap } = await getWorkflowToolExecutors();
   const { projectDir: _projectDir, ...params } = args;
   return adaptExecutorResult(
@@ -996,7 +996,7 @@ async function handleSaveGateResult(
   projectDir: string,
   args: z.infer<typeof saveGateResultSchema>,
 ): Promise<unknown> {
-  await enforceWorkflowWriteGate("gsd_save_gate_result", projectDir, args.milestoneId);
+  await enforceWorkflowWriteGate("otto_save_gate_result", projectDir, args.milestoneId);
   const { executeSaveGateResult } = await getWorkflowToolExecutors();
   const { projectDir: _projectDir, ...params } = args;
   return adaptExecutorResult(
@@ -1028,8 +1028,8 @@ async function findDatabaseMilestoneIds(): Promise<string[]> {
 }
 
 /**
- * Fix #4996: Shared helper for both gsd_milestone_generate_id and
- * gsd_generate_milestone_id. Reuses the lowest reusable ghost milestone ID
+ * Fix #4996: Shared helper for both otto_milestone_generate_id and
+ * otto_generate_milestone_id. Reuses the lowest reusable ghost milestone ID
  * (a disk-only stub with no DB row, no worktree, no content files) before
  * falling back to max+1. Uses the stricter `isReusableGhostMilestone` —
  * not `isGhostMilestone` — to avoid racing with in-flight queued DB rows
@@ -1533,7 +1533,7 @@ const execRuntimeSchema = z.enum(["bash", "node", "python"]);
 const execParams = {
   projectDir: projectDirParam,
   runtime: execRuntimeSchema.describe("Interpreter: bash (-c), node (-e), or python3 (-c)."),
-  script: nonEmptyString("script").describe("Script body. Keep output small; capped stdout/stderr are persisted under .gsd/exec."),
+  script: nonEmptyString("script").describe("Script body. Keep output small; capped stdout/stderr are persisted under .otto/workflow/exec."),
   purpose: z.string().optional().describe("Short label recorded in meta.json for later review."),
   timeout_ms: z.number().int().min(1_000).max(600_000).optional().describe("Per-invocation timeout in milliseconds."),
 };
@@ -1587,13 +1587,13 @@ function wrapServerWithErrorHandler(realServer: McpToolServer): McpToolServer {
 export function registerWorkflowTools(realServer: McpToolServer): void {
   const server = wrapServerWithErrorHandler(realServer);
   server.tool(
-    "gsd_decision_save",
-    "Record a project decision to the GSD database and regenerate DECISIONS.md.",
+    "otto_decision_save",
+    "Record a project decision to the OTTO database and regenerate DECISIONS.md.",
     decisionSaveParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(decisionSaveSchema, args);
       const { projectDir, ...params } = parsed;
-      await enforceWorkflowWriteGate("gsd_decision_save", projectDir);
+      await enforceWorkflowWriteGate("otto_decision_save", projectDir);
       const result = await runSerializedWorkflowDbOperation(projectDir, async () => {
         const { saveDecisionToDb } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db-writer.js");
         return saveDecisionToDb(params, projectDir);
@@ -1603,14 +1603,14 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_save_decision",
-    "Alias for gsd_decision_save. Record a project decision to the GSD database and regenerate DECISIONS.md.",
+    "otto_save_decision",
+    "Alias for otto_decision_save. Record a project decision to the OTTO database and regenerate DECISIONS.md.",
     decisionSaveParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_save_decision", "gsd_decision_save");
+      logAliasUsage("otto_save_decision", "otto_decision_save");
       const parsed = parseWorkflowArgs(decisionSaveSchema, args);
       const { projectDir, ...params } = parsed;
-      await enforceWorkflowWriteGate("gsd_decision_save", projectDir);
+      await enforceWorkflowWriteGate("otto_decision_save", projectDir);
       const result = await runSerializedWorkflowDbOperation(projectDir, async () => {
         const { saveDecisionToDb } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db-writer.js");
         return saveDecisionToDb(params, projectDir);
@@ -1620,13 +1620,13 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_requirement_update",
-    "Update an existing requirement in the GSD database and regenerate REQUIREMENTS.md.",
+    "otto_requirement_update",
+    "Update an existing requirement in the OTTO database and regenerate REQUIREMENTS.md.",
     requirementUpdateParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(requirementUpdateSchema, args);
       const { projectDir, id, ...updates } = parsed;
-      await enforceWorkflowWriteGate("gsd_requirement_update", projectDir);
+      await enforceWorkflowWriteGate("otto_requirement_update", projectDir);
       await runSerializedWorkflowDbOperation(projectDir, async () => {
         const { updateRequirementInDb } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db-writer.js");
         return updateRequirementInDb(id, updates, projectDir);
@@ -1636,14 +1636,14 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_update_requirement",
-    "Alias for gsd_requirement_update. Update an existing requirement in the GSD database and regenerate REQUIREMENTS.md.",
+    "otto_update_requirement",
+    "Alias for otto_requirement_update. Update an existing requirement in the OTTO database and regenerate REQUIREMENTS.md.",
     requirementUpdateParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_update_requirement", "gsd_requirement_update");
+      logAliasUsage("otto_update_requirement", "otto_requirement_update");
       const parsed = parseWorkflowArgs(requirementUpdateSchema, args);
       const { projectDir, id, ...updates } = parsed;
-      await enforceWorkflowWriteGate("gsd_requirement_update", projectDir);
+      await enforceWorkflowWriteGate("otto_requirement_update", projectDir);
       await runSerializedWorkflowDbOperation(projectDir, async () => {
         const { updateRequirementInDb } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db-writer.js");
         return updateRequirementInDb(id, updates, projectDir);
@@ -1653,13 +1653,13 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_requirement_save",
-    "Record a new requirement to the GSD database and regenerate REQUIREMENTS.md.",
+    "otto_requirement_save",
+    "Record a new requirement to the OTTO database and regenerate REQUIREMENTS.md.",
     requirementSaveParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(requirementSaveSchema, args);
       const { projectDir, ...params } = parsed;
-      await enforceWorkflowWriteGate("gsd_requirement_save", projectDir);
+      await enforceWorkflowWriteGate("otto_requirement_save", projectDir);
       const result = await runSerializedWorkflowDbOperation(projectDir, async () => {
         const { saveRequirementToDb } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db-writer.js");
         return saveRequirementToDb(params, projectDir);
@@ -1669,14 +1669,14 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_save_requirement",
-    "Alias for gsd_requirement_save. Record a new requirement to the GSD database and regenerate REQUIREMENTS.md.",
+    "otto_save_requirement",
+    "Alias for otto_requirement_save. Record a new requirement to the OTTO database and regenerate REQUIREMENTS.md.",
     requirementSaveParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_save_requirement", "gsd_requirement_save");
+      logAliasUsage("otto_save_requirement", "otto_requirement_save");
       const parsed = parseWorkflowArgs(requirementSaveSchema, args);
       const { projectDir, ...params } = parsed;
-      await enforceWorkflowWriteGate("gsd_requirement_save", projectDir);
+      await enforceWorkflowWriteGate("otto_requirement_save", projectDir);
       const result = await runSerializedWorkflowDbOperation(projectDir, async () => {
         const { saveRequirementToDb } = await importLocalModule<any>("../../../src/resources/extensions/workflow/db-writer.js");
         return saveRequirementToDb(params, projectDir);
@@ -1686,12 +1686,12 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_milestone_generate_id",
+    "otto_milestone_generate_id",
     "Generate the next milestone ID for a new GSD milestone.",
     milestoneGenerateIdParams,
     async (args: Record<string, unknown>) => {
       const { projectDir } = parseWorkflowArgs(milestoneGenerateIdSchema, args);
-      await enforceWorkflowWriteGate("gsd_milestone_generate_id", projectDir);
+      await enforceWorkflowWriteGate("otto_milestone_generate_id", projectDir);
       const id = await runSerializedWorkflowDbOperation(projectDir, () =>
         generateOrReuseMilestoneId(projectDir),
       );
@@ -1700,13 +1700,13 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_generate_milestone_id",
-    "Alias for gsd_milestone_generate_id. Generate the next milestone ID for a new GSD milestone.",
+    "otto_generate_milestone_id",
+    "Alias for otto_milestone_generate_id. Generate the next milestone ID for a new GSD milestone.",
     milestoneGenerateIdParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_generate_milestone_id", "gsd_milestone_generate_id");
+      logAliasUsage("otto_generate_milestone_id", "otto_milestone_generate_id");
       const { projectDir } = parseWorkflowArgs(milestoneGenerateIdSchema, args);
-      await enforceWorkflowWriteGate("gsd_milestone_generate_id", projectDir);
+      await enforceWorkflowWriteGate("otto_milestone_generate_id", projectDir);
       const id = await runSerializedWorkflowDbOperation(projectDir, () =>
         generateOrReuseMilestoneId(projectDir),
       );
@@ -1715,13 +1715,13 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_plan_milestone",
-    "Write milestone planning state to the GSD database and render ROADMAP.md from DB.",
+    "otto_plan_milestone",
+    "Write milestone planning state to the OTTO database and render ROADMAP.md from DB.",
     planMilestoneParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(planMilestoneSchema, args);
       const { projectDir, ...params } = parsed;
-      await enforceWorkflowWriteGate("gsd_plan_milestone", projectDir, params.milestoneId);
+      await enforceWorkflowWriteGate("otto_plan_milestone", projectDir, params.milestoneId);
       const { executePlanMilestone } = await getWorkflowToolExecutors();
       return adaptExecutorResult(
         await runSerializedWorkflowOperation(() => executePlanMilestone(params, projectDir)),
@@ -1730,13 +1730,13 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_plan_slice",
-    "Write slice/task planning state to the GSD database and render plan artifacts from DB.",
+    "otto_plan_slice",
+    "Write slice/task planning state to the OTTO database and render plan artifacts from DB.",
     planSliceParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(planSliceSchema, args);
       const { projectDir, ...params } = parsed;
-      await enforceWorkflowWriteGate("gsd_plan_slice", projectDir, params.milestoneId);
+      await enforceWorkflowWriteGate("otto_plan_slice", projectDir, params.milestoneId);
       const { executePlanSlice } = await getWorkflowToolExecutors();
       return adaptExecutorResult(
         await runSerializedWorkflowOperation(() => executePlanSlice(params, projectDir)),
@@ -1745,13 +1745,13 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_plan_task",
-    "Write task planning state to the GSD database and render tasks/T##-PLAN.md from DB.",
+    "otto_plan_task",
+    "Write task planning state to the OTTO database and render tasks/T##-PLAN.md from DB.",
     planTaskParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(planTaskSchema, args);
       const { projectDir, ...params } = parsed;
-      await enforceWorkflowWriteGate("gsd_plan_task", projectDir, params.milestoneId);
+      await enforceWorkflowWriteGate("otto_plan_task", projectDir, params.milestoneId);
       const result = await runSerializedWorkflowDbOperation(projectDir, async () => {
         const { handlePlanTask } = await importLocalModule<any>("../../../src/resources/extensions/workflow/tools/plan-task.js");
         return handlePlanTask(params, projectDir);
@@ -1766,14 +1766,14 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_task_plan",
-    "Alias for gsd_plan_task. Write task planning state to the GSD database and render tasks/T##-PLAN.md from DB.",
+    "otto_task_plan",
+    "Alias for otto_plan_task. Write task planning state to the OTTO database and render tasks/T##-PLAN.md from DB.",
     planTaskParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_task_plan", "gsd_plan_task");
+      logAliasUsage("otto_task_plan", "otto_plan_task");
       const parsed = parseWorkflowArgs(planTaskSchema, args);
       const { projectDir, ...params } = parsed;
-      await enforceWorkflowWriteGate("gsd_plan_task", projectDir, params.milestoneId);
+      await enforceWorkflowWriteGate("otto_plan_task", projectDir, params.milestoneId);
       const result = await runSerializedWorkflowDbOperation(projectDir, async () => {
         const { handlePlanTask } = await importLocalModule<any>("../../../src/resources/extensions/workflow/tools/plan-task.js");
         return handlePlanTask(params, projectDir);
@@ -1788,7 +1788,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_replan_slice",
+    "otto_replan_slice",
     "Replan a slice after a blocker is discovered, preserving completed tasks and re-rendering PLAN.md + REPLAN.md.",
     replanSliceParams,
     async (args: Record<string, unknown>) => {
@@ -1798,19 +1798,19 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_slice_replan",
-    "Alias for gsd_replan_slice. Replan a slice after a blocker is discovered.",
+    "otto_slice_replan",
+    "Alias for otto_replan_slice. Replan a slice after a blocker is discovered.",
     replanSliceParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_slice_replan", "gsd_replan_slice");
+      logAliasUsage("otto_slice_replan", "otto_replan_slice");
       const parsed = parseWorkflowArgs(replanSliceSchema, args);
       return handleReplanSlice(parsed.projectDir, parsed);
     },
   );
 
   server.tool(
-    "gsd_slice_complete",
-    "Record a completed slice to the GSD database, render SUMMARY.md + UAT.md, and update roadmap projection.",
+    "otto_slice_complete",
+    "Record a completed slice to the OTTO database, render SUMMARY.md + UAT.md, and update roadmap projection.",
     sliceCompleteParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(sliceCompleteSchema, args);
@@ -1819,23 +1819,23 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_complete_slice",
-    "Alias for gsd_slice_complete. Record a completed slice to the GSD database and render summary/UAT artifacts.",
+    "otto_complete_slice",
+    "Alias for otto_slice_complete. Record a completed slice to the OTTO database and render summary/UAT artifacts.",
     sliceCompleteParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_complete_slice", "gsd_slice_complete");
+      logAliasUsage("otto_complete_slice", "otto_slice_complete");
       const parsed = parseWorkflowArgs(sliceCompleteSchema, args);
       return handleSliceComplete(parsed.projectDir, parsed);
     },
   );
 
   server.tool(
-    "gsd_skip_slice",
+    "otto_skip_slice",
     "Mark a slice as skipped so auto-mode advances past it without executing.",
     skipSliceParams,
     async (args: Record<string, unknown>) => {
       const { projectDir, milestoneId, sliceId, reason } = parseWorkflowArgs(skipSliceSchema, args);
-      await enforceWorkflowWriteGate("gsd_skip_slice", projectDir, milestoneId);
+      await enforceWorkflowWriteGate("otto_skip_slice", projectDir, milestoneId);
       await runSerializedWorkflowDbOperation(projectDir, async () => {
         const { handleSkipSlice } = await importLocalModule<any>("../../../src/resources/extensions/workflow/tools/skip-slice.js");
         const { invalidateStateCache } = await importLocalModule<any>("../../../src/resources/extensions/workflow/state.js");
@@ -1855,8 +1855,8 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_complete_milestone",
-    "Record a completed milestone to the GSD database and render its SUMMARY.md.",
+    "otto_complete_milestone",
+    "Record a completed milestone to the OTTO database and render its SUMMARY.md.",
     completeMilestoneParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(completeMilestoneSchema, args);
@@ -1865,19 +1865,19 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_milestone_complete",
-    "Alias for gsd_complete_milestone. Record a completed milestone to the GSD database and render its SUMMARY.md.",
+    "otto_milestone_complete",
+    "Alias for otto_complete_milestone. Record a completed milestone to the OTTO database and render its SUMMARY.md.",
     completeMilestoneParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_milestone_complete", "gsd_complete_milestone");
+      logAliasUsage("otto_milestone_complete", "otto_complete_milestone");
       const parsed = parseWorkflowArgs(completeMilestoneSchema, args);
       return handleCompleteMilestone(parsed.projectDir, parsed);
     },
   );
 
   server.tool(
-    "gsd_validate_milestone",
-    "Validate a milestone, persist validation results to the GSD database, and render VALIDATION.md.",
+    "otto_validate_milestone",
+    "Validate a milestone, persist validation results to the OTTO database, and render VALIDATION.md.",
     validateMilestoneParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(validateMilestoneSchema, args);
@@ -1886,18 +1886,18 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_milestone_validate",
-    "Alias for gsd_validate_milestone. Validate a milestone and render VALIDATION.md.",
+    "otto_milestone_validate",
+    "Alias for otto_validate_milestone. Validate a milestone and render VALIDATION.md.",
     validateMilestoneParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_milestone_validate", "gsd_validate_milestone");
+      logAliasUsage("otto_milestone_validate", "otto_validate_milestone");
       const parsed = parseWorkflowArgs(validateMilestoneSchema, args);
       return handleValidateMilestone(parsed.projectDir, parsed);
     },
   );
 
   server.tool(
-    "gsd_reassess_roadmap",
+    "otto_reassess_roadmap",
     "Reassess a milestone roadmap after a slice completes, writing ASSESSMENT.md and re-rendering ROADMAP.md.",
     reassessRoadmapParams,
     async (args: Record<string, unknown>) => {
@@ -1907,19 +1907,19 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_roadmap_reassess",
-    "Alias for gsd_reassess_roadmap. Reassess a roadmap after slice completion.",
+    "otto_roadmap_reassess",
+    "Alias for otto_reassess_roadmap. Reassess a roadmap after slice completion.",
     reassessRoadmapParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_roadmap_reassess", "gsd_reassess_roadmap");
+      logAliasUsage("otto_roadmap_reassess", "otto_reassess_roadmap");
       const parsed = parseWorkflowArgs(reassessRoadmapSchema, args);
       return handleReassessRoadmap(parsed.projectDir, parsed);
     },
   );
 
   server.tool(
-    "gsd_save_gate_result",
-    "Save a quality gate result to the GSD database.",
+    "otto_save_gate_result",
+    "Save a quality gate result to the OTTO database.",
     saveGateResultParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(saveGateResultSchema, args);
@@ -1928,13 +1928,13 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_summary_save",
+    "otto_summary_save",
     "Save a GSD summary/research/context/assessment artifact to the database and disk. Omit milestone_id only for root-level PROJECT/PROJECT-DRAFT/REQUIREMENTS/REQUIREMENTS-DRAFT artifacts.",
     summarySaveParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(summarySaveSchema, args);
       const { projectDir, milestone_id, slice_id, task_id, artifact_type, content } = parsed;
-      await enforceWorkflowWriteGate("gsd_summary_save", projectDir, milestone_id ?? null);
+      await enforceWorkflowWriteGate("otto_summary_save", projectDir, milestone_id ?? null);
       const executors = await getWorkflowToolExecutors();
       const supportedArtifactTypes = getSupportedSummaryArtifactTypes(executors);
       if (!supportedArtifactTypes.includes(artifact_type)) {
@@ -1951,8 +1951,8 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_task_complete",
-    "Record a completed task to the GSD database and render its SUMMARY.md.",
+    "otto_task_complete",
+    "Record a completed task to the OTTO database and render its SUMMARY.md.",
     taskCompleteParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(taskCompleteSchema, args);
@@ -1962,11 +1962,11 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_complete_task",
-    "Alias for gsd_task_complete. Record a completed task to the GSD database and render its SUMMARY.md.",
+    "otto_complete_task",
+    "Alias for otto_task_complete. Record a completed task to the OTTO database and render its SUMMARY.md.",
     taskCompleteParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_complete_task", "gsd_task_complete");
+      logAliasUsage("otto_complete_task", "otto_task_complete");
       const parsed = parseWorkflowArgs(taskCompleteSchema, args);
       const { projectDir, ...taskArgs } = parsed;
       return handleTaskComplete(projectDir, taskArgs);
@@ -1974,7 +1974,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_task_reopen",
+    "otto_task_reopen",
     "Reset a completed task back to pending so it can be re-done.",
     taskReopenParams,
     async (args: Record<string, unknown>) => {
@@ -1985,11 +1985,11 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_reopen_task",
-    "Alias for gsd_task_reopen. Reset a completed task back to pending so it can be re-done.",
+    "otto_reopen_task",
+    "Alias for otto_task_reopen. Reset a completed task back to pending so it can be re-done.",
     taskReopenParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_reopen_task", "gsd_task_reopen");
+      logAliasUsage("otto_reopen_task", "otto_task_reopen");
       const parsed = parseWorkflowArgs(taskReopenSchema, args);
       const { projectDir, ...taskArgs } = parsed;
       return handleTaskReopen(projectDir, taskArgs);
@@ -1997,7 +1997,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_slice_reopen",
+    "otto_slice_reopen",
     "Reset a completed slice back to in_progress and reset its tasks to pending.",
     sliceReopenParams,
     async (args: Record<string, unknown>) => {
@@ -2008,11 +2008,11 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_reopen_slice",
-    "Alias for gsd_slice_reopen. Reset a completed slice back to in_progress and reset its tasks to pending.",
+    "otto_reopen_slice",
+    "Alias for otto_slice_reopen. Reset a completed slice back to in_progress and reset its tasks to pending.",
     sliceReopenParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_reopen_slice", "gsd_slice_reopen");
+      logAliasUsage("otto_reopen_slice", "otto_slice_reopen");
       const parsed = parseWorkflowArgs(sliceReopenSchema, args);
       const { projectDir, ...sliceArgs } = parsed;
       return handleSliceReopen(projectDir, sliceArgs);
@@ -2020,7 +2020,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_milestone_reopen",
+    "otto_milestone_reopen",
     "Reset a closed milestone back to active and reset its slices/tasks for rework.",
     milestoneReopenParams,
     async (args: Record<string, unknown>) => {
@@ -2031,11 +2031,11 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_reopen_milestone",
-    "Alias for gsd_milestone_reopen. Reset a closed milestone back to active and reset its slices/tasks for rework.",
+    "otto_reopen_milestone",
+    "Alias for otto_milestone_reopen. Reset a closed milestone back to active and reset its slices/tasks for rework.",
     milestoneReopenParams,
     async (args: Record<string, unknown>) => {
-      logAliasUsage("gsd_reopen_milestone", "gsd_milestone_reopen");
+      logAliasUsage("otto_reopen_milestone", "otto_milestone_reopen");
       const parsed = parseWorkflowArgs(milestoneReopenSchema, args);
       const { projectDir, ...milestoneArgs } = parsed;
       return handleMilestoneReopen(projectDir, milestoneArgs);
@@ -2043,11 +2043,11 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_milestone_status",
-    "Read the current status of a milestone and all its slices from the GSD database.",
+    "otto_milestone_status",
+    "Read the current status of a milestone and all its slices from the OTTO database.",
     milestoneStatusParams,
     async (args: Record<string, unknown>) => {
-      // gsd_milestone_status is a read-only query. In-process (query-tools.ts)
+      // otto_milestone_status is a read-only query. In-process (query-tools.ts)
       // does not apply the write-gate; MCP must match to avoid blocking reads
       // during pending-gate or queue-mode states.
       const { projectDir, milestoneId } = parseWorkflowArgs(milestoneStatusSchema, args);
@@ -2059,7 +2059,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_journal_query",
+    "otto_journal_query",
     "Query the structured event journal for auto-mode iterations.",
     journalQueryParams,
     async (args: Record<string, unknown>) => {
@@ -2074,12 +2074,12 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_exec",
-    "Run a short bash/node/python script in the project directory. Capped stdout/stderr and metadata persist under .gsd/exec; only a digest returns to MCP.",
+    "otto_exec",
+    "Run a short bash/node/python script in the project directory. Capped stdout/stderr and metadata persist under .otto/workflow/exec; only a digest returns to MCP.",
     execParams,
     async (args: Record<string, unknown>) => {
       const { projectDir, ...params } = parseWorkflowArgs(execSchema, args);
-      await enforceWorkflowWriteGate("gsd_exec", projectDir);
+      await enforceWorkflowWriteGate("otto_exec", projectDir);
       const { executeWorkflowExec } = await importLocalModule<any>(
         "../../../src/resources/extensions/workflow/tools/exec-tool.js",
       );
@@ -2095,8 +2095,8 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_exec_search",
-    "Search prior gsd_exec runs from .gsd/exec/*.meta.json without re-running them.",
+    "otto_exec_search",
+    "Search prior otto_exec runs from .otto/workflow/exec/*.meta.json without re-running them.",
     execSearchParams,
     async (args: Record<string, unknown>) => {
       const { projectDir, ...params } = parseWorkflowArgs(execSearchSchema, args);
@@ -2113,8 +2113,8 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   );
 
   server.tool(
-    "gsd_resume",
-    "Read .gsd/last-snapshot.md so agents can re-orient after compaction or session resume.",
+    "otto_resume",
+    "Read .otto/workflow/last-snapshot.md so agents can re-orient after compaction or session resume.",
     resumeParams,
     async (args: Record<string, unknown>) => {
       const { projectDir, ...params } = parseWorkflowArgs(resumeSchema, args);
@@ -2133,10 +2133,10 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   // ─── ADR-013 step 3 — memory-store tools for external MCP clients ────────
   //
   // The same three tools the LLM sees in-process as `capture_thought`,
-  // `memory_query`, and `gsd_graph` (the memory variant). MCP exposes them
-  // under the gsd_* prefix and renames the memory graph to gsd_memory_graph
+  // `memory_query`, and `otto_graph` (the memory variant). MCP exposes them
+  // under the otto_* prefix and renames the memory graph to otto_memory_graph
   // to avoid collision with the project knowledge graph tool registered as
-  // `gsd_graph` in server.ts.
+  // `otto_graph` in server.ts.
 
   const MEMORY_CATEGORY = z.enum([
     "architecture",
@@ -2169,12 +2169,12 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   };
 
   server.tool(
-    "gsd_capture_thought",
+    "otto_capture_thought",
     "Record a durable project insight into the GSD memory store. Categories: architecture, convention, gotcha, preference, environment, pattern. Mirrors the in-process capture_thought tool for external MCP clients.",
     captureThoughtParams,
     async (args: Record<string, unknown>) => {
       const { projectDir, ...params } = parseWorkflowArgs(captureThoughtSchema, args);
-      await enforceWorkflowWriteGate("gsd_capture_thought", projectDir);
+      await enforceWorkflowWriteGate("otto_capture_thought", projectDir);
       return runSerializedWorkflowDbOperation(projectDir, async () => {
         const { executeMemoryCapture } = await importLocalModule<any>(
           "../../../src/resources/extensions/workflow/tools/memory-tools.js",
@@ -2208,7 +2208,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   };
 
   server.tool(
-    "gsd_memory_query",
+    "otto_memory_query",
     "Search the GSD memory store by keyword. Returns ranked memories with id, category, content, confidence, scope, and tags. Mirrors the in-process memory_query tool for external MCP clients.",
     memoryQueryParams,
     async (args: Record<string, unknown>) => {
@@ -2241,8 +2241,8 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
   };
 
   server.tool(
-    "gsd_memory_graph",
-    "Inspect the relationship graph between memories. mode=query walks edges from a given memoryId. mode=build is a placeholder reserved for future graph rebuilds. Distinct from gsd_graph (project knowledge graph) — see ADR-013.",
+    "otto_memory_graph",
+    "Inspect the relationship graph between memories. mode=query walks edges from a given memoryId. mode=build is a placeholder reserved for future graph rebuilds. Distinct from otto_graph (project knowledge graph) — see ADR-013.",
     memoryGraphParams,
     async (args: Record<string, unknown>) => {
       const { projectDir, ...params } = parseWorkflowArgs(memoryGraphSchema, args);

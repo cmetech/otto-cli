@@ -14,7 +14,7 @@ import type {
 	AgentToolResult,
 	AgentToolUpdateCallback,
 	ThinkingLevel,
-} from "@loop24/pi-agent-core";
+} from "@otto/pi-agent-core";
 import type {
 	Api,
 	AssistantMessageEvent,
@@ -27,7 +27,7 @@ import type {
 	SimpleStreamOptions,
 	TextContent,
 	ToolResultMessage,
-} from "@loop24/pi-ai";
+} from "@otto/pi-ai";
 import type {
 	AutocompleteItem,
 	Component,
@@ -37,7 +37,7 @@ import type {
 	OverlayHandle,
 	OverlayOptions,
 	TUI,
-} from "@loop24/pi-tui";
+} from "@otto/pi-tui";
 import type { Static, TSchema } from "@sinclair/typebox";
 import type { Theme } from "../../modes/interactive/theme/theme.js";
 import type { BashResult } from "../bash-executor.js";
@@ -196,12 +196,12 @@ export interface ExtensionUIContext {
 	 * - `keybindings`: KeybindingsManager for app-level keybindings
 	 *
 	 * For full app keybinding support (escape, ctrl+d, model switching, etc.),
-	 * extend `CustomEditor` from `@loop24/pi-coding-agent` and call
+	 * extend `CustomEditor` from `@otto/pi-coding-agent` and call
 	 * `super.handleInput(data)` for keys you don't handle.
 	 *
 	 * @example
 	 * ```ts
-	 * import { CustomEditor } from "@loop24/pi-coding-agent";
+	 * import { CustomEditor } from "@otto/pi-coding-agent";
 	 *
 	 * class VimEditor extends CustomEditor {
 	 *   private mode: "normal" | "insert" = "insert";

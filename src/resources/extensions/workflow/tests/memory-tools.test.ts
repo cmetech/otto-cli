@@ -241,19 +241,19 @@ test('memory-tools: memory_query ignores superseded memories by default', () => 
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// gsd_graph
+// otto_graph
 // ═══════════════════════════════════════════════════════════════════════════
 
-test('memory-tools: gsd_graph build acknowledges request', () => {
+test('memory-tools: otto_graph build acknowledges request', () => {
   openDatabase(':memory:');
   const result = executeWorkflowGraph({ mode: 'build' });
   assert.ok(!result.isError);
-  assert.equal(result.details.operation, 'gsd_graph');
+  assert.equal(result.details.operation, 'otto_graph');
   assert.equal(result.details.mode, 'build');
   closeDatabase();
 });
 
-test('memory-tools: gsd_graph query rejects missing memoryId', () => {
+test('memory-tools: otto_graph query rejects missing memoryId', () => {
   openDatabase(':memory:');
   const result = executeWorkflowGraph({ mode: 'query' });
   assert.ok(result.isError);
@@ -261,7 +261,7 @@ test('memory-tools: gsd_graph query rejects missing memoryId', () => {
   closeDatabase();
 });
 
-test('memory-tools: gsd_graph query returns node + supersedes edge', () => {
+test('memory-tools: otto_graph query returns node + supersedes edge', () => {
   openDatabase(':memory:');
   createMemory({ category: 'convention', content: 'first' });
   createMemory({ category: 'convention', content: 'second' });
@@ -279,7 +279,7 @@ test('memory-tools: gsd_graph query returns node + supersedes edge', () => {
   closeDatabase();
 });
 
-test('memory-tools: gsd_graph query returns empty when memoryId does not exist', () => {
+test('memory-tools: otto_graph query returns empty when memoryId does not exist', () => {
   openDatabase(':memory:');
   const result = executeWorkflowGraph({ mode: 'query', memoryId: 'MEM999' });
   assert.ok(!result.isError, 'missing memory is not an error, just empty');
@@ -287,7 +287,7 @@ test('memory-tools: gsd_graph query returns empty when memoryId does not exist',
   closeDatabase();
 });
 
-test('memory-tools: gsd_graph errors when DB is closed', () => {
+test('memory-tools: otto_graph errors when DB is closed', () => {
   closeDatabase();
   const result = executeWorkflowGraph({ mode: 'query', memoryId: 'MEM001' });
   assert.ok(result.isError);

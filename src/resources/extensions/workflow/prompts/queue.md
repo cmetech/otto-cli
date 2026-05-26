@@ -8,7 +8,7 @@ Before asking "What do you want to add?", check existing milestone context. If a
 
 1. Tell the user which milestones have draft contexts and summarize each after reading it.
 2. Use `ask_user_questions` to ask per-draft milestone:
-   - **"Discuss now"** — Treat the draft as primary topic. Run reflection -> investigation -> questions -> depth verification -> requirements -> roadmap, call `gsd_summary_save` with `artifact_type: "CONTEXT"`, then delete `CONTEXT-DRAFT.md`.
+   - **"Discuss now"** — Treat the draft as primary topic. Run reflection -> investigation -> questions -> depth verification -> requirements -> roadmap, call `otto_summary_save` with `artifact_type: "CONTEXT"`, then delete `CONTEXT-DRAFT.md`.
    - **"Leave for later"** — Keep the draft. Auto-mode will keep pausing when it reaches this milestone.
 3. Resolve all draft discussions before new queue work.
 4. If no drafts exist in the context, skip this section entirely and proceed to "What do you want to add?"
@@ -28,11 +28,11 @@ Never fabricate or simulate user input during this discussion. Never emit `[User
 - Use `search-the-web`, `fetch_page`, or `search_and_read` only for current external facts; budget 3-5 searches per turn.
 - Scout code with `ls`, `find`, `rg`, or `scout`.
 
-Surface technical unknowns, integration surfaces, proof needed before committing, milestone overlap/dependencies, and any Active/Deferred `.gsd/REQUIREMENTS.md` items advanced by this work.
+Surface technical unknowns, integration surfaces, proof needed before committing, milestone overlap/dependencies, and any Active/Deferred `.otto/workflow/REQUIREMENTS.md` items advanced by this work.
 
 **Then use ask_user_questions** for gray areas: scope boundaries, proof expectations, integration choices, material tech preferences, and in/out scope. Ask 1-3 questions per round, then wait for the user's response before asking the next round.
 
-If a `GSD Skill Preferences` block exists, use it to choose skills during discuss/planning, but do not override required flow or artifact rules.
+If a `OTTO Skill Preferences` block exists, use it to choose skills during discuss/planning, but do not override required flow or artifact rules.
 
 **Self-regulate:** Do not ask "ready to queue?" after every round. Continue until enough depth, then use one wrap-up prompt if needed. Never infer permission from silence or partial answers.
 
@@ -45,7 +45,7 @@ Before writing, assess new work against existing milestones:
 1. **Dedup check** — If covered, explain what is planned and do not duplicate it.
 2. **Extension check** — If it belongs in a pending milestone, propose extending that context.
 3. **Dependency check** — Capture dependencies on in-progress or planned work.
-4. **Requirement check** — If `.gsd/REQUIREMENTS.md` exists, note advanced Active/Deferred requirements or new contract scope.
+4. **Requirement check** — If `.otto/workflow/REQUIREMENTS.md` exists, note advanced Active/Deferred requirements or new contract scope.
 
 If the new work is already fully covered, say so and stop; do not create duplicates.
 
@@ -103,8 +103,8 @@ The user confirms or corrects before you write. Use one depth verification per m
 
 Once the user is satisfied, in one pass for **each** new milestone:
 
-1. Call `gsd_milestone_generate_id`; never invent IDs. Then `mkdir -p .gsd/milestones/<ID>/slices`.
-2. Call `gsd_summary_save` with `artifact_type: "CONTEXT"` and full context markdown. The tool computes path and persists DB + disk. Capture intent, scope, risks, constraints, integration points, and requirements. Mark status "Queued — pending auto-mode execution." **If dependent, include YAML frontmatter:**
+1. Call `otto_milestone_generate_id`; never invent IDs. Then `mkdir -p .otto/workflow/milestones/<ID>/slices`.
+2. Call `otto_summary_save` with `artifact_type: "CONTEXT"` and full context markdown. The tool computes path and persists DB + disk. Capture intent, scope, risks, constraints, integration points, and requirements. Mark status "Queued — pending auto-mode execution." **If dependent, include YAML frontmatter:**
    ```yaml
    ---
    depends_on: [M001, M002]
@@ -114,14 +114,14 @@ Once the user is satisfied, in one pass for **each** new milestone:
 
 After all milestone directories and context files are written:
 
-3. Refresh project state through `gsd_summary_save` with `artifact_type: "PROJECT"` and full PROJECT content that includes the new milestones in the Milestone Sequence; omit `milestone_id`.
-4. If the queued work introduces new in-scope capabilities or promotes Deferred items, persist those changes with `gsd_requirement_save` or `gsd_requirement_update`, then call `gsd_summary_save` with `artifact_type: "REQUIREMENTS"` so `.gsd/REQUIREMENTS.md` renders from DB rows.
-5. If discussion produced decisions relevant to existing work, call `gsd_decision_save` for each decision; the tool regenerates `.gsd/DECISIONS.md`.
-6. If `.gsd/QUEUE.md` is maintained, update it only as an audit projection of queued intent. Runtime queue state must come from the DB-backed milestone/context tool calls above.
+3. Refresh project state through `otto_summary_save` with `artifact_type: "PROJECT"` and full PROJECT content that includes the new milestones in the Milestone Sequence; omit `milestone_id`.
+4. If the queued work introduces new in-scope capabilities or promotes Deferred items, persist those changes with `otto_requirement_save` or `otto_requirement_update`, then call `otto_summary_save` with `artifact_type: "REQUIREMENTS"` so `.otto/workflow/REQUIREMENTS.md` renders from DB rows.
+5. If discussion produced decisions relevant to existing work, call `otto_decision_save` for each decision; the tool regenerates `.otto/workflow/DECISIONS.md`.
+6. If `.otto/workflow/QUEUE.md` is maintained, update it only as an audit projection of queued intent. Runtime queue state must come from the DB-backed milestone/context tool calls above.
 7. {{commitInstruction}}
 
 **Do NOT write roadmaps for queued milestones.**
-**Do NOT update `.gsd/STATE.md`.**
+**Do NOT update `.otto/workflow/STATE.md`.**
 
 After writing the files and committing, say exactly: "Queued N milestone(s). Auto-mode will pick them up after current work completes." — nothing else.
 

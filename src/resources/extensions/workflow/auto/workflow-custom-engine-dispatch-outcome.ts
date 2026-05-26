@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Applies custom-engine dispatch decisions to auto-mode loop side effects.
 
 import type { EngineDispatchDecision } from "./workflow-kernel.js";

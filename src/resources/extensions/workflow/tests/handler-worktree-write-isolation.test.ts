@@ -1,6 +1,6 @@
 /**
- * Regression: when /gsd handlers run with cwd inside a worktree, writes must
- * land in the worktree's .gsd/, not the parent project's .gsd/.
+ * Regression: when /otto handlers run with cwd inside a worktree, writes must
+ * land in the worktree's .otto/workflow/, not the parent project's .otto/workflow/.
  *
  * The fix in 01464a97 replaced `process.cwd()` with `projectRoot()` to block
  * $HOME pollution, but `projectRoot()` walks UP from a worktree path to the
@@ -23,10 +23,10 @@ describe("handlers preserve worktree cwd via currentDirectoryRoot()", () => {
 
   beforeEach(() => {
     project = realpathSync(mkdtempSync(join(tmpdir(), "gsd-wt-iso-")));
-    mkdirSync(join(project, ".gsd"), { recursive: true });
+    mkdirSync(join(project, ".otto/workflow"), { recursive: true });
     mkdirSync(join(project, ".git"), { recursive: true });
-    worktree = join(project, ".gsd", "worktrees", "M001");
-    mkdirSync(join(worktree, ".gsd"), { recursive: true });
+    worktree = join(project, ".otto/workflow", "worktrees", "M001");
+    mkdirSync(join(worktree, ".otto/workflow"), { recursive: true });
   });
 
   afterEach(() => {

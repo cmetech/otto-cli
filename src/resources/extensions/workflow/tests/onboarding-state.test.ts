@@ -1,4 +1,4 @@
-// GSD — Onboarding state record tests.
+// OTTO — Onboarding state record tests.
 // Verifies the explicit completion record (onboarding-state.ts) and step-evolution
 // behavior in setup-catalog.ts, including stale-resume fallback and version semantics.
 
@@ -8,10 +8,10 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-// Tests must isolate per-process to avoid clobbering the user's real ~/.gsd/agent/onboarding.json.
-// We point GSD_HOME at a fresh tmp dir before importing the modules under test.
+// Tests must isolate per-process to avoid clobbering the user's real ~/.otto/workflow/agent/onboarding.json.
+// We point OTTO_HOME at a fresh tmp dir before importing the modules under test.
 const tmpHome = mkdtempSync(join(tmpdir(), "gsd-onboarding-state-test-"));
-process.env.GSD_HOME = tmpHome;
+process.env.OTTO_HOME = tmpHome;
 
 const state = await import("../onboarding-state.ts");
 const catalog = await import("../setup-catalog.ts");

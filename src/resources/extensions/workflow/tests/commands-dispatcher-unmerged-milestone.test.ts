@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Dispatcher regression tests for completed-but-unmerged milestone branches.
 
 import test from "node:test";
@@ -69,8 +69,8 @@ function makeMockPi(): { pi: any; messages: SentMessage[] } {
 }
 
 function seedCompletedUnmergedMilestone(base: string): void {
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M008", title: "Live Text Search", status: "complete" });
 
   git(base, "checkout", "-b", "milestone/M008");
@@ -84,24 +84,24 @@ function seedCompletedUnmergedMilestone(base: string): void {
 }
 
 function writeWorktreePreferencesAndRoadmap(base: string): void {
-  mkdirSync(join(base, ".gsd", "milestones", "M008"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M008"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "PREFERENCES.md"),
+    join(base, ".otto/workflow", "PREFERENCES.md"),
     "---\ngit:\n  isolation: worktree\n---\n",
   );
   writeFileSync(
-    join(base, ".gsd", "milestones", "M008", "M008-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M008", "M008-ROADMAP.md"),
     "# M008 Roadmap\n\n- [x] S01: Live Text Search\n",
   );
 }
 
 function seedRegisteredCompletedWorktree(base: string): void {
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M008", title: "Live Text Search", status: "complete" });
   writeWorktreePreferencesAndRoadmap(base);
 
-  const worktreePath = join(base, ".gsd", "worktrees", "M008");
+  const worktreePath = join(base, ".otto/workflow", "worktrees", "M008");
   mkdirSync(dirname(worktreePath), { recursive: true });
   git(base, "worktree", "add", "-b", "milestone/M008", worktreePath, "main");
   writeFileSync(join(worktreePath, "index.html"), "<h1>M008</h1>\n");
@@ -110,7 +110,7 @@ function seedRegisteredCompletedWorktree(base: string): void {
   invalidateStateCache();
 }
 
-test("dispatcher blocks bare /gsd when a completed milestone branch is unmerged", async () => {
+test("dispatcher blocks bare /otto when a completed milestone branch is unmerged", async () => {
   const base = makeTempRepo("gsd-dispatch-unmerged-");
   try {
     seedCompletedUnmergedMilestone(base);
@@ -123,7 +123,7 @@ test("dispatcher blocks bare /gsd when a completed milestone branch is unmerged"
     assert.equal(messages.length, 1);
     assert.equal(messages[0].customType, "gsd-command-block");
     assert.equal(messages[0].display, true);
-    assert.match(messages[0].content, /\/gsd cannot start new workflow work/);
+    assert.match(messages[0].content, /\/otto cannot start new workflow work/);
     assert.match(messages[0].content, /M008 is complete but not merged/);
     assert.match(messages[0].content, /index\.html/);
     assert.ok(widgets.some(([key, value]) => key === "gsd-outcome" && value === undefined));

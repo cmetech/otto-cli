@@ -7,11 +7,11 @@
 
 ## Context
 
-ADR-001 and ADR-003 reference an "external state directory" ADR-002 that was never written as a standalone document. The idea, as carried in those ADRs, was to move `.gsd/` runtime state out of the working tree so that branch checkouts, slice merges, and worktree teardown could not clobber in-flight planning artifacts.
+ADR-001 and ADR-003 reference an "external state directory" ADR-002 that was never written as a standalone document. The idea, as carried in those ADRs, was to move `.otto/workflow/` runtime state out of the working tree so that branch checkouts, slice merges, and worktree teardown could not clobber in-flight planning artifacts.
 
 ## Decision
 
-**Not adopted.** GSD instead moved to a **DB-authoritative runtime model**: the project-root database is canonical, and `.gsd/**` markdown files are rendered projections of that database. With the database living outside the per-worktree working set and projections regenerated on demand, the cross-branch state-clobbering problem an external state directory was meant to solve no longer presents the same shape.
+**Not adopted.** OTTO instead moved to a **DB-authoritative runtime model**: the project-root database is canonical, and `.otto/workflow/**` markdown files are rendered projections of that database. With the database living outside the per-worktree working set and projections regenerated on demand, the cross-branch state-clobbering problem an external state directory was meant to solve no longer presents the same shape.
 
 The worktree-level concerns this ADR would have touched were addressed by:
 
@@ -21,4 +21,4 @@ The worktree-level concerns this ADR would have touched were addressed by:
 ## Consequences
 
 - Cross-references to "ADR-002" from ADR-001 and ADR-003 should be read as "the work that became ADR-016/017."
-- No external state directory exists or is planned. `.gsd/` artifacts remain inside the working tree as projections.
+- No external state directory exists or is planned. `.otto/workflow/` artifacts remain inside the working tree as projections.

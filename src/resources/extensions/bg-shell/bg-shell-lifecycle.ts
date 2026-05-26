@@ -7,11 +7,11 @@ import type {
 	ExtensionAPI,
 	ExtensionContext,
 	Theme,
-} from "@loop24/pi-coding-agent";
+} from "@otto/pi-coding-agent";
 import {
 	truncateToWidth,
 	visibleWidth,
-} from "@loop24/pi-tui";
+} from "@otto/pi-tui";
 
 import {
 	processes,
@@ -44,7 +44,7 @@ export function registerBgShellLifecycle(pi: ExtensionAPI, state: BgShellSharedS
 		cleanupAll();
 		// Also kill bash-tool spawned children that bg-shell doesn't track
 		try {
-			const { listDescendants } = require("@loop24/native") as typeof import("@loop24/native");
+			const { listDescendants } = require("@otto/native") as typeof import("@otto/native");
 			const descendants = listDescendants(process.pid);
 			for (const childPid of descendants) {
 				try { process.kill(childPid, "SIGKILL"); } catch {}

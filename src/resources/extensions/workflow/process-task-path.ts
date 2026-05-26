@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Canonical process recommendations for routing work by task size.
 
 export type ProcessTaskSize =
@@ -22,7 +22,7 @@ const TASK_PATHS: Record<ProcessTaskSize, ProcessTaskPath> = {
     taskSize: "hotfix",
     label: "Hotfix",
     templateId: "hotfix",
-    command: "/gsd start hotfix <description>",
+    command: "/otto start hotfix <description>",
     phases: ["fix", "ship"],
     guidance: "Use for urgent production fixes that need minimal ceremony and fast verification.",
   },
@@ -30,7 +30,7 @@ const TASK_PATHS: Record<ProcessTaskSize, ProcessTaskPath> = {
     taskSize: "bugfix",
     label: "Bugfix",
     templateId: "bugfix",
-    command: "/gsd start bugfix <description> --issue <ref>",
+    command: "/otto start bugfix <description> --issue <ref>",
     phases: ["triage", "fix", "verify", "ship"],
     guidance: "Use for reproducible defects where a linked issue and regression test are expected.",
   },
@@ -38,7 +38,7 @@ const TASK_PATHS: Record<ProcessTaskSize, ProcessTaskPath> = {
     taskSize: "small-feature",
     label: "Small Feature",
     templateId: "small-feature",
-    command: "/gsd start small-feature <description>",
+    command: "/otto start small-feature <description>",
     phases: ["scope", "plan", "implement", "verify"],
     guidance: "Use for contained feature work that does not need the full milestone machinery.",
   },
@@ -46,7 +46,7 @@ const TASK_PATHS: Record<ProcessTaskSize, ProcessTaskPath> = {
     taskSize: "large-feature",
     label: "Large Feature",
     templateId: "full-project",
-    command: "/gsd discuss <description>, then /gsd auto",
+    command: "/otto discuss <description>, then /otto auto",
     phases: ["discuss", "plan", "execute", "verify"],
     guidance: "Use for multi-slice work that should run through the DB-backed milestone flow.",
   },
@@ -54,7 +54,7 @@ const TASK_PATHS: Record<ProcessTaskSize, ProcessTaskPath> = {
     taskSize: "architecture-change",
     label: "Architecture Change",
     templateId: "refactor",
-    command: "/gsd start refactor <description>",
+    command: "/otto start refactor <description>",
     phases: ["inventory", "plan", "migrate", "verify"],
     guidance: "Use for structural changes that require inventory, compatibility notes, and staged verification.",
   },

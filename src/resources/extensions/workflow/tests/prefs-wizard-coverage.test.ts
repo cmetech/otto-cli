@@ -87,7 +87,7 @@ const PREF_SAMPLE_VALUES: Record<string, unknown> = {
   context_window_override: 128000,
   context_mode: { enabled: true },
   planning_depth: "deep",
-  claude_code_mcp: { per_model: { "claude-haiku": { allowed_servers: ["gsd-workflow"] } } },
+  claude_code_mcp: { per_model: { "claude-haiku": { allowed_servers: ["otto-workflow"] } } },
   workspace: {
     mode: "parent",
     repositories: {

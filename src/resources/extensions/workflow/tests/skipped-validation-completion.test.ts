@@ -24,7 +24,7 @@ const COMPLETE_RULE = "completing-milestone → complete-milestone";
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-skipped-validation-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
   writeFileSync(join(base, "app.js"), "export const shipped = true;\n");
   return base;
 }
@@ -36,7 +36,7 @@ function cleanup(base: string): void {
 }
 
 function seedMilestone(base: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({
     id: "M001",
     title: "Preference-skipped validation milestone",
@@ -71,7 +71,7 @@ function seedMilestone(base: string): void {
 }
 
 function writeFixtureFiles(base: string): void {
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   writeFileSync(
     join(milestoneDir, "M001-ROADMAP.md"),
     [

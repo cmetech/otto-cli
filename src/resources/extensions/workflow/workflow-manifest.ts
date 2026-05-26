@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: State manifest snapshot and restore orchestration for workflow data.
 
 import {
@@ -202,13 +202,13 @@ export function snapshotState(): StateManifest {
 // ─── writeManifest ───────────────────────────────────────────────────────
 
 /**
- * Write current DB state to .gsd/state-manifest.json via atomicWriteSync.
+ * Write current DB state to .otto/workflow/state-manifest.json via atomicWriteSync.
  * Uses JSON.stringify with 2-space indent for git three-way merge friendliness.
  */
 export function writeManifest(basePath: string): void {
   const manifest = snapshotState();
   const json = JSON.stringify(manifest, null, 2);
-  const dir = join(basePath, ".gsd");
+  const dir = join(basePath, ".otto/workflow");
   mkdirSync(dir, { recursive: true });
   atomicWriteSync(join(dir, "state-manifest.json"), json);
 }
@@ -219,7 +219,7 @@ export function writeManifest(basePath: string): void {
  * Read state-manifest.json and return parsed manifest, or null if not found.
  */
 export function readManifest(basePath: string): StateManifest | null {
-  const manifestPath = join(basePath, ".gsd", "state-manifest.json");
+  const manifestPath = join(basePath, ".otto/workflow", "state-manifest.json");
 
   if (!existsSync(manifestPath)) {
     return null;

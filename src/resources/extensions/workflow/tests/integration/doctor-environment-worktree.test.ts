@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
  * absent by design (worktrees symlink to the project root's node_modules and
  * the symlink may not yet exist at check time).
  *
- * Fix: when the basePath contains `.gsd/worktrees/`, resolve the project root
+ * Fix: when the basePath contains `.otto/workflow/worktrees/`, resolve the project root
  * and check its node_modules instead.
  */
 
@@ -45,8 +45,8 @@ describe('doctor-environment-worktree', async () => {
       mkdirSync(join(projectRoot, "node_modules"), { recursive: true });
       cleanups.push(projectRoot);
 
-      // Simulate a worktree inside .gsd/worktrees/<name>/
-      const worktreeDir = join(projectRoot, ".gsd", "worktrees", "slice-abc");
+      // Simulate a worktree inside .otto/workflow/worktrees/<name>/
+      const worktreeDir = join(projectRoot, ".otto/workflow", "worktrees", "slice-abc");
       mkdirSync(worktreeDir, { recursive: true });
       writeFileSync(
         join(worktreeDir, "package.json"),
@@ -73,7 +73,7 @@ describe('doctor-environment-worktree', async () => {
       cleanups.push(projectRoot);
       // No node_modules at project root either
 
-      const worktreeDir = join(projectRoot, ".gsd", "worktrees", "slice-xyz");
+      const worktreeDir = join(projectRoot, ".otto/workflow", "worktrees", "slice-xyz");
       mkdirSync(worktreeDir, { recursive: true });
       writeFileSync(
         join(worktreeDir, "package.json"),
@@ -94,7 +94,7 @@ describe('doctor-environment-worktree', async () => {
       mkdirSync(join(projectRoot, "node_modules"), { recursive: true });
       cleanups.push(projectRoot);
 
-      const worktreeDir = join(projectRoot, ".gsd", "worktrees", "slice-pr");
+      const worktreeDir = join(projectRoot, ".otto/workflow", "worktrees", "slice-pr");
       mkdirSync(worktreeDir, { recursive: true });
       writeFileSync(
         join(worktreeDir, "package.json"),
@@ -123,35 +123,35 @@ describe('doctor-environment-worktree', async () => {
       assert.deepStrictEqual(depsCheck!.status, "error", "missing node_modules is an error for non-worktree");
     });
 
-    // ── GSD_WORKTREE env var detection ─────────────────────────────────
-    test('GSD_WORKTREE env: should resolve project root node_modules', () => {
+    // ── OTTO_WORKTREE env var detection ─────────────────────────────────
+    test('OTTO_WORKTREE env: should resolve project root node_modules', () => {
       const projectRoot = createDir({
         "package.json": JSON.stringify({ name: "test-project" }),
       });
       mkdirSync(join(projectRoot, "node_modules"), { recursive: true });
       cleanups.push(projectRoot);
 
-      // Create a directory that doesn't have .gsd/worktrees in path but
-      // has GSD_WORKTREE env pointing to project root
+      // Create a directory that doesn't have .otto/workflow/worktrees in path but
+      // has OTTO_WORKTREE env pointing to project root
       const someDir = createDir({
         "package.json": JSON.stringify({ name: "test-project" }),
       });
       cleanups.push(someDir);
 
-      const origEnv = process.env.GSD_WORKTREE;
+      const origEnv = process.env.OTTO_WORKTREE;
       try {
-        process.env.GSD_WORKTREE = projectRoot;
+        process.env.OTTO_WORKTREE = projectRoot;
         const results = runEnvironmentChecks(someDir);
         const depsCheck = results.find(r => r.name === "dependencies");
         assert.ok(
           depsCheck === undefined || depsCheck.status !== "error",
-          "GSD_WORKTREE env allows fallback to project root node_modules",
+          "OTTO_WORKTREE env allows fallback to project root node_modules",
         );
       } finally {
         if (origEnv === undefined) {
-          delete process.env.GSD_WORKTREE;
+          delete process.env.OTTO_WORKTREE;
         } else {
-          process.env.GSD_WORKTREE = origEnv;
+          process.env.OTTO_WORKTREE = origEnv;
         }
       }
     });

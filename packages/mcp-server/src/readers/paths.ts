@@ -1,4 +1,4 @@
-// MCP Server — .loop24/ directory resolution
+// MCP Server — .otto/ directory resolution
 
 import { existsSync, statSync, readdirSync } from 'node:fs';
 import { join, resolve, dirname, basename } from 'node:path';
@@ -8,10 +8,10 @@ import { execFileSync } from 'node:child_process';
 // Caching
 // ---------------------------------------------------------------------------
 //
-// Read-only MCP tools (gsd_progress, gsd_roadmap, gsd_doctor, …) hammer the
-// filesystem on every call: gsd_roadmap alone resolves milestone directories
+// Read-only MCP tools (otto_progress, otto_roadmap, otto_doctor, …) hammer the
+// filesystem on every call: otto_roadmap alone resolves milestone directories
 // 5–6× per milestone, and resolveWorkflowRoot can spawn `git rev-parse` for
-// non-direct .loop24/ layouts. Without caching, an MCP host pipelining several
+// non-direct .otto/ layouts. Without caching, an MCP host pipelining several
 // tool calls blocks the event loop on dozens of redundant readdir/stat
 // syscalls per request.
 //
@@ -111,13 +111,13 @@ export function _resetReaderCaches(): void {
 }
 
 /**
- * Resolve the .loop24/ root directory for a project.
+ * Resolve the .otto/ root directory for a project.
  *
  * Probes in order:
- *   1. projectDir/.gsd (fast path)
- *   2. git repo root/.gsd
+ *   1. projectDir/.otto/workflow (fast path)
+ *   2. git repo root/.otto/workflow
  *   3. Walk up from projectDir
- *   4. Fallback: projectDir/.gsd (even if missing — for init)
+ *   4. Fallback: projectDir/.otto/workflow (even if missing — for init)
  */
 export function resolveWorkflowRoot(projectDir: string): string {
   const resolved = resolve(projectDir);
@@ -125,8 +125,8 @@ export function resolveWorkflowRoot(projectDir: string): string {
   const cached = cachedWorkflowRoot(resolved);
   if (cached) return cached;
 
-  // Fast path: .loop24/ in the given directory
-  const direct = join(resolved, '.gsd');
+  // Fast path: .otto/ in the given directory
+  const direct = join(resolved, '.otto', 'workflow');
   if (existsSync(direct) && statSync(direct).isDirectory()) {
     rememberWorkflowRoot(resolved, direct);
     return direct;
@@ -139,7 +139,7 @@ export function resolveWorkflowRoot(projectDir: string): string {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
     }).trim();
-    const gitGsd = join(gitRoot, '.gsd');
+    const gitGsd = join(gitRoot, '.otto', 'workflow');
     if (existsSync(gitGsd) && statSync(gitGsd).isDirectory()) {
       rememberWorkflowRoot(resolved, gitGsd);
       return gitGsd;
@@ -151,7 +151,7 @@ export function resolveWorkflowRoot(projectDir: string): string {
   // Walk up from projectDir
   let dir = resolved;
   while (dir !== dirname(dir)) {
-    const candidate = join(dir, '.gsd');
+    const candidate = join(dir, '.otto', 'workflow');
     if (existsSync(candidate) && statSync(candidate).isDirectory()) {
       rememberWorkflowRoot(resolved, candidate);
       return candidate;
@@ -163,7 +163,7 @@ export function resolveWorkflowRoot(projectDir: string): string {
   return direct;
 }
 
-/** Resolve path to a .gsd/ root file (STATE.md, KNOWLEDGE.md, etc.) */
+/** Resolve path to a .otto/workflow/ root file (STATE.md, KNOWLEDGE.md, etc.) */
 export function resolveRootFile(workflowRoot: string, name: string): string {
   return join(workflowRoot, name);
 }

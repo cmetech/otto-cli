@@ -17,8 +17,8 @@ import { syncWorktreeStateBack } from "../auto-worktree.ts";
 test("#2684: syncWorktreeStateBack does not overwrite project PREFERENCES.md", () => {
   const mainBase = mkdtempSync(join(tmpdir(), "gsd-wt-prefs-main-"));
   const wtBase = mkdtempSync(join(tmpdir(), "gsd-wt-prefs-worktree-"));
-  const mainGsd = join(mainBase, ".gsd");
-  const wtGsd = join(wtBase, ".gsd");
+  const mainGsd = join(mainBase, ".otto/workflow");
+  const wtGsd = join(wtBase, ".otto/workflow");
   mkdirSync(mainGsd, { recursive: true });
   mkdirSync(wtGsd, { recursive: true });
 
@@ -39,15 +39,15 @@ test("#2684: syncWorktreeStateBack does not overwrite project PREFERENCES.md", (
 });
 
 // Phase C: copyPlanningArtifacts was deleted. Worktrees no longer
-// maintain a parallel .gsd/ projection; preference seeding is now
+// maintain a parallel .otto/workflow/ projection; preference seeding is now
 // handled exclusively by syncWorkflowStateToWorktree() (covered below).
 
 test("syncWorkflowStateToWorktree copies canonical PREFERENCES.md", async () => {
   // Functional test: create a mock source and destination, call the sync
   const srcBase = mkdtempSync(join(tmpdir(), "gsd-wt-prefs-src-"));
   const dstBase = mkdtempSync(join(tmpdir(), "gsd-wt-prefs-dst-"));
-  const srcGsd = join(srcBase, ".gsd");
-  const dstGsd = join(dstBase, ".gsd");
+  const srcGsd = join(srcBase, ".otto/workflow");
+  const dstGsd = join(dstBase, ".otto/workflow");
   mkdirSync(srcGsd, { recursive: true });
   mkdirSync(dstGsd, { recursive: true });
 
@@ -82,8 +82,8 @@ test("syncWorkflowStateToWorktree copies canonical PREFERENCES.md", async () => 
 test("syncWorkflowStateToWorktree falls back to legacy lowercase preferences.md", async () => {
   const srcBase = mkdtempSync(join(tmpdir(), "gsd-wt-prefs-legacy-src-"));
   const dstBase = mkdtempSync(join(tmpdir(), "gsd-wt-prefs-legacy-dst-"));
-  const srcGsd = join(srcBase, ".gsd");
-  const dstGsd = join(dstBase, ".gsd");
+  const srcGsd = join(srcBase, ".otto/workflow");
+  const dstGsd = join(dstBase, ".otto/workflow");
   mkdirSync(srcGsd, { recursive: true });
   mkdirSync(dstGsd, { recursive: true });
 

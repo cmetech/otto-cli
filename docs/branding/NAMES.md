@@ -1,6 +1,6 @@
-# loop24 — Product Naming
+# otto — Product Naming
 
-**Project context:** loop24 is the team/parent brand. The product is a personal-laptop coding & research worker assistant. LLM calls route through `kiro-cli`. Automations are triggered from a local Langflow instance.
+**Project context:** otto is the team/parent brand. The product is a personal-laptop coding & research worker assistant. LLM calls route through `kiro-cli`. Automations are triggered from a local Langflow instance.
 
 We're looking for a **human name** (à la OSCAR) that is short, catchy, and works as a backronym tied to the product's intent.
 
@@ -8,7 +8,7 @@ We're looking for a **human name** (à la OSCAR) that is short, catchy, and work
 
 ## Round 1 — Loop / Automation / Routing flavor
 
-These lean into the *loop24*, *kiro routing*, and *local automation* axes.
+These lean into the *otto*, *kiro routing*, and *local automation* axes.
 
 | Name | Backronym | Hook |
 |------|-----------|------|
@@ -36,19 +36,19 @@ These lean into the *research worker*, *analysis*, and *knowledge* axes.
 
 ---
 
-## Round 3 — The mascot pivot: OTTER
+## Round 3 — The mascot pivot: OTTO
 
-After rounds 1 and 2, the conversation surfaced **OTTER** — the strongest candidate by a wide margin and a clear sibling to the existing **OSCAR** product.
+After rounds 1 and 2, the conversation surfaced **OTTO** — the strongest candidate by a wide margin and a clear sibling to the existing **OSCAR** product.
 
-### Why OTTER lands
+### Why OTTO lands
 
-- **Pairs naturally with OSCAR.** Two-syllable, ends in `-R`, anglo, named-teammate feel. OSCAR + OTTER reads like a roster, not a coincidence.
-- **Otters are the only non-primate mammal that habitually uses tools.** They carry a favorite rock in a pouch under one armpit and crack shells with it. That is *literally* the product: a worker that carries and wields tools (kiro-cli, Langflow) to crack open coding and research problems.
-- **Otters raft together by holding paws so they don't drift apart.** Direct visual + semantic line to *loop24* — connection, the loop holds.
-- **Otters anchor themselves in kelp to sleep without drifting.** Maps to "runs locally on your laptop, doesn't drift to the cloud."
+- **Pairs naturally with OSCAR.** Two-syllable, ends in `-R`, anglo, named-teammate feel. OSCAR + OTTO reads like a roster, not a coincidence.
+- **OTTOs are the only non-primate mammal that habitually uses tools.** They carry a favorite rock in a pouch under one armpit and crack shells with it. That is *literally* the product: a worker that carries and wields tools (kiro-cli, Langflow) to crack open coding and research problems.
+- **OTTOs raft together by holding paws so they don't drift apart.** Direct visual + semantic line to *otto* — connection, the loop holds.
+- **OTTOs anchor themselves in kelp to sleep without drifting.** Maps to "runs locally on your laptop, doesn't drift to the cloud."
 - **Personality:** clever, playful, persistent, dexterous. A distinctive brand voice rather than another generic capable-assistant tone.
 
-### OTTER backronym options
+### OTTO backronym options
 
 | # | Expansion | Notes |
 |---|-----------|-------|
@@ -62,7 +62,7 @@ After rounds 1 and 2, the conversation surfaced **OTTER** — the strongest cand
 
 ## Final Recommendation
 
-**OTTER — *Orchestrating Tools, Tasks, Execution & Research***
+**OTTO — *Orchestrating Tools, Tasks, Execution & Research***
 
 The four nouns map cleanly to the product's four pillars:
 - **Tools** → kiro-cli, MCP servers, language tooling
@@ -70,17 +70,17 @@ The four nouns map cleanly to the product's four pillars:
 - **Execution** → local-laptop runtime
 - **Research** → investigation, analysis, synthesis
 
-OSCAR + OTTER becomes a coherent product family. The mascot gives the brand a personality that pure-acronym names (OTTO, SAGE, IRIS, ECHO, ADA) can't match, and the tool-using behavior is a near-perfect product metaphor.
+OSCAR + OTTO becomes a coherent product family. The mascot gives the brand a personality that pure-acronym names (OTTO, SAGE, IRIS, ECHO, ADA) can't match, and the tool-using behavior is a near-perfect product metaphor.
 
 ---
 
 ## Previously shortlisted (also considered)
 
-Kept here for reference and as a fallback bench if OTTER hits a trademark or naming snag.
+Kept here for reference and as a fallback bench if OTTO hits a trademark or naming snag.
 
 | Name | Backronym | Flavor | Note |
 |------|-----------|--------|------|
-| OTTO | Orchestrated Task & Tooling Operator | Automation / loop | Palindrome mirrors loop. Strong runner-up if OTTER is blocked. |
+| OTTO | Orchestrated Task & Tooling Operator | Automation / loop | Palindrome mirrors loop. Strong runner-up if OTTO is blocked. |
 | SAGE | Scholarly Agent Guiding Engineers | Research / wisdom | Dictionary meaning *is* the pitch. Check trademark (SAP/Sage). |
 | IRIS | Investigative Research & Iteration Synthesizer | Research + routing | Messenger goddess + aperture. Heavily used acronym in gov/academia. |
 | ECHO | Engineered Coding Helper & Orchestrator | Automation / loop | Loop semantics. Amazon Echo mindshare collision. |
@@ -90,4 +90,4 @@ Kept here for reference and as a fallback bench if OTTER hits a trademark or nam
 
 ## Suggested next step
 
-Lock in **OTTER** + backronym #1 → draft tagline + 1-paragraph brand blurb → commission/generate the logo. Logo prompts for OTTER (three concept directions) plus the previously shortlisted five live in [`LOGO-PROMPTS.md`](./LOGO-PROMPTS.md).
+Lock in **OTTO** + backronym #1 → draft tagline + 1-paragraph brand blurb → commission/generate the logo. Logo prompts for OTTO (three concept directions) plus the previously shortlisted five live in [`LOGO-PROMPTS.md`](./LOGO-PROMPTS.md).

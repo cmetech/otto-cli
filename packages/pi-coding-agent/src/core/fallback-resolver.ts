@@ -9,7 +9,7 @@
  * restoration: checking if a higher-priority provider has recovered before each request.
  */
 
-import type { Api, Model } from "@loop24/pi-ai";
+import type { Api, Model } from "@otto/pi-ai";
 import type { AuthStorage, UsageLimitErrorType } from "./auth-storage.js";
 import type { ModelRegistry } from "./model-registry.js";
 import type { FallbackChainEntry, SettingsManager } from "./settings-manager.js";

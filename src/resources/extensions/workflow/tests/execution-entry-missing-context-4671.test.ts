@@ -45,7 +45,7 @@ function buildState(phase: Phase): WorkflowDbState {
 
 function makeBasePath(prefix: string): string {
   const dir = mkdtempSync(join(tmpdir(), `gsd-4671-${prefix}-`));
-  mkdirSync(join(dir, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
   return dir;
 }
 
@@ -89,7 +89,7 @@ describe("#4671 execution-entry phase missing-context recovery", () => {
     const basePath = makeBasePath("has-context");
     try {
       writeFileSync(
-        join(basePath, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+        join(basePath, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
         "# M001 Context\n\nSome real context.\n",
       );
       const action = await findRule().match(buildCtx(basePath, buildState("executing")));
@@ -103,7 +103,7 @@ describe("#4671 execution-entry phase missing-context recovery", () => {
     const basePath = makeBasePath("has-plan");
     try {
       writeFileSync(
-        join(basePath, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+        join(basePath, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
         "# S01 Plan\n\n- [ ] **T01**: work\n",
       );
       const action = await findRule().match(buildCtx(basePath, buildState("executing")));
@@ -113,16 +113,16 @@ describe("#4671 execution-entry phase missing-context recovery", () => {
     }
   });
 
-  test("phase=executing accepts finalized CONTEXT.md from GSD_PROJECT_ROOT fallback", async () => {
+  test("phase=executing accepts finalized CONTEXT.md from OTTO_PROJECT_ROOT fallback", async () => {
     const projectRoot = makeBasePath("project-root-context");
     const worktreeBase = makeBasePath("worktree-context");
-    const prevProjectRoot = process.env.GSD_PROJECT_ROOT;
+    const prevProjectRoot = process.env.OTTO_PROJECT_ROOT;
     try {
       writeFileSync(
-        join(projectRoot, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+        join(projectRoot, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
         "# M001 Context\n\nFinalized context at project root.\n",
       );
-      process.env.GSD_PROJECT_ROOT = projectRoot;
+      process.env.OTTO_PROJECT_ROOT = projectRoot;
 
       const action = await findRule().match(buildCtx(worktreeBase, buildState("executing")));
       assert.strictEqual(
@@ -132,9 +132,9 @@ describe("#4671 execution-entry phase missing-context recovery", () => {
       );
     } finally {
       if (prevProjectRoot === undefined) {
-        delete process.env.GSD_PROJECT_ROOT;
+        delete process.env.OTTO_PROJECT_ROOT;
       } else {
-        process.env.GSD_PROJECT_ROOT = prevProjectRoot;
+        process.env.OTTO_PROJECT_ROOT = prevProjectRoot;
       }
       rmSync(projectRoot, { recursive: true, force: true });
       rmSync(worktreeBase, { recursive: true, force: true });
@@ -159,7 +159,7 @@ describe("#4671 execution-entry phase missing-context recovery", () => {
     const basePath = makeBasePath("empty-context");
     try {
       writeFileSync(
-        join(basePath, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+        join(basePath, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
         "   \n\t\n",
       );
       const action = await findRule().match(buildCtx(basePath, buildState("summarizing")));

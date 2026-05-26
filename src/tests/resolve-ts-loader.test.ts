@@ -6,7 +6,7 @@ import { load as loadWithTestLoader, resolve as resolveWithTestLoader } from "..
 const nextResolve = async (specifier: string) => ({ url: specifier })
 
 const cases = [
-  ["@loop24/pi-coding-agent", "../../packages/pi-coding-agent/src/index.ts"],
+  ["@otto/pi-coding-agent", "../../packages/pi-coding-agent/src/index.ts"],
 ] as const
 
 test("resolve-ts loader redirects pi-coding-agent bare imports to the workspace source entrypoint", async () => {

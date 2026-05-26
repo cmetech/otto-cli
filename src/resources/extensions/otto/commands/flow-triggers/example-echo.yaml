@@ -1,0 +1,21 @@
+# Example flow-trigger command. Replace flow.id with an actual flow on
+# your local LangFlow server, then invoke with:
+#   /otto-example-echo --msg "hello world"
+#
+# To list available flow IDs:
+#   curl -sf -H "x-api-key: $LANGFLOW_API_KEY" http://127.0.0.1:7860/api/v1/flows/ | python3 -m json.tool | head -50
+name: example-echo
+description: Run the example LangFlow echo flow with a single message
+flow:
+  id: PUT-YOUR-FLOW-ID-HERE
+inputs:
+  - name: msg
+    type: string
+    required: true
+    flowField: input_value
+execution:
+  mode: poll
+  timeoutMs: 30000
+output:
+  format: markdown
+  render: inline

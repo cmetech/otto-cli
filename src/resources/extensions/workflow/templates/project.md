@@ -31,7 +31,7 @@
 
 ## Capability Contract
 
-See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement status, and coverage mapping.
+See `.otto/workflow/REQUIREMENTS.md` for the explicit capability contract, requirement status, and coverage mapping.
 
 ## Milestone Sequence
 

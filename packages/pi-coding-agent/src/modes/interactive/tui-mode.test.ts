@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for adaptive TUI mode selection and command-center layout rendering.
 
 import assert from "node:assert/strict";
@@ -58,7 +58,7 @@ describe("AdaptiveLayoutComponent", () => {
 		const plain = layout.render(120).map(stripAnsi);
 
 		assert.match(plain[0], /^╭─+╮$/, "workflow layout should start with a rounded frame");
-		assert.ok(plain.some((line) => line.includes("GSD Command Center")), "workflow title should render");
+		assert.ok(plain.some((line) => line.includes("OTTO Command Center")), "workflow title should render");
 		assert.ok(plain.some((line) => line.includes("Status")), "status row should render");
 		assert.ok(plain.some((line) => line.includes("Tools")), "tools row should render");
 		assert.ok(!plain.some((line) => line.includes("signals")), "old signals title should not render");

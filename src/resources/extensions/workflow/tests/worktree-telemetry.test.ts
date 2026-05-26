@@ -27,7 +27,7 @@ import { queryJournal } from "../journal.ts";
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-tel-test-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -225,7 +225,7 @@ test("resolveCanonicalMilestoneRoot emits canonical-root-redirect on redirect", 
   const base = makeTmpBase();
   try {
     // Create the live-worktree shape the resolver looks for
-    const wtDir = join(base, ".gsd", "worktrees", "M001");
+    const wtDir = join(base, ".otto/workflow", "worktrees", "M001");
     mkdirSync(wtDir, { recursive: true });
     writeFileSync(join(wtDir, ".git"), `gitdir: ${join(base, ".git", "worktrees", "M001")}\n`);
 

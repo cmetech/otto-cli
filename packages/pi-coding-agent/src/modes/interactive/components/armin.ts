@@ -1,9 +1,9 @@
-// LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/armin.ts - Animated Armin easter egg component.
+// OTTO + packages/pi-coding-agent/src/modes/interactive/components/armin.ts - Animated Armin easter egg component.
 /**
  * Armin says hi! A fun easter egg with animated XBM art.
  */
 
-import { type TUI, visibleWidth } from "@loop24/pi-tui";
+import { type TUI, visibleWidth } from "@otto/pi-tui";
 import { theme } from "../theme/theme.js";
 import { AnimatedComponent } from "./animated-component.js";
 

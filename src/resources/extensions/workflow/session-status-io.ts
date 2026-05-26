@@ -100,7 +100,7 @@ export function readSessionStatus(basePath: string, milestoneId: string): Sessio
   return loadJsonFileOrNull(statusPath(basePath, milestoneId), isSessionStatus);
 }
 
-/** Read all session status files from .gsd/parallel/. */
+/** Read all session status files from .otto/workflow/parallel/. */
 export function readAllSessionStatuses(basePath: string): SessionStatus[] {
   const dir = parallelDir(basePath);
   if (!existsSync(dir)) return [];

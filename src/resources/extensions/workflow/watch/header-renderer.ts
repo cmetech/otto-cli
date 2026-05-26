@@ -1,11 +1,11 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Watch-mode terminal header and splash renderer for the workflow project status.
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { visibleWidth, truncateToWidth } from "@loop24/pi-tui";
+import { visibleWidth, truncateToWidth } from "@otto/pi-tui";
 import { loadEffectiveGSDPreferences } from "../preferences.js";
 import { workflowHome } from "../home.js";
 import { splashPalette } from "./splash-palette.js";
@@ -142,14 +142,14 @@ export function readGitBranch(projectRoot: string): string {
 }
 
 /**
- * Read MCP server names from .mcp.json, .gsd/mcp.json, and the global
- * ~/.otto/mcp.json (or $GSD_HOME/mcp.json).
+ * Read MCP server names from .mcp.json, .otto/workflow/mcp.json, and the global
+ * ~/.otto/mcp.json (or $OTTO_HOME/mcp.json).
  * Returns array of server name strings.
  */
 export function readMcpServerNames(projectRoot: string): string[] {
   const configPaths = [
     join(projectRoot, ".mcp.json"),
-    join(projectRoot, ".gsd", "mcp.json"),
+    join(projectRoot, ".otto/workflow", "mcp.json"),
     join(workflowHome(), "mcp.json"),
   ];
   const names: string[] = [];
@@ -264,7 +264,7 @@ export function renderHeaderLines(data: HeaderData, width: number): string[] {
     ),
     rightAlign(
       `${color("Project", colors.muted)} ${color(data.directory, colors.text)}`,
-      `${color("Command", colors.muted)} ${color("/gsd start", colors.accent)}`,
+      `${color("Command", colors.muted)} ${color("/otto start", colors.accent)}`,
       panelWidth,
     ),
     rightAlign(
@@ -283,8 +283,8 @@ export function renderHeaderLines(data: HeaderData, width: number): string[] {
       panelWidth,
     ),
     rightAlign(
-      color("/gsd to begin", colors.accent),
-      `${color("/gsd templates", colors.muted)}  ${color("/gsd help", colors.muted)}`,
+      color("/otto to begin", colors.accent),
+      `${color("/otto templates", colors.muted)}  ${color("/otto help", colors.muted)}`,
       panelWidth,
     ),
   ];
@@ -316,14 +316,14 @@ function renderStackedHeader(data: HeaderData, width: number): string[] {
 
   // Info
   lines.push(panelLine(formatInfoLine("Project", data.directory, innerWidth), outerWidth));
-  lines.push(panelLine(formatInfoLine("Command", "/gsd start", innerWidth), outerWidth));
+  lines.push(panelLine(formatInfoLine("Command", "/otto start", innerWidth), outerWidth));
   lines.push(panelLine(formatInfoLine("Branch", data.branch, innerWidth), outerWidth));
   lines.push(panelLine(formatInfoLine("Model", data.model, innerWidth), outerWidth));
 
   // MCP
   const mcpRow = formatMcpRow(data.mcpServers, Math.max(1, innerWidth - 5));
   if (mcpRow) lines.push(panelLine(`${color("MCP", colors.muted)} ${mcpRow}`, outerWidth));
-  lines.push(panelLine(`${color("/gsd to begin", colors.accent)}  ${color("/gsd help", colors.muted)}`, outerWidth));
+  lines.push(panelLine(`${color("/otto to begin", colors.accent)}  ${color("/otto help", colors.muted)}`, outerWidth));
   // Closing rule on its own line keeps header content copy-clean.
   lines.push(color("─".repeat(outerWidth), colors.border));
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Project/App: LOOP24
+ * Project/App: OTTO
  * File Purpose: Compile source and test files into reusable dist-test artifacts.
  *
  * Compile all TypeScript source + test files to dist-test/ using esbuild.
@@ -188,9 +188,6 @@ async function main() {
     packageFiles.push(...await collectFiles(pkgSrc));
   }
 
-  // Also compile web/lib/ — some tests import from ../../web/lib/
-  const webLibFiles = await collectFiles(join(ROOT, 'web', 'lib'));
-
   // Compile extracted extension workspace packages (extensions/*/) — tests in
   // src/tests/ import from ../../extensions/<name>/index.ts.
   const extensionsDir = join(ROOT, 'extensions');
@@ -203,25 +200,12 @@ async function main() {
     extensionFiles.push(...await collectFiles(join(extensionsDir, entry.name)));
   }
 
-  // Compile vscode-extension/src/ — the security regression test imports
-  // ../../vscode-extension/src/trusted-config.ts (a vscode-API-free helper)
-  // so the trust predicate can be exercised outside the VS Code host.
-  // esbuild with bundle:false + packages:external just transpiles syntax,
-  // so files that import the `vscode` module compile fine without running.
-  const vscodeExtensionSrc = join(ROOT, 'vscode-extension', 'src');
-  const vscodeExtensionFiles = existsSync(vscodeExtensionSrc)
-    ? await collectFiles(vscodeExtensionSrc)
-    : [];
-
-  const entryPoints = [...srcFiles, ...packageFiles, ...webLibFiles, ...extensionFiles, ...vscodeExtensionFiles];
+  const entryPoints = [...srcFiles, ...packageFiles, ...extensionFiles];
 
   const inputFiles = [
     ...await collectAllFiles(join(ROOT, 'src')),
     ...await collectAllFiles(packagesDir),
-    ...await collectAllFiles(join(ROOT, 'web', 'lib')),
-    ...await collectAllFiles(join(ROOT, 'web', 'components')),
     ...await collectAllFiles(extensionsDir),
-    ...await collectAllFiles(vscodeExtensionSrc),
     ...await collectAllFiles(join(ROOT, 'scripts')),
     ...await collectAllFiles(join(ROOT, 'dist')),
     join(ROOT, 'package.json'),
@@ -298,12 +282,6 @@ async function main() {
       await cp(extPkgJson, join(extDist, 'package.json'), { force: true });
     }
   }
-
-  // Copy web/lib/ assets (tests import from ../../web/lib/ relative to dist-test/src/tests/)
-  await copyAssets(join(ROOT, 'web', 'lib'), join(DIST_TEST_DIR, 'web', 'lib'));
-
-  // Copy web/components/ assets (xterm-theme test reads shell-terminal.tsx via import.meta.dirname)
-  await copyAssets(join(ROOT, 'web', 'components'), join(DIST_TEST_DIR, 'web', 'components'));
 
   // Copy scripts/ non-TS files (.cjs etc) — some tests require() scripts directly
   await copyAssets(join(ROOT, 'scripts'), join(DIST_TEST_DIR, 'scripts'));

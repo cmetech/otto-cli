@@ -1,4 +1,4 @@
-// GSD Extension — Workflow Logger Audit Persistence Tests
+// OTTO Extension — Workflow Logger Audit Persistence Tests
 // Validates error-only persistence, sanitization, and warning ephemeral behavior.
 
 import { describe, test, beforeEach, afterEach } from "node:test";
@@ -18,12 +18,12 @@ import {
 
 function createTempProject(): string {
   const tmp = mkdtempSync(join(tmpdir(), "gsd-wflog-test-"));
-  mkdirSync(join(tmp, ".gsd"), { recursive: true });
+  mkdirSync(join(tmp, ".otto/workflow"), { recursive: true });
   return tmp;
 }
 
 function readAuditLines(basePath: string): Record<string, unknown>[] {
-  const auditPath = join(basePath, ".gsd", "audit-log.jsonl");
+  const auditPath = join(basePath, ".otto/workflow", "audit-log.jsonl");
   if (!existsSync(auditPath)) return [];
   const content = readFileSync(auditPath, "utf-8").trim();
   if (!content) return [];
@@ -80,16 +80,16 @@ describe("workflow-logger audit persistence", () => {
   test("persisted errors have context filtered to safe allowlist", () => {
     logError("tool", "tool failed", {
       fn: "saveDecisionToDb",
-      tool: "gsd_decision_save",
+      tool: "otto_decision_save",
       error: "SQLITE_BUSY: database is locked",
-      file: "/home/user/project/gsd.db",
+      file: "/home/user/project/otto.db",
     });
     const lines = readAuditLines(tmp);
     assert.equal(lines.length, 1);
     const ctx = lines[0].context as Record<string, string>;
     assert.ok(ctx, "context should exist");
     assert.equal(ctx.fn, "saveDecisionToDb");
-    assert.equal(ctx.tool, "gsd_decision_save");
+    assert.equal(ctx.tool, "otto_decision_save");
     assert.equal(ctx.error, "SQLITE_BUSY: database is locked", "error key should be preserved in persisted context");
     assert.equal(ctx.file, undefined, "file key must be stripped from persisted context");
   });

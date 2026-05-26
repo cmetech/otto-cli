@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Decision and requirement row mappers for the workflow database facade.
 
 import type { Decision, DecisionMadeBy, Requirement, RequirementCounts } from "./types.js";

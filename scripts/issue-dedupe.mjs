@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Suggest possible duplicate issues without closing them.
 
 export const DEDUPE_MARKER = "<!-- gsd-issue-dedupe -->";

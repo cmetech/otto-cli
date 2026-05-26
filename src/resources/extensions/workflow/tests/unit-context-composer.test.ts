@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests unit context composer rendering, budgets, and reassess-roadmap prompt integration.
 
 import test from "node:test";
@@ -122,11 +122,11 @@ test("Context Mode composer: standalone output starts with heading and includes 
   const out = composeContextModeInstructions("execute-task", { enabled: true, renderMode: "standalone" });
   assert.ok(out.startsWith("## Context Mode"));
   assert.match(out, /execution lane/i);
-  assert.match(out, /`gsd_exec`/);
+  assert.match(out, /`otto_exec`/);
   assert.match(out, /builds, tests, and diagnostics/);
-  assert.match(out, /`gsd_exec_search`/);
+  assert.match(out, /`otto_exec_search`/);
   assert.match(out, /before reruns/);
-  assert.match(out, /`gsd_resume`/);
+  assert.match(out, /`otto_resume`/);
   assert.match(out, /after compaction or resume/);
 });
 
@@ -135,9 +135,9 @@ test("Context Mode composer: nested output is compact single sentence", () => {
   assert.ok(!out.startsWith("## Context Mode"));
   assert.match(out, /^Context Mode \(verification lane\): /);
   assert.strictEqual(out.split(/\n/).length, 1);
-  assert.match(out, /`gsd_exec`/);
-  assert.match(out, /`gsd_exec_search`/);
-  assert.match(out, /`gsd_resume`/);
+  assert.match(out, /`otto_exec`/);
+  assert.match(out, /`otto_exec_search`/);
+  assert.match(out, /`otto_resume`/);
   assert.ok(out.length < 240, `nested guidance should stay compact, got ${out.length} chars`);
 });
 
@@ -163,9 +163,9 @@ test("Context Mode composer: every known eligible unit renders its configured la
     }
     assert.ok(out.startsWith("## Context Mode"), `${unitType} should render standalone Context Mode heading`);
     assert.match(out, new RegExp(`Lane: \\*\\*${laneLabelByMode[manifest.contextMode]} lane\\*\\*\\.`, "i"));
-    assert.match(out, /`gsd_exec`/, `${unitType} should mention gsd_exec`);
-    assert.match(out, /`gsd_exec_search`/, `${unitType} should mention gsd_exec_search`);
-    assert.match(out, /`gsd_resume`/, `${unitType} should mention gsd_resume`);
+    assert.match(out, /`otto_exec`/, `${unitType} should mention otto_exec`);
+    assert.match(out, /`otto_exec_search`/, `${unitType} should mention otto_exec_search`);
+    assert.match(out, /`otto_resume`/, `${unitType} should mention otto_resume`);
   }
 });
 
@@ -184,7 +184,7 @@ test("Context Mode composer: workflow-preferences and research-decision render n
 
 function makeFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-composer-pilot-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
   return base;
 }
 
@@ -195,7 +195,7 @@ function cleanup(base: string): void {
 }
 
 function seed(base: string, mid: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: mid, title: "Test", status: "active", depends_on: [] });
   upsertMilestonePlanning(mid, {
     title: "Test",
@@ -226,11 +226,11 @@ function seed(base: string, mid: string): void {
 
 function writeArtifacts(base: string): void {
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     "# M001\n## Slices\n- [x] **S01: First** `risk:low` `depends:[]`\n",
   );
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md"),
     "---\nid: S01\nparent: M001\n---\n# S01 Summary\n**One-liner**\n\n## What Happened\nDone.\n",
   );
 }
@@ -259,9 +259,9 @@ test("#4782 phase 2: buildReassessRoadmapPrompt emits composer-shaped context wi
 
   // Broad project docs are advertised on demand instead of fully inlined.
   assert.match(prompt, /### On-demand Planning Context/);
-  assert.match(prompt, /\.gsd\/PROJECT\.md/);
-  assert.match(prompt, /\.gsd\/REQUIREMENTS\.md/);
-  assert.match(prompt, /\.gsd\/DECISIONS\.md/);
+  assert.match(prompt, /\.otto\/workflow\/PROJECT\.md/);
+  assert.match(prompt, /\.otto\/workflow\/REQUIREMENTS\.md/);
+  assert.match(prompt, /\.otto\/workflow\/DECISIONS\.md/);
 
   // Slice context is optional and not present in this fixture — must not
   // leave a stray empty section
@@ -276,15 +276,15 @@ test("Context Mode resume injection: eligible prompts include one bounded snapsh
   seed(base, "M001");
   writeArtifacts(base);
   writeFileSync(
-    join(base, ".gsd", "last-snapshot.md"),
-    "# GSD context snapshot\n\nResume evidence.\n",
+    join(base, ".otto/workflow", "last-snapshot.md"),
+    "# OTTO context snapshot\n\nResume evidence.\n",
     "utf-8",
   );
 
   const prompt = await buildReassessRoadmapPrompt("M001", "Test", "S01", base);
 
   assert.equal(prompt.match(/## Context Snapshot/g)?.length, 1);
-  assert.match(prompt, /Source: `\.gsd\/last-snapshot\.md`/);
+  assert.match(prompt, /Source: `\.otto\/workflow\/last-snapshot\.md`/);
   assert.match(prompt, /Resume evidence/);
   assert.ok(prompt.indexOf("## Context Mode") < prompt.indexOf("## Context Snapshot"));
   assert.ok(prompt.indexOf("## Context Snapshot") < prompt.indexOf("## Inlined Context"));
@@ -311,8 +311,8 @@ test("Context Mode resume injection: disabled mode suppresses guidance and snaps
 
   seed(base, "M001");
   writeArtifacts(base);
-  writeFileSync(join(base, ".gsd", "PREFERENCES.md"), "---\ncontext_mode:\n  enabled: false\n---\n", "utf-8");
-  writeFileSync(join(base, ".gsd", "last-snapshot.md"), "# GSD context snapshot\n\nDo not inject.\n", "utf-8");
+  writeFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "---\ncontext_mode:\n  enabled: false\n---\n", "utf-8");
+  writeFileSync(join(base, ".otto/workflow", "last-snapshot.md"), "# OTTO context snapshot\n\nDo not inject.\n", "utf-8");
 
   const prompt = await buildReassessRoadmapPrompt("M001", "Test", "S01", base);
 
@@ -324,7 +324,7 @@ test("Context Mode resume injection: disabled mode suppresses guidance and snaps
 test("Context Mode resume injection: none-mode units do not inject snapshots", async () => {
   const base = makeFixtureBase();
   try {
-    writeFileSync(join(base, ".gsd", "last-snapshot.md"), "# GSD context snapshot\n\nNo lane.\n", "utf-8");
+    writeFileSync(join(base, ".otto/workflow", "last-snapshot.md"), "# OTTO context snapshot\n\nNo lane.\n", "utf-8");
     const prompt = await buildWorkflowPreferencesPrompt(base);
     assert.doesNotMatch(prompt, /## Context Mode/);
     assert.doesNotMatch(prompt, /## Context Snapshot/);
@@ -342,8 +342,8 @@ test("Context Mode prompt suppression: disabled inlined, phase-anchor, and neste
   seed(base, "M001");
   writeArtifacts(base);
   insertGateRow({ milestoneId: "M001", sliceId: "S01", gateId: "Q3", scope: "slice" });
-  writeFileSync(join(base, ".gsd", "PREFERENCES.md"), "---\ncontext_mode:\n  enabled: false\n---\n", "utf-8");
-  writeFileSync(join(base, ".gsd", "last-snapshot.md"), "# GSD context snapshot\n\nDo not inject.\n", "utf-8");
+  writeFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "---\ncontext_mode:\n  enabled: false\n---\n", "utf-8");
+  writeFileSync(join(base, ".otto/workflow", "last-snapshot.md"), "# OTTO context snapshot\n\nDo not inject.\n", "utf-8");
 
   const inlinedPrompt = await buildReassessRoadmapPrompt("M001", "Test", "S01", base);
   assert.doesNotMatch(inlinedPrompt, /## Context Mode|Context Mode \(|## Context Snapshot/);
@@ -360,7 +360,7 @@ test("Context Mode prompt suppression: disabled inlined, phase-anchor, and neste
 
 const fakeBase: BaseResolverContext = {
   unitType: "reassess-roadmap",
-  basePath: process.env.GSD_TEST_WORKSPACE_ROOT ?? process.cwd(),
+  basePath: process.env.OTTO_TEST_WORKSPACE_ROOT ?? process.cwd(),
   milestoneId: "M001",
   sliceId: "S01",
 };

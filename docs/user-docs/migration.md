@@ -1,15 +1,15 @@
 # Migration from v1
 
-If you have projects with `.planning` directories from the original Get Shit Done (v1), you can migrate them to GSD-2's `.gsd` format.
+If you have projects with `.planning` directories from the original Get Shit Done (v1), you can migrate them to OTTO's `.otto/workflow` format.
 
 ## Running the Migration
 
 ```bash
 # From within the project directory
-/gsd migrate
+/otto migrate
 
 # Or specify a path
-/gsd migrate ~/projects/my-old-project
+/otto migrate ~/projects/my-old-project
 ```
 
 ## What Gets Migrated
@@ -18,13 +18,13 @@ The migration tool:
 
 - Parses your old `PROJECT.md`, `ROADMAP.md`, `REQUIREMENTS.md`, phase directories, plans, summaries, research, top-level `decisions/`, and top-level `seeds/`
 - Maps phases → slices, plans → tasks, milestones → milestones
-- Treats an explicit path as the target project root, so `/gsd migrate ~/projects/my-old-project` writes to `~/projects/my-old-project/.gsd`
+- Treats an explicit path as the target project root, so `/otto migrate ~/projects/my-old-project` writes to `~/projects/my-old-project/.otto/workflow`
 - Blocks zero-slice migrations and refuses to run while active, paused, or worktree session state exists
-- Backs up any existing `.gsd/` to `.gsd-backups/migrate-YYYYMMDD-HHMMSS/`, deletes the old `.gsd/`, and restores the backup if migration fails
-- Writes the imported hierarchy into the GSD database, then renders markdown projections from that database
+- Backs up any existing `.otto/workflow/` to `.otto/workflow-backups/migrate-YYYYMMDD-HHMMSS/`, deletes the old `.otto/workflow/`, and restores the backup if migration fails
+- Writes the imported hierarchy into the OTTO database, then renders markdown projections from that database
 - Preserves completion state (`[x]` phases stay done, summaries carry over)
-- Consolidates research files into the new structure and archives the full legacy `.planning` source under `.gsd/migration/legacy/`
-- Records `.gsd/migration/MIGRATION.md` and `.gsd/migration/manifest.json` audit artifacts
+- Consolidates research files into the new structure and archives the full legacy `.planning` source under `.otto/workflow/migration/legacy/`
+- Records `.otto/workflow/migration/MIGRATION.md` and `.otto/workflow/migration/manifest.json` audit artifacts
 - Shows a preview before writing anything, including requirement status totals (validated, active, deferred, out of scope) and legacy-input counts (milestone phase dirs, decision files, seed files)
 - Optionally runs a read-only review of the output for quality assurance
 
@@ -50,15 +50,15 @@ Migration works best with a `ROADMAP.md` file for milestone structure. Without o
 After migrating, verify the output with:
 
 ```
-/gsd doctor
+/otto doctor
 ```
 
-This checks database and projection integrity and flags any structural issues. Use `/gsd inspect` when you need database diagnostics.
+This checks database and projection integrity and flags any structural issues. Use `/otto inspect` when you need database diagnostics.
 
-If an existing project has markdown artifacts but a missing or damaged database, start GSD once so the database opens, then run:
+If an existing project has markdown artifacts but a missing or damaged database, start OTTO once so the database opens, then run:
 
 ```
-/gsd recover
+/otto recover
 ```
 
-`/gsd recover` clears the persisted hierarchy plus validation-related state, including quality-gate rows and skipped-validation assessments, then reconstructs the milestone, slice, and task hierarchy from the rendered markdown on disk. It is an explicit destructive recovery/import operation; normal runtime does not silently derive state from markdown.
+`/otto recover` clears the persisted hierarchy plus validation-related state, including quality-gate rows and skipped-validation assessments, then reconstructs the milestone, slice, and task hierarchy from the rendered markdown on disk. It is an explicit destructive recovery/import operation; normal runtime does not silently derive state from markdown.

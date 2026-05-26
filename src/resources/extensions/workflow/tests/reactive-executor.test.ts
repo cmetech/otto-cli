@@ -76,7 +76,7 @@ test("reactive dispatch requires enabled config and multiple ready tasks", async
   // Build a minimal filesystem with a slice plan and task plans
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-dispatch-"));
   try {
-    const gsd = join(repo, ".gsd", "milestones", "M001", "slices", "S01");
+    const gsd = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01");
     mkdirSync(join(gsd, "tasks"), { recursive: true });
 
     // Slice plan with 3 tasks
@@ -179,7 +179,7 @@ test("reactive dispatch requires enabled config and multiple ready tasks", async
 test("reactive dispatch falls back when graph is ambiguous (task without IO)", async () => {
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-ambiguous-"));
   try {
-    const gsd = join(repo, ".gsd", "milestones", "M001", "slices", "S01");
+    const gsd = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01");
     mkdirSync(join(gsd, "tasks"), { recursive: true });
 
     writeFileSync(
@@ -219,7 +219,7 @@ test("reactive dispatch falls back when graph is ambiguous (task without IO)", a
 test("single ready task falls through to sequential", async () => {
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-single-"));
   try {
-    const gsd = join(repo, ".gsd", "milestones", "M001", "slices", "S01");
+    const gsd = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01");
     mkdirSync(join(gsd, "tasks"), { recursive: true });
 
     writeFileSync(
@@ -262,7 +262,7 @@ test("single ready task falls through to sequential", async () => {
 
 test("saveReactiveState and loadReactiveState round-trip", () => {
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-state-"));
-  mkdirSync(join(repo, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(repo, ".otto/workflow", "runtime"), { recursive: true });
   try {
     const state: ReactiveExecutionState = {
       sliceId: "S01",
@@ -282,7 +282,7 @@ test("saveReactiveState and loadReactiveState round-trip", () => {
 
 test("clearReactiveState removes the file", () => {
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-clear-"));
-  mkdirSync(join(repo, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(repo, ".otto/workflow", "runtime"), { recursive: true });
   try {
     const state: ReactiveExecutionState = {
       sliceId: "S01",
@@ -293,10 +293,10 @@ test("clearReactiveState removes the file", () => {
     };
 
     saveReactiveState(repo, "M001", "S01", state);
-    assert.ok(existsSync(join(repo, ".gsd", "runtime", "M001-S01-reactive.json")));
+    assert.ok(existsSync(join(repo, ".otto/workflow", "runtime", "M001-S01-reactive.json")));
 
     clearReactiveState(repo, "M001", "S01");
-    assert.ok(!existsSync(join(repo, ".gsd", "runtime", "M001-S01-reactive.json")));
+    assert.ok(!existsSync(join(repo, ".otto/workflow", "runtime", "M001-S01-reactive.json")));
   } finally {
     rmSync(repo, { recursive: true, force: true });
   }
@@ -304,7 +304,7 @@ test("clearReactiveState removes the file", () => {
 
 test("loadReactiveState returns null when no file exists", () => {
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-nofile-"));
-  mkdirSync(join(repo, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(repo, ".otto/workflow", "runtime"), { recursive: true });
   try {
     const loaded = loadReactiveState(repo, "M001", "S01");
     assert.equal(loaded, null);
@@ -316,9 +316,9 @@ test("loadReactiveState returns null when no file exists", () => {
 test("completed tasks are not re-dispatched on next iteration", async () => {
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-reentry-"));
   try {
-    const gsd = join(repo, ".gsd", "milestones", "M001", "slices", "S01");
+    const gsd = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01");
     mkdirSync(join(gsd, "tasks"), { recursive: true });
-    mkdirSync(join(repo, ".gsd", "runtime"), { recursive: true });
+    mkdirSync(join(repo, ".otto/workflow", "runtime"), { recursive: true });
 
     writeFileSync(
       join(gsd, "S01-PLAN.md"),
@@ -375,7 +375,7 @@ test("verifyExpectedArtifact: reactive-execute passes when all dispatched summar
   const { verifyExpectedArtifact } = await import("../auto-recovery.ts");
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-verify-pass-"));
   try {
-    const tasksDir = join(repo, ".gsd", "milestones", "M001", "slices", "S01", "tasks");
+    const tasksDir = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks");
     mkdirSync(tasksDir, { recursive: true });
     writeFileSync(join(tasksDir, "T02-SUMMARY.md"), "---\nid: T02\n---\n# T02: Done\n");
     writeFileSync(join(tasksDir, "T03-SUMMARY.md"), "---\nid: T03\n---\n# T03: Done\n");
@@ -391,7 +391,7 @@ test("verifyExpectedArtifact: reactive-execute fails when a dispatched summary i
   const { verifyExpectedArtifact } = await import("../auto-recovery.ts");
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-verify-fail-"));
   try {
-    const tasksDir = join(repo, ".gsd", "milestones", "M001", "slices", "S01", "tasks");
+    const tasksDir = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks");
     mkdirSync(tasksDir, { recursive: true });
     // Only T02 has a summary, T03 does not
     writeFileSync(join(tasksDir, "T02-SUMMARY.md"), "---\nid: T02\n---\n# T02: Done\n");
@@ -407,7 +407,7 @@ test("verifyExpectedArtifact: reactive-execute fails even with pre-existing summ
   const { verifyExpectedArtifact } = await import("../auto-recovery.ts");
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-verify-preexisting-"));
   try {
-    const tasksDir = join(repo, ".gsd", "milestones", "M001", "slices", "S01", "tasks");
+    const tasksDir = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks");
     mkdirSync(tasksDir, { recursive: true });
     // T01 summary exists from before, but T02 and T03 were dispatched
     writeFileSync(join(tasksDir, "T01-SUMMARY.md"), "---\nid: T01\n---\n# T01: Prior\n");
@@ -423,7 +423,7 @@ test("verifyExpectedArtifact: reactive-execute legacy format (no batch IDs) fall
   const { verifyExpectedArtifact } = await import("../auto-recovery.ts");
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-verify-legacy-"));
   try {
-    const tasksDir = join(repo, ".gsd", "milestones", "M001", "slices", "S01", "tasks");
+    const tasksDir = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks");
     mkdirSync(tasksDir, { recursive: true });
     writeFileSync(join(tasksDir, "T01-SUMMARY.md"), "---\nid: T01\n---\n# T01\n");
 
@@ -457,7 +457,7 @@ test("getDependencyTaskSummaryPaths returns only dependency summaries", async ()
   const { getDependencyTaskSummaryPaths } = await import("../auto-prompts.ts");
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-depcarry-"));
   try {
-    const tasksDir = join(repo, ".gsd", "milestones", "M001", "slices", "S01", "tasks");
+    const tasksDir = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks");
     mkdirSync(tasksDir, { recursive: true });
     // T01, T02, T03 all have summaries
     writeFileSync(join(tasksDir, "T01-SUMMARY.md"), "---\nid: T01\n---\n# T01\n");
@@ -479,7 +479,7 @@ test("getDependencyTaskSummaryPaths falls back to order-based for root tasks", a
   const { getDependencyTaskSummaryPaths } = await import("../auto-prompts.ts");
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-depcarry-root-"));
   try {
-    const tasksDir = join(repo, ".gsd", "milestones", "M001", "slices", "S01", "tasks");
+    const tasksDir = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks");
     mkdirSync(tasksDir, { recursive: true });
     writeFileSync(join(tasksDir, "T01-SUMMARY.md"), "---\nid: T01\n---\n# T01\n");
 
@@ -496,7 +496,7 @@ test("getDependencyTaskSummaryPaths handles missing dependency summaries gracefu
   const { getDependencyTaskSummaryPaths } = await import("../auto-prompts.ts");
   const repo = mkdtempSync(join(tmpdir(), "gsd-reactive-depcarry-missing-"));
   try {
-    const tasksDir = join(repo, ".gsd", "milestones", "M001", "slices", "S01", "tasks");
+    const tasksDir = join(repo, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks");
     mkdirSync(tasksDir, { recursive: true });
     // Only T01 has a summary, T02 does not
     writeFileSync(join(tasksDir, "T01-SUMMARY.md"), "---\nid: T01\n---\n# T01\n");

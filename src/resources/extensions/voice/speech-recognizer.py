@@ -169,7 +169,7 @@ def run_groq():
         emit("ERROR", "GROQ_API_KEY not set. Run 'gsd config' to set up, or get a free key at https://console.groq.com")
         sys.exit(1)
 
-    groq_model = os.environ.get("GSD_GROQ_MODEL", "whisper-large-v3-turbo")
+    groq_model = os.environ.get("OTTO_GROQ_MODEL", "whisper-large-v3-turbo")
     api_url = "https://api.groq.com/openai/v1/audio/transcriptions"
 
     # --- Signal handling ---
@@ -337,7 +337,7 @@ def run_local():
     signal.signal(signal.SIGINT, _handle_signal)
 
     # --- Load model ---
-    model_size = os.environ.get("GSD_WHISPER_MODEL", "small")
+    model_size = os.environ.get("OTTO_WHISPER_MODEL", "small")
     cache_root = os.path.join(
         os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache")),
         "gsd", "whisper",

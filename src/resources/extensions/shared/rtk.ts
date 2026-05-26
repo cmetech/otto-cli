@@ -2,8 +2,8 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import {
-  GSD_RTK_DISABLED_ENV,
-  GSD_RTK_PATH_ENV,
+  OTTO_RTK_DISABLED_ENV,
+  OTTO_RTK_PATH_ENV,
   RTK_TELEMETRY_DISABLED_ENV,
   getManagedRtkDir,
   getPathValue,
@@ -12,13 +12,13 @@ import {
   resolveSystemRtkPath,
 } from "./rtk-shared.js";
 
-const GSD_RTK_REWRITE_TIMEOUT_MS_ENV = "GSD_RTK_REWRITE_TIMEOUT_MS";
+const OTTO_RTK_REWRITE_TIMEOUT_MS_ENV = "OTTO_RTK_REWRITE_TIMEOUT_MS";
 const RTK_REWRITE_TIMEOUT_MS = 5_000;
 
 export { isRtkEnabled };
 
 function getRewriteTimeoutMs(env: NodeJS.ProcessEnv = process.env): number {
-  const configured = Number.parseInt(env[GSD_RTK_REWRITE_TIMEOUT_MS_ENV] ?? "", 10);
+  const configured = Number.parseInt(env[OTTO_RTK_REWRITE_TIMEOUT_MS_ENV] ?? "", 10);
   if (Number.isFinite(configured) && configured > 0) {
     return configured;
   }
@@ -43,7 +43,7 @@ export function resolveRtkBinaryPath(options: ResolveRtkBinaryPathOptions = {}):
   const env = options.env ?? process.env;
   const platform = options.platform ?? process.platform;
 
-  const explicitPath = options.binaryPath ?? env[GSD_RTK_PATH_ENV];
+  const explicitPath = options.binaryPath ?? env[OTTO_RTK_PATH_ENV];
   if (explicitPath && existsSync(explicitPath)) {
     return explicitPath;
   }

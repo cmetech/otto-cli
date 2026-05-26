@@ -47,7 +47,7 @@ test("command entrypoints use startAutoDetached instead of awaiting startAuto (#
   );
 });
 
-test("bare /gsd stays in the foreground home flow (#5125 regression)", () => {
+test("bare /otto stays in the foreground home flow (#5125 regression)", () => {
   const autoHandlerSrc = readAgentFile("commands/handlers/auto.ts");
   const bareCommandBranch = autoHandlerSrc.slice(
     autoHandlerSrc.indexOf('if (trimmed === "")'),
@@ -55,15 +55,15 @@ test("bare /gsd stays in the foreground home flow (#5125 regression)", () => {
 
   assert.ok(
     bareCommandBranch.includes('await import("../../command-home.js")'),
-    "bare /gsd should load the state-aware home flow",
+    "bare /otto should load the state-aware home flow",
   );
   assert.ok(
     bareCommandBranch.includes("await showWorkflowHome(ctx, pi, projectRoot())"),
-    "bare /gsd should await the foreground home menu instead of detaching auto-mode",
+    "bare /otto should await the foreground home menu instead of detaching auto-mode",
   );
   assert.ok(
     !bareCommandBranch.includes("startAutoDetached("),
-    "bare /gsd must not enter detached auto bootstrap directly",
+    "bare /otto must not enter detached auto bootstrap directly",
   );
 });
 
@@ -85,7 +85,7 @@ test("guided execute uses auto step bootstrap when worktree isolation is enabled
   );
 });
 
-test("auto bootstrap validates blocked directories before touching .gsd migration state", () => {
+test("auto bootstrap validates blocked directories before touching .otto/workflow migration state", () => {
   const autoSrc = readAgentFile("auto.ts");
   const autoStartSrc = readAgentFile("auto-start.ts");
 
@@ -99,7 +99,7 @@ test("auto bootstrap validates blocked directories before touching .gsd migratio
   assert.ok(startAutoRecoveryIdx > -1, "startAuto should still recover failed migrations for safe projects");
   assert.ok(
     startAutoValidationIdx < startAutoRecoveryIdx,
-    "startAuto must reject blocked directories before recovering or migrating .gsd state",
+    "startAuto must reject blocked directories before recovering or migrating .otto/workflow state",
   );
 
   const bootstrapIdx = autoStartSrc.indexOf("export async function bootstrapAutoSession(");
@@ -118,7 +118,7 @@ test("auto bootstrap validates blocked directories before touching .gsd migratio
   assert.ok(staleCrashClearIdx > -1, "bootstrapAutoSession should clear stale crash lock state when detected");
   assert.ok(
     bootstrapValidationIdx < lockIdx && bootstrapValidationIdx < bootstrapMigrationIdx,
-    "fresh bootstrap must reject blocked directories before locking or migrating .gsd state",
+    "fresh bootstrap must reject blocked directories before locking or migrating .otto/workflow state",
   );
   assert.ok(
     staleCrashReadIdx < lockIdx && staleCrashClearIdx < lockIdx,
@@ -279,7 +279,7 @@ test("discussion auto-start waits for the current command context to become idle
   _scheduleAutoStartAfterIdleForTest(
     ctx,
     {} as any,
-    "/tmp/gsd-auto-start-idle-test",
+    "/tmp/otto-auto-start-idle-test",
     false,
     { step: true },
     (...args: unknown[]) => {
@@ -296,7 +296,7 @@ test("discussion auto-start waits for the current command context to become idle
 
   await new Promise((resolveTimer) => setTimeout(resolveTimer, 0));
   assert.equal(launches.length, 1);
-  assert.equal(launches[0][2], "/tmp/gsd-auto-start-idle-test");
+  assert.equal(launches[0][2], "/tmp/otto-auto-start-idle-test");
   assert.deepEqual(launches[0][4], { step: true });
 });
 

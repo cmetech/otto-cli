@@ -1,13 +1,13 @@
 /**
- * ANSI-aware TUI layout utilities that depend on @loop24/pi-tui.
+ * ANSI-aware TUI layout utilities that depend on @otto/pi-tui.
  *
  * Separated from format-utils.ts so that modules needing only pure
  * formatting (e.g. HTML report generation) can import format-utils
- * without pulling in the @loop24/pi-tui dependency — which fails when
+ * without pulling in the @otto/pi-tui dependency — which fails when
  * loaded outside jiti's alias resolution context.
  */
 
-import { truncateToWidth, visibleWidth } from "@loop24/pi-tui";
+import { truncateToWidth, visibleWidth } from "@otto/pi-tui";
 
 // ─── Layout Helpers ───────────────────────────────────────────────────────────
 

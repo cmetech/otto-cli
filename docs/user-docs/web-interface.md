@@ -2,20 +2,20 @@
 
 > Added in v2.41.0
 
-GSD includes a browser-based web interface for project management, real-time progress monitoring, and multi-project support.
+OTTO includes a browser-based web interface for project management, real-time progress monitoring, and multi-project support.
 
 ## Quick Start
 
 ```bash
-gsd --web
+otto --web
 ```
 
-This starts a local web server and opens the GSD dashboard in your default browser.
+This starts a local web server and opens the OTTO dashboard in your default browser.
 
 ### CLI Flags (v2.42.0)
 
 ```bash
-gsd --web --host 0.0.0.0 --port 8080 --allowed-origins "https://example.com"
+otto --web --host 0.0.0.0 --port 8080 --allowed-origins "https://example.com"
 ```
 
 | Flag | Default | Description |
@@ -35,12 +35,12 @@ gsd --web --host 0.0.0.0 --port 8080 --allowed-origins "https://example.com"
 
 ## Architecture
 
-The web interface is built with Next.js and communicates with the GSD backend via a bridge service. Each project gets its own bridge instance, providing isolation for concurrent sessions.
+The web interface is built with Next.js and communicates with the OTTO backend via a bridge service. Each project gets its own bridge instance, providing isolation for concurrent sessions.
 
 Key components:
 - `ProjectBridgeService` — per-project command routing and SSE subscription
 - `getProjectBridgeServiceForCwd()` — registry returning distinct instances per project path
-- `resolveProjectCwd()` — reads `?project=` from request URL or falls back to `GSD_WEB_PROJECT_CWD`
+- `resolveProjectCwd()` — reads `?project=` from request URL or falls back to `OTTO_WEB_PROJECT_CWD`
 
 ## Configuration
 
@@ -50,11 +50,11 @@ The web server binds to `localhost:3000` by default. Use `--host`, `--port`, and
 
 | Variable | Description |
 |----------|-------------|
-| `GSD_WEB_PROJECT_CWD` | Default project path when `?project=` is not specified |
+| `OTTO_WEB_PROJECT_CWD` | Default project path when `?project=` is not specified |
 
 ## Node v24 Compatibility
 
-Node v24 introduced breaking changes to type stripping that caused `ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING` on web boot. This is fixed in v2.42.0+ (#1864). If you encounter this error, upgrade GSD.
+Node v24 introduced breaking changes to type stripping that caused `ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING` on web boot. This is fixed in v2.42.0+ (#1864). If you encounter this error, upgrade OTTO.
 
 ## Auth Token Persistence
 

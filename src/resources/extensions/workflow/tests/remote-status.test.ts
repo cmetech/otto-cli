@@ -11,7 +11,7 @@ function withTempHome(fn: (tempHome: string) => void | Promise<void>) {
     const savedHome = process.env.HOME;
     const savedUserProfile = process.env.USERPROFILE;
     const tempHome = join(tmpdir(), `gsd-remote-status-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-    mkdirSync(join(tempHome, ".gsd", "runtime", "remote-questions"), { recursive: true });
+    mkdirSync(join(tempHome, ".otto/workflow", "runtime", "remote-questions"), { recursive: true });
     process.env.HOME = tempHome;
     process.env.USERPROFILE = tempHome;
     try {

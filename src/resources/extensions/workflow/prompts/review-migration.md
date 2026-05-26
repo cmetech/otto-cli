@@ -1,10 +1,10 @@
-## Review Migrated .gsd Directory
+## Review Migrated .otto/workflow Directory
 
-A `/gsd migrate` command just wrote a `.gsd/` directory from an old `.planning` source. Your job is to audit the output and verify it meets the agent standards before the user starts working with it. This review is read-only: report issues and recommended fixes, but do not edit files in place.
+A `/otto migrate` command just wrote a `.otto/workflow/` directory from an old `.planning` source. Your job is to audit the output and verify it meets the agent standards before the user starts working with it. This review is read-only: report issues and recommended fixes, but do not edit files in place.
 
 ### Source
 - Old `.planning` directory: `{{sourcePath}}`
-- Written `.gsd` directory: `{{gsdPath}}`
+- Written `.otto/workflow` directory: `{{gsdPath}}`
 
 ### Migration Stats
 {{previewStats}}
@@ -14,7 +14,7 @@ A `/gsd migrate` command just wrote a `.gsd/` directory from an old `.planning` 
 Work through each check. Report PASS/FAIL with specifics. Do not fix files in place; migration repairs must go through DB-backed migration repair paths.
 
 #### 1. Structure Validation
-- Run `deriveState()` on the `.gsd` directory (import from `state.ts`, pass the **project root** as basePath)
+- Run `deriveState()` on the `.otto/workflow` directory (import from `state.ts`, pass the **project root** as basePath)
 - Confirm it returns a coherent phase (not `pre-planning` unless the project is truly empty)
 - Confirm activeMilestone, activeSlice, activeTask are sensible for the project's completion state
 - Confirm progress counts match the migration preview stats
@@ -63,4 +63,4 @@ Issues: <list any problems found>
 Recommended fixes: <list any fixes needed>
 ```
 
-If the overall result is FAIL, explain what needs manual attention. If PASS WITH NOTES, explain what's imperfect but acceptable. If PASS, confirm the `.gsd` directory is ready for the agent auto-mode.
+If the overall result is FAIL, explain what needs manual attention. If PASS WITH NOTES, explain what's imperfect but acceptable. If PASS, confirm the `.otto/workflow` directory is ready for the agent auto-mode.

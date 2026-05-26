@@ -19,8 +19,8 @@ import {
 	registerApiProvider,
 	resetApiProviders,
 	type SimpleStreamOptions,
-} from "@loop24/pi-ai";
-import { registerOAuthProvider, resetOAuthProviders } from "@loop24/pi-ai/oauth";
+} from "@otto/pi-ai";
+import { registerOAuthProvider, resetOAuthProviders } from "@otto/pi-ai/oauth";
 import { type Static, Type } from "@sinclair/typebox";
 import AjvModule from "ajv";
 import { existsSync, readFileSync } from "fs";
@@ -579,9 +579,9 @@ export class ModelRegistry {
 	 */
 	getProviderAuthMode(provider: string): ProviderAuthMode {
 		// E2E-test-only: the fake provider is keyless. Sentinel is project-
-		// internal ("gsd-fake") so it cannot collide with a real provider.
+		// internal ("otto-fake") so it cannot collide with a real provider.
 		// See packages/pi-ai/src/providers/fake.ts.
-		if (provider === "gsd-fake") return "none";
+		if (provider === "otto-fake") return "none";
 		const config = this.registeredProviders.get(provider);
 		if (!config) return "apiKey";
 		if (config.authMode) return config.authMode;

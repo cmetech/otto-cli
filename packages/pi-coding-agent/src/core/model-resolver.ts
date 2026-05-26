@@ -2,8 +2,8 @@
  * Model resolution, scoping, and initial selection
  */
 
-import type { ThinkingLevel } from "@loop24/pi-agent-core";
-import { type Api, type Model, modelsAreEqual } from "@loop24/pi-ai";
+import type { ThinkingLevel } from "@otto/pi-agent-core";
+import { type Api, type Model, modelsAreEqual } from "@otto/pi-ai";
 import chalk from "chalk";
 import { minimatch } from "minimatch";
 import { isValidThinkingLevel } from "../cli/args.js";

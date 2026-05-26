@@ -1,6 +1,6 @@
-// LOOP24 + src/resources/extensions/workflow/bootstrap/agent-end-recovery.ts - Handles provider and agent-end recovery for auto-mode.
+// OTTO + src/resources/extensions/workflow/bootstrap/agent-end-recovery.ts - Handles provider and agent-end recovery for auto-mode.
 
-import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@otto/pi-coding-agent";
 
 import type { AgentEndEvent, ErrorContext } from "../auto/types.js";
 import { logWarning } from "../workflow-logger.js";
@@ -219,7 +219,7 @@ export function isTerminalDeletedWorktreeProviderError(
 ): boolean {
   if (!message) return false;
   if (!/\bdoes not exist\b/i.test(message)) return false;
-  return /[/\\]\.gsd[/\\](?:projects[/\\][^/\\]+[/\\])?worktrees[/\\][^/\\\s"']+/i.test(message);
+  return /[/\\]\.otto[/\\]workflow[/\\](?:projects[/\\][^/\\]+[/\\])?worktrees[/\\][^/\\\s"']+/i.test(message);
 }
 
 type MessageEndLike = {
@@ -522,7 +522,7 @@ export async function handleAgentEnd(
 
       // No usable fallback — pause with a clearly named message.
       const blockedLabel = rejectedProvider && rejectedId ? `${rejectedProvider}/${rejectedId}` : "current model";
-      const pauseDetail = `Model ${blockedLabel} blocked for this account${errorDetail}. Configure a different model and restart /gsd auto.`;
+      const pauseDetail = `Model ${blockedLabel} blocked for this account${errorDetail}. Configure a different model and restart /otto auto.`;
       await pauseAutoForProviderError(ctx.ui, pauseDetail, () =>
         pauseAuto(ctx, pi, {
           message: pauseDetail,

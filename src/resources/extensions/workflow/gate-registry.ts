@@ -62,7 +62,7 @@ export const GATE_REGISTRY = {
     ownerTurn: "gate-evaluate",
     question: "Which existing requirements (R-IDs) does this slice touch, and which must be re-tested?",
     guidance: [
-      "List the R-IDs (e.g. R001, R003) touched by this slice; see the milestone requirements artifact at .gsd/milestones/<id>/REQUIREMENTS.md.",
+      "List the R-IDs (e.g. R001, R003) touched by this slice; see the milestone requirements artifact at .otto/workflow/milestones/<id>/REQUIREMENTS.md.",
       "Identify what must be re-tested after shipping.",
       "Flag decisions that should be revisited given the new scope.",
       "If no existing requirements are affected, return verdict 'omitted'.",

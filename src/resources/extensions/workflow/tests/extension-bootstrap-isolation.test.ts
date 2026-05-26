@@ -1,30 +1,30 @@
 // Behavioural contract for Workflow extension bootstrap isolation (#4168, #4172).
 //
-// Guarantee: the `/gsd` slash command must be registered on pi even if the
+// Guarantee: the `/otto` slash command must be registered on pi even if the
 // full bootstrap (shortcuts, tools, hooks, ecosystem) throws during import or
 // execution. Prior regressions: a Windows-specific failure in register-
-// shortcuts.ts silently prevented /gsd from being registered at all because
+// shortcuts.ts silently prevented /otto from being registered at all because
 // registerWorkflowCommand was called inside the same try that loaded shortcuts.
 //
 // These tests exercise the real default export of index.ts (which calls
 // registerWorkflowCommand via dynamic import, then attempts the full bootstrap)
 // with a minimal mock ExtensionAPI and verify the observable behaviour
-// directly: /gsd is registered in both the happy path and the degraded path.
+// directly: /otto is registered in both the happy path and the degraded path.
 //
 // Anti-regression proof (documented in commit):
-//   neuter index.ts to register /gsd inside the same try{} as
-//   register-extension → the degraded-path test fails (no /gsd command
+//   neuter index.ts to register /otto inside the same try{} as
+//   register-extension → the degraded-path test fails (no /otto command
 //   registered when register-extension throws). Restore → passes.
 
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 
-import { COMMAND_NAMESPACE } from "@loop24/pi-coding-agent";
+import { COMMAND_NAMESPACE } from "@otto/pi-coding-agent";
 
 import registerExtension from "../index.ts";
 
 // The top-level slash command is registered under COMMAND_NAMESPACE
-// (e.g. "loop24"), not the historical literal "gsd".
+// (e.g. "otto"), not the historical literal "gsd".
 const ROOT_CMD = COMMAND_NAMESPACE;
 
 type RegisterFn = (name: string, def: unknown) => void;

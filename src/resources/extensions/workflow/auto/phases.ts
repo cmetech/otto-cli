@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Auto-loop pipeline phases, merge closeout, and finalize handling.
 /**
  * auto/phases.ts — Pipeline phases for the auto-loop.
@@ -9,7 +9,7 @@
  * Imports from: auto/types, auto/detect-stuck, auto/run-unit, auto/loop-deps
  */
 
-import { importExtensionModule, type ExtensionAPI, type ExtensionContext } from "@loop24/pi-coding-agent";
+import { importExtensionModule, type ExtensionAPI, type ExtensionContext } from "@otto/pi-coding-agent";
 
 import type { AutoSession, SidecarItem } from "./session.js";
 import type { LoopDeps } from "./loop-deps.js";
@@ -235,7 +235,7 @@ function formatWorktreeSafetyFailure(result: Extract<WorktreeSafetyResult, { ok:
 
 function formatWorktreeSafetyStopReason(result: Extract<WorktreeSafetyResult, { ok: false }>): string {
   if (result.kind === "empty-worktree-with-project-content") {
-    return `Worktree Safety failed (${result.kind}). Run /gsd doctor fix, then /gsd auto.`;
+    return `Worktree Safety failed (${result.kind}). Run /otto doctor fix, then /otto auto.`;
   }
   return `Worktree Safety failed (${result.kind}).`;
 }
@@ -251,7 +251,7 @@ function classifyBlocker(blocker: string): BlockerKind {
 }
 
 function sanitizeBlockerForUser(blocker: string): string {
-  return blocker.replaceAll("gsd_reassess_roadmap", `${slashCommand("dispatch")} reassess`);
+  return blocker.replaceAll("otto_reassess_roadmap", `${slashCommand("dispatch")} reassess`);
 }
 
 /**
@@ -436,7 +436,7 @@ async function generateMilestoneReport(
     (m: { id: string }) => m.id === milestoneId,
   );
   const msTitle = completedMs?.title ?? milestoneId;
-  const workflowVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) ?? "0.0.0";
+  const workflowVersion = (process.env.OTTO_VERSION ?? process.env.OTTO_VERSION) ?? "0.0.0";
   const projName = basename(reportBasePath);
   const doneSlices = snapData.milestones.reduce(
     (acc: number, m: { slices: { done: boolean }[] }) =>
@@ -474,7 +474,7 @@ async function generateMilestoneReport(
     phase: snapData.phase,
   });
   ctx.ui.notify(
-    `Report saved: .gsd/reports/${basename(outPath)} — open index.html to browse progression.`,
+    `Report saved: .otto/workflow/reports/${basename(outPath)} — open index.html to browse progression.`,
     "info",
   );
 }
@@ -525,7 +525,7 @@ async function stopOnPostflightRecoveryNeeded(
 /**
  * Run a milestone merge surrounded by preflight stash + always-on postflight
  * pop. The previous code popped the stash only after a successful merge, which
- * leaked `gsd-preflight-stash:M00x:*` entries whenever `mergeAndExit` threw —
+ * leaked `otto-preflight-stash:M00x:*` entries whenever `mergeAndExit` threw —
  * leaving the user's pre-merge working tree silently stashed away after a
  * merge-conflict or other merge error. This helper restores the stash on
  * every exit path, then surfaces the merge or stash failure (in priority
@@ -597,7 +597,7 @@ export async function _runMilestoneMergeWithStashRestore(
       // re-runs the already-failed worktree merge in its cleanup step
       // (#2645), then drops the user out of the interactive TUI onto a
       // "stopped" surface.
-      const conflictReason = `Merge conflict on milestone ${milestoneId}: ${mergeError.conflictedFiles.join(", ")}. Resolve conflicts manually and run /gsd auto to resume.`;
+      const conflictReason = `Merge conflict on milestone ${milestoneId}: ${mergeError.conflictedFiles.join(", ")}. Resolve conflicts manually and run /otto auto to resume.`;
       ctx.ui.notify(conflictReason, "error");
       await deps.pauseAuto(ctx, pi, {
         message: conflictReason,
@@ -613,7 +613,7 @@ export async function _runMilestoneMergeWithStashRestore(
     // network, permissions) is recoverable — the user fixes the cause and
     // runs `/otto auto` to resume. Pause (don't stop) so the session stays
     // resumable and stopAuto's teardown does not re-run the failed merge.
-    const mergeFailReason = `Merge error on milestone ${milestoneId}: ${mergeError instanceof Error ? mergeError.message : String(mergeError)}. Resolve and run /gsd auto to resume.`;
+    const mergeFailReason = `Merge error on milestone ${milestoneId}: ${mergeError instanceof Error ? mergeError.message : String(mergeError)}. Resolve and run /otto auto to resume.`;
     ctx.ui.notify(mergeFailReason, "error");
     await deps.pauseAuto(ctx, pi, {
       message: mergeFailReason,
@@ -847,7 +847,7 @@ export async function runPreDispatch(
         findings: healthGate.reason,
       });
       ctx.ui.notify(
-        healthGate.reason || "Pre-dispatch health check failed — run /gsd doctor for details.",
+        healthGate.reason || "Pre-dispatch health check failed — run /otto doctor for details.",
         "error",
       );
       await deps.pauseAuto(ctx, pi, undefined, { expectedCurrentUnit });
@@ -956,7 +956,7 @@ export async function runPreDispatch(
           findings: reason,
           milestoneId: state.activeMilestone?.id ?? undefined,
         });
-        ctx.ui.notify(`Plan gate failed-closed: ${reason}\n\nIf this keeps happening, try: /gsd doctor heal`, "error");
+        ctx.ui.notify(`Plan gate failed-closed: ${reason}\n\nIf this keeps happening, try: /otto doctor heal`, "error");
         await deps.pauseAuto(ctx, pi);
         return { action: "break", reason: "plan-v2-gate-failed" };
       }
@@ -989,7 +989,7 @@ export async function runPreDispatch(
   if (
     prefs?.slice_parallel?.enabled &&
     mid &&
-    !(process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) &&
+    !(process.env.OTTO_PARALLEL_WORKER ?? process.env.OTTO_PARALLEL_WORKER) &&
     isDbAvailable()
   ) {
     try {
@@ -1088,7 +1088,7 @@ export async function runPreDispatch(
 
     const vizPrefs = prefs;
     if (vizPrefs?.auto_visualize) {
-      ctx.ui.notify("Run /gsd visualize to see progress overview.", "info");
+      ctx.ui.notify("Run /otto visualize to see progress overview.", "info");
     }
     if (vizPrefs?.auto_report !== false) {
       try {
@@ -1778,7 +1778,7 @@ export async function runGuards(
     // In parallel worker mode, only count cost from the current auto-mode session
     // to avoid hitting the ceiling due to historical project-wide spend (#2184).
     let costUnits = currentLedger?.units;
-    if ((process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) && s.autoStartTime && Array.isArray(costUnits)) {
+    if ((process.env.OTTO_PARALLEL_WORKER ?? process.env.OTTO_PARALLEL_WORKER) && s.autoStartTime && Array.isArray(costUnits)) {
       const sessionStartISO = new Date(s.autoStartTime).toISOString();
       costUnits = costUnits.filter(
         (u: { startedAt?: string }) => u.startedAt != null && u.startedAt >= sessionStartISO,
@@ -1844,7 +1844,7 @@ export async function runGuards(
         }
         if (effectiveAction === "pause") {
           ctx.ui.notify(
-            `${msg} Pausing auto-mode — /gsd auto to override and continue.`,
+            `${msg} Pausing auto-mode — /otto auto to override and continue.`,
             "warning",
           );
           deps.sendDesktopNotification(BRAND, msg, "warning", "budget", basename(s.originalBasePath || s.basePath));
@@ -1884,7 +1884,7 @@ export async function runGuards(
       const contextPercent = contextUsage!.percent as number;
       const msg = `Context window at ${contextPercent}% (threshold: ${contextThreshold}%). Pausing to prevent truncated output.`;
       ctx.ui.notify(
-        `${msg} Run /gsd auto to continue (will start fresh session).`,
+        `${msg} Run /otto auto to continue (will start fresh session).`,
         "warning",
       );
       deps.sendDesktopNotification(
@@ -2079,7 +2079,7 @@ export async function runUnitPhase(
           : diagnostic;
       const retryInstruction =
         unitType === "execute-task"
-          ? "The required artifact is `T##-SUMMARY.md`. Do NOT manually write this file. Call `gsd_task_complete` with `milestoneId`, `sliceId`, `taskId`, and the required completion fields. Do not re-run implementation work — call the tool."
+          ? "The required artifact is `T##-SUMMARY.md`. Do NOT manually write this file. Call `otto_task_complete` with `milestoneId`, `sliceId`, `taskId`, and the required completion fields. Do not re-run implementation work — call the tool."
           : "Fix whatever went wrong and make sure you write the required file this time.";
       finalPrompt = `**RETRY — your previous attempt did not produce the required artifact.**\n\nDiagnostic from previous attempt:\n${cappedDiag}\n\n${retryInstruction}\n\n---\n\n${finalPrompt}`;
     }

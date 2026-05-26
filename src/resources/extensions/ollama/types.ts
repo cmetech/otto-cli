@@ -1,4 +1,4 @@
-// LOOP24 — Ollama API response types
+// OTTO — Ollama API response types
 
 /**
  * Type definitions for the Ollama REST API.

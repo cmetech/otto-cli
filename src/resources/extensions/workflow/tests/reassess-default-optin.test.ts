@@ -26,7 +26,7 @@ const REASSESS_RULE_NAME = "reassess-roadmap (post-completion)";
 
 function makeIsolatedBase(): string {
   const base = join(tmpdir(), `gsd-reassess-default-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
   return base;
 }
 
@@ -122,8 +122,8 @@ test("ADR-003 §4: plan-slice prompt and MCP tool agree on reassess sliceChanges
   const tools: Record<string, any> = {};
   registerDbTools({ registerTool(tool: any) { tools[tool.name] = tool; } } as any);
 
-  const reassessTool = tools.gsd_reassess_roadmap;
-  assert.ok(reassessTool, "gsd_reassess_roadmap should be registered");
+  const reassessTool = tools.otto_reassess_roadmap;
+  assert.ok(reassessTool, "otto_reassess_roadmap should be registered");
   const sliceChanges = reassessTool.parameters.properties.sliceChanges.properties;
   assert.ok(sliceChanges.modified, "tool schema exposes sliceChanges.modified");
   assert.ok(sliceChanges.added, "tool schema exposes sliceChanges.added");
@@ -133,10 +133,10 @@ test("ADR-003 §4: plan-slice prompt and MCP tool agree on reassess sliceChanges
 test("ADR-003 §4: rendered plan-slice prompt documents reassess sliceChanges shape", async () => {
   const base = makeIsolatedBase();
   try {
-    const msDir = join(base, ".gsd", "milestones", "M001");
+    const msDir = join(base, ".otto/workflow", "milestones", "M001");
     writeFileSync(join(msDir, "M001-ROADMAP.md"), "# Roadmap\n\n## Slices\n\n- [ ] **S01: First** `risk:low` `depends:[]`\n");
     const prompt = await buildPlanSlicePrompt("M001", "Test", "S01", "First", base, "minimal");
-    assert.match(prompt, /gsd_reassess_roadmap/);
+    assert.match(prompt, /otto_reassess_roadmap/);
     assert.match(prompt, /sliceChanges\.modified/);
     assert.match(prompt, /sliceChanges\.added/);
     assert.match(prompt, /sliceChanges\.removed/);

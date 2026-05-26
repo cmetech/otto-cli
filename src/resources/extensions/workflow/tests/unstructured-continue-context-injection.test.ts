@@ -36,8 +36,8 @@ describe("#3615 — RESUME_INTENT_PATTERNS behavior", () => {
   const shouldNotMatch = [
     "help",
     "status",
-    "/gsd auto",
-    "/gsd stats",
+    "/otto auto",
+    "/otto stats",
     "what's the plan?",
     "show me the logs",
     "abort",

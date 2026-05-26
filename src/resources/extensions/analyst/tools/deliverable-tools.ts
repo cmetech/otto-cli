@@ -1,4 +1,4 @@
-import type { ToolDefinition } from "@loop24/pi-coding-agent";
+import type { ToolDefinition } from "@otto/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 import type { DeliverableStore } from "../deliverables/store.js";
 

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Pre-migration backup helper for workflow database schema upgrades.
 
 import type { DbAdapter } from "./db-adapter.js";

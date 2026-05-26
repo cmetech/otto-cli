@@ -4,7 +4,7 @@
  * Contains: InspectData type, formatInspectOutput, handleInspect
  */
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { workflowRoot } from "./paths.js";
@@ -21,7 +21,7 @@ export interface InspectData {
 
 export function formatInspectOutput(data: InspectData): string {
   const lines: string[] = [];
-  lines.push("=== GSD Database Inspect ===");
+  lines.push("=== OTTO Database Inspect ===");
   lines.push(`Schema version: ${data.schemaVersion ?? "unknown"}`);
   lines.push("");
   lines.push(`Decisions:    ${data.counts.decisions}`);
@@ -53,7 +53,7 @@ export async function handleInspect(ctx: ExtensionCommandContext): Promise<void>
 
     if (!isDbAvailable()) {
       const workflowDir = workflowRoot(process.cwd());
-      const dbPath = join(workflowDir, "gsd.db");
+      const dbPath = join(workflowDir, "otto.db");
       if (!existsSync(workflowDir) || !existsSync(dbPath) || !openDatabase(dbPath)) {
         ctx.ui.notify(`No ${BRAND} database available. Run ${slashCommand("auto")} to create one.`, "info");
         return;

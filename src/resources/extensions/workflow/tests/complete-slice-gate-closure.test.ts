@@ -67,11 +67,11 @@ describe("complete-slice closes complete-slice-owned gates", () => {
 
     basePath = fs.mkdtempSync(path.join(os.tmpdir(), "gsd-slice-gate-handler-"));
     const sliceDir = path.join(
-      basePath, ".gsd", "milestones", "M001", "slices", "S01", "tasks",
+      basePath, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks",
     );
     fs.mkdirSync(sliceDir, { recursive: true });
     fs.writeFileSync(
-      path.join(basePath, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+      path.join(basePath, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
       [
         "# M001: Test Milestone",
         "",

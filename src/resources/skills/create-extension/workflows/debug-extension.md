@@ -24,7 +24,7 @@
 
 ```bash
 # Test in isolation
-gsd -e ./path/to/extension.ts
+otto -e ./path/to/extension.ts
 
 # Check agent startup output for errors
 # Extension errors are logged but don't crash the agent
@@ -35,10 +35,10 @@ gsd -e ./path/to/extension.ts
 Community extensions must be in auto-discovery paths:
 - `~/.pi/agent/extensions/*.ts`
 - `~/.pi/agent/extensions/*/index.ts`
-- `.gsd/extensions/*.ts`
-- `.gsd/extensions/*/index.ts`
+- `.otto/workflow/extensions/*.ts`
+- `.otto/workflow/extensions/*/index.ts`
 
-Note: `~/.gsd/agent/extensions/` is reserved for bundled extensions synced from the gsd-pi package.
+Note: `~/.otto/agent/extensions/` is reserved for bundled extensions synced from the otto-pi package.
 
 The file must `export default function(pi: ExtensionAPI) { ... }`.
 

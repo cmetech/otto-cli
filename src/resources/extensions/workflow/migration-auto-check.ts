@@ -97,7 +97,7 @@ export async function checkMarkdownHierarchyAgainstDb(
 
   const opened = await ensureDbOpen(basePath);
   if (!opened || !isDbAvailable()) {
-    throw new Error(`failed to open or create the GSD database at ${basePath}`);
+    throw new Error(`failed to open or create the OTTO database at ${basePath}`);
   }
 
   const beforeDb = countDbHierarchy();
@@ -116,6 +116,6 @@ export async function checkMarkdownHierarchyAgainstDb(
     message:
       `Markdown planning artifacts (${markdown.milestones}M/${markdown.slices}S/${markdown.tasks}T) ` +
       `do not match the authoritative DB (${beforeDb.milestones}M/${beforeDb.slices}S/${beforeDb.tasks}T). ` +
-      "Runtime startup will not import markdown automatically; run explicit GSD recovery if markdown should repopulate the database.",
+      "Runtime startup will not import markdown automatically; run explicit OTTO recovery if markdown should repopulate the database.",
   };
 }

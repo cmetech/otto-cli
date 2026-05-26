@@ -9,7 +9,7 @@ import type { PhaseAnchor } from "../phase-anchor.js";
 
 function makeTempBase(): string {
   const tmp = mkdtempSync(join(tmpdir(), "gsd-anchor-test-"));
-  mkdirSync(join(tmp, ".gsd", "milestones", "M001", "anchors"), { recursive: true });
+  mkdirSync(join(tmp, ".otto/workflow", "milestones", "M001", "anchors"), { recursive: true });
   return tmp;
 }
 
@@ -26,7 +26,7 @@ test("writePhaseAnchor creates anchor file in correct location", () => {
       nextSteps: ["Plan the implementation slices"],
     };
     writePhaseAnchor(base, "M001", anchor);
-    assert.ok(existsSync(join(base, ".gsd", "milestones", "M001", "anchors", "discuss.json")));
+    assert.ok(existsSync(join(base, ".otto/workflow", "milestones", "M001", "anchors", "discuss.json")));
   } finally {
     rmSync(base, { recursive: true, force: true });
   }

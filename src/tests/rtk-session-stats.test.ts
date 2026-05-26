@@ -16,17 +16,17 @@ import { createFakeRtk } from "./rtk-test-utils.ts";
 let originalRtkDisabled: string | undefined;
 
 beforeEach(() => {
-  // Save and clear GSD_RTK_DISABLED so tests can use fake RTK binaries
-  originalRtkDisabled = process.env.GSD_RTK_DISABLED;
-  delete process.env.GSD_RTK_DISABLED;
+  // Save and clear OTTO_RTK_DISABLED so tests can use fake RTK binaries
+  originalRtkDisabled = process.env.OTTO_RTK_DISABLED;
+  delete process.env.OTTO_RTK_DISABLED;
 });
 
 afterEach(() => {
   // Restore original env
   if (originalRtkDisabled !== undefined) {
-    process.env.GSD_RTK_DISABLED = originalRtkDisabled;
+    process.env.OTTO_RTK_DISABLED = originalRtkDisabled;
   } else {
-    delete process.env.GSD_RTK_DISABLED;
+    delete process.env.OTTO_RTK_DISABLED;
   }
 });
 
@@ -46,7 +46,7 @@ function summary(totalCommands: number, totalInput: number, totalOutput: number,
 
 test("RTK session savings diff from a persisted baseline", () => {
   const basePath = mkdtempSync(join(tmpdir(), "gsd-rtk-session-stats-"));
-  mkdirSync(join(basePath, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow", "runtime"), { recursive: true });
 
   const first = createFakeRtk({
     "gain --all --format json": { stdout: summary(10, 1000, 600, 400) },
@@ -55,12 +55,12 @@ test("RTK session savings diff from a persisted baseline", () => {
     "gain --all --format json": { stdout: summary(14, 1600, 900, 700, 1800) },
   });
 
-  const previous = process.env.GSD_RTK_PATH;
+  const previous = process.env.OTTO_RTK_PATH;
   try {
-    process.env.GSD_RTK_PATH = first.path;
+    process.env.OTTO_RTK_PATH = first.path;
     ensureRtkSessionBaseline(basePath, "sess-1");
 
-    process.env.GSD_RTK_PATH = second.path;
+    process.env.OTTO_RTK_PATH = second.path;
     const savings = getRtkSessionSavings(basePath, "sess-1");
     assert.ok(savings, "expected RTK savings snapshot");
     assert.equal(savings?.commands, 4);
@@ -69,8 +69,8 @@ test("RTK session savings diff from a persisted baseline", () => {
     assert.equal(savings?.savedTokens, 300);
     assert.equal(Math.round(savings?.savingsPct ?? 0), 50);
   } finally {
-    if (previous === undefined) delete process.env.GSD_RTK_PATH;
-    else process.env.GSD_RTK_PATH = previous;
+    if (previous === undefined) delete process.env.OTTO_RTK_PATH;
+    else process.env.OTTO_RTK_PATH = previous;
     first.cleanup();
     second.cleanup();
     rmSync(basePath, { recursive: true, force: true });
@@ -79,7 +79,7 @@ test("RTK session savings diff from a persisted baseline", () => {
 
 test("RTK session savings baseline resets cleanly when tracking totals go backwards", () => {
   const basePath = mkdtempSync(join(tmpdir(), "gsd-rtk-session-reset-"));
-  mkdirSync(join(basePath, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow", "runtime"), { recursive: true });
 
   const first = createFakeRtk({
     "gain --all --format json": { stdout: summary(8, 800, 500, 300) },
@@ -88,28 +88,28 @@ test("RTK session savings baseline resets cleanly when tracking totals go backwa
     "gain --all --format json": { stdout: summary(1, 100, 80, 20) },
   });
 
-  const previous = process.env.GSD_RTK_PATH;
+  const previous = process.env.OTTO_RTK_PATH;
   try {
-    process.env.GSD_RTK_PATH = first.path;
+    process.env.OTTO_RTK_PATH = first.path;
     ensureRtkSessionBaseline(basePath, "sess-2");
 
-    process.env.GSD_RTK_PATH = second.path;
+    process.env.OTTO_RTK_PATH = second.path;
     const savings = getRtkSessionSavings(basePath, "sess-2");
     assert.ok(savings, "expected RTK savings snapshot");
     assert.equal(savings?.commands, 0);
     assert.equal(savings?.savedTokens, 0);
   } finally {
-    if (previous === undefined) delete process.env.GSD_RTK_PATH;
-    else process.env.GSD_RTK_PATH = previous;
+    if (previous === undefined) delete process.env.OTTO_RTK_PATH;
+    else process.env.OTTO_RTK_PATH = previous;
     first.cleanup();
     second.cleanup();
     rmSync(basePath, { recursive: true, force: true });
   }
 });
 
-test("RTK session stats fall back to the managed RTK path when GSD_RTK_PATH is unset", () => {
+test("RTK session stats fall back to the managed RTK path when OTTO_RTK_PATH is unset", () => {
   const basePath = mkdtempSync(join(tmpdir(), "gsd-rtk-session-managed-"));
-  mkdirSync(join(basePath, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow", "runtime"), { recursive: true });
 
   const fake = createFakeRtk({
     "gain --all --format json": { stdout: summary(6, 900, 500, 400) },
@@ -123,18 +123,18 @@ test("RTK session stats fall back to the managed RTK path when GSD_RTK_PATH is u
     chmodSync(managedPath, 0o755);
   }
 
-  const previousHome = process.env.GSD_HOME;
-  const previousPath = process.env.GSD_RTK_PATH;
+  const previousHome = process.env.OTTO_HOME;
+  const previousPath = process.env.OTTO_RTK_PATH;
 
   try {
-    process.env.GSD_HOME = managedHome;
-    delete process.env.GSD_RTK_PATH;
+    process.env.OTTO_HOME = managedHome;
+    delete process.env.OTTO_RTK_PATH;
 
     const env: NodeJS.ProcessEnv = {
       ...process.env,
-      GSD_HOME: managedHome,
+      OTTO_HOME: managedHome,
     };
-    delete env.GSD_RTK_PATH;
+    delete env.OTTO_RTK_PATH;
 
     const baseline = ensureRtkSessionBaseline(basePath, "sess-managed", env);
     assert.ok(baseline, "expected baseline from managed RTK path");
@@ -143,10 +143,10 @@ test("RTK session stats fall back to the managed RTK path when GSD_RTK_PATH is u
     assert.ok(savings, "expected savings snapshot from managed RTK path");
     assert.equal(savings?.commands, 0);
   } finally {
-    if (previousHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousHome;
-    if (previousPath === undefined) delete process.env.GSD_RTK_PATH;
-    else process.env.GSD_RTK_PATH = previousPath;
+    if (previousHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = previousHome;
+    if (previousPath === undefined) delete process.env.OTTO_RTK_PATH;
+    else process.env.OTTO_RTK_PATH = previousPath;
     fake.cleanup();
     rmSync(managedHome, { recursive: true, force: true });
     rmSync(basePath, { recursive: true, force: true });
@@ -185,22 +185,22 @@ test("formatRtkSavingsLabel produces a compact footer string", () => {
 
 test("clearRtkSessionBaseline removes a stored session entry", () => {
   const basePath = mkdtempSync(join(tmpdir(), "gsd-rtk-session-clear-"));
-  mkdirSync(join(basePath, ".gsd", "runtime"), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow", "runtime"), { recursive: true });
   const fake = createFakeRtk({
     "gain --all --format json": { stdout: summary(3, 300, 200, 100) },
   });
-  const previous = process.env.GSD_RTK_PATH;
+  const previous = process.env.OTTO_RTK_PATH;
 
   try {
-    process.env.GSD_RTK_PATH = fake.path;
+    process.env.OTTO_RTK_PATH = fake.path;
     ensureRtkSessionBaseline(basePath, "sess-clear");
     clearRtkSessionBaseline(basePath, "sess-clear");
     const savings = getRtkSessionSavings(basePath, "sess-clear");
     assert.ok(savings, "expected savings snapshot after baseline recreation");
     assert.equal(savings?.commands, 0);
   } finally {
-    if (previous === undefined) delete process.env.GSD_RTK_PATH;
-    else process.env.GSD_RTK_PATH = previous;
+    if (previous === undefined) delete process.env.OTTO_RTK_PATH;
+    else process.env.OTTO_RTK_PATH = previous;
     fake.cleanup();
     rmSync(basePath, { recursive: true, force: true });
   }

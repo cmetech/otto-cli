@@ -1,12 +1,12 @@
 /**
  * GSD2 — regression tests for #5187 and git-root anchor guard:
  *
- * #5187: workflowRoot() must refuse to use the global GSD home (~/.gsd) as a
- * project .gsd directory when basePath resolves to $HOME. Paths under
- * ~/.gsd/projects/<hash>/ remain valid.
+ * #5187: workflowRoot() must refuse to use the global OTTO home (~/.otto) as a
+ * project .otto/workflow directory when basePath resolves to $HOME. Paths under
+ * ~/.otto/workflow/projects/<hash>/ remain valid.
  *
- * git-root anchor guard: when $HOME is itself a git repo and ~/.gsd exists,
- * workflowRoot() must NOT return ~/.gsd for a subdir basePath like ~/projects/foo.
+ * git-root anchor guard: when $HOME is itself a git repo and ~/.otto exists,
+ * workflowRoot() must NOT return ~/.otto for a subdir basePath like ~/projects/foo.
  * It should fall through to step 4 (creation fallback) instead.
  */
 
@@ -19,7 +19,7 @@ import { spawnSync } from 'node:child_process';
 
 import { workflowRoot, _clearWorkflowRootCache } from '../paths.ts';
 
-describe('workflowRoot() refuses ~/.gsd as project state when basePath is $HOME (#5187)', () => {
+describe('workflowRoot() refuses ~/.otto as project state when basePath is $HOME (#5187)', () => {
   let fakeHome: string;
   let savedHome: string | undefined;
   let savedUserProfile: string | undefined;
@@ -27,15 +27,15 @@ describe('workflowRoot() refuses ~/.gsd as project state when basePath is $HOME 
 
   beforeEach(() => {
     fakeHome = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-home-guard-')));
-    mkdirSync(join(fakeHome, '.gsd'), { recursive: true });
+    mkdirSync(join(fakeHome, '.otto/workflow'), { recursive: true });
 
     savedHome = process.env.HOME;
     savedUserProfile = process.env.USERPROFILE;
-    savedWorkflowHome = process.env.GSD_HOME;
+    savedWorkflowHome = process.env.OTTO_HOME;
 
     process.env.HOME = fakeHome;
     process.env.USERPROFILE = fakeHome;
-    delete process.env.GSD_HOME;
+    delete process.env.OTTO_HOME;
 
     _clearWorkflowRootCache();
   });
@@ -45,8 +45,8 @@ describe('workflowRoot() refuses ~/.gsd as project state when basePath is $HOME 
     else process.env.HOME = savedHome;
     if (savedUserProfile === undefined) delete process.env.USERPROFILE;
     else process.env.USERPROFILE = savedUserProfile;
-    if (savedWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = savedWorkflowHome;
+    if (savedWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = savedWorkflowHome;
 
     _clearWorkflowRootCache();
     rmSync(fakeHome, { recursive: true, force: true });
@@ -59,7 +59,7 @@ describe('workflowRoot() refuses ~/.gsd as project state when basePath is $HOME 
         assert.ok(err instanceof Error, 'should throw an Error');
         assert.match(
           (err as Error).message,
-          /global GSD home|project .gsd directory/i,
+          /home directory|project workflow directory/i,
           'message should explain the refusal',
         );
         return true;
@@ -67,29 +67,29 @@ describe('workflowRoot() refuses ~/.gsd as project state when basePath is $HOME 
     );
   });
 
-  test('does NOT throw for paths under ~/.gsd/projects/<hash>/', () => {
-    const projectStateDir = join(fakeHome, '.gsd', 'projects', 'abcdef123456');
-    mkdirSync(join(projectStateDir, '.gsd'), { recursive: true });
+  test('does NOT throw for paths under ~/.otto/workflow/projects/<hash>/', () => {
+    const projectStateDir = join(fakeHome, '.otto/workflow', 'projects', 'abcdef123456');
+    mkdirSync(join(projectStateDir, '.otto/workflow'), { recursive: true });
     _clearWorkflowRootCache();
 
     const resolved = workflowRoot(projectStateDir);
-    assert.equal(resolved, join(projectStateDir, '.gsd'));
+    assert.equal(resolved, join(projectStateDir, '.otto/workflow'));
   });
 
-  test('does NOT throw for an unrelated project directory that has its own .gsd', () => {
+  test('does NOT throw for an unrelated project directory that has its own .otto/workflow', () => {
     const projectDir = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-home-guard-proj-')));
-    mkdirSync(join(projectDir, '.gsd'), { recursive: true });
+    mkdirSync(join(projectDir, '.otto/workflow'), { recursive: true });
     _clearWorkflowRootCache();
     try {
       const resolved = workflowRoot(projectDir);
-      assert.equal(resolved, join(projectDir, '.gsd'));
+      assert.equal(resolved, join(projectDir, '.otto/workflow'));
     } finally {
       rmSync(projectDir, { recursive: true, force: true });
     }
   });
 });
 
-describe('git-root anchor guard: subdir basePath must not resolve to ~/.gsd', () => {
+describe('git-root anchor guard: subdir basePath must not resolve to ~/.otto', () => {
   let fakeHome: string;
   let subDir: string;
   let savedHome: string | undefined;
@@ -101,19 +101,19 @@ describe('git-root anchor guard: subdir basePath must not resolve to ~/.gsd', ()
     fakeHome = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-anchor-guard-')));
     // Init a bare-minimum git repo so git rev-parse --show-toplevel returns fakeHome.
     spawnSync('git', ['init', fakeHome], { encoding: 'utf-8' });
-    // Create ~/.gsd (the global home that must NOT be used for project subdirs).
-    mkdirSync(join(fakeHome, '.gsd'), { recursive: true });
+    // Create ~/.otto (the global home that must NOT be used for project subdirs).
+    mkdirSync(join(fakeHome, '.otto/workflow'), { recursive: true });
     // Create a subdir inside the git repo — this is the project basePath.
     subDir = join(fakeHome, 'projects', 'foo');
     mkdirSync(subDir, { recursive: true });
 
     savedHome = process.env.HOME;
     savedUserProfile = process.env.USERPROFILE;
-    savedWorkflowHome = process.env.GSD_HOME;
+    savedWorkflowHome = process.env.OTTO_HOME;
 
     process.env.HOME = fakeHome;
     process.env.USERPROFILE = fakeHome;
-    delete process.env.GSD_HOME;
+    delete process.env.OTTO_HOME;
 
     _clearWorkflowRootCache();
   });
@@ -123,26 +123,26 @@ describe('git-root anchor guard: subdir basePath must not resolve to ~/.gsd', ()
     else process.env.HOME = savedHome;
     if (savedUserProfile === undefined) delete process.env.USERPROFILE;
     else process.env.USERPROFILE = savedUserProfile;
-    if (savedWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = savedWorkflowHome;
+    if (savedWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = savedWorkflowHome;
 
     _clearWorkflowRootCache();
     rmSync(fakeHome, { recursive: true, force: true });
   });
 
-  test('does NOT return ~/.gsd when $HOME is a git repo and basePath is a subdir', () => {
+  test('does NOT return ~/.otto when $HOME is a git repo and basePath is a subdir', () => {
     // fakeHome IS the git root AND $HOME, so git rev-parse returns fakeHome,
-    // and ~/.gsd (fakeHome/.gsd) exists. The guard must skip that candidate
-    // and fall through to the creation fallback: subDir/.gsd.
+    // and ~/.otto (fakeHome/.otto/workflow) exists. The guard must skip that candidate
+    // and fall through to the creation fallback: subDir/.otto/workflow.
     const result = workflowRoot(subDir);
     assert.notEqual(
       result,
-      join(fakeHome, '.gsd'),
-      'workflowRoot must not return ~/.gsd for a subdir basePath',
+      join(fakeHome, '.otto/workflow'),
+      'workflowRoot must not return ~/.otto for a subdir basePath',
     );
     assert.equal(
       result,
-      join(subDir, '.gsd'),
+      join(subDir, '.otto/workflow'),
       'workflowRoot should fall through to the creation fallback for a subdir',
     );
   });

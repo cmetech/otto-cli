@@ -52,7 +52,7 @@ To call this milestone complete, we must prove:
 ---
 
 > Add additional decisions as separate `### Decision Title` blocks following the same structure above.
-> See `.gsd/DECISIONS.md` for the full append-only register of all project decisions.
+> See `.otto/workflow/DECISIONS.md` for the full append-only register of all project decisions.
 
 ## Error Handling Strategy
 

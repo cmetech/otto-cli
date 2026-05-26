@@ -5,12 +5,12 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 const workflowHome = mkdtempSync(join(tmpdir(), "gsd-onboarding-reentry-"))
-process.env.GSD_HOME = workflowHome
+process.env.OTTO_HOME = workflowHome
 const { handleOnboarding } = await import("../resources/extensions/workflow/commands/handlers/onboarding.ts")
 
 after(() => rmSync(workflowHome, { recursive: true, force: true }))
 
-// Regression for #4470: /gsd onboarding re-entry must route through the
+// Regression for #4470: /otto onboarding re-entry must route through the
 // TUI-owned setup hub instead of replaying the first-run clack wizard.
 
 test("re-entry onboarding handler opens the TUI setup hub and routes selected steps", async () => {
@@ -31,7 +31,7 @@ test("re-entry onboarding handler opens the TUI setup hub and routes selected st
   await handleOnboarding("", ctx as any)
 
   assert.equal(selections.length, 1)
-  assert.equal(selections[0].message, "GSD Setup — pick a step to configure")
+  assert.equal(selections[0].message, "OTTO Setup — pick a step to configure")
   assert.ok(selections[0].options.some((option) => option.includes("LLM")))
   assert.equal(notifications.length, 1)
   assert.match(notifications[0].message, /LLM provider setup/)

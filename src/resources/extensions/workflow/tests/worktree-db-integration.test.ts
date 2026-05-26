@@ -5,8 +5,8 @@
  * Uses real temp git repos and real SQLite databases.
  *
  * Test cases:
- *   1. Copy: createAutoWorktree seeds .gsd/gsd.db into the worktree when main has one
- *   2. Copy-skip: createAutoWorktree silently skips when main has no gsd.db
+ *   1. Copy: createAutoWorktree seeds .otto/workflow/otto.db into the worktree when main has one
+ *   2. Copy-skip: createAutoWorktree silently skips when main has no otto.db
  *   3. Reconcile: reconcileWorktreeDb merges worktree rows into main DB
  *   4. Reconcile-skip: reconcileWorktreeDb is non-fatal when both paths are nonexistent
  *   5. Failure path: reconcileWorktreeDb emits to stderr on open failure (observable)
@@ -67,10 +67,10 @@ describe('worktree-db-integration', async () => {
       const tempDir = createTempRepo();
       tempDirs.push(tempDir);
 
-      // Seed a gsd.db in the main repo
-      const workflowDir = join(tempDir, ".gsd");
+      // Seed a otto.db in the main repo
+      const workflowDir = join(tempDir, ".otto/workflow");
       mkdirSync(workflowDir, { recursive: true });
-      const mainDbPath = join(workflowDir, "gsd.db");
+      const mainDbPath = join(workflowDir, "otto.db");
       openDatabase(mainDbPath);
       closeDatabase();
 
@@ -81,10 +81,10 @@ describe('worktree-db-integration', async () => {
       // createAutoWorktree should copy the DB into the worktree
       const wtPath = createAutoWorktree(tempDir, "M004");
 
-      const worktreeDbPath = join(worktreePath(tempDir, "M004"), ".gsd", "gsd.db");
+      const worktreeDbPath = join(worktreePath(tempDir, "M004"), ".otto/workflow", "otto.db");
       assert.ok(
         existsSync(worktreeDbPath),
-        "gsd.db exists in worktree .gsd after createAutoWorktree",
+        "otto.db exists in worktree .otto/workflow after createAutoWorktree",
       );
 
       // Restore cwd for next test
@@ -97,7 +97,7 @@ describe('worktree-db-integration', async () => {
       const tempDir = createTempRepo();
       tempDirs.push(tempDir);
 
-      // No gsd.db — just a bare repo
+      // No otto.db — just a bare repo
       let threw = false;
       let wtPath: string | null = null;
       try {
@@ -109,10 +109,10 @@ describe('worktree-db-integration', async () => {
 
       assert.ok(!threw, "createAutoWorktree does not throw when no source DB");
 
-      const worktreeDbPath = join(worktreePath(tempDir, "M004"), ".gsd", "gsd.db");
+      const worktreeDbPath = join(worktreePath(tempDir, "M004"), ".otto/workflow", "otto.db");
       assert.ok(
         !existsSync(worktreeDbPath),
-        "gsd.db is absent in worktree when source had none",
+        "otto.db is absent in worktree when source had none",
       );
 
       process.chdir(savedCwd);
@@ -161,7 +161,7 @@ describe('worktree-db-integration', async () => {
     {
       let threw = false;
       try {
-        reconcileWorktreeDb("/nonexistent/path/gsd.db", "/also/nonexistent/gsd.db");
+        reconcileWorktreeDb("/nonexistent/path/otto.db", "/also/nonexistent/otto.db");
       } catch {
         threw = true;
       }

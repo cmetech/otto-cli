@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for telemetry counters guarding legacy compatibility cleanup.
 
 import test from "node:test";
@@ -53,7 +53,7 @@ test("legacy telemetry emits one actionable diagnostic per counter", () => {
     assert.equal(logs.length, 1);
     assert.equal(logs[0]?.component, "migration");
     assert.equal(logs[0]?.context?.counter, "legacy.mcpAliasUsed");
-    assert.match(logs[0]?.message ?? "", /canonical gsd_\* tool name/);
+    assert.match(logs[0]?.message ?? "", /canonical otto_\* tool name/);
   } finally {
     _resetLogs();
     resetLegacyTelemetry();
@@ -63,13 +63,13 @@ test("legacy telemetry emits one actionable diagnostic per counter", () => {
 
 test("legacy telemetry can persist an opt-in snapshot file", () => {
   const previousStderr = setStderrLoggingEnabled(false);
-  const previousOutput = process.env.GSD_LEGACY_TELEMETRY_FILE;
+  const previousOutput = process.env.OTTO_LEGACY_TELEMETRY_FILE;
   const base = mkdtempSync(join(tmpdir(), "gsd-legacy-telemetry-file-"));
   const outputPath = join(base, "runtime", "legacy-telemetry.json");
   try {
     resetLegacyTelemetry();
     _resetLogs();
-    process.env.GSD_LEGACY_TELEMETRY_FILE = outputPath;
+    process.env.OTTO_LEGACY_TELEMETRY_FILE = outputPath;
 
     incrementLegacyTelemetry("legacy.providerDefaultUsed", 2);
 
@@ -77,8 +77,8 @@ test("legacy telemetry can persist an opt-in snapshot file", () => {
     assert.equal(typeof report.ts, "string");
     assert.equal(report.counters["legacy.providerDefaultUsed"], 2);
   } finally {
-    if (previousOutput === undefined) delete process.env.GSD_LEGACY_TELEMETRY_FILE;
-    else process.env.GSD_LEGACY_TELEMETRY_FILE = previousOutput;
+    if (previousOutput === undefined) delete process.env.OTTO_LEGACY_TELEMETRY_FILE;
+    else process.env.OTTO_LEGACY_TELEMETRY_FILE = previousOutput;
     _resetLogs();
     resetLegacyTelemetry();
     setStderrLoggingEnabled(previousStderr);
@@ -87,12 +87,12 @@ test("legacy telemetry can persist an opt-in snapshot file", () => {
 });
 
 test("legacy telemetry can persist a zero-use snapshot for deletion gates", () => {
-  const previousOutput = process.env.GSD_LEGACY_TELEMETRY_FILE;
+  const previousOutput = process.env.OTTO_LEGACY_TELEMETRY_FILE;
   const base = mkdtempSync(join(tmpdir(), "gsd-legacy-zero-telemetry-"));
   const outputPath = join(base, "legacy-telemetry.json");
   try {
     resetLegacyTelemetry();
-    process.env.GSD_LEGACY_TELEMETRY_FILE = outputPath;
+    process.env.OTTO_LEGACY_TELEMETRY_FILE = outputPath;
 
     persistLegacyTelemetrySnapshot();
 
@@ -106,8 +106,8 @@ test("legacy telemetry can persist a zero-use snapshot for deletion gates", () =
       "legacy.providerDefaultUsed": 0,
     });
   } finally {
-    if (previousOutput === undefined) delete process.env.GSD_LEGACY_TELEMETRY_FILE;
-    else process.env.GSD_LEGACY_TELEMETRY_FILE = previousOutput;
+    if (previousOutput === undefined) delete process.env.OTTO_LEGACY_TELEMETRY_FILE;
+    else process.env.OTTO_LEGACY_TELEMETRY_FILE = previousOutput;
     resetLegacyTelemetry();
     rmSync(base, { recursive: true, force: true });
   }

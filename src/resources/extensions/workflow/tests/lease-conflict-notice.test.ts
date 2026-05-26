@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for user-facing milestone lease conflict notices.
 
 import test from "node:test";
@@ -16,8 +16,8 @@ test("lease conflict notice explains the retry action before worker details", ()
   });
 
   const lines = message.split("\n");
-  assert.match(lines[0] ?? "", /^Blocked: M012 is already active in another GSD worker\./);
-  assert.match(lines[0] ?? "", /Retry with \/gsd auto/);
+  assert.match(lines[0] ?? "", /^Blocked: M012 is already active in another OTTO worker\./);
+  assert.match(lines[0] ?? "", /Retry with \/otto auto/);
   assert.match(lines[0] ?? "", /about 45s/);
   assert.equal(lines[1], "Waiting unit: run-uat M012/S01.");
   assert.equal(lines[2], "Details: held by auto-Jeremys-MacBook-Pro-9.local-34036-ee4ef385.");
@@ -32,7 +32,7 @@ test("lease conflict notice keeps unknown reasons as details", () => {
     reason: "stale_lease",
   });
 
-  assert.match(message, /^Blocked: M012 is already active in another GSD worker\./);
-  assert.match(message, /Try \/gsd status/);
+  assert.match(message, /^Blocked: M012 is already active in another OTTO worker\./);
+  assert.match(message, /Try \/otto status/);
   assert.match(message, /Details: stale_lease/);
 });

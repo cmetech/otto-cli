@@ -2,14 +2,14 @@
 
 ## Overview
 
-GSD 2 uses a three-stage promotion pipeline that automatically moves merged PRs through **Dev → Test → Prod** environments using npm dist-tags.
+OTTO 2 uses a three-stage promotion pipeline that automatically moves merged PRs through **Dev → Test → Prod** environments using npm dist-tags.
 
 ```
 PR merged to main
         │
         ▼
    ┌─────────┐    ci.yml passes (build, test, typecheck)
-   │   DEV   │    → publishes gsd-pi@<version>-dev.<sha> with @dev tag
+   │   DEV   │    → publishes otto-pi@<version>-dev.<sha> with @dev tag
    └────┬────┘
         ▼ (automatic if green)
    ┌─────────┐    CLI smoke tests + LLM fixture replay
@@ -29,32 +29,32 @@ Every merged PR is immediately installable:
 
 ```bash
 # Latest dev build (bleeding edge, every merged PR)
-npx @opengsd/gsd-pi@dev
+npx @cmetech/otto@dev
 
 # Test candidate (passed smoke + fixture tests)
-npx @opengsd/gsd-pi@next
+npx @cmetech/otto@next
 
 # Stable production release
-npx @opengsd/gsd-pi@latest    # or just: npx @opengsd/gsd-pi
+npx @cmetech/otto@latest    # or just: npx @cmetech/otto
 ```
 
 ### Using Docker
 
 ```bash
 # Test candidate
-docker run --rm -v $(pwd):/workspace ghcr.io/open-gsd/gsd-pi:next --version
+docker run --rm -v $(pwd):/workspace ghcr.io/cmetech/otto:next --version
 
 # Stable
-docker run --rm -v $(pwd):/workspace ghcr.io/open-gsd/gsd-pi:latest --version
+docker run --rm -v $(pwd):/workspace ghcr.io/cmetech/otto:latest --version
 ```
 
 ### Checking if a Fix Landed
 
 1. Find the PR's merge commit SHA (first 7 chars)
-2. Check if it's in `@dev`: `npm view @opengsd/gsd-pi@dev version`
+2. Check if it's in `@dev`: `npm view @cmetech/otto@dev version`
    - If the version ends in `-dev.<your-sha>`, your PR is in dev
-3. Check if it promoted to `@next`: `npm view @opengsd/gsd-pi@next version`
-4. Check if it's in production: `npm view @opengsd/gsd-pi@latest version`
+3. Check if it promoted to `@next`: `npm view @cmetech/otto@next version`
+4. Check if it's in production: `npm view @cmetech/otto@latest version`
 
 ## For Maintainers
 
@@ -144,12 +144,12 @@ If a broken version reaches production:
 
 ```bash
 # Roll back npm
-npm dist-tag add @opengsd/gsd-pi@<previous-good-version> latest
+npm dist-tag add @cmetech/otto@<previous-good-version> latest
 
 # Roll back Docker
-docker pull ghcr.io/open-gsd/gsd-pi:<previous-good-version>
-docker tag ghcr.io/open-gsd/gsd-pi:<previous-good-version> ghcr.io/open-gsd/gsd-pi:latest
-docker push ghcr.io/open-gsd/gsd-pi:latest
+docker pull ghcr.io/cmetech/otto:<previous-good-version>
+docker tag ghcr.io/cmetech/otto:<previous-good-version> ghcr.io/cmetech/otto:latest
+docker push ghcr.io/cmetech/otto:latest
 ```
 
 For `@dev` or `@next` rollbacks, the next successful merge will overwrite the tag automatically.
@@ -166,14 +166,14 @@ For `@dev` or `@next` rollbacks, the next successful merge will overwrite the ta
 | Secret: `ANTHROPIC_API_KEY` | Prod environment only |
 | Secret: `OPENAI_API_KEY` | Prod environment only |
 | Variable: `RUN_LIVE_TESTS` | `false` (set to `true` to enable live LLM tests) |
-| GHCR | Enabled for the `open-gsd` org |
+| GHCR | Enabled for the `cmetech` org |
 
 ### Docker Images
 
 | Image | Base | Purpose | Tags |
 |-------|------|---------|------|
-| `ghcr.io/open-gsd/gsd-ci-builder` | `node:24-bookworm` | CI build environment with Rust toolchain | `:latest`, `:<date>` |
-| `ghcr.io/open-gsd/gsd-pi` | `node:24-slim` | User-facing runtime | `:latest`, `:next`, `:v<version>` |
+| `ghcr.io/cmetech/otto-ci-builder` | `node:24-bookworm` | CI build environment with Rust toolchain | `:latest`, `:<date>` |
+| `ghcr.io/cmetech/otto` | `node:24-slim` | User-facing runtime | `:latest`, `:next`, `:v<version>` |
 
 The CI builder image is rebuilt automatically when its build inputs change. It eliminates ~3-5 min of toolchain setup per CI run.
 
@@ -191,7 +191,7 @@ npm run test:fixtures
 
 ```bash
 # Set your API key, then record
-GSD_FIXTURE_MODE=record GSD_FIXTURE_DIR=./tests/fixtures/recordings \
+OTTO_FIXTURE_MODE=record OTTO_FIXTURE_DIR=./tests/fixtures/recordings \
   node --experimental-strip-types tests/fixtures/record.ts
 ```
 

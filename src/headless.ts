@@ -1,7 +1,7 @@
 /**
  * Headless Orchestrator — `gsd headless`
  *
- * Runs any /loop24 subcommand without a TUI by spawning a child process in
+ * Runs any /otto subcommand without a TUI by spawning a child process in
  * RPC mode, auto-responding to extension UI requests, and streaming
  * progress to stderr.
  *
@@ -17,8 +17,8 @@ import { join } from 'node:path'
 import { resolve } from 'node:path'
 import { ChildProcess } from 'node:child_process'
 
-import { RpcClient, SessionManager, COMMAND_NAMESPACE } from '@loop24/pi-coding-agent'
-import type { SessionInfo } from '@loop24/pi-coding-agent'
+import { RpcClient, SessionManager, COMMAND_NAMESPACE } from '@otto/pi-coding-agent'
+import type { SessionInfo } from '@otto/pi-coding-agent'
 import { getProjectSessionsDir } from './project-sessions.js'
 import { loadAndValidateAnswerFile, AnswerInjector } from './headless-answers.js'
 
@@ -324,7 +324,7 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
     }
   }
 
-  // For new-milestone, load context and bootstrap .gsd/ before spawning RPC child
+  // For new-milestone, load context and bootstrap .otto/workflow before spawning RPC child
   if (isNewMilestone) {
     if (!options.context && !options.contextText) {
       process.stderr.write('[headless] Error: new-milestone requires --context <file> or --context-text <text>\n')
@@ -339,11 +339,11 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
       process.exit(1)
     }
 
-    // Bootstrap .gsd/ if needed
-    const workflowDir = join(process.cwd(), '.gsd')
+    // Bootstrap .otto/workflow if needed
+    const workflowDir = join(process.cwd(), '.otto', 'workflow')
     if (!existsSync(workflowDir)) {
       if (!options.json) {
-        process.stderr.write('[headless] Bootstrapping .gsd/ project structure...\n')
+        process.stderr.write('[headless] Bootstrapping .otto/workflow project structure...\n')
       }
       bootstrapWorkflowProject(process.cwd())
     }
@@ -354,10 +354,10 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
     writeFileSync(join(runtimeDir, 'headless-context.md'), contextContent, 'utf-8')
   }
 
-  // Validate .gsd/ directory (skip for new-milestone since we just bootstrapped it)
-  const workflowDir = join(process.cwd(), '.gsd')
+  // Validate .otto/workflow directory (skip for new-milestone since we just bootstrapped it)
+  const workflowDir = join(process.cwd(), '.otto', 'workflow')
   if (!isNewMilestone && !existsSync(workflowDir)) {
-    process.stderr.write('[headless] Error: No .gsd/ directory found in current directory.\n')
+    process.stderr.write('[headless] Error: No .otto/workflow directory found in current directory.\n')
     process.stderr.write("[headless] Run 'otto' interactively first to initialize a project.\n")
     process.exit(1)
   }
@@ -388,7 +388,7 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
   }
 
   // Doctor: read-only health check, no RPC child needed (#4904 live-regression).
-  // The interactive `/loop24 doctor` command lives in the workflow extension; this CLI
+  // The interactive `/otto doctor` command lives in the workflow extension; this CLI
   // path lets non-interactive callers (CI, recovery scripts, the live-regression
   // suite) get the same diagnostic without a TTY.
   if (options.command === 'doctor') {
@@ -412,9 +412,9 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
   }
 
   // Resolve CLI path for the child process
-  const cliPath = (process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH) || process.argv[1]
+  const cliPath = process.env.OTTO_BIN_PATH || process.argv[1]
   if (!cliPath) {
-    process.stderr.write('[headless] Error: Cannot determine CLI path. Set GSD_BIN_PATH or run via gsd.\n')
+    process.stderr.write('[headless] Error: Cannot determine CLI path. Set OTTO_BIN_PATH or run via gsd.\n')
     process.exit(1)
   }
 
@@ -430,7 +430,7 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
     clientOptions.env = injector.getSecretEnvVars()
   }
   // Signal headless mode to the workflow extension (skips UAT human pause, etc.)
-  clientOptions.env = { ...(clientOptions.env as Record<string, string> || {}), GSD_HEADLESS: '1' }
+  clientOptions.env = { ...(clientOptions.env as Record<string, string> || {}), OTTO_HEADLESS: '1' }
   // Propagate --bare to the child process
   if (options.bare) {
     clientOptions.args = [...((clientOptions.args as string[]) || []), '--bare']

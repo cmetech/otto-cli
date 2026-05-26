@@ -45,7 +45,7 @@ function makeCtx(basePath: string, state: WorkflowDbState, mid = "M001"): Dispat
 // ─── Disk scaffold helpers ────────────────────────────────────────────────
 
 function writeMilestoneFile(basePath: string, mid: string, suffix: string, content = "stub\n"): void {
-  const dir = join(basePath, ".gsd", "milestones", mid);
+  const dir = join(basePath, ".otto/workflow", "milestones", mid);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, `${mid}-${suffix}.md`), content);
 }
@@ -57,13 +57,13 @@ function writeSliceFile(
   suffix: string,
   content = "stub\n",
 ): void {
-  const dir = join(basePath, ".gsd", "milestones", mid, "slices", sid);
+  const dir = join(basePath, ".otto/workflow", "milestones", mid, "slices", sid);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, `${sid}-${suffix}.md`), content);
 }
 
 function writeTaskPlan(basePath: string, mid: string, sid: string, tid: string): void {
-  const dir = join(basePath, ".gsd", "milestones", mid, "slices", sid, "tasks");
+  const dir = join(basePath, ".otto/workflow", "milestones", mid, "slices", sid, "tasks");
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, `${tid}-PLAN.md`), `# ${tid}\n\n## Steps\n- [ ] Step\n`);
 }
@@ -131,7 +131,7 @@ test("dispatch-rule-coverage: pre-planning, no CONTEXT → discuss-milestone", a
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
 
   // Bare milestone dir, no CONTEXT/RESEARCH/ROADMAP files.
-  mkdirSync(join(tmp, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(tmp, ".otto/workflow", "milestones", "M001"), { recursive: true });
 
   const ctx = makeCtx(tmp, makeState({ phase: "pre-planning" }));
   const match = await findFirstMatch(ctx);

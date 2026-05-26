@@ -33,11 +33,11 @@ import {
 	normalizeClaudePathForSdk,
 	roundResultToElicitationContent,
 } from "../stream-adapter.ts";
-import type { AssistantMessage, Context, Message } from "@loop24/pi-ai";
+import type { AssistantMessage, Context, Message } from "@otto/pi-ai";
 import type { SDKUserMessage } from "../sdk-types.ts";
 
 // ---------------------------------------------------------------------------
-// Env helpers — `GSD_WORKFLOW_MCP_*` save/restore
+// Env helpers — `OTTO_WORKFLOW_MCP_*` save/restore
 //
 // The naive pattern `process.env.X = prev.X` breaks when `prev.X` is
 // undefined: Node coerces the assignment to the literal string
@@ -50,13 +50,13 @@ import type { SDKUserMessage } from "../sdk-types.ts";
 // ---------------------------------------------------------------------------
 
 const WORKFLOW_MCP_ENV_KEYS = [
-	"GSD_WORKFLOW_MCP_COMMAND",
-	"GSD_WORKFLOW_MCP_NAME",
-	"GSD_WORKFLOW_MCP_ARGS",
-	"GSD_WORKFLOW_MCP_ENV",
-	"GSD_WORKFLOW_MCP_CWD",
-	"GSD_PROJECT_ROOT",
-	"GSD_WORKFLOW_PROJECT_ROOT",
+	"OTTO_WORKFLOW_MCP_COMMAND",
+	"OTTO_WORKFLOW_MCP_NAME",
+	"OTTO_WORKFLOW_MCP_ARGS",
+	"OTTO_WORKFLOW_MCP_ENV",
+	"OTTO_WORKFLOW_MCP_CWD",
+	"OTTO_PROJECT_ROOT",
+	"OTTO_WORKFLOW_PROJECT_ROOT",
 ] as const;
 
 type WorkflowMcpEnvKey = (typeof WORKFLOW_MCP_ENV_KEYS)[number];
@@ -719,11 +719,11 @@ describe("stream-adapter — session persistence (#2859)", () => {
 		const explicitCwd = realpathSync(mkdtempSync(join(tmpdir(), "claude-sdk-cwd-")));
 		const restore = setWorkflowMcpEnv({});
 		try {
-			delete process.env.GSD_WORKFLOW_MCP_COMMAND;
-			delete process.env.GSD_WORKFLOW_MCP_NAME;
-			delete process.env.GSD_WORKFLOW_MCP_ARGS;
-			delete process.env.GSD_WORKFLOW_MCP_ENV;
-			delete process.env.GSD_WORKFLOW_MCP_CWD;
+			delete process.env.OTTO_WORKFLOW_MCP_COMMAND;
+			delete process.env.OTTO_WORKFLOW_MCP_NAME;
+			delete process.env.OTTO_WORKFLOW_MCP_ARGS;
+			delete process.env.OTTO_WORKFLOW_MCP_ENV;
+			delete process.env.OTTO_WORKFLOW_MCP_CWD;
 
 			const distDir = join(explicitCwd, "packages", "mcp-server", "dist");
 			mkdirSync(distDir, { recursive: true });
@@ -731,8 +731,8 @@ describe("stream-adapter — session persistence (#2859)", () => {
 
 			const options = buildSdkOptions("claude-sonnet-4-20250514", "hello world", undefined, { cwd: explicitCwd });
 			const mcpServers = options.mcpServers as Record<string, any>;
-			assert.equal(mcpServers["gsd-workflow"].cwd, explicitCwd);
-			assert.equal(mcpServers["gsd-workflow"].env.GSD_WORKFLOW_PROJECT_ROOT, explicitCwd);
+			assert.equal(mcpServers["otto-workflow"].cwd, explicitCwd);
+			assert.equal(mcpServers["otto-workflow"].env.OTTO_WORKFLOW_PROJECT_ROOT, explicitCwd);
 		} finally {
 			restore();
 			rmSync(explicitCwd, { recursive: true, force: true });
@@ -868,24 +868,24 @@ describe("stream-adapter — session persistence (#2859)", () => {
 
 	test("buildSdkOptions prefers workflow MCP question tools over native AskUserQuestion", () => {
 		const restore = setWorkflowMcpEnv({
-			GSD_WORKFLOW_MCP_COMMAND: "node",
-			GSD_WORKFLOW_MCP_NAME: "gsd-workflow",
-			GSD_WORKFLOW_MCP_ARGS: JSON.stringify(["packages/mcp-server/dist/cli.js"]),
-			GSD_WORKFLOW_MCP_ENV: JSON.stringify({ GSD_CLI_PATH: "/tmp/gsd" }),
-			GSD_WORKFLOW_MCP_CWD: "/tmp/project",
+			OTTO_WORKFLOW_MCP_COMMAND: "node",
+			OTTO_WORKFLOW_MCP_NAME: "otto-workflow",
+			OTTO_WORKFLOW_MCP_ARGS: JSON.stringify(["packages/mcp-server/dist/cli.js"]),
+			OTTO_WORKFLOW_MCP_ENV: JSON.stringify({ OTTO_CLI_PATH: "/tmp/gsd" }),
+			OTTO_WORKFLOW_MCP_CWD: "/tmp/project",
 		});
 		try {
 
 			const options = buildSdkOptions("claude-sonnet-4-20250514", "test");
 			const mcpServers = options.mcpServers as Record<string, any>;
-			assert.ok(mcpServers?.["gsd-workflow"], "expected gsd-workflow server config");
-			const srv = mcpServers["gsd-workflow"];
+			assert.ok(mcpServers?.["otto-workflow"], "expected otto-workflow server config");
+			const srv = mcpServers["otto-workflow"];
 			assert.equal(srv.command, "node");
 			assert.deepEqual(srv.args, ["packages/mcp-server/dist/cli.js"]);
 			assert.equal(srv.cwd, "/tmp/project");
-			assert.equal(srv.env.GSD_CLI_PATH, "/tmp/gsd");
-			assert.equal(srv.env.GSD_PERSIST_WRITE_GATE_STATE, "1");
-			assert.equal(srv.env.GSD_WORKFLOW_PROJECT_ROOT, "/tmp/project");
+			assert.equal(srv.env.OTTO_CLI_PATH, "/tmp/gsd");
+			assert.equal(srv.env.OTTO_PERSIST_WRITE_GATE_STATE, "1");
+			assert.equal(srv.env.OTTO_WORKFLOW_PROJECT_ROOT, "/tmp/project");
 			assert.deepEqual(options.disallowedTools, ["AskUserQuestion"]);
 			assert.deepEqual(options.allowedTools, [
 				"Read",
@@ -897,7 +897,7 @@ describe("stream-adapter — session persistence (#2859)", () => {
 				"Agent",
 				"WebFetch",
 				"WebSearch",
-				"mcp__gsd-workflow__*",
+				"mcp__otto-workflow__*",
 			]);
 		} finally {
 			restore();
@@ -906,11 +906,11 @@ describe("stream-adapter — session persistence (#2859)", () => {
 
 	test("buildSdkOptions prefers custom workflow MCP question tools over native AskUserQuestion", () => {
 		const restore = setWorkflowMcpEnv({
-			GSD_WORKFLOW_MCP_COMMAND: "node",
-			GSD_WORKFLOW_MCP_NAME: "custom-workflow",
-			GSD_WORKFLOW_MCP_ARGS: JSON.stringify(["packages/mcp-server/dist/cli.js"]),
-			GSD_WORKFLOW_MCP_ENV: JSON.stringify({ GSD_CLI_PATH: "/tmp/gsd" }),
-			GSD_WORKFLOW_MCP_CWD: "/tmp/project",
+			OTTO_WORKFLOW_MCP_COMMAND: "node",
+			OTTO_WORKFLOW_MCP_NAME: "custom-workflow",
+			OTTO_WORKFLOW_MCP_ARGS: JSON.stringify(["packages/mcp-server/dist/cli.js"]),
+			OTTO_WORKFLOW_MCP_ENV: JSON.stringify({ OTTO_CLI_PATH: "/tmp/gsd" }),
+			OTTO_WORKFLOW_MCP_CWD: "/tmp/project",
 		});
 		try {
 
@@ -942,11 +942,11 @@ describe("stream-adapter — session persistence (#2859)", () => {
 		// the naive `process.env.X = prev.X` pattern introduced).
 		const restore = setWorkflowMcpEnv({});
 		try {
-			delete process.env.GSD_WORKFLOW_MCP_COMMAND;
-			delete process.env.GSD_WORKFLOW_MCP_NAME;
-			delete process.env.GSD_WORKFLOW_MCP_ARGS;
-			delete process.env.GSD_WORKFLOW_MCP_ENV;
-			delete process.env.GSD_WORKFLOW_MCP_CWD;
+			delete process.env.OTTO_WORKFLOW_MCP_COMMAND;
+			delete process.env.OTTO_WORKFLOW_MCP_NAME;
+			delete process.env.OTTO_WORKFLOW_MCP_ARGS;
+			delete process.env.OTTO_WORKFLOW_MCP_ENV;
+			delete process.env.OTTO_WORKFLOW_MCP_CWD;
 
 			const originalCwd = process.cwd();
 			const emptyDir = mkdtempSync(join(tmpdir(), "claude-mcp-none-"));
@@ -958,7 +958,7 @@ describe("stream-adapter — session persistence (#2859)", () => {
 			// Either outcome is valid — the key invariant is no crash.
 			const mcpServers = (options as any).mcpServers;
 			if (mcpServers) {
-				assert.ok(mcpServers["gsd-workflow"], "if present, must be gsd-workflow");
+				assert.ok(mcpServers["otto-workflow"], "if present, must be otto-workflow");
 				assert.deepEqual((options as any).disallowedTools, ["AskUserQuestion"]);
 			} else {
 				assert.deepEqual((options as any).disallowedTools, []);
@@ -970,19 +970,19 @@ describe("stream-adapter — session persistence (#2859)", () => {
 	});
 
 	test("buildSdkOptions auto-detects local workflow MCP dist CLI when present", () => {
-		// GSD_CLI_PATH isn't in WORKFLOW_MCP_ENV_KEYS, so save+restore it
+		// OTTO_CLI_PATH isn't in WORKFLOW_MCP_ENV_KEYS, so save+restore it
 		// manually around setWorkflowMcpEnv which handles the MCP keys.
-		const prevCliPath = process.env.GSD_CLI_PATH;
+		const prevCliPath = process.env.OTTO_CLI_PATH;
 		const restore = setWorkflowMcpEnv({});
 		const originalCwd = process.cwd();
 		const repoDir = mkdtempSync(join(tmpdir(), "claude-mcp-detect-"));
 		try {
-			delete process.env.GSD_WORKFLOW_MCP_COMMAND;
-			delete process.env.GSD_WORKFLOW_MCP_NAME;
-			delete process.env.GSD_WORKFLOW_MCP_ARGS;
-			delete process.env.GSD_WORKFLOW_MCP_ENV;
-			delete process.env.GSD_WORKFLOW_MCP_CWD;
-			process.env.GSD_CLI_PATH = "/tmp/gsd";
+			delete process.env.OTTO_WORKFLOW_MCP_COMMAND;
+			delete process.env.OTTO_WORKFLOW_MCP_NAME;
+			delete process.env.OTTO_WORKFLOW_MCP_ARGS;
+			delete process.env.OTTO_WORKFLOW_MCP_ENV;
+			delete process.env.OTTO_WORKFLOW_MCP_CWD;
+			process.env.OTTO_CLI_PATH = "/tmp/gsd";
 
 			const distDir = join(repoDir, "packages", "mcp-server", "dist");
 			mkdirSync(distDir, { recursive: true });
@@ -992,51 +992,51 @@ describe("stream-adapter — session persistence (#2859)", () => {
 
 			const options = buildSdkOptions("claude-sonnet-4-20250514", "test");
 			const mcpServers = options.mcpServers as Record<string, any>;
-			assert.ok(mcpServers?.["gsd-workflow"], "expected gsd-workflow server config");
-			const srv = mcpServers["gsd-workflow"];
+			assert.ok(mcpServers?.["otto-workflow"], "expected otto-workflow server config");
+			const srv = mcpServers["otto-workflow"];
 			assert.equal(srv.command, process.execPath);
 			assert.deepEqual(srv.args, [realpathSync(resolve(repoDir, "packages", "mcp-server", "dist", "cli.js"))]);
 			assert.equal(srv.cwd, resolvedRepoDir);
-			assert.equal(srv.env.GSD_CLI_PATH, "/tmp/gsd");
-			assert.equal(srv.env.GSD_PERSIST_WRITE_GATE_STATE, "1");
-			assert.equal(srv.env.GSD_WORKFLOW_PROJECT_ROOT, resolvedRepoDir);
+			assert.equal(srv.env.OTTO_CLI_PATH, "/tmp/gsd");
+			assert.equal(srv.env.OTTO_PERSIST_WRITE_GATE_STATE, "1");
+			assert.equal(srv.env.OTTO_WORKFLOW_PROJECT_ROOT, resolvedRepoDir);
 			assert.deepEqual(options.disallowedTools, ["AskUserQuestion"]);
 		} finally {
 			process.chdir(originalCwd);
 			rmSync(repoDir, { recursive: true, force: true });
 			restore();
-			// GSD_CLI_PATH isn't in setWorkflowMcpEnv's scope — restore it here.
+			// OTTO_CLI_PATH isn't in setWorkflowMcpEnv's scope — restore it here.
 			if (prevCliPath === undefined) {
-				delete process.env.GSD_CLI_PATH;
+				delete process.env.OTTO_CLI_PATH;
 			} else {
-				process.env.GSD_CLI_PATH = prevCliPath;
+				process.env.OTTO_CLI_PATH = prevCliPath;
 			}
 		}
 	});
 
 	test("buildSdkOptions does not inject workflow MCP when already declared in project .mcp.json (avoids duplicate registration)", () => {
 		const restore = setWorkflowMcpEnv({
-			GSD_WORKFLOW_MCP_COMMAND: "node",
-			GSD_WORKFLOW_MCP_NAME: "gsd-workflow",
-			GSD_WORKFLOW_MCP_ARGS: JSON.stringify(["packages/mcp-server/dist/cli.js"]),
-			GSD_WORKFLOW_MCP_ENV: JSON.stringify({ GSD_CLI_PATH: "/tmp/gsd" }),
-			GSD_WORKFLOW_MCP_CWD: "/tmp/project",
+			OTTO_WORKFLOW_MCP_COMMAND: "node",
+			OTTO_WORKFLOW_MCP_NAME: "otto-workflow",
+			OTTO_WORKFLOW_MCP_ARGS: JSON.stringify(["packages/mcp-server/dist/cli.js"]),
+			OTTO_WORKFLOW_MCP_ENV: JSON.stringify({ OTTO_CLI_PATH: "/tmp/gsd" }),
+			OTTO_WORKFLOW_MCP_CWD: "/tmp/project",
 		});
 		const originalCwd = process.cwd();
 		const projectDir = mkdtempSync(join(tmpdir(), "claude-mcp-dup-"));
 		try {
-			// Simulate a project that already has gsd-workflow in its .mcp.json
+			// Simulate a project that already has otto-workflow in its .mcp.json
 			writeFileSync(
 				join(projectDir, ".mcp.json"),
-				JSON.stringify({ mcpServers: { "gsd-workflow": { command: "node", args: ["old-cli.js"] }, "other-mcp": { command: "npx", args: ["other"] } } }),
+				JSON.stringify({ mcpServers: { "otto-workflow": { command: "node", args: ["old-cli.js"] }, "other-mcp": { command: "npx", args: ["other"] } } }),
 			);
 			process.chdir(projectDir);
 			const options = buildSdkOptions("claude-sonnet-4-20250514", "test");
-			// Should NOT inject gsd-workflow via mcpServers (project already has it)
+			// Should NOT inject otto-workflow via mcpServers (project already has it)
 			assert.equal(options.mcpServers, undefined, "mcpServers should be omitted when workflow already in .mcp.json");
 			// But allowedTools should still include the workflow pattern
 			const allowedTools = options.allowedTools as string[];
-			assert.ok(allowedTools.includes("mcp__gsd-workflow__*"), "allowedTools must include workflow pattern even when not injected");
+			assert.ok(allowedTools.includes("mcp__otto-workflow__*"), "allowedTools must include workflow pattern even when not injected");
 			// AskUserQuestion should be disallowed (workflow is available via project config)
 			const disallowedTools = options.disallowedTools as string[];
 			assert.ok(disallowedTools.includes("AskUserQuestion"), "AskUserQuestion should be suppressed when workflow is available");
@@ -1051,11 +1051,11 @@ describe("stream-adapter — session persistence (#2859)", () => {
 		const restore = setWorkflowMcpEnv({});
 		const onElicitation = async () => ({ action: "decline" as const });
 		try {
-			delete process.env.GSD_WORKFLOW_MCP_COMMAND;
-			delete process.env.GSD_WORKFLOW_MCP_NAME;
-			delete process.env.GSD_WORKFLOW_MCP_ARGS;
-			delete process.env.GSD_WORKFLOW_MCP_ENV;
-			delete process.env.GSD_WORKFLOW_MCP_CWD;
+			delete process.env.OTTO_WORKFLOW_MCP_COMMAND;
+			delete process.env.OTTO_WORKFLOW_MCP_NAME;
+			delete process.env.OTTO_WORKFLOW_MCP_ARGS;
+			delete process.env.OTTO_WORKFLOW_MCP_ENV;
+			delete process.env.OTTO_WORKFLOW_MCP_CWD;
 			const options = buildSdkOptions("claude-sonnet-4-20250514", "test", undefined, { onElicitation });
 			assert.equal(options.onElicitation, onElicitation);
 		} finally {
@@ -1066,7 +1066,7 @@ describe("stream-adapter — session persistence (#2859)", () => {
 
 describe("stream-adapter — MCP elicitation bridge", () => {
 	const askUserQuestionsRequest = {
-		serverName: "gsd-workflow",
+		serverName: "otto-workflow",
 		message: "Please answer the following question(s).",
 		mode: "form" as const,
 		requestedSchema: {
@@ -1208,7 +1208,7 @@ describe("stream-adapter — MCP elicitation bridge", () => {
 
 	test("parseTextInputElicitation recognizes secure free-text MCP forms", () => {
 		const request = {
-			serverName: "gsd-workflow",
+			serverName: "otto-workflow",
 			message: "Enter values for environment variables.",
 			mode: "form" as const,
 			requestedSchema: {
@@ -1249,7 +1249,7 @@ describe("stream-adapter — MCP elicitation bridge", () => {
 
 	test("parseTextInputElicitation accepts legacy keys schema and skips unsupported fields", () => {
 		const request = {
-			serverName: "gsd-workflow",
+			serverName: "otto-workflow",
 			message: "Enter secure values",
 			mode: "form" as const,
 			requestedSchema: {
@@ -1282,7 +1282,7 @@ describe("stream-adapter — MCP elicitation bridge", () => {
 
 	test("createClaudeCodeElicitationHandler collects secure_env_collect fields through input dialogs", async () => {
 		const secureRequest = {
-			serverName: "gsd-workflow",
+			serverName: "otto-workflow",
 			message: "Enter values for environment variables.",
 			mode: "form" as const,
 			requestedSchema: {
@@ -1426,18 +1426,18 @@ describe("stream-adapter — final-turn tool-call merge (F3)", () => {
 // ---------------------------------------------------------------------------
 
 describe("stream-adapter — permission mode (F10)", () => {
-	// Earlier tests in this file set GSD_WORKFLOW_MCP_* env vars and restore
+	// Earlier tests in this file set OTTO_WORKFLOW_MCP_* env vars and restore
 	// them by reassigning from `prev.*`. When `prev.*` was undefined, node
 	// coerces the assignment to the literal string "undefined", which then
 	// fails JSON.parse inside buildWorkflowMcpServers. Clear the relevant
 	// slots before each permission-mode test so buildSdkOptions doesn't throw.
 	function clearWorkflowMcpEnv(): void {
 		for (const key of [
-			"GSD_WORKFLOW_MCP_COMMAND",
-			"GSD_WORKFLOW_MCP_NAME",
-			"GSD_WORKFLOW_MCP_ARGS",
-			"GSD_WORKFLOW_MCP_ENV",
-			"GSD_WORKFLOW_MCP_CWD",
+			"OTTO_WORKFLOW_MCP_COMMAND",
+			"OTTO_WORKFLOW_MCP_NAME",
+			"OTTO_WORKFLOW_MCP_ARGS",
+			"OTTO_WORKFLOW_MCP_ENV",
+			"OTTO_WORKFLOW_MCP_CWD",
 		]) {
 			if (process.env[key] === undefined || process.env[key] === "undefined") {
 				delete process.env[key];
@@ -1472,14 +1472,14 @@ describe("stream-adapter — permission mode (F10)", () => {
 		assert.equal(mode, "bypassPermissions");
 	});
 
-	test("resolveClaudePermissionMode honours the GSD_CLAUDE_CODE_PERMISSION_MODE env override", async () => {
-		const env = { GSD_CLAUDE_CODE_PERMISSION_MODE: "acceptEdits" } as NodeJS.ProcessEnv;
+	test("resolveClaudePermissionMode honours the OTTO_CLAUDE_CODE_PERMISSION_MODE env override", async () => {
+		const env = { OTTO_CLAUDE_CODE_PERMISSION_MODE: "acceptEdits" } as NodeJS.ProcessEnv;
 		const mode = await resolveClaudePermissionMode(env);
 		assert.equal(mode, "acceptEdits");
 	});
 
 	test("resolveClaudePermissionMode rejects unknown override values (fallback path)", async () => {
-		const env = { GSD_CLAUDE_CODE_PERMISSION_MODE: "nonsense" } as NodeJS.ProcessEnv;
+		const env = { OTTO_CLAUDE_CODE_PERMISSION_MODE: "nonsense" } as NodeJS.ProcessEnv;
 		const mode = await resolveClaudePermissionMode(env);
 		// Unknown override falls back to auto-detect → either bypass or acceptEdits
 		assert.ok(
@@ -1488,11 +1488,11 @@ describe("stream-adapter — permission mode (F10)", () => {
 		);
 	});
 
-	test("resolveClaudePermissionMode flips to bypassPermissions when GSD_HEADLESS=1 (#4657)", async () => {
+	test("resolveClaudePermissionMode flips to bypassPermissions when OTTO_HEADLESS=1 (#4657)", async () => {
 		const originalWarn = console.warn;
 		console.warn = () => {};
 		try {
-			const env = { GSD_HEADLESS: "1" } as NodeJS.ProcessEnv;
+			const env = { OTTO_HEADLESS: "1" } as NodeJS.ProcessEnv;
 			const mode = await resolveClaudePermissionMode(env);
 			assert.equal(mode, "bypassPermissions");
 		} finally {
@@ -1500,10 +1500,10 @@ describe("stream-adapter — permission mode (F10)", () => {
 		}
 	});
 
-	test("resolveClaudePermissionMode: explicit override wins over GSD_HEADLESS=1", async () => {
+	test("resolveClaudePermissionMode: explicit override wins over OTTO_HEADLESS=1", async () => {
 		const env = {
-			GSD_HEADLESS: "1",
-			GSD_CLAUDE_CODE_PERMISSION_MODE: "acceptEdits",
+			OTTO_HEADLESS: "1",
+			OTTO_CLAUDE_CODE_PERMISSION_MODE: "acceptEdits",
 		} as NodeJS.ProcessEnv;
 		const mode = await resolveClaudePermissionMode(env);
 		assert.equal(mode, "acceptEdits");

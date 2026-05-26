@@ -16,7 +16,7 @@ import {
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-runtime-kv-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -28,7 +28,7 @@ function cleanup(base: string): void {
 test("set + get round-trip preserves the value", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   setRuntimeKv("global", "", "ui_cursor", { row: 5, col: 10 });
   const got = getRuntimeKv<{ row: number; col: number }>("global", "", "ui_cursor");
@@ -38,7 +38,7 @@ test("set + get round-trip preserves the value", (t) => {
 test("get returns null for missing keys", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   assert.equal(getRuntimeKv("global", "", "missing"), null);
 });
@@ -46,7 +46,7 @@ test("get returns null for missing keys", (t) => {
 test("set on existing key updates the value (idempotent upsert)", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   setRuntimeKv("worker", "w1", "counter", 1);
   setRuntimeKv("worker", "w1", "counter", 42);
@@ -56,7 +56,7 @@ test("set on existing key updates the value (idempotent upsert)", (t) => {
 test("scope partitioning: same key under different scopes is independent", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   setRuntimeKv("global", "", "k", "global-value");
   setRuntimeKv("worker", "w1", "k", "worker-value");
@@ -70,7 +70,7 @@ test("scope partitioning: same key under different scopes is independent", (t) =
 test("scope_id partitioning: same scope+key under different scope_ids is independent", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   setRuntimeKv("worker", "w1", "k", "v1");
   setRuntimeKv("worker", "w2", "k", "v2");
@@ -81,7 +81,7 @@ test("scope_id partitioning: same scope+key under different scope_ids is indepen
 test("delete removes the row; subsequent get returns null", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   setRuntimeKv("worker", "w1", "k", "value");
   deleteRuntimeKv("worker", "w1", "k");
@@ -91,7 +91,7 @@ test("delete removes the row; subsequent get returns null", (t) => {
 test("list returns all rows for a scope+scope_id, ordered by key", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   setRuntimeKv("milestone", "M001", "alpha", 1);
   setRuntimeKv("milestone", "M001", "gamma", 3);
@@ -106,7 +106,7 @@ test("list returns all rows for a scope+scope_id, ordered by key", (t) => {
 test("malformed JSON in storage returns null without throwing", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   // Inject a malformed value directly (bypassing setRuntimeKv's JSON.stringify).
   setRuntimeKv("global", "", "k", "valid");

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for database open attempt and error state tracking.
 
 import { describe, test } from "node:test";

@@ -214,7 +214,7 @@ export function resolveDefaultSessionModel(
  * proxies, etc.).
  *
  * Used by auto-mode bootstrap to decide whether the session model
- * (set via `/loop24 model`) should override `PREFERENCES.md`.  Custom providers
+ * (set via `/otto model`) should override `PREFERENCES.md`.  Custom providers
  * are never reachable from `PREFERENCES.md` (which only knows built-in
  * providers), so when the user has explicitly selected one, it must take
  * priority — otherwise auto-mode tries to start the built-in provider from

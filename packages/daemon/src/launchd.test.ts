@@ -31,7 +31,7 @@ afterEach(() => {
 function basePlistOpts(overrides?: Partial<PlistOptions>): PlistOptions {
   return {
     nodePath: '/usr/local/bin/node',
-    scriptPath: '/usr/local/lib/gsd-daemon/dist/cli.js',
+    scriptPath: '/usr/local/lib/otto-daemon/dist/cli.js',
     configPath: join(homedir(), '.gsd', 'daemon.yaml'),
     ...overrides,
   };

@@ -31,7 +31,7 @@ describe("pre-flight CONTEXT-DRAFT filter (#2473)", () => {
 
   beforeEach(() => {
     tmpBase = mkdtempSync(join(tmpdir(), "gsd-preflight-draft-"));
-    gsd = join(tmpBase, ".gsd");
+    gsd = join(tmpBase, ".otto/workflow");
 
     // Create milestone directories with CONTEXT-DRAFT files
     for (const id of ["M001", "M002", "M003"]) {
@@ -41,7 +41,7 @@ describe("pre-flight CONTEXT-DRAFT filter (#2473)", () => {
     }
 
     // Open DB and insert milestones with different statuses
-    const dbPath = join(gsd, "gsd.db");
+    const dbPath = join(gsd, "otto.db");
     openDatabase(dbPath);
     insertMilestone({ id: "M001", title: "Complete milestone", status: "complete" });
     insertMilestone({ id: "M002", title: "Active milestone", status: "active" });

@@ -34,7 +34,7 @@ describe('resolveExtensionEntries — #1709 defence-in-depth', () => {
     writeFileSync(
       join(libDir, 'package.json'),
       JSON.stringify({
-        name: '@loop24/cmux',
+        name: '@otto/cmux',
         description:
           'cmux integration library — used by other extensions, not an extension itself',
         pi: {},

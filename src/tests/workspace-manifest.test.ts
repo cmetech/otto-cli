@@ -36,14 +36,14 @@ describe("workspace manifest (live project)", () => {
 
 		const names = packages.map((p: { packageName: string }) => p.packageName).sort();
 		assert.deepEqual(names, [
-			"@loop24-build/contracts",
-			"@loop24-build/mcp-server",
-			"@loop24-build/rpc-client",
-			"@loop24/native",
-			"@loop24/pi-agent-core",
-			"@loop24/pi-ai",
-			"@loop24/pi-coding-agent",
-			"@loop24/pi-tui",
+			"@otto-build/contracts",
+			"@otto-build/mcp-server",
+			"@otto-build/rpc-client",
+			"@otto/native",
+			"@otto/pi-agent-core",
+			"@otto/pi-ai",
+			"@otto/pi-coding-agent",
+			"@otto/pi-tui",
 		]);
 
 		for (const pkg of packages) {
@@ -52,12 +52,12 @@ describe("workspace manifest (live project)", () => {
 		}
 	});
 
-	test("getCorePackages returns only @gsd scope entries", () => {
+	test("getCorePackages returns only @otto scope entries", () => {
 		const manifest = require(manifestModulePath);
 		const core = manifest.getCorePackages();
 		assert.ok(core.length >= 1);
 		for (const pkg of core) {
-			assert.equal(pkg.scope, "@gsd", `${pkg.packageName} should be @gsd scope`);
+			assert.equal(pkg.scope, "@otto", `${pkg.packageName} should be @otto scope`);
 		}
 	});
 
@@ -128,9 +128,9 @@ describe("verify-workspace-coverage CI gate", () => {
 
 		test("FAILS when a linkable package has zero test files", () => {
 			writePackage("pkg-a", {
-				name: "@loop24/pkg-a",
+				name: "@otto/pkg-a",
 				version: "1.0.0",
-				gsd: { linkable: true, scope: "@gsd", name: "pkg-a" },
+				gsd: { linkable: true, scope: "@otto", name: "pkg-a" },
 			}, {
 				"src/index.ts": "export const x = 1;",
 			});
@@ -153,17 +153,17 @@ describe("verify-workspace-coverage CI gate", () => {
 
 		test("PASSES when every linkable package has at least one test file", () => {
 			writePackage("pkg-a", {
-				name: "@loop24/pkg-a",
+				name: "@otto/pkg-a",
 				version: "1.0.0",
-				gsd: { linkable: true, scope: "@gsd", name: "pkg-a" },
+				gsd: { linkable: true, scope: "@otto", name: "pkg-a" },
 			}, {
 				"src/index.ts": "export const x = 1;",
 				"src/index.test.ts": "import test from 'node:test'; test('ok', () => {});",
 			});
 			writePackage("pkg-b", {
-				name: "@loop24-build/pkg-b",
+				name: "@otto-build/pkg-b",
 				version: "1.0.0",
-				gsd: { linkable: true, scope: "@loop24-build", name: "pkg-b" },
+				gsd: { linkable: true, scope: "@otto-build", name: "pkg-b" },
 			}, {
 				"src/thing.test.js": "",
 			});
@@ -177,7 +177,7 @@ describe("verify-workspace-coverage CI gate", () => {
 
 		test("IGNORES non-linkable packages even if they have no tests", () => {
 			writePackage("internal-pkg", {
-				name: "@loop24-build/internal-pkg",
+				name: "@otto-build/internal-pkg",
 				version: "1.0.0",
 				// Intentionally no gsd.linkable — this package should be skipped entirely.
 			}, {
@@ -192,9 +192,9 @@ describe("verify-workspace-coverage CI gate", () => {
 
 		test("FAILS when package.json 'name' disagrees with gsd.scope/gsd.name", () => {
 			writePackage("pkg-bad", {
-				name: "@loop24/wrong-name",
+				name: "@otto/wrong-name",
 				version: "1.0.0",
-				gsd: { linkable: true, scope: "@gsd", name: "pkg-bad" },
+				gsd: { linkable: true, scope: "@otto", name: "pkg-bad" },
 			}, {
 				"src/x.test.ts": "",
 			});

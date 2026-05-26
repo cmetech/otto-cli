@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Unit tests for pre-execution validation checks.
 
 /**
@@ -954,19 +954,19 @@ describe("runPreExecutionChecks", () => {
     }
   });
 
-  test("resolves .gsd metadata inputs from canonical project root in worktree mode (#5492)", async () => {
+  test("resolves .otto/workflow metadata inputs from canonical project root in worktree mode (#5492)", async () => {
     const projectRoot = join(tmpdir(), `pre-exec-project-root-${Date.now()}`);
     const worktreeRoot = join(tmpdir(), `pre-exec-worktree-root-${Date.now()}`);
-    mkdirSync(join(projectRoot, ".gsd"), { recursive: true });
+    mkdirSync(join(projectRoot, ".otto/workflow"), { recursive: true });
     mkdirSync(worktreeRoot, { recursive: true });
-    writeFileSync(join(projectRoot, ".gsd", "DECISIONS.md"), "# decisions");
+    writeFileSync(join(projectRoot, ".otto/workflow", "DECISIONS.md"), "# decisions");
 
     try {
       const tasks = [
         createTask({
           id: "T01",
           files: [],
-          inputs: [".gsd/DECISIONS.md"],
+          inputs: [".otto/workflow/DECISIONS.md"],
           expected_output: [],
         }),
       ];
@@ -1516,14 +1516,14 @@ describe("checkFilePathConsistency additional edge cases", () => {
 
   test("backticked path cited mid-sentence resolves to the path", () => {
     const tempDir = join(tmpdir(), `pre-exec-test-4421-case4-${Date.now()}`);
-    mkdirSync(join(tempDir, ".gsd"), { recursive: true });
-    writeFileSync(join(tempDir, ".gsd/REQUIREMENTS.md"), "# Requirements");
+    mkdirSync(join(tempDir, ".otto/workflow"), { recursive: true });
+    writeFileSync(join(tempDir, ".otto/workflow/REQUIREMENTS.md"), "# Requirements");
 
     try {
       const tasks = [
         createTask({
           id: "T01",
-          inputs: ["R014 verbatim text from `.gsd/REQUIREMENTS.md` (the owned requirement statement)"],
+          inputs: ["R014 verbatim text from `.otto/workflow/REQUIREMENTS.md` (the owned requirement statement)"],
         }),
       ];
 
@@ -1630,8 +1630,8 @@ describe("normalizeFilePath tilde expansion (#4446)", () => {
 
   test("expands ~/ prefixed paths to homedir", () => {
     assert.equal(
-      normalizeFilePath("~/.gsd/agent/extensions/gsd/native-git-bridge.js"),
-      join(homedir(), ".gsd/agent/extensions/gsd/native-git-bridge.js"),
+      normalizeFilePath("~/.otto/workflow/agent/extensions/workflow/native-git-bridge.js"),
+      join(homedir(), ".otto/workflow/agent/extensions/workflow/native-git-bridge.js"),
     );
   });
 });
@@ -1750,8 +1750,8 @@ describe("checkFilePathConsistency directory inputs (#4446)", () => {
   test("tilde-prefixed input is matched against $HOME, not the project basePath", (t) => {
     const fakeHome = join(tmpdir(), `pre-exec-tilde-home-${Date.now()}`);
     const projectDir = join(tmpdir(), `pre-exec-tilde-proj-${Date.now()}`);
-    mkdirSync(join(fakeHome, ".gsd"), { recursive: true });
-    writeFileSync(join(fakeHome, ".gsd/tool.js"), "// present");
+    mkdirSync(join(fakeHome, ".otto/workflow"), { recursive: true });
+    writeFileSync(join(fakeHome, ".otto/workflow/tool.js"), "// present");
     mkdirSync(projectDir, { recursive: true });
 
     const originalHome = process.env.HOME;
@@ -1771,7 +1771,7 @@ describe("checkFilePathConsistency directory inputs (#4446)", () => {
     const tasks = [
       createTask({
         id: "T01",
-        inputs: ["~/.gsd/tool.js"],
+        inputs: ["~/.otto/workflow/tool.js"],
         expected_output: [],
       }),
     ];

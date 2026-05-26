@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Custom-engine verification retry adapter for auto-mode loop.
 
 import type { AutoSession } from "./session.js";

@@ -28,10 +28,10 @@ type GatewayOptions = {
 
 const ORIGINAL_ENV = { ...process.env };
 
-describe("LOOP24 gateway routing branch in buildAnthropicClientOptions", () => {
+describe("OTTO gateway routing branch in buildAnthropicClientOptions", () => {
 	beforeEach(() => {
-		delete process.env.LOOP24_GATEWAY_URL;
-		delete process.env.LOOP24_GATEWAY_TOKEN;
+		delete process.env.OTTO_GATEWAY_URL;
+		delete process.env.OTTO_GATEWAY_TOKEN;
 		delete process.env.ANTHROPIC_BASE_URL;
 	});
 
@@ -39,42 +39,42 @@ describe("LOOP24 gateway routing branch in buildAnthropicClientOptions", () => {
 		process.env = { ...ORIGINAL_ENV };
 	});
 
-	it("returns direct-to-Anthropic options when LOOP24_GATEWAY_URL is unset", () => {
+	it("returns direct-to-Anthropic options when OTTO_GATEWAY_URL is unset", () => {
 		const opts = buildAnthropicClientOptions(anthropicModel(), "test-api-key", false) as GatewayOptions;
 
 		assert.equal(opts.apiKey, "test-api-key", "apiKey should pass through when gateway is not configured");
 		assert.equal(opts.baseURL, "https://api.anthropic.com", "baseURL should match the model's baseUrl");
 	});
 
-	it("routes through gateway URL when LOOP24_GATEWAY_URL is set", () => {
-		process.env.LOOP24_GATEWAY_URL = "https://gateway.loop24.local";
+	it("routes through gateway URL when OTTO_GATEWAY_URL is set", () => {
+		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
 
 		const opts = buildAnthropicClientOptions(anthropicModel(), "test-api-key", false) as GatewayOptions;
 
-		assert.equal(opts.baseURL, "https://gateway.loop24.local", "baseURL should match LOOP24_GATEWAY_URL");
+		assert.equal(opts.baseURL, "https://gateway.otto.local", "baseURL should match OTTO_GATEWAY_URL");
 		assert.equal(opts.apiKey, null, "apiKey should be null when routing through the gateway");
 	});
 
-	it("uses LOOP24_GATEWAY_TOKEN as bearer credential when set", () => {
-		process.env.LOOP24_GATEWAY_URL = "https://gateway.loop24.local";
-		process.env.LOOP24_GATEWAY_TOKEN = "gateway-secret-token";
+	it("uses OTTO_GATEWAY_TOKEN as bearer credential when set", () => {
+		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
+		process.env.OTTO_GATEWAY_TOKEN = "gateway-secret-token";
 
 		const opts = buildAnthropicClientOptions(anthropicModel(), "test-api-key", false) as GatewayOptions;
 
-		assert.equal(opts.authToken, "gateway-secret-token", "authToken should be the LOOP24_GATEWAY_TOKEN value");
+		assert.equal(opts.authToken, "gateway-secret-token", "authToken should be the OTTO_GATEWAY_TOKEN value");
 		assert.notEqual(opts.authToken, "test-api-key", "authToken should not fall back to apiKey when token is set");
 	});
 
-	it("falls back to apiKey as bearer credential when LOOP24_GATEWAY_TOKEN is unset", () => {
-		process.env.LOOP24_GATEWAY_URL = "https://gateway.loop24.local";
+	it("falls back to apiKey as bearer credential when OTTO_GATEWAY_TOKEN is unset", () => {
+		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
 
 		const opts = buildAnthropicClientOptions(anthropicModel(), "test-api-key", false) as GatewayOptions;
 
-		assert.equal(opts.authToken, "test-api-key", "authToken should fall back to apiKey arg when LOOP24_GATEWAY_TOKEN is unset");
+		assert.equal(opts.authToken, "test-api-key", "authToken should fall back to apiKey arg when OTTO_GATEWAY_TOKEN is unset");
 	});
 
 	it("preserves model.headers when gateway-routed", () => {
-		process.env.LOOP24_GATEWAY_URL = "https://gateway.loop24.local";
+		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
 
 		const opts = buildAnthropicClientOptions(
 			anthropicModel({
@@ -88,8 +88,8 @@ describe("LOOP24 gateway routing branch in buildAnthropicClientOptions", () => {
 		assert.equal(opts.defaultHeaders["X-Trace-Id"], "abc-123", "all custom model headers should be preserved");
 	});
 
-	it("LOOP24_GATEWAY_URL with only whitespace is treated as unset", () => {
-		process.env.LOOP24_GATEWAY_URL = "   \t  ";
+	it("OTTO_GATEWAY_URL with only whitespace is treated as unset", () => {
+		process.env.OTTO_GATEWAY_URL = "   \t  ";
 
 		const opts = buildAnthropicClientOptions(anthropicModel(), "test-api-key", false) as GatewayOptions;
 

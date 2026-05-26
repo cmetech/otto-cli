@@ -1,4 +1,4 @@
-// Structural invariant: gsd-db.ts is the single writer for .gsd/gsd.db.
+// Structural invariant: gsd-db.ts is the single writer for .otto/workflow/otto.db.
 //
 // No file under src/resources/extensions/workflow/ may issue raw write SQL
 // (INSERT/UPDATE/DELETE/REPLACE) or raw transaction control (BEGIN/COMMIT/
@@ -7,7 +7,7 @@
 //
 // Allowlist:
 // - gsd-db.ts itself — the single writer
-// - unit-ownership.ts — manages a separate .gsd/unit-claims.db for
+// - unit-ownership.ts — manages a separate .otto/workflow/unit-claims.db for
 //   cross-worktree claim races; intentionally outside this invariant
 // - tests/** — fixtures and direct DB inspection are fair game
 //

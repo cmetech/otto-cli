@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Integration tests for pre-execution check retry and pause wiring.
 /**
  * pre-execution-pause-wiring.test.ts — Integration tests for pre-execution check → retry/pause wiring.
@@ -99,7 +99,7 @@ function makePostUnitContext(
 }
 
 /**
- * Set up a temp directory with GSD structure and DB.
+ * Set up a temp directory with OTTO structure and DB.
  * Also changes cwd so preferences loading finds the right PREFERENCES.md.
  */
 function setupTestEnvironment(): void {
@@ -109,8 +109,8 @@ function setupTestEnvironment(): void {
   tempDir = join(tmpdir(), `pre-exec-pause-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(tempDir, { recursive: true });
   
-  // Create .gsd directory structure
-  const workflowDir = join(tempDir, ".gsd");
+  // Create .otto/workflow directory structure
+  const workflowDir = join(tempDir, ".otto/workflow");
   mkdirSync(workflowDir, { recursive: true });
   
   // Create milestones directory structure
@@ -120,11 +120,11 @@ function setupTestEnvironment(): void {
   // Change cwd so loadEffectiveGSDPreferences finds our PREFERENCES.md
   process.chdir(tempDir);
   
-  // Clear caches so it finds the new .gsd directory and preferences.
+  // Clear caches so it finds the new .otto/workflow directory and preferences.
   resetAllCaches();
   
   // Initialize DB
-  dbPath = join(workflowDir, "gsd.db");
+  dbPath = join(workflowDir, "otto.db");
   openDatabase(dbPath);
 }
 
@@ -165,7 +165,7 @@ ${yamlLines.join("\n")}
 
 # Workflow Preferences
 `;
-  writeFileSync(join(tempDir, ".gsd", "PREFERENCES.md"), prefsContent);
+  writeFileSync(join(tempDir, ".otto/workflow", "PREFERENCES.md"), prefsContent);
   // Invalidate caches so the new preferences file is found
   resetAllCaches();
 }
@@ -363,7 +363,7 @@ describe("Pre-execution checks → retry/pause wiring", () => {
       "failure notification should summarize truncated blocking checks",
     );
     assert.ok(
-      errorMessage.includes(join(".gsd", "milestones", "M001", "slices", "S01", "S01-PRE-EXEC-VERIFY.json")),
+      errorMessage.includes(join(".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PRE-EXEC-VERIFY.json")),
       "failure notification should point to the relative pre-exec evidence file path",
     );
     assert.ok(
@@ -563,7 +563,7 @@ describe("Pre-execution checks → retry/pause wiring", () => {
     // Create a separate "worktree" directory with the referenced files present.
     const worktreeDir = join(tempDir, "worktree");
     mkdirSync(join(worktreeDir, "lib"), { recursive: true });
-    mkdirSync(join(worktreeDir, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+    mkdirSync(join(worktreeDir, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
     writeFileSync(join(worktreeDir, "lib", "types.ts"), "export type Habit = { id: string; name: string; };");
     writeFileSync(join(worktreeDir, "lib", "useLocalStorage.ts"), "export function useLocalStorage() {}");
 
@@ -620,7 +620,7 @@ describe("Pre-execution checks → retry/pause wiring", () => {
     });
 
     const worktreeDir = join(tempDir, "worktree-missing-src");
-    mkdirSync(join(worktreeDir, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+    mkdirSync(join(worktreeDir, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
 
     mkdirSync(join(tempDir, "src", "engine"), { recursive: true });
     writeFileSync(join(tempDir, "src", "engine", "bus.ts"), "export const bus = {};");

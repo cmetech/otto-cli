@@ -2,11 +2,15 @@
  * Native addon loader.
  *
  * Locates and loads the compiled Rust N-API addon (`.node` file).
- * Resolution order (LOOP24 does not ship Rust binaries; resolution always
+ * Resolution order (OTTO does not ship Rust binaries; resolution always
  * falls through to the JS implementations — see packages/native/dist):
  *   1. {platform} engine npm optional dependency (legacy upstream path)
  *   2. native/addon/engine.{platform}.node (local release build)
  *   3. native/addon/engine.dev.node (local debug build)
+ *
+ * Test builds can load this package from dist-test/packages/native, so local
+ * addon discovery checks both package-root-relative and repo-root-relative
+ * locations.
  */
 
 import * as path from "node:path";
@@ -17,7 +21,10 @@ import * as path from "node:path";
 const _dirname = __dirname;
 const _require = require;
 
-const addonDir = path.resolve(_dirname, "..", "..", "..", "native", "addon");
+const addonDirs = Array.from(new Set([
+  path.resolve(_dirname, "..", "..", "..", "native", "addon"),
+  path.resolve(_dirname, "..", "..", "..", "..", "native", "addon"),
+]));
 const platformTag = `${process.platform}-${process.arch}`;
 
 /** Map Node.js platform/arch to the npm package suffix */
@@ -34,42 +41,44 @@ let _loadedSuccessfully = false;
 function loadNative(): Record<string, unknown> {
   const errors: string[] = [];
 
-  if ((process.env.LOOP24_NATIVE_DISABLE ?? process.env.GSD_NATIVE_DISABLE) === "1") {
-    errors.push("disabled by GSD_NATIVE_DISABLE=1");
+  if (process.env.OTTO_NATIVE_DISABLE === "1") {
+    errors.push("disabled by OTTO_NATIVE_DISABLE=1 or OTTO_NATIVE_DISABLE=1");
   } else {
     // 1. Try the platform-specific npm optional dependency
     const packageSuffix = platformPackageMap[platformTag];
     if (packageSuffix) {
       try {
-        const loaded = _require(`@opengsd/engine-${packageSuffix}`) as Record<string, unknown>;
+        const loaded = _require(`@cmetech/otto-engine-${packageSuffix}`) as Record<string, unknown>;
         _loadedSuccessfully = true;
         return loaded;
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        errors.push(`@opengsd/engine-${packageSuffix}: ${message}`);
+        errors.push(`@cmetech/otto-engine-${packageSuffix}: ${message}`);
       }
     }
 
-    // 2. Try local release build (native/addon/gsd_engine.{platform}.node)
-    const releasePath = path.join(addonDir, `gsd_engine.${platformTag}.node`);
-    try {
-      const loaded = _require(releasePath) as Record<string, unknown>;
-      _loadedSuccessfully = true;
-      return loaded;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      errors.push(`${releasePath}: ${message}`);
-    }
+    for (const addonDir of addonDirs) {
+      // 2. Try local release build (native/addon/otto_engine.{platform}.node)
+      const releasePath = path.join(addonDir, `otto_engine.${platformTag}.node`);
+      try {
+        const loaded = _require(releasePath) as Record<string, unknown>;
+        _loadedSuccessfully = true;
+        return loaded;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        errors.push(`${releasePath}: ${message}`);
+      }
 
-    // 3. Try local dev build (native/addon/gsd_engine.dev.node)
-    const devPath = path.join(addonDir, "gsd_engine.dev.node");
-    try {
-      const loaded = _require(devPath) as Record<string, unknown>;
-      _loadedSuccessfully = true;
-      return loaded;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      errors.push(`${devPath}: ${message}`);
+      // 3. Try local dev build (native/addon/otto_engine.dev.node)
+      const devPath = path.join(addonDir, "otto_engine.dev.node");
+      try {
+        const loaded = _require(devPath) as Record<string, unknown>;
+        _loadedSuccessfully = true;
+        return loaded;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        errors.push(`${devPath}: ${message}`);
+      }
     }
   }
 

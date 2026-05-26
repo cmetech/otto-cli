@@ -10,7 +10,7 @@ import { createRepositoryRegistryFromPreferences, defaultRepositoryTargets } fro
 test("repository registry includes implicit project root and declared child repos", (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-repo-registry-"));
   t.after(() => rmSync(base, { recursive: true, force: true }));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   mkdirSync(join(base, "frontend"), { recursive: true });
   mkdirSync(join(base, "backend"), { recursive: true });
 
@@ -39,7 +39,7 @@ test("repository registry includes implicit project root and declared child repo
 test("repository registry rejects repositories outside project root", (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-repo-registry-"));
   t.after(() => rmSync(base, { recursive: true, force: true }));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
 
   assert.throws(
     () => createRepositoryRegistryFromPreferences(base, {
@@ -57,7 +57,7 @@ test("repository registry rejects repositories outside project root", (t) => {
 test('repository registry rejects explicit "project" repository id', (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-repo-registry-"));
   t.after(() => rmSync(base, { recursive: true, force: true }));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
 
   assert.throws(
     () => createRepositoryRegistryFromPreferences(base, {
@@ -75,7 +75,7 @@ test('repository registry rejects explicit "project" repository id', (t) => {
 test("defaultRepositoryTargets returns [project] for a single-repo project registry", (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-repo-registry-"));
   t.after(() => rmSync(base, { recursive: true, force: true }));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
 
   const registry = createRepositoryRegistryFromPreferences(base, undefined);
 
@@ -85,7 +85,7 @@ test("defaultRepositoryTargets returns [project] for a single-repo project regis
 test("defaultRepositoryTargets returns [project] for a parent-mode registry", (t) => {
   const base = mkdtempSync(join(tmpdir(), "gsd-repo-registry-"));
   t.after(() => rmSync(base, { recursive: true, force: true }));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   mkdirSync(join(base, "frontend"), { recursive: true });
 
   const registry = createRepositoryRegistryFromPreferences(base, {

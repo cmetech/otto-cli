@@ -1,5 +1,5 @@
 {
-  "name": "@loop24/claude-code-cli",
+  "name": "@otto/claude-code-cli",
   "private": true,
   "version": "1.0.0",
   "type": "module",

@@ -58,7 +58,7 @@ describe("convertTools cache_control", () => {
 	it("merges object variants when parameters is top-level anyOf", () => {
 		const tools = [
 			{
-				name: "gsd_summary_save",
+				name: "otto_summary_save",
 				description: "desc",
 				parameters: {
 					anyOf: [

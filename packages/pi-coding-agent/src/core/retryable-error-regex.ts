@@ -4,7 +4,7 @@
  *
  * Kept in its own zero-import module so tests can consume the live pattern
  * without pulling in the full RetryHandler dependency graph (Agent /
- * FallbackResolver / ModelRegistry / @loop24/pi-ai …). The test in
+ * FallbackResolver / ModelRegistry / @otto/pi-ai …). The test in
  * `src/resources/extensions/workflow/tests/provider-errors.test.ts` previously
  * redefined this regex inline, which meant runtime and test could drift
  * silently on every edit (see #4837).

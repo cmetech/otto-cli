@@ -58,7 +58,7 @@ test("returns error when hook script does not exist", () => {
   const src = makeTmpDir();
   const wt = makeTmpDir();
   try {
-    const result = runWorktreePostCreateHook(src, wt, ".gsd/hooks/nonexistent");
+    const result = runWorktreePostCreateHook(src, wt, ".otto/workflow/hooks/nonexistent");
     assert.ok(result !== null, "should return error string");
     assert.ok(result!.includes("not found"), "error should mention 'not found'");
   } finally {
@@ -71,7 +71,7 @@ test("executes hook script with correct SOURCE_DIR and WORKTREE_DIR env vars", (
   const src = makeTmpDir();
   const wt = makeTmpDir();
   try {
-    const hooksDir = join(src, ".gsd", "hooks");
+    const hooksDir = join(src, ".otto/workflow", "hooks");
     mkdirSync(hooksDir, { recursive: true });
     const hookFile = hookPath(join(hooksDir, "post-create"));
     const code = [
@@ -82,7 +82,7 @@ test("executes hook script with correct SOURCE_DIR and WORKTREE_DIR env vars", (
     ].join("\n");
     writeNodeHookScript(hookFile, code);
 
-    const result = runWorktreePostCreateHook(src, wt, hookPath(".gsd/hooks/post-create"));
+    const result = runWorktreePostCreateHook(src, wt, hookPath(".otto/workflow/hooks/post-create"));
     assert.equal(result, null, "should succeed");
 
     const outputFile = join(wt, "hook-output.txt");
@@ -101,12 +101,12 @@ test("returns error message when hook script fails", () => {
   const src = makeTmpDir();
   const wt = makeTmpDir();
   try {
-    const hooksDir = join(src, ".gsd", "hooks");
+    const hooksDir = join(src, ".otto/workflow", "hooks");
     mkdirSync(hooksDir, { recursive: true });
     const hookFile = hookPath(join(hooksDir, "failing-hook"));
     writeNodeHookScript(hookFile, `process.exit(1);`);
 
-    const result = runWorktreePostCreateHook(src, wt, hookPath(".gsd/hooks/failing-hook"));
+    const result = runWorktreePostCreateHook(src, wt, hookPath(".otto/workflow/hooks/failing-hook"));
     assert.ok(result !== null, "should return error string");
     assert.ok(result!.includes("hook failed"), "error should mention 'hook failed'");
   } finally {

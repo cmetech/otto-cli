@@ -1,6 +1,6 @@
-// Project/App: LOOP24
-// File Purpose: Parity tests for GSD workflow task completion over native and MCP transports.
-// ADR-008 validation criterion #3 — behavior-parity lock-in for gsd_task_complete.
+// Project/App: OTTO
+// File Purpose: Parity tests for OTTO workflow task completion over native and MCP transports.
+// ADR-008 validation criterion #3 — behavior-parity lock-in for otto_task_complete.
 //
 // ADR-008 §1 ("One handler layer, multiple transports") is shipped: both
 // native (`db-tools.ts`) and MCP (`workflow-tools.ts`) registrations wrap the
@@ -32,14 +32,14 @@ import { registerWorkflowTools } from "./workflow-tools.ts";
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-mcp-parity-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto", "workflow"), { recursive: true });
   return base;
 }
 
 function seedMilestoneAndSlice(base: string): void {
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+  mkdirSync(join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+    join(base, ".otto", "workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
     "# S01\n\n- [ ] **T01: Demo** `est:5m`\n",
     "utf-8",
   );
@@ -116,7 +116,7 @@ function normalizeParams(params: Record<string, unknown>): Record<string, unknow
 }
 
 function snapshotState(base: string, milestoneId: string, sliceId: string, taskId: string): SnapshotShape {
-  const summaryPath = join(base, ".gsd", "milestones", milestoneId, "slices", sliceId, "tasks", `${taskId}-SUMMARY.md`);
+  const summaryPath = join(base, ".otto", "workflow", "milestones", milestoneId, "slices", sliceId, "tasks", `${taskId}-SUMMARY.md`);
   assert.ok(existsSync(summaryPath), `summary file must exist at ${summaryPath}`);
   const summary = normalizeTimestamps(readFileSync(summaryPath, "utf-8").trim());
 
@@ -129,7 +129,7 @@ function snapshotState(base: string, milestoneId: string, sliceId: string, taskI
   const taskRow = normalizeParams(row as Record<string, unknown>);
   assert.equal(taskRow.status, "complete", "task status must be 'complete' after completion");
 
-  const journalPath = join(base, ".gsd", "event-log.jsonl");
+  const journalPath = join(base, ".otto", "workflow", "event-log.jsonl");
   const journalEvents: SnapshotShape["journalEvents"] = [];
   if (existsSync(journalPath)) {
     const lines = readFileSync(journalPath, "utf-8")
@@ -171,16 +171,16 @@ const COMPLETION_ARGS = {
 };
 
 const workflowBridgeExtension = import.meta.url.includes("/dist-test/") ? "js" : "ts";
-process.env.GSD_WORKFLOW_EXECUTORS_MODULE ??= fileURLToPath(new URL(
+process.env.OTTO_WORKFLOW_EXECUTORS_MODULE ??= fileURLToPath(new URL(
   `../../../src/resources/extensions/workflow/tools/workflow-tool-executors.${workflowBridgeExtension}`,
   import.meta.url,
 ));
-process.env.GSD_WORKFLOW_WRITE_GATE_MODULE ??= fileURLToPath(new URL(
+process.env.OTTO_WORKFLOW_WRITE_GATE_MODULE ??= fileURLToPath(new URL(
   `../../../src/resources/extensions/workflow/bootstrap/write-gate.${workflowBridgeExtension}`,
   import.meta.url,
 ));
 
-describe("ADR-008 parity: gsd_task_complete native vs MCP", () => {
+describe("ADR-008 parity: otto_task_complete native vs MCP", () => {
   it("native and MCP produce equivalent DB row, summary, and journal event", async () => {
     let baseNative = "";
     let baseMcp = "";
@@ -207,8 +207,8 @@ describe("ADR-008 parity: gsd_task_complete native vs MCP", () => {
 
       const server = makeMockServer();
       registerWorkflowTools(server as Parameters<typeof registerWorkflowTools>[0]);
-      const taskTool = server.tools.find((t) => t.name === "gsd_task_complete");
-      assert.ok(taskTool, "gsd_task_complete must be registered on the MCP surface");
+      const taskTool = server.tools.find((t) => t.name === "otto_task_complete");
+      assert.ok(taskTool, "otto_task_complete must be registered on the MCP surface");
 
       const mcpResult = await taskTool.handler({ projectDir: baseMcp, ...COMPLETION_ARGS });
       assert.ok(!mcpResult.isError, "mcp completion must succeed");

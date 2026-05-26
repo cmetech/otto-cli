@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, it, mock } from "node:test";
 import assert from "node:assert/strict";
-import type { TUI } from "@loop24/pi-tui";
+import type { TUI } from "@otto/pi-tui";
 import { initTheme } from "../theme/theme.js";
 import { DaxnutsComponent } from "./daxnuts.js";
 

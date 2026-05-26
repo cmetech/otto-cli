@@ -1,4 +1,4 @@
-// LOOP24 - /loop24 migrate audit helpers.
+// OTTO - /otto migrate audit helpers.
 // File Purpose: Legacy archive, migration manifest, and projection verification support.
 
 import { cpSync, existsSync, readFileSync } from "node:fs";

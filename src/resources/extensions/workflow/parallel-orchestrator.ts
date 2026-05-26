@@ -3,7 +3,7 @@
  *
  * Manages worker lifecycle, budget tracking, and coordination. Workers are
  * separate processes spawned via child_process, each running in its own git
- * worktree with GSD_MILESTONE_LOCK env var set. The coordinator monitors
+ * worktree with OTTO_MILESTONE_LOCK env var set. The coordinator monitors
  * workers via session status files (see session-status-io.ts).
  */
 
@@ -101,7 +101,7 @@ function stateFilePath(basePath: string): string {
 }
 
 /**
- * Persist the current orchestrator state to .gsd/orchestrator.json.
+ * Persist the current orchestrator state to .otto/workflow/orchestrator.json.
  * Uses atomic write (tmp + rename) to prevent partial reads.
  */
 export function persistState(basePath: string): void {
@@ -158,7 +158,7 @@ function isPidAlive(pid: number): boolean {
 }
 
 /**
- * Restore orchestrator state from .gsd/orchestrator.json.
+ * Restore orchestrator state from .otto/workflow/orchestrator.json.
  * Checks PID liveness for each worker:
  * - Living PID → state "running", process stays null (no handle)
  * - Dead PID → removed from restored state
@@ -251,7 +251,7 @@ function restoreRuntimeState(basePath: string): boolean {
 
   // Fallback: rebuild coordinator state from live session status files.
   // This covers cases where orchestrator.json is missing/corrupt but workers are
-  // still running and writing heartbeats under .gsd/parallel/.
+  // still running and writing heartbeats under .otto/workflow/parallel/.
   cleanupStaleSessions(basePath);
   const statuses = readAllSessionStatuses(basePath);
   if (statuses.length === 0) {
@@ -366,7 +366,7 @@ export async function startParallel(
   prefs: WorkflowPreferences | undefined,
 ): Promise<{ started: string[]; errors: Array<{ mid: string; error: string }> }> {
   // Prevent workers from spawning nested parallel sessions
-  if ((process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER)) {
+  if ((process.env.OTTO_PARALLEL_WORKER ?? process.env.OTTO_PARALLEL_WORKER)) {
     return { started: [], errors: [{ mid: "all", error: "Cannot start parallel from within a parallel worker" }] };
   }
 
@@ -558,7 +558,7 @@ export function _createMilestoneWorktree(basePath: string, milestoneId: string):
   // Run post-create hook if configured
   runWorktreePostCreateHook(basePath, info.path);
 
-  // Copy .gsd/ planning artifacts (milestones, CONTEXT, ROADMAP, etc.) from the
+  // Copy .otto/workflow/ planning artifacts (milestones, CONTEXT, ROADMAP, etc.) from the
   // project root into the worktree. Without this, workers for newly-planned
   // milestones can't find their roadmap and exit immediately (#2184 Bug 4).
   syncWorkflowStateToWorktree(basePath, info.path);
@@ -571,7 +571,7 @@ export function _createMilestoneWorktree(basePath: string, milestoneId: string):
 /**
  * Spawn a worker process for a milestone.
  * The worker runs `gsd headless --json auto` in the milestone's worktree
- * with GSD_MILESTONE_LOCK set to isolate state derivation.
+ * with OTTO_MILESTONE_LOCK set to isolate state derivation.
  *
  * IMPORTANT: We use `headless --json auto` instead of `--print "/otto auto"`.
  * --print mode calls session.prompt() which returns immediately after the
@@ -601,23 +601,20 @@ export function spawnWorker(
   try {
     const workerEnv: Record<string, string | undefined> = {
       ...process.env,
-      LOOP24_MILESTONE_LOCK: milestoneId,
-      GSD_MILESTONE_LOCK: milestoneId,
+      OTTO_MILESTONE_LOCK: milestoneId,
       // Pass the real project root so workers don't need to re-derive it.
       // Without this, process.cwd() resolves symlinks and the worktree
-      // path heuristic can match the user-level ~/.gsd instead of the
-      // project .gsd, causing writes to ~ and corrupting user config.
-      LOOP24_PROJECT_ROOT: basePath,
-      GSD_PROJECT_ROOT: basePath,
+      // path heuristic can match the user-level ~/.otto instead of the
+      // project .otto/workflow, causing writes to ~ and corrupting user config.
+      OTTO_PROJECT_ROOT: basePath,
       // Prevent workers from spawning their own parallel sessions
-      LOOP24_PARALLEL_WORKER: "1",
-      GSD_PARALLEL_WORKER: "1",
+      OTTO_PARALLEL_WORKER: "1",
     };
 
     // Apply worker model override if configured, so workers use a cheaper
     // model (e.g. Haiku) rather than inheriting the coordinator's model.
     if (state.config.worker_model) {
-      workerEnv.GSD_WORKER_MODEL = state.config.worker_model;
+      workerEnv.OTTO_WORKER_MODEL = state.config.worker_model;
     }
 
     child = spawn(process.execPath, [binPath, "headless", "--json", "auto"], {
@@ -742,12 +739,12 @@ export function spawnWorker(
 
 /**
  * Resolve the CLI binary path.
- * Uses GSD_BIN_PATH env var (set by loader.ts) or falls back to
+ * Uses OTTO_BIN_PATH env var (set by loader.ts) or falls back to
  * finding the binary relative to the current module.
  */
 function resolveWorkflowBin(): string | null {
-  // LOOP24_BIN_PATH (or legacy GSD_BIN_PATH) is set by loader.ts to the absolute path of dist/loader.js
-  const envBinPath = process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH;
+  // OTTO_BIN_PATH (or legacy OTTO_BIN_PATH) is set by loader.ts to the absolute path of dist/loader.js
+  const envBinPath = process.env.OTTO_BIN_PATH ?? process.env.OTTO_BIN_PATH;
   if (envBinPath && existsSync(envBinPath)) {
     return envBinPath;
   }

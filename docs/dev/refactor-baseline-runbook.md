@@ -1,6 +1,6 @@
-# GSD-2 Refactor Baseline Runbook
+# OTTO Refactor Baseline Runbook
 
-Project/App: GSD-2
+Project/App: OTTO
 File Purpose: Operator runbook for Phase 0 baseline measurement and comparison during the long-running refactor.
 
 ## Purpose
@@ -24,13 +24,13 @@ npm run baseline:refactor -- --json
 Persist a baseline outside the repo:
 
 ```bash
-npm run baseline:refactor -- --json --output /tmp/gsd-refactor-baseline-before.json
+npm run baseline:refactor -- --json --output /tmp/otto-refactor-baseline-before.json
 ```
 
 Compare the current checkout against a previous baseline:
 
 ```bash
-npm run baseline:refactor -- --compare /tmp/gsd-refactor-baseline-before.json
+npm run baseline:refactor -- --compare /tmp/otto-refactor-baseline-before.json
 ```
 
 ## Optional Timed Commands
@@ -47,7 +47,7 @@ Startup timing should be captured after build output exists:
 
 ```bash
 npm run baseline:refactor -- \
-  --command startup='GSD_STARTUP_TIMING=1 node dist/loader.js --version'
+  --command startup='OTTO_STARTUP_TIMING=1 node dist/loader.js --version'
 ```
 
 ## Report Shape
@@ -89,13 +89,13 @@ Later phases may add metrics, but they must not remove or rename these without i
 Before starting a phase that changes behavior, capture a baseline:
 
 ```bash
-npm run baseline:refactor -- --json --output /tmp/gsd-refactor-before-phase-N.json
+npm run baseline:refactor -- --json --output /tmp/otto-refactor-before-phase-N.json
 ```
 
 After the phase is implemented and verified, compare:
 
 ```bash
-npm run baseline:refactor -- --compare /tmp/gsd-refactor-before-phase-N.json
+npm run baseline:refactor -- --compare /tmp/otto-refactor-before-phase-N.json
 ```
 
 For Phase 2 token/context work, the prompt metrics are the primary gate. For Phase 3 build/test speed work, use opt-in command timings.

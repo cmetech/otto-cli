@@ -50,15 +50,15 @@ try {
   npmCacheDir = mkdtempSync(join(tmpdir(), 'validate-pack-npm-cache-'));
   mkdirSync(npmCacheDir, { recursive: true });
 
-  // --- Guard: @loop24/* workspace packages must not have @loop24/* cross-deps ---
-  // (@loop24-build/* packages CAN depend on each other — e.g., mcp-server depends
+  // --- Guard: @otto/* workspace packages must not have @otto/* cross-deps ---
+  // (@otto-build/* packages CAN depend on each other — e.g., mcp-server depends
   // on rpc-client — because they are both published to the registry.)
-  console.log('==> Checking workspace packages for @loop24/* cross-deps...');
+  console.log('==> Checking workspace packages for @otto/* cross-deps...');
   let crossFailed = false;
 
   for (const ws of getCorePackages()) {
     const pkg = JSON.parse(readFileSync(ws.packageJsonPath, 'utf8'));
-    const deps = Object.keys(pkg.dependencies || {}).filter(d => d.startsWith('@loop24/'));
+    const deps = Object.keys(pkg.dependencies || {}).filter(d => d.startsWith('@otto/'));
     if (deps.length) {
       console.log(`    LEAKED in ${ws.dir}: ${deps.join(', ')}`);
       crossFailed = true;
@@ -66,11 +66,11 @@ try {
   }
 
   if (crossFailed) {
-    console.log('ERROR: Workspace packages have @loop24/* cross-dependencies.');
+    console.log('ERROR: Workspace packages have @otto/* cross-dependencies.');
     console.log('    These cause 404s when npm resolves them from the registry.');
     process.exit(1);
   }
-  console.log('    No @loop24/* cross-dependencies.');
+  console.log('    No @otto/* cross-dependencies.');
 
   // --- Pack tarball ---
   console.log('==> Packing tarball...');
@@ -102,7 +102,6 @@ try {
     'packages/rpc-client/dist/index.js',
     'packages/mcp-server/dist/cli.js',
     'scripts/link-workspace-packages.cjs',
-    'dist/web/standalone/server.js',
   ];
 
   let missing = false;
@@ -148,11 +147,11 @@ try {
 
   // --- Verify every linkable workspace package resolved correctly post-install ---
   // This catches the Windows-style failure where symlinkSync fails silently and
-  // node_modules/@loop24/ is never populated, causing ERR_MODULE_NOT_FOUND at runtime.
+  // node_modules/@otto/ is never populated, causing ERR_MODULE_NOT_FOUND at runtime.
   // Checks every package with `gsd.linkable: true` — not just a hand-picked subset —
   // so any future addition is automatically covered.
   console.log('==> Verifying workspace package resolution (every linkable package)...');
-  const installedRoot = join(installDir, 'node_modules', '@ericsson', 'loop24');
+  const installedRoot = join(installDir, 'node_modules', '@ericsson', 'otto');
   let resolutionFailed = false;
   for (const pkg of getLinkablePackages()) {
     const pkgPath = join(installedRoot, 'node_modules', pkg.scope, pkg.name);

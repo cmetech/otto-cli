@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Unit tests for workflow template registry loading, matching, and display.
 //
 // Workflow Templates — Unit Tests
@@ -151,10 +151,10 @@ console.log('\n── List Templates ──');
   assert.ok(output.includes('bugfix'), 'Should list bugfix');
   assert.ok(output.includes('spike'), 'Should list spike');
   assert.ok(output.includes('hotfix'), 'Should list hotfix');
-  assert.ok(output.includes('/gsd start'), 'Should include usage hint');
+  assert.ok(output.includes('/otto start'), 'Should include usage hint');
   assert.ok(output.includes('Recommended Task Paths'), 'Should include process path guidance');
   assert.ok(output.includes('large-feature'), 'Should include large feature process path');
-  assert.ok(output.includes('/gsd discuss'), 'Should route large features to milestone flow');
+  assert.ok(output.includes('/otto discuss'), 'Should route large features to milestone flow');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

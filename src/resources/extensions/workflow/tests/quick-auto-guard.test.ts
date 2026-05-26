@@ -1,7 +1,7 @@
 /**
- * Tests that /gsd quick is blocked when auto-mode is active.
+ * Tests that /otto quick is blocked when auto-mode is active.
  *
- * Relates to #2417: /gsd quick freezes terminal when auto-mode is active.
+ * Relates to #2417: /otto quick freezes terminal when auto-mode is active.
  * The fix adds an isAutoActive() guard in handleWorkflowCommand before
  * delegating to handleQuick.
  */
@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 import { _setAutoActiveForTest } from "../auto.ts";
 import { handleWorkflowCommand } from "../commands/handlers/workflow.ts";
 
-describe("/gsd quick auto-mode guard (#2417)", () => {
+describe("/otto quick auto-mode guard (#2417)", () => {
   it("returns handled and notifies when auto-mode is active", async () => {
     const notifications: Array<{ message: string; level?: string }> = [];
     _setAutoActiveForTest(true);
@@ -26,7 +26,7 @@ describe("/gsd quick auto-mode guard (#2417)", () => {
 
       assert.equal(handled, true);
       assert.deepEqual(notifications, [{
-        message: "/gsd quick cannot run while auto-mode is active.\nStop auto-mode first with /gsd stop, then run /gsd quick.",
+        message: "/otto quick cannot run while auto-mode is active.\nStop auto-mode first with /otto stop, then run /otto quick.",
         level: "error",
       }]);
     } finally {

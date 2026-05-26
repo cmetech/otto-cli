@@ -14,7 +14,7 @@
  *   - /configs command (slash command)
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 import { discoverAllConfigs } from "./discovery.js";
 import { formatDiscoveryForTool, formatDiscoveryForCommand } from "./format.js";

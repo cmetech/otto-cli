@@ -21,7 +21,7 @@ function makeTmp(name: string): string {
 }
 
 function buildScaffold(base: string) {
-  const gsd = join(base, ".gsd");
+  const gsd = join(base, ".otto/workflow");
   const m = join(gsd, "milestones", "M001");
   const s = join(m, "slices", "S01", "tasks");
   mkdirSync(s, { recursive: true });
@@ -67,14 +67,14 @@ test("fixLevel:task — roadmap checkbox is never toggled by doctor (reconciliat
   const report = await runDoctor(tmp, { fix: true, fixLevel: "task" });
 
   // Roadmap must remain unchecked — doctor no longer touches checkboxes
-  const roadmapContent = readFileSync(join(tmp, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), "utf8");
+  const roadmapContent = readFileSync(join(tmp, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"), "utf8");
   assert.ok(
     roadmapContent.includes("- [ ] **S01"),
     "roadmap should remain unchecked — doctor no longer toggles checkboxes"
   );
 
   // No summary or UAT stubs created
-  const sliceSummaryPath = join(tmp, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md");
+  const sliceSummaryPath = join(tmp, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md");
   assert.ok(!existsSync(sliceSummaryPath), "summary should NOT be created");
 });
 
@@ -87,13 +87,13 @@ test("fixLevel:all — roadmap checkbox is never toggled by doctor (reconciliati
   const report = await runDoctor(tmp, { fix: true });
 
   // Even at fixLevel:all, doctor no longer creates stubs or toggles checkboxes
-  const roadmapContent = readFileSync(join(tmp, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), "utf8");
+  const roadmapContent = readFileSync(join(tmp, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"), "utf8");
   assert.ok(
     roadmapContent.includes("- [ ] **S01"),
     "roadmap should remain unchecked — reconciliation removed"
   );
 
-  const sliceSummaryPath = join(tmp, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md");
+  const sliceSummaryPath = join(tmp, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md");
   assert.ok(!existsSync(sliceSummaryPath), "summary should NOT be created");
 });
 

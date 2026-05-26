@@ -15,7 +15,7 @@ function _require(name: string): any {
   } catch {
     try {
       const workflowPiRequire = createRequire(
-        join(process.cwd(), "node_modules", "@ericsson", "loop24", "index.js"),
+        join(process.cwd(), "node_modules", "@ericsson", "otto", "index.js"),
       );
       return workflowPiRequire(name);
     } catch {

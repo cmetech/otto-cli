@@ -816,7 +816,7 @@ export async function saveArtifactToDbForWorkspace(
 
     const rel0 = relative(workflowDir, fullPath);
     if (rel0.startsWith('..') || isAbsolute(rel0)) {
-      throw new WorkflowError(IO_ERROR, `saveArtifactToDbForWorkspace: path escapes .gsd/ directory: ${opts.path}`);
+      throw new WorkflowError(IO_ERROR, `saveArtifactToDbForWorkspace: path escapes .otto/workflow/ directory: ${opts.path}`);
     }
 
     let contentToPersist = opts.content;
@@ -867,7 +867,7 @@ export async function saveArtifactToDbForWorkspace(
  * Save an artifact to DB and write the corresponding markdown file to disk,
  * routing all path construction through the workspace contract.
  *
- * The path is relative to .gsd/ (e.g. "milestones/M001/slices/S06/tasks/T01-SUMMARY.md").
+ * The path is relative to .otto/workflow/ (e.g. "milestones/M001/slices/S06/tasks/T01-SUMMARY.md").
  * The full file path is computed as scope.workspace.contract.projectGsd + '/' + path.
  */
 export async function saveArtifactToDbByScope(
@@ -883,14 +883,14 @@ export async function saveArtifactToDbByScope(
   try {
     const db = await import('./db.js');
 
-    // Use contract.projectGsd as the canonical .gsd directory — never a hand-rolled basePath join.
+    // Use contract.projectGsd as the canonical .otto/workflow directory — never a hand-rolled basePath join.
     const workflowDir = scope.workspace.contract.projectGsd;
     const fullPath = resolve(workflowDir, opts.path);
 
     // Guard against path traversal before any reads/writes
     const rel1 = relative(workflowDir, fullPath);
     if (rel1.startsWith('..') || isAbsolute(rel1)) {
-      throw new WorkflowError(IO_ERROR, `saveArtifactToDbByScope: path escapes .gsd/ directory: ${opts.path}`);
+      throw new WorkflowError(IO_ERROR, `saveArtifactToDbByScope: path escapes .otto/workflow/ directory: ${opts.path}`);
     }
 
     let contentToPersist = opts.content;
@@ -946,8 +946,8 @@ export async function saveArtifactToDbByScope(
 
 /**
  * Save an artifact to DB and write the corresponding markdown file to disk.
- * The path is relative to .gsd/ (e.g. "milestones/M001/slices/S06/tasks/T01-SUMMARY.md").
- * The full file path is computed as basePath + '.gsd/' + path.
+ * The path is relative to .otto/workflow/ (e.g. "milestones/M001/slices/S06/tasks/T01-SUMMARY.md").
+ * The full file path is computed as basePath + '.otto/workflow/' + path.
  *
  * @deprecated Use saveArtifactToDbByScope instead, which routes through the
  * workspace contract for canonical path resolution.

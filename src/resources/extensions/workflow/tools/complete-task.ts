@@ -1,8 +1,8 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Complete-task tool handler for workflow state and summaries.
 
 /**
- * complete-task handler — the core operation behind gsd_complete_task.
+ * complete-task handler — the core operation behind otto_complete_task.
  *
  * Validates inputs, writes task row and rendered SUMMARY.md to DB in a
  * transaction, then renders projections to disk and invalidates caches.
@@ -244,7 +244,7 @@ export async function handleCompleteTask(
     if (existingTask && isClosedStatus(existingTask.status)) {
       // Stale-turn path: a timed-out turn that was superseded by recovery
       // can still reach this code when its LLM call eventually returns and
-      // invokes gsd_complete_task. Returning an error would produce noisy
+      // invokes otto_complete_task. Returning an error would produce noisy
       // "already complete — use reopen first" logs in the orphaned turn.
       // Instead, signal the duplicate via a non-mutating success shape that
       // callers can detect via `duplicate: true` / `stale: true`.
@@ -254,7 +254,7 @@ export async function handleCompleteTask(
         guardError = "__stale_duplicate__";
         return;
       }
-      guardError = `task ${params.taskId} is already complete — use gsd_task_reopen first if you need to redo it`;
+      guardError = `task ${params.taskId} is already complete — use otto_task_reopen first if you need to redo it`;
       return;
     }
 

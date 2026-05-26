@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# LOOP24 install script — clone+install distribution (Phase 1 per design spec §7).
+# OTTO install script — clone+install distribution (Phase 1 per design spec §7).
 #
 # Run from the repo root after `git clone`:
 #
@@ -46,7 +46,7 @@ note() { printf "%s%s%s\n" "$C_DIM" "$1" "$C_RESET"; }
 
 usage() {
   cat <<EOF
-LOOP24 install script
+OTTO install script
 
 Usage: $0 [--no-wizard] [--bin-dir DIR] [-h|--help]
 
@@ -80,7 +80,7 @@ if ! grep -q '"@cmetech/otto"' "$REPO_ROOT/package.json"; then
   exit 1
 fi
 
-printf "%sLOOP24%s installing from %s\n\n" "$C_BRAND" "$C_RESET" "$REPO_ROOT"
+printf "%sOTTO%s installing from %s\n\n" "$C_BRAND" "$C_RESET" "$REPO_ROOT"
 
 # ── Prereq: git ──────────────────────────────────────────────────────────────
 if ! command -v git >/dev/null 2>&1; then
@@ -97,7 +97,7 @@ fi
 NODE_VERSION="$(node -v)"
 NODE_MAJOR="$(printf "%s" "$NODE_VERSION" | sed -E 's/^v([0-9]+).*/\1/')"
 if [ "$NODE_MAJOR" -lt 22 ]; then
-  err "Node $NODE_VERSION is too old. LOOP24 requires Node ≥22."
+  err "Node $NODE_VERSION is too old. OTTO requires Node ≥22."
   exit 1
 fi
 ok "node: $NODE_VERSION"
@@ -179,9 +179,9 @@ fi
 # ── Done ────────────────────────────────────────────────────────────────────
 echo
 printf "%s%s installed.%s Type %s%s%s to launch.\n" \
-  "$C_BRAND" "LOOP24" "$C_RESET" "$C_BRAND" "$PROG_NAME" "$C_RESET"
+  "$C_BRAND" "OTTO" "$C_RESET" "$C_BRAND" "$PROG_NAME" "$C_RESET"
 echo
 note "Next steps:"
 note "  - Quick start:  otto --help"
 note "  - Re-configure: otto config [gateway|langflow|llm|all]"
-note "  - Docs:         docs/INSTALL.md, LOOP24-PATCHES.md"
+note "  - Docs:         docs/INSTALL.md, OTTO-PATCHES.md"

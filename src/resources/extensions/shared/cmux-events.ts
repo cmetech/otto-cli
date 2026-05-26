@@ -1,4 +1,4 @@
-// LOOP24 — Shared cmux event channel contracts
+// OTTO — Shared cmux event channel contracts
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 
 /**

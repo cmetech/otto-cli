@@ -16,9 +16,9 @@ import {
 test('isSourceCandidate accepts source files and skips integration and declarations', () => {
   assert.equal(isSourceCandidate('src/foo.ts'), true);
   assert.equal(isSourceCandidate('src/resources/extensions/workflow/auto-prompts.ts'), true);
-  assert.equal(isSourceCandidate('src/tests/integration/web.test.ts'), false);
+  assert.equal(isSourceCandidate('src/tests/integration/example.test.ts'), false);
   assert.equal(isSourceCandidate('src/foo.d.ts'), false);
-  assert.equal(isSourceCandidate('web/lib/store.ts'), false);
+  assert.equal(isSourceCandidate('docs/user-guide.md'), false);
 });
 
 test('isTestFile recognizes node test naming', () => {

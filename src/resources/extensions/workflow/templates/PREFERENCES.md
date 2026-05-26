@@ -96,6 +96,6 @@ pre_dispatch_hooks: []
 #   rtk: false
 ---
 
-# GSD Skill Preferences
+# OTTO Skill Preferences
 
-See `~/.gsd/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.
+See `~/.otto/workflow/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.

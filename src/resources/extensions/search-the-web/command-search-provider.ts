@@ -9,8 +9,8 @@
  */
 
 import { supportsNativeWebSearch } from './native-search.js'
-import type { ExtensionAPI } from '@loop24/pi-coding-agent'
-import type { AutocompleteItem } from '@loop24/pi-tui'
+import type { ExtensionAPI } from '@otto/pi-coding-agent'
+import type { AutocompleteItem } from '@otto/pi-tui'
 import {
   getTavilyApiKey,
   getBraveApiKey,

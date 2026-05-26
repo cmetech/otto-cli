@@ -46,7 +46,7 @@ function assertSelfMergeRefRecoversToMain(recordedIntegrationBranch: string): vo
   // Isolate from user's global preferences so prefs.main_branch can't
   // override the corrupt-metadata path under test.
   const originalHome = process.env.HOME;
-  const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "gsd-fake-home-")));
+  const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "otto-fake-home-")));
   process.env.HOME = fakeHome;
   _clearWorkflowRootCache();
   _resetServiceCache();
@@ -58,7 +58,7 @@ function assertSelfMergeRefRecoversToMain(recordedIntegrationBranch: string): vo
     // milestone branch itself. Commit it so mergeMilestoneToMain's
     // autoCommitDirtyState pre-step has nothing to capture and the
     // postcondition (no new commits) cleanly reflects the guard.
-    const msDir = join(tempDir, ".gsd", "milestones", "M001");
+    const msDir = join(tempDir, ".otto/workflow", "milestones", "M001");
     mkdirSync(msDir, { recursive: true });
     writeFileSync(
       join(msDir, "M001-META.json"),

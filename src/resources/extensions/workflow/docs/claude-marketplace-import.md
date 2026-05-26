@@ -1,24 +1,24 @@
 # Claude Marketplace Import
 
-This document describes the Claude marketplace import feature in GSD: what it reads, what it imports, what it persists, and what it does not translate into active GSD/Pi runtime behavior.
+This document describes the Claude marketplace import feature in OTTO: what it reads, what it imports, what it persists, and what it does not translate into active OTTO/Pi runtime behavior.
 
 ---
 
 ## What this feature does
 
-GSD can read Claude Code marketplace catalogs, inspect the plugins they reference, and import selected Claude skills into GSD/Pi while preserving Claude-style namespace identity.
+OTTO can read Claude Code marketplace catalogs, inspect the plugins they reference, and import selected Claude skills into OTTO/Pi while preserving Claude-style namespace identity.
 
 The interactive entry point is:
 
 ```text
-/gsd prefs import-claude
+/otto prefs import-claude
 ```
 
 You can also choose scope explicitly:
 
 ```text
-/gsd prefs import-claude global
-/gsd prefs import-claude project
+/otto prefs import-claude global
+/otto prefs import-claude project
 ```
 
 ---
@@ -53,25 +53,25 @@ Anthropic also documents user-added marketplace sources under:
 ~/.claude/plugins/marketplaces
 ```
 
-GSD aligns its Claude import flow to that model.
+OTTO aligns its Claude import flow to that model.
 
 ---
 
 ## Where the agent looks
 
-For Claude plugin and marketplace material, GSD prefers Claude-managed locations first:
+For Claude plugin and marketplace material, OTTO prefers Claude-managed locations first:
 
 1. `~/.claude/plugins/marketplaces`
 2. `~/.claude/plugins/cache`
 3. `~/.claude/plugins`
 
-After that, GSD still allows local clone-style convenience paths such as sibling repos or `~/repos/...` paths. Those fallbacks remain supported for developer workflows, but they are not the primary Claude storage model.
+After that, OTTO still allows local clone-style convenience paths such as sibling repos or `~/repos/...` paths. Those fallbacks remain supported for developer workflows, but they are not the primary Claude storage model.
 
 ---
 
-## What GSD imports
+## What OTTO imports
 
-### Imported into GSD/Pi settings
+### Imported into OTTO/Pi settings
 
 - Claude skills discovered directly from configured skill roots
 - Marketplace-derived skills
@@ -92,7 +92,7 @@ scientific-method:experiment-protocol
 - hooks
 - MCP server definitions
 - LSP server definitions
-- other plugin metadata that does not currently map directly into active GSD/Pi runtime surfaces
+- other plugin metadata that does not currently map directly into active OTTO/Pi runtime surfaces
 
 ---
 
@@ -105,13 +105,13 @@ The import flow does the following:
 3. inspect discovered plugins and inventory their components
 4. let you select components to import
 5. validate the selection for canonical conflicts and ambiguity
-6. persist imported resources into GSD/Pi settings
+6. persist imported resources into OTTO/Pi settings
 
 ---
 
 ## Namespace behavior
 
-GSD preserves Claude plugin namespace semantics rather than flattening plugin components into anonymous global names.
+OTTO preserves Claude plugin namespace semantics rather than flattening plugin components into anonymous global names.
 
 ### Canonical references
 
@@ -122,11 +122,11 @@ Canonical references remain available for imported components:
 
 ### Shorthand
 
-GSD supports shorthand lookup when it is unambiguous.
+OTTO supports shorthand lookup when it is unambiguous.
 
 ### Local-first resolution
 
-When a namespaced component refers to another component by bare name, GSD tries the same plugin namespace first before broader lookup.
+When a namespaced component refers to another component by bare name, OTTO tries the same plugin namespace first before broader lookup.
 
 ---
 
@@ -138,7 +138,7 @@ Claude plugin agent directories are markdown agent-definition directories, for e
 .../plugins/python3-development/agents
 ```
 
-GSD does **not** persist imported marketplace agent directories into:
+OTTO does **not** persist imported marketplace agent directories into:
 
 ```json
 settings.packages
@@ -154,7 +154,7 @@ Persisting an `.../agents` directory into `settings.packages` can cause Pi start
 Cannot find module '.../agents'
 ```
 
-GSD now avoids writing those entries.
+OTTO now avoids writing those entries.
 
 ---
 
@@ -162,7 +162,7 @@ GSD now avoids writing those entries.
 
 ### Skills
 
-Imported skills are persisted into Pi skill settings. Depending on the selection path, they may also be added to GSD preferences.
+Imported skills are persisted into Pi skill settings. Depending on the selection path, they may also be added to OTTO preferences.
 
 ### Marketplace agents
 
@@ -172,7 +172,7 @@ Marketplace agents remain part of the import model and validation surface, but t
 
 ## Diagnostics
 
-GSD distinguishes between:
+OTTO distinguishes between:
 
 - **canonical conflicts** — hard errors
 - **shorthand overlaps** — warnings when canonical names remain distinct
@@ -194,14 +194,14 @@ Real host validation included:
 
 - clean startup of the installed `gsd` binary after fixing stale bad settings
 - successful invocation of an imported skill (`/stinkysnake`)
-- successful execution of `/gsd prefs import-claude global`
+- successful execution of `/otto prefs import-claude global`
 - verification that imported marketplace agent directories were **not** reintroduced into `settings.packages`
 
 ---
 
 ## Current limitations
 
-- GSD does not yet translate every Claude plugin component type into active Pi-native runtime behavior
+- OTTO does not yet translate every Claude plugin component type into active Pi-native runtime behavior
 - marketplace-derived agents are not persisted as package roots, by design
 - clone-style local fallbacks still exist for developer convenience, even though Claude-managed marketplace/plugin locations are preferred first
 

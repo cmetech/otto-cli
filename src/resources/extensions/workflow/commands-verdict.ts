@@ -1,7 +1,7 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Handles manual milestone validation verdict overrides.
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { loadFile } from "./files.js";
 import { resolveMilestoneFile } from "./paths.js";
@@ -17,7 +17,7 @@ import {
 } from "./verdict-parser.js";
 
 const USAGE =
-  'Usage: /gsd verdict <pass|needs-attention|needs-remediation> [--milestone Mxxx] [--rationale "..."]';
+  'Usage: /otto verdict <pass|needs-attention|needs-remediation> [--milestone Mxxx] [--rationale "..."]';
 
 interface ParsedArgs {
   verdict?: ValidationVerdict;
@@ -172,7 +172,7 @@ export async function handleVerdict(
   const existingValidation = await loadExistingValidation(basePath, milestoneId);
   if (!existingValidation) {
     ctx.ui.notify(
-      `No milestone validation found for ${milestoneId}. Run /gsd auto to validate first, then retry /gsd verdict.`,
+      `No milestone validation found for ${milestoneId}. Run /otto auto to validate first, then retry /otto verdict.`,
       "warning",
     );
     return;
@@ -189,7 +189,7 @@ export async function handleVerdict(
   }
 
   const verdictRationale =
-    parsed.rationale ?? "Manually overridden via /gsd verdict";
+    parsed.rationale ?? "Manually overridden via /otto verdict";
 
   const result = await executeValidateMilestone(
     {
@@ -222,7 +222,7 @@ export async function handleVerdict(
 
   if (parsed.verdict === "needs-remediation") {
     ctx.ui.notify(
-      "Follow up with gsd_reassess_roadmap to add remediation slices, then re-run /gsd auto.",
+      "Follow up with otto_reassess_roadmap to add remediation slices, then re-run /otto auto.",
       "info",
     );
   }

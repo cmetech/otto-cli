@@ -1,7 +1,8 @@
 /**
  * TTSR Rule Loader
  *
- * Scans global (~/.otto/agent/rules/*.md) and project-local (.gsd/rules/*.md)
+ * Scans global (~/.otto/agent/rules/*.md) and project-local
+ * (.otto/workflow/rules/*.md)
  * rule files. Parses YAML frontmatter for condition, scope, globs.
  * Project rules override global rules with the same name.
  */
@@ -11,6 +12,7 @@ import { join, basename } from "node:path";
 import type { Rule } from "./ttsr-manager.js";
 import { splitFrontmatter, parseFrontmatterMap } from "../shared/frontmatter.js";
 import { workflowHome } from "../workflow/home.js";
+import { workflowDirUnder } from "../workflow/paths.js";
 
 function parseRuleFile(filePath: string): Rule | null {
 	let content: string;
@@ -61,7 +63,7 @@ function scanDir(dir: string): Rule[] {
  */
 export function loadRules(cwd: string): Rule[] {
 	const globalDir = join(workflowHome(), "agent", "rules");
-	const projectDir = join(cwd, ".gsd", "rules");
+	const projectDir = join(workflowDirUnder(cwd), "rules");
 
 	const globalRules = scanDir(globalDir);
 	const projectRules = scanDir(projectDir);

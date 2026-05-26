@@ -109,7 +109,7 @@ export async function handleReassessRoadmap(
   // ── Compute assessment artifact path ──────────────────────────────
   // Assessment lives in the completed slice's directory
   const assessmentRelPath = join(
-    ".gsd", "milestones", params.milestoneId,
+    ".otto/workflow", "milestones", params.milestoneId,
     "slices", params.completedSliceId,
     `${params.completedSliceId}-ASSESSMENT.md`,
   );
@@ -247,7 +247,7 @@ export async function handleReassessRoadmap(
 
     if (hasStructuralChanges) {
       const validationFile = join(
-        basePath, ".gsd", "milestones", params.milestoneId,
+        basePath, ".otto/workflow", "milestones", params.milestoneId,
         `${params.milestoneId}-VALIDATION.md`,
       );
       try {

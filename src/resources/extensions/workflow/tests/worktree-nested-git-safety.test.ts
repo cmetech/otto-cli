@@ -9,7 +9,7 @@
  * These tests exercise findNestedGitDirs directly against a synthetic
  * filesystem layout to verify that nested .git *directories* are detected
  * (while .git *files* — legitimate worktree pointers — are not), and that
- * non-project directories (node_modules, .gsd, target, etc.) are skipped.
+ * non-project directories (node_modules, .otto/workflow, target, etc.) are skipped.
  */
 
 import { test } from "node:test";
@@ -56,11 +56,11 @@ test("#2616: findNestedGitDirs ignores .git files (worktree pointers)", (t) => {
   );
 });
 
-test("#2616: findNestedGitDirs skips excluded directories (node_modules, .gsd, .bg-shell, target)", (t) => {
+test("#2616: findNestedGitDirs skips excluded directories (node_modules, .otto/workflow, .bg-shell, target)", (t) => {
   const root = makeRoot(t);
 
   // All three of these contain a .git *directory*, but the scan must skip them.
-  for (const excluded of ["node_modules", ".gsd", ".bg-shell", "target"]) {
+  for (const excluded of ["node_modules", ".otto/workflow", ".bg-shell", "target"]) {
     const inside = join(root, excluded, "vendored-pkg");
     mkdirSync(join(inside, ".git"), { recursive: true });
   }

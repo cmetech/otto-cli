@@ -1,11 +1,11 @@
-// LOOP24 — LLM-callable Ollama management tool
+// OTTO — LLM-callable Ollama management tool
 /**
  * Registers an ollama_manage tool that the LLM can call to interact
  * with the local Ollama instance — list models, pull new ones, check status.
  */
 
-import type { ExtensionAPI } from "@loop24/pi-coding-agent";
-import { Text } from "@loop24/pi-tui";
+import type { ExtensionAPI } from "@otto/pi-coding-agent";
+import { Text } from "@otto/pi-tui";
 import { Type } from "@sinclair/typebox";
 import * as client from "./ollama-client.js";
 import { discoverModels, formatModelForDisplay } from "./ollama-discovery.js";

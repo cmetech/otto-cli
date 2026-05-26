@@ -70,7 +70,7 @@ describe("Editor", () => {
 		editor.setText("/");
 
 		let autocompleteRows = [
-			"/gsd",
+			"/otto",
 			"/git",
 			"/grep",
 			"/go",
@@ -82,7 +82,7 @@ describe("Editor", () => {
 
 		const openLength = editor.render(40).length;
 
-		autocompleteRows = ["/gsd"];
+		autocompleteRows = ["/otto"];
 		const filteredLength = editor.render(40).length;
 
 		assert.equal(

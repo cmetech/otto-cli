@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Auto-loop phase lifecycle regression tests.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -292,7 +292,7 @@ test("runFinalize does not render next-phase handoff for complete-milestone", as
 
 test("runFinalize stops before merge when an isolated unit leaks app files into project root", async (t) => {
   const root = mkdtempSync(join(tmpdir(), "gsd-root-leak-root-"));
-  const worktree = join(root, ".gsd", "worktrees", "M001");
+  const worktree = join(root, ".otto/workflow", "worktrees", "M001");
   t.after(() => {
     rmSync(root, { recursive: true, force: true });
   });
@@ -355,14 +355,14 @@ test("runFinalize stops before merge when an isolated unit leaks app files into 
   assert.match(message, /tests\/verify-s09\.sh/);
 });
 
-test("runFinalize allows root .gsd-only changes during isolated units", async (t) => {
+test("runFinalize allows root .otto/workflow-only changes during isolated units", async (t) => {
   const root = mkdtempSync(join(tmpdir(), "gsd-root-leak-gsd-"));
-  const worktree = join(root, ".gsd", "worktrees", "M001");
+  const worktree = join(root, ".otto/workflow", "worktrees", "M001");
   t.after(() => {
     rmSync(root, { recursive: true, force: true });
   });
   initRepo(root);
-  mkdirSync(join(root, ".gsd"), { recursive: true });
+  mkdirSync(join(root, ".otto/workflow"), { recursive: true });
   mkdirSync(worktree, { recursive: true });
 
   const s = new AutoSession();
@@ -376,7 +376,7 @@ test("runFinalize allows root .gsd-only changes during isolated units", async (t
     startedAt: Date.now(),
   };
 
-  writeFileSync(join(root, ".gsd", "metrics.json"), "{}\n");
+  writeFileSync(join(root, ".otto/workflow", "metrics.json"), "{}\n");
 
   const stopCalls: string[] = [];
   const result = await runFinalizeWithDeps(s, {

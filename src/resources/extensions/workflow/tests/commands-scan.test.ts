@@ -1,5 +1,5 @@
 /**
- * Tests for /gsd scan command — pure functions + handler integration
+ * Tests for /otto scan command — pure functions + handler integration
  */
 
 import { describe, test, afterEach } from "node:test";
@@ -142,10 +142,10 @@ describe("resolveScanDocuments", () => {
 // ─── buildScanOutputPaths ────────────────────────────────────────────────────
 
 describe("buildScanOutputPaths", () => {
-  test("returns paths under .gsd/codebase/ relative to basePath", () => {
+  test("returns paths under .otto/workflow/codebase/ relative to basePath", () => {
     const base = "/some/project";
     const paths = buildScanOutputPaths("tech", base);
-    assert.ok(paths.every((p) => p.startsWith(join(base, ".gsd", "codebase"))));
+    assert.ok(paths.every((p) => p.startsWith(join(base, ".otto/workflow", "codebase"))));
   });
 
   test("each path ends with .md extension", () => {
@@ -239,7 +239,7 @@ function makeMockCtx() {
 }
 
 describe("handleScan — handler integration", () => {
-  test("creates .gsd/codebase/ directory", async (t) => {
+  test("creates .otto/workflow/codebase/ directory", async (t) => {
     const tmpDir = makeTmpDir();
     const origCwd = process.cwd();
     process.chdir(tmpDir);
@@ -250,7 +250,7 @@ describe("handleScan — handler integration", () => {
 
     await handleScan("", ctx as never, pi as never);
 
-    assert.ok(existsSync(join(tmpDir, ".gsd", "codebase")));
+    assert.ok(existsSync(join(tmpDir, ".otto/workflow", "codebase")));
   });
 
   test("calls pi.sendMessage with triggerTurn: true", async (t) => {
@@ -335,7 +335,7 @@ describe("handleScan — handler integration", () => {
     t.after(() => { process.chdir(origCwd); });
 
     // Pre-create one of the output documents
-    const codesbaseDir = join(tmpDir, ".gsd", "codebase");
+    const codesbaseDir = join(tmpDir, ".otto/workflow", "codebase");
     mkdirSync(codesbaseDir, { recursive: true });
     writeFileSync(join(codesbaseDir, "STACK.md"), "# existing");
 

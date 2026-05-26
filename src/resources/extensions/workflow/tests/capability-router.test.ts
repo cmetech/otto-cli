@@ -1,4 +1,4 @@
-// GSD Extension — Capability-Aware Router Tests
+// OTTO Extension — Capability-Aware Router Tests
 // Tests for new capability scoring functions and data tables (Plan 01-01)
 
 import { describe, test } from "node:test";

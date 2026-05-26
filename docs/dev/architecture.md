@@ -1,35 +1,35 @@
 # Architecture Overview
 
-GSD is a TypeScript application built on the [Pi SDK](https://github.com/badlogic/pi-mono). It embeds the Pi coding agent and extends it with the GSD workflow engine, auto mode state machine, and project management primitives.
+OTTO is a TypeScript application built on the [Pi SDK](https://github.com/badlogic/pi-mono). It embeds the Pi coding agent and extends it with the OTTO workflow engine, auto mode state machine, and project management primitives.
 
 ## System Structure
 
 ```
-gsd (CLI binary)
-  └─ loader.ts          Sets PI_PACKAGE_DIR, GSD env vars, dynamic-imports cli.ts
+otto (CLI binary)
+  └─ loader.ts          Sets PI_PACKAGE_DIR, OTTO env vars, dynamic-imports cli.ts
       └─ cli.ts         Wires SDK managers, loads extensions, starts InteractiveMode
           ├─ onboarding.ts   First-run setup wizard (LLM provider + tool keys)
           ├─ wizard.ts       Env hydration from stored auth.json credentials
-          ├─ app-paths.ts    ~/.gsd/agent/, ~/.gsd/sessions/, auth.json
-          ├─ resource-loader.ts  Syncs bundled extensions + agents to ~/.gsd/agent/
+          ├─ app-paths.ts    ~/.otto/agent/, ~/.otto/sessions/, auth.json
+          ├─ resource-loader.ts  Syncs bundled extensions + agents to ~/.otto/agent/
           └─ src/resources/
-              ├─ extensions/workflow/    Core GSD extension
+              ├─ extensions/workflow/    Core OTTO extension
               ├─ extensions/...     23 supporting extensions
               ├─ agents/            scout, researcher, worker
               ├─ AGENTS.md          Agent routing instructions
-              └─ GSD-WORKFLOW.md    Manual bootstrap protocol
+              └─ OTTO-WORKFLOW.md    Manual bootstrap protocol
 
-gsd headless              Headless mode — CI/cron orchestration via RPC child process
-gsd --mode mcp            MCP server mode — exposes tools over stdin/stdout
+otto headless              Headless mode — CI/cron orchestration via RPC child process
+otto --mode mcp            MCP server mode — exposes tools over stdin/stdout
 
-vscode-extension/         VS Code extension — chat participant (@gsd), sidebar dashboard, RPC integration
+vscode-extension/         VS Code extension — chat participant (@otto), sidebar dashboard, RPC integration
 ```
 
 ## Key Design Decisions
 
 ### DB-Authoritative Project State
 
-GSD stores runtime workflow state in the project-root SQLite database. Auto mode derives phases, completion status, requirements, decisions, summaries, and hierarchy from that database, then renders markdown projections in `.gsd/` for human review, prompt context, and git-friendly history. No in-memory state survives across sessions. This enables crash recovery, multi-terminal steering, and session resumption while avoiding silent markdown re-imports during normal runtime.
+OTTO stores runtime workflow state in the project-root SQLite database. Auto mode derives phases, completion status, requirements, decisions, summaries, and hierarchy from that database, then renders markdown projections in `.otto/workflow/` for human review, prompt context, and git-friendly history. No in-memory state survives across sessions. This enables crash recovery, multi-terminal steering, and session resumption while avoiding silent markdown re-imports during normal runtime.
 
 ### Two-File Loader Pattern
 
@@ -37,11 +37,11 @@ GSD stores runtime workflow state in the project-root SQLite database. Auto mode
 
 ### `pkg/` Shim Directory
 
-`PI_PACKAGE_DIR` points to `pkg/` (not project root) to avoid Pi's theme resolution colliding with GSD's `src/` directory. Contains only `piConfig` and theme assets.
+`PI_PACKAGE_DIR` points to `pkg/` (not project root) to avoid Pi's theme resolution colliding with OTTO's `src/` directory. Contains only `piConfig` and theme assets.
 
 ### Always-Overwrite Sync
 
-Bundled extensions and agents are synced to `~/.gsd/agent/` on every launch, not just first run. This means `npm update -g` takes effect immediately.
+Bundled extensions and agents are synced to `~/.otto/agent/` on every launch, not just first run. This means `npm update -g` takes effect immediately.
 
 ### Lazy Provider Loading
 
@@ -53,13 +53,13 @@ Every dispatch creates a new agent session. The LLM starts with a clean context 
 
 ### Workspace Roots, Not Ambient `cwd`
 
-GSD workflow code must treat the active project/worktree as explicit state, not infer it from ambient `process.cwd()`. Prefer `AutoSession.scope`, `s.canonicalProjectRoot`, `s.basePath`, `s.originalBasePath`, hook `ctx.cwd`, or an explicit `basePath` parameter depending on the boundary. `cwd` remains valid as a subprocess/shell option in generic Pi tooling, but GSD identity, DB paths, workflow gates, auto-mode sessions, and dynamic tool execution should be rooted from explicit workflow state.
+OTTO workflow code must treat the active project/worktree as explicit state, not infer it from ambient `process.cwd()`. Prefer `AutoSession.scope`, `s.canonicalProjectRoot`, `s.basePath`, `s.originalBasePath`, hook `ctx.cwd`, or an explicit `basePath` parameter depending on the boundary. `cwd` remains valid as a subprocess/shell option in generic Pi tooling, but OTTO identity, DB paths, workflow gates, auto-mode sessions, and dynamic tool execution should be rooted from explicit workflow state.
 
 ## Bundled Extensions
 
 | Extension | What It Provides |
 |-----------|-----------------|
-| **GSD** | Core workflow engine — auto mode, state machine, commands, dashboard |
+| **OTTO** | Core workflow engine — auto mode, state machine, commands, dashboard |
 | **Browser Tools** | Playwright-based browser automation — navigation, forms, screenshots, PDF export, device emulation, visual regression, structured data extraction, route mocking, accessibility tree inspection, and semantic actions |
 | **Search the Web** | Brave Search, Tavily, or Jina page extraction |
 | **Google Search** | Gemini-powered web search with AI-synthesized answers |
@@ -108,7 +108,7 @@ Performance-critical operations use a Rust N-API engine:
 - **fd** — fuzzy file path discovery
 - **clipboard** — native clipboard access
 - **git** — libgit2-backed git read operations (v2.16+)
-- **parser** — GSD file parsing and frontmatter extraction
+- **parser** — OTTO file parsing and frontmatter extraction
 
 ## Dispatch Pipeline
 

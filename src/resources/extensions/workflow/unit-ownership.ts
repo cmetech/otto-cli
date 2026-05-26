@@ -3,7 +3,7 @@
 //
 // An agent can claim a unit (task, slice) before working on it.
 // complete-task and complete-slice enforce ownership when claims exist.
-// Claims are stored in SQLite (.gsd/unit-claims.db) for atomic
+// Claims are stored in SQLite (.otto/workflow/unit-claims.db) for atomic
 // first-writer-wins semantics via INSERT OR IGNORE.
 //
 // Unit key format:
@@ -144,7 +144,7 @@ function wrapDb(rawDb: unknown): DbLike {
 const dbPool = new Map<string, DbLike>();
 
 function claimsDbPath(basePath: string): string {
-  return join(basePath, ".gsd", "unit-claims.db");
+  return join(basePath, ".otto/workflow", "unit-claims.db");
 }
 
 function getDb(basePath: string): DbLike | null {
@@ -167,13 +167,13 @@ export function sliceUnitKey(milestoneId: string, sliceId: string): string {
 
 /**
  * Initialize the ownership SQLite database for a given basePath.
- * Creates .gsd/ directory and unit-claims.db with the unit_claims table.
+ * Creates .otto/workflow/ directory and unit-claims.db with the unit_claims table.
  * Safe to call multiple times (idempotent).
  */
 export function initOwnershipTable(basePath: string): void {
   if (dbPool.has(basePath)) return;
 
-  const dir = join(basePath, ".gsd");
+  const dir = join(basePath, ".otto/workflow");
   mkdirSync(dir, { recursive: true });
 
   const raw = openRawDb(claimsDbPath(basePath));

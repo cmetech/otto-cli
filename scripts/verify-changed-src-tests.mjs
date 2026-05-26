@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Run focused source tests for changed src files.
 
 import { existsSync } from 'node:fs';

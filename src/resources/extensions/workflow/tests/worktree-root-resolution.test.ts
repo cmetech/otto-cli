@@ -17,16 +17,16 @@ function makeParentRepo(): string {
   return parent;
 }
 
-test("resolveProjectRoot prefers nearest bootstrapped .gsd before parent git root", () => {
+test("resolveProjectRoot prefers nearest bootstrapped .otto/workflow before parent git root", () => {
   const parent = makeParentRepo();
   const child = join(parent, "nested-app");
   const nested = join(child, "src", "components");
 
   try {
-    mkdirSync(join(parent, ".gsd", "milestones"), { recursive: true });
-    mkdirSync(join(child, ".gsd"), { recursive: true });
+    mkdirSync(join(parent, ".otto/workflow", "milestones"), { recursive: true });
+    mkdirSync(join(child, ".otto/workflow"), { recursive: true });
     mkdirSync(nested, { recursive: true });
-    writeFileSync(join(child, ".gsd", "PREFERENCES.md"), "---\nplanning_depth: deep\n---\n");
+    writeFileSync(join(child, ".otto/workflow", "PREFERENCES.md"), "---\nplanning_depth: deep\n---\n");
 
     assert.equal(resolveProjectRoot(child), child);
     assert.equal(resolveProjectRoot(nested), child);
@@ -35,13 +35,13 @@ test("resolveProjectRoot prefers nearest bootstrapped .gsd before parent git roo
   }
 });
 
-test("resolveProjectRoot ignores zombie .gsd without bootstrap artifacts", () => {
+test("resolveProjectRoot ignores zombie .otto/workflow without bootstrap artifacts", () => {
   const parent = makeParentRepo();
   const child = join(parent, "nested-app");
 
   try {
-    mkdirSync(join(parent, ".gsd", "milestones"), { recursive: true });
-    mkdirSync(join(child, ".gsd"), { recursive: true });
+    mkdirSync(join(parent, ".otto/workflow", "milestones"), { recursive: true });
+    mkdirSync(join(child, ".otto/workflow"), { recursive: true });
 
     assert.equal(resolveProjectRoot(child), parent);
   } finally {

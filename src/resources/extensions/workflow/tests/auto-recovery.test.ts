@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests auto-mode artifact verification and recovery behavior.
 import test, { afterEach } from "node:test";
 import assert from "node:assert/strict";
@@ -20,8 +20,8 @@ const tmpDirs: string[] = [];
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-test-${randomUUID()}`);
-  // Create .gsd/milestones/M001/slices/S01/tasks/ structure
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  // Create .otto/workflow/milestones/M001/slices/S01/tasks/ structure
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
   return base;
 }
 
@@ -31,8 +31,8 @@ function cleanup(base: string): void {
 
 function makeTmpProject(): string {
   const dir = mkdtempSync(join(tmpdir(), "auto-recovery-"));
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
-  openDatabase(join(dir, ".gsd", "gsd.db"));
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
+  openDatabase(join(dir, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test Milestone", status: "active" });
   insertSlice({
     milestoneId: "M001",
@@ -100,7 +100,7 @@ test("resolveExpectedArtifactPath returns correct path for plan-slice", () => {
 test("plan-slice artifact resolution handles lowercase unit IDs against uppercase paths", () => {
   const base = makeTmpBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     const tasksDir = join(sliceDir, "tasks");
     writeFileSync(join(sliceDir, "S01-PLAN.md"), [
       "# S01: Test Slice",
@@ -113,13 +113,13 @@ test("plan-slice artifact resolution handles lowercase unit IDs against uppercas
 
     const artifactPath = resolveExpectedArtifactPath("plan-slice", "m001/s01", base);
     assert.ok(
-      artifactPath?.endsWith(".gsd/milestones/M001/slices/S01/S01-PLAN.md"),
+      artifactPath?.endsWith(".otto/workflow/milestones/M001/slices/S01/S01-PLAN.md"),
       "lowercase unit IDs should resolve to the existing uppercase artifact path",
     );
 
     const diagnostic = diagnoseExpectedArtifact("plan-slice", "m001/s01", base);
     assert.ok(
-      diagnostic?.includes(".gsd/milestones/M001/slices/S01/S01-PLAN.md"),
+      diagnostic?.includes(".otto/workflow/milestones/M001/slices/S01/S01-PLAN.md"),
       "diagnostic should report the existing uppercase artifact path",
     );
     assert.ok(
@@ -140,11 +140,11 @@ test("plan-slice artifact resolution handles lowercase unit IDs against uppercas
 test("plan-slice verification accepts artifacts rendered in the live milestone worktree", () => {
   const base = makeTmpBase();
   try {
-    const rootSlicePlan = join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md");
+    const rootSlicePlan = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md");
     rmSync(rootSlicePlan, { force: true });
 
-    const worktree = join(base, ".gsd", "worktrees", "M001");
-    const worktreeSliceDir = join(worktree, ".gsd", "milestones", "M001", "slices", "S01");
+    const worktree = join(base, ".otto/workflow", "worktrees", "M001");
+    const worktreeSliceDir = join(worktree, ".otto/workflow", "milestones", "M001", "slices", "S01");
     const worktreeTasksDir = join(worktreeSliceDir, "tasks");
     mkdirSync(worktreeTasksDir, { recursive: true });
     writeFileSync(join(worktree, ".git"), "gitdir: ../../../../.git/worktrees/M001\n", "utf-8");
@@ -170,7 +170,7 @@ test("plan-slice verification accepts artifacts rendered in the live milestone w
 test("complete-slice verification accepts artifacts rendered in the project root while a live worktree exists", () => {
   const base = makeTmpBase();
   try {
-    const milestoneDir = join(base, ".gsd", "milestones", "M001");
+    const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
     const sliceDir = join(milestoneDir, "slices", "S01");
     writeFileSync(join(milestoneDir, "M001-ROADMAP.md"), [
       "# M001: Test",
@@ -183,8 +183,8 @@ test("complete-slice verification accepts artifacts rendered in the project root
     writeFileSync(join(sliceDir, "S01-SUMMARY.md"), "# S01 Summary\nDone.");
     writeFileSync(join(sliceDir, "S01-UAT.md"), "# S01 UAT\nPass.");
 
-    const worktree = join(base, ".gsd", "worktrees", "M001");
-    mkdirSync(join(worktree, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+    const worktree = join(base, ".otto/workflow", "worktrees", "M001");
+    mkdirSync(join(worktree, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
     writeFileSync(join(worktree, ".git"), "gitdir: ../../../../.git/worktrees/M001\n", "utf-8");
 
     assert.equal(
@@ -200,11 +200,11 @@ test("complete-slice verification accepts artifacts rendered in the project root
 test("validate-milestone verification accepts project-root VALIDATION while a live worktree exists", () => {
   const base = makeTmpBase();
   try {
-    const milestoneDir = join(base, ".gsd", "milestones", "M001");
+    const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
     writeFileSync(join(milestoneDir, "M001-VALIDATION.md"), "---\nverdict: pass\n---\n# Validation\nPass.");
 
-    const worktree = join(base, ".gsd", "worktrees", "M001");
-    mkdirSync(join(worktree, ".gsd", "milestones", "M001"), { recursive: true });
+    const worktree = join(base, ".otto/workflow", "worktrees", "M001");
+    mkdirSync(join(worktree, ".otto/workflow", "milestones", "M001"), { recursive: true });
     writeFileSync(join(worktree, ".git"), "gitdir: ../../../../.git/worktrees/M001\n", "utf-8");
 
     assert.equal(
@@ -227,17 +227,17 @@ test("resolveExpectedArtifactPath returns null for unknown type", () => {
   }
 });
 
-test("diagnoseWorktreeIntegrityFailure reports missing GSD worktree paths only", () => {
-  const missingWorktreePath = join(tmpdir(), `gsd-test-${randomUUID()}`, ".gsd", "worktrees", "M001-S01");
+test("diagnoseWorktreeIntegrityFailure reports missing OTTO worktree paths only", () => {
+  const missingWorktreePath = join(tmpdir(), `gsd-test-${randomUUID()}`, ".otto/workflow", "worktrees", "M001-S01");
   assert.equal(
     diagnoseWorktreeIntegrityFailure(join(tmpdir(), `gsd-test-${randomUUID()}`)),
     null,
-    "non-GSD paths should keep falling through to artifact recovery",
+    "non-OTTO paths should keep falling through to artifact recovery",
   );
   assert.equal(
     diagnoseWorktreeIntegrityFailure(missingWorktreePath),
     `Worktree integrity failure: ${missingWorktreePath} does not exist. Repair or recreate the worktree before retrying.`,
-    "missing GSD worktree paths should fail terminally before artifact retry",
+    "missing OTTO worktree paths should fail terminally before artifact retry",
   );
 });
 
@@ -290,8 +290,8 @@ test("refreshRecoveryDbForArtifact treats missing execute-task DB rows as fatal 
 
 test("refreshRecoveryDbForArtifact closes complete-milestone DB row when artifacts exist but DB is stale (#5568)", () => {
   const base = mkdtempSync(join(tmpdir(), "auto-recovery-complete-ms-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   tmpDirs.push(base);
   insertMilestone({ id: "M001", title: "Stale completion", status: "active" });
   insertSlice({
@@ -325,13 +325,13 @@ test("refreshRecoveryDbForArtifact closes complete-milestone DB row when artifac
     status: "complete",
   });
   insertAssessment({
-    path: ".gsd/milestones/M001/M001-VALIDATION.md",
+    path: ".otto/workflow/milestones/M001/M001-VALIDATION.md",
     milestoneId: "M001",
     status: "pass",
     scope: "milestone-validation",
     fullContent: "---\nverdict: pass\n---\n",
   });
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(join(milestoneDir, "M001-SUMMARY.md"), "# Milestone Summary\n");
   writeFileSync(join(milestoneDir, "M001-VALIDATION.md"), "---\nverdict: pass\n---\n");
@@ -342,7 +342,7 @@ test("refreshRecoveryDbForArtifact closes complete-milestone DB row when artifac
   writeFileSync(join(base, "feature.ts"), "export const shipped = true;\n");
   runGit(base, ["add", "feature.ts"]);
   runGit(base, ["commit", "-m", "feat: implementation evidence"]);
-  writeFileSync(join(base, ".gsd", "integration-branch"), "main\n");
+  writeFileSync(join(base, ".otto/workflow", "integration-branch"), "main\n");
 
   const result = refreshRecoveryDbForArtifact("complete-milestone", "M001", base);
 
@@ -352,8 +352,8 @@ test("refreshRecoveryDbForArtifact closes complete-milestone DB row when artifac
 
 test("refreshRecoveryDbForArtifact fails closed for complete-milestone without implementation evidence", () => {
   const base = mkdtempSync(join(tmpdir(), "auto-recovery-complete-ms-no-impl-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   tmpDirs.push(base);
   insertMilestone({ id: "M001", title: "Stale completion", status: "active" });
   insertSlice({
@@ -372,20 +372,20 @@ test("refreshRecoveryDbForArtifact fails closed for complete-milestone without i
     status: "complete",
   });
   insertAssessment({
-    path: ".gsd/milestones/M001/M001-VALIDATION.md",
+    path: ".otto/workflow/milestones/M001/M001-VALIDATION.md",
     milestoneId: "M001",
     status: "pass",
     scope: "milestone-validation",
     fullContent: "---\nverdict: pass\n---\n",
   });
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(join(milestoneDir, "M001-SUMMARY.md"), "# Milestone Summary\n");
   writeFileSync(join(milestoneDir, "M001-VALIDATION.md"), "---\nverdict: pass\n---\n");
   runGit(base, ["init", "-b", "main"]);
   runGit(base, ["config", "user.email", "test@example.com"]);
   runGit(base, ["config", "user.name", "Test User"]);
-  runGit(base, ["add", ".gsd"]);
+  runGit(base, ["add", ".otto/workflow"]);
   runGit(base, ["commit", "-m", "chore: gsd artifacts only"]);
 
   const result = refreshRecoveryDbForArtifact("complete-milestone", "M001", base);
@@ -505,11 +505,11 @@ test("verifyExpectedArtifact detects roadmap [x] change despite parse cache", ()
     assert.equal(sliceBefore!.done, false);
 
     // Now write the post-edit roadmap to disk and create required artifacts
-    const roadmapPath = join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md");
+    const roadmapPath = join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md");
     writeFileSync(roadmapPath, roadmapAfter);
-    const summaryPath = join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md");
+    const summaryPath = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md");
     writeFileSync(summaryPath, "# Summary\nDone.");
-    const uatPath = join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-UAT.md");
+    const uatPath = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-UAT.md");
     writeFileSync(uatPath, "# UAT\nPassed.");
 
     // verifyExpectedArtifact should see the [x] despite the parse cache
@@ -525,7 +525,7 @@ test("verifyExpectedArtifact detects roadmap [x] change despite parse cache", ()
 test("verifyExpectedArtifact accepts DB-complete slice when roadmap projection is stale", () => {
   const base = makeTmpBase();
   try {
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Test Milestone", status: "active" });
     insertSlice({
       milestoneId: "M001",
@@ -537,17 +537,17 @@ test("verifyExpectedArtifact accepts DB-complete slice when roadmap projection i
     });
 
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
       "# M001: Test Milestone\n\n## Slices\n\n- [ ] **S01: Test Slice** `risk:low` `depends:[]`\n",
       "utf-8",
     );
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md"),
       "# S01 Summary\n\nDone.\n",
       "utf-8",
     );
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-UAT.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-UAT.md"),
       "# S01 UAT\n\nPassed.\n",
       "utf-8",
     );
@@ -568,7 +568,7 @@ test("verifyExpectedArtifact accepts DB-complete slice when roadmap projection i
 test("verifyExpectedArtifact rejects plan-slice with empty scaffold", () => {
   const base = makeTmpBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     mkdirSync(sliceDir, { recursive: true });
     writeFileSync(join(sliceDir, "S01-PLAN.md"), "# S01: Test Slice\n\n## Tasks\n\n");
     assert.strictEqual(
@@ -584,7 +584,7 @@ test("verifyExpectedArtifact rejects plan-slice with empty scaffold", () => {
 test("verifyExpectedArtifact accepts plan-slice with actual tasks", () => {
   const base = makeTmpBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     const tasksDir = join(sliceDir, "tasks");
     mkdirSync(tasksDir, { recursive: true });
     writeFileSync(join(sliceDir, "S01-PLAN.md"), [
@@ -610,7 +610,7 @@ test("verifyExpectedArtifact accepts plan-slice with actual tasks", () => {
 test("verifyExpectedArtifact accepts plan-slice with completed tasks", () => {
   const base = makeTmpBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     const tasksDir = join(sliceDir, "tasks");
     mkdirSync(tasksDir, { recursive: true });
     writeFileSync(join(sliceDir, "S01-PLAN.md"), [
@@ -636,7 +636,7 @@ test("verifyExpectedArtifact accepts plan-slice with completed tasks", () => {
 test("verifyExpectedArtifact treats complete-slice as satisfied when summary, UAT, and roadmap checkbox exist", () => {
   const base = makeTmpBase();
   try {
-    const milestoneDir = join(base, ".gsd", "milestones", "M001");
+    const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
     const sliceDir = join(milestoneDir, "slices", "S01");
     mkdirSync(sliceDir, { recursive: true });
     writeFileSync(join(milestoneDir, "M001-ROADMAP.md"), [
@@ -668,7 +668,7 @@ test("verifyExpectedArtifact treats complete-slice as satisfied when summary, UA
 test("verifyExpectedArtifact rejects complete-slice when roadmap checkbox is still unchecked", () => {
   const base = makeTmpBase();
   try {
-    const milestoneDir = join(base, ".gsd", "milestones", "M001");
+    const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
     const sliceDir = join(milestoneDir, "slices", "S01");
     mkdirSync(sliceDir, { recursive: true });
     writeFileSync(join(milestoneDir, "M001-ROADMAP.md"), [
@@ -700,7 +700,7 @@ test("verifyExpectedArtifact rejects complete-slice when roadmap checkbox is sti
 test("verifyExpectedArtifact rejects run-uat when ASSESSMENT has no verdict", () => {
   const base = makeTmpBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     writeFileSync(join(sliceDir, "S01-ASSESSMENT.md"), "# Reassessment\n\nNo canonical verdict field.\n");
 
     assert.equal(
@@ -716,7 +716,7 @@ test("verifyExpectedArtifact rejects run-uat when ASSESSMENT has no verdict", ()
 test("verifyExpectedArtifact accepts run-uat when ASSESSMENT has verdict", () => {
   const base = makeTmpBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     writeFileSync(join(sliceDir, "S01-ASSESSMENT.md"), [
       "---",
       "verdict: pass",
@@ -741,8 +741,8 @@ test("verifyExpectedArtifact accepts run-uat when ASSESSMENT has verdict", () =>
 test("verifyExpectedArtifact plan-slice passes when all task plan files exist", () => {
   const base = makeTmpBase();
   try {
-    const tasksDir = join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks");
-    const planPath = join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md");
+    const tasksDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks");
+    const planPath = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md");
     const planContent = [
       "# S01: Test Slice",
       "",
@@ -765,8 +765,8 @@ test("verifyExpectedArtifact plan-slice passes when all task plan files exist", 
 test("verifyExpectedArtifact plan-slice fails when a task plan file is missing (#739)", () => {
   const base = makeTmpBase();
   try {
-    const tasksDir = join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks");
-    const planPath = join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md");
+    const tasksDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks");
+    const planPath = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md");
     const planContent = [
       "# S01: Test Slice",
       "",
@@ -789,7 +789,7 @@ test("verifyExpectedArtifact plan-slice fails when a task plan file is missing (
 test("verifyExpectedArtifact plan-slice fails for plan with no tasks (#699)", () => {
   const base = makeTmpBase();
   try {
-    const planPath = join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md");
+    const planPath = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md");
     const planContent = [
       "# S01: Test Slice",
       "",
@@ -811,7 +811,7 @@ test("verifyExpectedArtifact plan-slice fails for plan with no tasks (#699)", ()
 test("verifyExpectedArtifact accepts plan-slice with heading-style tasks (### T01 --)", () => {
   const base = makeTmpBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     const tasksDir = join(sliceDir, "tasks");
     mkdirSync(tasksDir, { recursive: true });
     writeFileSync(join(sliceDir, "S01-PLAN.md"), [
@@ -842,7 +842,7 @@ test("verifyExpectedArtifact accepts plan-slice with heading-style tasks (### T0
 test("verifyExpectedArtifact accepts plan-slice with colon-style heading tasks (### T01:)", () => {
   const base = makeTmpBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     const tasksDir = join(sliceDir, "tasks");
     mkdirSync(tasksDir, { recursive: true });
     writeFileSync(join(sliceDir, "S01-PLAN.md"), [
@@ -868,7 +868,7 @@ test("verifyExpectedArtifact accepts plan-slice with colon-style heading tasks (
 test("verifyExpectedArtifact execute-task requires checked checkbox or DB status for heading-style plan entry (#1691, #3607)", () => {
   const base = makeTmpBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     const tasksDir = join(sliceDir, "tasks");
     mkdirSync(tasksDir, { recursive: true });
     writeFileSync(join(sliceDir, "S01-PLAN.md"), [
@@ -911,19 +911,19 @@ function makeGitBase(): string {
   return base;
 }
 
-test("hasImplementationArtifacts returns false when only .gsd/ files committed (#1703)", () => {
+test("hasImplementationArtifacts returns false when only .otto/workflow/ files committed (#1703)", () => {
   const base = makeGitBase();
   try {
-    // Create a feature branch and commit only .gsd/ files
+    // Create a feature branch and commit only .otto/workflow/ files
     execFileSync("git", ["checkout", "-b", "feat/test-milestone"], { cwd: base, stdio: "ignore" });
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap");
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"), "# Summary");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap");
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"), "# Summary");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
     execFileSync("git", ["commit", "-m", "chore: add plan files"], { cwd: base, stdio: "ignore" });
 
     const result = hasImplementationArtifacts(base);
-    assert.equal(result, "absent", "should return absent when only .gsd/ files were committed");
+    assert.equal(result, "absent", "should return absent when only .otto/workflow/ files were committed");
   } finally {
     cleanup(base);
   }
@@ -932,10 +932,10 @@ test("hasImplementationArtifacts returns false when only .gsd/ files committed (
 test("hasImplementationArtifacts returns true when implementation files committed (#1703)", () => {
   const base = makeGitBase();
   try {
-    // Create a feature branch with both .gsd/ and implementation files
+    // Create a feature branch with both .otto/workflow/ and implementation files
     execFileSync("git", ["checkout", "-b", "feat/test-impl"], { cwd: base, stdio: "ignore" });
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap");
     mkdirSync(join(base, "src"), { recursive: true });
     writeFileSync(join(base, "src", "feature.ts"), "export function feature() {}");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
@@ -951,17 +951,17 @@ test("hasImplementationArtifacts returns true when implementation files committe
 test("hasImplementationArtifacts finds milestone implementation commits after retry resumes on main (#4699)", () => {
   const base = makeGitBase();
   try {
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
-    execFileSync("git", ["commit", "-m", "chore: auto-commit after plan-milestone\n\nGSD-Unit: M001"], { cwd: base, stdio: "ignore" });
+    execFileSync("git", ["commit", "-m", "chore: auto-commit after plan-milestone\n\nOTTO-Unit: M001"], { cwd: base, stdio: "ignore" });
 
     mkdirSync(join(base, "src"), { recursive: true });
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
     writeFileSync(join(base, "src", "feature.ts"), "export function feature() {}");
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"), "# Summary");
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"), "# Summary");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
-    execFileSync("git", ["commit", "-m", "feat: add milestone feature\n\nGSD-Task: S01/T01"], { cwd: base, stdio: "ignore" });
+    execFileSync("git", ["commit", "-m", "feat: add milestone feature\n\nOTTO-Task: S01/T01"], { cwd: base, stdio: "ignore" });
 
     const result = hasImplementationArtifacts(base, "M001");
     assert.equal(result, "present", "main self-diff retry should find production execute-task commits");
@@ -970,32 +970,32 @@ test("hasImplementationArtifacts finds milestone implementation commits after re
   }
 });
 
-test("hasImplementationArtifacts rejects milestone-scoped main history with only .gsd commits (#4699)", () => {
+test("hasImplementationArtifacts rejects milestone-scoped main history with only .otto/workflow commits (#4699)", () => {
   const base = makeGitBase();
   try {
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap");
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"), "# Summary");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap");
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"), "# Summary");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
-    execFileSync("git", ["commit", "-m", "chore: auto-commit after complete-milestone\n\nGSD-Unit: M001"], { cwd: base, stdio: "ignore" });
+    execFileSync("git", ["commit", "-m", "chore: auto-commit after complete-milestone\n\nOTTO-Unit: M001"], { cwd: base, stdio: "ignore" });
 
     const result = hasImplementationArtifacts(base, "M001");
-    assert.equal(result, "absent", "milestone-scoped fallback must not treat .gsd-only commits as implementation");
+    assert.equal(result, "absent", "milestone-scoped fallback must not treat .otto/workflow-only commits as implementation");
   } finally {
     cleanup(base);
   }
 });
 
-test("hasImplementationArtifacts finds integration implementation-only commits when milestone branch diff is .gsd-only", () => {
+test("hasImplementationArtifacts finds integration implementation-only commits when milestone branch diff is .otto/workflow-only", () => {
   const base = makeGitBase();
   try {
     mkdirSync(join(base, "src"), { recursive: true });
     writeFileSync(join(base, "src", "feature.ts"), "export function feature() {}\n");
     execFileSync("git", ["add", "src/feature.ts"], { cwd: base, stdio: "ignore" });
-    execFileSync("git", ["commit", "-m", "feat: add milestone feature\n\nGSD-Task: S01/T01"], { cwd: base, stdio: "ignore" });
+    execFileSync("git", ["commit", "-m", "feat: add milestone feature\n\nOTTO-Task: S01/T01"], { cwd: base, stdio: "ignore" });
 
-    mkdirSync(join(base, ".gsd"), { recursive: true });
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
     insertSlice({
       id: "S01",
@@ -1015,15 +1015,15 @@ test("hasImplementationArtifacts finds integration implementation-only commits w
 
     execFileSync("git", ["checkout", "-b", "milestone/M001"], { cwd: base, stdio: "ignore" });
     writeIntegrationBranch(base, "M001", "main");
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nDone.");
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nDone.");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
-    execFileSync("git", ["commit", "-m", "chore: auto-commit after complete-milestone\n\nGSD-Unit: M001"], { cwd: base, stdio: "ignore" });
+    execFileSync("git", ["commit", "-m", "chore: auto-commit after complete-milestone\n\nOTTO-Unit: M001"], { cwd: base, stdio: "ignore" });
 
     const result = hasImplementationArtifacts(base, "M001");
     assert.equal(
       result,
       "present",
-      ".gsd-only milestone closeout diffs should still honor implementation commits already on the integration branch",
+      ".otto/workflow-only milestone closeout diffs should still honor implementation commits already on the integration branch",
     );
   } finally {
     cleanup(base);
@@ -1036,10 +1036,10 @@ test("hasImplementationArtifacts ignores corrupted milestone/* integration metad
     mkdirSync(join(base, "src"), { recursive: true });
     writeFileSync(join(base, "src", "feature.ts"), "export function feature() {}\n");
     execFileSync("git", ["add", "src/feature.ts"], { cwd: base, stdio: "ignore" });
-    execFileSync("git", ["commit", "-m", "feat: add milestone feature\n\nGSD-Task: S01/T01"], { cwd: base, stdio: "ignore" });
+    execFileSync("git", ["commit", "-m", "feat: add milestone feature\n\nOTTO-Task: S01/T01"], { cwd: base, stdio: "ignore" });
 
-    mkdirSync(join(base, ".gsd"), { recursive: true });
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
     insertSlice({
       id: "S01",
@@ -1058,13 +1058,13 @@ test("hasImplementationArtifacts ignores corrupted milestone/* integration metad
     });
 
     execFileSync("git", ["checkout", "-b", "milestone/M001"], { cwd: base, stdio: "ignore" });
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nDone.");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nDone.");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
-    execFileSync("git", ["commit", "-m", "chore: auto-commit after complete-milestone\n\nGSD-Unit: M001"], { cwd: base, stdio: "ignore" });
+    execFileSync("git", ["commit", "-m", "chore: auto-commit after complete-milestone\n\nOTTO-Unit: M001"], { cwd: base, stdio: "ignore" });
 
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "M001-META.json"),
+      join(base, ".otto/workflow", "milestones", "M001", "M001-META.json"),
       JSON.stringify({ integrationBranch: "milestone/M001" }, null, 2) + "\n",
     );
 
@@ -1078,8 +1078,8 @@ test("hasImplementationArtifacts ignores corrupted milestone/* integration metad
 test("hasImplementationArtifacts backfills untagged main implementation commits from completed task file hints", () => {
   const base = makeGitBase();
   try {
-    mkdirSync(join(base, ".gsd"), { recursive: true });
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
     insertSlice({
       id: "S01",
@@ -1133,8 +1133,8 @@ test("hasImplementationArtifacts does not backfill untagged commits before miles
       },
     });
 
-    mkdirSync(join(base, ".gsd"), { recursive: true });
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
     insertSlice({
       id: "S01",
@@ -1169,8 +1169,8 @@ test("hasImplementationArtifacts does not backfill untagged commits before miles
 test("hasImplementationArtifacts does not backfill unrelated untagged implementation commits", () => {
   const base = makeGitBase();
   try {
-    mkdirSync(join(base, ".gsd"), { recursive: true });
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
     insertSlice({
       id: "S01",
@@ -1236,12 +1236,12 @@ test("hasImplementationArtifacts returns unknown for empty integration self-diff
 test("hasImplementationArtifacts uses milestone path history instead of rolling depth (#4699)", () => {
   const base = makeGitBase();
   try {
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
     mkdirSync(join(base, "src"), { recursive: true });
     writeFileSync(join(base, "src", "feature.ts"), "export function feature() {}");
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"), "# Summary");
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"), "# Summary");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
-    execFileSync("git", ["commit", "-m", "feat: old milestone implementation\n\nGSD-Task: S01/T01"], { cwd: base, stdio: "ignore" });
+    execFileSync("git", ["commit", "-m", "feat: old milestone implementation\n\nOTTO-Task: S01/T01"], { cwd: base, stdio: "ignore" });
 
     mkdirSync(join(base, "docs"), { recursive: true });
     for (let i = 0; i < 205; i++) {
@@ -1257,15 +1257,15 @@ test("hasImplementationArtifacts uses milestone path history instead of rolling 
   }
 });
 
-test("hasImplementationArtifacts finds implementation commits when .gsd/ is gitignored (#5033)", () => {
+test("hasImplementationArtifacts finds implementation commits when .otto/workflow/ is gitignored (#5033)", () => {
   const base = makeGitBase();
   try {
-    // Simulate external/untracked .gsd/ via .git/info/exclude — milestone
+    // Simulate external/untracked .otto/workflow/ via .git/info/exclude — milestone
     // planning artifacts never enter git, but real implementation files do.
-    writeFileSync(join(base, ".git", "info", "exclude"), ".gsd/\n");
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+    writeFileSync(join(base, ".git", "info", "exclude"), ".otto/workflow/\n");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"),
       "# Summary",
     );
 
@@ -1275,7 +1275,7 @@ test("hasImplementationArtifacts finds implementation commits when .gsd/ is giti
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
     execFileSync(
       "git",
-      ["commit", "-m", "feat: materialize M001 evidence\n\nGSD-Task: S01/T01"],
+      ["commit", "-m", "feat: materialize M001 evidence\n\nOTTO-Task: S01/T01"],
       { cwd: base, stdio: "ignore" },
     );
 
@@ -1283,19 +1283,19 @@ test("hasImplementationArtifacts finds implementation commits when .gsd/ is giti
     assert.equal(
       result,
       "present",
-      "milestone-tagged commit binding must work when .gsd/ is gitignored",
+      "milestone-tagged commit binding must work when .otto/workflow/ is gitignored",
     );
   } finally {
     cleanup(base);
   }
 });
 
-test("hasImplementationArtifacts binds GSD-Task trailer to milestone via DB state when .gsd/ is gitignored", () => {
+test("hasImplementationArtifacts binds OTTO-Task trailer to milestone via DB state when .otto/workflow/ is gitignored", () => {
   const base = makeGitBase();
   try {
-    writeFileSync(join(base, ".git", "info", "exclude"), ".gsd/\n");
-    mkdirSync(join(base, ".gsd"), { recursive: true });
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    writeFileSync(join(base, ".git", "info", "exclude"), ".otto/workflow/\n");
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
     insertSlice({
       id: "S01",
@@ -1318,7 +1318,7 @@ test("hasImplementationArtifacts binds GSD-Task trailer to milestone via DB stat
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
     execFileSync(
       "git",
-      ["commit", "-m", "feat: add feature\n\nGSD-Task: S01/T01"],
+      ["commit", "-m", "feat: add feature\n\nOTTO-Task: S01/T01"],
       { cwd: base, stdio: "ignore" },
     );
 
@@ -1333,12 +1333,12 @@ test("hasImplementationArtifacts binds GSD-Task trailer to milestone via DB stat
   }
 });
 
-test("hasImplementationArtifacts returns unknown when GSD-Task trailer cannot be bound to milestone ownership evidence", () => {
+test("hasImplementationArtifacts returns unknown when OTTO-Task trailer cannot be bound to milestone ownership evidence", () => {
   const base = makeGitBase();
   try {
-    writeFileSync(join(base, ".git", "info", "exclude"), ".gsd/\n");
-    mkdirSync(join(base, ".gsd"), { recursive: true });
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    writeFileSync(join(base, ".git", "info", "exclude"), ".otto/workflow/\n");
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
     insertMilestone({ id: "M002", title: "Milestone Two", status: "active" });
     insertSlice({
@@ -1362,7 +1362,7 @@ test("hasImplementationArtifacts returns unknown when GSD-Task trailer cannot be
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
     execFileSync(
       "git",
-      ["commit", "-m", "feat: add sibling feature\n\nGSD-Task: S01/T01"],
+      ["commit", "-m", "feat: add sibling feature\n\nOTTO-Task: S01/T01"],
       { cwd: base, stdio: "ignore" },
     );
 
@@ -1380,14 +1380,14 @@ test("hasImplementationArtifacts returns unknown when GSD-Task trailer cannot be
 test("hasImplementationArtifacts ignores malformed milestone IDs in commit-message fallback", () => {
   const base = makeGitBase();
   try {
-    writeFileSync(join(base, ".git", "info", "exclude"), ".gsd/\n");
+    writeFileSync(join(base, ".git", "info", "exclude"), ".otto/workflow/\n");
     mkdirSync(join(base, "src"), { recursive: true });
     writeFileSync(join(base, "src", "feature.ts"), "export function feature() {}\n");
 
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
     execFileSync(
       "git",
-      ["commit", "-m", "feat: materialize M001(foo evidence\n\nGSD-Task: S01/T01"],
+      ["commit", "-m", "feat: materialize M001(foo evidence\n\nOTTO-Task: S01/T01"],
       { cwd: base, stdio: "ignore" },
     );
 
@@ -1415,18 +1415,18 @@ test("hasImplementationArtifacts returns true on non-git directory (fail-open)",
 
 // ─── verifyExpectedArtifact: complete-milestone requires impl artifacts (#1703) ──
 
-test("verifyExpectedArtifact complete-milestone fails with only .gsd/ files (#1703)", () => {
+test("verifyExpectedArtifact complete-milestone fails with only .otto/workflow/ files (#1703)", () => {
   const base = makeGitBase();
   try {
-    // Create feature branch with only .gsd/ files
+    // Create feature branch with only .otto/workflow/ files
     execFileSync("git", ["checkout", "-b", "feat/ms-only-gsd"], { cwd: base, stdio: "ignore" });
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nDone.");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nDone.");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
     execFileSync("git", ["commit", "-m", "chore: milestone plan files"], { cwd: base, stdio: "ignore" });
 
     const result = verifyExpectedArtifact("complete-milestone", "M001", base);
-    assert.equal(result, false, "complete-milestone should fail verification when only .gsd/ files present");
+    assert.equal(result, false, "complete-milestone should fail verification when only .otto/workflow/ files present");
   } finally {
     cleanup(base);
   }
@@ -1437,8 +1437,8 @@ test("verifyExpectedArtifact complete-milestone passes with impl files (#1703)",
   try {
     // Create feature branch with implementation files AND milestone summary
     execFileSync("git", ["checkout", "-b", "feat/ms-with-impl"], { cwd: base, stdio: "ignore" });
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nDone.");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nDone.");
     mkdirSync(join(base, "src"), { recursive: true });
     writeFileSync(join(base, "src", "app.ts"), "console.log('hello');");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
@@ -1454,14 +1454,14 @@ test("verifyExpectedArtifact complete-milestone passes with impl files (#1703)",
 test("verifyExpectedArtifact complete-milestone passes on main retry with milestone implementation commits (#4699)", () => {
   const base = makeGitBase();
   try {
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nDone.");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nDone.");
     mkdirSync(join(base, "src"), { recursive: true });
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
     writeFileSync(join(base, "src", "app.ts"), "console.log('hello');");
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"), "# Summary");
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"), "# Summary");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
-    execFileSync("git", ["commit", "-m", "feat: implementation already on main\n\nGSD-Task: S01/T01"], { cwd: base, stdio: "ignore" });
+    execFileSync("git", ["commit", "-m", "feat: implementation already on main\n\nOTTO-Task: S01/T01"], { cwd: base, stdio: "ignore" });
 
     const result = verifyExpectedArtifact("complete-milestone", "M001", base);
     assert.equal(result, true, "complete-milestone should not fail solely because HEAD vs main is a self-diff");
@@ -1474,14 +1474,14 @@ test("verifyExpectedArtifact complete-milestone fails when DB milestone is not c
   const base = makeGitBase();
   try {
     execFileSync("git", ["checkout", "-b", "feat/ms-db-active"], { cwd: base, stdio: "ignore" });
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nverification FAILED — not complete.");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nverification FAILED — not complete.");
     mkdirSync(join(base, "src"), { recursive: true });
     writeFileSync(join(base, "src", "app.ts"), "console.log('hello');");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
     execFileSync("git", ["commit", "-m", "feat: implementation with failed summary"], { cwd: base, stdio: "ignore" });
 
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
 
     const result = verifyExpectedArtifact("complete-milestone", "M001", base);
@@ -1495,14 +1495,14 @@ test("verifyExpectedArtifact complete-milestone passes when DB milestone is comp
   const base = makeGitBase();
   try {
     execFileSync("git", ["checkout", "-b", "feat/ms-db-complete"], { cwd: base, stdio: "ignore" });
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nDone.");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"), "# Milestone Summary\nDone.");
     mkdirSync(join(base, "src"), { recursive: true });
     writeFileSync(join(base, "src", "app.ts"), "console.log('hello');");
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
     execFileSync("git", ["commit", "-m", "feat: implementation complete"], { cwd: base, stdio: "ignore" });
 
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "complete" });
 
     const result = verifyExpectedArtifact("complete-milestone", "M001", base);
@@ -1516,9 +1516,9 @@ test("verifyExpectedArtifact complete-milestone tolerates transient DB lag when 
   const base = makeGitBase();
   try {
     execFileSync("git", ["checkout", "-b", "feat/ms-db-lag-success"], { cwd: base, stdio: "ignore" });
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "M001-SUMMARY.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "M001-SUMMARY.md"),
       [
         "---",
         "id: M001",
@@ -1533,7 +1533,7 @@ test("verifyExpectedArtifact complete-milestone tolerates transient DB lag when 
     execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
     execFileSync("git", ["commit", "-m", "feat: implementation with stale db"], { cwd: base, stdio: "ignore" });
 
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone One", status: "active" });
 
     const result = verifyExpectedArtifact("complete-milestone", "M001", base);
@@ -1624,7 +1624,7 @@ test("#4068: verifyExpectedArtifact parallel-research treats PARALLEL-BLOCKER as
   try {
     // Write a minimal roadmap
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
       [
         "# M001: Timeout Test",
         "",
@@ -1664,12 +1664,12 @@ test("#4068: verifyExpectedArtifact parallel-research treats PARALLEL-BLOCKER as
 test("#4414: verifyExpectedArtifact parallel-research succeeds when all research-ready slices have RESEARCH", () => {
   const base = makeTmpBase();
   try {
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S02", "tasks"), { recursive: true });
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S03", "tasks"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S02", "tasks"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S03", "tasks"), { recursive: true });
 
     // Minimal roadmap with three slices
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
       [
         "# M001: Regression",
         "",
@@ -1685,12 +1685,12 @@ test("#4414: verifyExpectedArtifact parallel-research succeeds when all research
 
     // Only 2 of 3 have RESEARCH — should fail verification
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-RESEARCH.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-RESEARCH.md"),
       "# research",
       "utf-8",
     );
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "slices", "S02", "S02-RESEARCH.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "slices", "S02", "S02-RESEARCH.md"),
       "# research",
       "utf-8",
     );
@@ -1705,7 +1705,7 @@ test("#4414: verifyExpectedArtifact parallel-research succeeds when all research
 
     // All three RESEARCH present → verification passes
     writeFileSync(
-      join(base, ".gsd", "milestones", "M001", "slices", "S03", "S03-RESEARCH.md"),
+      join(base, ".otto/workflow", "milestones", "M001", "slices", "S03", "S03-RESEARCH.md"),
       "# research",
       "utf-8",
     );

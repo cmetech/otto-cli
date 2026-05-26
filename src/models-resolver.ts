@@ -14,7 +14,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { agentDir } from './app-paths.js'
 
-const GSD_MODELS_PATH = join(agentDir, 'models.json')
+const OTTO_MODELS_PATH = join(agentDir, 'models.json')
 const PI_MODELS_PATH = join(homedir(), '.pi', 'agent', 'models.json')
 
 /**
@@ -28,13 +28,13 @@ const PI_MODELS_PATH = join(homedir(), '.pi', 'agent', 'models.json')
  * @returns The path to use for models.json
  */
 export function resolveModelsJsonPath(): string {
-  if (existsSync(GSD_MODELS_PATH)) {
-    return GSD_MODELS_PATH
+  if (existsSync(OTTO_MODELS_PATH)) {
+    return OTTO_MODELS_PATH
   }
   if (existsSync(PI_MODELS_PATH)) {
     return PI_MODELS_PATH
   }
-  return GSD_MODELS_PATH
+  return OTTO_MODELS_PATH
 }
 
 

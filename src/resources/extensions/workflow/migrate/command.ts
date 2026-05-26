@@ -1,5 +1,5 @@
 /**
- * /loop24 migrate — one-shot migration from .planning to .gsd
+ * /otto migrate — one-shot migration from .planning to .otto/workflow
  *
  * Thin UX orchestrator: resolves paths, runs the validate → parse → transform →
  * preview → write pipeline, and shows confirmation UI via showNextAction.
@@ -9,7 +9,7 @@
  * for the workflow-2 standards compliance.
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { existsSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { workflowRoot } from "../paths.js";
@@ -84,7 +84,7 @@ export async function importWrittenMigrationToDb(
 ): Promise<MigrationImportCounts> {
   const opened = await ensureDbOpen(basePath);
   if (!opened) {
-    throw new Error(`failed to open or create the GSD database at ${basePath}`);
+    throw new Error(`failed to open or create the OTTO database at ${basePath}`);
   }
 
   const counts = transaction(() => {
@@ -220,8 +220,8 @@ export async function handleMigrate(
   if (!existsSync(sourcePath)) {
     ctx.ui.notify(
       `Directory not found: ${sourcePath}\n\n` +
-      'Migration converts a .planning/ directory (from older GSD versions) into .gsd/ format.\n' +
-      'If you are starting a new project, use /gsd:new-project instead.\n' +
+      'Migration converts a .planning/ directory (from older OTTO versions) into .otto/workflow/ format.\n' +
+      'If you are starting a new project, use /otto:new-project instead.\n' +
       'If migrating, ensure the path contains a .planning/ directory.',
       "error",
     );
@@ -281,7 +281,7 @@ export async function handleMigrate(
   const targetWorkflowExists = existsSync(workflowRoot(targetRoot));
   if (targetWorkflowExists) {
     lines.push("");
-    lines.push(`⚠ A .gsd directory already exists at ${workflowRoot(targetRoot)}.`);
+    lines.push(`⚠ A .otto/workflow directory already exists at ${workflowRoot(targetRoot)}.`);
     lines.push("It will be backed up, deleted, and rewritten fresh before DB import.");
   }
 
@@ -292,7 +292,7 @@ export async function handleMigrate(
     actions: [
       {
         id: "confirm",
-        label: "Write .gsd directory",
+        label: "Write .otto/workflow directory",
         description: `Migrate ${preview.milestoneCount} milestone(s) to ${workflowRoot(targetRoot)}`,
         recommended: true,
       },
@@ -302,7 +302,7 @@ export async function handleMigrate(
         description: "Exit without writing anything",
       },
     ],
-    notYetMessage: "Run /gsd migrate again when ready.",
+    notYetMessage: "Run /otto migrate again when ready.",
   });
 
   if (choice !== "confirm") {
@@ -311,14 +311,14 @@ export async function handleMigrate(
   }
 
   // ── Write ──────────────────────────────────────────────────────────────────
-  ctx.ui.notify("Writing .gsd directory and importing DB state…", "info");
+  ctx.ui.notify("Writing .otto/workflow directory and importing DB state…", "info");
 
   let execution: MigrationExecutionResult;
   try {
     execution = await executeMigrationWrite(sourcePath, targetRoot, project, preview);
   } catch (err) {
     ctx.ui.notify(
-      `Migration failed and the previous .gsd state was restored: ${(err as Error).message}`,
+      `Migration failed and the previous .otto/workflow state was restored: ${(err as Error).message}`,
       "error",
     );
     return;
@@ -328,7 +328,7 @@ export async function handleMigrate(
   const { written, imported } = execution;
 
   ctx.ui.notify(
-    `✓ Migration complete — ${written.paths.length} file(s) written to .gsd/, ${imported.hierarchy.milestones}M/${imported.hierarchy.slices}S/${imported.hierarchy.tasks}T imported to the database, and ${execution.audit.importedArtifacts} audit artifact(s) recorded`,
+    `✓ Migration complete — ${written.paths.length} file(s) written to .otto/workflow/, ${imported.hierarchy.milestones}M/${imported.hierarchy.slices}S/${imported.hierarchy.tasks}T imported to the database, and ${execution.audit.importedArtifacts} audit artifact(s) recorded`,
     "info",
   );
 
@@ -336,8 +336,8 @@ export async function handleMigrate(
   const reviewChoice = await showNextAction(ctx, {
     title: "Migration written",
     summary: [
-      `${written.paths.length} files written to .gsd/`,
-      `${imported.hierarchy.milestones} milestone(s), ${imported.hierarchy.slices} slice(s), and ${imported.hierarchy.tasks} task(s) imported to gsd.db`,
+      `${written.paths.length} files written to .otto/workflow/`,
+      `${imported.hierarchy.milestones} milestone(s), ${imported.hierarchy.slices} slice(s), and ${imported.hierarchy.tasks} task(s) imported to otto.db`,
       `Legacy source archived at ${execution.legacyArchive.archivePath}`,
       `Migration audit written at ${execution.audit.migrationPath}`,
       "",
@@ -349,7 +349,7 @@ export async function handleMigrate(
       {
         id: "review",
         label: "Review migration",
-        description: "Agent audits the .gsd output and reports PASS/FAIL per category",
+        description: "Agent audits the .otto/workflow output and reports PASS/FAIL per category",
         recommended: true,
       },
       {
@@ -358,7 +358,7 @@ export async function handleMigrate(
         description: "Trust the migration output as-is",
       },
     ],
-    notYetMessage: "Run /gsd migrate again to re-migrate, or review .gsd manually.",
+    notYetMessage: "Run /otto migrate again to re-migrate, or review .otto/workflow manually.",
   });
 
   if (reviewChoice === "review") {

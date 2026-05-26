@@ -113,7 +113,7 @@ test('memory-relations: applyMemoryActions processes LINK actions', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// traverseGraph + gsd_graph tool
+// traverseGraph + otto_graph tool
 // ═══════════════════════════════════════════════════════════════════════════
 
 test('memory-relations: traverseGraph walks multi-hop edges', () => {
@@ -149,7 +149,7 @@ test('memory-relations: traverseGraph still reports supersedes edges', () => {
   closeDatabase();
 });
 
-test('memory-tools: gsd_graph returns LINK edges and filters by rel', () => {
+test('memory-tools: otto_graph returns LINK edges and filters by rel', () => {
   openDatabase(':memory:');
   createMemory({ category: 'pattern', content: 'alpha' });
   createMemory({ category: 'pattern', content: 'beta' });

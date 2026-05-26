@@ -115,7 +115,7 @@ function listTarEntries(tarballPath: string): Promise<string[]> {
 // ═══════════════════════════════════════════════════════════════════════════
 
 test("npm pack produces tarball with required files", async (t) => {
-  const sandbox = createNpmSandbox("gsd-pack-test-");
+  const sandbox = createNpmSandbox("otto-pack-test-");
   const tarballPath = packTarball(sandbox);
 
   assert.ok(existsSync(tarballPath), "tarball created");
@@ -134,22 +134,24 @@ test("npm pack produces tarball with required files", async (t) => {
   assert.ok(files.some(f => f.includes("dist/wizard.js")), "tarball contains dist/wizard.js");
   assert.ok(files.some(f => f.includes("dist/resource-loader.js")), "tarball contains dist/resource-loader.js");
   assert.ok(files.some(f => f.includes("pkg/package.json")), "tarball contains pkg/package.json");
-  assert.ok(files.some(f => f.includes("src/resources/extensions/workflow/index.ts")), "tarball contains bundled gsd extension");
+  assert.ok(files.some(f => f.includes("src/resources/extensions/workflow/index.ts")), "tarball contains bundled workflow extension");
   assert.ok(files.some(f => f.includes("scripts/postinstall.js")), "tarball contains postinstall script");
 
   // pkg/package.json must have piConfig
   const pkgJson = readFileSync(join(projectRoot, "pkg", "package.json"), "utf-8");
   const pkg = JSON.parse(pkgJson);
-  assert.equal(pkg.piConfig?.name, "gsd", "pkg/package.json piConfig.name is gsd");
-  assert.equal(pkg.piConfig?.configDir, ".gsd", "pkg/package.json piConfig.configDir is .gsd");
+  assert.equal(pkg.piConfig?.name, "otto", "pkg/package.json piConfig.name is otto");
+  assert.equal(pkg.piConfig?.configDir, ".otto", "pkg/package.json piConfig.configDir is .otto");
+  assert.equal(pkg.piConfig?.commandNamespace, "otto", "pkg/package.json command namespace is otto");
+  assert.equal(pkg.piConfig?.brandName, "OTTO", "pkg/package.json brand name is OTTO");
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 2. npm pack → install → gsd binary resolves
+// 2. npm pack -> install -> otto binary resolves
 // ═══════════════════════════════════════════════════════════════════════════
 
-test("tarball installs and gsd binary resolves", async (t) => {
-  const sandbox = createNpmSandbox("gsd-install-test-");
+test("tarball installs and otto binary resolves", async (t) => {
+  const sandbox = createNpmSandbox("otto-install-test-");
   const tarballPath = packTarball(sandbox);
 
   t.after(() => {
@@ -160,13 +162,13 @@ test("tarball installs and gsd binary resolves", async (t) => {
   // Install from tarball into a temp prefix
   runNpmQuiet(["install", "--prefix", sandbox.installPrefix, tarballPath, "--no-save"], sandbox);
 
-  // Verify the gsd bin exists in the installed package
-  const binName = process.platform === "win32" ? "gsd.cmd" : "gsd";
+  // Verify the otto bin exists in the installed package
+  const binName = process.platform === "win32" ? "otto.cmd" : "otto";
   const installedBin = join(sandbox.installPrefix, "node_modules", ".bin", binName);
-  assert.ok(existsSync(installedBin), `gsd binary exists in node_modules/.bin/ (${binName})`);
+  assert.ok(existsSync(installedBin), `otto binary exists in node_modules/.bin/ (${binName})`);
 
   // Verify loader.js is executable (has shebang)
-  const installedLoader = join(sandbox.installPrefix, "node_modules", "@ericsson", "loop24", "dist", "loader.js");
+  const installedLoader = join(sandbox.installPrefix, "node_modules", "@cmetech", "otto", "dist", "loader.js");
   const loaderContent = readFileSync(installedLoader, "utf-8");
   if (process.platform !== "win32") {
     assert.ok(loaderContent.startsWith("#!/usr/bin/env node"), "loader.js has node shebang");
@@ -176,22 +178,22 @@ test("tarball installs and gsd binary resolves", async (t) => {
   const installedWorkflowExt = join(
     sandbox.installPrefix,
     "node_modules",
-    "@ericsson", "loop24",
+    "@cmetech", "otto",
     "src",
     "resources",
     "extensions",
-    "gsd",
+    "workflow",
     "index.ts",
   );
-  assert.ok(existsSync(installedWorkflowExt), "bundled gsd extension present in installed package");
+  assert.ok(existsSync(installedWorkflowExt), "bundled workflow extension present in installed package");
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 3. Launch → extensions load → no errors on stderr
 // ═══════════════════════════════════════════════════════════════════════════
 
-test("gsd launches and loads extensions without errors", async () => {
-  // Launch gsd with all optional keys set (skip wizard) and capture stderr.
+test("otto launches and loads extensions without errors", async () => {
+  // Launch otto with all optional keys set (skip wizard) and capture stderr.
   // Kill after 5 seconds — we just need to see if extensions load.
   // Assumes build already done.
   const output = await new Promise<string>((resolve) => {
@@ -229,7 +231,7 @@ test("gsd launches and loads extensions without errors", async () => {
 
   // No extension load errors
   assert.ok(
-    !output.includes("[gsd] Extension load error"),
+    !output.includes("[otto] Extension load error"),
     `no extension load errors on stderr (got: ${output.slice(0, 500)})`,
   );
 
@@ -244,9 +246,9 @@ test("gsd launches and loads extensions without errors", async () => {
   );
 });
 
-test("gsd exits early with a clear message when synced resources are newer than the binary", async (t) => {
-  const fakeHome = mkdtempSync(join(tmpdir(), "gsd-version-skew-"));
-  const fakeAgentDir = join(fakeHome, ".gsd", "agent");
+test("otto exits early with a clear message when synced resources are newer than the binary", async (t) => {
+  const fakeHome = mkdtempSync(join(tmpdir(), "otto-version-skew-"));
+  const fakeAgentDir = join(fakeHome, ".otto", "agent");
   mkdirSync(fakeAgentDir, { recursive: true });
   writeFileSync(
     join(fakeAgentDir, "managed-resources.json"),
@@ -283,6 +285,6 @@ test("gsd exits early with a clear message when synced resources are newer than 
 
   assert.equal(result.code, 1, "startup exits with code 1 on version skew");
   assert.match(result.stderr, /Version mismatch detected/, "prints a friendly skew header");
-  assert.match(result.stderr, /npm install -g @ericsson\/loop24@latest|gsd upgrade/, "prints upgrade guidance");
-  assert.doesNotMatch(result.stderr, /\[gsd\] Extension load error/, "fails before extension loading");
+  assert.match(result.stderr, /npm install -g @cmetech\/otto@latest|otto upgrade/, "prints upgrade guidance");
+  assert.doesNotMatch(result.stderr, /\[otto\] Extension load error/, "fails before extension loading");
 });

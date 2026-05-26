@@ -5,7 +5,7 @@ name: api-breaking-change
 version: 1
 mode: markdown-phase
 requires_project: false
-artifact_dir: .gsd/workflows/api-breaks/
+artifact_dir: .otto/workflow/workflows/api-breaks/
 </template_meta>
 
 <purpose>
@@ -90,7 +90,7 @@ dependents where feasible.
    - Draft a release-notes entry with before/after code examples.
    - If the API has external users, draft an issue or blog post.
 
-4. **Ship** the deprecation release (coordinate with `/gsd workflow release`).
+4. **Ship** the deprecation release (coordinate with `/otto workflow release`).
 
 5. **Gate:** Deprecation is live, callers have had time to migrate. Decide
    the removal timeline (typically next minor or next major).

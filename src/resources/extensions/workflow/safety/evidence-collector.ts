@@ -3,7 +3,7 @@
  * Tracks every bash command, file write, and file edit during a unit execution.
  * Evidence is compared against LLM completion claims in evidence-cross-ref.ts.
  *
- * Evidence is persisted to .gsd/safety/evidence-<mid>-<sid>-<tid>.json so it
+ * Evidence is persisted to .otto/workflow/safety/evidence-<mid>-<sid>-<tid>.json so it
  * survives session restarts (pause/resume, crash recovery). On unit start,
  * call resetEvidence() then loadEvidenceFromDisk(). On every new tool call,
  * saveEvidenceToDisk() is called automatically by recordToolCall/recordToolResult.
@@ -55,10 +55,10 @@ const EXECUTION_TOOL_NAMES = new Set([
   "Bash",
   "PowerShell",
   "async_bash",
-  "gsd_exec",
-  "gsd_exec_search",
-  "mcp__gsd-workflow__gsd_exec",
-  "mcp__gsd-workflow__gsd_exec_search",
+  "otto_exec",
+  "otto_exec_search",
+  "mcp__otto-workflow__otto_exec",
+  "mcp__otto-workflow__otto_exec_search",
 ]);
 
 // ─── Module State ───────────────────────────────────────────────────────────
@@ -93,10 +93,10 @@ export function getFilePaths(): string[] {
 
 /**
  * Build the path for the evidence JSON file for a given unit.
- * Lives under .gsd/safety/ which is gitignored and session-scoped.
+ * Lives under .otto/workflow/safety/ which is gitignored and session-scoped.
  */
 function evidencePath(basePath: string, milestoneId: string, sliceId: string, taskId: string): string {
-  return join(basePath, ".gsd", "safety", `evidence-${milestoneId}-${sliceId}-${taskId}.json`);
+  return join(basePath, ".otto/workflow", "safety", `evidence-${milestoneId}-${sliceId}-${taskId}.json`);
 }
 
 /**

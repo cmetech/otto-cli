@@ -95,11 +95,11 @@ test("MILESTONE_CONTEXT_RE matches legacy and unique CONTEXT.md names", () => {
   assert.ok(MILESTONE_CONTEXT_RE.test("M001-CONTEXT.md"));
   assert.ok(MILESTONE_CONTEXT_RE.test("M001-abc123-CONTEXT.md"));
   assert.ok(
-    MILESTONE_CONTEXT_RE.test(".gsd/milestones/M001/M001-CONTEXT.md"),
+    MILESTONE_CONTEXT_RE.test(".otto/workflow/milestones/M001/M001-CONTEXT.md"),
     "full path legacy format",
   );
   assert.ok(
-    MILESTONE_CONTEXT_RE.test(".gsd/milestones/M001-abc123/M001-abc123-CONTEXT.md"),
+    MILESTONE_CONTEXT_RE.test(".otto/workflow/milestones/M001-abc123/M001-abc123-CONTEXT.md"),
     "full path unique format",
   );
 });

@@ -18,7 +18,7 @@ describe("discuss incremental persistence (#2152)", () => {
     const content = readFileSync(join(promptsDir, "guided-discuss-milestone.md"), "utf-8");
     assert.match(content, /CONTEXT-DRAFT/, "should mention CONTEXT-DRAFT");
     assert.match(content, /Incremental persistence/, "should have incremental persistence section");
-    assert.match(content, /gsd_summary_save/, "should use gsd_summary_save tool");
+    assert.match(content, /otto_summary_save/, "should use otto_summary_save tool");
   });
 
   test("slice discuss prompt includes CONTEXT-DRAFT save instruction", () => {
@@ -31,7 +31,7 @@ describe("discuss incremental persistence (#2152)", () => {
     const content = readFileSync(join(promptsDir, "discuss.md"), "utf-8");
     assert.match(content, /CONTEXT-DRAFT/, "should mention CONTEXT-DRAFT");
     assert.match(content, /Incremental persistence/, "should have incremental persistence section");
-    assert.match(content, /gsd_summary_save/, "should use gsd_summary_save tool");
+    assert.match(content, /otto_summary_save/, "should use otto_summary_save tool");
   });
 
   test("drafts are saved silently without user notification", () => {

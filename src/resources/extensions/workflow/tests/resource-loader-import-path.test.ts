@@ -7,9 +7,9 @@ import { pathToFileURL } from "node:url";
 import { refreshResumeResourcesAndDb } from "../auto.ts";
 
 describe("resource-loader import path", () => {
-  test("refreshResumeResourcesAndDb resolves resource-loader from GSD_PKG_ROOT", async () => {
-    const pkgRoot = "/tmp/gsd-pkg-root";
-    const agentDir = "/tmp/gsd-agent";
+  test("refreshResumeResourcesAndDb resolves resource-loader from OTTO_PKG_ROOT", async () => {
+    const pkgRoot = "/tmp/otto-pkg-root";
+    const agentDir = "/tmp/otto-agent";
     const basePath = "/tmp/project-root";
     const imports: string[] = [];
     const initializedDirs: string[] = [];
@@ -18,8 +18,8 @@ describe("resource-loader import path", () => {
 
     await refreshResumeResourcesAndDb(basePath, {
       env: {
-        GSD_PKG_ROOT: pkgRoot,
-        GSD_CODING_AGENT_DIR: agentDir,
+        OTTO_PKG_ROOT: pkgRoot,
+        OTTO_CODING_AGENT_DIR: agentDir,
       } as NodeJS.ProcessEnv,
       importModule: async (specifier: string) => {
         imports.push(specifier);

@@ -1,6 +1,6 @@
-# @loop24-build/mcp-server
+# @otto-build/mcp-server
 
-MCP server exposing GSD orchestration tools for Claude Code, Cursor, and other MCP-compatible clients.
+MCP server exposing OTTO orchestration tools for Claude Code, Cursor, and other MCP-compatible clients.
 
 Start auto-mode sessions, poll progress, resolve blockers, and retrieve results — all through the [Model Context Protocol](https://modelcontextprotocol.io/).
 
@@ -13,14 +13,14 @@ This package now exposes two tool surfaces:
 ## Installation
 
 ```bash
-npm install @loop24-build/mcp-server
+npm install @otto-build/mcp-server
 ```
 
 Or with the monorepo workspace:
 
 ```bash
 # Already available as a workspace package
-npx gsd-mcp-server
+npx otto-mcp-server
 ```
 
 ## Configuration
@@ -32,11 +32,11 @@ Add to your project's `.mcp.json`:
 ```json
 {
   "mcpServers": {
-    "gsd": {
+    "otto": {
       "command": "npx",
-      "args": ["gsd-mcp-server"],
+      "args": ["otto-mcp-server"],
       "env": {
-        "GSD_CLI_PATH": "/path/to/gsd"
+        "OTTO_CLI_PATH": "/path/to/otto"
       }
     }
   }
@@ -48,8 +48,8 @@ Or if installed globally:
 ```json
 {
   "mcpServers": {
-    "gsd": {
-      "command": "gsd-mcp-server"
+    "otto": {
+      "command": "otto-mcp-server"
     }
   }
 }
@@ -62,11 +62,11 @@ Add to `.cursor/mcp.json`:
 ```json
 {
   "mcpServers": {
-    "gsd": {
+    "otto": {
       "command": "npx",
-      "args": ["gsd-mcp-server"],
+      "args": ["otto-mcp-server"],
       "env": {
-        "GSD_CLI_PATH": "/path/to/gsd"
+        "OTTO_CLI_PATH": "/path/to/otto"
       }
     }
   }
@@ -79,49 +79,49 @@ Add to `.cursor/mcp.json`:
 
 The workflow MCP surface includes:
 
-- `gsd_decision_save`
-- `gsd_requirement_update`
-- `gsd_requirement_save`
-- `gsd_milestone_generate_id`
-- `gsd_plan_milestone`
-- `gsd_plan_slice`
-- `gsd_plan_task`
-- `gsd_replan_slice`
-- `gsd_slice_complete`
-- `gsd_skip_slice`
-- `gsd_complete_milestone`
-- `gsd_validate_milestone`
-- `gsd_reassess_roadmap`
-- `gsd_save_gate_result`
-- `gsd_summary_save`
-- `gsd_task_complete`
-- `gsd_task_reopen`
-- `gsd_slice_reopen`
-- `gsd_milestone_reopen`
-- `gsd_milestone_status`
-- `gsd_journal_query`
-- `gsd_exec`
-- `gsd_exec_search`
-- `gsd_resume`
-- `gsd_capture_thought`
-- `gsd_memory_query`
-- `gsd_memory_graph`
+- `otto_decision_save`
+- `otto_requirement_update`
+- `otto_requirement_save`
+- `otto_milestone_generate_id`
+- `otto_plan_milestone`
+- `otto_plan_slice`
+- `otto_plan_task`
+- `otto_replan_slice`
+- `otto_slice_complete`
+- `otto_skip_slice`
+- `otto_complete_milestone`
+- `otto_validate_milestone`
+- `otto_reassess_roadmap`
+- `otto_save_gate_result`
+- `otto_summary_save`
+- `otto_task_complete`
+- `otto_task_reopen`
+- `otto_slice_reopen`
+- `otto_milestone_reopen`
+- `otto_milestone_status`
+- `otto_journal_query`
+- `otto_exec`
+- `otto_exec_search`
+- `otto_resume`
+- `otto_capture_thought`
+- `otto_memory_query`
+- `otto_memory_graph`
 
-**Aliases (kept for backwards compatibility — prefer the canonical name above):** `gsd_save_decision`, `gsd_update_requirement`, `gsd_save_requirement`, `gsd_generate_milestone_id`, `gsd_task_plan`, `gsd_slice_replan`, `gsd_complete_task`, `gsd_complete_slice`, `gsd_milestone_validate`, `gsd_milestone_complete`, `gsd_roadmap_reassess`, `gsd_reopen_task`, `gsd_reopen_slice`, `gsd_reopen_milestone`.
+**Aliases (kept for backwards compatibility — prefer the canonical name above):** `otto_save_decision`, `otto_update_requirement`, `otto_save_requirement`, `otto_generate_milestone_id`, `otto_task_plan`, `otto_slice_replan`, `otto_complete_task`, `otto_complete_slice`, `otto_milestone_validate`, `otto_milestone_complete`, `otto_roadmap_reassess`, `otto_reopen_task`, `otto_reopen_slice`, `otto_reopen_milestone`.
 
-These tools use the same GSD workflow handlers as the native in-process tool path wherever a shared handler exists.
+These tools use the same OTTO workflow handlers as the native in-process tool path wherever a shared handler exists.
 
-`gsd_decision_save` and its `gsd_save_decision` alias persist new decisions to the ADR-013 memory store, not to the legacy `decisions` table. The assigned `D###` ID is recorded in `memories.structured_fields.sourceDecisionId`, and `.gsd/DECISIONS.md` is refreshed as a projection from memory-backed decisions. The legacy table may still be read by compatibility and inspection paths during the cutover window, but it is no longer a write target.
+`otto_decision_save` and its `otto_save_decision` alias persist new decisions to the ADR-013 memory store, not to the legacy `decisions` table. The assigned `D###` ID is recorded in `memories.structured_fields.sourceDecisionId`, and `.otto/workflow/DECISIONS.md` is refreshed as a projection from memory-backed decisions. The legacy table may still be read by compatibility and inspection paths during the cutover window, but it is no longer a write target.
 
-`gsd_summary_save` computes artifact paths from the supplied IDs. `milestone_id` is required for milestone-, slice-, and task-scoped artifact types (`SUMMARY`, `RESEARCH`, `CONTEXT`, `ASSESSMENT`, `CONTEXT-DRAFT`) and should be omitted only for root-level `PROJECT`, `PROJECT-DRAFT`, `REQUIREMENTS`, and `REQUIREMENTS-DRAFT` artifacts. For final `REQUIREMENTS` saves, the tool renders content from active database requirement rows; callers must create those rows with `gsd_requirement_save` first.
+`otto_summary_save` computes artifact paths from the supplied IDs. `milestone_id` is required for milestone-, slice-, and task-scoped artifact types (`SUMMARY`, `RESEARCH`, `CONTEXT`, `ASSESSMENT`, `CONTEXT-DRAFT`) and should be omitted only for root-level `PROJECT`, `PROJECT-DRAFT`, `REQUIREMENTS`, and `REQUIREMENTS-DRAFT` artifacts. For final `REQUIREMENTS` saves, the tool renders content from active database requirement rows; callers must create those rows with `otto_requirement_save` first.
 
 ### Interactive tools
 
-The packaged server exposes `ask_user_questions` through MCP form elicitation. This keeps the existing GSD answer payload shape while allowing Claude Code CLI and other elicitation-capable clients to surface structured user choices.
+The packaged server exposes `ask_user_questions` through MCP form elicitation. This keeps the existing OTTO answer payload shape while allowing Claude Code CLI and other elicitation-capable clients to surface structured user choices.
 
 The packaged server also exposes `secure_env_collect` through MCP form elicitation. Secret values are written directly to the selected destination and are not included in tool output. For dotenv writes, `envFilePath` must resolve inside the validated project directory; parent traversal and symlink escapes are rejected.
 
-`secure_env_collect` refuses to set variables that control the MCP server runtime itself, including `GSD_WORKFLOW_EXECUTORS_MODULE`, `GSD_WORKFLOW_WRITE_GATE_MODULE`, `GSD_WORKFLOW_PROJECT_ROOT`, `GSD_CLI_PATH`, `NODE_OPTIONS`, `NODE_PATH`, `PATH`, `LD_PRELOAD`, and `DYLD_INSERT_LIBRARIES`. These values must be configured by the operator in the MCP server environment, not collected from an MCP tool call.
+`secure_env_collect` refuses to set variables that control the MCP server runtime itself, including `OTTO_WORKFLOW_EXECUTORS_MODULE`, `OTTO_WORKFLOW_WRITE_GATE_MODULE`, `OTTO_WORKFLOW_PROJECT_ROOT`, `OTTO_CLI_PATH`, `NODE_OPTIONS`, `NODE_PATH`, `PATH`, `LD_PRELOAD`, and `DYLD_INSERT_LIBRARIES`. These values must be configured by the operator in the MCP server environment, not collected from an MCP tool call.
 
 Secret handling differs by destination:
 
@@ -130,33 +130,33 @@ Secret handling differs by destination:
 
 Current support boundary:
 
-- when running inside the GSD monorepo checkout, the MCP server auto-discovers the shared workflow executor module
-- outside the monorepo, set `GSD_WORKFLOW_EXECUTORS_MODULE` to an importable `workflow-tool-executors` module path if you want the mutation tools enabled
+- when running inside the OTTO monorepo checkout, the MCP server auto-discovers the shared workflow executor module
+- outside the monorepo, set `OTTO_WORKFLOW_EXECUTORS_MODULE` to an importable `workflow-tool-executors` module path if you want the mutation tools enabled
 - `ask_user_questions` and `secure_env_collect` require an MCP client that supports form elicitation
 - session/read tools do not depend on this bridge
 
 If the executor bridge cannot be loaded, workflow mutation calls will fail with a precise configuration error instead of silently degrading.
 
-### `gsd_execute`
+### `otto_execute`
 
 Start a auto-mode session for a project directory.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `projectDir` | `string` | ✅ | Absolute path to the project directory |
-| `command` | `string` | | Command to send (default: `"/gsd auto"`) |
+| `command` | `string` | | Command to send (default: `"/otto auto"`) |
 | `model` | `string` | | Model ID override |
 | `bare` | `boolean` | | Run in bare mode (skip user config) |
 
 **Returns:** `{ sessionId, status: "started" }`
 
-### `gsd_status`
+### `otto_status`
 
-Poll the current status of a running GSD session.
+Poll the current status of a running OTTO session.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `sessionId` | `string` | ✅ | Session ID from `gsd_execute` |
+| `sessionId` | `string` | ✅ | Session ID from `otto_execute` |
 
 **Returns:**
 
@@ -171,13 +171,13 @@ Poll the current status of a running GSD session.
 }
 ```
 
-### `gsd_result`
+### `otto_result`
 
 Get the accumulated result of a session. Works for both running (partial) and completed sessions.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `sessionId` | `string` | ✅ | Session ID from `gsd_execute` |
+| `sessionId` | `string` | ✅ | Session ID from `otto_execute` |
 
 **Returns:**
 
@@ -194,19 +194,19 @@ Get the accumulated result of a session. Works for both running (partial) and co
 }
 ```
 
-### `gsd_cancel`
+### `otto_cancel`
 
 Cancel a running session. Aborts the current operation and stops the agent process.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `sessionId` | `string` | ✅ | Session ID from `gsd_execute` |
+| `sessionId` | `string` | ✅ | Session ID from `otto_execute` |
 
 **Returns:** `{ cancelled: true }`
 
-### `gsd_query`
+### `otto_query`
 
-Query GSD project state from the filesystem without an active session. Returns STATE.md, PROJECT.md, requirements, and milestone listing.
+Query OTTO project state from the filesystem without an active session. Returns STATE.md, PROJECT.md, requirements, and milestone listing.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -227,13 +227,13 @@ Query GSD project state from the filesystem without an active session. Returns S
 }
 ```
 
-### `gsd_resolve_blocker`
+### `otto_resolve_blocker`
 
 Resolve a pending blocker in a session by sending a response to the blocked UI request.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `sessionId` | `string` | ✅ | Session ID from `gsd_execute` |
+| `sessionId` | `string` | ✅ | Session ID from `otto_execute` |
 | `response` | `string` | ✅ | Response to send for the pending blocker |
 
 **Returns:** `{ resolved: true }`
@@ -242,10 +242,10 @@ Resolve a pending blocker in a session by sending a response to the blocked UI r
 
 | Variable | Description |
 |----------|-------------|
-| `GSD_CLI_PATH` | Absolute path to the GSD CLI binary. If not set, the server resolves `gsd` via `which`. |
-| `GSD_WORKFLOW_EXECUTORS_MODULE` | Optional absolute path or `file:` URL for the shared GSD workflow executor module used by workflow mutation tools. |
+| `OTTO_CLI_PATH` | Absolute path to the OTTO CLI binary. If not set, the server resolves `otto` via `which`. |
+| `OTTO_WORKFLOW_EXECUTORS_MODULE` | Optional absolute path or `file:` URL for the shared OTTO workflow executor module used by workflow mutation tools. |
 
-The server also hydrates supported model-provider and tool credentials from `~/.gsd/agent/auth.json` on startup. Keys saved through `/gsd config` or `/gsd keys` become available to the MCP server process automatically, and any explicitly-set environment variable still wins.
+The server also hydrates supported model-provider and tool credentials from `~/.otto/agent/auth.json` on startup. Keys saved through `/otto config` or `/otto keys` become available to the MCP server process automatically, and any explicitly-set environment variable still wins.
 
 Remote secrets pushed by `secure_env_collect` to Vercel or Convex are not hydrated into the MCP server process after the push. Use explicit MCP `env` configuration or a process restart when an operator-level value must be visible to the running server.
 
@@ -253,22 +253,22 @@ Remote secrets pushed by `secure_env_collect` to Vercel or Convex are not hydrat
 
 ```
 ┌─────────────────┐     stdio      ┌──────────────────┐
-│  MCP Client     │ ◄────────────► │  @loop24-build/mcp-server │
+│  MCP Client     │ ◄────────────► │  @otto-build/mcp-server │
 │  (Claude Code,  │    JSON-RPC    │                  │
 │   Cursor, etc.) │                │  SessionManager  │
 └─────────────────┘                │       │          │
                                    │       ▼          │
-                                   │  @loop24-build/rpc-client │
+                                   │  @otto-build/rpc-client │
                                    │       │          │
                                    │       ▼          │
-                                   │  GSD CLI (child  │
+                                   │  OTTO CLI (child  │
                                    │  process via RPC)│
                                    └──────────────────┘
 ```
 
-- **@loop24-build/mcp-server** — MCP protocol adapter. Translates MCP tool calls into SessionManager operations.
+- **@otto-build/mcp-server** — MCP protocol adapter. Translates MCP tool calls into SessionManager operations.
 - **SessionManager** — Manages RpcClient lifecycle. One session per project directory. Tracks events in a ring buffer (last 50), detects blockers, accumulates cost.
-- **@loop24-build/rpc-client** — Low-level RPC client that spawns and communicates with the GSD CLI process via JSON-RPC over stdio.
+- **@otto-build/rpc-client** — Low-level RPC client that spawns and communicates with the OTTO CLI process via JSON-RPC over stdio.
 
 ## License
 

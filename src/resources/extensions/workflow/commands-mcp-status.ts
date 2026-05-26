@@ -1,19 +1,19 @@
 /**
- * MCP Status — `/loop24 mcp` command handler.
+ * MCP Status — `/otto mcp` command handler.
  *
  * Shows configured MCP servers, their connection status, and available tools.
  *
  * Subcommands:
- *   /loop24 mcp             — Overview of all servers (alias: /loop24 mcp status)
- *   /loop24 mcp status      — Same as bare /loop24 mcp
- *   /loop24 mcp check <srv> — Detailed status for a specific server
- *   /loop24 mcp test <srv>  — Test handshake + tools/list for a server
- *   /loop24 mcp enable <srv> / disable <srv> — Toggle local server exposure
- *   /loop24 mcp import <srv> [as <name>] — Copy a discovered server into local config
- *   /loop24 mcp init [dir]  — Write project-local workflow MCP config
+ *   /otto mcp             — Overview of all servers (alias: /otto mcp status)
+ *   /otto mcp status      — Same as bare /otto mcp
+ *   /otto mcp check <srv> — Detailed status for a specific server
+ *   /otto mcp test <srv>  — Test handshake + tools/list for a server
+ *   /otto mcp enable <srv> / disable <srv> — Toggle local server exposure
+ *   /otto mcp import <srv> [as <name>] — Copy a discovered server into local config
+ *   /otto mcp init [dir]  — Write project-local workflow MCP config
  */
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { resolve } from "node:path";
 
@@ -68,7 +68,7 @@ export function formatMcpInitResult(
     `Project: ${targetPath}`,
     `Config:   ${configPath}`,
     "",
-    "Claude Code can now load the GSD workflow MCP server from this folder.",
+    "Claude Code can now load the OTTO workflow MCP server from this folder.",
   ].join("\n");
 }
 
@@ -79,8 +79,8 @@ export function formatMcpStatusReport(servers: McpServerStatus[]): string {
     return [
       "No MCP servers configured.",
       "",
-      "Add servers to .mcp.json, .gsd/mcp.json, or $GSD_HOME/mcp.json (default: ~/.gsd/mcp.json) to enable MCP integrations.",
-      "Tip: run /gsd mcp init . to write the local GSD workflow MCP config.",
+      "Add servers to .mcp.json, .otto/workflow/mcp.json, or $OTTO_HOME/mcp.json (default: ~/.otto/workflow/mcp.json) to enable MCP integrations.",
+      "Tip: run /otto mcp init . to write the local OTTO workflow MCP config.",
       "See: https://modelcontextprotocol.io/quickstart",
     ].join("\n");
   }
@@ -101,8 +101,8 @@ export function formatMcpStatusReport(servers: McpServerStatus[]): string {
   }
 
   lines.push("");
-  lines.push("Use /gsd mcp check <server> for details on a specific server.");
-  lines.push("Use /gsd mcp test <server> to verify handshake and tool discovery.");
+  lines.push("Use /otto mcp check <server> for details on a specific server.");
+  lines.push("Use /otto mcp test <server> to verify handshake and tool discovery.");
   lines.push("Use mcp_discover to connect and list tools for a server.");
 
   return lines.join("\n");
@@ -169,7 +169,7 @@ export function formatMcpConnectionTestResult(result: ManagedMcpConnectionTestRe
 // ─── Command handler ────────────────────────────────────────────────────────
 
 /**
- * Handle `/loop24 mcp [status|check <server>]`.
+ * Handle `/otto mcp [status|check <server>]`.
  */
 export async function handleMcpStatus(
   args: string,
@@ -181,7 +181,7 @@ export async function handleMcpStatus(
   const configs = management.servers;
   const systemPrompt = ctx.getSystemPrompt();
 
-  // /loop24 mcp init [dir]
+  // /otto mcp init [dir]
   if (!lowered || lowered === "status") {
     // handled below
   } else if (lowered === "init" || lowered.startsWith("init ")) {
@@ -199,7 +199,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /loop24 mcp test <server>
+  // /otto mcp test <server>
   if (lowered.startsWith("test ")) {
     const serverName = trimmed.slice("test ".length).trim();
     const result = await testMcpServerConnection(serverName);
@@ -207,7 +207,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /loop24 mcp disable <server>
+  // /otto mcp disable <server>
   if (lowered.startsWith("disable ")) {
     const serverName = trimmed.slice("disable ".length).trim();
     try {
@@ -219,7 +219,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /loop24 mcp enable <server>
+  // /otto mcp enable <server>
   if (lowered.startsWith("enable ")) {
     const serverName = trimmed.slice("enable ".length).trim();
     try {
@@ -231,13 +231,13 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /loop24 mcp delete <server> --confirm
+  // /otto mcp delete <server> --confirm
   if (lowered.startsWith("delete ")) {
     const raw = trimmed.slice("delete ".length).trim();
     const confirmed = /\s--confirm$/.test(raw) || raw === "--confirm";
     const serverName = raw.replace(/\s--confirm$/, "").trim();
     if (!confirmed || !serverName) {
-      ctx.ui.notify(`Usage: /gsd mcp delete <server> --confirm`, "warning");
+      ctx.ui.notify(`Usage: /otto mcp delete <server> --confirm`, "warning");
       return;
     }
     try {
@@ -249,7 +249,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /loop24 mcp import <server> [as <name>]
+  // /otto mcp import <server> [as <name>]
   if (lowered.startsWith("import ")) {
     const raw = trimmed.slice("import ".length).trim();
     const match = raw.match(/^(.*?)\s+as\s+(.+)$/i);
@@ -290,7 +290,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /loop24 mcp check <server>
+  // /otto mcp check <server>
   if (lowered.startsWith("check ")) {
     const serverName = trimmed.slice("check ".length).trim();
     const config = configs.find((c) => c.name === serverName);
@@ -339,7 +339,7 @@ export async function handleMcpStatus(
     return;
   }
 
-  // /loop24 mcp or /loop24 mcp status
+  // /otto mcp or /otto mcp status
   if (!lowered || lowered === "status") {
     // Build status for each server
     const statuses: McpServerStatus[] = [];
@@ -388,15 +388,15 @@ export async function handleMcpStatus(
 
   // Unknown subcommand
   ctx.ui.notify(
-    "Usage: /gsd mcp [status|check <server>|test <server>|enable <server>|disable <server>|delete <server> --confirm|import <server> [as <name>]|init [dir]]\n\n" +
+    "Usage: /otto mcp [status|check <server>|test <server>|enable <server>|disable <server>|delete <server> --confirm|import <server> [as <name>]|init [dir]]\n\n" +
     "  status           Show all MCP server statuses (default)\n" +
     "  check <server>   Detailed status for a specific server\n" +
     "  test <server>    Verify MCP handshake and tools/list\n" +
     "  enable <server>  Enable a local workflow-managed server\n" +
     "  disable <server> Disable a local workflow-managed server\n" +
     "  delete <server> --confirm  Delete a local workflow-managed server\n" +
-    "  import <server> [as <name>] Copy a discovered server to .gsd/mcp.json\n" +
-    "  init [dir]       Write .mcp.json for the local GSD workflow MCP server",
+    "  import <server> [as <name>] Copy a discovered server to .otto/workflow/mcp.json\n" +
+    "  init [dir]       Write .mcp.json for the local OTTO workflow MCP server",
     "warning",
   );
 }

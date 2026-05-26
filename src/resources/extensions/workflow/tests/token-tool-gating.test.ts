@@ -1,38 +1,38 @@
-// Project/App: LOOP24
-// File Purpose: Tests for opt-in GSD tool surface reduction.
+// Project/App: OTTO
+// File Purpose: Tests for opt-in OTTO tool surface reduction.
 
 import assert from "node:assert/strict";
 import test from "node:test";
 
 import { DISCUSS_TOOLS_ALLOWLIST } from "../constants.ts";
-import { buildMinimalAutoWorkflowToolSet, buildMinimalWorkflowToolSet, buildMinimalWorkflowWorkflowToolSet, buildRequestScopedWorkflowToolSet, MINIMAL_AUTO_BASE_TOOL_NAMES, MINIMAL_GSD_TOOL_NAMES, restoreWorkflowWorkflowTools, scopeWorkflowWorkflowToolsForDispatch } from "../bootstrap/register-hooks.ts";
+import { buildMinimalAutoWorkflowToolSet, buildMinimalWorkflowToolSet, buildMinimalWorkflowWorkflowToolSet, buildRequestScopedWorkflowToolSet, MINIMAL_AUTO_BASE_TOOL_NAMES, MINIMAL_OTTO_TOOL_NAMES, restoreWorkflowWorkflowTools, scopeWorkflowWorkflowToolsForDispatch } from "../bootstrap/register-hooks.ts";
 
-test("buildMinimalWorkflowToolSet preserves non-GSD tools and replaces broad GSD surface", () => {
+test("buildMinimalWorkflowToolSet preserves non-OTTO tools and replaces broad OTTO surface", () => {
   const result = buildMinimalWorkflowToolSet([
     "bash",
     "read",
     "browser_open",
-    "gsd_plan_milestone",
-    "gsd_task_complete",
-    "gsd_exec",
-    "gsd_exec_search",
-    "gsd_resume",
-    "gsd_milestone_status",
-    "gsd_checkpoint_db",
+    "otto_plan_milestone",
+    "otto_task_complete",
+    "otto_exec",
+    "otto_exec_search",
+    "otto_resume",
+    "otto_milestone_status",
+    "otto_checkpoint_db",
     "memory_query",
     "capture_thought",
-    "gsd_graph",
+    "otto_graph",
   ]);
 
   assert.ok(result.includes("bash"));
   assert.ok(result.includes("read"));
   assert.ok(result.includes("browser_open"));
-  for (const toolName of MINIMAL_GSD_TOOL_NAMES) {
+  for (const toolName of MINIMAL_OTTO_TOOL_NAMES) {
     assert.ok(result.includes(toolName), `expected ${toolName}`);
   }
-  assert.ok(!result.includes("gsd_plan_milestone"));
-  assert.ok(!result.includes("gsd_task_complete"));
-  assert.ok(!result.includes("gsd_graph"));
+  assert.ok(!result.includes("otto_plan_milestone"));
+  assert.ok(!result.includes("otto_task_complete"));
+  assert.ok(!result.includes("otto_graph"));
 });
 
 test("buildMinimalWorkflowToolSet deduplicates preserved and minimal tools", () => {
@@ -42,11 +42,11 @@ test("buildMinimalWorkflowToolSet deduplicates preserved and minimal tools", () 
   assert.deepEqual(result.filter((toolName) => toolName === "memory_query"), ["memory_query"]);
 });
 
-test("buildMinimalWorkflowToolSet does not reintroduce provider-filtered GSD tools", () => {
+test("buildMinimalWorkflowToolSet does not reintroduce provider-filtered OTTO tools", () => {
   const result = buildMinimalWorkflowToolSet(["bash", "read", "memory_query"]);
 
   assert.deepEqual(result, ["bash", "read", "memory_query"]);
-  assert.ok(!result.includes("gsd_exec"));
+  assert.ok(!result.includes("otto_exec"));
 });
 
 test("buildMinimalAutoWorkflowToolSet keeps unit-specific completion tools without aliases", () => {
@@ -56,15 +56,15 @@ test("buildMinimalAutoWorkflowToolSet keeps unit-specific completion tools witho
     "read",
     "lsp",
     "browser_click",
-    "gsd_task_complete",
-    "gsd_complete_task",
-    "gsd_exec",
-    "gsd_exec_search",
-    "gsd_resume",
-    "gsd_milestone_status",
-    "gsd_checkpoint_db",
-    "gsd_slice_complete",
-    "gsd_complete_slice",
+    "otto_task_complete",
+    "otto_complete_task",
+    "otto_exec",
+    "otto_exec_search",
+    "otto_resume",
+    "otto_milestone_status",
+    "otto_checkpoint_db",
+    "otto_slice_complete",
+    "otto_complete_slice",
     "memory_query",
     "capture_thought",
   ], "execute-task");
@@ -72,16 +72,16 @@ test("buildMinimalAutoWorkflowToolSet keeps unit-specific completion tools witho
   assert.ok(result.includes("ask_user_questions"));
   assert.ok(result.includes("bash"));
   assert.ok(result.includes("read"));
-  assert.ok(result.includes("gsd_task_complete"));
+  assert.ok(result.includes("otto_task_complete"));
   assert.ok(result.includes("memory_query"));
   assert.ok(!result.includes("lsp"));
   assert.ok(!result.includes("browser_click"));
-  assert.ok(!result.includes("gsd_complete_task"));
-  assert.ok(!result.includes("gsd_slice_complete"));
-  assert.ok(!result.includes("gsd_complete_slice"));
+  assert.ok(!result.includes("otto_complete_task"));
+  assert.ok(!result.includes("otto_slice_complete"));
+  assert.ok(!result.includes("otto_complete_slice"));
 });
 
-test("buildMinimalAutoWorkflowToolSet keeps only the auto base non-GSD tools", () => {
+test("buildMinimalAutoWorkflowToolSet keeps only the auto base non-OTTO tools", () => {
   const result = buildMinimalAutoWorkflowToolSet([
     "ask_user_questions",
     "bash",
@@ -96,11 +96,11 @@ test("buildMinimalAutoWorkflowToolSet keeps only the auto base non-GSD tools", (
     "read",
     "subagent",
     "write",
-    "gsd_exec",
-    "gsd_exec_search",
-    "gsd_resume",
-    "gsd_milestone_status",
-    "gsd_checkpoint_db",
+    "otto_exec",
+    "otto_exec_search",
+    "otto_resume",
+    "otto_milestone_status",
+    "otto_checkpoint_db",
     "memory_query",
     "capture_thought",
   ], "execute-task");
@@ -124,8 +124,8 @@ test("buildMinimalAutoWorkflowToolSet preserves browser tools for run-uat", () =
     "browser_assert",
     "browser_screenshot",
     "browser_wait_for",
-    "gsd_summary_save",
-    "gsd_task_complete",
+    "otto_summary_save",
+    "otto_task_complete",
     "memory_query",
     "capture_thought",
   ], "run-uat");
@@ -136,8 +136,8 @@ test("buildMinimalAutoWorkflowToolSet preserves browser tools for run-uat", () =
   assert.ok(result.includes("browser_assert"));
   assert.ok(result.includes("browser_screenshot"));
   assert.ok(result.includes("browser_wait_for"));
-  assert.ok(result.includes("gsd_summary_save"));
-  assert.ok(!result.includes("gsd_task_complete"));
+  assert.ok(result.includes("otto_summary_save"));
+  assert.ok(!result.includes("otto_task_complete"));
 });
 
 test("buildMinimalAutoWorkflowToolSet includes closeout tool for complete-slice", () => {
@@ -145,68 +145,68 @@ test("buildMinimalAutoWorkflowToolSet includes closeout tool for complete-slice"
     "bash",
     "read",
     "subagent",
-    "gsd_exec",
-    "gsd_exec_search",
-    "gsd_resume",
-    "gsd_milestone_status",
-    "gsd_checkpoint_db",
-    "gsd_task_complete",
-    "gsd_task_reopen",
-    "gsd_replan_slice",
-    "gsd_slice_complete",
-    "gsd_complete_slice",
+    "otto_exec",
+    "otto_exec_search",
+    "otto_resume",
+    "otto_milestone_status",
+    "otto_checkpoint_db",
+    "otto_task_complete",
+    "otto_task_reopen",
+    "otto_replan_slice",
+    "otto_slice_complete",
+    "otto_complete_slice",
     "memory_query",
     "capture_thought",
   ], "complete-slice");
 
-  assert.ok(result.includes("gsd_slice_complete"));
-  assert.ok(result.includes("gsd_task_reopen"));
-  assert.ok(result.includes("gsd_replan_slice"));
+  assert.ok(result.includes("otto_slice_complete"));
+  assert.ok(result.includes("otto_task_reopen"));
+  assert.ok(result.includes("otto_replan_slice"));
   assert.ok(result.includes("subagent"));
   assert.ok(result.includes("capture_thought"));
-  assert.ok(!result.includes("gsd_task_complete"));
-  assert.ok(!result.includes("gsd_complete_slice"));
+  assert.ok(!result.includes("otto_task_complete"));
+  assert.ok(!result.includes("otto_complete_slice"));
 });
 
 test("buildMinimalAutoWorkflowToolSet preserves workflow MCP-namespaced closeout tools", () => {
   const result = buildMinimalAutoWorkflowToolSet([
     "bash",
     "read",
-    "mcp__gsd-workflow__gsd_task_reopen",
-    "mcp__gsd-workflow__gsd_replan_slice",
-    "mcp__gsd-workflow__gsd_slice_complete",
-    "mcp__gsd-workflow__gsd_complete_slice",
-    "mcp__gsd-workflow__gsd_exec",
-    "mcp__gsd-workflow__memory_query",
-    "mcp__gsd-workflow__capture_thought",
+    "mcp__otto-workflow__otto_task_reopen",
+    "mcp__otto-workflow__otto_replan_slice",
+    "mcp__otto-workflow__otto_slice_complete",
+    "mcp__otto-workflow__otto_complete_slice",
+    "mcp__otto-workflow__otto_exec",
+    "mcp__otto-workflow__memory_query",
+    "mcp__otto-workflow__capture_thought",
   ], "complete-slice");
 
-  assert.ok(result.includes("mcp__gsd-workflow__gsd_task_reopen"));
-  assert.ok(result.includes("mcp__gsd-workflow__gsd_replan_slice"));
-  assert.ok(result.includes("mcp__gsd-workflow__gsd_slice_complete"));
-  assert.ok(!result.includes("mcp__gsd-workflow__gsd_complete_slice"));
-  assert.ok(result.includes("mcp__gsd-workflow__gsd_exec"));
-  assert.ok(result.includes("mcp__gsd-workflow__memory_query"));
-  assert.ok(result.includes("mcp__gsd-workflow__capture_thought"));
+  assert.ok(result.includes("mcp__otto-workflow__otto_task_reopen"));
+  assert.ok(result.includes("mcp__otto-workflow__otto_replan_slice"));
+  assert.ok(result.includes("mcp__otto-workflow__otto_slice_complete"));
+  assert.ok(!result.includes("mcp__otto-workflow__otto_complete_slice"));
+  assert.ok(result.includes("mcp__otto-workflow__otto_exec"));
+  assert.ok(result.includes("mcp__otto-workflow__memory_query"));
+  assert.ok(result.includes("mcp__otto-workflow__capture_thought"));
 });
 
 test("buildMinimalAutoWorkflowToolSet covers execute-task-simple", () => {
   const result = buildMinimalAutoWorkflowToolSet([
     "bash",
     "read",
-    "gsd_task_complete",
-    "gsd_decision_save",
-    "gsd_plan_task",
+    "otto_task_complete",
+    "otto_decision_save",
+    "otto_plan_task",
     "memory_query",
     "capture_thought",
   ], "execute-task-simple");
 
-  assert.ok(result.includes("gsd_task_complete"));
-  assert.ok(result.includes("gsd_decision_save"));
-  assert.ok(!result.includes("gsd_plan_task"));
+  assert.ok(result.includes("otto_task_complete"));
+  assert.ok(result.includes("otto_decision_save"));
+  assert.ok(!result.includes("otto_plan_task"));
 });
 
-test("buildMinimalWorkflowWorkflowToolSet keeps workflow GSD tools but drops broad non-GSD tools", () => {
+test("buildMinimalWorkflowWorkflowToolSet keeps workflow OTTO tools but drops broad non-OTTO tools", () => {
   const result = buildMinimalWorkflowWorkflowToolSet([
     "ask_user_questions",
     "bash",
@@ -218,18 +218,18 @@ test("buildMinimalWorkflowWorkflowToolSet keeps workflow GSD tools but drops bro
     "read",
     "subagent",
     "write",
-    "gsd_plan_milestone",
-    "gsd_complete_milestone",
-    "gsd_task_complete",
-    "gsd_summary_save",
+    "otto_plan_milestone",
+    "otto_complete_milestone",
+    "otto_task_complete",
+    "otto_summary_save",
     "memory_query",
     "capture_thought",
-    "gsd_exec",
-    "gsd_exec_search",
-    "gsd_resume",
-    "gsd_milestone_status",
-    "gsd_checkpoint_db",
-    "gsd_graph",
+    "otto_exec",
+    "otto_exec_search",
+    "otto_resume",
+    "otto_milestone_status",
+    "otto_checkpoint_db",
+    "otto_graph",
   ]);
 
   assert.ok(result.includes("ask_user_questions"));
@@ -237,15 +237,15 @@ test("buildMinimalWorkflowWorkflowToolSet keeps workflow GSD tools but drops bro
   assert.ok(result.includes("bg_shell"));
   assert.ok(result.includes("read"));
   assert.ok(result.includes("write"));
-  assert.ok(result.includes("gsd_plan_milestone"));
-  assert.ok(result.includes("gsd_complete_milestone"));
-  assert.ok(result.includes("gsd_task_complete"));
-  assert.ok(result.includes("gsd_summary_save"));
+  assert.ok(result.includes("otto_plan_milestone"));
+  assert.ok(result.includes("otto_complete_milestone"));
+  assert.ok(result.includes("otto_task_complete"));
+  assert.ok(result.includes("otto_summary_save"));
   assert.ok(!result.includes("browser_wait_for"));
   assert.ok(!result.includes("lsp"));
   assert.ok(!result.includes("mac_find"));
   assert.ok(!result.includes("subagent"));
-  assert.ok(!result.includes("gsd_graph"));
+  assert.ok(!result.includes("otto_graph"));
 });
 
 test("buildRequestScopedWorkflowToolSet scopes queued workflow custom-message requests", () => {
@@ -256,10 +256,10 @@ test("buildRequestScopedWorkflowToolSet scopes queued workflow custom-message re
     "lsp",
     "read",
     "write",
-    "gsd_plan_milestone",
-    "gsd_complete_milestone",
-    "gsd_task_complete",
-    "gsd_graph",
+    "otto_plan_milestone",
+    "otto_complete_milestone",
+    "otto_task_complete",
+    "otto_graph",
     "memory_query",
     "capture_thought",
   ], [{ customType: "gsd-run" }, { customType: "gsd-memory" }]);
@@ -269,15 +269,15 @@ test("buildRequestScopedWorkflowToolSet scopes queued workflow custom-message re
   assert.ok(result.includes("bash"));
   assert.ok(result.includes("read"));
   assert.ok(result.includes("write"));
-  assert.ok(result.includes("gsd_plan_milestone"));
-  assert.ok(result.includes("gsd_complete_milestone"));
+  assert.ok(result.includes("otto_plan_milestone"));
+  assert.ok(result.includes("otto_complete_milestone"));
   assert.ok(!result.includes("browser_wait_for"));
   assert.ok(!result.includes("lsp"));
-  assert.ok(!result.includes("gsd_graph"));
+  assert.ok(!result.includes("otto_graph"));
 });
 
 test("buildRequestScopedWorkflowToolSet ignores stale workflow messages outside the current request tail", () => {
-  assert.equal(buildRequestScopedWorkflowToolSet(["bash", "gsd_plan_milestone"], []), undefined);
+  assert.equal(buildRequestScopedWorkflowToolSet(["bash", "otto_plan_milestone"], []), undefined);
 });
 
 test("discuss-milestone dispatch keeps required headless milestone tools after two-stage scoping", () => {
@@ -286,18 +286,18 @@ test("discuss-milestone dispatch keeps required headless milestone tools after t
     "bash",
     "read",
     "write",
-    "gsd_summary_save",
-    "gsd_decision_save",
-    "gsd_requirement_save",
-    "gsd_requirement_update",
-    "gsd_plan_milestone",
-    "gsd_milestone_generate_id",
-    "gsd_complete_milestone",
-    "gsd_task_complete",
+    "otto_summary_save",
+    "otto_decision_save",
+    "otto_requirement_save",
+    "otto_requirement_update",
+    "otto_plan_milestone",
+    "otto_milestone_generate_id",
+    "otto_complete_milestone",
+    "otto_task_complete",
   ];
 
   activeTools = activeTools.filter((toolName) =>
-    !toolName.startsWith("gsd_") ||
+    !toolName.startsWith("otto_") ||
     DISCUSS_TOOLS_ALLOWLIST.includes(toolName)
   );
 
@@ -309,13 +309,13 @@ test("discuss-milestone dispatch keeps required headless milestone tools after t
   }, "discuss-milestone");
 
   assert.ok(activeTools.includes("ask_user_questions"));
-  assert.ok(activeTools.includes("gsd_summary_save"));
-  assert.ok(activeTools.includes("gsd_requirement_save"));
-  assert.ok(activeTools.includes("gsd_requirement_update"));
-  assert.ok(activeTools.includes("gsd_plan_milestone"));
-  assert.ok(activeTools.includes("gsd_milestone_generate_id"));
-  assert.ok(!activeTools.includes("gsd_task_complete"));
-  assert.ok(!activeTools.includes("gsd_complete_milestone"));
+  assert.ok(activeTools.includes("otto_summary_save"));
+  assert.ok(activeTools.includes("otto_requirement_save"));
+  assert.ok(activeTools.includes("otto_requirement_update"));
+  assert.ok(activeTools.includes("otto_plan_milestone"));
+  assert.ok(activeTools.includes("otto_milestone_generate_id"));
+  assert.ok(!activeTools.includes("otto_task_complete"));
+  assert.ok(!activeTools.includes("otto_complete_milestone"));
 });
 
 test("scopeWorkflowWorkflowToolsForDispatch applies and restores per-unit skill visibility", () => {
@@ -324,8 +324,8 @@ test("scopeWorkflowWorkflowToolsForDispatch applies and restores per-unit skill 
     "bash",
     "read",
     "lsp",
-    "gsd_plan_milestone",
-    "gsd_decision_save",
+    "otto_plan_milestone",
+    "otto_decision_save",
     "memory_query",
     "capture_thought",
   ];
@@ -372,8 +372,8 @@ test("scopeWorkflowWorkflowToolsForDispatch applies and restores per-unit skill 
     "bash",
     "read",
     "lsp",
-    "gsd_plan_milestone",
-    "gsd_decision_save",
+    "otto_plan_milestone",
+    "otto_decision_save",
     "memory_query",
     "capture_thought",
   ]);

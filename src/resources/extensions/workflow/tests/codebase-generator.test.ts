@@ -21,7 +21,7 @@ import {
 
 function makeTmpRepo(): string {
   const base = join(tmpdir(), `gsd-codebase-test-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   execSync("git init", { cwd: base, stdio: "ignore" });
   return base;
 }
@@ -126,11 +126,11 @@ test("generateCodebaseMap: generates from git ls-files", () => {
   }
 });
 
-test("generateCodebaseMap: excludes .gsd/ files", () => {
+test("generateCodebaseMap: excludes .otto/workflow/ files", () => {
   const base = makeTmpRepo();
   try {
     addFile(base, "src/main.ts");
-    addFile(base, ".gsd/PROJECT.md");
+    addFile(base, ".otto/workflow/PROJECT.md");
 
     const result = generateCodebaseMap(base);
     assert.ok(result.content.includes("`src/main.ts`"));
@@ -333,7 +333,7 @@ test("generateCodebaseMap: truncated=true when file count exceeds maxFiles", () 
 
 test("generateCodebaseMap: returns empty map for non-git directory", () => {
   const base = join(tmpdir(), `gsd-codebase-test-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   // No git init
   try {
     const result = generateCodebaseMap(base);
@@ -488,10 +488,10 @@ test("readCodebaseMap: returns null when file missing", () => {
   }
 });
 
-test("writeCodebaseMap: creates .gsd/ directory if missing", () => {
+test("writeCodebaseMap: creates .otto/workflow/ directory if missing", () => {
   const base = join(tmpdir(), `gsd-codebase-test-${randomUUID()}`);
   mkdirSync(base, { recursive: true });
-  // Intentionally do NOT pre-create .gsd/
+  // Intentionally do NOT pre-create .otto/workflow/
   try {
     const outPath = writeCodebaseMap(base, "# Codebase Map\n");
     assert.ok(existsSync(outPath));

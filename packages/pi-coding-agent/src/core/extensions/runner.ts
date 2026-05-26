@@ -2,9 +2,10 @@
  * Extension runner - executes extensions and manages their lifecycle.
  */
 
-import type { AgentMessage } from "@loop24/pi-agent-core";
-import type { ImageContent, Model } from "@loop24/pi-ai";
-import type { KeyId } from "@loop24/pi-tui";
+import type { AgentMessage } from "@otto/pi-agent-core";
+import type { ImageContent, Model } from "@otto/pi-ai";
+import type { KeyId } from "@otto/pi-tui";
+import { COMMAND_NAMESPACE } from "../../config.js";
 import { type Theme, theme } from "../../modes/interactive/theme/theme.js";
 import type { ResourceDiagnostic } from "../diagnostics.js";
 import type { KeyAction, KeybindingsConfig } from "../keybindings.js";
@@ -116,13 +117,13 @@ const buildBuiltinKeybindings = (effectiveKeybindings: Required<KeybindingsConfi
 	return builtinKeybindings;
 };
 
-const PROTECTED_EXTENSION_COMMANDS = new Set(["gsd"]);
+const PROTECTED_EXTENSION_COMMANDS = new Set([COMMAND_NAMESPACE]);
 
 function isProtectedCommandOwner(commandName: string, extensionPath: string): boolean {
 	if (!PROTECTED_EXTENSION_COMMANDS.has(commandName)) return false;
 	const normalized = extensionPath.replace(/\\/g, "/");
-	return /\/extensions\/gsd\/(?:index\.[cm]?[jt]s|dist\/.*)$/.test(normalized)
-		|| /\/extensions\/gsd\/?$/.test(normalized);
+	return /\/extensions\/workflow\/(?:index\.[cm]?[jt]s|dist\/.*)$/.test(normalized)
+		|| /\/extensions\/workflow\/?$/.test(normalized);
 }
 
 /** Combined result from all before_agent_start handlers */

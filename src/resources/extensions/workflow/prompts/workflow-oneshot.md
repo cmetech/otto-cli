@@ -16,7 +16,7 @@ and no resume mechanism. Just execute the instructions below and return.
 
 ## Execution Rules
 
-1. **No scaffolding.** Do not create `.gsd/workflows/` directories, STATE.json
+1. **No scaffolding.** Do not create `.otto/workflow/workflows/` directories, STATE.json
    files, or run directories unless the instructions explicitly tell you to
    write a specific artifact.
 2. **No branch switching.** Work on the current branch.

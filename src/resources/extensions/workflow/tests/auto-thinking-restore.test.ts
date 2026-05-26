@@ -14,9 +14,9 @@ test("selectAndApplyModel restores captured thinking level after model selection
     process.chdir(originalCwd);
     rmSync(base, { recursive: true, force: true });
   });
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "PREFERENCES.md"),
+    join(base, ".otto/workflow", "PREFERENCES.md"),
     ["---", "models:", "  planning: anthropic/claude-sonnet-4-6", "---"].join("\n"),
     "utf-8",
   );

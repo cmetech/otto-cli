@@ -2,7 +2,7 @@
 
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { Container } from "@loop24/pi-tui";
+import { Container } from "@otto/pi-tui";
 import { SettingsManager } from "../../core/settings-manager.js";
 import { dispatchSlashCommand, type SlashCommandContext } from "./slash-command-handlers.js";
 

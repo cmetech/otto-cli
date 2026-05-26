@@ -1,9 +1,9 @@
 /**
- * GSD Auto-Worktree -- teardown-cleanup-parity.test.ts
+ * OTTO Auto-Worktree -- teardown-cleanup-parity.test.ts
  *
  * Regression test: teardownAutoWorktree (abort path) must call
  * clearProjectRootStateFiles, removing STATE.md, auto.lock, and
- * {MID}-META.json from the project root .gsd/ dir.
+ * {MID}-META.json from the project root .otto/workflow/ dir.
  *
  * Prior to the fix these files were left behind on disk after abort teardown.
  */
@@ -57,7 +57,7 @@ describe("teardownAutoWorktree cleanup parity", () => {
     // Phase C pt 2: auto.lock no longer exists as a file — it migrated
     // to the workers + unit_dispatches tables. clearProjectRootStateFiles
     // still removes STATE.md and {MID}-META.json on teardown.
-    const workflowDir = join(repoDir, ".gsd");
+    const workflowDir = join(repoDir, ".otto/workflow");
     const milestonesDir = join(workflowDir, "milestones", "M001");
     mkdirSync(milestonesDir, { recursive: true });
 

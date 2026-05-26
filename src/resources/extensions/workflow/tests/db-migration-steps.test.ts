@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Tests for extracted GSD database migration DDL steps.
+// Project/App: OTTO
+// File Purpose: Tests for extracted OTTO database migration DDL steps.
 
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";

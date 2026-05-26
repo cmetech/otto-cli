@@ -1,15 +1,15 @@
 /**
- * Quick Mode — /loop24 quick <task>
+ * Quick Mode — /otto quick <task>
  * Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
  *
  * Lightweight task execution with the agent guarantees (atomic commits, state
  * tracking) but without the full milestone/slice ceremony.
  *
- * Quick tasks live in `.gsd/quick/` and are tracked in STATE.md's
+ * Quick tasks live in `.otto/workflow/quick/` and are tracked in STATE.md's
  * "Quick Tasks Completed" table.
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, relative } from "node:path";
 import { loadPrompt } from "./prompt-loader.js";
@@ -94,8 +94,8 @@ export function buildQuickCommitInstruction(basePath: string, root: string): str
   const externalState = isExternalWorkflowRoot(basePath, root);
   if (externalState) {
     return [
-      "Commit repo changes atomically, but do not stage or commit `.gsd/quick/...`:",
-      "   - `.gsd/` resolves outside this git repository, so Git cannot stage quick-task summary files from the project repo.",
+      "Commit repo changes atomically, but do not stage or commit `.otto/workflow/quick/...`:",
+      "   - `.otto/workflow/` resolves outside this git repository, so Git cannot stage quick-task summary files from the project repo.",
       "   - Write the quick summary file directly at the requested path; that file is persisted by the workflow external state.",
       "   - Stage and commit only implementation/test/docs files that live inside the repository.",
       "   - If the task only writes quick-task research/summary files and no repository files changed, do not run `git commit`; report that there was nothing in the project repo to commit.",
@@ -199,10 +199,10 @@ export async function handleQuick(
   const basePath = process.cwd();
   const root = workflowRoot(basePath);
 
-  // Validate: .gsd/ must exist
+  // Validate: .otto/workflow/ must exist
   if (!existsSync(root)) {
     ctx.ui.notify(
-      "No .gsd/ directory found. Run /gsd to initialize a project first.",
+      "No .otto/workflow/ directory found. Run /otto to initialize a project first.",
       "error",
     );
     return;
@@ -212,7 +212,7 @@ export async function handleQuick(
   let description = args.trim();
   if (!description) {
     ctx.ui.notify(
-      "Usage: /gsd quick <task description>\n\nExample: /gsd quick fix login button not responding on mobile",
+      "Usage: /otto quick <task description>\n\nExample: /otto quick fix login button not responding on mobile",
       "info",
     );
     return;
@@ -223,7 +223,7 @@ export async function handleQuick(
   const taskNum = getNextTaskNum(quickDir);
   const slug = slugify(description);
   const taskDir = ensureQuickDir(basePath, taskNum, slug);
-  const taskDirRel = `.gsd/quick/${taskNum}-${slug}`;
+  const taskDirRel = `.otto/workflow/quick/${taskNum}-${slug}`;
   const date = new Date().toISOString().split("T")[0];
 
   // Create git branch for the quick task (unless isolation:none — #3337)

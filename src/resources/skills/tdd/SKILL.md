@@ -8,7 +8,7 @@ Drive feature implementation through one red-green-refactor cycle per vertical s
 </objective>
 
 <context>
-GSD already organizes work into slices (S##) and tasks (T##). This skill operates at the task level — inside a single T##-PLAN.md, it structures the execution as a sequence of tiny red-green-refactor cycles rather than write-all-then-test or write-all-without-tests.
+OTTO already organizes work into slices (S##) and tasks (T##). This skill operates at the task level — inside a single T##-PLAN.md, it structures the execution as a sequence of tiny red-green-refactor cycles rather than write-all-then-test or write-all-without-tests.
 
 Invocation points:
 - Task plan calls out behavior with a clear external contract (pure function, API endpoint, module boundary)
@@ -16,7 +16,7 @@ Invocation points:
 - Refactor into a new module — write the tests against the new interface first
 
 Do not use this skill for:
-- Exploratory spikes (use `/gsd start spike` — no production code ships)
+- Exploratory spikes (use `/otto start spike` — no production code ships)
 - Pure UI polish where visual verification beats unit tests
 - Scripts that run once and are deleted
 </context>
@@ -85,8 +85,8 @@ Rules:
 When the behavior the task plan specified is fully under test and the code is clean:
 
 1. Run the full test suite — not just the tests you wrote. Verify no regressions.
-2. Append a one-line summary of what is now pinned to `.gsd/KNOWLEDGE.md` if the behavior is non-obvious or the test surfaced a trap future agents should know about.
-3. Use `gsd_*` tools to mark the task complete — do not edit checkboxes by hand.
+2. Append a one-line summary of what is now pinned to `.otto/workflow/KNOWLEDGE.md` if the behavior is non-obvious or the test surfaced a trap future agents should know about.
+3. Use `otto_*` tools to mark the task complete — do not edit checkboxes by hand.
 
 </process>
 

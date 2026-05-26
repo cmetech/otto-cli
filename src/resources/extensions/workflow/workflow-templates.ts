@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Workflow template registry loading, matching, and display helpers.
 
 /**
@@ -219,8 +219,8 @@ export function listTemplates(): string {
     lines.push("");
   }
 
-  lines.push("Usage: /gsd start <template> [description]");
-  lines.push("       /gsd templates info <name>");
+  lines.push("Usage: /otto start <template> [description]");
+  lines.push("       /otto templates info <name>");
   lines.push("");
   lines.push("Recommended Task Paths:");
   lines.push(formatRecommendedProcessPaths());
@@ -241,7 +241,7 @@ export function getTemplateInfo(name: string): string | null {
     "",
     `Description: ${t.description}`,
     `Complexity:  ${t.estimated_complexity}`,
-    `Requires .gsd/: ${t.requires_project ? "yes" : "no"}`,
+    `Requires .otto/workflow/: ${t.requires_project ? "yes" : "no"}`,
     "",
     "Phases:",
     ...t.phases.map((p, i) => `  ${i + 1}. ${p}`),

@@ -4,12 +4,12 @@
  *
  * Mirrors the existing parallel-orchestrator.ts pattern at slice scope
  * instead of milestone scope. Workers are separate processes spawned via
- * child_process, each running in its own git worktree with GSD_SLICE_LOCK
- * + GSD_MILESTONE_LOCK env vars set.
+ * child_process, each running in its own git worktree with OTTO_SLICE_LOCK
+ * + OTTO_MILESTONE_LOCK env vars set.
  *
  * Key differences from milestone-level parallelism:
  * - Scope: slices within one milestone, not milestones within a project
- * - Lock env: GSD_SLICE_LOCK (in addition to GSD_MILESTONE_LOCK)
+ * - Lock env: OTTO_SLICE_LOCK (in addition to OTTO_MILESTONE_LOCK)
  * - Conflict check: file overlap between slice plans (slice-parallel-conflict.ts)
  */
 
@@ -99,15 +99,11 @@ export function _buildSliceWorkerEnvForTest(
 ): NodeJS.ProcessEnv {
   return {
     ...sourceEnv,
-    LOOP24_SLICE_LOCK: sliceId,
-    GSD_SLICE_LOCK: sliceId,
-    LOOP24_MILESTONE_LOCK: milestoneId,
-    GSD_MILESTONE_LOCK: milestoneId,
-    LOOP24_PROJECT_ROOT: basePath,
-    GSD_PROJECT_ROOT: basePath,
-    LOOP24_PARALLEL_WORKER: "1",
-    GSD_PARALLEL_WORKER: "1",
-    GSD_SLICE_WORKER_TOKEN: workerToken,
+    OTTO_SLICE_LOCK: sliceId,
+    OTTO_MILESTONE_LOCK: milestoneId,
+    OTTO_PROJECT_ROOT: basePath,
+    OTTO_PARALLEL_WORKER: "1",
+    OTTO_SLICE_WORKER_TOKEN: workerToken,
   };
 }
 
@@ -169,8 +165,8 @@ function createSliceWorktree(basePath: string, milestoneId: string, sliceId: str
   }
   syncWorkflowStateToWorktree(basePath, wtPath);
 
-  if (!existsSync(join(wtPath, ".gsd"))) {
-    throw new Error(`slice worktree preflight failed (${wtName}): missing .gsd in worktree`);
+  if (!existsSync(join(wtPath, ".otto/workflow"))) {
+    throw new Error(`slice worktree preflight failed (${wtName}): missing .otto/workflow in worktree`);
   }
   return wtPath;
 }
@@ -272,7 +268,7 @@ function isRecoveredSliceWorkerAlive(worker: {
   if (worker.workerToken) {
     const envMatches = linuxProcessEnvContains(
       worker.pid,
-      "GSD_SLICE_WORKER_TOKEN",
+      "OTTO_SLICE_WORKER_TOKEN",
       worker.workerToken,
     );
     if (envMatches === false) return false;
@@ -470,7 +466,7 @@ export function getSliceOrchestratorState(): SliceOrchestratorState | null {
  * Start parallel execution for eligible slices within a milestone.
  *
  * For each eligible slice: create a worktree, spawn `gsd headless --json auto`
- * with env GSD_SLICE_LOCK=<SID> + GSD_MILESTONE_LOCK=<MID> + GSD_PARALLEL_WORKER=1.
+ * with env OTTO_SLICE_LOCK=<SID> + OTTO_MILESTONE_LOCK=<MID> + OTTO_PARALLEL_WORKER=1.
  */
 export async function startSliceParallel(
   basePath: string,
@@ -479,7 +475,7 @@ export async function startSliceParallel(
   opts: StartSliceParallelOpts = {},
 ): Promise<{ started: string[]; errors: Array<{ sid: string; error: string }> }> {
   // Prevent nesting: if already a parallel worker, refuse
-  if ((process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER)) {
+  if (process.env.OTTO_PARALLEL_WORKER) {
     return { started: [], errors: [{ sid: "all", error: "Cannot start slice-parallel from within a parallel worker" }] };
   }
 
@@ -697,7 +693,7 @@ function filterConflictingSlices(
  * Same logic as parallel-orchestrator.ts resolveWorkflowBin().
  */
 function resolveWorkflowBin(): string | null {
-  const envBinPath = process.env.LOOP24_BIN_PATH ?? process.env.GSD_BIN_PATH;
+  const envBinPath = process.env.OTTO_BIN_PATH;
   if (envBinPath && existsSync(envBinPath)) {
     return envBinPath;
   }
@@ -722,7 +718,7 @@ function resolveWorkflowBin(): string | null {
 /**
  * Spawn a worker process for a slice.
  * The worker runs `gsd headless --json auto` in the slice's worktree
- * with GSD_SLICE_LOCK, GSD_MILESTONE_LOCK, and GSD_PARALLEL_WORKER set.
+ * with OTTO_SLICE_LOCK, OTTO_MILESTONE_LOCK, and OTTO_PARALLEL_WORKER set.
  *
  * Print-mode slash commands return after the command handler schedules
  * auto-mode, so the worker process can exit before doing any LLM work. The

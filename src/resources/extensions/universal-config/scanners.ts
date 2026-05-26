@@ -536,7 +536,7 @@ async function scanCline(projectRoot: string, _home: string, tool: ToolInfo): Pr
     }
   }
 
-  // Cline MCP: .cline/mcp_settings.json (VS Code extension stores MCP here)
+  // Cline MCP: .cline/mcp_settings.json
   const clineMcpPath = join(projectRoot, ".cline/mcp_settings.json");
   const clineMcpContent = await readTextFile(clineMcpPath);
   if (clineMcpContent) {

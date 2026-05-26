@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Unit tests for pure auto-mode workflow kernel decisions.
 
 import assert from "node:assert/strict";
@@ -245,7 +245,7 @@ test("decideMemoryPressure returns stable stop messages when pressured", () => {
       stopMessage:
         "Memory pressure: heap at 3800MB / 4096MB (93%). " +
         "Stopping gracefully to prevent OOM kill after 10 iterations. " +
-        "Resume with /gsd auto to continue from where you left off.",
+        "Resume with /otto auto to continue from where you left off.",
       turnError: "memory-pressure",
     },
   );

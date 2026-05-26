@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Compact connected status message formatting for the workflow TUI notifications.
 
 const STATUS_INDENT = "    ";

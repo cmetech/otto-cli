@@ -1,5 +1,5 @@
-import type { AgentTool } from "@loop24/pi-agent-core";
-import type { ImageContent, TextContent } from "@loop24/pi-ai";
+import type { AgentTool } from "@otto/pi-agent-core";
+import type { ImageContent, TextContent } from "@otto/pi-ai";
 import { type Static, Type } from "@sinclair/typebox";
 import { constants } from "fs";
 import { access as fsAccess, readFile as fsReadFile } from "fs/promises";

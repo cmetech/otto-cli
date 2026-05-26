@@ -253,7 +253,7 @@ function stripInheritedPlanningDepth(
 
   // planning_depth is a project bootstrap routing flag, not a user-global
   // preference. A global ~/.otto/PREFERENCES.md value should not make every
-  // fresh repo behave like `/loop24 new-project --deep`.
+  // fresh repo behave like `/otto new-project --deep`.
   const preferences: WorkflowPreferences = { ...loaded.preferences };
   delete preferences.planning_depth;
   return { ...loaded, preferences };
@@ -310,8 +310,8 @@ export function parsePreferencesMarkdown(content: string): WorkflowPreferences |
   if (content.trim().length > 0 && !_warnedUnrecognizedFormat) {
     _warnedUnrecognizedFormat = true;
     console.warn(
-      "[GSD] Warning: preferences file has unrecognized format — content does not use YAML frontmatter delimiters (---). " +
-      "Wrap your preferences in --- fences. See https://github.com/open-gsd/gsd-pi/issues/2036",
+      "[OTTO] Warning: preferences file has unrecognized format — content does not use YAML frontmatter delimiters (---). " +
+      "Wrap your preferences in --- fences. See https://github.com/open-gsd/otto-pi/issues/2036",
     );
   }
   return null;
@@ -578,7 +578,7 @@ function mergePreDispatchHooks(
 
 export function renderPreferencesForSystemPrompt(preferences: WorkflowPreferences, resolutions?: Map<string, SkillResolution>): string {
   const validated = validatePreferences(preferences);
-  const lines: string[] = ["## GSD Skill Preferences"];
+  const lines: string[] = ["## OTTO Skill Preferences"];
 
   if (validated.errors.length > 0) {
     lines.push("- Validation: some preference values were ignored because they were invalid.");
@@ -590,7 +590,7 @@ export function renderPreferencesForSystemPrompt(preferences: WorkflowPreference
   preferences = validated.preferences;
 
   lines.push(
-    "- Treat these as explicit skill-selection policy for GSD work.",
+    "- Treat these as explicit skill-selection policy for OTTO work.",
     "- If a listed skill exists and is relevant, load and follow it instead of treating it as a vague suggestion.",
     "- Current user instructions still override these defaults.",
   );

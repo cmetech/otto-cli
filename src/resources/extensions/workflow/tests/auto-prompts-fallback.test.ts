@@ -12,7 +12,7 @@ test("buildSourceFilePaths fallback does not reference rg or ripgrep", (t) => {
   const tmp = mkdtempSync(join(tmpdir(), "gsd-prompts-fallback-"));
   t.after(() => rmSync(tmp, { recursive: true, force: true }));
 
-  // No GSD files exist in tmp — forces the fallback branch.
+  // No OTTO files exist in tmp — forces the fallback branch.
   const result = buildSourceFilePaths(tmp, "M001");
 
   assert.ok(

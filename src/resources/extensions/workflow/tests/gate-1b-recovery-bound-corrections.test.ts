@@ -1,6 +1,6 @@
 // the agent + Gate 1b recovery bound corrections — regression tests for the two bugs
 // found in peer review of the H1 fix (commit f0e1d42a2):
-//   1. Escalation message must describe /gsd (counter reset) AND /gsd-debug (diagnose).
+//   1. Escalation message must describe /otto (counter reset) AND /otto-debug (diagnose).
 //   2. planBlockedRecoveryCount must NOT increment when pi.sendMessage throws.
 
 import { describe, test, beforeEach, afterEach } from "node:test";
@@ -71,9 +71,9 @@ function mkPi(cap: MockCapture): any {
 
 function mkBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-gate1b-corrections-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
     "# M001: Corrections Test\n\nContext written by discuss phase.\n",
   );
   return base;
@@ -100,7 +100,7 @@ describe("Gate 1b recovery bound corrections", () => {
 
   // ── Fix 1: escalation message ──────────────────────────────────────────
 
-  test("escalation message describes /gsd for reset AND /gsd-debug for diagnosis", () => {
+  test("escalation message describes /otto for reset AND /otto-debug for diagnosis", () => {
     base = mkBase();
     openDatabase(":memory:");
     insertMilestone({ id: "M001", title: "Corrections Test", status: "queued" });
@@ -128,30 +128,30 @@ describe("Gate 1b recovery bound corrections", () => {
     const errorNotify = cap.notifies.find((n) => n.level === "error");
     assert.ok(errorNotify, "escalation must emit a notify with level 'error'");
 
-    // Must mention /gsd with reset semantics
+    // Must mention /otto with reset semantics
     assert.match(
       errorNotify.msg,
-      /\/gsd\b/,
-      "escalation message must reference /gsd (the command that resets the counter)",
+      /\/otto\b/,
+      "escalation message must reference /otto (the command that resets the counter)",
     );
     assert.match(
       errorNotify.msg,
       /reset/i,
-      "escalation message must use the word 'reset' so users know /gsd resets the counter",
+      "escalation message must use the word 'reset' so users know /otto resets the counter",
     );
 
-    // Must also mention /gsd-debug
+    // Must also mention /otto-debug
     assert.match(
       errorNotify.msg,
-      /\/gsd-debug/i,
-      "escalation message must also reference /gsd-debug for diagnosis",
+      /\/otto-debug/i,
+      "escalation message must also reference /otto-debug for diagnosis",
     );
 
-    // Must NOT suggest /gsd-debug alone as the sole remediation
+    // Must NOT suggest /otto-debug alone as the sole remediation
     assert.doesNotMatch(
       errorNotify.msg,
-      /^[^/]*\/gsd-debug[^/]*$/,
-      "escalation message must not mention /gsd-debug as the only option",
+      /^[^/]*\/otto-debug[^/]*$/,
+      "escalation message must not mention /otto-debug as the only option",
     );
   });
 

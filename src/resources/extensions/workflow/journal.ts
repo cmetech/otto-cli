@@ -1,7 +1,7 @@
 /**
  * Event Journal — structured JSONL event log for auto-mode iterations.
  *
- * Writes daily-rotated JSONL files to `.gsd/journal/YYYY-MM-DD.jsonl`.
+ * Writes daily-rotated JSONL files to `.otto/workflow/journal/YYYY-MM-DD.jsonl`.
  * Zero imports from `auto/` — depends only on node:fs, node:path, and paths.ts.
  *
  * Observability:

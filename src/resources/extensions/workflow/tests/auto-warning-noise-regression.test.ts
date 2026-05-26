@@ -1,4 +1,4 @@
-// GSD Extension — Regression tests for auto-mode warning noise (PR #4294)
+// OTTO Extension — Regression tests for auto-mode warning noise (PR #4294)
 //
 // Three independent bug fixes, three regression tests:
 //
@@ -10,7 +10,7 @@
 //      with correct binding).
 //
 //   2. auto-worktree.ts — isSamePath logged every error as a warning,
-//      including ENOENT when a worktree's .gsd dir hadn't been created yet.
+//      including ENOENT when a worktree's .otto/workflow dir hadn't been created yet.
 //      Source-check test: the catch block must short-circuit on ENOENT
 //      before hitting logWarning. Follows the same style as
 //      copy-planning-artifacts-samepath.test.ts.
@@ -85,10 +85,10 @@ test("checkAutoStartAfterDiscuss completes when discussion manifest is absent", 
   const notifications: Array<{ message: string; level: string }> = [];
   let scheduled = false;
   try {
-    const milestoneDir = join(base, ".gsd", "milestones", "M001");
+    const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
     mkdirSync(milestoneDir, { recursive: true });
     writeFileSync(join(milestoneDir, "M001-CONTEXT.md"), "# Context\n", "utf-8");
-    writeFileSync(join(base, ".gsd", "STATE.md"), "# State\n", "utf-8");
+    writeFileSync(join(base, ".otto/workflow", "STATE.md"), "# State\n", "utf-8");
     setPendingAutoStart(base, {
       basePath: base,
       milestoneId: "M001",

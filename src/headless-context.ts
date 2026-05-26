@@ -2,7 +2,7 @@
  * Headless Context Loading — stdin reading, file context, and project bootstrapping
  *
  * Handles loading context from files or stdin for headless new-milestone,
- * and bootstraps the .gsd/ directory structure when needed.
+ * and bootstraps the .otto/workflow directory structure when needed.
  */
 
 import { readFileSync, mkdirSync } from 'node:fs'
@@ -49,11 +49,11 @@ export async function loadContext(options: ContextOptions): Promise<string> {
 // ---------------------------------------------------------------------------
 
 /**
- * Bootstrap .gsd/ directory structure for headless new-milestone.
+ * Bootstrap .otto/workflow directory structure for headless new-milestone.
  * Mirrors the bootstrap logic from guided-flow.ts showSmartEntry().
  */
 export function bootstrapWorkflowProject(basePath: string): void {
-  const workflowDir = join(basePath, '.gsd')
+  const workflowDir = join(basePath, '.otto', 'workflow')
   mkdirSync(join(workflowDir, 'milestones'), { recursive: true })
   mkdirSync(join(workflowDir, 'runtime'), { recursive: true })
 }

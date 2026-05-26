@@ -31,12 +31,12 @@ describe("DB-authoritative slice rogue detection", () => {
     const base = realpathSync(mkdtempSync(join(tmpdir(), "gsd-rogue-slice-")));
     t.after(() => rmSync(base, { recursive: true, force: true }));
 
-    mkdirSync(join(base, ".gsd"), { recursive: true });
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Milestone", status: "active" });
     insertSlice({ milestoneId: "M001", id: "S01", title: "Slice", status: "pending", sequence: 1 });
 
-    const summaryPath = join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md");
+    const summaryPath = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md");
     mkdirSync(dirname(summaryPath), { recursive: true });
     writeFileSync(summaryPath, "# Summary\n", "utf-8");
 

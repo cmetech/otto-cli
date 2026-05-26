@@ -34,14 +34,14 @@ import type { WorkflowDbState } from "../types.ts";
 
 function makeBase(): string {
   const base = join(tmpdir(), `gsd-deep-project-loop-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
-  writeFileSync(join(base, ".gsd", "PREFERENCES.md"), "---\nplanning_depth: deep\n---\n");
+  mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
+  writeFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "---\nplanning_depth: deep\n---\n");
   return base;
 }
 
 function makeCommandBase(): string {
   const base = join(tmpdir(), `gsd-deep-project-command-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
   writeFileSync(join(base, "package.json"), '{"name":"gsd-command-test"}\n');
   return base;
 }
@@ -111,7 +111,7 @@ function makePlanningState(): WorkflowDbState {
 
 function writeCapturedDeepPrefs(base: string): void {
   writeFileSync(
-    join(base, ".gsd", "PREFERENCES.md"),
+    join(base, ".otto/workflow", "PREFERENCES.md"),
     "---\nplanning_depth: deep\nworkflow_prefs_captured: true\n---\n",
   );
 }
@@ -125,8 +125,8 @@ function writeValidProjectAndRequirements(base: string): void {
     new URL("../schemas/__fixtures__/valid-requirements.md", import.meta.url),
     "utf-8",
   );
-  writeFileSync(join(base, ".gsd", "PROJECT.md"), validProject);
-  writeFileSync(join(base, ".gsd", "REQUIREMENTS.md"), validRequirements);
+  writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), validProject);
+  writeFileSync(join(base, ".otto/workflow", "REQUIREMENTS.md"), validRequirements);
 }
 
 function makeRepo(): string {
@@ -165,12 +165,12 @@ function makeCtx(sessionId = "test-session") {
 function makePi(messages: unknown[]) {
   let activeTools = [
     "ask_user_questions",
-    "mcp__gsd-workflow__ask_user_questions",
+    "mcp__otto-workflow__ask_user_questions",
     "read",
     "write",
     "edit",
     "bash",
-    "gsd_summary_save",
+    "otto_summary_save",
   ];
   return {
     sendMessage: (message: unknown) => {
@@ -188,16 +188,16 @@ function makePi(messages: unknown[]) {
 
 async function runNewProjectCommand(base: string, command: string): Promise<unknown[]> {
   const previousCwd = process.cwd();
-  const previousWorkflowHome = process.env.GSD_HOME;
-  const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
-  const previousProjectRoot = process.env.GSD_PROJECT_ROOT;
+  const previousWorkflowHome = process.env.OTTO_HOME;
+  const previousWorkflowPath = process.env.OTTO_WORKFLOW_PATH;
+  const previousProjectRoot = process.env.OTTO_PROJECT_ROOT;
   const workflowPath = join(base, "WORKFLOW.md");
   writeFileSync(workflowPath, "# Test Workflow\n");
 
   try {
-    process.env.GSD_HOME = join(base, ".test-gsd-home");
-    process.env.GSD_WORKFLOW_PATH = workflowPath;
-    delete process.env.GSD_PROJECT_ROOT;
+    process.env.OTTO_HOME = join(base, ".test-gsd-home");
+    process.env.OTTO_WORKFLOW_PATH = workflowPath;
+    delete process.env.OTTO_PROJECT_ROOT;
     process.chdir(base);
 
     const messages: unknown[] = [];
@@ -206,12 +206,12 @@ async function runNewProjectCommand(base: string, command: string): Promise<unkn
     return messages;
   } finally {
     process.chdir(previousCwd);
-    if (previousWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousWorkflowHome;
-    if (previousWorkflowPath === undefined) delete process.env.GSD_WORKFLOW_PATH;
-    else process.env.GSD_WORKFLOW_PATH = previousWorkflowPath;
-    if (previousProjectRoot === undefined) delete process.env.GSD_PROJECT_ROOT;
-    else process.env.GSD_PROJECT_ROOT = previousProjectRoot;
+    if (previousWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = previousWorkflowHome;
+    if (previousWorkflowPath === undefined) delete process.env.OTTO_WORKFLOW_PATH;
+    else process.env.OTTO_WORKFLOW_PATH = previousWorkflowPath;
+    if (previousProjectRoot === undefined) delete process.env.OTTO_PROJECT_ROOT;
+    else process.env.OTTO_PROJECT_ROOT = previousProjectRoot;
 
     try {
       const { closeDatabase } = await import("../db.ts");
@@ -222,16 +222,16 @@ async function runNewProjectCommand(base: string, command: string): Promise<unkn
 
 async function runBareWorkflowCommand(base: string): Promise<unknown[]> {
   const previousCwd = process.cwd();
-  const previousWorkflowHome = process.env.GSD_HOME;
-  const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
-  const previousProjectRoot = process.env.GSD_PROJECT_ROOT;
+  const previousWorkflowHome = process.env.OTTO_HOME;
+  const previousWorkflowPath = process.env.OTTO_WORKFLOW_PATH;
+  const previousProjectRoot = process.env.OTTO_PROJECT_ROOT;
   const workflowPath = join(base, "WORKFLOW.md");
   writeFileSync(workflowPath, "# Test Workflow\n");
 
   try {
-    process.env.GSD_HOME = join(base, ".test-gsd-home");
-    process.env.GSD_WORKFLOW_PATH = workflowPath;
-    delete process.env.GSD_PROJECT_ROOT;
+    process.env.OTTO_HOME = join(base, ".test-gsd-home");
+    process.env.OTTO_WORKFLOW_PATH = workflowPath;
+    delete process.env.OTTO_PROJECT_ROOT;
     process.chdir(base);
 
     const messages: unknown[] = [];
@@ -245,12 +245,12 @@ async function runBareWorkflowCommand(base: string): Promise<unknown[]> {
     return [...messages, ...notifications];
   } finally {
     process.chdir(previousCwd);
-    if (previousWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousWorkflowHome;
-    if (previousWorkflowPath === undefined) delete process.env.GSD_WORKFLOW_PATH;
-    else process.env.GSD_WORKFLOW_PATH = previousWorkflowPath;
-    if (previousProjectRoot === undefined) delete process.env.GSD_PROJECT_ROOT;
-    else process.env.GSD_PROJECT_ROOT = previousProjectRoot;
+    if (previousWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = previousWorkflowHome;
+    if (previousWorkflowPath === undefined) delete process.env.OTTO_WORKFLOW_PATH;
+    else process.env.OTTO_WORKFLOW_PATH = previousWorkflowPath;
+    if (previousProjectRoot === undefined) delete process.env.OTTO_PROJECT_ROOT;
+    else process.env.OTTO_PROJECT_ROOT = previousProjectRoot;
 
     try {
       const { closeDatabase } = await import("../db.ts");
@@ -368,10 +368,10 @@ test("deep project setup: bootstrap continues queued M002 without milestone cont
   try {
     writeCapturedDeepPrefs(base);
     writeValidProjectAndRequirements(base);
-    mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "runtime", "research-decision.json"), '{"decision":"skip"}\n');
+    mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), '{"decision":"skip"}\n');
 
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "First milestone", status: "complete" });
     insertMilestone({ id: "M002", title: "Second milestone", status: "queued" });
     closeDatabase();
@@ -528,8 +528,8 @@ test("deep project setup: pre-dispatch does not rewrite execution state to PROJE
   try {
     writeCapturedDeepPrefs(base);
     writeValidProjectAndRequirements(base);
-    mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "runtime", "research-decision.json"), JSON.stringify({ decision: "skip" }));
+    mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), JSON.stringify({ decision: "skip" }));
 
     const s = new AutoSession();
     s.basePath = base;
@@ -585,9 +585,9 @@ test("deep project setup: pending project research cannot dispatch PROJECT/S01",
   try {
     writeCapturedDeepPrefs(base);
     writeValidProjectAndRequirements(base);
-    mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
     writeFileSync(
-      join(base, ".gsd", "runtime", "research-decision.json"),
+      join(base, ".otto/workflow", "runtime", "research-decision.json"),
       JSON.stringify({ decision: "research", source: "research-decision" }),
     );
 
@@ -657,12 +657,12 @@ test("deep project setup: new-project command only writes planning_depth with --
   try {
     writeCommandGlobalDeepPrefs(lightBase);
     const lightMessages = await runNewProjectCommand(lightBase, "new-project");
-    const lightPrefsPath = join(lightBase, ".gsd", "PREFERENCES.md");
+    const lightPrefsPath = join(lightBase, ".otto/workflow", "PREFERENCES.md");
     if (existsSync(lightPrefsPath)) {
       assert.doesNotMatch(
         readFileSync(lightPrefsPath, "utf-8"),
         /planning_depth\s*:/,
-        "plain /gsd new-project must not persist planning_depth",
+        "plain /otto new-project must not persist planning_depth",
       );
     }
     assert.equal(lightMessages.length, 1, "plain new-project should still dispatch the normal first milestone discussion");
@@ -673,7 +673,7 @@ test("deep project setup: new-project command only writes planning_depth with --
     );
 
     const deepMessages = await runNewProjectCommand(deepBase, "new-project --deep");
-    const deepPrefs = readFileSync(join(deepBase, ".gsd", "PREFERENCES.md"), "utf-8");
+    const deepPrefs = readFileSync(join(deepBase, ".otto/workflow", "PREFERENCES.md"), "utf-8");
     assert.match(deepPrefs, /planning_depth:\s*deep/);
     assert.match(deepPrefs, /workflow_prefs_captured:\s*true/);
     assert.equal(deepMessages.length, 1, "deep new-project should dispatch the foreground project setup interview");
@@ -686,31 +686,31 @@ test("deep project setup: new-project command only writes planning_depth with --
   }
 });
 
-test("deep project setup: bare /gsd ignores global planning_depth without project opt-in", async () => {
+test("deep project setup: bare /otto ignores global planning_depth without project opt-in", async () => {
   const base = makeCommandBase();
   try {
     writeCommandGlobalDeepPrefs(base);
 
     const messages = await runBareWorkflowCommand(base);
-    const prefsPath = join(base, ".gsd", "PREFERENCES.md");
+    const prefsPath = join(base, ".otto/workflow", "PREFERENCES.md");
 
     if (existsSync(prefsPath)) {
       assert.doesNotMatch(
         readFileSync(prefsPath, "utf-8"),
         /planning_depth\s*:/,
-        "bare /gsd must not persist planning_depth from global preferences",
+        "bare /otto must not persist planning_depth from global preferences",
       );
     }
-    assert.equal(messages.length, 1, "bare /gsd should render the state-aware home in non-UI mode");
+    assert.equal(messages.length, 1, "bare /otto should render the state-aware home in non-UI mode");
     assert.match(
       String((messages[0] as any).content),
-      /GSD — What now\?/,
-      "bare /gsd should render the command home instead of dispatching a milestone discussion",
+      /OTTO — What now\?/,
+      "bare /otto should render the command home instead of dispatching a milestone discussion",
     );
     assert.doesNotMatch(
       String((messages[0] as any).content),
       /Foreground Deep Setup Question Policy/,
-      "global planning_depth must not make bare /gsd take the deep foreground setup path",
+      "global planning_depth must not make bare /otto take the deep foreground setup path",
     );
   } finally {
     clearPendingAutoStart(base);
@@ -730,7 +730,7 @@ test("deep project setup: new-project --deep creates a reachable HEAD in unborn 
     }).trim();
     assert.equal(subject, "chore: init project");
 
-    const deepPrefs = readFileSync(join(base, ".gsd", "PREFERENCES.md"), "utf-8");
+    const deepPrefs = readFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "utf-8");
     assert.match(deepPrefs, /planning_depth:\s*deep/);
     assert.equal(messages.length, 1, "deep new-project should still dispatch foreground setup");
     assert.match(String((messages[0] as any).content), /Foreground Deep Setup Question Policy/);
@@ -744,9 +744,9 @@ test("deep project setup: new-project --deep uses cwd when nested inside a paren
   const parent = join(tmpdir(), `gsd-deep-project-parent-${randomUUID()}`);
   const child = join(parent, "nested-app");
   const previousCwd = process.cwd();
-  const previousWorkflowHome = process.env.GSD_HOME;
-  const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
-  const previousProjectRoot = process.env.GSD_PROJECT_ROOT;
+  const previousWorkflowHome = process.env.OTTO_HOME;
+  const previousWorkflowPath = process.env.OTTO_WORKFLOW_PATH;
+  const previousProjectRoot = process.env.OTTO_PROJECT_ROOT;
 
   mkdirSync(child, { recursive: true });
   execFileSync("git", ["init"], { cwd: parent, stdio: "ignore" });
@@ -756,9 +756,9 @@ test("deep project setup: new-project --deep uses cwd when nested inside a paren
   writeFileSync(join(child, "WORKFLOW.md"), "# Test Workflow\n");
 
   try {
-    process.env.GSD_HOME = join(child, ".test-gsd-home");
-    process.env.GSD_WORKFLOW_PATH = join(child, "WORKFLOW.md");
-    delete process.env.GSD_PROJECT_ROOT;
+    process.env.OTTO_HOME = join(child, ".test-gsd-home");
+    process.env.OTTO_WORKFLOW_PATH = join(child, "WORKFLOW.md");
+    delete process.env.OTTO_PROJECT_ROOT;
     process.chdir(child);
 
     const messages: unknown[] = [];
@@ -767,10 +767,10 @@ test("deep project setup: new-project --deep uses cwd when nested inside a paren
     const { handleWorkflowCommand } = await import("../commands/handlers/workflow.ts");
     await handleWorkflowCommand("new-project --deep", ctx, pi);
 
-    const childPrefs = readFileSync(join(child, ".gsd", "PREFERENCES.md"), "utf-8");
+    const childPrefs = readFileSync(join(child, ".otto/workflow", "PREFERENCES.md"), "utf-8");
     assert.match(childPrefs, /planning_depth:\s*deep/);
     assert.equal(
-      existsSync(join(parent, ".gsd", "PREFERENCES.md")),
+      existsSync(join(parent, ".otto/workflow", "PREFERENCES.md")),
       false,
       "new-project must not write deep prefs to the parent git root",
     );
@@ -780,7 +780,7 @@ test("deep project setup: new-project --deep uses cwd when nested inside a paren
       new URL("../schemas/__fixtures__/valid-project.md", import.meta.url),
       "utf-8",
     );
-    writeFileSync(join(child, ".gsd", "PROJECT.md"), validProject);
+    writeFileSync(join(child, ".otto/workflow", "PROJECT.md"), validProject);
 
     const advanced = await checkDeepProjectSetupAfterTurn(
       { messages: [{ role: "assistant", content: "Project context written." }] },
@@ -793,12 +793,12 @@ test("deep project setup: new-project --deep uses cwd when nested inside a paren
     assert.match(String((messages[1] as any).content), /REQUIREMENTS\.md/);
   } finally {
     process.chdir(previousCwd);
-    if (previousWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = previousWorkflowHome;
-    if (previousWorkflowPath === undefined) delete process.env.GSD_WORKFLOW_PATH;
-    else process.env.GSD_WORKFLOW_PATH = previousWorkflowPath;
-    if (previousProjectRoot === undefined) delete process.env.GSD_PROJECT_ROOT;
-    else process.env.GSD_PROJECT_ROOT = previousProjectRoot;
+    if (previousWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = previousWorkflowHome;
+    if (previousWorkflowPath === undefined) delete process.env.OTTO_WORKFLOW_PATH;
+    else process.env.OTTO_WORKFLOW_PATH = previousWorkflowPath;
+    if (previousProjectRoot === undefined) delete process.env.OTTO_PROJECT_ROOT;
+    else process.env.OTTO_PROJECT_ROOT = previousProjectRoot;
 
     clearPendingDeepProjectSetup(child);
     rmSync(parent, { recursive: true, force: true });
@@ -811,9 +811,9 @@ test("deep project setup: new-project --deep uses cwd when nested inside a paren
 
 test("deep project setup: new-project asks interview stages in foreground", async () => {
   const base = makeBase();
-  const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
-  process.env.GSD_WORKFLOW_PATH = join(base, "WORKFLOW.md");
-  writeFileSync(process.env.GSD_WORKFLOW_PATH, "# Test Workflow\n");
+  const previousWorkflowPath = process.env.OTTO_WORKFLOW_PATH;
+  process.env.OTTO_WORKFLOW_PATH = join(base, "WORKFLOW.md");
+  writeFileSync(process.env.OTTO_WORKFLOW_PATH, "# Test Workflow\n");
 
   try {
     const messages: any[] = [];
@@ -857,7 +857,7 @@ test("deep project setup: new-project asks interview stages in foreground", asyn
       new URL("../schemas/__fixtures__/valid-project.md", import.meta.url),
       "utf-8",
     );
-    writeFileSync(join(base, ".gsd", "PROJECT.md"), validProject);
+    writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), validProject);
 
     const advanced = await checkDeepProjectSetupAfterTurn(
       { messages: [{ role: "assistant", content: "Project captured." }] },
@@ -879,9 +879,9 @@ test("deep project setup: new-project asks interview stages in foreground", asyn
   } finally {
     clearPendingDeepProjectSetup(base);
     if (previousWorkflowPath === undefined) {
-      delete process.env.GSD_WORKFLOW_PATH;
+      delete process.env.OTTO_WORKFLOW_PATH;
     } else {
-      process.env.GSD_WORKFLOW_PATH = previousWorkflowPath;
+      process.env.OTTO_WORKFLOW_PATH = previousWorkflowPath;
     }
     rmSync(base, { recursive: true, force: true });
   }
@@ -958,9 +958,9 @@ test("deep auto dispatch forces milestone checkpoints into plain chat", async (t
 test("deep project setup: unrelated agent_end sessions do not advance pending setup", async () => {
   const base = makeBase();
   const otherBase = makeBase();
-  const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
-  process.env.GSD_WORKFLOW_PATH = join(base, "WORKFLOW.md");
-  writeFileSync(process.env.GSD_WORKFLOW_PATH, "# Test Workflow\n");
+  const previousWorkflowPath = process.env.OTTO_WORKFLOW_PATH;
+  process.env.OTTO_WORKFLOW_PATH = join(base, "WORKFLOW.md");
+  writeFileSync(process.env.OTTO_WORKFLOW_PATH, "# Test Workflow\n");
 
   try {
     const messages: any[] = [];
@@ -975,7 +975,7 @@ test("deep project setup: unrelated agent_end sessions do not advance pending se
       new URL("../schemas/__fixtures__/valid-project.md", import.meta.url),
       "utf-8",
     );
-    writeFileSync(join(base, ".gsd", "PROJECT.md"), validProject);
+    writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), validProject);
 
     const ignored = await checkDeepProjectSetupAfterTurn(
       { messages: [{ role: "assistant", content: "Unrelated light workflow completed." }] },
@@ -995,9 +995,9 @@ test("deep project setup: unrelated agent_end sessions do not advance pending se
   } finally {
     clearPendingDeepProjectSetup(base);
     if (previousWorkflowPath === undefined) {
-      delete process.env.GSD_WORKFLOW_PATH;
+      delete process.env.OTTO_WORKFLOW_PATH;
     } else {
-      process.env.GSD_WORKFLOW_PATH = previousWorkflowPath;
+      process.env.OTTO_WORKFLOW_PATH = previousWorkflowPath;
     }
     rmSync(base, { recursive: true, force: true });
     rmSync(otherBase, { recursive: true, force: true });
@@ -1006,9 +1006,9 @@ test("deep project setup: unrelated agent_end sessions do not advance pending se
 
 test("deep project setup: same project advances when agent_end session id changes", async () => {
   const base = makeBase();
-  const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
-  process.env.GSD_WORKFLOW_PATH = join(base, "WORKFLOW.md");
-  writeFileSync(process.env.GSD_WORKFLOW_PATH, "# Test Workflow\n");
+  const previousWorkflowPath = process.env.OTTO_WORKFLOW_PATH;
+  process.env.OTTO_WORKFLOW_PATH = join(base, "WORKFLOW.md");
+  writeFileSync(process.env.OTTO_WORKFLOW_PATH, "# Test Workflow\n");
 
   try {
     const messages: any[] = [];
@@ -1023,7 +1023,7 @@ test("deep project setup: same project advances when agent_end session id change
       new URL("../schemas/__fixtures__/valid-project.md", import.meta.url),
       "utf-8",
     );
-    writeFileSync(join(base, ".gsd", "PROJECT.md"), validProject);
+    writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), validProject);
 
     const advanced = await checkDeepProjectSetupAfterTurn(
       { messages: [{ role: "assistant", content: "Project captured." }] },
@@ -1035,9 +1035,9 @@ test("deep project setup: same project advances when agent_end session id change
   } finally {
     clearPendingDeepProjectSetup(base);
     if (previousWorkflowPath === undefined) {
-      delete process.env.GSD_WORKFLOW_PATH;
+      delete process.env.OTTO_WORKFLOW_PATH;
     } else {
-      process.env.GSD_WORKFLOW_PATH = previousWorkflowPath;
+      process.env.OTTO_WORKFLOW_PATH = previousWorkflowPath;
     }
     rmSync(base, { recursive: true, force: true });
   }
@@ -1054,7 +1054,7 @@ test("deep project setup: project-level units verify their real artifacts", () =
   try {
     assert.equal(verifyExpectedArtifact("workflow-preferences", "WORKFLOW-PREFS", base), false);
     writeFileSync(
-      join(base, ".gsd", "PREFERENCES.md"),
+      join(base, ".otto/workflow", "PREFERENCES.md"),
       "---\nplanning_depth: deep\nworkflow_prefs_captured: true\n---\n",
     );
     assert.equal(verifyExpectedArtifact("workflow-preferences", "WORKFLOW-PREFS", base), true);
@@ -1063,25 +1063,25 @@ test("deep project setup: project-level units verify their real artifacts", () =
       new URL("../schemas/__fixtures__/valid-project.md", import.meta.url),
       "utf-8",
     );
-    writeFileSync(join(base, ".gsd", "PROJECT.md"), validProject);
+    writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), validProject);
     assert.equal(verifyExpectedArtifact("discuss-project", "PROJECT", base), true);
-    writeFileSync(join(base, ".gsd", "PROJECT.md"), "# Project\n");
+    writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), "# Project\n");
     assert.equal(verifyExpectedArtifact("discuss-project", "PROJECT", base), false);
 
     const validRequirements = readFileSync(
       new URL("../schemas/__fixtures__/valid-requirements.md", import.meta.url),
       "utf-8",
     );
-    writeFileSync(join(base, ".gsd", "REQUIREMENTS.md"), validRequirements);
+    writeFileSync(join(base, ".otto/workflow", "REQUIREMENTS.md"), validRequirements);
     assert.equal(verifyExpectedArtifact("discuss-requirements", "REQUIREMENTS", base), true);
 
-    mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "runtime", "research-decision.json"), '{"decision":"maybe"}\n');
+    mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), '{"decision":"maybe"}\n');
     assert.equal(verifyExpectedArtifact("research-decision", "RESEARCH-DECISION", base), false);
-    writeFileSync(join(base, ".gsd", "runtime", "research-decision.json"), '{"decision":"skip"}\n');
+    writeFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), '{"decision":"skip"}\n');
     assert.equal(verifyExpectedArtifact("research-decision", "RESEARCH-DECISION", base), true);
 
-    const researchDir = join(base, ".gsd", "research");
+    const researchDir = join(base, ".otto/workflow", "research");
     mkdirSync(researchDir, { recursive: true });
     writeFileSync(join(researchDir, "STACK.md"), "# Stack\n");
     writeFileSync(join(researchDir, "FEATURES.md"), "# Features\n");
@@ -1106,9 +1106,9 @@ test("deep project setup: research-project blocker placeholder is a file, not th
   const base = makeBase();
   try {
     const expectedPath = resolveExpectedArtifactPath("research-project", "PROJECT-RESEARCH", base);
-    assert.equal(expectedPath, join(realpathSync(base), ".gsd", "research", "PROJECT-RESEARCH-BLOCKER.md"));
+    assert.equal(expectedPath, join(realpathSync(base), ".otto/workflow", "research", "PROJECT-RESEARCH-BLOCKER.md"));
 
-    mkdirSync(join(base, ".gsd", "research"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "research"), { recursive: true });
     const diagnosis = writeBlockerPlaceholder(
       "research-project",
       "PROJECT-RESEARCH",
@@ -1117,9 +1117,9 @@ test("deep project setup: research-project blocker placeholder is a file, not th
     );
 
     assert.match(diagnosis ?? "", /research/i);
-    assert.equal(existsSync(join(base, ".gsd", "research", "PROJECT-RESEARCH-BLOCKER.md")), true);
+    assert.equal(existsSync(join(base, ".otto/workflow", "research", "PROJECT-RESEARCH-BLOCKER.md")), true);
     assert.match(
-      readFileSync(join(base, ".gsd", "research", "PROJECT-RESEARCH-BLOCKER.md"), "utf-8"),
+      readFileSync(join(base, ".otto/workflow", "research", "PROJECT-RESEARCH-BLOCKER.md"), "utf-8"),
       /fail-closed/,
     );
     assert.equal(
@@ -1140,10 +1140,10 @@ test("deep project setup: research-project partial output writes dimension block
     s.basePath = base;
     s.currentUnit = { type: "research-project", id: "RESEARCH-PROJECT", startedAt: Date.now() };
 
-    mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "runtime", "research-project-inflight"), "{}\n");
-    mkdirSync(join(base, ".gsd", "research"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "research", "STACK.md"), "# Stack\n");
+    mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "runtime", "research-project-inflight"), "{}\n");
+    mkdirSync(join(base, ".otto/workflow", "research"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "research", "STACK.md"), "# Stack\n");
 
     const notifications: string[] = [];
     const result = await postUnitPreVerification(
@@ -1161,9 +1161,9 @@ test("deep project setup: research-project partial output writes dimension block
     );
 
     assert.equal(result, "continue");
-    assert.equal(existsSync(join(base, ".gsd", "runtime", "research-project-inflight")), false);
+    assert.equal(existsSync(join(base, ".otto/workflow", "runtime", "research-project-inflight")), false);
     for (const name of ["FEATURES", "ARCHITECTURE", "PITFALLS"]) {
-      assert.equal(existsSync(join(base, ".gsd", "research", `${name}-BLOCKER.md`)), true);
+      assert.equal(existsSync(join(base, ".otto/workflow", "research", `${name}-BLOCKER.md`)), true);
     }
     assert.equal(verifyExpectedArtifact("research-project", "RESEARCH-PROJECT", base), true);
     assert.equal(s.pendingVerificationRetry, null);
@@ -1185,8 +1185,8 @@ test("deep project setup: research-project empty output writes global blocker wi
     s.basePath = base;
     s.currentUnit = { type: "research-project", id: "RESEARCH-PROJECT", startedAt: Date.now() };
 
-    mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "runtime", "research-project-inflight"), "{}\n");
+    mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "runtime", "research-project-inflight"), "{}\n");
 
     const notifications: string[] = [];
     const result = await postUnitPreVerification(
@@ -1204,8 +1204,8 @@ test("deep project setup: research-project empty output writes global blocker wi
     );
 
     assert.equal(result, "continue");
-    assert.equal(existsSync(join(base, ".gsd", "runtime", "research-project-inflight")), false);
-    assert.equal(existsSync(join(base, ".gsd", "research", "PROJECT-RESEARCH-BLOCKER.md")), true);
+    assert.equal(existsSync(join(base, ".otto/workflow", "runtime", "research-project-inflight")), false);
+    assert.equal(existsSync(join(base, ".otto/workflow", "research", "PROJECT-RESEARCH-BLOCKER.md")), true);
     assert.equal(verifyExpectedArtifact("research-project", "RESEARCH-PROJECT", base), false);
     assert.equal(s.pendingVerificationRetry, null);
     assert.equal(s.verificationRetryCount.size, 0);
@@ -1221,14 +1221,14 @@ test("deep project setup: research-project empty output writes global blocker wi
 test("deep project setup: project research timeout finalizer removes stale marker", () => {
   const base = makeBase();
   try {
-    mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "runtime", "research-project-inflight"), "{}\n");
+    mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "runtime", "research-project-inflight"), "{}\n");
 
     const outcome = finalizeProjectResearchTimeout(base, "test hard timeout");
 
     assert.equal(outcome.kind, "global-blocker");
-    assert.equal(existsSync(join(base, ".gsd", "runtime", "research-project-inflight")), false);
-    assert.equal(existsSync(join(base, ".gsd", "research", "PROJECT-RESEARCH-BLOCKER.md")), true);
+    assert.equal(existsSync(join(base, ".otto/workflow", "runtime", "research-project-inflight")), false);
+    assert.equal(existsSync(join(base, ".otto/workflow", "research", "PROJECT-RESEARCH-BLOCKER.md")), true);
   } finally {
     rmSync(base, { recursive: true, force: true });
   }
@@ -1275,11 +1275,11 @@ test("deep project setup: research-project supervision timeout is capped narrowl
 
 test("deep project setup: empty legacy pseudo-milestone dirs do not block first real milestone", async () => {
   const base = makeBase();
-  const previousWorkflowPath = process.env.GSD_WORKFLOW_PATH;
+  const previousWorkflowPath = process.env.OTTO_WORKFLOW_PATH;
   const workflowPath = join(base, "WORKFLOW.md");
   try {
     writeFileSync(workflowPath, "# Test Workflow\n");
-    process.env.GSD_WORKFLOW_PATH = workflowPath;
+    process.env.OTTO_WORKFLOW_PATH = workflowPath;
 
     const validProject = readFileSync(
       new URL("../schemas/__fixtures__/valid-project.md", import.meta.url),
@@ -1290,28 +1290,28 @@ test("deep project setup: empty legacy pseudo-milestone dirs do not block first 
       "utf-8",
     );
     writeFileSync(
-      join(base, ".gsd", "PREFERENCES.md"),
+      join(base, ".otto/workflow", "PREFERENCES.md"),
       "---\nplanning_depth: deep\nworkflow_prefs_captured: true\n---\n",
     );
-    writeFileSync(join(base, ".gsd", "PROJECT.md"), validProject);
-    writeFileSync(join(base, ".gsd", "REQUIREMENTS.md"), validRequirements);
-    mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
-    writeFileSync(join(base, ".gsd", "runtime", "research-decision.json"), '{"decision":"skip"}\n');
+    writeFileSync(join(base, ".otto/workflow", "PROJECT.md"), validProject);
+    writeFileSync(join(base, ".otto/workflow", "REQUIREMENTS.md"), validRequirements);
+    mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
+    writeFileSync(join(base, ".otto/workflow", "runtime", "research-decision.json"), '{"decision":"skip"}\n');
 
     for (const legacy of ["PROJECT", "RESEARCH-PROJECT", "WORKFLOW-PREFS"]) {
-      mkdirSync(join(base, ".gsd", "milestones", legacy), { recursive: true });
+      mkdirSync(join(base, ".otto/workflow", "milestones", legacy), { recursive: true });
     }
 
     const messages: unknown[] = [];
     await showSmartEntry(makeCtx(`legacy-${randomUUID()}`) as any, makePi(messages) as any, base);
 
     assert.equal(messages.length, 1, "first real milestone discussion should dispatch");
-    assert.equal(existsSync(join(base, ".gsd", "milestones", "PROJECT")), false);
-    assert.equal(existsSync(join(base, ".gsd", "milestones", "RESEARCH-PROJECT")), false);
-    assert.equal(existsSync(join(base, ".gsd", "milestones", "WORKFLOW-PREFS")), false);
+    assert.equal(existsSync(join(base, ".otto/workflow", "milestones", "PROJECT")), false);
+    assert.equal(existsSync(join(base, ".otto/workflow", "milestones", "RESEARCH-PROJECT")), false);
+    assert.equal(existsSync(join(base, ".otto/workflow", "milestones", "WORKFLOW-PREFS")), false);
   } finally {
-    if (previousWorkflowPath === undefined) delete process.env.GSD_WORKFLOW_PATH;
-    else process.env.GSD_WORKFLOW_PATH = previousWorkflowPath;
+    if (previousWorkflowPath === undefined) delete process.env.OTTO_WORKFLOW_PATH;
+    else process.env.OTTO_WORKFLOW_PATH = previousWorkflowPath;
     clearPendingAutoStart(base);
     try {
       const { closeDatabase } = await import("../db.ts");
@@ -1663,7 +1663,7 @@ test("deep project setup: approval wait wins over deterministic write-gate place
     s.active = true;
     s.basePath = base;
     s.currentUnit = { type: "discuss-requirements", id: "REQUIREMENTS", startedAt: Date.now() };
-    s.lastToolInvocationError = "gsd_summary_save: Error saving artifact: root_artifact_write_blocked";
+    s.lastToolInvocationError = "otto_summary_save: Error saving artifact: root_artifact_write_blocked";
     s.verificationRetryCount.set("discuss-requirements:REQUIREMENTS", 2);
 
     let pauseCalled = false;
@@ -1694,7 +1694,7 @@ test("deep project setup: approval wait wins over deterministic write-gate place
     assert.equal(result, "dispatched");
     assert.equal(pauseCalled, true);
     assert.equal(s.lastToolInvocationError, null);
-    assert.equal(existsSync(join(base, ".gsd", "REQUIREMENTS.md")), false);
+    assert.equal(existsSync(join(base, ".otto/workflow", "REQUIREMENTS.md")), false);
     assert.ok(
       notifications.some((message) => message.includes("waiting for your input")),
       "should pause on the user wait instead of writing a blocker placeholder",

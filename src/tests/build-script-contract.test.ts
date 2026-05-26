@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression coverage for workspace build ordering around shared contracts.
 
 import assert from "node:assert/strict";
@@ -33,18 +33,17 @@ function assertContractsBefore(scriptName: string, laterCommand: string): void {
 	assert.ok(script, `${scriptName} script must exist`);
 	const contractsIndex = script.indexOf("npm run build:contracts");
 	const laterIndex = script.indexOf(laterCommand);
-	assert.ok(contractsIndex >= 0, `${scriptName} must build @loop24-build/contracts`);
+	assert.ok(contractsIndex >= 0, `${scriptName} must build @otto-build/contracts`);
 	assert.ok(laterIndex >= 0, `${scriptName} must include ${laterCommand}`);
 	assert.ok(
 		contractsIndex < laterIndex,
-		`${scriptName} must build @loop24-build/contracts before ${laterCommand}`,
+		`${scriptName} must build @otto-build/contracts before ${laterCommand}`,
 	);
 }
 
 test("pi build scripts compile contracts before pi-coding-agent", () => {
 	assertContractsBefore("build:pi", "npm run build:pi-coding-agent");
-	assertContractsBefore("build:pi-coding-agent", "npm run build -w @loop24/pi-coding-agent");
-	assertContractsBefore("gsd:web", "npm run copy-resources");
+	assertContractsBefore("build:pi-coding-agent", "npm run build -w @otto/pi-coding-agent");
 });
 
 test("contracts build emits dist even when incremental metadata is stale", () => {

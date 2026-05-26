@@ -49,10 +49,10 @@ Research what this slice needs. Narrate key findings and surprises: what exists,
 4. Use `resolve_library` / `get_library_docs` for unfamiliar libraries; skip libraries already used locally.
 5. **Web search budget:** Max ~15 per session. Prefer library docs tools. Do NOT repeat similar queries; rephrase once or move on. Target 3-5 searches for typical research.
 6. Use the inlined **Research** template only. Include sections with real content. Do NOT read any template file from disk; there is no `templates/SLICE-RESEARCH.md`.
-7. Call `gsd_summary_save` with `milestone_id: {{milestoneId}}`, `slice_id: {{sliceId}}`, `artifact_type: "RESEARCH"`, and full research markdown as `content`. The tool writes DB and disk.
+7. Call `otto_summary_save` with `milestone_id: {{milestoneId}}`, `slice_id: {{sliceId}}`, `artifact_type: "RESEARCH"`, and full research markdown as `content`. The tool writes DB and disk.
 
 The slice directory already exists at `{{slicePath}}/`. Do NOT mkdir.
 
-**You MUST call `gsd_summary_save` with the research content before finishing.**
+**You MUST call `otto_summary_save` with the research content before finishing.**
 
 When done, say: "Slice {{sliceId}} researched."

@@ -14,9 +14,9 @@ test.afterEach(() => {
 test("#5389: bootstrap reconciles PROJECT.md milestones that are missing from DB", () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-project-reconcile-"));
   try {
-    mkdirSync(join(base, ".gsd"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow"), { recursive: true });
     writeFileSync(
-      join(base, ".gsd", "PROJECT.md"),
+      join(base, ".otto/workflow", "PROJECT.md"),
       `# Project
 
 ## Milestone Sequence
@@ -27,7 +27,7 @@ test("#5389: bootstrap reconciles PROJECT.md milestones that are missing from DB
       "utf-8",
     );
 
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Existing Milestone", status: "complete" });
 
     const inserted = reconcileProjectMilestonesFromDisk(base);

@@ -23,8 +23,8 @@ import { spawnSync } from "node:child_process";
 // ─── Worker script source ────────────────────────────────────────────────────
 //
 // Each child process runs this script with two env vars:
-//   GSD_TEST_METRICS_PATH — absolute path to metrics.json
-//   GSD_TEST_MILESTONE_ID — milestone ID to record (e.g. "M001" or "M002")
+//   OTTO_TEST_METRICS_PATH — absolute path to metrics.json
+//   OTTO_TEST_MILESTONE_ID — milestone ID to record (e.g. "M001" or "M002")
 //
 // The script uses the same lock-acquire → read → merge → atomic-write
 // pattern implemented in metrics.ts saveLedger(), but using only built-in
@@ -35,8 +35,8 @@ const { openSync, closeSync, unlinkSync, existsSync, readFileSync, writeFileSync
 const { dirname } = require('node:path');
 const { randomBytes } = require('node:crypto');
 
-const metricsPath = process.env.GSD_TEST_METRICS_PATH;
-const milestoneId = process.env.GSD_TEST_MILESTONE_ID;
+const metricsPath = process.env.OTTO_TEST_METRICS_PATH;
+const milestoneId = process.env.OTTO_TEST_MILESTONE_ID;
 const lockPath = metricsPath + '.lock';
 
 // ── Lock helpers ──────────────────────────────────────────────────────────
@@ -123,8 +123,8 @@ function spawnWorker(metricsPath: string, milestoneId: string): void {
   const result = spawnSync(process.execPath, ["-e", WORKER_SCRIPT], {
     env: {
       ...process.env,
-      GSD_TEST_METRICS_PATH: metricsPath,
-      GSD_TEST_MILESTONE_ID: milestoneId,
+      OTTO_TEST_METRICS_PATH: metricsPath,
+      OTTO_TEST_MILESTONE_ID: milestoneId,
     },
     encoding: "utf-8",
     timeout: 10_000,
@@ -146,7 +146,7 @@ describe("metrics atomic merge — parallel workers", () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(join(tmpdir(), "gsd-metrics-atomic-"));
-    workflowDir = join(tmpDir, ".gsd");
+    workflowDir = join(tmpDir, ".otto/workflow");
     mkdirSync(workflowDir, { recursive: true });
     metricsPath = join(workflowDir, "metrics.json");
   });

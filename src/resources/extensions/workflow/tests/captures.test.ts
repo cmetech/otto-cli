@@ -1,5 +1,5 @@
 /**
- * Unit tests for GSD Captures — file I/O, parsing, and worktree path resolution.
+ * Unit tests for OTTO Captures — file I/O, parsing, and worktree path resolution.
  *
  * Exercises the boundary contract that S02 (auto-mode dispatch) depends on:
  * - appendCapture creates/appends entries to CAPTURES.md
@@ -46,10 +46,10 @@ test("captures: appendCapture creates CAPTURES.md on first call", (t) => {
   const id = appendCapture(tmp, "first thought");
   assert.ok(id.startsWith("CAP-"), "ID should start with CAP-");
   assert.ok(
-    existsSync(join(tmp, ".gsd", "CAPTURES.md")),
+    existsSync(join(tmp, ".otto/workflow", "CAPTURES.md")),
     "CAPTURES.md should exist",
   );
-  const content = readFileSync(join(tmp, ".gsd", "CAPTURES.md"), "utf-8");
+  const content = readFileSync(join(tmp, ".otto/workflow", "CAPTURES.md"), "utf-8");
   assert.ok(content.includes("# Captures"), "should have header");
   assert.ok(content.includes(`### ${id}`), "should have entry heading");
   assert.ok(
@@ -70,7 +70,7 @@ test("captures: appendCapture appends to existing file", (t) => {
   const id2 = appendCapture(tmp, "thought two");
   assert.notStrictEqual(id1, id2, "IDs should be unique");
 
-  const content = readFileSync(join(tmp, ".gsd", "CAPTURES.md"), "utf-8");
+  const content = readFileSync(join(tmp, ".otto/workflow", "CAPTURES.md"), "utf-8");
   assert.ok(content.includes(`### ${id1}`), "should have first entry");
   assert.ok(content.includes(`### ${id2}`), "should have second entry");
   assert.ok(
@@ -193,20 +193,20 @@ test("captures: markCaptureResolved updates entry in place", (t) => {
 
 // ─── resolveCapturesPath ──────────────────────────────────────────────────────
 
-test("captures: resolveCapturesPath returns .gsd/CAPTURES.md for normal path", () => {
+test("captures: resolveCapturesPath returns .otto/workflow/CAPTURES.md for normal path", () => {
   const base = join(tmpdir(), "cap-test-project");
   const result = resolveCapturesPath(base);
-  assert.ok(result.endsWith(join(".gsd", "CAPTURES.md")));
+  assert.ok(result.endsWith(join(".otto/workflow", "CAPTURES.md")));
   assert.ok(result.startsWith(base));
 });
 
 test("captures: resolveCapturesPath resolves worktree path to project root", () => {
   const base = join(tmpdir(), "cap-test-project");
-  const worktreePath = join(base, ".gsd", "worktrees", "M004");
+  const worktreePath = join(base, ".otto/workflow", "worktrees", "M004");
   const result = resolveCapturesPath(worktreePath);
   assert.ok(
-    result.endsWith(join(".gsd", "CAPTURES.md")),
-    `should end with .gsd/CAPTURES.md, got: ${result}`,
+    result.endsWith(join(".otto/workflow", "CAPTURES.md")),
+    `should end with .otto/workflow/CAPTURES.md, got: ${result}`,
   );
   // Should resolve to project root, not worktree root
   assert.ok(

@@ -40,10 +40,8 @@ export function resolveExtensionDirFromCandidates(
   const moduleUsable = hasRequiredExtensionAssets(moduleDir, exists);
   const agentUsable = hasRequiredExtensionAssets(agentWorkflowDir, exists);
 
-  // Prefer the user-local extension tree when both are valid. This avoids
-  // leaking npm/global-install paths into prompts on Windows.
-  if (agentUsable) return agentWorkflowDir;
   if (moduleUsable) return moduleDir;
+  if (agentUsable) return agentWorkflowDir;
 
   // Degraded fallback: if required template is missing in both locations,
   // keep previous behavior and prefer whichever still has prompts/.
@@ -184,7 +182,7 @@ export function loadPrompt(name: string, vars: Record<string, string> = {}): str
     planTemplatePath: join(getTemplatesDir(), "plan.md"),
     taskPlanTemplatePath: join(getTemplatesDir(), "task-plan.md"),
     taskSummaryTemplatePath: join(getTemplatesDir(), "task-summary.md"),
-    skillActivation: "If a `GSD Skill Preferences` block is present in system context, use it and the `<available_skills>` catalog in your system prompt to decide which skills to load and follow for this unit, without relaxing required verification or artifact rules.",
+    skillActivation: "If a `OTTO Skill Preferences` block is present in system context, use it and the `<available_skills>` catalog in your system prompt to decide which skills to load and follow for this unit, without relaxing required verification or artifact rules.",
     ...vars,
   };
 

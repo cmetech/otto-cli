@@ -23,7 +23,7 @@ import {
 
 function makeProjectDir(label = "gsd-vsp-"): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), label)));
-  mkdirSync(join(dir, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow", "milestones", "M001"), { recursive: true });
   return dir;
 }
 

@@ -1,4 +1,4 @@
-# loop24 — Logo Prompts (Text-to-Image)
+# otto — Logo Prompts (Text-to-Image)
 
 Prompts tuned for Midjourney / DALL·E / Imagen / Stable Diffusion / Ideogram. Each candidate has:
 
@@ -12,37 +12,37 @@ Prompts tuned for Midjourney / DALL·E / Imagen / Stable Diffusion / Ideogram. E
 
 > **Tip:** Generate the mark *without text* first, then composite the wordmark in Figma. Text-to-image tools are unreliable with typography. The prompts below explicitly request *symbol only* unless noted.
 
-> **Primary direction:** **OTTER** (see `NAMES.md`). Three concept variants below. The five acronym candidates that follow (OTTO, SAGE, IRIS, ECHO, ADA) are kept as the fallback bench.
+> **Primary direction:** **OTTO** (see `NAMES.md`). Three concept variants below. The five acronym candidates that follow (OTTO, SAGE, IRIS, ECHO, ADA) are kept as the fallback bench.
 
 ---
 
-# Primary: OTTER
+# Primary: OTTO
 
 **Shared palette across all three concepts:**
-- Otter brown `#6B4226` (primary fur)
+- OTTO brown `#6B4226` (primary fur)
 - Warm umber `#8E5A33` (highlight fur)
 - Cream `#F5EBD8` (background)
 - Slate teal `#3E5C6B` (water / accent)
 - Rust orange `#C8632D` (tool / spark accent — used sparingly)
 
-**Shared style:** Geometric minimal vector mascot, single-weight stroke or clean filled shapes, no rendered texture. Think modern fintech mascot or Apple-quality icon — friendly and clever, never cartoony or 90s clip-art. The otter should read as a *competent tool-using worker*, not a children's book character.
+**Shared style:** Geometric minimal vector mascot, single-weight stroke or clean filled shapes, no rendered texture. Think modern fintech mascot or Apple-quality icon — friendly and clever, never cartoony or 90s clip-art. The otto should read as a *competent tool-using worker*, not a children's book character.
 
 ---
 
-## OTTER — Concept A: Tool-Carrier
+## OTTO — Concept A: Tool-Carrier
 
-**Concept:** Side-profile otter, head and shoulders only, holding a small geometric "rock" in its paws — but the rock is rendered as a terminal-prompt glyph (`>_`) or a stylized hexagon. Says *tool-using worker* in one glance. Strongest single-product-pitch mark of the three.
+**Concept:** Side-profile otto, head and shoulders only, holding a small geometric "rock" in its paws — but the rock is rendered as a terminal-prompt glyph (`>_`) or a stylized hexagon. Says *tool-using worker* in one glance. Strongest single-product-pitch mark of the three.
 
 ### Primary prompt
 ```
 A minimalist vector logo mark, symbol only, no text. A side-profile sea
-otter shown from chest up, drawn in clean geometric flat shapes with no
-texture or rendered fur. The otter is warm otter brown (#6B4226) with a
+otto shown from chest up, drawn in clean geometric flat shapes with no
+texture or rendered fur. The otto is warm otto brown (#6B4226) with a
 lighter umber muzzle and chest (#8E5A33), a single circular black eye, a
-small triangular nose, and rounded ears. The otter holds in both front
+small triangular nose, and rounded ears. The otto holds in both front
 paws a small dark slate teal (#3E5C6B) rectangular tile with a glowing
 rust-orange (#C8632D) terminal-prompt glyph reading ">_" centered on it,
-as if the otter is presenting a code terminal. Cream background
+as if the otto is presenting a code terminal. Cream background
 (#F5EBD8). The mark suggests a clever tool-using worker, a coding
 assistant. Modern geometric mascot mark in the style of high-end fintech
 or developer-tool brands, flat design, crisp vector edges, balanced
@@ -51,7 +51,7 @@ negative space, no gradients, no shadows, no painterly rendering.
 
 ### Short prompt
 ```
-Minimalist vector logo, geometric side-profile sea otter from chest up,
+Minimalist vector logo, geometric side-profile sea otto from chest up,
 warm brown with umber muzzle, holding a slate-teal tile with a glowing
 rust-orange ">_" terminal prompt glyph in its paws, cream background,
 flat modern mascot style, symbol only no text --ar 1:1 --style raw --v 6
@@ -60,9 +60,9 @@ flat modern mascot style, symbol only no text --ar 1:1 --style raw --v 6
 ### Negative prompt (SD/Flux)
 ```
 text outside the terminal glyph, additional letters, words, watermark,
-photorealistic otter, rendered fur, whiskers in detail, full body, tail,
+photorealistic otto, rendered fur, whiskers in detail, full body, tail,
 3D render, painterly, watercolor, cartoonish, 90s clip art, drop shadow,
-gradient on the otter body, multiple otters
+gradient on the otto body, multiple ottos
 ```
 
 ### Output target
@@ -72,20 +72,20 @@ gradient on the otter body, multiple otters
 
 ---
 
-## OTTER — Concept B: Raft Loop (sibling to OSCAR)
+## OTTO — Concept B: Raft Loop (sibling to OSCAR)
 
-**Concept:** Two otters floating on their backs, paws joined at the center, their bodies and tails curving outward to form a horizontal *figure-eight / infinity loop* silhouette. Direct visual tie to *loop24*. If OSCAR has a single-mascot mark, this gives OTTER a "we work together" mark that reads as the natural sibling.
+**Concept:** Two ottos floating on their backs, paws joined at the center, their bodies and tails curving outward to form a horizontal *figure-eight / infinity loop* silhouette. Direct visual tie to *otto*. If OSCAR has a single-mascot mark, this gives OTTO a "we work together" mark that reads as the natural sibling.
 
 ### Primary prompt
 ```
-A minimalist vector logo mark, symbol only, no text. Two sea otters
+A minimalist vector logo mark, symbol only, no text. Two sea ottos
 floating on their backs, viewed from directly above, their bodies and
 tails curving outward and meeting at their joined front paws in the
 center to form a perfect horizontal figure-eight infinity loop
-silhouette. Both otters are warm otter brown (#6B4226) with lighter
+silhouette. Both ottos are warm otto brown (#6B4226) with lighter
 umber bellies (#8E5A33) facing the viewer. Small slate teal (#3E5C6B)
-curved lines beneath the otters suggest water ripples. Cream background
-(#F5EBD8). The mark suggests connection, a loop, otters rafting
+curved lines beneath the ottos suggest water ripples. Cream background
+(#F5EBD8). The mark suggests connection, a loop, ottos rafting
 together, "the loop holds." Modern geometric mascot mark, flat design,
 crisp vector edges, perfectly symmetrical composition, no gradients, no
 shadows, no rendered texture. Negative space within the figure-eight
@@ -94,7 +94,7 @@ should be clean and balanced.
 
 ### Short prompt
 ```
-Minimalist vector logo, two sea otters floating on backs seen from above,
+Minimalist vector logo, two sea ottos floating on backs seen from above,
 front paws joined in the center, bodies curving outward to form a
 horizontal infinity / figure-eight silhouette, warm brown with umber
 bellies, slate teal water ripples, cream background, flat geometric
@@ -103,9 +103,9 @@ symmetrical mascot style, symbol only no text --ar 1:1 --style raw --v 6
 
 ### Negative prompt (SD/Flux)
 ```
-text, letters, words, watermark, photorealistic otters, rendered fur,
+text, letters, words, watermark, photorealistic ottos, rendered fur,
 detailed faces, 3D render, painterly, watercolor, cartoonish,
-asymmetrical composition, more than two otters, side profile, drop
+asymmetrical composition, more than two ottos, side profile, drop
 shadow, complex water rendering, splashes
 ```
 
@@ -116,17 +116,17 @@ shadow, complex water rendering, splashes
 
 ---
 
-## OTTER — Concept C: Anchored Locally (kelp loop)
+## OTTO — Concept C: Anchored Locally (kelp loop)
 
-**Concept:** A single otter wrapped in one continuous strand of kelp that loops back on itself around the otter — anchored in place. Maps to "runs locally on your laptop, stays in the loop, doesn't drift." Most subtle of the three; best for an app icon that still reads at 32×32.
+**Concept:** A single otto wrapped in one continuous strand of kelp that loops back on itself around the otto — anchored in place. Maps to "runs locally on your laptop, stays in the loop, doesn't drift." Most subtle of the three; best for an app icon that still reads at 32×32.
 
 ### Primary prompt
 ```
-A minimalist vector logo mark, symbol only, no text. A single sea otter
+A minimalist vector logo mark, symbol only, no text. A single sea otto
 shown floating on its back, head and chest only, framed inside a
 continuous oval loop made of a single stylized kelp strand that wraps
-around the otter once and ties back to itself at the bottom. The otter
-is warm otter brown (#6B4226) with a lighter umber chest (#8E5A33), a
+around the otto once and ties back to itself at the bottom. The otto
+is warm otto brown (#6B4226) with a lighter umber chest (#8E5A33), a
 small circular black eye, and rounded paws crossed over its chest. The
 kelp loop is slate teal (#3E5C6B), drawn as a single smooth stroke with
 two or three small leaf-like fronds branching off. Cream background
@@ -138,18 +138,18 @@ space inside the kelp loop.
 
 ### Short prompt
 ```
-Minimalist vector logo, single sea otter floating on back with paws
+Minimalist vector logo, single sea otto floating on back with paws
 crossed, framed inside a continuous oval kelp-strand loop that ties
-back to itself, warm brown otter, slate teal kelp with small fronds,
+back to itself, warm brown otto, slate teal kelp with small fronds,
 cream background, flat geometric mascot style, symbol only no text
 --ar 1:1 --style raw --v 6
 ```
 
 ### Negative prompt (SD/Flux)
 ```
-text, letters, words, watermark, photorealistic otter, rendered fur,
-3D render, painterly, watercolor, cartoonish, multiple otters, busy
-kelp forest, dense foliage, drop shadow, full body of otter, tail
+text, letters, words, watermark, photorealistic otto, rendered fur,
+3D render, painterly, watercolor, cartoonish, multiple ottos, busy
+kelp forest, dense foliage, drop shadow, full body of otto, tail
 prominently visible, broken kelp strand
 ```
 
@@ -162,7 +162,7 @@ prominently visible, broken kelp strand
 
 # Fallback bench
 
-The five acronym candidates below remain available if OTTER hits a trademark or naming issue. Kept verbatim from the original shortlist.
+The five acronym candidates below remain available if OTTO hits a trademark or naming issue. Kept verbatim from the original shortlist.
 
 ---
 

@@ -31,7 +31,7 @@ import type { WindowEntry } from "../auto/types.ts";
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-detect-stuck-retry-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -63,7 +63,7 @@ test("rule 2b trips with no DB context (legacy behavior preserved)", () => {
 test("rule 2b SUPPRESSED while retry budget remains and next_run_at is in the future", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "T", status: "active" });
   const w = registerAutoWorker({ projectRootRealpath: base });
   const lease = claimMilestoneLease(w, "M001");
@@ -100,7 +100,7 @@ test("rule 2b SUPPRESSED while retry budget remains and next_run_at is in the fu
 test("rule 2b RE-ENGAGES once attempt_n reaches max_attempts", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "T", status: "active" });
   const w = registerAutoWorker({ projectRootRealpath: base });
   const lease = claimMilestoneLease(w, "M001");
@@ -138,7 +138,7 @@ test("rule 2b RE-ENGAGES once attempt_n reaches max_attempts", (t) => {
 test("rule 2b RE-ENGAGES once next_run_at is in the past", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "T", status: "active" });
   const w = registerAutoWorker({ projectRootRealpath: base });
   const lease = claimMilestoneLease(w, "M001");

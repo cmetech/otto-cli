@@ -1,16 +1,16 @@
 /**
- * /loop24 logs — Browse activity logs, debug logs, and metrics.
+ * /otto logs — Browse activity logs, debug logs, and metrics.
  *
  * Subcommands:
- *   /loop24 logs              — List recent activity + debug logs
- *   /loop24 logs <N>          — Show summary of activity log #N
- *   /loop24 logs debug        — List debug log files
- *   /loop24 logs debug <N>    — Show debug log summary #N
- *   /loop24 logs tail [N]     — Show last N activity log entries (default 5)
- *   /loop24 logs clear        — Remove old activity and debug logs
+ *   /otto logs              — List recent activity + debug logs
+ *   /otto logs <N>          — Show summary of activity log #N
+ *   /otto logs debug        — List debug log files
+ *   /otto logs debug <N>    — Show debug log summary #N
+ *   /otto logs tail [N]     — Show last N activity log entries (default 5)
+ *   /otto logs clear        — Remove old activity and debug logs
  */
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { CONFIG_DIR_NAME, slashCommand } from "./strings.js";
 import { existsSync, readdirSync, readFileSync, statSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
@@ -249,34 +249,34 @@ export async function handleLogs(args: string, ctx: ExtensionCommandContext): Pr
   const parts = args.trim().split(/\s+/).filter(Boolean);
   const subCmd = parts[0] ?? "";
 
-  // /loop24 logs clear
+  // /otto logs clear
   if (subCmd === "clear") {
     await handleLogsClear(basePath, ctx);
     return;
   }
 
-  // /loop24 logs debug [N]
+  // /otto logs debug [N]
   if (subCmd === "debug") {
     const idx = parts[1] ? parseInt(parts[1], 10) : undefined;
     await handleLogsDebug(basePath, ctx, idx);
     return;
   }
 
-  // /loop24 logs tail [N]
+  // /otto logs tail [N]
   if (subCmd === "tail") {
     const count = parts[1] ? parseInt(parts[1], 10) : 5;
     await handleLogsTail(basePath, ctx, count);
     return;
   }
 
-  // /loop24 logs <N> — show specific activity log
+  // /otto logs <N> — show specific activity log
   if (subCmd && /^\d+$/.test(subCmd)) {
     const seq = parseInt(subCmd, 10);
     await handleLogsShow(basePath, ctx, seq);
     return;
   }
 
-  // /loop24 logs — list overview
+  // /otto logs — list overview
   await handleLogsList(basePath, ctx);
 }
 
@@ -288,7 +288,7 @@ async function handleLogsList(basePath: string, ctx: ExtensionCommandContext): P
 
   if (activities.length === 0 && debugLogs.length === 0) {
     ctx.ui.notify(
-      "No logs found.\n\nActivity logs are created during auto-mode.\nDebug logs require GSD_DEBUG=1.",
+      "No logs found.\n\nActivity logs are created during auto-mode.\nDebug logs require OTTO_DEBUG=1.",
       "info",
     );
     return;
@@ -349,7 +349,7 @@ async function handleLogsList(basePath: string, ctx: ExtensionCommandContext): P
   }
 
   lines.push("");
-  lines.push(`Tip: Enable debug logging with GSD_DEBUG=1 before ${slashCommand("auto")}`);
+  lines.push(`Tip: Enable debug logging with OTTO_DEBUG=1 before ${slashCommand("auto")}`);
 
   ctx.ui.notify(lines.join("\n"), "info");
 }
@@ -418,7 +418,7 @@ async function handleLogsDebug(basePath: string, ctx: ExtensionCommandContext, i
 
   if (debugLogs.length === 0) {
     ctx.ui.notify(
-      "No debug logs found.\n\nEnable debug logging: GSD_DEBUG=1 gsd auto",
+      "No debug logs found.\n\nEnable debug logging: OTTO_DEBUG=1 gsd auto",
       "info",
     );
     return;

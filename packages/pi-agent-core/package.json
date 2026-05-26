@@ -1,11 +1,11 @@
 {
-  "name": "@loop24/pi-agent-core",
+  "name": "@otto/pi-agent-core",
   "version": "1.0.1",
   "description": "General-purpose agent core (vendored from pi-mono)",
   "type": "module",
   "gsd": {
     "linkable": true,
-    "scope": "@loop24",
+    "scope": "@otto",
     "name": "pi-agent-core"
   },
   "main": "./dist/index.js",

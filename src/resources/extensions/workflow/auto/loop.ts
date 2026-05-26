@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Main auto-mode execution loop.
 /**
  * auto/loop.ts — Main auto-mode execution loop.
@@ -9,7 +9,7 @@
  * Imports from: auto/types, auto/resolve, auto/phases
  */
 
-import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@otto/pi-coding-agent";
 
 import { randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -576,12 +576,12 @@ export async function autoLoop(
       // GRAPH.yaml. Shares runGuards and runUnitPhase with the dev path.
       // After unit execution, verifies then reconciles via the engine layer.
       //
-      // GSD_ENGINE_BYPASS=1 skips the engine layer entirely — falls through
+      // OTTO_ENGINE_BYPASS=1 skips the engine layer entirely — falls through
       // to the dev path below.
       if (shouldUseCustomEnginePath({
         activeEngineId: s.activeEngineId,
         hasSidecarItem: Boolean(sidecarItem),
-        engineBypass: (process.env.LOOP24_ENGINE_BYPASS ?? process.env.GSD_ENGINE_BYPASS) === "1",
+        engineBypass: (process.env.OTTO_ENGINE_BYPASS ?? process.env.OTTO_ENGINE_BYPASS) === "1",
       })) {
         debugLog("autoLoop", { phase: "custom-engine-derive", iteration, engineId: s.activeEngineId });
 
@@ -1335,7 +1335,7 @@ export async function autoLoop(
           error: msg,
         });
         ctx.ui.notify(
-          `${infraDecision.notifyMessage}${crashNotePath ? ` Crash note: ${crashNotePath}` : ""} Run /gsd auto to resume from the last checkpoint.`,
+          `${infraDecision.notifyMessage}${crashNotePath ? ` Crash note: ${crashNotePath}` : ""} Run /otto auto to resume from the last checkpoint.`,
           "error",
         );
         await deps.stopAuto(ctx, pi, infraDecision.stopMessage);
@@ -1369,7 +1369,7 @@ export async function autoLoop(
         if (cooldownDecision.action === "stop") {
           const crashNotePath = persistCrashNote(s, "cooldown-exhausted", msg, observedUnitType, observedUnitId);
           ctx.ui.notify(
-            `${cooldownDecision.notifyMessage}${crashNotePath ? ` Crash note: ${crashNotePath}` : ""} Run /gsd auto to resume from the last checkpoint.`,
+            `${cooldownDecision.notifyMessage}${crashNotePath ? ` Crash note: ${crashNotePath}` : ""} Run /otto auto to resume from the last checkpoint.`,
             "error",
           );
           finishTurn("stopped", "timeout", msg);
@@ -1404,7 +1404,7 @@ export async function autoLoop(
       if (errorDecision.action === "stop") {
         const crashNotePath = persistCrashNote(s, "iteration-exhausted", msg, observedUnitType, observedUnitId);
         ctx.ui.notify(
-          `${errorDecision.notifyMessage}${crashNotePath ? ` Crash note: ${crashNotePath}` : ""} Run /gsd auto to resume from the last checkpoint.`,
+          `${errorDecision.notifyMessage}${crashNotePath ? ` Crash note: ${crashNotePath}` : ""} Run /otto auto to resume from the last checkpoint.`,
           "error",
         );
         await deps.stopAuto(ctx, pi, errorDecision.stopMessage);

@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-05-05
-**Author:** GSD architecture review
+**Author:** OTTO architecture review
 **Related:** ADR-009 (unified orchestration kernel), ADR-014 (deep Auto Orchestration module), ADR-001 (worktree architecture)
 
 ## Context

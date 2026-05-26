@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Auto-worktree milestone squash-merge integration tests.
 /**
  * auto-worktree-milestone-merge.test.ts — Integration tests for mergeMilestoneToMain.
@@ -46,8 +46,8 @@ function createTempRepo(): string {
   run("git config user.email test@test.com", dir);
   run("git config user.name Test", dir);
   writeFileSync(join(dir, "README.md"), "# test\n");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
-  writeFileSync(join(dir, ".gsd", "STATE.md"), "# State\n");
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
+  writeFileSync(join(dir, ".otto/workflow", "STATE.md"), "# State\n");
   run("git add .", dir);
   run("git commit -m init", dir);
   run("git branch -M main", dir);
@@ -64,7 +64,7 @@ function createTempRepoWithExternalGsd(): { repo: string; externalState: string 
   run("git config user.name Test", repo);
 
   mkdirSync(join(externalState, "worktrees"), { recursive: true });
-  symlinkSync(externalState, join(repo, ".gsd"));
+  symlinkSync(externalState, join(repo, ".otto/workflow"));
 
   writeFileSync(join(repo, "README.md"), "# test\n");
   writeFileSync(join(externalState, "STATE.md"), "# State\n");
@@ -91,7 +91,7 @@ function addSliceToMilestone(
   commits: Array<{ file: string; content: string; message: string }>,
 ): void {
   const normalizedPath = wtPath.replaceAll("\\", "/");
-  const marker = "/.gsd/worktrees/";
+  const marker = "/.otto/workflow/worktrees/";
   const idx = normalizedPath.indexOf(marker);
   const worktreeName = idx !== -1 ? normalizedPath.slice(idx + marker.length).split("/")[0] : null;
 
@@ -163,7 +163,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     const branches = run("git branch", repo);
     assert.ok(!branches.includes("milestone/M010"), "milestone branch deleted");
 
-    const worktreeDir = join(repo, ".gsd", "worktrees", "M010");
+    const worktreeDir = join(repo, ".otto/workflow", "worktrees", "M010");
     assert.ok(!existsSync(worktreeDir), "worktree directory removed");
 
     assert.strictEqual(getAutoWorktreeOriginalBase(), null, "originalBase cleared after merge");
@@ -225,14 +225,14 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     assert.ok(result.commitMessage.includes("- S01/T01: Create API router"), "body lists S01 task");
     assert.ok(result.commitMessage.includes("- S02/T02: Handle API errors"), "body lists S02 task");
     assert.ok(result.commitMessage.includes("Milestone: M020 - Backend foundation"), "body has human milestone context");
-    assert.ok(result.commitMessage.includes("GSD-Milestone: M020"), "body has GSD-Milestone trailer");
+    assert.ok(result.commitMessage.includes("OTTO-Milestone: M020"), "body has OTTO-Milestone trailer");
     assert.ok(result.commitMessage.includes("Branch: milestone/M020"), "body has branch metadata");
     assert.ok(!result.commitMessage.includes("auto-commit after complete-milestone"), "body avoids generic complete-milestone fallback");
-    assert.ok(!result.commitMessage.includes("GSD-Unit:"), "body avoids generic unit trailer");
+    assert.ok(!result.commitMessage.includes("OTTO-Unit:"), "body avoids generic unit trailer");
 
     const gitMsg = run("git log -1 --format=%B main", repo).trim();
     assert.match(gitMsg, /^feat:/, "git commit message starts with feat:");
-    assert.ok(gitMsg.includes("GSD-Milestone: M020"), "git commit has GSD-Milestone trailer");
+    assert.ok(gitMsg.includes("OTTO-Milestone: M020"), "git commit has OTTO-Milestone trailer");
     assert.ok(gitMsg.includes("- S01: Core API"), "git commit body has S01");
     assert.ok(gitMsg.includes("- S03/T03: Wire request logging"), "git commit body has task names");
   });
@@ -287,7 +287,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     assert.strictEqual(typeof result.pushed, "boolean", "pushed flag remains boolean");
   });
 
-  test("external .gsd and local-only auto_push closeout without cleanup or push warnings", () => {
+  test("external .otto/workflow and local-only auto_push closeout without cleanup or push warnings", () => {
     const { repo, externalState } = freshRepoWithExternalGsd();
     const previousStderr = setStderrLoggingEnabled(false);
     drainLogs();
@@ -315,7 +315,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
       const messages = logs.map((entry) => entry.message).join("\n");
 
       assert.equal(result.pushed, false, "local-only repo should not report pushed");
-      assert.ok(!messages.includes("untracked file cleanup failed"), "external .gsd cleanup should not call git on paths outside the repo");
+      assert.ok(!messages.includes("untracked file cleanup failed"), "external .otto/workflow cleanup should not call git on paths outside the repo");
       assert.ok(!messages.includes("git push failed"), "missing origin should skip auto-push instead of running git push");
     } finally {
       drainLogs();
@@ -323,7 +323,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     }
   });
 
-  test("auto-resolve .gsd/ state file conflicts", () => {
+  test("auto-resolve .otto/workflow/ state file conflicts", () => {
     const repo = freshRepo();
     const wtPath = createAutoWorktree(repo, "M050");
 
@@ -331,12 +331,12 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
       { file: "feature.ts", content: "export const feature = true;\n", message: "add feature" },
     ]);
 
-    writeFileSync(join(wtPath, ".gsd", "STATE.md"), "# State\n\n## Updated on milestone branch\n");
+    writeFileSync(join(wtPath, ".otto/workflow", "STATE.md"), "# State\n\n## Updated on milestone branch\n");
     run("git add .", wtPath);
     run('git commit -m "chore: update state on milestone branch"', wtPath);
 
     run("git checkout main", repo);
-    writeFileSync(join(repo, ".gsd", "STATE.md"), "# State\n\n## Updated on main\n");
+    writeFileSync(join(repo, ".otto/workflow", "STATE.md"), "# State\n\n## Updated on main\n");
     run("git add .", repo);
     run('git commit -m "chore: update state on main"', repo);
 
@@ -349,11 +349,11 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     let threw = false;
     try {
       const result = mergeMilestoneToMain(repo, "M050", roadmap);
-      assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("GSD-Milestone: M050"), "merge commit created despite .gsd conflict");
+      assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("OTTO-Milestone: M050"), "merge commit created despite .otto/workflow conflict");
     } catch (err) {
       threw = true;
     }
-    assert.ok(!threw, "auto-resolves .gsd/ state file conflicts without throwing");
+    assert.ok(!threw, "auto-resolves .otto/workflow/ state file conflicts without throwing");
     assert.ok(existsSync(join(repo, "feature.ts")), "feature.ts merged to main");
   });
 
@@ -375,7 +375,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     let threw = false;
     try {
       const result = mergeMilestoneToMain(repo, "M060", roadmap);
-      assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("GSD-Milestone: M060"), "merge commit created");
+      assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("OTTO-Milestone: M060"), "merge commit created");
     } catch (err) {
       threw = true;
     }
@@ -390,8 +390,8 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     run("git config user.email test@test.com", dir);
     run("git config user.name Test", dir);
     writeFileSync(join(dir, "README.md"), "# master-branch repo\n");
-    mkdirSync(join(dir, ".gsd"), { recursive: true });
-    writeFileSync(join(dir, ".gsd", "STATE.md"), "# State\n");
+    mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
+    writeFileSync(join(dir, ".otto/workflow", "STATE.md"), "# State\n");
     run("git add .", dir);
     run("git commit -m init", dir);
     const defaultBranch = run("git rev-parse --abbrev-ref HEAD", dir);
@@ -402,7 +402,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
       { file: "master-feature.ts", content: "export const masterFeature = true;\n", message: "add master feature" },
     ]);
 
-    const metaFile = join(dir, ".gsd", "milestones", "M070", "M070-META.json");
+    const metaFile = join(dir, ".otto/workflow", "milestones", "M070", "M070-META.json");
     assert.ok(!existsSync(metaFile), "no META.json — integration branch not captured");
 
     const roadmap = makeRoadmap("M070", "Master branch milestone", [
@@ -413,7 +413,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     let errMsg = "";
     try {
       const result = mergeMilestoneToMain(dir, "M070", roadmap);
-      assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("GSD-Milestone: M070"), "merge commit created on master");
+      assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("OTTO-Milestone: M070"), "merge commit created on master");
     } catch (err) {
       threw = true;
       errMsg = err instanceof Error ? err.message : String(err);
@@ -466,7 +466,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     assert.ok(!threw, `empty milestone with no code changes should not throw (got: ${errMsg})`);
   });
 
-  test("#1738 bug 3: synced .gsd/ dirs cleaned before merge", () => {
+  test("#1738 bug 3: synced .otto/workflow/ dirs cleaned before merge", () => {
     const repo = freshRepo();
     const wtPath = createAutoWorktree(repo, "M090");
 
@@ -474,15 +474,15 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
       { file: "sync-test.ts", content: "export const sync = true;\n", message: "add sync-test" },
     ]);
 
-    const msDir = join(repo, ".gsd", "milestones", "M090", "slices", "S01");
+    const msDir = join(repo, ".otto/workflow", "milestones", "M090", "slices", "S01");
     mkdirSync(msDir, { recursive: true });
     writeFileSync(join(msDir, "S01-PLAN.md"), "# synced plan\n");
     writeFileSync(
-      join(repo, ".gsd", "milestones", "M090", "M090-ROADMAP.md"),
+      join(repo, ".otto/workflow", "milestones", "M090", "M090-ROADMAP.md"),
       "# synced roadmap\n",
     );
 
-    const runtimeDir = join(repo, ".gsd", "runtime", "units");
+    const runtimeDir = join(repo, ".otto/workflow", "runtime", "units");
     mkdirSync(runtimeDir, { recursive: true });
     writeFileSync(join(runtimeDir, "unit-001.json"), '{"stale": true}');
 
@@ -493,11 +493,11 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     let threw = false;
     try {
       const result = mergeMilestoneToMain(repo, "M090", roadmap);
-      assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("GSD-Milestone: M090"), "#1738 merge succeeds after cleaning synced dirs");
+      assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("OTTO-Milestone: M090"), "#1738 merge succeeds after cleaning synced dirs");
     } catch (err: unknown) {
       threw = true;
     }
-    assert.ok(!threw, "#1738 merge does not fail on synced .gsd/ files");
+    assert.ok(!threw, "#1738 merge does not fail on synced .otto/workflow/ files");
     assert.ok(existsSync(join(repo, "sync-test.ts")), "sync-test.ts on main after merge");
   });
 
@@ -520,7 +520,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     let threw = false;
     try {
       const result = mergeMilestoneToMain(repo, "M100", roadmap);
-      assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("GSD-Milestone: M100"), "#2151: merge succeeds after stashing dirty files");
+      assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("OTTO-Milestone: M100"), "#2151: merge succeeds after stashing dirty files");
     } catch {
       threw = true;
     }
@@ -620,7 +620,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     let errMsg = "";
     try {
       const result = mergeMilestoneToMain(repo, "M140", roadmap);
-      assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("GSD-Milestone: M140"), "merge commit created");
+      assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("OTTO-Milestone: M140"), "merge commit created");
     } catch (err) {
       threw = true;
       errMsg = err instanceof Error ? err.message : String(err);
@@ -690,7 +690,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     assert.ok(existsSync(squashMsgPath), "SQUASH_MSG planted before merge");
 
     const result = mergeMilestoneToMain(repo, "M160", roadmap);
-    assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("GSD-Milestone: M160"), "merge commit created");
+    assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("OTTO-Milestone: M160"), "merge commit created");
 
     assert.ok(!existsSync(squashMsgPath), "#1853: SQUASH_MSG must not persist after successful squash-merge");
   });
@@ -710,7 +710,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     ]);
 
     const result = mergeMilestoneToMain(repo, "M170", roadmap);
-    assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("GSD-Milestone: M170"), "merge commit created");
+    assert.ok(result.commitMessage.includes("feat:") && result.commitMessage.includes("OTTO-Milestone: M170"), "merge commit created");
 
     assert.ok(
       existsSync(join(repo, "uncommitted-agent-code.ts")),
@@ -718,13 +718,13 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     );
   });
 
-  test("#1906: codeFilesChanged=false when only .gsd/ metadata merged", () => {
+  test("#1906: codeFilesChanged=false when only .otto/workflow/ metadata merged", () => {
     const repo = freshRepo();
     const wtPath = createAutoWorktree(repo, "M180");
 
-    mkdirSync(join(wtPath, ".gsd", "milestones", "M180"), { recursive: true });
+    mkdirSync(join(wtPath, ".otto/workflow", "milestones", "M180"), { recursive: true });
     writeFileSync(
-      join(wtPath, ".gsd", "milestones", "M180", "SUMMARY.md"),
+      join(wtPath, ".otto/workflow", "milestones", "M180", "SUMMARY.md"),
       "# M180 Summary\n\nThis milestone was planned but not implemented.\n",
     );
     run("git add .", wtPath);
@@ -734,7 +734,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
 
     const result = mergeMilestoneToMain(repo, "M180", roadmap);
     assert.strictEqual(result.codeFilesChanged, false,
-      "#1906: codeFilesChanged must be false when only .gsd/ files were merged");
+      "#1906: codeFilesChanged must be false when only .otto/workflow/ files were merged");
   });
 
   test("#2156: mergeMilestoneToMain removes external-state worktrees using the milestone branch name", () => {
@@ -748,15 +748,15 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
     const realWtPath = realpathSync(wtPath);
     assert.ok(
       realWtPath.startsWith(externalState),
-      `worktree should be registered under external .gsd state, got ${realWtPath}`,
+      `worktree should be registered under external .otto/workflow state, got ${realWtPath}`,
     );
 
-    // Recreate the exact divergence from #1852: local .gsd/ is replaced with a
+    // Recreate the exact divergence from #1852: local .otto/workflow/ is replaced with a
     // stale real directory, so worktreePath() no longer matches git's record.
-    unlinkSync(join(repo, ".gsd"));
-    mkdirSync(join(repo, ".gsd", "worktrees", "M215"), { recursive: true });
-    writeFileSync(join(repo, ".gsd", "STATE.md"), "# Local stale state\n");
-    writeFileSync(join(repo, ".gsd", "worktrees", "M215", "stale.txt"), "stale local artifact\n");
+    unlinkSync(join(repo, ".otto/workflow"));
+    mkdirSync(join(repo, ".otto/workflow", "worktrees", "M215"), { recursive: true });
+    writeFileSync(join(repo, ".otto/workflow", "STATE.md"), "# Local stale state\n");
+    writeFileSync(join(repo, ".otto/workflow", "worktrees", "M215", "stale.txt"), "stale local artifact\n");
 
     const roadmap = makeRoadmap("M215", "External cleanup", [
       { id: "S01", title: "External cleanup" },
@@ -944,9 +944,9 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
       { file: "feature.ts", content: "export const f = 1;\n", message: "add feature" },
     ]);
 
-    // Seed a queued (non-target) milestone in .gsd/milestones/ that will be
+    // Seed a queued (non-target) milestone in .otto/workflow/milestones/ that will be
     // sheltered during the merge and restored afterwards.
-    const queuedDir = join(repo, ".gsd", "milestones", "M201");
+    const queuedDir = join(repo, ".otto/workflow", "milestones", "M201");
     mkdirSync(queuedDir, { recursive: true });
     writeFileSync(join(queuedDir, "CONTEXT.md"), "# queued\n");
 
@@ -958,7 +958,7 @@ describe("auto-worktree-milestone-merge", { timeout: 300_000 }, () => {
 
     // Normal success path: queued milestone restored, shelter cleaned up.
     assert.ok(existsSync(join(queuedDir, "CONTEXT.md")), "queued milestone restored from shelter");
-    assert.ok(!existsSync(join(repo, ".gsd", ".milestone-shelter")), "shelter removed on successful restore");
+    assert.ok(!existsSync(join(repo, ".otto/workflow", ".milestone-shelter")), "shelter removed on successful restore");
     assert.ok(result.commitMessage.length > 0, "merge completed");
   });
 });

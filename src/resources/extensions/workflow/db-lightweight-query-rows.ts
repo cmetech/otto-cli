@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Lightweight DB query row mappers for hot-path status reads.
 
 type DbRow = Record<string, unknown>;

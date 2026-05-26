@@ -60,8 +60,8 @@ describe("auto-worktree lifecycle", () => {
   test("create → detect → teardown", () => {
     tempDir = createTempRepo();
 
-    // Create .gsd/milestones/M003 with a dummy file (simulates planning artifacts)
-    const msDir = join(tempDir, ".gsd", "milestones", "M003");
+    // Create .otto/workflow/milestones/M003 with a dummy file (simulates planning artifacts)
+    const msDir = join(tempDir, ".otto/workflow", "milestones", "M003");
     mkdirSync(msDir, { recursive: true });
     writeFileSync(join(msDir, "CONTEXT.md"), "# M003 Context\n");
     run("git add .", tempDir);
@@ -77,7 +77,7 @@ describe("auto-worktree lifecycle", () => {
     assert.strictEqual(branch, "milestone/M003", "git branch is milestone/M003");
 
     assert.ok(
-      existsSync(join(wtPath, ".gsd", "milestones", "M003", "CONTEXT.md")),
+      existsSync(join(wtPath, ".otto/workflow", "milestones", "M003", "CONTEXT.md")),
       "planning files inherited in worktree",
     );
 
@@ -112,7 +112,7 @@ describe("auto-worktree lifecycle", () => {
 
   test("re-entry: create again, exit without teardown, re-enter", () => {
     tempDir = createTempRepo();
-    const msDir = join(tempDir, ".gsd", "milestones", "M003");
+    const msDir = join(tempDir, ".otto/workflow", "milestones", "M003");
     mkdirSync(msDir, { recursive: true });
     writeFileSync(join(msDir, "CONTEXT.md"), "# M003 Context\n");
     run("git add .", tempDir);
@@ -146,13 +146,13 @@ describe("auto-worktree lifecycle", () => {
 
   test("symlink-resolved auto worktree is detected after module state reset", () => {
     tempDir = createTempRepo();
-    const savedWorkflowHome = process.env.GSD_HOME;
+    const savedWorkflowHome = process.env.OTTO_HOME;
     const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "auto-wt-home-")));
-    const storage = join(fakeHome, ".gsd", "projects", "abc123def456");
+    const storage = join(fakeHome, ".otto/workflow", "projects", "abc123def456");
     mkdirSync(join(storage, "milestones", "M001"), { recursive: true });
     writeFileSync(join(storage, "milestones", "M001", "CONTEXT.md"), "# M001\n");
-    symlinkSync(storage, join(tempDir, ".gsd"));
-    process.env.GSD_HOME = join(fakeHome, ".gsd");
+    symlinkSync(storage, join(tempDir, ".otto/workflow"));
+    process.env.OTTO_HOME = join(fakeHome, ".otto/workflow");
 
     try {
       const wtPath = createAutoWorktree(tempDir, "M001");
@@ -166,7 +166,7 @@ describe("auto-worktree lifecycle", () => {
       const resolved = getAutoWorktreePath(realWtPath, "M001");
       assert.ok(resolved, "existing worktree is found when basePath is the worktree path");
       assert.equal(realpathSync(resolved!), realWtPath);
-      assert.equal(existsSync(join(realWtPath, ".gsd", "worktrees", "M001")), false);
+      assert.equal(existsSync(join(realWtPath, ".otto/workflow", "worktrees", "M001")), false);
 
       enterAutoWorktree(tempDir, "M001");
       process.chdir(realWtPath);
@@ -186,15 +186,15 @@ describe("auto-worktree lifecycle", () => {
       } catch {
         // Best-effort cleanup for partially-created temp worktrees.
       }
-      if (savedWorkflowHome === undefined) delete process.env.GSD_HOME;
-      else process.env.GSD_HOME = savedWorkflowHome;
+      if (savedWorkflowHome === undefined) delete process.env.OTTO_HOME;
+      else process.env.OTTO_HOME = savedWorkflowHome;
       rmSync(fakeHome, { recursive: true, force: true });
     }
   });
 
   test("coexistence with manual worktree", async () => {
     tempDir = createTempRepo();
-    const msDir = join(tempDir, ".gsd", "milestones", "M003");
+    const msDir = join(tempDir, ".otto/workflow", "milestones", "M003");
     mkdirSync(msDir, { recursive: true });
     writeFileSync(join(msDir, "CONTEXT.md"), "# M003 Context\n");
     run("git add .", tempDir);
@@ -221,7 +221,7 @@ describe("auto-worktree lifecycle", () => {
 
   test("split-brain prevention: originalBase cleared after teardown", () => {
     tempDir = createTempRepo();
-    const msDir = join(tempDir, ".gsd", "milestones", "M003");
+    const msDir = join(tempDir, ".otto/workflow", "milestones", "M003");
     mkdirSync(msDir, { recursive: true });
     writeFileSync(join(msDir, "CONTEXT.md"), "# M003 Context\n");
     run("git add .", tempDir);
@@ -235,7 +235,7 @@ describe("auto-worktree lifecycle", () => {
 
   test("#1526: getMainBranch returns milestone/<MID> in auto-worktree", async () => {
     tempDir = createTempRepo();
-    const msDir = join(tempDir, ".gsd", "milestones", "M005");
+    const msDir = join(tempDir, ".otto/workflow", "milestones", "M005");
     mkdirSync(msDir, { recursive: true });
     writeFileSync(join(msDir, "CONTEXT.md"), "# M005 Context\n");
     run("git add .", tempDir);
@@ -259,7 +259,7 @@ describe("auto-worktree lifecycle", () => {
 
   test("#1713: stale worktree directory without .git file", async () => {
     tempDir = createTempRepo();
-    const msDir = join(tempDir, ".gsd", "milestones", "M010");
+    const msDir = join(tempDir, ".otto/workflow", "milestones", "M010");
     mkdirSync(msDir, { recursive: true });
     writeFileSync(join(msDir, "CONTEXT.md"), "# M010 Context\n");
     run("git add .", tempDir);
@@ -282,16 +282,16 @@ describe("auto-worktree lifecycle", () => {
     teardownAutoWorktree(tempDir, "M010");
   });
 
-  test("#778: re-attach does not reconcile plan checkboxes into a worktree-local .gsd projection", async () => {
+  test("#778: re-attach does not reconcile plan checkboxes into a worktree-local .otto/workflow projection", async () => {
     tempDir = createTempRepo();
-    const msDir = join(tempDir, ".gsd", "milestones", "M003");
+    const msDir = join(tempDir, ".otto/workflow", "milestones", "M003");
     mkdirSync(msDir, { recursive: true });
     writeFileSync(join(msDir, "CONTEXT.md"), "# M003 Context\n");
     run("git add .", tempDir);
     run("git commit -m \"add milestone\"", tempDir);
 
-    const planRelPath = join(".gsd", "milestones", "M004", "slices", "S01", "S01-PLAN.md");
-    const planDir = join(tempDir, ".gsd", "milestones", "M004", "slices", "S01");
+    const planRelPath = join(".otto/workflow", "milestones", "M004", "slices", "S01", "S01-PLAN.md");
+    const planDir = join(tempDir, ".otto/workflow", "milestones", "M004", "slices", "S01");
     const { mkdirSync: mkdir, writeFileSync: write, readFileSync: read } = await import("node:fs");
 
     // Plan on integration branch (project root): T01 [x], T02 [x]
@@ -348,17 +348,17 @@ describe("auto-worktree lifecycle", () => {
 
   test("#2791: mcp.json is not copied into worktree on creation after copyPlanningArtifacts removal", () => {
     tempDir = createTempRepo();
-    const msDir = join(tempDir, ".gsd", "milestones", "M003");
+    const msDir = join(tempDir, ".otto/workflow", "milestones", "M003");
     mkdirSync(msDir, { recursive: true });
     writeFileSync(join(msDir, "CONTEXT.md"), "# M003 Context\n");
     run("git add .", tempDir);
     run("git commit -m \"add milestone\"", tempDir);
 
-    // Create mcp.json in .gsd/ AFTER the commit (untracked, like real usage).
+    // Create mcp.json in .otto/workflow/ AFTER the commit (untracked, like real usage).
     // Phase C removed copyPlanningArtifacts, so creation should not seed a
     // second worktree-local copy.
     writeFileSync(
-      join(tempDir, ".gsd", "mcp.json"),
+      join(tempDir, ".otto/workflow", "mcp.json"),
       JSON.stringify({ servers: { test: { command: "echo" } } }),
     );
 
@@ -366,9 +366,9 @@ describe("auto-worktree lifecycle", () => {
 
     try {
       assert.equal(
-        existsSync(join(wtPath, ".gsd", "mcp.json")),
+        existsSync(join(wtPath, ".otto/workflow", "mcp.json")),
         false,
-        "mcp.json should not be copied into worktree .gsd/ on creation",
+        "mcp.json should not be copied into worktree .otto/workflow/ on creation",
       );
     } finally {
       teardownAutoWorktree(tempDir, "M003");
@@ -377,7 +377,7 @@ describe("auto-worktree lifecycle", () => {
 
   test("#2791: mcp.json synced via syncWorkflowStateToWorktree (ROOT_STATE_FILES)", () => {
     tempDir = createTempRepo();
-    const msDir = join(tempDir, ".gsd", "milestones", "M003");
+    const msDir = join(tempDir, ".otto/workflow", "milestones", "M003");
     mkdirSync(msDir, { recursive: true });
     writeFileSync(join(msDir, "CONTEXT.md"), "# M003 Context\n");
     run("git add .", tempDir);
@@ -387,9 +387,9 @@ describe("auto-worktree lifecycle", () => {
     const wtPath = createAutoWorktree(tempDir, "M003");
 
     try {
-      // Now add mcp.json to the main .gsd/ after worktree was created
+      // Now add mcp.json to the main .otto/workflow/ after worktree was created
       writeFileSync(
-        join(tempDir, ".gsd", "mcp.json"),
+        join(tempDir, ".otto/workflow", "mcp.json"),
         JSON.stringify({ servers: { test: { command: "echo" } } }),
       );
 
@@ -398,7 +398,7 @@ describe("auto-worktree lifecycle", () => {
 
       assert.ok(synced.includes("mcp.json"), "mcp.json should be in the synced list");
       assert.ok(
-        existsSync(join(wtPath, ".gsd", "mcp.json")),
+        existsSync(join(wtPath, ".otto/workflow", "mcp.json")),
         "mcp.json should exist in worktree after sync",
       );
     } finally {

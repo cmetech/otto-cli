@@ -1,10 +1,10 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Loads modern component.yaml definitions and legacy skill/agent formats.
 
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
-import { parseFrontmatter } from '@loop24/pi-coding-agent';
+import { parseFrontmatter } from '@otto/pi-coding-agent';
 import { incrementLegacyTelemetry } from './legacy-telemetry.js';
 import type {
 	Component,

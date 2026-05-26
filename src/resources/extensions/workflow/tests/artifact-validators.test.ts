@@ -59,7 +59,7 @@ Patterns.
 
 ## Capability Contract
 
-See .gsd/REQUIREMENTS.md.
+See .otto/workflow/REQUIREMENTS.md.
 
 ## Milestone Sequence
 
@@ -95,7 +95,7 @@ Patterns.
 
 ## Capability Contract
 
-See .gsd/REQUIREMENTS.md.
+See .otto/workflow/REQUIREMENTS.md.
 
 ## Milestone Sequence
 
@@ -131,7 +131,7 @@ Patterns.
 
 ## Capability Contract
 
-See .gsd/REQUIREMENTS.md.
+See .otto/workflow/REQUIREMENTS.md.
 
 ## Milestone Sequence
 
@@ -167,7 +167,7 @@ Patterns.
 
 ## Capability Contract
 
-See .gsd/REQUIREMENTS.md.
+See .otto/workflow/REQUIREMENTS.md.
 
 ## Milestone Sequence
 
@@ -316,7 +316,7 @@ Now.
 Patterns.
 
 ## Capability Contract
-See .gsd/REQUIREMENTS.md.
+See .otto/workflow/REQUIREMENTS.md.
 
 ## Milestone Sequence
 

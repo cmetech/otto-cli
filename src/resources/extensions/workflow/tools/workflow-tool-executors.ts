@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Adapts shared workflow handlers for MCP executor calls.
 
 import { ensureDbOpen } from "../bootstrap/dynamic-tools.js";
@@ -103,7 +103,7 @@ export async function executeSummarySave(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available. Cannot save artifact." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available. Cannot save artifact." }],
       details: { operation: "save_summary", error: "db_unavailable" },
     isError: true,
       };
@@ -172,7 +172,7 @@ export async function executeSummarySave(
       : null;
     if (params.artifact_type === "REQUIREMENTS" && activeRequirements?.length === 0) {
       return {
-        content: [{ type: "text", text: "Error: Cannot save REQUIREMENTS artifact — no active requirements found in the database. Call gsd_requirement_save for each requirement before calling gsd_summary_save(REQUIREMENTS)." }],
+        content: [{ type: "text", text: "Error: Cannot save REQUIREMENTS artifact — no active requirements found in the database. Call otto_requirement_save for each requirement before calling otto_summary_save(REQUIREMENTS)." }],
         details: { operation: "save_summary", error: "no_active_requirements" },
         isError: true,
       };
@@ -205,22 +205,22 @@ export async function executeSummarySave(
         if (registeredMilestones.length > 0) invalidateStateCache();
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        logError("tool", `gsd_summary_save: PROJECT artifact persisted but milestone registration threw: ${msg}`, {
-          tool: "gsd_summary_save",
+        logError("tool", `otto_summary_save: PROJECT artifact persisted but milestone registration threw: ${msg}`, {
+          tool: "otto_summary_save",
           error: String(err),
           stack: err instanceof Error ? err.stack ?? "" : "",
         });
         // PROJECT.md was persisted by saveArtifactToDb above; the artifacts row
         // changed even though no milestones registered. Invalidate so subsequent
-        // /loop24 reads see the persisted artifact instead of the pre-save cache.
+        // /otto reads see the persisted artifact instead of the pre-save cache.
         invalidateStateCache();
         return {
           content: [{
             type: "text",
             text:
               `Error: PROJECT.md was saved to ${relativePath} but milestone registration failed: ${msg}. ` +
-              `The DB has no milestone rows for this project, so /gsd will report "No Active Milestone". ` +
-              `Re-call gsd_summary_save(PROJECT) once the underlying error is resolved — INSERT OR IGNORE makes registration idempotent.`,
+              `The DB has no milestone rows for this project, so /otto will report "No Active Milestone". ` +
+              `Re-call otto_summary_save(PROJECT) once the underlying error is resolved — INSERT OR IGNORE makes registration idempotent.`,
           }],
           details: {
             operation: "save_summary",
@@ -233,8 +233,8 @@ export async function executeSummarySave(
         };
       }
       if (registeredMilestones.length === 0) {
-        logError("tool", `gsd_summary_save: PROJECT.md saved to ${relativePath} but parsed zero milestones — registration produced no DB rows`, {
-          tool: "gsd_summary_save",
+        logError("tool", `otto_summary_save: PROJECT.md saved to ${relativePath} but parsed zero milestones — registration produced no DB rows`, {
+          tool: "otto_summary_save",
         });
         // PROJECT.md was persisted; invalidate so subsequent reads see the new
         // artifacts row even though no milestones registered.
@@ -244,9 +244,9 @@ export async function executeSummarySave(
             type: "text",
             text:
               `Error: PROJECT.md was saved to ${relativePath} but contains zero parseable milestone lines, ` +
-              `so no milestones were registered in the DB. /gsd will report "No Active Milestone". ` +
+              `so no milestones were registered in the DB. /otto will report "No Active Milestone". ` +
               `Rewrite PROJECT.md so the "Milestone Sequence" section uses canonical lines: ` +
-              `\`- [ ] M001: <Title> — <One-liner>\` (em-dash, double-dash \`--\`, or single-dash \`-\` separator), then re-call gsd_summary_save(PROJECT).`,
+              `\`- [ ] M001: <Title> — <One-liner>\` (em-dash, double-dash \`--\`, or single-dash \`-\` separator), then re-call otto_summary_save(PROJECT).`,
           }],
           details: {
             operation: "save_summary",
@@ -282,7 +282,7 @@ export async function executeSummarySave(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `gsd_summary_save tool failed: ${msg}`, { tool: "gsd_summary_save", error: String(err) });
+    logError("tool", `otto_summary_save tool failed: ${msg}`, { tool: "otto_summary_save", error: String(err) });
     return {
       content: [{ type: "text", text: `Error saving artifact: ${msg}` }],
       details: { operation: "save_summary", error: msg },
@@ -343,7 +343,7 @@ export async function executeTaskComplete(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available. Cannot complete task." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available. Cannot complete task." }],
       details: { operation: "complete_task", error: "db_unavailable" },
     isError: true,
       };
@@ -374,7 +374,7 @@ export async function executeTaskComplete(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `complete_task tool failed: ${msg}`, { tool: "gsd_task_complete", error: String(err) });
+    logError("tool", `complete_task tool failed: ${msg}`, { tool: "otto_task_complete", error: String(err) });
     return {
       content: [{ type: "text", text: `Error completing task: ${msg}` }],
       details: { operation: "complete_task", error: msg },
@@ -390,7 +390,7 @@ export async function executeTaskReopen(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available. Cannot reopen task." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available. Cannot reopen task." }],
       details: { operation: "reopen_task", error: "db_unavailable" },
       isError: true,
     };
@@ -415,7 +415,7 @@ export async function executeTaskReopen(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `reopen_task tool failed: ${msg}`, { tool: "gsd_task_reopen", error: String(err) });
+    logError("tool", `reopen_task tool failed: ${msg}`, { tool: "otto_task_reopen", error: String(err) });
     return {
       content: [{ type: "text", text: `Error reopening task: ${msg}` }],
       details: { operation: "reopen_task", error: msg },
@@ -431,7 +431,7 @@ export async function executeSliceReopen(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available. Cannot reopen slice." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available. Cannot reopen slice." }],
       details: { operation: "reopen_slice", error: "db_unavailable" },
       isError: true,
     };
@@ -456,7 +456,7 @@ export async function executeSliceReopen(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `reopen_slice tool failed: ${msg}`, { tool: "gsd_slice_reopen", error: String(err) });
+    logError("tool", `reopen_slice tool failed: ${msg}`, { tool: "otto_slice_reopen", error: String(err) });
     return {
       content: [{ type: "text", text: `Error reopening slice: ${msg}` }],
       details: { operation: "reopen_slice", error: msg },
@@ -472,7 +472,7 @@ export async function executeMilestoneReopen(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available. Cannot reopen milestone." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available. Cannot reopen milestone." }],
       details: { operation: "reopen_milestone", error: "db_unavailable" },
       isError: true,
     };
@@ -497,7 +497,7 @@ export async function executeMilestoneReopen(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `reopen_milestone tool failed: ${msg}`, { tool: "gsd_milestone_reopen", error: String(err) });
+    logError("tool", `reopen_milestone tool failed: ${msg}`, { tool: "otto_milestone_reopen", error: String(err) });
     return {
       content: [{ type: "text", text: `Error reopening milestone: ${msg}` }],
       details: { operation: "reopen_milestone", error: msg },
@@ -513,7 +513,7 @@ export async function executeSliceComplete(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available. Cannot complete slice." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available. Cannot complete slice." }],
       details: { operation: "complete_slice", error: "db_unavailable" },
     isError: true,
       };
@@ -609,7 +609,7 @@ export async function executeSliceComplete(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `complete_slice tool failed: ${msg}`, { tool: "gsd_slice_complete", error: String(err) });
+    logError("tool", `complete_slice tool failed: ${msg}`, { tool: "otto_slice_complete", error: String(err) });
     return {
       content: [{ type: "text", text: `Error completing slice: ${msg}` }],
       details: { operation: "complete_slice", error: msg },
@@ -625,7 +625,7 @@ export async function executeCompleteMilestone(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available. Cannot complete milestone." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available. Cannot complete milestone." }],
       details: { operation: "complete_milestone", error: "db_unavailable" },
     isError: true,
       };
@@ -655,7 +655,7 @@ export async function executeCompleteMilestone(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `complete_milestone tool failed: ${msg}`, { tool: "gsd_complete_milestone", error: String(err) });
+    logError("tool", `complete_milestone tool failed: ${msg}`, { tool: "otto_complete_milestone", error: String(err) });
     return {
       content: [{ type: "text", text: `Error completing milestone: ${msg}` }],
       details: { operation: "complete_milestone", error: msg },
@@ -671,7 +671,7 @@ export async function executeValidateMilestone(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available. Cannot validate milestone." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available. Cannot validate milestone." }],
       details: { operation: "validate_milestone", error: "db_unavailable" },
     isError: true,
       };
@@ -696,7 +696,7 @@ export async function executeValidateMilestone(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `validate_milestone tool failed: ${msg}`, { tool: "gsd_validate_milestone", error: String(err) });
+    logError("tool", `validate_milestone tool failed: ${msg}`, { tool: "otto_validate_milestone", error: String(err) });
     return {
       content: [{ type: "text", text: `Error validating milestone: ${msg}` }],
       details: { operation: "validate_milestone", error: msg },
@@ -712,7 +712,7 @@ export async function executeReassessRoadmap(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available. Cannot reassess roadmap." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available. Cannot reassess roadmap." }],
       details: { operation: "reassess_roadmap", error: "db_unavailable" },
     isError: true,
       };
@@ -738,7 +738,7 @@ export async function executeReassessRoadmap(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `reassess_roadmap tool failed: ${msg}`, { tool: "gsd_reassess_roadmap", error: String(err) });
+    logError("tool", `reassess_roadmap tool failed: ${msg}`, { tool: "otto_reassess_roadmap", error: String(err) });
     return {
       content: [{ type: "text", text: `Error reassessing roadmap: ${msg}` }],
       details: { operation: "reassess_roadmap", error: msg },
@@ -754,7 +754,7 @@ export async function executeSaveGateResult(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available." }],
       details: { operation: "save_gate_result", error: "db_unavailable" },
     isError: true,
       };
@@ -797,7 +797,7 @@ export async function executeSaveGateResult(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `gsd_save_gate_result failed: ${msg}`, { tool: "gsd_save_gate_result", error: String(err) });
+    logError("tool", `otto_save_gate_result failed: ${msg}`, { tool: "otto_save_gate_result", error: String(err) });
     return {
       content: [{ type: "text", text: `Error saving gate result: ${msg}` }],
       details: { operation: "save_gate_result", error: msg },
@@ -813,7 +813,7 @@ export async function executePlanMilestone(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available. Cannot plan milestone." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available. Cannot plan milestone." }],
       details: { operation: "plan_milestone", error: "db_unavailable" },
     isError: true,
       };
@@ -837,7 +837,7 @@ export async function executePlanMilestone(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `plan_milestone tool failed: ${msg}`, { tool: "gsd_plan_milestone", error: String(err) });
+    logError("tool", `plan_milestone tool failed: ${msg}`, { tool: "otto_plan_milestone", error: String(err) });
     return {
       content: [{ type: "text", text: `Error planning milestone: ${msg}` }],
       details: { operation: "plan_milestone", error: msg },
@@ -853,7 +853,7 @@ export async function executePlanSlice(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available. Cannot plan slice." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available. Cannot plan slice." }],
       details: { operation: "plan_slice", error: "db_unavailable" },
     isError: true,
       };
@@ -879,7 +879,7 @@ export async function executePlanSlice(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `plan_slice tool failed: ${msg}`, { tool: "gsd_plan_slice", error: String(err) });
+    logError("tool", `plan_slice tool failed: ${msg}`, { tool: "otto_plan_slice", error: String(err) });
     return {
       content: [{ type: "text", text: `Error planning slice: ${msg}` }],
       details: { operation: "plan_slice", error: msg },
@@ -895,7 +895,7 @@ export async function executeReplanSlice(
   const dbAvailable = await ensureDbOpen(basePath);
   if (!dbAvailable) {
     return {
-      content: [{ type: "text", text: "Error: GSD database is not available. Cannot replan slice." }],
+      content: [{ type: "text", text: "Error: OTTO database is not available. Cannot replan slice." }],
       details: { operation: "replan_slice", error: "db_unavailable" },
     isError: true,
       };
@@ -921,7 +921,7 @@ export async function executeReplanSlice(
     };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logError("tool", `replan_slice tool failed: ${msg}`, { tool: "gsd_replan_slice", error: String(err) });
+    logError("tool", `replan_slice tool failed: ${msg}`, { tool: "otto_replan_slice", error: String(err) });
     return {
       content: [{ type: "text", text: `Error replanning slice: ${msg}` }],
       details: { operation: "replan_slice", error: msg },
@@ -942,7 +942,7 @@ export async function executeMilestoneStatus(
     const dbAvailable = await ensureDbOpen(basePath);
     if (!dbAvailable) {
       return {
-        content: [{ type: "text", text: "Error: GSD database is not available." }],
+        content: [{ type: "text", text: "Error: OTTO database is not available." }],
         details: { operation: "milestone_status", error: "db_unavailable" },
       isError: true,
       };
@@ -981,7 +981,7 @@ export async function executeMilestoneStatus(
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    logWarning("tool", `gsd_milestone_status tool failed: ${msg}`);
+    logWarning("tool", `otto_milestone_status tool failed: ${msg}`);
     return {
       content: [{ type: "text", text: `Error querying milestone status: ${msg}` }],
       details: { operation: "milestone_status", error: msg },

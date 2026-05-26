@@ -11,7 +11,7 @@ import { showSmartEntry } from "../guided-flow.js";
 import { closeDatabase, insertMilestone, insertSlice, openDatabase } from "../db.js";
 
 function writeCompleteMilestone(base: string): void {
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(
     join(milestoneDir, "M001-ROADMAP.md"),
@@ -30,7 +30,7 @@ test("deriveState reports the last completed milestone when all milestone slices
   const base = mkdtempSync(join(tmpdir(), "gsd-smart-entry-complete-"));
   try {
     writeCompleteMilestone(base);
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Complete Milestone", status: "complete" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Done slice", status: "complete", risk: "low", depends: [] });
     const state = await deriveState(base);
@@ -47,7 +47,7 @@ test("showSmartEntry stops instead of opening next-action choices when complete 
   const notifications: Array<{ message: string; level: string }> = [];
   try {
     writeCompleteMilestone(base);
-    openDatabase(join(base, ".gsd", "gsd.db"));
+    openDatabase(join(base, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "Complete Milestone", status: "complete" });
     insertSlice({ id: "S01", milestoneId: "M001", title: "Done slice", status: "complete", risk: "low", depends: [] });
 

@@ -64,15 +64,15 @@ function mkBase(): string {
   // basePath we pass to setPendingGate matches what the workspace's
   // realpath-normalized projectRoot will resolve to.
   const base = realpathSync(mkdtempSync(join(tmpdir(), "gsd-gate1a-pending-")));
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   // CONTEXT.md (Gate 1) and STATE.md (Gate 2) both present so the only
   // possible blocker in these tests is the new Gate 1a.
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
     "# M001: Pending Gate Test\n\nContext.\n",
   );
   writeFileSync(
-    join(base, ".gsd", "STATE.md"),
+    join(base, ".otto/workflow", "STATE.md"),
     "# State\n\nactive: M001\n",
   );
   return base;

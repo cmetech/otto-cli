@@ -16,10 +16,10 @@ Agents are Markdown files loaded from:
 
 | Location | Scope |
 |----------|-------|
-| `~/.gsd/agent/agents/` | User-wide agents |
-| `.gsd/agents/` | Project-local agents |
+| `~/.otto/agent/agents/` | User-wide agents |
+| `.otto/workflow/agents/` | Project-local agents |
 
-Project-local agents are repository-controlled. For trusted-repo prompts, the parent can set `confirmProjectAgents: true` so GSD asks before running project-local agents.
+Project-local agents are repository-controlled. For trusted-repo prompts, the parent can set `confirmProjectAgents: true` so OTTO asks before running project-local agents.
 
 ## Invocation Modes
 
@@ -67,7 +67,7 @@ Optional fields:
 
 `context: "fork"` branches from the current parent session. Use it when the child needs the exact conversation state, selected files, or prior decisions. Forked context requires a persisted parent session and a current session leaf; in-memory sessions cannot be forked.
 
-Child processes are marked with `GSD_SUBAGENT_CHILD=1`, which suppresses recursive subagent registration inside the child.
+Child processes are marked with `OTTO_SUBAGENT_CHILD=1`, which suppresses recursive subagent registration inside the child.
 
 ## Background Runs
 
@@ -120,17 +120,17 @@ If the run has more than one resumable child session, include the agent selector
 }
 ```
 
-Resume requires a run record with exactly one matching child session file. If no run exists, no child session was recorded, or multiple child sessions match without an `agent` selector, GSD returns a hard error instead of guessing.
+Resume requires a run record with exactly one matching child session file. If no run exists, no child session was recorded, or multiple child sessions match without an `agent` selector, OTTO returns a hard error instead of guessing.
 
 ## Run State
 
 Subagent run records are JSON files stored under:
 
 ```text
-~/.gsd/agent/subagent-runs/<runId>.json
+~/.otto/agent/subagent-runs/<runId>.json
 ```
 
-`GSD_HOME` and `GSD_CODING_AGENT_DIR` can move this location; the store uses the active GSD agent directory returned by the runtime. Each record contains:
+`OTTO_HOME` and `OTTO_CODING_AGENT_DIR` can move this location; the store uses the active OTTO agent directory returned by the runtime. Each record contains:
 
 | Field | Meaning |
 |-------|---------|
@@ -162,14 +162,14 @@ Supported modes are:
 
 | Mode | Behavior |
 |------|----------|
-| `worktree` | Creates a detached git worktree under `~/.gsd/wt/<encoded-cwd>/<task-id>/`, snapshots parent dirty state into it, captures the child delta, applies the patch back to the parent checkout, then removes the worktree |
+| `worktree` | Creates a detached git worktree under `~/.otto/wt/<encoded-cwd>/<task-id>/`, snapshots parent dirty state into it, captures the child delta, applies the patch back to the parent checkout, then removes the worktree |
 | `fuse-overlay` | Uses `fuse-overlayfs` on Linux when available, otherwise falls back to `worktree` |
 
 If `taskIsolation.mode` is unset or invalid, `isolated: true` is ignored and the child runs in the normal working directory. If patch merge fails, the run is marked failed and the merge result lists applied and failed patches.
 
 ## Recovery Behavior
 
-When the parent session shuts down, GSD sends `SIGTERM` to live child processes and then `SIGKILL` to any process that does not exit promptly. Completed, failed, and interrupted child evidence is written to the run record when available.
+When the parent session shuts down, OTTO sends `SIGTERM` to live child processes and then `SIGKILL` to any process that does not exit promptly. Completed, failed, and interrupted child evidence is written to the run record when available.
 
 Use `status` first after an interruption. If a child session file was recorded, use `resume` with a follow-up instruction to continue that child's conversation. If the child never launched far enough to create a session file, relaunch the task from the parent with a new `launch` action.
 

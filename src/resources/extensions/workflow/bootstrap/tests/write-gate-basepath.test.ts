@@ -61,15 +61,15 @@ describe("write-gate basePath regression", () => {
 
   test("snapshot persisted to basePath=A is readable after chdir to basePath=B", (t) => {
     // Arrange: enable persistence (the default when env var is not set to "0"/"false").
-    const prev = process.env.GSD_PERSIST_WRITE_GATE_STATE;
+    const prev = process.env.OTTO_PERSIST_WRITE_GATE_STATE;
     t.after(() => {
       if (prev === undefined) {
-        delete process.env.GSD_PERSIST_WRITE_GATE_STATE;
+        delete process.env.OTTO_PERSIST_WRITE_GATE_STATE;
       } else {
-        process.env.GSD_PERSIST_WRITE_GATE_STATE = prev;
+        process.env.OTTO_PERSIST_WRITE_GATE_STATE = prev;
       }
     });
-    process.env.GSD_PERSIST_WRITE_GATE_STATE = "1";
+    process.env.OTTO_PERSIST_WRITE_GATE_STATE = "1";
 
     // Reset state and clear any stale snapshot files from both dirs.
     clearDiscussionFlowState(baseDirA);
@@ -79,7 +79,7 @@ describe("write-gate basePath regression", () => {
     markDepthVerified("M001", baseDirA);
 
     // Confirm the snapshot file was written under baseDirA.
-    const snapshotPath = join(baseDirA, ".gsd", "runtime", "write-gate-state.json");
+    const snapshotPath = join(baseDirA, ".otto/workflow", "runtime", "write-gate-state.json");
     assert.ok(existsSync(snapshotPath), "snapshot file should exist under baseDirA");
 
     // Simulate what happens when cwd changes to a different project root.

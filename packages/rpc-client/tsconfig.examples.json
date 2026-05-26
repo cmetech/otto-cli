@@ -10,7 +10,7 @@
     "noEmit": true,
     "types": ["node"],
     "paths": {
-      "@loop24-build/rpc-client": ["./src/index.ts"]
+      "@otto-build/rpc-client": ["./src/index.ts"]
     }
   },
   "include": ["examples/**/*.ts"]

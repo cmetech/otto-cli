@@ -6,7 +6,7 @@
  * - `pi --mode json "prompt"` - JSON event stream
  */
 
-import type { AssistantMessage, ImageContent } from "@loop24/pi-ai";
+import type { AssistantMessage, ImageContent } from "@otto/pi-ai";
 import type { AgentSession } from "../core/agent-session.js";
 import { createDefaultCommandContextActions } from "./shared/command-context-actions.js";
 

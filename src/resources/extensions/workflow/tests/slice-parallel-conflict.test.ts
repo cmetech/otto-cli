@@ -16,12 +16,12 @@ import { hasFileConflict } from "../slice-parallel-conflict.js";
 
 function makeTmpBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-slice-conflict-test-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
 function writeSlicePlan(base: string, mid: string, sid: string, content: string): void {
-  const dir = join(base, ".gsd", "milestones", mid, "slices", sid);
+  const dir = join(base, ".otto/workflow", "milestones", mid, "slices", sid);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, `${sid}-PLAN.md`), content, "utf-8");
 }

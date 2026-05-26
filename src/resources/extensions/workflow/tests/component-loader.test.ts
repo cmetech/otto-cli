@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Verifies component loading across modern and legacy formats.
 
 import { describe, it, beforeEach, afterEach } from 'node:test';

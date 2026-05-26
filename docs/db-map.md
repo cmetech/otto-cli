@@ -7,7 +7,7 @@
 ## 1. Database Infrastructure Stack
 
 ```
-gsd_* tool call (from LLM)
+otto_* tool call (from LLM)
        │
        ▼
 bootstrap/db-tools.ts          ← tool registration + input parsing
@@ -29,7 +29,7 @@ db-adapter.ts  ← normalized prepared-statement cache
 db-provider.ts  ← node:sqlite (primary) or better-sqlite3 (fallback)
        │
        ▼
-SQLite WAL  (.gsd/gsd.db)
+SQLite WAL  (.gsd/otto.db)
        │
        ▼
 After commit: regenerate markdown artifacts → write to disk → invalidate cache
@@ -37,7 +37,7 @@ After commit: regenerate markdown artifacts → write to disk → invalidate cac
 
 **Connection scoping (db-connection-cache.ts):**
 - Keyed by workspace `identityKey` (realpath of project root)
-- Sibling worktrees share the same `.gsd/gsd.db` via SQLite WAL
+- Sibling worktrees share the same `.gsd/otto.db` via SQLite WAL
 - Only one connection is "active" at a time; others cached for fast re-activation
 - On process exit: checkpoint WAL → vacuum → close
 
@@ -662,29 +662,29 @@ runtime_kv  (soft state KV)
 
 ---
 
-## 5. Complete gsd_* Tool → Table Map
+## 5. Complete otto_* Tool → Table Map
 
 | Tool | Tables READ | Tables WRITTEN | Disk Artifacts |
 |------|------------|----------------|----------------|
-| `gsd_decision_save` | memories | memories (`category = "architecture"`) | DECISIONS.md (projection) |
-| `gsd_requirement_save` | requirements | requirements | REQUIREMENTS.md |
-| `gsd_requirement_update` | requirements | requirements | REQUIREMENTS.md |
-| `gsd_summary_save` | milestones, slices, tasks | artifacts | M##/S##/T## artifact files |
-| `gsd_milestone_generate_id` | milestones | milestones (INSERT OR IGNORE, queued) | — |
-| `gsd_plan_milestone` | milestones, slices | milestones, slices, tasks, replan_history | ROADMAP.md |
-| `gsd_plan_slice` | slices, tasks | slices, tasks | S##-PLAN.md |
-| `gsd_plan_task` | slices, tasks | tasks | T##-PLAN.md |
-| `gsd_task_complete` | tasks, slices | tasks, verification_evidence | T##-SUMMARY.md; toggles checkbox in S##-PLAN.md |
-| `gsd_slice_complete` | tasks, slices | slices, tasks (cascade skipped) | S##-SUMMARY.md, S##-UAT.md; toggles checkpoint in ROADMAP.md |
-| `gsd_complete_milestone` | milestones, slices, tasks | milestones | M##-SUMMARY.md |
-| `gsd_validate_milestone` | milestones, slices, tasks | assessments | VALIDATION.md |
-| `gsd_reassess_roadmap` | milestones, slices | milestones, slices, assessments | ROADMAP.md, ASSESSMENT.md |
-| `gsd_replan_slice` | slices, tasks | slices, tasks, replan_history, quality_gates | S##-PLAN.md, S##-REPLAN.md |
-| `gsd_skip_slice` | slices, tasks | slices, tasks | STATE.md (via rebuildState) |
-| `gsd_task_reopen` | tasks, slices, milestones | tasks | deletes T##-SUMMARY.md |
-| `gsd_slice_reopen` | slices, tasks, milestones | slices, tasks | deletes S##-SUMMARY.md, UAT, all T##-SUMMARY.md |
-| `gsd_milestone_reopen` | milestones, slices, tasks | milestones, slices, tasks | deletes all summaries |
-| `gsd_save_gate_result` | quality_gates | quality_gates, gate_runs | — |
+| `otto_decision_save` | memories | memories (`category = "architecture"`) | DECISIONS.md (projection) |
+| `otto_requirement_save` | requirements | requirements | REQUIREMENTS.md |
+| `otto_requirement_update` | requirements | requirements | REQUIREMENTS.md |
+| `otto_summary_save` | milestones, slices, tasks | artifacts | M##/S##/T## artifact files |
+| `otto_milestone_generate_id` | milestones | milestones (INSERT OR IGNORE, queued) | — |
+| `otto_plan_milestone` | milestones, slices | milestones, slices, tasks, replan_history | ROADMAP.md |
+| `otto_plan_slice` | slices, tasks | slices, tasks | S##-PLAN.md |
+| `otto_plan_task` | slices, tasks | tasks | T##-PLAN.md |
+| `otto_task_complete` | tasks, slices | tasks, verification_evidence | T##-SUMMARY.md; toggles checkbox in S##-PLAN.md |
+| `otto_slice_complete` | tasks, slices | slices, tasks (cascade skipped) | S##-SUMMARY.md, S##-UAT.md; toggles checkpoint in ROADMAP.md |
+| `otto_complete_milestone` | milestones, slices, tasks | milestones | M##-SUMMARY.md |
+| `otto_validate_milestone` | milestones, slices, tasks | assessments | VALIDATION.md |
+| `otto_reassess_roadmap` | milestones, slices | milestones, slices, assessments | ROADMAP.md, ASSESSMENT.md |
+| `otto_replan_slice` | slices, tasks | slices, tasks, replan_history, quality_gates | S##-PLAN.md, S##-REPLAN.md |
+| `otto_skip_slice` | slices, tasks | slices, tasks | STATE.md (via rebuildState) |
+| `otto_task_reopen` | tasks, slices, milestones | tasks | deletes T##-SUMMARY.md |
+| `otto_slice_reopen` | slices, tasks, milestones | slices, tasks | deletes S##-SUMMARY.md, UAT, all T##-SUMMARY.md |
+| `otto_milestone_reopen` | milestones, slices, tasks | milestones, slices, tasks | deletes all summaries |
+| `otto_save_gate_result` | quality_gates | quality_gates, gate_runs | — |
 | `capture_thought` | memories | memories | KNOWLEDGE.md projection for Patterns/Lessons (both backfilled and newly captured) |
 | `memory_query` | memories, memories_fts, memory_embeddings | memories (hit_count++) | — |
 
@@ -726,12 +726,12 @@ runtime_kv  (soft state KV)
 2. **Transaction wrapping**: every multi-table write uses `transaction()`. Rollback on any error. Re-entrant: nested calls increment depth counter; no nested BEGIN.
 
 3. **Cascade semantics**:
-   - `gsd_slice_complete` cascades `pending` tasks → `skipped`
-   - `gsd_skip_slice` cascades `pending`/`active` tasks → `skipped`, preserves `complete`
-   - `gsd_milestone_reopen` cascades all slices → `in_progress`, all tasks → `pending`
+   - `otto_slice_complete` cascades `pending` tasks → `skipped`
+   - `otto_skip_slice` cascades `pending`/`active` tasks → `skipped`, preserves `complete`
+   - `otto_milestone_reopen` cascades all slices → `in_progress`, all tasks → `pending`
 
 4. **Conflict guards**: `insertSlice`, `insertTask` use `ON CONFLICT` to preserve existing completed status and non-empty fields. Fresh INSERT of an already-complete row is a no-op.
 
 5. **FTS fallback**: if FTS5 unavailable, `memory_query` falls back to LIKE scan on `memories.content`.
 
-6. **Workspace isolation**: same `.gsd/gsd.db` for all worktrees of one project; separate `.gsd/gsd.db` per project root. Coordination tables assume single-host shared WAL. Multi-host needs external coordinator.
+6. **Workspace isolation**: same `.gsd/otto.db` for all worktrees of one project; separate `.gsd/otto.db` per project root. Coordination tables assume single-host shared WAL. Multi-host needs external coordinator.

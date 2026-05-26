@@ -1,12 +1,12 @@
 /**
- * Direct phase dispatch — handles manual /loop24 dispatch commands.
+ * Direct phase dispatch — handles manual /otto dispatch commands.
  * Resolves phase name → unit type + prompt, creates a session, and sends the message.
  */
 
 import type {
   ExtensionAPI,
   ExtensionCommandContext,
-} from "@loop24/pi-coding-agent";
+} from "@otto/pi-coding-agent";
 
 import { deriveState } from "./state.js";
 import { loadFile } from "./files.js";
@@ -55,7 +55,7 @@ export async function dispatchDirectPhase(
   const projectRoot = base;
 
   // Switch the dispatch base to the canonical milestone worktree if one
-  // exists. Without this, /loop24 dispatch invoked from the project root would
+  // exists. Without this, /otto dispatch invoked from the project root would
   // build prompts and create a session anchored to the project root even
   // though the milestone's actual code lives in the worktree.
   const dispatchBase = resolveCanonicalMilestoneRoot(base, mid);
@@ -84,7 +84,7 @@ export async function dispatchDirectPhase(
         const requireDiscussion = loadEffectiveGSDPreferences()?.preferences?.phases?.require_slice_discussion;
         if (requireDiscussion && !sliceContextFile) {
           ctx.ui.notify(
-            `Slice ${sid} requires discussion before planning. Run /gsd discuss to discuss this slice, then /gsd auto to resume.`,
+            `Slice ${sid} requires discussion before planning. Run /otto discuss to discuss this slice, then /otto auto to resume.`,
             "info",
           );
           await pauseAuto(ctx, pi);

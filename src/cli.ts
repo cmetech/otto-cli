@@ -3,7 +3,7 @@ import type {
   ModelRegistry as ModelRegistryInstance,
   PackageCommand,
   SettingsManager as SettingsManagerInstance,
-} from '@loop24/pi-coding-agent'
+} from '@otto/pi-coding-agent'
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { agentDir, sessionsDir, authFilePath } from './app-paths.js'
@@ -12,8 +12,8 @@ import { ensureManagedTools } from './tool-bootstrap.js'
 import { loadStoredEnvKeys } from './wizard.js'
 import { migratePiCredentials } from './pi-migration.js'
 import { shouldRunOnboarding, runOnboarding } from './onboarding.js'
-import { runLoop24Wizard, shouldRunLoop24Wizard, selectConfigSection } from './loop24-wizard.js'
-import { applyConfigToEnv, configPath } from './loop24-config.js'
+import { runOttoWizard, shouldRunOTTOWizard, selectConfigSection } from './otto-wizard.js'
+import { applyConfigToEnv, configPath } from './otto-config.js'
 import { COMMAND_NAMESPACE, CONFIG_DIR_NAME } from './brand.js'
 import chalk from 'chalk'
 import { checkForUpdates } from './update-check.js'
@@ -26,21 +26,19 @@ import { migrateAnthropicDefaultToClaudeCode } from './provider-migrations.js'
 import {
   buildHeadlessAutoArgs,
   parseCliArgs,
-  runWebCliBranch,
   migrateLegacyFlatSessions,
-} from './cli-web-branch.js'
-import { stopWebMode } from './web-mode.js'
+} from './cli-args.js'
 import { getProjectSessionsDir } from './project-sessions.js'
 import { markStartup, printStartupTimings } from './startup-timings.js'
-import { applyRtkProcessEnv, GSD_RTK_DISABLED_ENV, LOOP24_RTK_DISABLED_ENV, isTruthy } from './rtk-shared.js'
+import { applyRtkProcessEnv, OTTO_RTK_DISABLED_ENV, isTruthy } from './rtk-shared.js'
 import type { EnsureRtkResult } from './rtk.js'
 
-type PiCodingAgentModule = typeof import('@loop24/pi-coding-agent')
+type PiCodingAgentModule = typeof import('@otto/pi-coding-agent')
 
 let piCodingAgentModulePromise: Promise<PiCodingAgentModule> | undefined
 
 function loadPiCodingAgentModule(): Promise<PiCodingAgentModule> {
-  return (piCodingAgentModulePromise ??= import('@loop24/pi-coding-agent'))
+  return (piCodingAgentModulePromise ??= import('@otto/pi-coding-agent'))
 }
 
 // ---------------------------------------------------------------------------
@@ -53,7 +51,7 @@ if (parseInt(process.versions.node) >= 22) {
 }
 
 function exitIfManagedResourcesAreNewer(currentAgentDir: string): void {
-  const currentVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || '0.0.0'
+  const currentVersion = process.env.OTTO_VERSION || '0.0.0'
   const managedVersion = getNewerManagedResourceVersion(currentAgentDir, currentVersion)
   if (!managedVersion) {
     return
@@ -61,8 +59,8 @@ function exitIfManagedResourcesAreNewer(currentAgentDir: string): void {
 
   process.stderr.write(
     `[otto] ${chalk.yellow('Version mismatch detected')}\n` +
-    `[otto] Synced resources are from ${chalk.bold(`v${managedVersion}`)}, but this \`gsd\` binary is ${chalk.dim(`v${currentVersion}`)}.\n` +
-    `[otto] Run ${chalk.bold('npm install -g @cmetech/otto@latest')} or ${chalk.bold('gsd upgrade')}, then try again.\n`,
+    `[otto] Synced resources are from ${chalk.bold(`v${managedVersion}`)}, but this \`otto\` binary is ${chalk.dim(`v${currentVersion}`)}.\n` +
+    `[otto] Run ${chalk.bold('npm install -g @cmetech/otto@latest')} or ${chalk.bold('otto upgrade')}, then try again.\n`,
   )
   process.exit(1)
 }
@@ -74,22 +72,18 @@ function exitIfManagedResourcesAreNewer(currentAgentDir: string): void {
 /**
  * Print the non-interactive-mode error and exit. Called both from the early
  * TTY gate (before heavy init) and from the interactive-mode TTY gate right
- * before `InteractiveMode.run()`. The `includeWebHint` variant also lists
- * `--web` and `headless` as alternatives.
+ * before `InteractiveMode.run()`.
  */
-function printNonTtyErrorAndExit(missing: string | undefined, includeWebHint: boolean): never {
+function printNonTtyErrorAndExit(missing: string | undefined, includeHeadlessHint: boolean): never {
   const suffix = missing ? ` but ${missing} not a TTY` : ''
   process.stderr.write(`[otto] Error: Interactive mode requires a terminal (TTY)${suffix}.\n`)
   process.stderr.write('[otto] Non-interactive alternatives:\n')
   process.stderr.write('[otto]   otto auto                       Auto-mode (pipeable, no TUI)\n')
   process.stderr.write('[otto]   otto --print "your message"     Single-shot prompt\n')
-  if (includeWebHint) {
-    process.stderr.write('[otto]   otto --web [path]               Browser-only web mode\n')
-  }
   process.stderr.write('[otto]   otto --mode rpc                 JSON-RPC over stdin/stdout\n')
   process.stderr.write('[otto]   otto --mode mcp                 MCP server over stdin/stdout\n')
   process.stderr.write('[otto]   otto --mode text "message"      Text output mode\n')
-  if (includeWebHint) {
+  if (includeHeadlessHint) {
     process.stderr.write('[otto]   otto headless                   Auto-mode without TUI\n')
   }
   process.exit(1)
@@ -176,7 +170,7 @@ const isPrintMode = cliFlags.print || cliFlags.mode !== undefined
 // subcommand, otherwise fall back to general help.
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   const helpSubcommand = cliFlags.messages[0]
-  const version = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || '0.0.0'
+  const version = process.env.OTTO_VERSION || '0.0.0'
   if (!helpSubcommand || !printSubcommandHelp(helpSubcommand, version)) {
     printHelp(version)
   }
@@ -188,10 +182,10 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
 let rtkBootstrapPromise: Promise<void> | undefined
 async function doRtkBootstrap(): Promise<void> {
   let rtkStatus: EnsureRtkResult | undefined
-  let rtkDisabled = isTruthy(process.env[LOOP24_RTK_DISABLED_ENV] ?? process.env[GSD_RTK_DISABLED_ENV])
+  let rtkDisabled = isTruthy(process.env[OTTO_RTK_DISABLED_ENV])
 
   // RTK is opt-in. Resolution order (highest precedence first):
-  //   1. Env var LOOP24_RTK_DISABLED / GSD_RTK_DISABLED (handled above)
+  //   1. Env var OTTO_RTK_DISABLED (handled above)
   //   2. ~/.otto/settings.json experimental.rtk
   //   3. Project preferences experimental.rtk (only if cwd is inside a project)
   //   4. Default: disabled
@@ -207,8 +201,7 @@ async function doRtkBootstrap(): Promise<void> {
     }
 
     if (!rtkEnabled) {
-      process.env[LOOP24_RTK_DISABLED_ENV] = '1'
-      process.env[GSD_RTK_DISABLED_ENV] = '1'
+      process.env[OTTO_RTK_DISABLED_ENV] = '1'
       rtkDisabled = true
     }
   }
@@ -221,7 +214,7 @@ async function doRtkBootstrap(): Promise<void> {
       supported: true,
       available: false,
       source: 'disabled',
-      reason: `${GSD_RTK_DISABLED_ENV} is set`,
+      reason: `${OTTO_RTK_DISABLED_ENV} is set`,
     }
   } else {
     const { bootstrapRtk } = await import('./rtk.js')
@@ -256,7 +249,7 @@ if (shouldBypassManagedResourceMismatchGate(cliFlags.messages[0])) {
 // ---------------------------------------------------------------------------
 if (cliFlags.messages[0] === 'graph') {
   const sub = cliFlags.messages[1]
-  const { buildGraph, writeGraph, graphStatus, graphQuery, graphDiff, resolveWorkflowRoot } = await import('@loop24-build/mcp-server')
+  const { buildGraph, writeGraph, graphStatus, graphQuery, graphDiff, resolveWorkflowRoot } = await import('@otto-build/mcp-server')
 
   const projectDir = process.cwd()
   const workflowRoot = resolveWorkflowRoot(projectDir)
@@ -349,7 +342,6 @@ const subcommandsExemptFromEarlyTtyCheck = new Set([
   'sessions',
   'update',
   'upgrade',
-  'web',
   'worktree',
   'wt',
 ])
@@ -360,10 +352,10 @@ const isSubcommandExemptFromEarlyTtyCheck = subcommandsExemptFromEarlyTtyCheck.h
 // (piped/non-TTY) and the wizard else-if branch (--mode rpc/mcp/text).
 const MISSING_CONFIG_WARN =
   `[${COMMAND_NAMESPACE}] No ~/${CONFIG_DIR_NAME}/config.json yet. ` +
-  `Run "${COMMAND_NAMESPACE} config" to configure, or set LOOP24_GATEWAY_URL / LANGFLOW_SERVER_URL.\n`
+  `Run "${COMMAND_NAMESPACE} config" to configure, or set OTTO_GATEWAY_URL / LANGFLOW_SERVER_URL.\n`
 
-if (!process.stdin.isTTY && !isPrintMode && !isSubcommandExemptFromEarlyTtyCheck && !cliFlags.listModels && !cliFlags.web) {
-  if (!existsSync(configPath()) && !process.env.LOOP24_GATEWAY_URL) {
+if (!process.stdin.isTTY && !isPrintMode && !isSubcommandExemptFromEarlyTtyCheck && !cliFlags.listModels) {
+  if (!existsSync(configPath()) && !process.env.OTTO_GATEWAY_URL) {
     process.stderr.write(MISSING_CONFIG_WARN)
   }
   printNonTtyErrorAndExit(undefined, false)
@@ -402,13 +394,13 @@ if (cliFlags.messages[0] === 'config') {
   }
 
   if (subject === 'gateway' || subject === 'langflow') {
-    const saved = await runLoop24Wizard({ section: subject })
+    const saved = await runOttoWizard({ section: subject })
     if (saved) applyConfigToEnv(saved)
     process.exit(0)
   }
 
   if (subject === 'all') {
-    const saved = await runLoop24Wizard({ section: 'all' })
+    const saved = await runOttoWizard({ section: 'all' })
     if (saved) {
       applyConfigToEnv(saved)
       await runOnboarding(authStorage)
@@ -424,7 +416,7 @@ if (cliFlags.messages[0] === 'config') {
   if (choice === 'llm') {
     await runOnboarding(authStorage)
   } else {
-    const saved = await runLoop24Wizard({ section: choice })
+    const saved = await runOttoWizard({ section: choice })
     if (saved) {
       applyConfigToEnv(saved)
       if (choice === 'all') {
@@ -434,33 +426,6 @@ if (cliFlags.messages[0] === 'config') {
   }
   process.exit(0)
 }
-
-// `gsd web stop [path|all]` — stop web server before anything else
-if (cliFlags.messages[0] === 'web' && cliFlags.messages[1] === 'stop') {
-  const webBranch = await runWebCliBranch(cliFlags, {
-    stopWebMode,
-    stderr: process.stderr,
-    baseSessionsDir: sessionsDir,
-    agentDir,
-  })
-  if (webBranch.handled) {
-    process.exit(webBranch.exitCode)
-  }
-}
-
-// `gsd --web [path]` or `gsd web [start] [path]` — launch browser-only web mode
-if (cliFlags.web || (cliFlags.messages[0] === 'web' && cliFlags.messages[1] !== 'stop')) {
-  await ensureRtkBootstrap()
-  const webBranch = await runWebCliBranch(cliFlags, {
-    stderr: process.stderr,
-    baseSessionsDir: sessionsDir,
-    agentDir,
-  })
-  if (webBranch.handled) {
-    process.exit(webBranch.exitCode)
-  }
-}
-
 
 // `gsd sessions` — list past sessions and pick one to resume
 if (cliFlags.messages[0] === 'sessions') {
@@ -633,12 +598,12 @@ const settingsManager = SettingsManager.create(process.cwd(), agentDir)
 applySecurityOverrides(settingsManager)
 markStartup('SettingsManager.create')
 
-// LOOP24 services first-run wizard (gateway + langflow). Runs once when
+// OTTO services first-run wizard (gateway + langflow). Runs once when
 // ~/.otto/config.json is missing — populates the file via clack prompts
 // and persists with mode 0600. Env vars still win at runtime, so CI is
 // unaffected.
-if (shouldRunLoop24Wizard({ isPrint: isPrintMode, isTTY: !!process.stdin.isTTY })) {
-  const saved = await runLoop24Wizard()
+if (shouldRunOTTOWizard({ isPrint: isPrintMode, isTTY: !!process.stdin.isTTY })) {
+  const saved = await runOttoWizard()
   // Propagate wizard-saved config into the current process's env so the
   // subsequent LLM-auth wizard and agent loop see the new values immediately
   // (the module-load side effect ran before the user wrote the config).
@@ -650,7 +615,7 @@ if (shouldRunLoop24Wizard({ isPrint: isPrintMode, isTTY: !!process.stdin.isTTY }
   process.stdin.removeAllListeners('keypress')
   if (process.stdin.setRawMode) process.stdin.setRawMode(false)
   process.stdin.pause()
-} else if (!existsSync(configPath()) && !process.env.LOOP24_GATEWAY_URL && !isPrintMode) {
+} else if (!existsSync(configPath()) && !process.env.OTTO_GATEWAY_URL && !isPrintMode) {
   // Config file missing AND no env override — headless / piped stdin / CI.
   // Emit a single warn line so the user knows the wizard is available.
   process.stderr.write(MISSING_CONFIG_WARN)
@@ -831,7 +796,7 @@ if (isPrintMode) {
 
     await startMcpServer({
       tools: session.agent.state.tools ?? [],
-      version: (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || '0.0.0',
+      version: process.env.OTTO_VERSION || '0.0.0',
     })
     // MCP server runs until the transport closes; keep alive
     await new Promise(() => {})

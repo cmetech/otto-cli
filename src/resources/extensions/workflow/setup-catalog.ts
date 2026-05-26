@@ -46,7 +46,7 @@ export const ONBOARDING_STEPS: readonly OnboardingStepDef[] = [
   { id: "prefs",     label: "Global preferences",       required: false, hint: "Mode, profile, notifications" },
   { id: "skills",    label: "Skills install",           required: false, hint: "Browse and install skill plugins" },
   { id: "doctor",    label: "Validate setup",           required: false, hint: "Run provider doctor checks" },
-  { id: "project",   label: "Project init",             required: false, hint: "Bootstrap .gsd/ in this repo" },
+  { id: "project",   label: "Project init",             required: false, hint: "Bootstrap .otto/workflow/ in this repo" },
 ]
 
 const STEP_INDEX = new Map(ONBOARDING_STEPS.map((s, i) => [s.id, i]))

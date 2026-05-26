@@ -2,7 +2,7 @@
 //
 // Belt-and-suspenders: even when CONTEXT.md and STATE.md exist on disk, the
 // "Milestone X ready." success notify must not fire when the milestone DB row
-// is absent. Otherwise the user sees "ready" and then /gsd reports
+// is absent. Otherwise the user sees "ready" and then /otto reports
 // "No Active Milestone" because the milestone was never registered.
 
 import { describe, test, beforeEach, afterEach } from "node:test";
@@ -60,13 +60,13 @@ function mkBase(): string {
   // realpathSync to normalize the macOS /var → /private/var symlink so the
   // basePath we pass matches what the workspace projectRoot resolves to.
   const base = realpathSync(mkdtempSync(join(tmpdir(), "gsd-ready-guard-")));
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"),
     "# M001: Ready Guard Test\n\nContext.\n",
   );
   writeFileSync(
-    join(base, ".gsd", "STATE.md"),
+    join(base, ".otto/workflow", "STATE.md"),
     "# State\n\nactive: M001\n",
   );
   return base;

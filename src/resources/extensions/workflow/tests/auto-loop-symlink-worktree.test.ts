@@ -1,7 +1,7 @@
-// gsd-2 + Symlinked .gsd worktree-loop reproduction (Phase A pt 2 follow-up to PR #5236)
+// gsd-2 + Symlinked .otto/workflow worktree-loop reproduction (Phase A pt 2 follow-up to PR #5236)
 //
 // Regression coverage for the auto-mode loop bug observed on projects whose
-// .gsd/ is a symlink into ~/.gsd/projects/<hash>/ (the external-state layout).
+// .otto/workflow/ is a symlink into ~/.otto/workflow/projects/<hash>/ (the external-state layout).
 //
 // Two assertions:
 //   1. deriveState's cache key is the canonical project root when callers
@@ -10,7 +10,7 @@
 //      whether the caller passed the worktree path or the project-root path.
 //   2. _deriveStateImpl's projectRootForReads option routes legacy markdown
 //      reads through the canonical project root, finding files that live in
-//      the symlink target rather than the worktree-local empty .gsd/.
+//      the symlink target rather than the worktree-local empty .otto/workflow/.
 //
 // Per project rule #11: regression test using node:test + node:assert/strict,
 // no source-grep assertions. The first test would fail on main without the
@@ -41,9 +41,9 @@ import {
 // ─── Fixture helpers ──────────────────────────────────────────────────────
 
 interface SymlinkedFixture {
-  /** Project root containing .gsd as a symlink. */
+  /** Project root containing .otto/workflow as a symlink. */
   projectRoot: string;
-  /** External state dir that .gsd points at (acts as the canonical .gsd/). */
+  /** External state dir that .otto/workflow points at (acts as the canonical .otto/workflow/). */
   externalState: string;
   /** Worktree path under the external state's worktrees/ dir. */
   worktreePath: string;
@@ -59,9 +59,10 @@ function makeSymlinkedFixture(prefix: string): SymlinkedFixture {
 
   mkdirSync(projectRoot, { recursive: true });
   mkdirSync(externalState, { recursive: true });
+  mkdirSync(join(projectRoot, ".otto"), { recursive: true });
 
-  // .gsd → externalState (the layout that triggered the original bug)
-  symlinkSync(externalState, join(projectRoot, ".gsd"), "junction");
+  // .otto/workflow → externalState (the layout that triggered the original bug)
+  symlinkSync(externalState, join(projectRoot, ".otto/workflow"), "junction");
 
   // Worktree path lives under the external state's worktrees/ dir, mirroring
   // the canonicalProjectRoot resolution that resolveWorkflowPathContract performs
@@ -89,8 +90,8 @@ test("deriveState: cache key is canonical when projectRootForReads is supplied",
   const fx = makeSymlinkedFixture("symlink-cache");
   t.after(() => cleanupFixture(fx));
 
-  // Open the DB at the canonical .gsd location (externalState).
-  openDatabase(join(fx.externalState, "gsd.db"));
+  // Open the DB at the canonical .otto/workflow location (externalState).
+  openDatabase(join(fx.externalState, "otto.db"));
   insertMilestone({ id: "M001", title: "Symlinked", status: "active" });
   insertSlice({ id: "S01", milestoneId: "M001", title: "Slice" });
   // No tasks → DB-derived state is "planning".
@@ -130,7 +131,7 @@ test("deriveState: cache key is canonical when projectRootForReads is supplied",
 // Test 2: _deriveStateImpl reads from canonical root via projectRootForReads
 // ═══════════════════════════════════════════════════════════════════════════
 
-test("_deriveStateImpl: projectRootForReads routes legacy markdown reads to the canonical .gsd/", async (t) => {
+test("_deriveStateImpl: projectRootForReads routes legacy markdown reads to the canonical .otto/workflow/", async (t) => {
   const fx = makeSymlinkedFixture("symlink-md");
   t.after(() => cleanupFixture(fx));
   // No DB opened — exercise the markdown fallback.
@@ -160,11 +161,11 @@ test("_deriveStateImpl: projectRootForReads routes legacy markdown reads to the 
   invalidateStateCache();
 
   // Calling _deriveStateImpl with the worktree path AND projectRootForReads
-  // pointing at the project root must consult the canonical .gsd/ (via the
+  // pointing at the project root must consult the canonical .otto/workflow/ (via the
   // symlink target externalState), find M001/S01, and report planning phase
   // because no slice plan file exists yet.
   const state = await _deriveStateImpl(fx.worktreePath, { projectRootForReads: fx.projectRoot });
-  assert.equal(state.activeMilestone?.id, "M001", "must find M001 via canonical .gsd/ reads");
+  assert.equal(state.activeMilestone?.id, "M001", "must find M001 via canonical .otto/workflow/ reads");
   assert.equal(state.activeSlice?.id, "S01", "must find S01 from the roadmap");
   assert.equal(state.phase, "planning", "no slice PLAN.md yet → planning phase");
 });

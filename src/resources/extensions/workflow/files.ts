@@ -814,7 +814,7 @@ export async function appendOverride(basePath: string, change: string, appliedAt
     await saveFile(overridesPath, existing.trimEnd() + "\n\n" + entry);
   } else {
     const header = [
-      "# GSD Overrides",
+      "# OTTO Overrides",
       "",
       "User-issued overrides that supersede plan document content.",
       "",

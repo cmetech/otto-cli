@@ -108,23 +108,23 @@ console.log("── formatGitError ──");
 
 {
   const cases: Array<{ input: string; shouldContain: string; label: string }> = [
-    { input: "CONFLICT (content): Merge conflict in file.ts", shouldContain: "/gsd doctor", label: "merge conflict" },
-    { input: "error: pathspec 'foo' did not match any file(s)", shouldContain: "/gsd doctor", label: "checkout failure" },
-    { input: "HEAD detached at abc123", shouldContain: "/gsd doctor", label: "detached HEAD" },
-    { input: "Unable to create '/path/.git/index.lock': File exists", shouldContain: "/gsd doctor", label: "lock file" },
-    { input: "fatal: not a git repository", shouldContain: "/gsd doctor", label: "not a repo" },
-    { input: "some unknown error", shouldContain: "/gsd doctor", label: "unknown error" },
+    { input: "CONFLICT (content): Merge conflict in file.ts", shouldContain: "/otto doctor", label: "merge conflict" },
+    { input: "error: pathspec 'foo' did not match any file(s)", shouldContain: "/otto doctor", label: "checkout failure" },
+    { input: "HEAD detached at abc123", shouldContain: "/otto doctor", label: "detached HEAD" },
+    { input: "Unable to create '/path/.git/index.lock': File exists", shouldContain: "/otto doctor", label: "lock file" },
+    { input: "fatal: not a git repository", shouldContain: "/otto doctor", label: "not a repo" },
+    { input: "some unknown error", shouldContain: "/otto doctor", label: "unknown error" },
   ];
 
   for (const { input, shouldContain, label } of cases) {
     const result = formatGitError(input);
-    assert.ok(result.includes(shouldContain), `${label}: should suggest /gsd doctor`);
-    console.log(`  ✓ ${label} → suggests /gsd doctor`);
+    assert.ok(result.includes(shouldContain), `${label}: should suggest /otto doctor`);
+    console.log(`  ✓ ${label} → suggests /otto doctor`);
   }
 
   // Test with Error object
   const result = formatGitError(new Error("CONFLICT in merge"));
-  assert.ok(result.includes("/gsd doctor"), "should handle Error objects");
+  assert.ok(result.includes("/otto doctor"), "should handle Error objects");
   console.log("  ✓ handles Error objects");
 }
 

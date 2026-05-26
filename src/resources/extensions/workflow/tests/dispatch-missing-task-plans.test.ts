@@ -68,7 +68,7 @@ function makeContextFor(
 // ─── Scaffold helpers ──────────────────────────────────────────────────────
 
 function scaffoldSlicePlan(basePath: string, mid: string, sid: string): void {
-  const dir = join(basePath, ".gsd", "milestones", mid, "slices", sid);
+  const dir = join(basePath, ".otto/workflow", "milestones", mid, "slices", sid);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, `${sid}-PLAN.md`), [
     `# ${sid}: Third Slice`,
@@ -81,7 +81,7 @@ function scaffoldSlicePlan(basePath: string, mid: string, sid: string): void {
 }
 
 function scaffoldMilestoneContext(basePath: string, mid: string): void {
-  const dir = join(basePath, ".gsd", "milestones", mid);
+  const dir = join(basePath, ".otto/workflow", "milestones", mid);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, `${mid}-CONTEXT.md`), [
     `# ${mid}: Test Milestone`,
@@ -92,7 +92,7 @@ function scaffoldMilestoneContext(basePath: string, mid: string): void {
 }
 
 function scaffoldTaskPlan(basePath: string, mid: string, sid: string, tid: string): void {
-  const dir = join(basePath, ".gsd", "milestones", mid, "slices", sid, "tasks");
+  const dir = join(basePath, ".otto/workflow", "milestones", mid, "slices", sid, "tasks");
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, `${tid}-PLAN.md`), [
     `# ${tid}: Do something`,
@@ -148,7 +148,7 @@ test("dispatch: executing recovery checks active milestone worktree task plans b
   scaffoldMilestoneContext(tmp, "M002");
   scaffoldSlicePlan(tmp, "M002", "S03");
 
-  const worktreeRoot = join(tmp, ".gsd", "worktrees", "M002");
+  const worktreeRoot = join(tmp, ".otto/workflow", "worktrees", "M002");
   mkdirSync(worktreeRoot, { recursive: true });
   writeFileSync(join(worktreeRoot, ".git"), "gitdir: /tmp/fake-worktree-gitdir\n");
   scaffoldMilestoneContext(worktreeRoot, "M002");
@@ -172,7 +172,7 @@ test("dispatch: active session worktree task plan wins over missing original-roo
   scaffoldMilestoneContext(tmp, "M004");
   scaffoldSlicePlan(tmp, "M004", "S02");
 
-  const worktreeRoot = join(tmp, ".gsd", "worktrees", "M004");
+  const worktreeRoot = join(tmp, ".otto/workflow", "worktrees", "M004");
   mkdirSync(worktreeRoot, { recursive: true });
   scaffoldMilestoneContext(worktreeRoot, "M004");
   scaffoldSlicePlan(worktreeRoot, "M004", "S02");
@@ -199,7 +199,7 @@ test("dispatch: artifact checks trust active session basePath even when original
   scaffoldMilestoneContext(tmp, "M004");
   scaffoldSlicePlan(tmp, "M004", "S02");
 
-  const activeMilestoneRoot = join(tmp, ".gsd", "runtime-active", "M004");
+  const activeMilestoneRoot = join(tmp, ".otto/workflow", "runtime-active", "M004");
   mkdirSync(activeMilestoneRoot, { recursive: true });
   scaffoldMilestoneContext(activeMilestoneRoot, "M004");
   scaffoldSlicePlan(activeMilestoneRoot, "M004", "S02");

@@ -71,7 +71,7 @@ describe("gsd-phase-state", () => {
 			activateGSD();
 			setCurrentPhase("execute-task");
 
-			const eventsPath = join(basePath, ".gsd", "audit", "events.jsonl");
+			const eventsPath = join(basePath, ".otto/workflow", "audit", "events.jsonl");
 			if (existsSync(eventsPath)) {
 				const contents = readFileSync(eventsPath, "utf-8");
 				assert.equal(

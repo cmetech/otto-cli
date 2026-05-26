@@ -33,7 +33,7 @@ describe("PartialMessageBuilder — malformed tool arguments (#2574)", () => {
 		builder.handleEvent({
 			type: "content_block_start",
 			index: 0,
-			content_block: { type: "tool_use", id: "tool_1", name: "gsd_plan_slice", input: {} },
+			content_block: { type: "tool_use", id: "tool_1", name: "otto_plan_slice", input: {} },
 		} as BetaRawMessageStreamEvent);
 
 		// Feed JSON fragments as input_json_delta
@@ -169,8 +169,8 @@ describe("PartialMessageBuilder — malformed tool arguments (#2574)", () => {
 describe("parseMcpToolName", () => {
 	test("splits mcp__<server>__<tool> into parts", () => {
 		assert.deepEqual(
-			parseMcpToolName("mcp__gsd-workflow__gsd_plan_milestone"),
-			{ server: "gsd-workflow", tool: "gsd_plan_milestone" },
+			parseMcpToolName("mcp__otto-workflow__otto_plan_milestone"),
+			{ server: "otto-workflow", tool: "otto_plan_milestone" },
 		);
 	});
 
@@ -190,7 +190,7 @@ describe("parseMcpToolName", () => {
 
 	test("returns null for non-prefixed names", () => {
 		assert.equal(parseMcpToolName("Bash"), null);
-		assert.equal(parseMcpToolName("gsd_plan_milestone"), null);
+		assert.equal(parseMcpToolName("otto_plan_milestone"), null);
 	});
 
 	test("returns null for malformed prefixes", () => {
@@ -210,7 +210,7 @@ describe("PartialMessageBuilder — MCP tool name normalization", () => {
 			content_block: {
 				type: "tool_use",
 				id: "tool_1",
-				name: "mcp__gsd-workflow__gsd_plan_milestone",
+				name: "mcp__otto-workflow__otto_plan_milestone",
 				input: {},
 			},
 		} as BetaRawMessageStreamEvent);
@@ -219,8 +219,8 @@ describe("PartialMessageBuilder — MCP tool name normalization", () => {
 		assert.equal(event!.type, "toolcall_start");
 		if (event!.type === "toolcall_start") {
 			const toolCall = (event.partial.content[event.contentIndex] as any);
-			assert.equal(toolCall.name, "gsd_plan_milestone");
-			assert.equal(toolCall.mcpServer, "gsd-workflow");
+			assert.equal(toolCall.name, "otto_plan_milestone");
+			assert.equal(toolCall.mcpServer, "otto-workflow");
 		}
 	});
 
@@ -244,13 +244,13 @@ describe("PartialMessageBuilder — MCP tool name normalization", () => {
 		const block: BetaContentBlock = {
 			type: "tool_use",
 			id: "tool_2",
-			name: "mcp__gsd-workflow__gsd_task_complete",
+			name: "mcp__otto-workflow__otto_task_complete",
 			input: { taskId: "T001" },
 		};
 		const mapped = mapContentBlock(block) as any;
 		assert.equal(mapped.type, "toolCall");
-		assert.equal(mapped.name, "gsd_task_complete");
-		assert.equal(mapped.mcpServer, "gsd-workflow");
+		assert.equal(mapped.name, "otto_task_complete");
+		assert.equal(mapped.mcpServer, "otto-workflow");
 		assert.deepEqual(mapped.arguments, { taskId: "T001" });
 	});
 });

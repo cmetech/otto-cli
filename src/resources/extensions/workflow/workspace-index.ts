@@ -266,10 +266,10 @@ export async function getSuggestedNextCommands(basePath: string): Promise<string
     : index.active.milestoneId;
 
   const commands = new Set<string>();
-  if (index.active.phase === "planning") commands.add("/gsd");
-  if (index.active.phase === "executing" || index.active.phase === "summarizing") commands.add("/gsd auto");
-  if (scope) commands.add(`/gsd doctor ${scope}`);
-  if (scope) commands.add(`/gsd doctor fix ${scope}`);
-  commands.add("/gsd status");
+  if (index.active.phase === "planning") commands.add("/otto");
+  if (index.active.phase === "executing" || index.active.phase === "summarizing") commands.add("/otto auto");
+  if (scope) commands.add(`/otto doctor ${scope}`);
+  if (scope) commands.add(`/otto doctor fix ${scope}`);
+  commands.add("/otto status");
   return [...commands];
 }

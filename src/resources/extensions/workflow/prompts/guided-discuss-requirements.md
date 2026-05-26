@@ -1,6 +1,6 @@
-**Working directory:** `{{workingDirectory}}`. All file reads, writes, and shell commands MUST operate relative to this directory. Do NOT `cd` elsewhere. For `.gsd` files, use absolute paths rooted at `{{workingDirectory}}`, not `Glob`.
+**Working directory:** `{{workingDirectory}}`. All file reads, writes, and shell commands MUST operate relative to this directory. Do NOT `cd` elsewhere. For `.otto/workflow` files, use absolute paths rooted at `{{workingDirectory}}`, not `Glob`.
 
-Discuss **project-level requirements**. Read `.gsd/PROJECT.md` first; it is the rendered project artifact for vision, core value, anti-goals, and milestone sequence. Requirements must trace to it. Ask capability gray areas, then persist requirements with `gsd_requirement_save` and render `.gsd/REQUIREMENTS.md` through `gsd_summary_save` using v2 `R###` format and the **Requirements** template.
+Discuss **project-level requirements**. Read `.otto/workflow/PROJECT.md` first; it is the rendered project artifact for vision, core value, anti-goals, and milestone sequence. Requirements must trace to it. Ask capability gray areas, then persist requirements with `otto_requirement_save` and render `.otto/workflow/REQUIREMENTS.md` through `otto_summary_save` using v2 `R###` format and the **Requirements** template.
 
 This runs once after `discuss-project` and before milestone work, creating the capability contract for milestones, slices, and verification.
 
@@ -20,9 +20,9 @@ Before your first action, print this banner verbatim in chat:
 
 ## Pre-flight
 
-1. Read `.gsd/PROJECT.md` end-to-end. If missing, STOP and emit: `"PROJECT.md missing — run discuss-project first."`
+1. Read `.otto/workflow/PROJECT.md` end-to-end. If missing, STOP and emit: `"PROJECT.md missing — run discuss-project first."`
 2. Extract Core Value, Anti-goals, Constraints, Milestone Sequence, and project shape from `## Project Shape` -> `**Complexity:**` (`simple` or `complex`; default to `complex` if missing/unclear).
-3. If `.gsd/REQUIREMENTS.md` exists, read it as the working set.
+3. If `.otto/workflow/REQUIREMENTS.md` exists, read it as the working set.
 
 **Shape-dependent cadence:**
 - **`simple`**: one fast pass. Extract from PROJECT.md, ask 1-2 plain-text clarifiers only when class/status is ambiguous, then persist requirements through the DB-backed tools.
@@ -54,7 +54,7 @@ Ask **1–3 questions per round**, one dimension at a time: capability scoping, 
 
 ### Round cadence
 
-- **Incremental persistence:** After every 2 question rounds, silently save the draft using `gsd_summary_save` with `artifact_type: "REQUIREMENTS-DRAFT"` and no `milestone_id`. Do NOT mention this save to the user.
+- **Incremental persistence:** After every 2 question rounds, silently save the draft using `otto_summary_save` with `artifact_type: "REQUIREMENTS-DRAFT"` and no `milestone_id`. Do NOT mention this save to the user.
 - Continue rounds until the depth checklist is satisfied or the user signals stop.
 
 ---
@@ -90,10 +90,10 @@ If they adjust, absorb and re-verify.
 Once the user confirms:
 
 1. Use the **Requirements** output template to render final markdown in memory.
-2. Every entry must use `R###` and all fields. Use `gsd_requirement_save` for each requirement so DB state is saved first.
-3. After all `gsd_requirement_save` calls, call `gsd_summary_save` with `artifact_type: "REQUIREMENTS"`; omit `milestone_id`. The requirements table is source of truth, and this tool renders `.gsd/REQUIREMENTS.md` from DB state. Pass markdown as audit context only; do not rely on markdown to update DB rows.
+2. Every entry must use `R###` and all fields. Use `otto_requirement_save` for each requirement so DB state is saved first.
+3. After all `otto_requirement_save` calls, call `otto_summary_save` with `artifact_type: "REQUIREMENTS"`; omit `milestone_id`. The requirements table is source of truth, and this tool renders `.otto/workflow/REQUIREMENTS.md` from DB state. Pass markdown as audit context only; do not rely on markdown to update DB rows.
 4. The file MUST contain all required sections: `## Active`, `## Validated`, `## Deferred`, `## Out of Scope`, `## Traceability`, `## Coverage Summary`. Empty sections are OK; missing sections are not.
 5. Print the final coverage summary in chat: `Active: N | Validated: N | Deferred: N | Out of Scope: N | Mapped to slices: N | Unmapped active: N`.
-6. Do NOT use `artifact_type: "CONTEXT"` and do NOT pass `milestone_id: "REQUIREMENTS"`; that creates a fake milestone instead of `.gsd/REQUIREMENTS.md`.
+6. Do NOT use `artifact_type: "CONTEXT"` and do NOT pass `milestone_id: "REQUIREMENTS"`; that creates a fake milestone instead of `.otto/workflow/REQUIREMENTS.md`.
 7. {{commitInstruction}}
 8. End your response with exactly: `Requirements written.`

@@ -5,7 +5,7 @@
  *
  * Two tests:
  * 1. Auto-mode files must have zero empty catch blocks (fully migrated).
- * 2. All GSD files must not use raw stderr/console in catch blocks.
+ * 2. All OTTO files must not use raw stderr/console in catch blocks.
  *
  * Implementation note (#4836): the previous implementation walked every
  * `{` / `}` character in the source to infer catch-block boundaries. That

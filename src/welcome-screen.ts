@@ -1,8 +1,8 @@
-// Project/App: LOOP24
-// File Purpose: Startup welcome screen rendering for the LOOP24 terminal experience.
+// Project/App: OTTO
+// File Purpose: Startup welcome screen rendering for the OTTO terminal experience.
 
 /**
- * LOOP24 Welcome Screen
+ * OTTO Welcome Screen
  *
  * Command-center layout: compact block logo, project
  * state, primary action, branch/workspace, and secondary hints.

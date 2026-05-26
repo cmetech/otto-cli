@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Best-effort dispatch ledger write helpers for auto-mode loop adapters.
 
 interface DispatchLedgerWriteDeps {

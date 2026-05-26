@@ -32,7 +32,7 @@ describe('needs-remediation revalidation guard (#3670)', () => {
       insertMilestone({ id: 'M001', title: 'Needs remediation', status: 'active' });
       insertSlice({ id: 'S01', milestoneId: 'M001', title: 'Done slice', status: 'complete' });
       insertAssessment({
-        path: join(base, '.gsd', 'milestones', 'M001', 'M001-VALIDATION.md'),
+        path: join(base, '.otto/workflow', 'milestones', 'M001', 'M001-VALIDATION.md'),
         milestoneId: 'M001',
         status: 'needs-remediation',
         scope: 'milestone-validation',

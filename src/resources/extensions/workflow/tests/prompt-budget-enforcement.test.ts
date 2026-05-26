@@ -38,7 +38,7 @@ function setupDependencyFixture(
   deps: string[],
   summaries: Record<string, string>,
 ): void {
-  const msDir = join(base, ".gsd", "milestones", mid);
+  const msDir = join(base, ".otto/workflow", "milestones", mid);
   mkdirSync(msDir, { recursive: true });
 
   // Build roadmap content — sid depends on deps
@@ -151,7 +151,7 @@ describe("prompt-budget: inlineDependencySummaries truncation", () => {
   });
 
   it("returns no-dependencies marker when slice has no deps", async () => {
-    const msDir = join(base, ".gsd", "milestones", "M001");
+    const msDir = join(base, ".otto/workflow", "milestones", "M001");
     mkdirSync(msDir, { recursive: true });
     const roadmap = "# Roadmap\n\n## Slices\n\n- [ ] **S01: Solo** `risk:low` `depends:[]`\n";
     writeFileSync(join(msDir, "M001-ROADMAP.md"), roadmap);
@@ -210,14 +210,14 @@ describe("prompt-budget: plan-slice template", () => {
     try {
       setupDependencyFixture(base, "M001", "S01", ["S00"], { S00: "### Results\n\nDone." });
       writeFileSync(
-        join(base, ".gsd", "DECISIONS.md"),
+        join(base, ".otto/workflow", "DECISIONS.md"),
         "# Decisions\n\n- This broad decision body should stay out of generic slice planning prompts.\n",
       );
 
       const prompt = await buildPlanSlicePrompt("M001", "Milestone", "S01", "Setup implementation testing", base, "standard");
 
       assert.match(prompt, /### On-demand Decisions/);
-      assert.match(prompt, /\.gsd\/DECISIONS\.md/);
+      assert.match(prompt, /\.otto\/workflow\/DECISIONS\.md/);
       assert.doesNotMatch(prompt, /broad decision body should stay out/);
     } finally {
       cleanup(base);
@@ -231,14 +231,14 @@ describe("prompt-budget: research-slice context", () => {
     try {
       setupDependencyFixture(base, "M001", "S01", ["S00"], { S00: "### Results\n\nDone." });
       writeFileSync(
-        join(base, ".gsd", "DECISIONS.md"),
+        join(base, ".otto/workflow", "DECISIONS.md"),
         "# Decisions\n\n- This broad research decision body should stay out of generic slice research prompts.\n",
       );
 
       const prompt = await buildResearchSlicePrompt("M001", "Milestone", "S01", "Setup implementation testing", base);
 
       assert.match(prompt, /### On-demand Decisions/);
-      assert.match(prompt, /\.gsd\/DECISIONS\.md/);
+      assert.match(prompt, /\.otto\/workflow\/DECISIONS\.md/);
       assert.doesNotMatch(prompt, /broad research decision body should stay out/);
     } finally {
       cleanup(base);
@@ -371,10 +371,10 @@ describe("prompt-budget: execute-task template", () => {
   it("rendered execute-task prompt includes verification budget", async () => {
     const base = createFixtureBase();
     try {
-      const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+      const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
       const taskDir = join(sliceDir, "tasks");
       mkdirSync(taskDir, { recursive: true });
-      writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap\n");
+      writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap\n");
       writeFileSync(join(sliceDir, "S01-PLAN.md"), "# Slice Plan\n");
       writeFileSync(join(taskDir, "T01-PLAN.md"), "# Task Plan\n");
 
@@ -392,10 +392,10 @@ describe("prompt-budget: execute-task template", () => {
   it("standard execute-task prompt keeps decisions template on demand", async () => {
     const base = createFixtureBase();
     try {
-      const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+      const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
       const taskDir = join(sliceDir, "tasks");
       mkdirSync(taskDir, { recursive: true });
-      writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap\n");
+      writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap\n");
       writeFileSync(join(sliceDir, "S01-PLAN.md"), "# Slice Plan\n");
       writeFileSync(join(taskDir, "T01-PLAN.md"), "# Task Plan\n");
 
@@ -569,7 +569,7 @@ describe("prompt-budget: reactive-execute builder", () => {
   it("caps dependency carry-forward per ready subagent", async () => {
     const base = createFixtureBase();
     try {
-      const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+      const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
       const taskDir = join(sliceDir, "tasks");
       mkdirSync(taskDir, { recursive: true });
       writeFileSync(
@@ -651,10 +651,10 @@ describe("prompt-budget: modelRegistry + sessionContextWindow behavior", () => {
   it("buildExecuteTaskPrompt output changes when sessionContextWindow changes", async () => {
     const base = createFixtureBase();
     try {
-      const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+      const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
       const taskDir = join(sliceDir, "tasks");
       mkdirSync(taskDir, { recursive: true });
-      writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap\n");
+      writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"), "# Roadmap\n");
       writeFileSync(join(sliceDir, "S01-PLAN.md"), "# Slice Plan\n");
       writeFileSync(join(taskDir, "T01-PLAN.md"), "# Task Plan\n");
 

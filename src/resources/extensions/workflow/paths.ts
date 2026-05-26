@@ -1,4 +1,4 @@
-// LOOP24 — ID-based path resolution for the workflow project files and directories
+// OTTO — ID-based path resolution for the workflow project files and directories
 /**
  * Workflow Paths — ID-based path resolution
  *
@@ -19,13 +19,20 @@ import { DIR_CACHE_MAX } from "./constants.js";
 import { workflowHome } from "./home.js";
 import { isWorktreePath, resolveWorktreeProjectRoot } from "./worktree-root.js";
 
+export const WORKFLOW_DIR_PARTS = [".otto", "workflow"] as const;
+export const WORKFLOW_DIR_DISPLAY = ".otto/workflow";
+
+export function workflowDirUnder(root: string): string {
+  return join(root, ...WORKFLOW_DIR_PARTS);
+}
+
 // ─── Directory Listing Cache ──────────────────────────────────────────────────
 
 const dirEntryCache = new Map<string, Dirent[]>();
 const dirListCache = new Map<string, string[]>();
 
 // ─── Native Tree Cache ────────────────────────────────────────────────────────
-// When the native module is available, scan the entire .gsd/ tree in one call
+// When the native module is available, scan the entire .otto/workflow/ tree in one call
 // and serve directory listings from memory instead of individual readdirSync calls.
 
 let nativeTreeCache: Map<string, WorkflowTreeEntry[]> | null = null;
@@ -66,7 +73,7 @@ function cachedReaddirWithTypes(dirPath: string): Dirent[] {
   const cached = dirEntryCache.get(dirPath);
   if (cached) return cached;
 
-  // Try native tree cache for paths under .gsd/
+  // Try native tree cache for paths under .otto/workflow/
   if (nativeTreeBase) {
     const key = nativeTreeKey(dirPath, nativeTreeBase);
     if (key && nativeTreeCache) {
@@ -108,7 +115,7 @@ function cachedReaddir(dirPath: string): string[] {
   const cached = dirListCache.get(dirPath);
   if (cached) return cached;
 
-  // Try native tree cache for paths under .gsd/
+  // Try native tree cache for paths under .otto/workflow/
   if (nativeTreeBase) {
     const key = nativeTreeKey(dirPath, nativeTreeBase);
     if (key && nativeTreeCache) {
@@ -284,7 +291,7 @@ export const ROOT_FILES = {
 
 export type RootFileKey = keyof typeof ROOT_FILES;
 
-const LEGACY_GSD_ROOT_FILES: Record<RootFileKey, string> = {
+const LEGACY_OTTO_ROOT_FILES: Record<RootFileKey, string> = {
   PROJECT: "project.md",
   DECISIONS: "decisions.md",
   QUEUE: "queue.md",
@@ -301,7 +308,7 @@ const LEGACY_GSD_ROOT_FILES: Record<RootFileKey, string> = {
 // Keys are realpath-normalized (via normCacheKey) so /foo and /foo/ share the
 // same entry and so do case-variant paths on case-insensitive volumes. This
 // normalization is the safety net that prevents cache poisoning from the
-// ~/.gsd walk-up bug (fixed in c46cf4786 + b35e070eb), making it safe to
+// ~/.otto walk-up bug (fixed in c46cf4786 + b35e070eb), making it safe to
 // hold this cache for the entire process lifetime.
 // Use _clearWorkflowRootCache() only at session-reset boundaries (workspace switch,
 // process exit) — NOT inside clearPathCache(), which runs on every agent turn.
@@ -312,9 +319,9 @@ export interface WorkflowPathContract {
   projectRoot: string;
   /** Current execution root, which may be an auto-worktree. */
   workRoot: string;
-  /** Canonical authoritative .gsd directory. */
+  /** Canonical authoritative workflow directory. */
   projectGsd: string;
-  /** Legacy worktree-local .gsd projection directory, when applicable. */
+  /** Worktree-local workflow projection directory, when applicable. */
   worktreeGsd: string | null;
   /** Canonical authoritative SQLite DB path. */
   projectDb: string;
@@ -329,7 +336,7 @@ export function resolveWorkflowPathContract(
   const resolvedWorkRoot = resolve(workRoot || process.cwd());
   const isWorktree = isWorktreePath(resolvedWorkRoot);
   if (isWorktree && !originalProjectRoot?.trim()) {
-    const externalMatch = /[/\\]\.gsd[/\\]projects[/\\][^/\\]+[/\\]worktrees(?:[/\\]|$)/.exec(resolvedWorkRoot);
+    const externalMatch = /[/\\]\.otto[/\\]workflow[/\\]projects[/\\][^/\\]+[/\\]worktrees(?:[/\\]|$)/.exec(resolvedWorkRoot);
     if (externalMatch) {
       const worktreesIdx = externalMatch[0].search(/[/\\]worktrees(?:[/\\]|$)/);
       const projectGsd = resolvedWorkRoot.slice(0, externalMatch.index + worktreesIdx);
@@ -337,22 +344,22 @@ export function resolveWorkflowPathContract(
         projectRoot: dirname(dirname(projectGsd)),
         workRoot: resolvedWorkRoot,
         projectGsd,
-        worktreeGsd: join(resolvedWorkRoot, ".gsd"),
-        projectDb: join(projectGsd, "gsd.db"),
+        worktreeGsd: workflowDirUnder(resolvedWorkRoot),
+        projectDb: join(projectGsd, "otto.db"),
         isWorktree,
       };
     }
   }
   const projectRoot = resolve(resolveWorktreeProjectRoot(resolvedWorkRoot, originalProjectRoot));
-  const projectGsd = join(projectRoot, ".gsd");
-  const worktreeGsd = isWorktree ? join(resolvedWorkRoot, ".gsd") : null;
+  const projectGsd = workflowDirUnder(projectRoot);
+  const worktreeGsd = isWorktree ? workflowDirUnder(resolvedWorkRoot) : null;
 
   return {
     projectRoot,
     workRoot: resolvedWorkRoot,
     projectGsd,
     worktreeGsd,
-    projectDb: join(projectGsd, "gsd.db"),
+    projectDb: join(projectGsd, "otto.db"),
     isWorktree,
   };
 }
@@ -394,13 +401,13 @@ function normCacheKey(p: string): string {
 }
 
 /**
- * Resolve the `.gsd` directory for a given project base path.
+ * Resolve the `.otto/workflow` directory for a given project base path.
  *
  * Probe order:
- *   1. basePath/.gsd         — fast path (common case)
+ *   1. basePath/.otto/workflow — fast path (common case)
  *   2. git rev-parse root    — handles cwd-is-a-subdirectory
- *   3. Walk up from basePath — handles moved .gsd in an ancestor (bounded by git root)
- *   4. basePath/.gsd         — creation fallback (init scenario)
+ *   3. Walk up from basePath — handles moved workflow roots in an ancestor (bounded by git root)
+ *   4. basePath/.otto/workflow — creation fallback (init scenario)
  *
  * Result is cached per normalized basePath for the process lifetime.
  * Keys are realpath-normalized so /foo and /foo/ share the same cache entry.
@@ -418,8 +425,7 @@ export function workflowRoot(basePath: string): string {
 
   // Defense-in-depth: if basePath resolves to the user's home directory and
   // the result equals workflowHome(), refuse — project-scoped writes must never
-  // land in the global ~/.gsd. Paths under ~/.otto/projects/<hash>/ are still
-  // valid (their basePath does not equal homedir).
+  // land in the global agent home.
   assertNotGlobalWorkflowHome(basePath, result);
 
   workflowRootCache.set(cacheKey, result);
@@ -429,11 +435,10 @@ export function workflowRoot(basePath: string): string {
 /**
  * Like `workflowRoot()` but returns null instead of throwing or falling back to
  * a creation-default path. Use this everywhere a "project may not exist" check
- * is appropriate (boot path, /gsd command guards).
+ * is appropriate (boot path, /otto command guards).
  *
  * Detection order at each ancestor level walked:
- *   1. <dir>/.otto/workflow/    (post-rebrand canonical)
- *   2. <dir>/.gsd/              (legacy)
+ *   1. <dir>/.otto/workflow/
  *
  * Returns null when no marker is found anywhere in the ancestor walk (bounded
  * by git root if inside a git repo, or by filesystem root otherwise). A
@@ -469,11 +474,8 @@ export function workflowRootOrNull(basePath: string): string | null {
   }
 
   while (true) {
-    const ottoWorkflow = join(cursor, ".otto", "workflow");
+    const ottoWorkflow = workflowDirUnder(cursor);
     if (existsSync(ottoWorkflow)) return normalizeRealPath(ottoWorkflow);
-
-    const gsd = join(cursor, ".gsd");
-    if (existsSync(gsd)) return normalizeRealPath(gsd);
 
     if (cursor === boundary) return null;
     const parent = dirname(cursor);
@@ -501,32 +503,32 @@ function assertNotGlobalWorkflowHome(basePath: string, result: string): void {
   } catch {
     return;
   }
-  if (baseNorm === homeNorm && resultNorm === workflowHomeNorm) {
+  if (baseNorm === homeNorm || (baseNorm === homeNorm && resultNorm === workflowHomeNorm)) {
     throw new Error(
-      `Refusing to use ${result} as a project .gsd directory — that is the global GSD home. ` +
-      `Run GSD from inside a project directory.`,
+      `Refusing to use ${result} as a project workflow directory from the home directory. ` +
+      `Run OTTO from inside a project directory.`,
     );
   }
 }
 
 /**
- * Detect if a path is inside a .gsd/worktrees/<name>/ structure.
+ * Detect if a path is inside a .otto/workflow/worktrees/<name>/ structure.
  *
- * Auto-worktrees live at <project>/.gsd/worktrees/<milestoneId>/.
+ * Auto-worktrees live at <project>/.otto/workflow/worktrees/<milestoneId>/.
  * When workflowRoot() is called with such a path, we must NOT walk up to the
- * project root's .gsd — each worktree manages its own .gsd state (#2594).
+ * project root's .otto/workflow — each worktree manages its own .otto/workflow state (#2594).
  *
  * Matches both forward-slash and platform-native separators to handle
  * Windows paths (path.sep = '\\') and normalized Unix paths.
  */
 function isInsideWorkflowWorktree(p: string): boolean {
-  // Match /.gsd/worktrees/<name> where <name> is the final segment or
+  // Match /.otto/workflow/worktrees/<name> where <name> is the final segment or
   // followed by a separator. The <name> segment must be non-empty.
   const sepFwd = "/";
   const sepNative = "\\";
   const markers = [
-    `${sepFwd}.gsd${sepFwd}worktrees${sepFwd}`,
-    `${sepNative}.gsd${sepNative}worktrees${sepNative}`,
+    `${sepFwd}.otto${sepFwd}workflow${sepFwd}worktrees${sepFwd}`,
+    `${sepNative}.otto${sepNative}workflow${sepNative}worktrees${sepNative}`,
   ];
   for (const marker of markers) {
     const idx = p.indexOf(marker);
@@ -546,13 +548,13 @@ function probeWorkflowRoot(rawBasePath: string): string {
   if (contract.isWorktree) return contract.projectGsd;
 
   // 1. Fast path — check the input path directly
-  const local = join(rawBasePath, ".gsd");
+  const local = workflowDirUnder(rawBasePath);
   if (existsSync(local)) return local;
 
-  // 1b. Worktree guard (#2594) — if basePath is inside a .gsd/worktrees/<name>/
-  //     structure, return the worktree-local .gsd path immediately. Without this,
+  // 1b. Worktree guard (#2594) — if basePath is inside a .otto/workflow/worktrees/<name>/
+  //     structure, return the worktree-local .otto/workflow path immediately. Without this,
   //     the git-root probe (step 2) or walk-up (step 3) escapes to the project
-  //     root's .gsd, causing ensurePreconditions() and deriveState() to read/write
+  //     root's .otto/workflow, causing ensurePreconditions() and deriveState() to read/write
   //     state in the wrong location.
   if (isInsideWorkflowWorktree(rawBasePath)) return local;
 
@@ -588,20 +590,22 @@ function probeWorkflowRoot(rawBasePath: string): string {
   };
   let workflowHomeNorm: string;
   try { workflowHomeNorm = normPath(workflowHome()); } catch { workflowHomeNorm = ""; }
+  let osHomeNorm: string;
+  try { osHomeNorm = normPath(process.env.HOME ?? process.env.USERPROFILE ?? homedir()); } catch { osHomeNorm = ""; }
 
   if (gitRoot) {
-    const candidate = join(gitRoot, ".gsd");
+    const candidate = workflowDirUnder(gitRoot);
     // Skip if the candidate resolves to the global agent home — a subdir basePath
-    // must not be anchored to ~/.gsd just because $HOME is a git repo.
-    if (existsSync(candidate) && normPath(candidate) !== workflowHomeNorm) return candidate;
+    // must not be anchored to ~/.otto just because $HOME is a git repo.
+    if (existsSync(candidate) && normPath(gitRoot) !== osHomeNorm && !normPath(candidate).startsWith(`${workflowHomeNorm}/`)) return candidate;
   }
 
   // 3. Walk up from basePath to the git root (only if we are in a subdirectory)
   if (gitRoot && basePath !== gitRoot) {
     let cur = dirname(basePath);
     while (cur !== basePath) {
-      const candidate = join(cur, ".gsd");
-      if (existsSync(candidate) && normPath(candidate) !== workflowHomeNorm) return candidate;
+      const candidate = workflowDirUnder(cur);
+      if (existsSync(candidate) && normPath(cur) !== osHomeNorm && !normPath(candidate).startsWith(`${workflowHomeNorm}/`)) return candidate;
       if (cur === gitRoot) break;
       basePath = cur;
       cur = dirname(cur);
@@ -623,13 +627,13 @@ export function resolveWorkflowRootFile(basePath: string, key: RootFileKey): str
   const root = workflowRoot(basePath);
   const canonical = join(root, ROOT_FILES[key]);
   if (existsSync(canonical)) return canonical;
-  const legacy = join(root, LEGACY_GSD_ROOT_FILES[key]);
+  const legacy = join(root, LEGACY_OTTO_ROOT_FILES[key]);
   if (existsSync(legacy)) return legacy;
   return canonical;
 }
 
 export function relWorkflowRootFile(key: RootFileKey): string {
-  return `.gsd/${ROOT_FILES[key]}`;
+  return `.otto/workflow/${ROOT_FILES[key]}`;
 }
 
 /**
@@ -703,20 +707,20 @@ export function resolveTaskFile(
   return file ? join(tDir, file) : null;
 }
 
-// ─── Relative Path Builders (for prompts — .gsd/milestones/...) ────────────
+// ─── Relative Path Builders (for prompts — .otto/workflow/milestones/...) ────────────
 
 /**
- * Build relative .gsd/ path to a milestone directory.
+ * Build relative .otto/workflow/ path to a milestone directory.
  * Uses the actual directory name on disk if it exists, otherwise bare ID.
  */
 export function relMilestonePath(basePath: string, milestoneId: string): string {
   const dir = resolveDir(milestonesDir(basePath), milestoneId);
-  if (dir) return `.gsd/milestones/${dir}`;
-  return `.gsd/milestones/${milestoneId}`;
+  if (dir) return `.otto/workflow/milestones/${dir}`;
+  return `.otto/workflow/milestones/${milestoneId}`;
 }
 
 /**
- * Build relative .gsd/ path to a milestone file.
+ * Build relative .otto/workflow/ path to a milestone file.
  */
 export function relMilestoneFile(
   basePath: string, milestoneId: string, suffix: string
@@ -731,7 +735,7 @@ export function relMilestoneFile(
 }
 
 /**
- * Build relative .gsd/ path to a slice directory.
+ * Build relative .otto/workflow/ path to a slice directory.
  */
 export function relSlicePath(
   basePath: string, milestoneId: string, sliceId: string
@@ -747,7 +751,7 @@ export function relSlicePath(
 }
 
 /**
- * Build relative .gsd/ path to a slice file.
+ * Build relative .otto/workflow/ path to a slice file.
  */
 export function relSliceFile(
   basePath: string, milestoneId: string, sliceId: string, suffix: string
@@ -762,7 +766,7 @@ export function relSliceFile(
 }
 
 /**
- * Build relative .gsd/ path to a task file.
+ * Build relative .otto/workflow/ path to a task file.
  */
 export function relTaskFile(
   basePath: string, milestoneId: string, sliceId: string,

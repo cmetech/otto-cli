@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Shared render cache helper for interactive TUI components.
 
 export class RenderCache {

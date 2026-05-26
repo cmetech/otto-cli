@@ -1,7 +1,7 @@
-// LOOP24 — ADR-013 Phase 6 preflight scanner.
+// OTTO — ADR-013 Phase 6 preflight scanner.
 //
 // Read-only detection of rows in the legacy knowledge surfaces (decisions
-// table, `.gsd/KNOWLEDGE.md`) that lack a corresponding `memories` row.
+// table, `.otto/workflow/KNOWLEDGE.md`) that lack a corresponding `memories` row.
 // Runs on session start (and on demand via doctor); never mutates state.
 //
 // The scanner exists so the destructive Phase 6 cutover (#5755) can prove
@@ -63,7 +63,7 @@ interface KnowledgeRow {
 }
 
 /**
- * Parse `.gsd/KNOWLEDGE.md` into rows, one per table entry. Skips the table
+ * Parse `.otto/workflow/KNOWLEDGE.md` into rows, one per table entry. Skips the table
  * header and separator lines; ignores rows from unrecognized sections.
  *
  * The format is locked in `files.ts:appendKnowledge` — three `## ` sections

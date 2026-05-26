@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for notification overlay wrapping and width-safe rendering.
 
 import { describe, test } from "node:test";
@@ -7,7 +7,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { visibleWidth } from "@loop24/pi-tui";
+import { visibleWidth } from "@otto/pi-tui";
 import { appendNotification, initNotificationStore, _resetNotificationStore } from "../notification-store.ts";
 import { NotificationOverlay, notificationOverlayOptions } from "../notification-overlay.ts";
 import { wrapVisibleText } from "../tui/render-kit.ts";
@@ -60,7 +60,7 @@ describe("notification overlay — wrapText", () => {
   // for the real-world long multi-provider notification payload.
   test("regression #4465: long notification stays within column budget", () => {
     const msg =
-      "GSD API Key Manager LLM Providers ✗ anthropic — not configured " +
+      "OTTO API Key Manager LLM Providers ✗ anthropic — not configured " +
       "(console.anthropic.com) ✗ openai — not configured " +
       "(platform.openai.com/api-keys) ✓ github-copilot — OAuth (expires in 13m) " +
       "✓ openai-codex — OAuth (expires in 99h 9m) ✓ google-gemini-cli — OAuth " +

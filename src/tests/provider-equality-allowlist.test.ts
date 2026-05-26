@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Provider equality guardrail tests for ADR-012.
 // gsd-2: provider-equality guardrail test (ADR-012)
 //
@@ -7,13 +7,13 @@
 //
 // Rule (see docs/dev/ADR-012-provider-id-vs-api-shape.md):
 //   Source files must either gate API-shape behavior through the shared
-//   helpers in @loop24/pi-ai (isAnthropicApi / isOpenAIApi / isGeminiApi /
+//   helpers in @otto/pi-ai (isAnthropicApi / isOpenAIApi / isGeminiApi /
 //   isBedrockApi), OR be present in the allowlist below with a justified
 //   `reason` — one of a small set of legitimate transport-specific use cases.
 //
 // When this test fails, you have two options:
 //   1. Replace the `model.provider === "x"` check with an isXxxApi() call
-//      from @loop24/pi-ai. This is the default answer.
+//      from @otto/pi-ai. This is the default answer.
 //   2. If your check really is transport-specific (credential resolution,
 //      transport-only fallback targeting, display labels, etc.), add the
 //      file path to ALLOWED_FILES below with a short reason.
@@ -164,7 +164,7 @@ test("ADR-012: provider-equality checks are allowlisted or use isXxxApi helpers"
     assert.fail(
       `New \`model.provider === "<transport>"\` check(s) detected in:\n${lines}\n\n` +
         `Rule (ADR-012): gate API-shape-dependent behavior on \`model.api\` via\n` +
-        `isAnthropicApi / isOpenAIApi / isGeminiApi / isBedrockApi from @loop24/pi-ai.\n\n` +
+        `isAnthropicApi / isOpenAIApi / isGeminiApi / isBedrockApi from @otto/pi-ai.\n\n` +
         `If the check really is transport-specific (credentials, fallback source,\n` +
         `display labels, etc.), add the file to ALLOWED_FILES in this test with a\n` +
         `one-line reason and update ADR-012's allowlist section.`,

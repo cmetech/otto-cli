@@ -1,4 +1,4 @@
-const flag = ((process.env.LOOP24_STARTUP_TIMING ?? process.env.GSD_STARTUP_TIMING) ?? process.env.PI_TIMING ?? "").toLowerCase();
+const flag = (process.env.OTTO_STARTUP_TIMING ?? process.env.PI_TIMING ?? "").toLowerCase();
 const ENABLED = flag === "1" || flag === "true" || flag === "yes";
 
 const timings: Array<{ label: string; ms: number }> = [];

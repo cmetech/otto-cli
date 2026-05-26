@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.channel }}
     container:
-      image: ghcr.io/open-gsd/gsd-ci-builder:latest
+      image: ghcr.io/open-gsd/otto-ci-builder:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -70,18 +70,8 @@ jobs:
         run: |
           node -e "const [major, minor] = process.versions.node.split('.').map(Number); if (major < 22 || (major === 22 && minor < 14)) { throw new Error('Trusted publishing requires Node >= 22.14.0'); }"
           node -e "const v=require('child_process').execSync('npm --version',{encoding:'utf8'}).trim().split('.').map(Number); if (v[0] < 11 || (v[0] === 11 && v[1] < 5) || (v[0] === 11 && v[1] === 5 && v[2] < 1)) { throw new Error('Trusted publishing requires npm >= 11.5.1'); }"
-
-      - name: Install web host dependencies
-        run: npm --prefix web ci
-
-      - uses: ./.github/actions/cache-nextjs
-
       - name: Build core
         run: npm run build:core
-
-      - name: Build web host
-        run: npm run build:web-host
-
       - name: Stamp prerelease version and sync platform packages
         id: stamp
         env:
@@ -203,8 +193,6 @@ jobs:
           node -e "const [major, minor] = process.versions.node.split('.').map(Number); if (major < 22 || (major === 22 && minor < 14)) { throw new Error('Trusted publishing requires Node >= 22.14.0'); }"
           node -e "const v=require('child_process').execSync('npm --version',{encoding:'utf8'}).trim().split('.').map(Number); if (v[0] < 11 || (v[0] === 11 && v[1] < 5) || (v[0] === 11 && v[1] === 5 && v[2] < 1)) { throw new Error('Trusted publishing requires npm >= 11.5.1'); }"
 
-      - uses: ./.github/actions/cache-nextjs
-
       - name: Run live LLM tests (optional)
         continue-on-error: true
         run: npm run test:live || echo "::warning::Live LLM tests failed - non-blocking, but worth investigating"
@@ -244,7 +232,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json web/package-lock.json CHANGELOG.md native/Cargo.toml native/Cargo.lock native/npm/*/package.json pkg/package.json packages/*/package.json extensions/google-search/package.json
+          git add package.json package-lock.json CHANGELOG.md native/Cargo.toml native/Cargo.lock native/npm/*/package.json pkg/package.json packages/*/package.json extensions/google-search/package.json
           git commit -m "release: v${RELEASE_VERSION}"
           git pull --rebase origin main
           git tag "v${RELEASE_VERSION}"

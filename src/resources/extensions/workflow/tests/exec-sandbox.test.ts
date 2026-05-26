@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Regression tests for the context-mode gsd_exec sandbox.
+// Project/App: OTTO
+// File Purpose: Regression tests for the context-mode otto_exec sandbox.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -43,7 +43,7 @@ test('runExecSandbox: captures stdout, persists artifacts, returns digest', asyn
     assert.equal(result.exit_code, 0);
     assert.equal(result.timed_out, false);
     assert.ok(result.digest.includes('hello world'), `digest should contain stdout: ${result.digest}`);
-    assert.ok(result.stdout_path.startsWith(join(base, '.gsd', 'exec')), 'stdout path under .gsd/exec');
+    assert.ok(result.stdout_path.startsWith(join(base, '.otto/workflow', 'exec')), 'stdout path under .otto/workflow/exec');
     assert.equal(readFileSync(result.stdout_path, 'utf-8').trim(), 'hello world');
     const meta = JSON.parse(readFileSync(result.meta_path, 'utf-8')) as Record<string, unknown>;
     assert.equal(meta.runtime, 'bash');
@@ -90,10 +90,10 @@ test('runExecSandbox: forwards only allowlisted env vars', async () => {
   const base = freshBase();
   try {
     const result = await runExecSandbox(
-      { runtime: 'bash', script: 'echo PATH=$PATH BLOCKED=$GSD_TEST_BLOCKED_VALUE' },
+      { runtime: 'bash', script: 'echo PATH=$PATH BLOCKED=$OTTO_TEST_BLOCKED_VALUE' },
       baseOpts(base, {
         env_allowlist: [],
-        env: { PATH: '/usr/bin:/bin', HOME: '/tmp', GSD_TEST_BLOCKED_VALUE: 'blocked-value' },
+        env: { PATH: '/usr/bin:/bin', HOME: '/tmp', OTTO_TEST_BLOCKED_VALUE: 'blocked-value' },
       }),
     );
     const stdout = readFileSync(result.stdout_path, 'utf-8');
@@ -145,7 +145,7 @@ test('executeWorkflowExec: runs by default when context_mode is unset', async ()
       { baseDir: base, preferences: {} },
     );
     assert.ok(!result.isError, 'should succeed with no preferences');
-    assert.equal(result.details.operation, 'gsd_exec');
+    assert.equal(result.details.operation, 'otto_exec');
     assert.equal(result.details.exit_code, 0);
     assert.ok(result.content[0].text.includes('default-on-run'));
   } finally {
@@ -259,7 +259,7 @@ test('executeWorkflowExec: rejects original-root scripts from milestone worktree
   const base = freshBase();
   try {
     const originalRoot = join(base, 'project');
-    const worktree = join(originalRoot, '.gsd', 'worktrees', 'M004');
+    const worktree = join(originalRoot, '.otto/workflow', 'worktrees', 'M004');
     mkdirSync(worktree, { recursive: true });
 
     const result = await executeWorkflowExec(
@@ -280,7 +280,7 @@ test('executeWorkflowExec: rejects original-root scripts from milestone worktree
 
 test('executeWorkflowExec: rejects macOS /var alias of original root from milestone worktrees', async () => {
   const originalRoot = '/var/folders/example/project';
-  const realpathedWorktree = '/private/var/folders/example/project/.gsd/worktrees/M004';
+  const realpathedWorktree = '/private/var/folders/example/project/.otto/workflow/worktrees/M004';
 
   const result = await executeWorkflowExec(
     { runtime: 'bash', script: `cd ${originalRoot} && node todo.js --help` },
@@ -299,7 +299,7 @@ test('executeWorkflowExec: rejects original-root traversal after shell boolean o
   const base = freshBase();
   try {
     const originalRoot = join(base, 'project');
-    const worktree = join(originalRoot, '.gsd', 'worktrees', 'M004');
+    const worktree = join(originalRoot, '.otto/workflow', 'worktrees', 'M004');
     mkdirSync(worktree, { recursive: true });
 
     const scripts = [
@@ -325,7 +325,7 @@ test('executeWorkflowExec: allows active worktree paths from milestone worktrees
   const base = freshBase();
   try {
     const originalRoot = join(base, 'project');
-    const worktree = join(originalRoot, '.gsd', 'worktrees', 'M004');
+    const worktree = join(originalRoot, '.otto/workflow', 'worktrees', 'M004');
     mkdirSync(worktree, { recursive: true });
 
     const result = await executeWorkflowExec(
@@ -344,7 +344,7 @@ test('executeWorkflowExec: rejects relative traversal to original root from mile
   const base = freshBase();
   try {
     const originalRoot = join(base, 'project');
-    const worktree = join(originalRoot, '.gsd', 'worktrees', 'M004');
+    const worktree = join(originalRoot, '.otto/workflow', 'worktrees', 'M004');
     mkdirSync(worktree, { recursive: true });
 
     const scripts = [

@@ -1,7 +1,7 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Interactive terminal footer renderer for workspace, model, usage, context, and extension status.
 
-import { type Component, truncateToWidth, visibleWidth } from "@loop24/pi-tui";
+import { type Component, truncateToWidth, visibleWidth } from "@otto/pi-tui";
 import { BRAND_NAME } from "../../../config.js";
 import type { AgentSession } from "../../../core/agent-session.js";
 import type { ReadonlyFooterDataProvider } from "../../../core/footer-data-provider.js";
@@ -154,7 +154,7 @@ export class FooterComponent implements Component {
 		}
 
 		// Per-prompt cost annotation (opt-in via show_token_cost preference, #1515)
-		if ((process.env.LOOP24_SHOW_TOKEN_COST ?? process.env.GSD_SHOW_TOKEN_COST) === "1") {
+		if ((process.env.OTTO_SHOW_TOKEN_COST ?? process.env.OTTO_SHOW_TOKEN_COST) === "1") {
 			const lastTurnCost = this.session.getLastTurnCost();
 			if (lastTurnCost > 0) {
 				costGroup.push(`(last: ${formatPromptCost(lastTurnCost)})`);

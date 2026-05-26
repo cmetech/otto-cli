@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Builds auto-mode unit prompts and pre-dispatch checks.
 
 /**
@@ -24,7 +24,7 @@ import { isContextModeEnabled } from "./preferences-types.js";
 import { parseRoadmap } from "./parsers-legacy.js";
 import type { WorkflowDbState, InlineLevel } from "./types.js";
 import type { WorkflowPreferences } from "./preferences.js";
-import { getLoadedSkills, type Skill } from "@loop24/pi-coding-agent";
+import { getLoadedSkills, type Skill } from "@otto/pi-coding-agent";
 import { join, basename } from "node:path";
 import { existsSync } from "node:fs";
 import { computeBudgets, resolveExecutorContextWindow, truncateAtSectionBoundary, type MinimalModelRegistry } from "./context-budget.js";
@@ -170,7 +170,7 @@ function formatCloseoutReviewInstructions(validationContent: string | null, vali
       "",
       `A passing validation artifact is present at \`${validationRel}\`. Treat it as authoritative for success criteria, requirement coverage, verification classes, and cross-slice integration.`,
       "",
-      "Do not delegate fresh reviewer/security/tester audits and do not redo the validation evidence review unless the artifact is internally inconsistent with the inlined summaries. Focus this unit on final milestone narrative, learnings, PROJECT/requirements updates, and `gsd_complete_milestone`.",
+      "Do not delegate fresh reviewer/security/tester audits and do not redo the validation evidence review unless the artifact is internally inconsistent with the inlined summaries. Focus this unit on final milestone narrative, learnings, PROJECT/requirements updates, and `otto_complete_milestone`.",
     ].join("\n");
   }
 
@@ -268,7 +268,7 @@ function renderContextModeBlockForPrompt(
   const snapshot = readCompactionSnapshot(base);
   if (!snapshot?.trim()) return contextMode;
 
-  return `${contextMode}\n\n## Context Snapshot\nSource: \`.gsd/last-snapshot.md\`\n\n${snapshot.trimEnd()}`;
+  return `${contextMode}\n\n## Context Snapshot\nSource: \`.otto/workflow/last-snapshot.md\`\n\n${snapshot.trimEnd()}`;
 }
 
 function prependContextModeToBlock(
@@ -867,7 +867,7 @@ export async function inlineDependencySummaries(
 }
 
 /**
- * Load a well-known .gsd/ root file for optional inlining.
+ * Load a well-known .otto/workflow/ root file for optional inlining.
  * Handles the existsSync check internally.
  */
 export async function inlineWorkflowRootFile(
@@ -920,7 +920,7 @@ export async function inlineDecisionsFromDb(
         const formatted = inlineLevel !== "full"
           ? formatDecisionsCompact(decisions)
           : formatDecisionsForPrompt(decisions);
-        return `### Decisions\nSource: \`.gsd/DECISIONS.md\`\n\n${formatted}`;
+        return `### Decisions\nSource: \`.otto/workflow/DECISIONS.md\`\n\n${formatted}`;
       }
       // DB available but cascade returned empty — intentional per D020, don't fall back to file
       return null;
@@ -950,7 +950,7 @@ export async function inlineRequirementsFromDb(
         const formatted = inlineLevel !== "full"
           ? formatRequirementsCompact(requirements)
           : formatRequirementsForPrompt(requirements);
-        return `### Requirements\nSource: \`.gsd/REQUIREMENTS.md\`\n\n${formatted}`;
+        return `### Requirements\nSource: \`.otto/workflow/REQUIREMENTS.md\`\n\n${formatted}`;
       }
     }
   } catch (err) {
@@ -972,7 +972,7 @@ export async function inlineProjectFromDb(
       const { queryProject } = await import("./context-store.js");
       const content = queryProject();
       if (content) {
-        return `### Project\nSource: \`.gsd/PROJECT.md\`\n\n${content}`;
+        return `### Project\nSource: \`.otto/workflow/PROJECT.md\`\n\n${content}`;
       }
     }
   } catch (err) {
@@ -1708,7 +1708,7 @@ export async function checkNeedsRunUat(
           // If the UAT file already contains a verdict, UAT has been run — skip
           if (hasVerdict(uatContent)) continue;
           // Also check the ASSESSMENT file — the run-uat prompt writes the verdict
-          // there (via gsd_summary_save artifact_type:"ASSESSMENT"), not into the
+          // there (via otto_summary_save artifact_type:"ASSESSMENT"), not into the
           // UAT spec file. Without this check the unit re-dispatches indefinitely.
           const assessmentFile = resolveSliceFile(base, mid, sid, "ASSESSMENT");
           if (assessmentFile) {
@@ -1780,8 +1780,8 @@ export async function buildDiscussMilestonePrompt(
       workingDirectory: base,
       milestoneId: mid,
       contextPath: relMilestoneFile(base, mid, "CONTEXT"),
-      commitInstruction: "Do not commit planning artifacts — .gsd/ is managed externally.",
-      multiMilestoneCommitInstruction: "Do not commit planning artifacts — .gsd/ is managed externally.",
+      commitInstruction: "Do not commit planning artifacts — .otto/workflow/ is managed externally.",
+      multiMilestoneCommitInstruction: "Do not commit planning artifacts — .otto/workflow/ is managed externally.",
     });
   }
 
@@ -1793,7 +1793,7 @@ export async function buildDiscussMilestonePrompt(
     milestoneTitle: midTitle,
     inlinedTemplates: discussTemplates,
     structuredQuestionsAvailable,
-    commitInstruction: "Do not commit planning artifacts — .gsd/ is managed externally.",
+    commitInstruction: "Do not commit planning artifacts — .otto/workflow/ is managed externally.",
     fastPathInstruction: "",
   });
   const promptWithContextMode = prependContextModeToBlock("discuss-milestone", base, basePrompt);
@@ -1812,7 +1812,7 @@ export async function buildDiscussMilestonePrompt(
 /**
  * Build a prompt for the workflow-preferences unit type (deep mode).
  * Default-writing stage: records high-impact workflow defaults in
- * .gsd/PREFERENCES.md. Runs ONCE per project, early
+ * .otto/workflow/PREFERENCES.md. Runs ONCE per project, early
  * in deep-mode bootstrap before discuss-project.
  */
 export async function buildWorkflowPreferencesPrompt(
@@ -1828,7 +1828,7 @@ export async function buildWorkflowPreferencesPrompt(
 /**
  * Build a prompt for the research-project (parallel) unit type (deep mode).
  * Orchestrator that spawns 4 parallel Task() calls covering stack, features,
- * architecture, and pitfalls. Each subagent writes its findings to .gsd/research/.
+ * architecture, and pitfalls. Each subagent writes its findings to .otto/workflow/research/.
  * Fires after research-decision marker says "research" and project research files
  * are missing. Skipped entirely if user picked "skip".
  */
@@ -1845,7 +1845,7 @@ export async function buildResearchProjectPrompt(
 /**
  * Build a prompt for the research-decision unit type (deep mode).
  * Fixed-question stage: asks "research first or skip?" via ask_user_questions
- * and writes .gsd/runtime/research-decision.json. Fires after discuss-requirements
+ * and writes .otto/workflow/runtime/research-decision.json. Fires after discuss-requirements
  * and before research-project-parallel.
  */
 export async function buildResearchDecisionPrompt(
@@ -1860,7 +1860,7 @@ export async function buildResearchDecisionPrompt(
 
 /**
  * Build a prompt for the discuss-project unit type (deep mode).
- * Project-level interview: produces .gsd/PROJECT.md.
+ * Project-level interview: produces .otto/workflow/PROJECT.md.
  * Fires before any milestone-level work when planning_depth === "deep" and
  * PROJECT.md is missing.
  */
@@ -1874,13 +1874,13 @@ export async function buildDiscussProjectPrompt(
     workingDirectory: base,
     inlinedTemplates,
     structuredQuestionsAvailable,
-    commitInstruction: "Do not commit planning artifacts — .gsd/ is managed externally.",
+    commitInstruction: "Do not commit planning artifacts — .otto/workflow/ is managed externally.",
   }));
 }
 
 /**
  * Build a prompt for the discuss-requirements unit type (deep mode).
- * Requirements-level interview: produces .gsd/REQUIREMENTS.md using the
+ * Requirements-level interview: produces .otto/workflow/REQUIREMENTS.md using the
  * structured R### format. Reads PROJECT.md as authoritative context.
  * Fires when planning_depth === "deep", PROJECT.md exists, and REQUIREMENTS.md is missing.
  */
@@ -1894,7 +1894,7 @@ export async function buildDiscussRequirementsPrompt(
     workingDirectory: base,
     inlinedTemplates,
     structuredQuestionsAvailable,
-    commitInstruction: "Do not commit planning artifacts — .gsd/ is managed externally.",
+    commitInstruction: "Do not commit planning artifacts — .otto/workflow/ is managed externally.",
   }));
 }
 
@@ -2473,7 +2473,7 @@ async function renderSlicePrompt(options: {
   emitPromptContextTelemetry(promptTemplate, contextTelemetry, inlinedContext);
   const executorContextConstraints = formatExecutorConstraints(sessionContextWindow, modelRegistry, sessionProvider);
   const outputRelPath = relSliceFile(base, mid, sid, "PLAN");
-  const commitInstruction = "Do not commit — .gsd/ planning docs are managed externally and not tracked in git.";
+  const commitInstruction = "Do not commit — .otto/workflow/ planning docs are managed externally and not tracked in git.";
 
   return loadPrompt(promptTemplate, {
     workingDirectory: base,
@@ -2698,7 +2698,7 @@ export async function buildExecuteTaskPrompt(
   const decisionsOnDemandET = [
     "### On-demand Decisions Template",
     "",
-    "If this task records a durable architecture or product decision, read `templates/decisions.md` before calling `capture_thought` or `gsd_decision_save`.",
+    "If this task records a durable architecture or product decision, read `templates/decisions.md` before calling `capture_thought` or `otto_decision_save`.",
   ].join("\n");
 
   const inlinedTemplates = inlineLevel === "minimal"
@@ -2739,7 +2739,7 @@ export async function buildExecuteTaskPrompt(
   const runtimePath = resolveRuntimeFile(base);
   const runtimeContent = existsSync(runtimePath) ? await loadFile(runtimePath) : null;
   const runtimeContext = runtimeContent
-    ? `### Runtime Context\nSource: \`.gsd/RUNTIME.md\`\n\n${runtimeContent.trim()}`
+    ? `### Runtime Context\nSource: \`.otto/workflow/RUNTIME.md\`\n\n${runtimeContent.trim()}`
     : "";
   trackPromptContext(contextTelemetry, "runtime", runtimeContext ? "inline" : "skipped", runtimeContext, runtimeContext ? undefined : "missing");
 
@@ -2972,7 +2972,7 @@ export async function buildCompleteSlicePrompt(
   // Gates owned by complete-slice (e.g. Q8). Pull from the DB so the
   // prompt only prompts for gates the plan actually seeded. The tool
   // handler closes each gate based on the SUMMARY.md section content
-  // after the assistant calls gsd_complete_slice.
+  // after the assistant calls otto_complete_slice.
   const csPending = getPendingGatesForTurn(mid, sid, "complete-slice");
   // coverage check: every pending row must be owned by complete-slice.
   // requireAll:false because a slice may have already closed some gates.
@@ -3708,7 +3708,7 @@ export async function buildReassessRoadmapPrompt(
     logWarning("prompt", `loadDeferredCaptures failed: ${err instanceof Error ? err.message : String(err)}`);
   }
 
-  const reassessCommitInstruction = "Do not commit — .gsd/ planning docs are managed externally and not tracked in git.";
+  const reassessCommitInstruction = "Do not commit — .otto/workflow/ planning docs are managed externally and not tracked in git.";
 
   return loadPrompt("reassess-roadmap", {
     workingDirectory: base,
@@ -3814,7 +3814,7 @@ export async function buildReactiveExecutePrompt(
       `## UNIT: Execute Task ${tid} ("${tTitle}")`,
       "",
       "Work only in the repository root.",
-      "Implement from the inlined task plan below. Verify changes, then call `gsd_task_complete`.",
+      "Implement from the inlined task plan below. Verify changes, then call `otto_task_complete`.",
       "Do not run git commands.",
       "",
       finalCarryForwardSection,
@@ -3822,7 +3822,7 @@ export async function buildReactiveExecutePrompt(
       taskPlanInline,
       "",
       "## Completion Contract",
-      `- Call \`gsd_task_complete\` with camelCase fields: \`milestoneId\`, \`sliceId\`, \`taskId\`, \`oneLiner\`, \`narrative\`, \`verification\`, and \`verificationEvidence\`.`,
+      `- Call \`otto_task_complete\` with camelCase fields: \`milestoneId\`, \`sliceId\`, \`taskId\`, \`oneLiner\`, \`narrative\`, \`verification\`, and \`verificationEvidence\`.`,
       `- Do not manually write \`${taskSummaryPath}\` or edit PLAN checkboxes; the completion tool is canonical.`,
       `- Use \`blocker_discovered: true\` only if the task cannot be completed due to a real blocker.`,
       "",
@@ -3991,7 +3991,7 @@ export async function buildGateEvaluatePrompt(
       "## Instructions",
       "",
       "Analyze the slice plan above and answer the gate question.",
-      `Call the \`gsd_save_gate_result\` tool with:`,
+      `Call the \`otto_save_gate_result\` tool with:`,
       `- \`milestoneId\`: "${mid}"`,
       `- \`sliceId\`: "${sid}"`,
       `- \`gateId\`: "${def.id}"`,

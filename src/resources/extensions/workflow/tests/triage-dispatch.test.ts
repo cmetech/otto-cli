@@ -27,9 +27,9 @@ import {
 
 function makeProject(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-triage-dispatch-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     [
       "# M001",
       "",
@@ -38,7 +38,7 @@ function makeProject(): string {
     ].join("\n"),
   );
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-PLAN.md"),
     "# S01 Plan\n\n## Tasks\n- [ ] **T01: Task** `est:10m`\n",
   );
   return base;

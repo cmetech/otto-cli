@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Visual contract tests for the GSD watch header renderer.
+// Project/App: OTTO
+// File Purpose: Visual contract tests for the OTTO watch header renderer.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -20,7 +20,7 @@ test("renderHeaderLines uses the command-center splash layout", () => {
     {
       model: "claude-sonnet-4-6",
       provider: "anthropic",
-      directory: "~/Github/gsd-2",
+      directory: "~/Github/otto-2",
       branch: "feat/tui-refresh",
       mcpServers: ["context7"],
     },
@@ -33,8 +33,8 @@ test("renderHeaderLines uses the command-center splash layout", () => {
   assert.match(raw, rgbPattern(splashPalette.border), "logo and divider should use the recommended olive border");
   assert.match(raw, rgbPattern(splashPalette.accent), "header accents should use the recommended blue");
   assert.match(plain, /Project Console/);
-  assert.match(plain, /\/gsd start/);
-  assert.match(plain, /\/gsd templates/);
+  assert.match(plain, /\/otto start/);
+  assert.match(plain, /\/otto templates/);
   assert.match(plain, /claude-sonnet-4-6/);
   assert.match(plain, /Context7 ✓/);
 });

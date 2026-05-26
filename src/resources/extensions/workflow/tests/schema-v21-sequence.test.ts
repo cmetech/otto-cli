@@ -339,7 +339,7 @@ function createV20Db(dbPath: string): void {
 
 test('schema v21 migration: structured_fields column added when upgrading from v20', () => {
   const base = makeTmp();
-  const dbPath = path.join(base, 'gsd.db');
+  const dbPath = path.join(base, 'otto.db');
   createV20Db(dbPath);
 
   try {
@@ -361,7 +361,7 @@ test('schema v21 migration: structured_fields column added when upgrading from v
 
 test('schema v21 migration: version 21 is recorded in schema_version after upgrading from v20', () => {
   const base = makeTmp();
-  const dbPath = path.join(base, 'gsd.db');
+  const dbPath = path.join(base, 'otto.db');
   createV20Db(dbPath);
 
   try {
@@ -388,7 +388,7 @@ test('schema v21 migration: version 21 is recorded in schema_version after upgra
 
 test('schema v21 migration: upgrading from v20 lands on current SCHEMA_VERSION', () => {
   const base = makeTmp();
-  const dbPath = path.join(base, 'gsd.db');
+  const dbPath = path.join(base, 'otto.db');
   createV20Db(dbPath);
 
   try {

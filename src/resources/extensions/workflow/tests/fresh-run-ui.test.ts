@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Regression tests for clearing stale GSD run UI surfaces.
+// Project/App: OTTO
+// File Purpose: Regression tests for clearing stale OTTO run UI surfaces.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -41,7 +41,7 @@ test("fresh run cleanup applies only to work-entry commands", () => {
   }
 });
 
-test("fresh run cleanup clears stale GSD widgets and statuses", () => {
+test("fresh run cleanup clears stale OTTO widgets and statuses", () => {
   const widgets: Array<[string, unknown]> = [];
   const statuses: Array<[string, string | undefined]> = [];
   const ctx = {

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression coverage for the public npm package identity.
 
 import assert from "node:assert/strict";
@@ -8,7 +8,7 @@ import { test } from "node:test";
 
 const projectRoot = process.cwd();
 
-function readPackageJson(path: string): { name?: string; optionalDependencies?: Record<string, string> } {
+function readPackageJson(path: string): { name?: string; version?: string; optionalDependencies?: Record<string, string> } {
 	return JSON.parse(readFileSync(join(projectRoot, path), "utf8"));
 }
 
@@ -26,11 +26,11 @@ test("published npm package names use the @cmetech scope", () => {
 
 	for (const platform of platforms) {
 		const nativePackage = readPackageJson(`native/npm/${platform}/package.json`);
-		const expectedName = `@opengsd/engine-${platform}`;
+		const expectedName = `@cmetech/otto-engine-${platform}`;
 		assert.equal(nativePackage.name, expectedName);
 		assert.equal(
 			rootPackage.optionalDependencies?.[expectedName],
-			">=1.0.0",
+			rootPackage.version,
 			`root package must install the ${expectedName} native optional dependency`,
 		);
 	}

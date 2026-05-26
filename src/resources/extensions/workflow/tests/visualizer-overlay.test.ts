@@ -1,5 +1,5 @@
 /**
- * GSD visualizer overlay — behaviour tests.
+ * OTTO visualizer overlay — behaviour tests.
  *
  * These tests drive the overlay through its public surface:
  *   - construct an instance

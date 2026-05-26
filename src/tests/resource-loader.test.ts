@@ -44,8 +44,8 @@ test("getExtensionKey normalizes top-level .ts and .js entry names to the same k
     "ask-user-questions",
   );
   assert.equal(
-    getExtensionKey("/tmp/extensions/gsd/index.js", extensionsDir),
-    "gsd",
+    getExtensionKey("/tmp/extensions/workflow/index.js", extensionsDir),
+    "workflow",
   );
 });
 
@@ -99,7 +99,7 @@ test("hasStaleCompiledExtensionSiblings detects nested bundled extension format 
 test("buildResourceLoader excludes duplicate top-level pi extensions when bundled resources use .js", async (t) => {
   const tmp = mkdtempSync(join(tmpdir(), "gsd-resource-loader-home-"));
   const piExtensionsDir = join(tmp, ".pi", "agent", "extensions");
-  const fakeAgentDir = join(tmp, ".gsd", "agent");
+  const fakeAgentDir = join(tmp, ".otto/workflow", "agent");
   const restoreHomeEnv = overrideHomeEnv(tmp);
 
   t.after(() => {
@@ -129,7 +129,7 @@ test("buildResourceLoader excludes duplicate top-level pi extensions when bundle
 
 test("buildResourceLoader includes caller-provided additional extension paths", async (t) => {
   const tmp = mkdtempSync(join(tmpdir(), "gsd-resource-loader-cli-"));
-  const fakeAgentDir = join(tmp, ".gsd", "agent");
+  const fakeAgentDir = join(tmp, ".otto/workflow", "agent");
   const cliExtensionPath = join(tmp, "cli-extension.ts");
   const restoreHomeEnv = overrideHomeEnv(tmp);
 
@@ -245,9 +245,9 @@ test("pruneRemovedBundledExtensions removes stale subdirectory extensions not in
     // First sync — seeds the agent dir and writes the manifest.
     initResources(fakeAgentDir, join(tmp, "skills"));
 
-    // Simulate a stale subdirectory extension left from a previous GSD version.
+    // Simulate a stale subdirectory extension left from a previous OTTO version.
     // This mirrors the mcporter scenario: it was bundled before, synced to
-    // ~/.gsd/agent/extensions/, then removed from the bundle in a newer version.
+    // ~/.otto/workflow/agent/extensions/, then removed from the bundle in a newer version.
     const staleExtDir = join(fakeAgentDir, "extensions", "mcporter");
     mkdirSync(staleExtDir, { recursive: true });
     writeFileSync(join(staleExtDir, "index.ts"), 'export default { name: "mcporter" };\n');
@@ -264,7 +264,7 @@ test("pruneRemovedBundledExtensions removes stale subdirectory extensions not in
       "manifest should contain installedExtensionDirs array",
     );
 
-    // Bump the manifest version to force a re-sync (simulates upgrading GSD).
+    // Bump the manifest version to force a re-sync (simulates upgrading OTTO).
     manifest.workflowVersion = "0.0.0-force-resync";
     manifest.contentHash = "0000000000000000";
     writeFileSync(manifestPath, JSON.stringify(manifest));

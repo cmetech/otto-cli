@@ -21,14 +21,14 @@ function jsonResponse(body: unknown): Response {
 }
 
 async function withTempWorkflowHome<T>(fn: (home: string) => T | Promise<T>): Promise<T> {
-  const oldHome = process.env.GSD_HOME;
+  const oldHome = process.env.OTTO_HOME;
   const home = mkdtempSync(join(tmpdir(), "gsd-remote-home-"));
   try {
-    process.env.GSD_HOME = home;
+    process.env.OTTO_HOME = home;
     return await fn(home);
   } finally {
-    if (oldHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = oldHome;
+    if (oldHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = oldHome;
     rmSync(home, { recursive: true, force: true });
   }
 }
@@ -556,7 +556,7 @@ test("formatForTelegram single-question produces inline keyboard", () => {
 
   const msg = formatForTelegram(prompt);
   assert.equal(msg.parse_mode, "HTML");
-  assert.ok(msg.text.includes("<b>GSD needs your input</b>"));
+  assert.ok(msg.text.includes("<b>OTTO needs your input</b>"));
   assert.ok(msg.text.includes("<b>Confirm</b>"));
   assert.ok(msg.reply_markup, "single-question should have inline keyboard");
   assert.equal(msg.reply_markup!.inline_keyboard.length, 2, "should have 2 button rows");
@@ -732,8 +732,8 @@ test("resolveRemoteConfig returns null when preferences are absent (no env side-
   const savedTelegram = process.env.TELEGRAM_BOT_TOKEN;
   try {
     // Point HOME to a nonexistent dir so auth.json lookup finds nothing.
-    process.env.HOME = "/tmp/gsd-no-such-home-for-test";
-    process.env.USERPROFILE = "/tmp/gsd-no-such-home-for-test";
+    process.env.HOME = "/tmp/otto-no-such-home-for-test";
+    process.env.USERPROFILE = "/tmp/otto-no-such-home-for-test";
     delete process.env.DISCORD_BOT_TOKEN;
     delete process.env.SLACK_BOT_TOKEN;
     delete process.env.TELEGRAM_BOT_TOKEN;

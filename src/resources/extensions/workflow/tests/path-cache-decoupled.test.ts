@@ -22,18 +22,18 @@ interface Fixture {
 
 function makeFixture(): Fixture {
   const projectDir = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-decoupled-')));
-  mkdirSync(join(projectDir, '.gsd'), { recursive: true });
+  mkdirSync(join(projectDir, '.otto/workflow'), { recursive: true });
 
   const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), 'gsd-decoupled-home-')));
 
   const savedHome = process.env.HOME;
   const savedUserProfile = process.env.USERPROFILE;
-  const savedWorkflowHome = process.env.GSD_HOME;
+  const savedWorkflowHome = process.env.OTTO_HOME;
 
-  // Redirect HOME so workflowRoot never accidentally resolves to the real ~/.gsd.
+  // Redirect HOME so workflowRoot never accidentally resolves to the real ~/.otto.
   process.env.HOME = fakeHome;
   process.env.USERPROFILE = fakeHome;
-  process.env.GSD_HOME = join(fakeHome, '.gsd');
+  process.env.OTTO_HOME = join(fakeHome, '.otto/workflow');
 
   _clearWorkflowRootCache();
 
@@ -45,8 +45,8 @@ function teardownFixture(f: Fixture): void {
   else process.env.HOME = f.savedHome;
   if (f.savedUserProfile === undefined) delete process.env.USERPROFILE;
   else process.env.USERPROFILE = f.savedUserProfile;
-  if (f.savedWorkflowHome === undefined) delete process.env.GSD_HOME;
-  else process.env.GSD_HOME = f.savedWorkflowHome;
+  if (f.savedWorkflowHome === undefined) delete process.env.OTTO_HOME;
+  else process.env.OTTO_HOME = f.savedWorkflowHome;
 
   _clearWorkflowRootCache();
   clearPathCache();
@@ -65,13 +65,13 @@ describe('workflowRoot cache population', () => {
 
   test('first call populates cache; second call returns same value without re-probing', (t) => {
     const first = workflowRoot(f.projectDir);
-    assert.equal(first, join(f.projectDir, '.gsd'), 'must resolve to projectDir/.gsd');
+    assert.equal(first, join(f.projectDir, '.otto/workflow'), 'must resolve to projectDir/.otto/workflow');
 
-    // Hide .gsd so a re-probe would yield the creation fallback (same path in this
+    // Hide .otto/workflow so a re-probe would yield the creation fallback (same path in this
     // case, but the rename lets us verify no re-probe happens).
-    renameSync(join(f.projectDir, '.gsd'), join(f.projectDir, '.gsd-hidden'));
+    renameSync(join(f.projectDir, '.otto/workflow'), join(f.projectDir, '.otto/workflow-hidden'));
     t.after(() => {
-      try { renameSync(join(f.projectDir, '.gsd-hidden'), join(f.projectDir, '.gsd')); } catch { /* ignore */ }
+      try { renameSync(join(f.projectDir, '.otto/workflow-hidden'), join(f.projectDir, '.otto/workflow')); } catch { /* ignore */ }
     });
 
     const second = workflowRoot(f.projectDir);
@@ -91,12 +91,12 @@ describe('clearPathCache() does not evict workflowRootCache', () => {
   test('cached workflowRoot survives clearPathCache()', (t) => {
     // Prime the cache.
     const primed = workflowRoot(f.projectDir);
-    assert.equal(primed, join(f.projectDir, '.gsd'));
+    assert.equal(primed, join(f.projectDir, '.otto/workflow'));
 
     // Mutate the filesystem so a fresh probe would return a different path.
-    renameSync(join(f.projectDir, '.gsd'), join(f.projectDir, '.gsd-gone'));
+    renameSync(join(f.projectDir, '.otto/workflow'), join(f.projectDir, '.otto/workflow-gone'));
     t.after(() => {
-      try { renameSync(join(f.projectDir, '.gsd-gone'), join(f.projectDir, '.gsd')); } catch { /* ignore */ }
+      try { renameSync(join(f.projectDir, '.otto/workflow-gone'), join(f.projectDir, '.otto/workflow')); } catch { /* ignore */ }
     });
 
     // clearPathCache() only clears volatile dir caches — must not touch workflowRootCache.
@@ -113,9 +113,9 @@ describe('clearPathCache() does not evict workflowRootCache', () => {
   test('multiple clearPathCache() calls still preserve workflowRoot cache', (t) => {
     const primed = workflowRoot(f.projectDir);
 
-    renameSync(join(f.projectDir, '.gsd'), join(f.projectDir, '.gsd-gone'));
+    renameSync(join(f.projectDir, '.otto/workflow'), join(f.projectDir, '.otto/workflow-gone'));
     t.after(() => {
-      try { renameSync(join(f.projectDir, '.gsd-gone'), join(f.projectDir, '.gsd')); } catch { /* ignore */ }
+      try { renameSync(join(f.projectDir, '.otto/workflow-gone'), join(f.projectDir, '.otto/workflow')); } catch { /* ignore */ }
     });
 
     // Simulate many agent turn-ends.
@@ -141,29 +141,29 @@ describe('_clearWorkflowRootCache() evicts workflowRootCache', () => {
   test('workflowRoot re-probes after _clearWorkflowRootCache()', (t) => {
     // Prime the cache.
     const primed = workflowRoot(f.projectDir);
-    assert.equal(primed, join(f.projectDir, '.gsd'));
+    assert.equal(primed, join(f.projectDir, '.otto/workflow'));
 
-    // Hide .gsd — next probe would see it absent.
-    renameSync(join(f.projectDir, '.gsd'), join(f.projectDir, '.gsd-hidden'));
+    // Hide .otto/workflow — next probe would see it absent.
+    renameSync(join(f.projectDir, '.otto/workflow'), join(f.projectDir, '.otto/workflow-hidden'));
     t.after(() => {
-      try { renameSync(join(f.projectDir, '.gsd-hidden'), join(f.projectDir, '.gsd')); } catch { /* ignore */ }
+      try { renameSync(join(f.projectDir, '.otto/workflow-hidden'), join(f.projectDir, '.otto/workflow')); } catch { /* ignore */ }
     });
 
     // _clearWorkflowRootCache() must evict, triggering a fresh probe.
     _clearWorkflowRootCache();
     const afterRootClear = workflowRoot(f.projectDir);
 
-    // Probe with .gsd absent falls through to creation fallback (same path value,
+    // Probe with .otto/workflow absent falls through to creation fallback (same path value,
     // but the probe definitely ran). Restore and re-prime to confirm it returns
     // the live value rather than a stale cached one.
-    renameSync(join(f.projectDir, '.gsd-hidden'), join(f.projectDir, '.gsd'));
+    renameSync(join(f.projectDir, '.otto/workflow-hidden'), join(f.projectDir, '.otto/workflow'));
     _clearWorkflowRootCache();
     const reprobe = workflowRoot(f.projectDir);
-    assert.equal(reprobe, join(f.projectDir, '.gsd'), 're-probe with .gsd restored must find it');
+    assert.equal(reprobe, join(f.projectDir, '.otto/workflow'), 're-probe with .otto/workflow restored must find it');
 
     // The result after root-clear + removal fell back to the creation path (same
     // string as primed), which confirms the probe ran (not from cache).
-    assert.equal(afterRootClear, join(f.projectDir, '.gsd'));
+    assert.equal(afterRootClear, join(f.projectDir, '.otto/workflow'));
   });
 });
 
@@ -180,8 +180,8 @@ describe('realpath normalization: trailing slash shares cache entry', () => {
   test('/foo and /foo/ map to the same cache entry', () => {
     const withoutSlash = workflowRoot(f.projectDir);
 
-    // Hide .gsd — if a re-probe happened, the result would differ.
-    renameSync(join(f.projectDir, '.gsd'), join(f.projectDir, '.gsd-hidden'));
+    // Hide .otto/workflow — if a re-probe happened, the result would differ.
+    renameSync(join(f.projectDir, '.otto/workflow'), join(f.projectDir, '.otto/workflow-hidden'));
     try {
       const withSlash = workflowRoot(f.projectDir + '/');
       assert.equal(
@@ -190,7 +190,7 @@ describe('realpath normalization: trailing slash shares cache entry', () => {
         'trailing-slash variant must hit the same cache entry as no-slash variant',
       );
     } finally {
-      try { renameSync(join(f.projectDir, '.gsd-hidden'), join(f.projectDir, '.gsd')); } catch { /* ignore */ }
+      try { renameSync(join(f.projectDir, '.otto/workflow-hidden'), join(f.projectDir, '.otto/workflow')); } catch { /* ignore */ }
     }
   });
 

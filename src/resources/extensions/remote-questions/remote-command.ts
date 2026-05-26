@@ -1,10 +1,10 @@
 /**
- * Remote Questions — /loop24 remote command
+ * Remote Questions — /otto remote command
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
-import { AuthStorage } from "@loop24/pi-coding-agent";
-import { Editor, type EditorTheme, Key, matchesKey, truncateToWidth } from "@loop24/pi-tui";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
+import { AuthStorage } from "@otto/pi-coding-agent";
+import { Editor, type EditorTheme, Key, matchesKey, truncateToWidth } from "@otto/pi-tui";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { getGlobalGSDPreferencesPath, loadEffectiveGSDPreferences } from "../workflow/preferences.js";

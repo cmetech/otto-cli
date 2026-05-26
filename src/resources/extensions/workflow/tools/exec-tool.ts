@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Executor for the gsd_exec MCP tool.
+// Project/App: OTTO
+// File Purpose: Executor for the otto_exec MCP tool.
 
 import {
   EXEC_DEFAULTS,
@@ -75,7 +75,7 @@ function isEnabled(prefs: ExecToolDeps["preferences"]): boolean {
 function paramError(message: string): ToolExecutionResult {
   return {
     content: [{ type: "text", text: `Error: ${message}` }],
-    details: { operation: "gsd_exec", error: "invalid_params", detail: message },
+    details: { operation: "otto_exec", error: "invalid_params", detail: message },
     isError: true,
   };
 }
@@ -93,7 +93,7 @@ function normalizeScanPath(value: string): string {
 
 function parseWorktreeBase(baseDir: string): { originalRoot: string; worktreeRoot: string } | null {
   const normalizedBase = normalizeScanPath(baseDir);
-  const marker = "/.gsd/worktrees/";
+  const marker = "/.otto/workflow/worktrees/";
   const markerIndex = normalizedBase.indexOf(marker);
   if (markerIndex <= 0) return null;
   return {
@@ -189,7 +189,7 @@ function scriptReferencesOriginalRootFromWorktree(script: string, baseDir: strin
   const normalizedScript = script.replace(/\\/g, "/");
   return comparablePathVariants(parsed.originalRoot).some((originalRoot) => {
     const originalRootPattern = new RegExp(
-      `${escapeRegExp(originalRoot)}(?=$|[\\s'"\\\`;)&|<>]|/(?!\\.gsd/worktrees(?:/|$)))`,
+      `${escapeRegExp(originalRoot)}(?=$|[\\s'"\\\`;)&|<>]|/(?!\\.otto/workflow/worktrees(?:/|$)))`,
     );
     return originalRootPattern.test(normalizedScript);
   });
@@ -199,7 +199,7 @@ export async function executeWorkflowExec(
   params: ExecToolParams,
   deps: ExecToolDeps,
 ): Promise<ToolExecutionResult> {
-  if (!isEnabled(deps.preferences)) return contextModeDisabledResult("gsd_exec");
+  if (!isEnabled(deps.preferences)) return contextModeDisabledResult("otto_exec");
 
   const runtime = params.runtime;
   if (runtime !== "bash" && runtime !== "node" && runtime !== "python") {
@@ -242,8 +242,8 @@ export async function executeWorkflowExec(
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return {
-      content: [{ type: "text", text: `Error: gsd_exec failed — ${message}` }],
-      details: { operation: "gsd_exec", error: message },
+      content: [{ type: "text", text: `Error: otto_exec failed — ${message}` }],
+      details: { operation: "otto_exec", error: message },
       isError: true,
     };
   }
@@ -251,7 +251,7 @@ export async function executeWorkflowExec(
 
 function formatResult(result: ExecSandboxResult): ToolExecutionResult {
   const headerLines = [
-    `gsd_exec[${result.id}] runtime=${result.runtime} exit=${formatExit(result)} duration=${result.duration_ms}ms`,
+    `otto_exec[${result.id}] runtime=${result.runtime} exit=${formatExit(result)} duration=${result.duration_ms}ms`,
     `  stdout: ${result.stdout_bytes}B${result.stdout_truncated ? " (truncated)" : ""} → ${result.stdout_path}`,
     `  stderr: ${result.stderr_bytes}B${result.stderr_truncated ? " (truncated)" : ""} → ${result.stderr_path}`,
   ];
@@ -259,7 +259,7 @@ function formatResult(result: ExecSandboxResult): ToolExecutionResult {
   return {
     content: [{ type: "text", text: summary }],
     details: {
-      operation: "gsd_exec",
+      operation: "otto_exec",
       id: result.id,
       runtime: result.runtime,
       exit_code: result.exit_code,

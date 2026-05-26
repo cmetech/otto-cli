@@ -1,9 +1,9 @@
 // prompt-tool-names — Ensures prompt files reference correct tool names.
 //
-// The registered GSD tool is `search-the-web`, not `web_search`.
+// The registered OTTO tool is `search-the-web`, not `web_search`.
 // `web_search` is an Anthropic API implementation detail that should
-// never appear in GSD prompts or agent frontmatter.
-// See: https://github.com/open-gsd/gsd-pi/issues/2920
+// never appear in OTTO prompts or agent frontmatter.
+// See: https://github.com/open-gsd/otto-pi/issues/2920
 
 import test from "node:test";
 import assert from "node:assert/strict";

@@ -1,8 +1,8 @@
-// LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/custom-message.ts - Extension custom message renderer.
+// OTTO + packages/pi-coding-agent/src/modes/interactive/components/custom-message.ts - Extension custom message renderer.
 
-import type { TextContent } from "@loop24/pi-ai";
-import type { Component } from "@loop24/pi-tui";
-import { Box, Markdown, type MarkdownTheme, Spacer, Text } from "@loop24/pi-tui";
+import type { TextContent } from "@otto/pi-ai";
+import type { Component } from "@otto/pi-tui";
+import { Box, Markdown, type MarkdownTheme, Spacer, Text } from "@otto/pi-tui";
 import type { MessageRenderer } from "../../../core/extensions/types.js";
 import type { CustomMessage } from "../../../core/messages.js";
 import { getMarkdownTheme, theme } from "../theme/theme.js";

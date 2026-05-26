@@ -44,7 +44,7 @@ test("Workflow extension module resolution falls back to source when dist module
     (p) => existing.has(p),
   );
 
-  assert.equal(result, join(pkg, "src", "resources", "extensions", "gsd", "worktree-root.ts"));
+  assert.equal(result, join(pkg, "src", "resources", "extensions", "workflow", "worktree-root.ts"));
 });
 
 test("Workflow extension module resolution uses compiled dist module when available", () => {
@@ -53,7 +53,7 @@ test("Workflow extension module resolution uses compiled dist module when availa
   const existing = new Set([
     join(pkg, "dist", "resources", "agents"),
     join(pkg, "dist", "resources", "extensions"),
-    join(pkg, "dist", "resources", "extensions", "gsd", "worktree-manager.js"),
+    join(pkg, "dist", "resources", "extensions", "workflow", "worktree-manager.js"),
   ]);
 
   const result = resolveBundledWorkflowExtensionModule(
@@ -62,5 +62,5 @@ test("Workflow extension module resolution uses compiled dist module when availa
     (p) => existing.has(p),
   );
 
-  assert.equal(result, join(pkg, "dist", "resources", "extensions", "gsd", "worktree-manager.js"));
+  assert.equal(result, join(pkg, "dist", "resources", "extensions", "workflow", "worktree-manager.js"));
 });

@@ -15,7 +15,7 @@ const SLEEP_BUFFER = new SharedArrayBuffer(4);
 const SLEEP_VIEW = new Int32Array(SLEEP_BUFFER);
 
 function lockFilePath(basePath: string): string {
-  return join(basePath, ".gsd", "sync.lock");
+  return join(basePath, ".otto/workflow", "sync.lock");
 }
 
 function sleepSync(ms: number): void {

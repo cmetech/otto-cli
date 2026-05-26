@@ -68,7 +68,7 @@ test("handleRecoverableExtensionProcessError swallows read EIO", () => {
 			}),
 		);
 		assert.equal(handled, true);
-		assert.match(stderr, /\[gsd\] EIO: read EIO/);
+		assert.match(stderr, /\[otto\] EIO: read EIO/);
 	} finally {
 		process.stderr.write = originalWrite;
 	}
@@ -96,8 +96,8 @@ test("handleRecoverableExtensionProcessError leaves unrelated errors unhandled",
 
 test("handleRecoverableExtensionProcessError swallows EPIPE, warns, and writes crash log when stdout is alive", () => {
   const tmpHome = join(tmpdir(), `gsd-epipe-test-${randomUUID()}`);
-  const origHome = process.env.GSD_HOME;
-  process.env.GSD_HOME = tmpHome;
+  const origHome = process.env.OTTO_HOME;
+  process.env.OTTO_HOME = tmpHome;
 
   let stderr = "";
   const originalWrite = process.stderr.write.bind(process.stderr);
@@ -120,7 +120,7 @@ test("handleRecoverableExtensionProcessError swallows EPIPE, warns, and writes c
     assert.equal(readdirSync(crashDir).some((f) => f.endsWith(".log")), true);
   } finally {
     process.stderr.write = originalWrite;
-    process.env.GSD_HOME = origHome;
+    process.env.OTTO_HOME = origHome;
     rmSync(tmpHome, { recursive: true, force: true });
   }
 });

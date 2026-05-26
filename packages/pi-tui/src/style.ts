@@ -1,4 +1,4 @@
-// LOOP24 - Terminal style primitives for framed TUI surfaces
+// OTTO - Terminal style primitives for framed TUI surfaces
 
 import { truncateToWidth, visibleWidth } from "./utils.js";
 

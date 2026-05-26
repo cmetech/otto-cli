@@ -34,7 +34,7 @@ describe("isClosedStatus used by projections", () => {
 describe("upsertDecision preserves seq column", () => {
   test("seq is preserved when decision is re-upserted", () => {
     const tmp = mkdtempSync(join(tmpdir(), "gsd-upsert-test-"));
-    const dbPath = join(tmp, "gsd.db");
+    const dbPath = join(tmp, "otto.db");
     try {
       openDatabase(dbPath);
       const adapter = _getAdapter();
@@ -96,7 +96,7 @@ describe("WorkflowEvent v field", () => {
         actor: "system",
       });
 
-      const logPath = join(tmp, ".gsd", "event-log.jsonl");
+      const logPath = join(tmp, ".otto/workflow", "event-log.jsonl");
       const line = readFileSync(logPath, "utf-8").trim();
       const event = JSON.parse(line);
       assert.strictEqual(event.v, 2, "New events should have v:2");

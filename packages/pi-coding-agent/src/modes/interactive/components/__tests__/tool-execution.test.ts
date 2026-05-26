@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for interactive terminal tool execution rendering.
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
@@ -121,7 +121,7 @@ describe("ToolExecutionComponent", () => {
 
 	test("exposes phase metadata for successful low-signal tool rows", () => {
 		const component = new ToolExecutionComponent(
-			"gsd_requirement_update",
+			"otto_requirement_update",
 			{ id: "R001" },
 			{},
 			{ label: "Update Requirement" } as any,
@@ -173,7 +173,7 @@ describe("ToolExecutionComponent", () => {
 	test("renders compact capitalized read rows from file_path args", () => {
 		const rendered = renderToolCollapsed(
 			"Read",
-			{ file_path: "~/Github/gsd-2/src/resources/extensions/workflow/health-widget-core.ts" },
+			{ file_path: "~/Github/otto-cli/src/resources/extensions/workflow/health-widget-core.ts" },
 			{ content: [{ type: "text", text: "hidden body output" }], isError: false },
 		);
 
@@ -279,7 +279,7 @@ describe("ToolExecutionComponent", () => {
 			{ content: [{ type: "text", text: "hidden body output" }], isError: false },
 		);
 
-		assert.match(rendered, /Project Initialized in src\/resources\/extensions\/gsd \(\*\.ts\)/);
+		assert.match(rendered, /Project Initialized in src\/resources\/extensions\/workflow \(\*\.ts\)/);
 		assert.doesNotMatch(rendered, /hidden body output/);
 	});
 
@@ -367,7 +367,7 @@ describe("ToolExecutionComponent", () => {
 
 	test("passes failed result status to custom result renderers", () => {
 		const rendered = renderTool(
-			"gsd_requirement_save",
+			"otto_requirement_save",
 			{ id: "R001" },
 			{ content: [{ type: "text", text: "saved" }], isError: true },
 			{
@@ -390,11 +390,11 @@ describe("ToolExecutionComponent", () => {
 		const rendered = renderTool(
 			"Bash",
 			{ command: "pwd" },
-			{ content: [{ type: "text", text: "/tmp/gsd-pr-fix" }], isError: false },
+			{ content: [{ type: "text", text: "/tmp/otto-pr-fix" }], isError: false },
 		);
 
 		assert.match(rendered, /\$ pwd/);
-		assert.match(rendered, /\/tmp\/gsd-pr-fix/);
+		assert.match(rendered, /\/tmp\/otto-pr-fix/);
 		assert.doesNotMatch(rendered, /^\{\s*\}$/m);
 	});
 
@@ -438,7 +438,7 @@ describe("ToolExecutionComponent", () => {
 
 	test("frame header prefers toolDefinition.label over raw tool name", () => {
 		const rendered = renderToolCollapsed(
-			"gsd_slice_complete",
+			"otto_slice_complete",
 			{ sliceId: "S03" },
 			undefined,
 			{ label: "Complete Slice" },
@@ -446,20 +446,20 @@ describe("ToolExecutionComponent", () => {
 
 		assert.match(rendered, /Complete Slice/);
 		assert.doesNotMatch(rendered, /Tool Complete Slice/);
-		assert.doesNotMatch(rendered, /gsd_slice_complete/);
+		assert.doesNotMatch(rendered, /otto_slice_complete/);
 	});
 
-	test("frame header strips gsd_ prefix and title-cases when no label is registered", () => {
-		const rendered = renderToolCollapsed("gsd_requirement_update", { id: "R005" });
+	test("frame header strips otto_ prefix and title-cases when no label is registered", () => {
+		const rendered = renderToolCollapsed("otto_requirement_update", { id: "R005" });
 
 		assert.match(rendered, /Requirement Update/);
 		assert.doesNotMatch(rendered, /Tool Requirement Update/);
-		assert.doesNotMatch(rendered, /gsd_requirement_update/);
+		assert.doesNotMatch(rendered, /otto_requirement_update/);
 	});
 
 	test("collapsed generic running tools hide primitive args", () => {
 		const longPath = "/Users/alice/.gsd/projects/4dce7b775013/worktrees/slice-S03-some-long-path-that-exceeds-limit";
-		const rendered = renderToolCollapsed("gsd_slice_complete", {
+		const rendered = renderToolCollapsed("otto_slice_complete", {
 			sliceId: "S03",
 			milestoneId: "M001",
 			worktree: longPath,
@@ -475,7 +475,7 @@ describe("ToolExecutionComponent", () => {
 
 	test("formatCompactArgs shows full string values when expanded", () => {
 		const longPath = "/Users/alice/.gsd/projects/4dce7b775013/worktrees/slice-S03-some-long-path-that-exceeds-limit";
-		const rendered = renderTool("gsd_slice_complete", {
+		const rendered = renderTool("otto_slice_complete", {
 			sliceId: "S03",
 			worktree: longPath,
 		});

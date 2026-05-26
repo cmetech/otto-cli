@@ -1,6 +1,6 @@
 ---
 name: create-mcp-server
-description: Build, iterate, and evaluate Model Context Protocol (MCP) servers that expose external services as tools an LLM can call. Use when asked to "build an MCP server", "create an MCP tool", "wrap this API as MCP", "expose X to Claude", or when extending GSD with custom tool integrations. Covers research, schema/tool design, error handling, pagination, testing via MCP Inspector, and producing a 10-question eval set that proves the server actually enables real work.
+description: Build, iterate, and evaluate Model Context Protocol (MCP) servers that expose external services as tools an LLM can call. Use when asked to "build an MCP server", "create an MCP tool", "wrap this API as MCP", "expose X to Claude", or when extending OTTO with custom tool integrations. Covers research, schema/tool design, error handling, pagination, testing via MCP Inspector, and producing a 10-question eval set that proves the server actually enables real work.
 ---
 
 <objective>
@@ -8,11 +8,11 @@ Produce a high-quality MCP server that an LLM can actually use — not one that 
 </objective>
 
 <context>
-the agent consumes MCP heavily — see `src/resources/extensions/mcp-client/`, `src/resources/extensions/gsd/mcp-project-config.ts`, `src/resources/extensions/gsd/workflow-mcp.ts`, and `/gsd mcp` commands. Users frequently want to extend GSD with project-specific MCP servers (internal APIs, data sources, domain tools). This skill fills the authoring gap between "MCP exists" and "I have a working server."
+the agent consumes MCP heavily — see `src/resources/extensions/mcp-client/`, `src/resources/extensions/otto/mcp-project-config.ts`, `src/resources/extensions/otto/workflow-mcp.ts`, and `/otto mcp` commands. Users frequently want to extend OTTO with project-specific MCP servers (internal APIs, data sources, domain tools). This skill fills the authoring gap between "MCP exists" and "I have a working server."
 
 Invocation points:
 - User describes a service or API they want an LLM to reach
-- `/gsd mcp init` scaffolds config but there's a tool integration to build
+- `/otto mcp init` scaffolds config but there's a tool integration to build
 - Replacing a hand-rolled extension with a standard MCP server
 </context>
 
@@ -91,9 +91,9 @@ Format:
 
 Run the evals. If the model can't complete them, the server — not the model — needs work. Iterate on descriptions, error messages, and tool granularity.
 
-## Step 6: Wire into GSD
+## Step 6: Wire into OTTO
 
-Write the project's `.mcp.json` entry using `/gsd mcp init` as a starting point. Document env vars and startup in README.md. If the server is globally useful, suggest the user file it as a durable skill via `spike-wrap-up` or publish it.
+Write the project's `.mcp.json` entry using `/otto mcp init` as a starting point. Document env vars and startup in README.md. If the server is globally useful, suggest the user file it as a durable skill via `spike-wrap-up` or publish it.
 
 </process>
 
@@ -116,6 +116,6 @@ Write the project's `.mcp.json` entry using `/gsd mcp init` as a starting point.
 - [ ] `evals.xml` has 10 questions; the model completes ≥8 without handholding.
 - [ ] MCP Inspector test passes cleanly.
 - [ ] README documents env, startup, and rate-limit behavior.
-- [ ] Server is reachable from GSD via `.mcp.json` entry.
+- [ ] Server is reachable from OTTO via `.mcp.json` entry.
 
 </success_criteria>

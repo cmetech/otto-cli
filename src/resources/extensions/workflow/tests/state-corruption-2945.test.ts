@@ -47,7 +47,7 @@ function cleanupDb(dbPath: string): void {
 
 function createTempProject(): { basePath: string } {
   const basePath = mkdtempSync(join(tmpdir(), "gsd-2945-project-"));
-  mkdirSync(join(basePath, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(basePath, ".otto/workflow", "milestones", "M001"), { recursive: true });
   return { basePath };
 }
 
@@ -284,21 +284,21 @@ describe("#2945 Bug 3: mergeAndExit must teardown worktree after successful merg
       git(["config", "user.email", "test@test.com"]);
       git(["config", "user.name", "Test"]);
       writeFileSync(join(tmpBase, "README.md"), "# test\n");
-      writeFileSync(join(tmpBase, ".gitignore"), ".gsd/worktrees/\n");
-      mkdirSync(join(tmpBase, ".gsd"), { recursive: true });
+      writeFileSync(join(tmpBase, ".gitignore"), ".otto/workflow/worktrees/\n");
+      mkdirSync(join(tmpBase, ".otto/workflow"), { recursive: true });
       writeFileSync(
-        join(tmpBase, ".gsd", "preferences.md"),
+        join(tmpBase, ".otto/workflow", "preferences.md"),
         "## Git\n- isolation: worktree\n",
       );
       git(["add", "."]);
       git(["commit", "-m", "init"]);
       git(["checkout", "-b", "milestone/M001"]);
       git(["checkout", "main"]);
-      const wt = join(tmpBase, ".gsd", "worktrees", "M001");
+      const wt = join(tmpBase, ".otto/workflow", "worktrees", "M001");
       git(["worktree", "add", wt, "milestone/M001"]);
-      mkdirSync(join(tmpBase, ".gsd", "milestones", "M001"), { recursive: true });
+      mkdirSync(join(tmpBase, ".otto/workflow", "milestones", "M001"), { recursive: true });
       writeFileSync(
-        join(tmpBase, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+        join(tmpBase, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
         "# M001\n- [x] S01: Slice one\n",
       );
 

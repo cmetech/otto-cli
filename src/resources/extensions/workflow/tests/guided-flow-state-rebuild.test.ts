@@ -31,12 +31,12 @@ import {
 
 function createFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-guided-state-"));
-  mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
   return base;
 }
 
 function writeFile(base: string, relativePath: string, content: string): void {
-  const full = join(base, ".gsd", relativePath);
+  const full = join(base, ".otto/workflow", relativePath);
   mkdirSync(join(full, ".."), { recursive: true });
   writeFileSync(full, content);
 }

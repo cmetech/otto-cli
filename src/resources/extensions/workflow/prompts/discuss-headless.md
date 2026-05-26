@@ -1,6 +1,6 @@
 # Headless Milestone Creation
 
-You are creating a GSD milestone from a provided specification document. This is a **headless** flow: do NOT ask the user questions. Wherever the interactive flow would ask, make your best judgment and document it as an assumption.
+You are creating a OTTO milestone from a provided specification document. This is a **headless** flow: do NOT ask the user questions. Wherever the interactive flow would ask, make your best judgment and document it as an assumption.
 
 ## Provided Specification
 
@@ -70,7 +70,7 @@ Do focused research before roadmap creation. Research is advisory, not auto-bind
 
 ## Capability Contract
 
-Before writing a roadmap, produce `.gsd/REQUIREMENTS.md`.
+Before writing a roadmap, produce `.otto/workflow/REQUIREMENTS.md`.
 
 Use it as the project's explicit capability contract.
 
@@ -100,30 +100,30 @@ Before writing files, **print the planned roadmap in chat**: markdown table with
 
 ### Naming Convention
 
-Directories use bare IDs. Files use ID-SUFFIX format. Titles live inside content, not names. Milestone dir: `.gsd/milestones/{{milestoneId}}/`; files: `{{milestoneId}}-CONTEXT.md`, `{{milestoneId}}-ROADMAP.md`; slice dirs: `S01/`, `S02/`, etc.
+Directories use bare IDs. Files use ID-SUFFIX format. Titles live inside content, not names. Milestone dir: `.otto/workflow/milestones/{{milestoneId}}/`; files: `{{milestoneId}}-CONTEXT.md`, `{{milestoneId}}-ROADMAP.md`; slice dirs: `S01/`, `S02/`, etc.
 
 ### Single Milestone
 
 In a single pass:
-1. `mkdir -p .gsd/milestones/{{milestoneId}}/slices`
-2. Call `gsd_summary_save` with `artifact_type: "PROJECT"` and full Project template content. The tool persists the DB-backed PROJECT artifact and renders `.gsd/PROJECT.md`. Describe what the project is, its current state, and list the milestone sequence.
-3. Persist requirements with `gsd_requirement_save` or `gsd_requirement_update`, then call `gsd_summary_save` with `artifact_type: "REQUIREMENTS"` so the tool renders `.gsd/REQUIREMENTS.md` from DB rows. Confirm states, ownership, and traceability before roadmap creation.
+1. `mkdir -p .otto/workflow/milestones/{{milestoneId}}/slices`
+2. Call `otto_summary_save` with `artifact_type: "PROJECT"` and full Project template content. The tool persists the DB-backed PROJECT artifact and renders `.otto/workflow/PROJECT.md`. Describe what the project is, its current state, and list the milestone sequence.
+3. Persist requirements with `otto_requirement_save` or `otto_requirement_update`, then call `otto_summary_save` with `artifact_type: "REQUIREMENTS"` so the tool renders `.otto/workflow/REQUIREMENTS.md` from DB rows. Confirm states, ownership, and traceability before roadmap creation.
 
 **Depth-Preservation Guidance for context.md:** Preserve the specification's exact terminology, emphasis, and framing. Do not flatten domain-specific language into generics. CONTEXT.md is downstream agents' only window into this spec.
 
 4. Write `{{contextPath}}` from the **Context** template. Preserve risks, unknowns, codebase constraints, integration points, relevant requirements, and an "Assumptions" section.
-5. Call `gsd_plan_milestone` to create demoable vertical slices with risk, depends, demo, proof strategy, verification classes, definition of done, requirement coverage, and boundary map. If crossing runtime boundaries, include a final end-to-end integration slice. Use the **Roadmap** output template below.
-6. For each architectural or pattern decision, call `gsd_decision_save` — the tool auto-assigns IDs and regenerates `.gsd/DECISIONS.md` automatically.
+5. Call `otto_plan_milestone` to create demoable vertical slices with risk, depends, demo, proof strategy, verification classes, definition of done, requirement coverage, and boundary map. If crossing runtime boundaries, include a final end-to-end integration slice. Use the **Roadmap** output template below.
+6. For each architectural or pattern decision, call `otto_decision_save` — the tool auto-assigns IDs and regenerates `.otto/workflow/DECISIONS.md` automatically.
 7. {{commitInstruction}}
 
 ### Ready-phrase pre-condition (NON-BYPASSABLE)
 
 Before emitting the ready phrase, verify in the CURRENT turn that you have:
 
-- [ ] Called `gsd_summary_save` for the PROJECT artifact (step 2)
-- [ ] Persisted requirements and called `gsd_summary_save` for the REQUIREMENTS artifact (step 3)
+- [ ] Called `otto_summary_save` for the PROJECT artifact (step 2)
+- [ ] Persisted requirements and called `otto_summary_save` for the REQUIREMENTS artifact (step 3)
 - [ ] Written `{{contextPath}}` (step 4)
-- [ ] Called `gsd_plan_milestone` (step 5)
+- [ ] Called `otto_plan_milestone` (step 5)
 
 If ANY box is unchecked, **STOP**. Do NOT emit the ready phrase. Emit the missing tool calls in this same turn. The system detects missing artifacts and will reject premature ready signals — you will be asked again and retries are capped.
 
@@ -135,24 +135,24 @@ After completing steps 1–7 above, end with this concise user-facing handoff:
 Milestone {{milestoneId}} ready.
 
 Next steps:
-- Run `/gsd auto` to start execution if it does not begin automatically.
-- Use `/gsd status` or `/gsd visualize` to inspect the roadmap.
-- Use `/gsd notifications` to review or configure delivery alerts.
+- Run `/otto auto` to start execution if it does not begin automatically.
+- Use `/otto status` or `/otto visualize` to inspect the roadmap.
+- Use `/otto notifications` to review or configure delivery alerts.
 ```
 
 ### Multi-Milestone
 
 #### Phase 1: Shared artifacts
 
-1. For each milestone, call `gsd_milestone_generate_id`; never invent IDs. Then `mkdir -p .gsd/milestones/<ID>/slices`.
-2. Call `gsd_summary_save` with `artifact_type: "PROJECT"` and full Project template content so the tool persists the DB-backed PROJECT artifact and renders `.gsd/PROJECT.md`.
-3. Persist requirements with `gsd_requirement_save` or `gsd_requirement_update`, then call `gsd_summary_save` with `artifact_type: "REQUIREMENTS"` so the tool renders `.gsd/REQUIREMENTS.md` from DB rows. Capture Active, Deferred, Out of Scope, and any already Validated requirements. Later milestones may have provisional ownership where slice plans do not exist yet.
-4. For any architectural or pattern decisions, call `gsd_decision_save` — the tool auto-assigns IDs and regenerates `.gsd/DECISIONS.md` automatically.
+1. For each milestone, call `otto_milestone_generate_id`; never invent IDs. Then `mkdir -p .otto/workflow/milestones/<ID>/slices`.
+2. Call `otto_summary_save` with `artifact_type: "PROJECT"` and full Project template content so the tool persists the DB-backed PROJECT artifact and renders `.otto/workflow/PROJECT.md`.
+3. Persist requirements with `otto_requirement_save` or `otto_requirement_update`, then call `otto_summary_save` with `artifact_type: "REQUIREMENTS"` so the tool renders `.otto/workflow/REQUIREMENTS.md` from DB rows. Capture Active, Deferred, Out of Scope, and any already Validated requirements. Later milestones may have provisional ownership where slice plans do not exist yet.
+4. For any architectural or pattern decisions, call `otto_decision_save` — the tool auto-assigns IDs and regenerates `.otto/workflow/DECISIONS.md` automatically.
 
 #### Phase 2: Primary milestone
 
 5. Write a full `CONTEXT.md` for the primary milestone (the first in sequence). Include an "Assumptions" section.
-6. Call `gsd_plan_milestone` for **only the primary milestone**; detail-planning later milestones now is waste because the codebase will change. Include requirement coverage and definition of done.
+6. Call `otto_plan_milestone` for **only the primary milestone**; detail-planning later milestones now is waste because the codebase will change. Include requirement coverage and definition of done.
 
 #### MANDATORY: depends_on Frontmatter in CONTEXT.md
 
@@ -187,7 +187,7 @@ Each full or draft context must let a future agent understand intent, constraint
 
 #### Milestone Gate Tracking (MANDATORY for multi-milestone)
 
-After deciding each milestone's readiness, immediately write or update `.gsd/DISCUSSION-MANIFEST.json`:
+After deciding each milestone's readiness, immediately write or update `.otto/workflow/DISCUSSION-MANIFEST.json`:
 
 ```json
 {
@@ -214,11 +214,11 @@ For single-milestone projects, do NOT write this file.
 
 Before emitting the ready phrase, verify in the CURRENT turn that you have:
 
-- [ ] Called `gsd_summary_save` for the PROJECT artifact
-- [ ] Persisted requirements and called `gsd_summary_save` for the REQUIREMENTS artifact
+- [ ] Called `otto_summary_save` for the PROJECT artifact
+- [ ] Persisted requirements and called `otto_summary_save` for the REQUIREMENTS artifact
 - [ ] Written the primary milestone `CONTEXT.md`
-- [ ] Called `gsd_plan_milestone` for the primary milestone
-- [ ] Written `.gsd/DISCUSSION-MANIFEST.json` with `gates_completed === total`
+- [ ] Called `otto_plan_milestone` for the primary milestone
+- [ ] Written `.otto/workflow/DISCUSSION-MANIFEST.json` with `gates_completed === total`
 
 If ANY box is unchecked, **STOP**. Do NOT emit the ready phrase. Emit the missing tool calls in this same turn. The system detects missing artifacts and will reject premature ready signals — you will be asked again and retries are capped.
 
@@ -230,9 +230,9 @@ After completing every step above, end with this concise user-facing handoff:
 Milestone {{milestoneId}} ready.
 
 Next steps:
-- Run `/gsd auto` to start execution if it does not begin automatically.
-- Use `/gsd status` or `/gsd visualize` to inspect the roadmap.
-- Use `/gsd notifications` to review or configure delivery alerts.
+- Run `/otto auto` to start execution if it does not begin automatically.
+- Use `/otto status` or `/otto visualize` to inspect the roadmap.
+- Use `/otto notifications` to review or configure delivery alerts.
 ```
 
 ## Critical Rules
@@ -242,11 +242,11 @@ Next steps:
 - **Document assumptions** — every judgment call gets noted in CONTEXT.md under "Assumptions" with reasoning
 - **Investigate thoroughly** — scout codebase, check library docs, and web search with the same rigor as interactive mode.
 - **Do focused research** — identify table stakes, domain standards, omissions, and scope traps.
-- **Use proper tools** — `gsd_plan_milestone` for roadmaps, `gsd_decision_save` for decisions, `gsd_milestone_generate_id` for IDs
+- **Use proper tools** — `otto_plan_milestone` for roadmaps, `otto_decision_save` for decisions, `otto_milestone_generate_id` for IDs
 - **Print artifacts in chat** — requirements table, roadmap preview, depth summary. The TUI scrollback is the user's audit trail.
 - **Use depends_on frontmatter** for multi-milestone sequences
 - **Anti-reduction rule** — if the spec describes a big vision, plan it. Phase complexity; do not cut it.
-- **Naming convention** — always use `gsd_milestone_generate_id` for IDs. Directories use bare IDs, files use ID-SUFFIX format.
+- **Naming convention** — always use `otto_milestone_generate_id` for IDs. Directories use bare IDs, files use ID-SUFFIX format.
 - **End with "Milestone {{milestoneId}} ready."** — this triggers auto-start detection
 
 {{inlinedTemplates}}

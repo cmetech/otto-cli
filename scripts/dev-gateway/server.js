@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * LOOP24 dev mock gateway.
+ * OTTO dev mock gateway.
  *
  * Transparent proxy: POST /v1/messages → https://api.anthropic.com/v1/messages
  *
@@ -8,19 +8,19 @@
  * credential — gateway accepts everything for local dev) and injects
  * x-api-key from ANTHROPIC_API_KEY when forwarding upstream.
  *
- * Stand-in for the real loop24-gateway's Anthropic surface (SURF-V2-01)
+ * Stand-in for the real otto-gateway's Anthropic surface (SURF-V2-01)
  * until the gateway team ships it. NOT for production use.
  *
  * Usage:
  *   ANTHROPIC_API_KEY=sk-ant-... node scripts/dev-gateway/server.js
  *   # then in another shell:
- *   LOOP24_GATEWAY_URL=http://127.0.0.1:7250 loop24
+ *   OTTO_GATEWAY_URL=http://127.0.0.1:7250 otto
  */
 
 import { createServer } from "node:http";
 import { request as httpsRequest } from "node:https";
 
-const PORT = Number(process.env.LOOP24_DEV_GATEWAY_PORT || 7250);
+const PORT = Number(process.env.OTTO_DEV_GATEWAY_PORT || 7250);
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 if (!ANTHROPIC_API_KEY) {
 	console.error("error: ANTHROPIC_API_KEY must be set so the mock gateway can forward upstream.");
@@ -35,7 +35,7 @@ function logRequest(req, status) {
 }
 
 const server = createServer((clientReq, clientRes) => {
-	// Health probe for the LOOP24 connection-state check
+	// Health probe for the OTTO connection-state check
 	if (clientReq.method === "GET" && clientReq.url === "/health") {
 		clientRes.statusCode = 200;
 		clientRes.setHeader("content-type", "application/json");
@@ -85,6 +85,6 @@ const server = createServer((clientReq, clientRes) => {
 });
 
 server.listen(PORT, "127.0.0.1", () => {
-	console.log(`[loop24-dev-gateway] listening on http://127.0.0.1:${PORT}`);
-	console.log(`[loop24-dev-gateway] forwarding to https://${UPSTREAM_HOST}`);
+	console.log(`[otto-dev-gateway] listening on http://127.0.0.1:${PORT}`);
+	console.log(`[otto-dev-gateway] forwarding to https://${UPSTREAM_HOST}`);
 });

@@ -97,18 +97,18 @@ function makeExtension(
 // ─── extractExtensionKey ─────────────────────────────────────────────────────
 
 describe("extractExtensionKey", () => {
-  const extensionsDir = "/home/user/.gsd/agent/extensions";
+  const extensionsDir = "/home/user/.otto/workflow/agent/extensions";
 
   it("extracts directory name from a nested extension path", () => {
     assert.equal(
-      extractExtensionKey("/home/user/.gsd/agent/extensions/mcp-client/index.js", extensionsDir),
+      extractExtensionKey("/home/user/.otto/workflow/agent/extensions/mcp-client/index.js", extensionsDir),
       "mcp-client",
     );
   });
 
   it("strips .ts/.js suffix from flat extension files", () => {
     assert.equal(
-      extractExtensionKey("/home/user/.gsd/agent/extensions/my-ext.ts", extensionsDir),
+      extractExtensionKey("/home/user/.otto/workflow/agent/extensions/my-ext.ts", extensionsDir),
       "my-ext",
     );
   });
@@ -124,7 +124,7 @@ describe("extractExtensionKey", () => {
 // ─── detectExtensionConflicts ─────────────────────────────────────────────────
 
 describe("detectExtensionConflicts", () => {
-  const extensionsDir = "/home/user/.gsd/agent/extensions";
+  const extensionsDir = "/home/user/.otto/workflow/agent/extensions";
 
   it("returns no conflicts when extensions have unique tool names", () => {
     const extensions = [
@@ -208,12 +208,12 @@ describe("detectExtensionConflicts", () => {
     );
   });
 
-  it("reproduces issue #2075: bundled extension under /.gsd/agent/extensions/ was never identified as built-in", () => {
+  it("reproduces issue #2075: bundled extension under /.otto/workflow/agent/extensions/ was never identified as built-in", () => {
     // Before the fix, the isBuiltIn check used path heuristics that excluded
-    // paths containing /.gsd/agent/extensions/, so bundled extensions placed
+    // paths containing /.otto/workflow/agent/extensions/, so bundled extensions placed
     // there by initResources() could never be recognized as built-in.
-    const bundledPath = "/home/user/.gsd/agent/extensions/mcp-client/index.js";
-    const userPath = "/home/user/.gsd/agent/extensions/mcporter/index.ts";
+    const bundledPath = "/home/user/.otto/workflow/agent/extensions/mcp-client/index.js";
+    const userPath = "/home/user/.otto/workflow/agent/extensions/mcporter/index.ts";
 
     const extensions = [
       makeExtension(bundledPath, { tools: ["mcp_servers", "mcp_discover", "mcp_call"] }),
@@ -221,7 +221,7 @@ describe("detectExtensionConflicts", () => {
     ];
 
     const bundledKeys = new Set(["mcp-client"]);
-    const conflicts = detectExtensionConflicts(extensions, bundledKeys, "/home/user/.gsd/agent/extensions");
+    const conflicts = detectExtensionConflicts(extensions, bundledKeys, "/home/user/.otto/workflow/agent/extensions");
 
     // All three conflicting tools should include the supersedes hint
     assert.equal(conflicts.length, 3);

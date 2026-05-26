@@ -8,7 +8,7 @@ import {
   getAllToolCompatibility,
   registerMcpToolCompatibility,
   resetToolCompatibilityRegistry,
-} from "@loop24/pi-coding-agent";
+} from "@otto/pi-coding-agent";
 
 import {
   isToolCompatibleWithProvider,
@@ -19,7 +19,7 @@ import {
 
 import {
   getProviderCapabilities,
-} from "@loop24/pi-ai";
+} from "@otto/pi-ai";
 
 // ─── Tool Compatibility Registry ────────────────────────────────────────────
 

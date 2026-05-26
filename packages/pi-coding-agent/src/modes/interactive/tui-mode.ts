@@ -1,4 +1,4 @@
-// LOOP24 - Adaptive mode selection for the interactive terminal UI
+// OTTO - Adaptive mode selection for the interactive terminal UI
 
 export type TuiMode = "chat" | "workflow" | "validation" | "debug" | "compact";
 export type TuiAdaptiveMode = "auto" | TuiMode;

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Normalized SQLite adapter wrapper used by the workflow database facade.
 
 export interface DbStatement {

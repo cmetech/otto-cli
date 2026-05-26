@@ -5,8 +5,8 @@ const PACKAGES_ROOT = fileURLToPath(new URL("packages/", ROOT));
 
 export function resolve(specifier, context, nextResolve) {
   let tsSpecifier = specifier;
-  if (specifier.includes('@loop24/')) {
-    tsSpecifier = specifier.replace('@loop24/', PACKAGES_ROOT).replace('/dist/', '/src/');
+  if (specifier.includes('@otto/')) {
+    tsSpecifier = specifier.replace('@otto/', PACKAGES_ROOT).replace('/dist/', '/src/');
     if (tsSpecifier.includes('/packages/pi-ai') && !tsSpecifier.endsWith('.ts')) {
         tsSpecifier = tsSpecifier.replace(/\/packages\/pi-ai$/, '/packages/pi-ai/src/index.ts');
     } else if (!tsSpecifier.includes('/src/') && !tsSpecifier.endsWith('.ts')) {

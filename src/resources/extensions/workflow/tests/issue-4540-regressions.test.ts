@@ -1,6 +1,6 @@
 /**
  * Regression tests for issue #4540:
- *   Bug 1 — Invalid quality_gates migration bricks gsd.db
+ *   Bug 1 — Invalid quality_gates migration bricks otto.db
  *   Bug 2 — Artifact retries emit no journal event, look like stuck loops
  */
 import { describe, test, beforeEach, afterEach } from "node:test";
@@ -26,7 +26,7 @@ const _require = createRequire(import.meta.url);
 
 function tmpDb(): { dir: string; dbPath: string } {
   const dir = mkdtempSync(join(tmpdir(), "gsd-4540-"));
-  return { dir, dbPath: join(dir, "gsd.db") };
+  return { dir, dbPath: join(dir, "otto.db") };
 }
 
 function cleanup(dir: string): void {
@@ -249,7 +249,7 @@ describe("Bug 2 — artifact-verification-retry journal event (#4540)", () => {
   test("emitJournalEvent accepts artifact-verification-retry event type", () => {
     const basePath = mkdtempSync(join(tmpdir(), "gsd-journal-4540-"));
     try {
-      mkdirSync(join(basePath, ".gsd"), { recursive: true });
+      mkdirSync(join(basePath, ".otto/workflow"), { recursive: true });
       emitJournalEvent(basePath, {
         ts: new Date().toISOString(),
         flowId: "flow-4540",
@@ -268,7 +268,7 @@ describe("Bug 2 — artifact-verification-retry journal event (#4540)", () => {
   test("artifact-verification-retry event carries attempt count", () => {
     const basePath = mkdtempSync(join(tmpdir(), "gsd-journal-4540b-"));
     try {
-      mkdirSync(join(basePath, ".gsd"), { recursive: true });
+      mkdirSync(join(basePath, ".otto/workflow"), { recursive: true });
       emitJournalEvent(basePath, {
         ts: new Date().toISOString(),
         flowId: "flow-4540b",

@@ -13,7 +13,7 @@ function run(cmd: string, cwd: string): string {
   return execSync(cmd, { cwd, stdio: ["ignore", "pipe", "pipe"], encoding: "utf-8" }).trim();
 }
 
-/** Create a temp git repo with .gsd structure and DB. */
+/** Create a temp git repo with .otto/workflow structure and DB. */
 function createRepo(): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), "orphan-audit-test-")));
   run("git init", dir);
@@ -25,8 +25,8 @@ function createRepo(): string {
   run("git commit -m init", dir);
   run("git branch -M main", dir);
 
-  // Create .gsd structure on disk (not tracked in git)
-  mkdirSync(join(dir, ".gsd", "milestones", "M001"), { recursive: true });
+  // Create .otto/workflow structure on disk (not tracked in git)
+  mkdirSync(join(dir, ".otto/workflow", "milestones", "M001"), { recursive: true });
 
   return dir;
 }
@@ -36,7 +36,7 @@ describe("auditOrphanedMilestoneBranches", () => {
 
   beforeEach(() => {
     dir = createRepo();
-    openDatabase(join(dir, ".gsd", "gsd.db"));
+    openDatabase(join(dir, ".otto/workflow", "otto.db"));
   });
 
   afterEach(() => {
@@ -102,11 +102,11 @@ describe("auditOrphanedMilestoneBranches", () => {
       "should warn about unmerged branch",
     );
     assert.ok(
-      result.warnings.some(w => w.includes("/gsd doctor fix")),
+      result.warnings.some(w => w.includes("/otto doctor fix")),
       `warning should suggest the real remediation command; got: ${JSON.stringify(result.warnings)}`,
     );
     assert.ok(
-      result.warnings.every(w => !w.includes("/gsd health --fix")),
+      result.warnings.every(w => !w.includes("/otto health --fix")),
       `warning must not suggest the removed health --fix command; got: ${JSON.stringify(result.warnings)}`,
     );
 
@@ -167,7 +167,7 @@ describe("auditOrphanedMilestoneBranches", () => {
     run("git checkout main", dir);
 
     // Simulate a leftover worktree directory
-    const wtDir = join(dir, ".gsd", "worktrees", "M001");
+    const wtDir = join(dir, ".otto/workflow", "worktrees", "M001");
     mkdirSync(wtDir, { recursive: true });
     writeFileSync(join(wtDir, ".git"), `gitdir: ${join(dir, ".git", "worktrees", "M001")}\n`);
 
@@ -181,7 +181,7 @@ describe("auditOrphanedMilestoneBranches", () => {
 
     // Warning should mention the worktree path so the user can find the work
     assert.ok(
-      result.warnings.some(w => w.includes(".gsd/worktrees/M001") || w.includes("worktree")),
+      result.warnings.some(w => w.includes(".otto/workflow/worktrees/M001") || w.includes("worktree")),
       `warning should reference the worktree location; got: ${JSON.stringify(result.warnings)}`,
     );
   });
@@ -192,7 +192,7 @@ describe("auditOrphanedMilestoneBranches", () => {
     insertMilestone({ id: "M001", title: "Test", status: "complete" });
 
     // Create orphaned worktree directory
-    const wtDir = join(dir, ".gsd", "worktrees", "M001");
+    const wtDir = join(dir, ".otto/workflow", "worktrees", "M001");
     mkdirSync(wtDir, { recursive: true });
     writeFileSync(join(wtDir, "leftover.txt"), "orphaned file\n");
 
@@ -261,7 +261,7 @@ describe("auditOrphanedMilestoneBranches", () => {
     //    directory lives forever.
     insertMilestone({ id: "M001", title: "Test", status: "complete" });
 
-    const wtDir = join(dir, ".gsd", "worktrees", "M001");
+    const wtDir = join(dir, ".otto/workflow", "worktrees", "M001");
     mkdirSync(wtDir, { recursive: true });
     writeFileSync(join(wtDir, "leftover.txt"), "stranded from a prior session\n");
 
@@ -281,7 +281,7 @@ describe("auditOrphanedMilestoneBranches", () => {
   test("#5879 — branch list failure still cleans complete orphan only after branch absence is verified", () => {
     insertMilestone({ id: "M001", title: "Test", status: "complete" });
 
-    const wtDir = join(dir, ".gsd", "worktrees", "M001");
+    const wtDir = join(dir, ".otto/workflow", "worktrees", "M001");
     mkdirSync(wtDir, { recursive: true });
     writeFileSync(join(wtDir, "leftover.txt"), "stranded from a prior session\n");
 
@@ -305,7 +305,7 @@ describe("auditOrphanedMilestoneBranches", () => {
   test("#5879 — branch list failure preserves complete worktree when branch still exists", () => {
     insertMilestone({ id: "M001", title: "Test", status: "complete" });
 
-    const wtDir = join(dir, ".gsd", "worktrees", "M001");
+    const wtDir = join(dir, ".otto/workflow", "worktrees", "M001");
     mkdirSync(wtDir, { recursive: true });
     writeFileSync(join(wtDir, "live-work.txt"), "do not delete\n");
 
@@ -329,7 +329,7 @@ describe("auditOrphanedMilestoneBranches", () => {
     // state (probably mid-recovery) and should not be silently wiped.
     insertMilestone({ id: "M001", title: "Test", status: "active" });
 
-    const wtDir = join(dir, ".gsd", "worktrees", "M001");
+    const wtDir = join(dir, ".otto/workflow", "worktrees", "M001");
     mkdirSync(wtDir, { recursive: true });
     writeFileSync(join(wtDir, "live-work.txt"), "do not delete\n");
 
@@ -342,7 +342,7 @@ describe("auditOrphanedMilestoneBranches", () => {
   test("#5879 — branch list failure does not delete worktree for milestone that is not complete", () => {
     insertMilestone({ id: "M001", title: "Test", status: "active" });
 
-    const wtDir = join(dir, ".gsd", "worktrees", "M001");
+    const wtDir = join(dir, ".otto/workflow", "worktrees", "M001");
     mkdirSync(wtDir, { recursive: true });
     writeFileSync(join(wtDir, "live-work.txt"), "do not delete\n");
 
@@ -362,7 +362,7 @@ describe("auditOrphanedMilestoneBranches", () => {
   test("#5879 — skips branch-less orphan in 'none' isolation mode", () => {
     insertMilestone({ id: "M001", title: "Test", status: "complete" });
 
-    const wtDir = join(dir, ".gsd", "worktrees", "M001");
+    const wtDir = join(dir, ".otto/workflow", "worktrees", "M001");
     mkdirSync(wtDir, { recursive: true });
     writeFileSync(join(wtDir, "leftover.txt"), "stranded\n");
 

@@ -2,7 +2,7 @@
  * Regression test for #4620.
  *
  * Ensures plan gate failed-closed errors include a self-heal hint
- * directing users to /gsd doctor heal.
+ * directing users to /otto doctor heal.
  */
 
 import test from "node:test";
@@ -22,8 +22,8 @@ test("#4620: auto/phases plan gate failed message includes doctor heal hint", ()
   const src = readSrc("auto/phases.ts");
   assert.match(
     src,
-    /Plan gate failed-closed:[\s\S]*\/gsd doctor heal/,
-    "auto/phases.ts should include /gsd doctor heal in plan gate failed notification",
+    /Plan gate failed-closed:[\s\S]*\/otto doctor heal/,
+    "auto/phases.ts should include /otto doctor heal in plan gate failed notification",
   );
 });
 
@@ -31,7 +31,7 @@ test("#4620: guided-flow plan gate failed message includes doctor heal hint", ()
   const src = readSrc("guided-flow.ts");
   assert.match(
     src,
-    /Plan gate failed-closed:[\s\S]*\/gsd doctor heal/,
-    "guided-flow.ts should include /gsd doctor heal in plan gate failed notification",
+    /Plan gate failed-closed:[\s\S]*(?:\/otto doctor heal|slashCommand\("doctor heal"\))/,
+    "guided-flow.ts should include /otto doctor heal in plan gate failed notification",
   );
 });

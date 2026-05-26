@@ -39,7 +39,7 @@ function listFiles(dir: string): string[] {
 }
 
 function activityDir(baseDir: string): string {
-  return join(baseDir, ".gsd", "activity");
+  return join(baseDir, ".otto/workflow", "activity");
 }
 
 function createCtx(entries: unknown[]) {

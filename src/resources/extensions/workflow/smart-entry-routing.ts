@@ -1,5 +1,5 @@
-// LOOP24 — Smart entry routing decisions.
-// Pure route selection for /loop24 guided wizard choices.
+// OTTO — Smart entry routing decisions.
+// Pure route selection for /otto guided wizard choices.
 
 export type SmartEntryIsolationMode = "worktree" | "branch" | "none";
 

@@ -10,7 +10,7 @@
  * @see upstream #2874
  */
 
-import type { Message, ImageContent, TextContent } from "@loop24/pi-ai";
+import type { Message, ImageContent, TextContent } from "@otto/pi-ai";
 
 /**
  * Maximum image dimension (px) that the Anthropic API allows in many-image

@@ -6,7 +6,7 @@
  * lockfile) which eliminates the TOCTOU race condition that existed with
  * the old advisory JSON lock approach.
  *
- * The lock file (.gsd/auto.lock) contains JSON metadata (PID, start time,
+ * The lock file (.otto/workflow/auto.lock) contains JSON metadata (PID, start time,
  * unit info) for diagnostics, but the actual exclusion is enforced by the
  * OS-level lock held via proper-lockfile.
  *
@@ -98,22 +98,22 @@ const LOCK_FILE = "auto.lock";
 
 /**
  * Derive the effective lock file name for the current process.
- * In parallel worker mode (GSD_PARALLEL_WORKER + GSD_MILESTONE_LOCK),
+ * In parallel worker mode (OTTO_PARALLEL_WORKER + OTTO_MILESTONE_LOCK),
  * each worker uses a per-milestone lock file (`auto-<milestoneId>.lock`)
- * to avoid contending on the shared `.gsd/auto.lock` (#2184).
+ * to avoid contending on the shared `.otto/workflow/auto.lock` (#2184).
  */
 export function effectiveLockFile(): string {
-  const mid = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK) : null;
+  const mid = process.env.OTTO_PARALLEL_WORKER ? process.env.OTTO_MILESTONE_LOCK : null;
   return mid ? `auto-${mid}.lock` : LOCK_FILE;
 }
 
 /**
  * Derive the OS-level lock target directory for the current process.
- * In parallel worker mode, uses `.gsd/parallel/<milestoneId>/` instead of
- * `.gsd/` so workers don't contend on the same proper-lockfile directory (#2184).
+ * In parallel worker mode, uses `.otto/workflow/parallel/<milestoneId>/` instead of
+ * `.otto/workflow/` so workers don't contend on the same proper-lockfile directory (#2184).
  */
 export function effectiveLockTarget(workflowDir: string): string {
-  const mid = (process.env.LOOP24_PARALLEL_WORKER ?? process.env.GSD_PARALLEL_WORKER) ? (process.env.LOOP24_MILESTONE_LOCK ?? process.env.GSD_MILESTONE_LOCK) : null;
+  const mid = process.env.OTTO_PARALLEL_WORKER ? process.env.OTTO_MILESTONE_LOCK : null;
   return mid ? join(workflowDir, "parallel", mid) : workflowDir;
 }
 
@@ -130,12 +130,12 @@ function lockPath(basePath: string): string {
  * that accumulate from macOS file conflict resolution (iCloud/Dropbox/OneDrive)
  * or other filesystem-level copy-on-conflict behavior (#1315).
  *
- * Also removes stray proper-lockfile directories beyond the canonical `.gsd.lock/`.
+ * Also removes stray proper-lockfile directories beyond the canonical `.otto/workflow.lock/`.
  */
 export function cleanupStrayLockFiles(basePath: string): void {
   const workflowDir = workflowRoot(basePath);
 
-  // Clean numbered auto lock files inside .gsd/
+  // Clean numbered auto lock files inside .otto/workflow/
   try {
     if (existsSync(workflowDir)) {
       for (const entry of readdirSync(workflowDir)) {
@@ -147,14 +147,14 @@ export function cleanupStrayLockFiles(basePath: string): void {
     }
   } catch { /* non-fatal: directory read failure */ }
 
-  // Clean stray proper-lockfile directories (e.g. ".gsd 2.lock/")
-  // The canonical one is ".gsd.lock/" — anything else is stray.
+  // Clean stray proper-lockfile directories (e.g. ".otto/workflow 2.lock/")
+  // The canonical one is ".otto/workflow.lock/" — anything else is stray.
   try {
     const parentDir = dirname(workflowDir);
-    const workflowDirName = workflowDir.split("/").pop() || ".gsd";
+    const workflowDirName = workflowDir.split("/").pop() || ".otto/workflow";
     if (existsSync(parentDir)) {
       for (const entry of readdirSync(parentDir)) {
-        // Match ".gsd <N>.lock" or ".gsd (<N>).lock" directories but NOT ".gsd.lock"
+        // Match ".otto/workflow <N>.lock" or ".otto/workflow (<N>).lock" directories but NOT ".otto/workflow.lock"
         if (entry !== `${workflowDirName}.lock` && entry.startsWith(workflowDirName) && entry.endsWith(".lock")) {
           const fullPath = join(parentDir, entry);
           try {
@@ -186,7 +186,7 @@ function ensureExitHandler(_gsdDir: string): void {
       if (_releaseFunction) { _releaseFunction(); _releaseFunction = null; }
     } catch { /* best-effort */ }
     // Clean ALL registered lock paths, not just the current one (#1578).
-    // Lock files accumulate across main project .gsd/, worktree .gsd/,
+    // Lock files accumulate across main project .otto/workflow/, worktree .otto/workflow/,
     // and projects registry paths — cleanup must cover all of them.
     for (const dir of _lockDirRegistry) {
       const lockFile = join(dir, LOCK_FILE);
@@ -312,7 +312,7 @@ export function acquireSessionLock(basePath: string): SessionLockResult {
   // #3218: Pre-flight stale lock cleanup — if the .lock/ directory exists but
   // no auto.lock metadata is present (or the PID is dead), remove the lock
   // directory before attempting acquisition. This prevents the 30-min stale
-  // window from blocking /loop24 after crashes, SIGKILL, or laptop sleep.
+  // window from blocking /otto after crashes, SIGKILL, or laptop sleep.
   const lockDir = lockTarget + ".lock";
   if (existsSync(lockDir)) {
     const existingData = readExistingLockData(lp);
@@ -329,7 +329,7 @@ export function acquireSessionLock(basePath: string): SessionLockResult {
     // Try to acquire an exclusive OS-level lock on the lock target.
     // We lock a directory since proper-lockfile works best on directories,
     // and the lock file itself may not exist yet.
-    // In parallel worker mode, lockTarget is .gsd/parallel/<MID>/ (#2184).
+    // In parallel worker mode, lockTarget is .otto/workflow/parallel/<MID>/ (#2184).
     mkdirSync(lockTarget, { recursive: true });
 
     const release = lockfile.lockSync(lockTarget, {
@@ -350,7 +350,7 @@ export function acquireSessionLock(basePath: string): SessionLockResult {
 
     return { acquired: true };
   } catch (err) {
-    // Lock is held by another process — or the .gsd.lock/ directory is stranded.
+    // Lock is held by another process — or the .otto/workflow.lock/ directory is stranded.
     // Check: if auto.lock is gone and no process is alive, the lock dir is stale.
     const existingData = readExistingLockData(lp);
     const existingPid = existingData?.pid;
@@ -552,7 +552,7 @@ export function releaseSessionLock(basePath: string): void {
   }
 
   // Remove the proper-lockfile directory for the current lock target.
-  // In parallel worker mode, this is .gsd/parallel/<MID>.lock/ (#2184).
+  // In parallel worker mode, this is .otto/workflow/parallel/<MID>.lock/ (#2184).
   const workflowDir = workflowRoot(basePath);
   const lockTarget = effectiveLockTarget(workflowDir);
   try {
@@ -571,7 +571,7 @@ export function releaseSessionLock(basePath: string): void {
   }
 
   // Clean ALL registered lock paths (#1578) — lock files accumulate across
-  // main project .gsd/, worktree .gsd/, and projects registry paths.
+  // main project .otto/workflow/, worktree .otto/workflow/, and projects registry paths.
   for (const dir of _lockDirRegistry) {
     const lockFile = join(dir, LOCK_FILE);
     const ownsRegisteredLock = isLockFileOwnedByCurrentProcess(lockFile);

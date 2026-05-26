@@ -1,6 +1,6 @@
 /**
  * Service Tier — gating, status formatting, icon resolution, and
- * the /loop24 fast command handler.
+ * the /otto fast command handler.
  *
  * Service tiers (priority/flex) are an OpenAI feature that currently only
  * applies to gpt-5.4 variants in the workflow. This module centralizes the model-gating logic
@@ -8,7 +8,7 @@
  * use a single source of truth.
  */
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { existsSync, readFileSync } from "node:fs";
 import { saveFile } from "./files.js";
@@ -64,9 +64,9 @@ export function formatServiceTierStatus(tier: ServiceTierSetting): string {
       "Service tier: disabled",
       "",
       "Usage:",
-      "  /gsd fast on     Set to priority (2x cost, faster)",
-      "  /gsd fast flex   Set to flex (0.5x cost, slower)",
-      "  /gsd fast off    Disable service tier",
+      "  /otto fast on     Set to priority (2x cost, faster)",
+      "  /otto fast flex   Set to flex (0.5x cost, slower)",
+      "  /otto fast off    Disable service tier",
       "",
       SERVICE_TIER_SCOPE_NOTE,
     ].join("\n");
@@ -77,9 +77,9 @@ export function formatServiceTierStatus(tier: ServiceTierSetting): string {
     `Service tier: ${label}`,
     "",
     "Usage:",
-    "  /gsd fast on     Set to priority (2x cost, faster)",
-    "  /gsd fast flex   Set to flex (0.5x cost, slower)",
-    "  /gsd fast off    Disable service tier",
+    "  /otto fast on     Set to priority (2x cost, faster)",
+    "  /otto fast flex   Set to flex (0.5x cost, slower)",
+    "  /otto fast off    Disable service tier",
     "",
     SERVICE_TIER_SCOPE_NOTE,
   ].join("\n");
@@ -146,7 +146,7 @@ async function writeGlobalServiceTier(
   }
 
   const frontmatter = serializePreferencesToFrontmatter(prefs);
-  let body = "\n# GSD Skill Preferences\n\nSee `~/.gsd/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
+  let body = "\n# OTTO Skill Preferences\n\nSee `~/.otto/workflow/agent/extensions/gsd/docs/preferences-reference.md` for full field documentation and examples.\n";
   if (existsSync(path)) {
     const preserved = extractBodyAfterFrontmatter(readFileSync(path, "utf-8"));
     if (preserved) body = preserved;
@@ -160,7 +160,7 @@ async function writeGlobalServiceTier(
 // ─── Command Handler ─────────────────────────────────────────────────────────
 
 /**
- * Handle `/loop24 fast [on|off|flex|status]`.
+ * Handle `/otto fast [on|off|flex|status]`.
  */
 export async function handleFast(args: string, ctx: ExtensionCommandContext): Promise<void> {
   const trimmed = args.trim().toLowerCase();
@@ -193,7 +193,7 @@ export async function handleFast(args: string, ctx: ExtensionCommandContext): Pr
   }
 
   ctx.ui.notify(
-    "Usage: /gsd fast [on|off|flex|status]\n\n  on    Priority tier (2x cost, faster)\n  off   Disable service tier\n  flex  Flex tier (0.5x cost, slower)\n  status Show current setting",
+    "Usage: /otto fast [on|off|flex|status]\n\n  on    Priority tier (2x cost, faster)\n  off   Disable service tier\n  flex  Flex tier (0.5x cost, slower)\n  status Show current setting",
     "warning",
   );
 }

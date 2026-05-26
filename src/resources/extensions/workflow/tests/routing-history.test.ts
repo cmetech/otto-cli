@@ -18,7 +18,7 @@ import {
 
 function makeTmpDir(): string {
   const dir = join(tmpdir(), `gsd-routing-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   return dir;
 }
 

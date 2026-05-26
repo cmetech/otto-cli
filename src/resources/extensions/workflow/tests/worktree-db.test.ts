@@ -82,8 +82,8 @@ test("copyWorktreeDb copies DB file and data is queryable", (t) => {
   const destDir = tempDir();
   registerCleanup(t, srcDir, destDir);
 
-  const srcDb = path.join(srcDir, "gsd.db");
-  const destDb = path.join(destDir, "nested", "gsd.db");
+  const srcDb = path.join(srcDir, "otto.db");
+  const destDb = path.join(destDir, "nested", "otto.db");
 
   seedMainDb(srcDb);
   closeDatabase();
@@ -107,8 +107,8 @@ test("copyWorktreeDb skips -wal and -shm files", (t) => {
   const destDir = tempDir();
   registerCleanup(t, srcDir, destDir);
 
-  const srcDb = path.join(srcDir, "gsd.db");
-  const destDb = path.join(destDir, "gsd.db");
+  const srcDb = path.join(srcDir, "otto.db");
+  const destDb = path.join(destDir, "otto.db");
 
   seedMainDb(srcDb);
   closeDatabase();
@@ -127,8 +127,8 @@ test("copyWorktreeDb returns false when source doesn't exist", (t) => {
   const destDir = tempDir();
   registerCleanup(t, destDir);
 
-  const missingSrc = path.join(destDir, "missing", "gsd.db");
-  const result = copyWorktreeDb(missingSrc, path.join(destDir, "gsd.db"));
+  const missingSrc = path.join(destDir, "missing", "otto.db");
+  const result = copyWorktreeDb(missingSrc, path.join(destDir, "otto.db"));
   assert.equal(result, false, "returns false for missing source");
 });
 
@@ -137,8 +137,8 @@ test("copyWorktreeDb creates deeply nested dest directories", (t) => {
   const destDir = tempDir();
   registerCleanup(t, srcDir, destDir);
 
-  const srcDb = path.join(srcDir, "gsd.db");
-  const deepDest = path.join(destDir, "a", "b", "c", "gsd.db");
+  const srcDb = path.join(srcDir, "otto.db");
+  const deepDest = path.join(destDir, "a", "b", "c", "otto.db");
 
   seedMainDb(srcDb);
   closeDatabase();
@@ -155,8 +155,8 @@ test("reconcileWorktreeDb merges new decisions from worktree into main", (t) => 
   const wtDir = tempDir();
   registerCleanup(t, mainDir, wtDir);
 
-  const mainDb = path.join(mainDir, "gsd.db");
-  const wtDb = path.join(wtDir, "gsd.db");
+  const mainDb = path.join(mainDir, "otto.db");
+  const wtDb = path.join(wtDir, "otto.db");
 
   seedMainDb(mainDb);
   closeDatabase();
@@ -190,8 +190,8 @@ test("reconcileWorktreeDb merges new requirements from worktree into main", (t) 
   const wtDir = tempDir();
   registerCleanup(t, mainDir, wtDir);
 
-  const mainDb = path.join(mainDir, "gsd.db");
-  const wtDb = path.join(wtDir, "gsd.db");
+  const mainDb = path.join(mainDir, "otto.db");
+  const wtDb = path.join(wtDir, "otto.db");
 
   seedMainDb(mainDb);
   closeDatabase();
@@ -228,8 +228,8 @@ test("reconcileWorktreeDb merges new artifacts from worktree into main", (t) => 
   const wtDir = tempDir();
   registerCleanup(t, mainDir, wtDir);
 
-  const mainDb = path.join(mainDir, "gsd.db");
-  const wtDb = path.join(wtDir, "gsd.db");
+  const mainDb = path.join(mainDir, "otto.db");
+  const wtDb = path.join(wtDir, "otto.db");
 
   seedMainDb(mainDb);
   closeDatabase();
@@ -264,8 +264,8 @@ test("reconcileWorktreeDb detects conflicts and applies worktree-wins policy", (
   const wtDir = tempDir();
   registerCleanup(t, mainDir, wtDir);
 
-  const mainDb = path.join(mainDir, "gsd.db");
-  const wtDb = path.join(wtDir, "gsd.db");
+  const mainDb = path.join(mainDir, "otto.db");
+  const wtDb = path.join(wtDir, "otto.db");
 
   seedMainDb(mainDb);
   closeDatabase();
@@ -300,7 +300,7 @@ test("reconcileWorktreeDb handles missing worktree DB gracefully", (t) => {
   const mainDir = tempDir();
   registerCleanup(t, mainDir);
 
-  const mainDb = path.join(mainDir, "gsd.db");
+  const mainDb = path.join(mainDir, "otto.db");
   seedMainDb(mainDb);
 
   const missingWt = path.join(mainDir, "missing-worktree.db");
@@ -320,8 +320,8 @@ test("reconcileWorktreeDb handles paths containing spaces", (t) => {
   fs.mkdirSync(mainDir, { recursive: true });
   fs.mkdirSync(wtDir, { recursive: true });
 
-  const mainDb = path.join(mainDir, "gsd.db");
-  const wtDb = path.join(wtDir, "gsd.db");
+  const mainDb = path.join(mainDir, "otto.db");
+  const wtDb = path.join(wtDir, "otto.db");
 
   seedMainDb(mainDb);
   closeDatabase();
@@ -353,8 +353,8 @@ test("reconcileWorktreeDb leaves main DB usable after DETACH", (t) => {
   const wtDir = tempDir();
   registerCleanup(t, mainDir, wtDir);
 
-  const mainDb = path.join(mainDir, "gsd.db");
-  const wtDb = path.join(wtDir, "gsd.db");
+  const mainDb = path.join(mainDir, "otto.db");
+  const wtDb = path.join(wtDir, "otto.db");
 
   seedMainDb(mainDb);
   closeDatabase();
@@ -398,8 +398,8 @@ test("reconcileWorktreeDb is a no-op when DBs are identical", (t) => {
   const wtDir = tempDir();
   registerCleanup(t, mainDir, wtDir);
 
-  const mainDb = path.join(mainDir, "gsd.db");
-  const wtDb = path.join(wtDir, "gsd.db");
+  const mainDb = path.join(mainDir, "otto.db");
+  const wtDb = path.join(wtDir, "otto.db");
 
   seedMainDb(mainDb);
   closeDatabase();
@@ -417,8 +417,8 @@ test("reconcileWorktreeDb does not downgrade milestone status complete→active 
   const wtDir = tempDir();
   registerCleanup(t, mainDir, wtDir);
 
-  const mainDb = path.join(mainDir, "gsd.db");
-  const wtDb = path.join(wtDir, "gsd.db");
+  const mainDb = path.join(mainDir, "otto.db");
+  const wtDb = path.join(wtDir, "otto.db");
 
   seedMainDb(mainDb);
   const mainAdapter = _getAdapter()!;

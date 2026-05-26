@@ -1,8 +1,8 @@
 /**
- * GSD-2 Docker runtime e2e smoke.
+ * OTTO-2 Docker runtime e2e smoke.
  *
  * Builds the `runtime-local` Dockerfile target from the *current source*
- * (via `npm pack` → COPY into the image) and runs `gsd --version` inside
+ * (via `npm pack` → COPY into the image) and runs `otto --version` inside
  * the resulting container. Catches regressions where the published image
  * would refuse to start: missing system deps (git), broken postinstall,
  * platform-specific native binding failures, missing files in the npm
@@ -116,8 +116,8 @@ function dockerRmImage(tag: string): void {
 	}
 }
 
-const TAG = `gsd-pi:e2e-${process.pid}`;
-const BUILDER_TAG = `gsd-ci-builder:e2e-${process.pid}`;
+const TAG = `otto-pi:e2e-${process.pid}`;
+const BUILDER_TAG = `otto-ci-builder:e2e-${process.pid}`;
 
 describe("docker runtime e2e", () => {
 	const skipReason = dockerAvailable()
@@ -135,7 +135,7 @@ describe("docker runtime e2e", () => {
 	);
 
 	test(
-		"`gsd --version` inside runtime-local container exits 0 with semver",
+		"`otto --version` inside runtime-local container exits 0 with semver",
 		{ skip: skipReason ?? false, timeout: 900_000 },
 		(t) => {
 			const packed = packToRoot();

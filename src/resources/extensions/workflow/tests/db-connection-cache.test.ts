@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for workspace database connection cache lifecycle helpers.
 
 import { describe, test } from "node:test";

@@ -4,7 +4,7 @@ description: Break a plan or milestone brief into independently-grabbable vertic
 ---
 
 <objective>
-Decompose an approved plan into the smallest useful vertical slices that each cut end-to-end through every relevant layer. Primary output is the `Slices` section of `M###-ROADMAP.md` (matching the template at `src/resources/extensions/gsd/templates/roadmap.md`). Secondary output, only with explicit confirmation, is a set of GitHub issues with blocked-by relationships wired up.
+Decompose an approved plan into the smallest useful vertical slices that each cut end-to-end through every relevant layer. Primary output is the `Slices` section of `M###-ROADMAP.md` (matching the template at `src/resources/extensions/otto/templates/roadmap.md`). Secondary output, only with explicit confirmation, is a set of GitHub issues with blocked-by relationships wired up.
 </objective>
 
 <context>
@@ -30,7 +30,7 @@ Typical invocation points:
 
 1. Read `M###-CONTEXT.md` for the active milestone — the brief is the source of truth for scope.
 2. Read `M###-ROADMAP.md` if one exists — you may be refining rather than creating from scratch.
-3. Read `src/resources/extensions/gsd/templates/roadmap.md` for the exact slice format. The parser depends on it.
+3. Read `src/resources/extensions/otto/templates/roadmap.md` for the exact slice format. The parser depends on it.
 4. If the plan came from a GitHub issue (user passed a URL or number), fetch it with `mcp__github__issue_read`.
 
 ## Step 2: Explore the codebase briefly
@@ -80,7 +80,7 @@ Once approved, write or update `M###-ROADMAP.md` matching the template exactly. 
 
 Fill the rest of the template: Vision, Success Criteria, Key Risks, Proof Strategy, Verification Classes, Definition of Done, Requirement Coverage, Horizontal Checklist (omit entirely for trivial milestones), and the Boundary Map (`S01 → S02` produces/consumes blocks — be specific, name real APIs/types/invariants).
 
-Use `write` to the path `.gsd/milestones/<MID>/<MID>-ROADMAP.md`. Do not edit checkboxes by hand during normal execution — the `gsd_*` tools own state.
+Use `write` to the path `.otto/workflow/milestones/<MID>/<MID>-ROADMAP.md`. Do not edit checkboxes by hand during normal execution — the `otto_*` tools own state.
 
 ## Step 6: Optionally file as GitHub issues
 
@@ -108,7 +108,7 @@ If the user explicitly asks (and only if — outward actions need confirmation),
 <or "None - can start immediately">
 
 ---
-From milestone brief at `.gsd/milestones/<MID>/<MID>-CONTEXT.md`.
+From milestone brief at `.otto/workflow/milestones/<MID>/<MID>-CONTEXT.md`.
 ```
 
 Do NOT close or modify any parent issue.
@@ -118,10 +118,10 @@ Do NOT close or modify any parent issue.
 <anti_patterns>
 
 - **Horizontal slices.** "S01: All schemas" / "S02: All APIs" / "S03: All UI" — destroys demoability.
-- **Research-only slices.** A slice whose deliverable is a document, not working code, is a spike. Use `/gsd start spike`.
+- **Research-only slices.** A slice whose deliverable is a document, not working code, is a spike. Use `/otto start spike`.
 - **Foundation slices with no demo.** "Set up the base class for X" is a layer, not a slice.
 - **Auto-filing GitHub issues.** Requires explicit user confirmation every time.
-- **Editing roadmap checkboxes by hand later.** `gsd_*` tools own that state during execution.
+- **Editing roadmap checkboxes by hand later.** `otto_*` tools own that state during execution.
 - **Vague demo lines.** "Feature X is implemented" is not a demo. "User can submit the form and see the result" is.
 
 </anti_patterns>

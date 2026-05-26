@@ -1,4 +1,4 @@
-const AUDIT_ENV_KEY = "GSD_UOK_AUDIT_UNIFIED";
+const AUDIT_ENV_KEY = "OTTO_UOK_AUDIT_UNIFIED";
 
 export function setUnifiedAuditEnabled(enabled: boolean): void {
   process.env[AUDIT_ENV_KEY] = enabled ? "1" : "0";

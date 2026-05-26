@@ -1,13 +1,13 @@
 # Remote Questions
 
-Remote questions allow GSD to ask for user input and send informational notifications via Slack, Discord, or Telegram when running in headless auto-mode. When GSD encounters a decision point that needs human input, it posts the question to your configured channel and polls for a response. Milestone completions, blockers, budget alerts, and other status events are also routed to the same channel.
+Remote questions allow OTTO to ask for user input and send informational notifications via Slack, Discord, or Telegram when running in headless auto-mode. When OTTO encounters a decision point that needs human input, it posts the question to your configured channel and polls for a response. Milestone completions, blockers, budget alerts, and other status events are also routed to the same channel.
 
 ## Setup
 
 ### Discord
 
 ```
-/gsd remote discord
+/otto remote discord
 ```
 
 The setup wizard:
@@ -16,7 +16,7 @@ The setup wizard:
 3. Lists servers the bot belongs to (or lets you pick)
 4. Lists text channels in the selected server
 5. Sends a test message to confirm permissions
-6. Saves the configuration to `~/.gsd/PREFERENCES.md`
+6. Saves the configuration to `~/.otto/PREFERENCES.md`
 
 **Bot requirements:**
 - A Discord bot application with a token (from [Discord Developer Portal](https://discord.com/developers/applications))
@@ -30,7 +30,7 @@ The setup wizard:
 ### Slack
 
 ```
-/gsd remote slack
+/otto remote slack
 ```
 
 The setup wizard:
@@ -48,7 +48,7 @@ The setup wizard:
 ### Telegram
 
 ```
-/gsd remote telegram
+/otto remote telegram
 ```
 
 The setup wizard:
@@ -65,7 +65,7 @@ The setup wizard:
 
 ## Configuration
 
-Remote questions are configured in `~/.gsd/PREFERENCES.md`:
+Remote questions are configured in `~/.otto/PREFERENCES.md`:
 
 ```yaml
 remote_questions:
@@ -77,13 +77,13 @@ remote_questions:
 
 ## How It Works
 
-1. GSD encounters a decision point during auto-mode
+1. OTTO encounters a decision point during auto-mode
 2. The question is posted to your configured channel as a rich embed (Discord) or Block Kit message (Slack)
-3. GSD polls for a response at the configured interval
+3. OTTO polls for a response at the configured interval
 4. You respond by:
    - **Reacting** with a number emoji (1️⃣, 2️⃣, etc.) for single-question prompts
    - **Replying** to the message with a number (`1`), comma-separated numbers (`1,3`), or free text
-5. GSD picks up the response and continues execution
+5. OTTO picks up the response and continues execution
 6. A ✅ reaction is added to the prompt message to confirm receipt
 
 ### Response Formats
@@ -99,11 +99,11 @@ remote_questions:
 
 ### Timeouts
 
-If no response is received within `timeout_minutes`, the prompt times out and GSD continues with a timeout result. The LLM handles timeouts according to the task context — typically by making a conservative default choice or pausing auto-mode.
+If no response is received within `timeout_minutes`, the prompt times out and OTTO continues with a timeout result. The LLM handles timeouts according to the task context — typically by making a conservative default choice or pausing auto-mode.
 
 ## Informational Notifications
 
-In addition to interactive questions, GSD sends informational notifications to your remote channel for significant auto-mode events. These do not require a response — they are delivered alongside desktop notifications.
+In addition to interactive questions, OTTO sends informational notifications to your remote channel for significant auto-mode events. These do not require a response — they are delivered alongside desktop notifications.
 
 Events that are sent remotely:
 
@@ -119,7 +119,7 @@ Informational notifications are sent whenever `notifications.enabled: true` is s
 
 ## Telegram Commands
 
-When Telegram is configured as your remote channel, GSD runs a background polling loop (every ~5 seconds) while auto-mode is active. This allows you to send commands directly to your bot and receive live project status updates in return.
+When Telegram is configured as your remote channel, OTTO runs a background polling loop (every ~5 seconds) while auto-mode is active. This allows you to send commands directly to your bot and receive live project status updates in return.
 
 > **Note:** Background command polling is only available for Telegram. Slack and Discord use a webhook-based model and do not support incoming commands from the chat.
 
@@ -139,22 +139,22 @@ All command responses are prefixed with the project name (e.g., `📁 MyProject`
 
 ### How Background Polling Works
 
-While auto-mode is running, GSD polls the Telegram Bot API every ~5 seconds for new messages sent to the bot. When a command is received, GSD processes it and replies in the same chat.
+While auto-mode is running, OTTO polls the Telegram Bot API every ~5 seconds for new messages sent to the bot. When a command is received, OTTO processes it and replies in the same chat.
 
-Polling is active only while auto-mode is running. When auto-mode stops (normally, or via `/pause`), polling stops as well. The next `/gsd auto` resumes polling automatically.
+Polling is active only while auto-mode is running. When auto-mode stops (normally, or via `/pause`), polling stops as well. The next `/otto auto` resumes polling automatically.
 
-The `/pause` command sets a stop directive that GSD checks at each unit boundary — the current unit always completes before auto-mode halts. `/resume` clears that directive so auto-mode continues without requiring a terminal interaction.
+The `/pause` command sets a stop directive that OTTO checks at each unit boundary — the current unit always completes before auto-mode halts. `/resume` clears that directive so auto-mode continues without requiring a terminal interaction.
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `/gsd remote` | Show remote questions menu and current status |
-| `/gsd remote slack` | Set up Slack integration |
-| `/gsd remote discord` | Set up Discord integration |
-| `/gsd remote telegram` | Set up Telegram integration |
-| `/gsd remote status` | Show current configuration and last prompt status |
-| `/gsd remote disconnect` | Remove remote questions configuration |
+| `/otto remote` | Show remote questions menu and current status |
+| `/otto remote slack` | Set up Slack integration |
+| `/otto remote discord` | Set up Discord integration |
+| `/otto remote telegram` | Set up Telegram integration |
+| `/otto remote status` | Show current configuration and last prompt status |
+| `/otto remote disconnect` | Remove remote questions configuration |
 
 ## Discord vs Slack Feature Comparison
 
@@ -199,7 +199,7 @@ Telegram supports all the above plus background command polling (`/status`, `/pa
 
 ### Telegram commands not responding
 - Confirm auto-mode is actively running — background polling only operates while auto-mode is active
-- Verify the bot token in `~/.gsd/PREFERENCES.md` matches the token from [@BotFather](https://t.me/BotFather)
+- Verify the bot token in `~/.otto/PREFERENCES.md` matches the token from [@BotFather](https://t.me/BotFather)
 - Ensure the `chat_id` (or `channel_id`) in your configuration matches the chat where you're sending the commands — the bot only responds in its configured chat
 - Send `/help` first: if the bot responds, polling is working and the issue may be with a specific command
-- Run `/gsd remote status` from your terminal to confirm the Telegram configuration is saved correctly
+- Run `/otto remote status` from your terminal to confirm the Telegram configuration is saved correctly

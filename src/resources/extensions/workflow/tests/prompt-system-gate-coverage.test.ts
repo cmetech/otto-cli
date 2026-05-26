@@ -46,7 +46,7 @@ import {
 
 function setupTestDb(): string {
   const tmpDir = mkdtempSync(join(tmpdir(), "prompt-gate-coverage-"));
-  const dbPath = join(tmpDir, "gsd.db");
+  const dbPath = join(tmpDir, "otto.db");
   openDatabase(dbPath);
   insertMilestone({ id: "M001", title: "Test", status: "active" });
   insertSlice({

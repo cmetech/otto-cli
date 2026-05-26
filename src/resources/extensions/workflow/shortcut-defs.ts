@@ -16,7 +16,7 @@ type ShortcutDef = {
 export const SHORTCUTS: Record<ShortcutId, ShortcutDef> = {
   dashboard: {
     key: "g",
-    action: "Open GSD dashboard",
+    action: "Open OTTO dashboard",
     command: slashCommand("status"),
     hasFallback: true,
   },

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Prompt contract tests for milestone validation verification-class evidence.
 
 import test from "node:test";

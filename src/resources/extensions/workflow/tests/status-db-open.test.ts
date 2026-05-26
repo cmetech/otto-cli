@@ -26,15 +26,15 @@ describe("status command routing", () => {
     assert.match(notifications[0]?.message ?? "", /interactive terminal/i);
   });
 
-  test("quick task commit instructions handle external .gsd roots without staging quick files", () => {
-    const instruction = buildQuickCommitInstruction("/project", "/external/.gsd");
+  test("quick task commit instructions handle external .otto/workflow roots without staging quick files", () => {
+    const instruction = buildQuickCommitInstruction("/project", "/external/.otto/workflow");
 
-    assert.match(instruction, /do not stage or commit `\.gsd\/quick\/\.\.\.`/);
+    assert.match(instruction, /do not stage or commit `\.otto\/workflow\/quick\/\.\.\.`/);
     assert.match(instruction, /nothing in the project repo to commit/);
   });
 
-  test("quick task commit instructions include normal commit guidance for in-project .gsd roots", () => {
-    const instruction = buildQuickCommitInstruction("/project", "/project/.gsd");
+  test("quick task commit instructions include normal commit guidance for in-project .otto/workflow roots", () => {
+    const instruction = buildQuickCommitInstruction("/project", "/project/.otto/workflow");
 
     assert.doesNotMatch(instruction, /nothing in the project repo to commit/);
     assert.match(instruction, /Commit your changes atomically/);

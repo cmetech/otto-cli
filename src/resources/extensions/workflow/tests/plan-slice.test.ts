@@ -1,4 +1,4 @@
-// GSD Extension — Plan-slice tool integration tests.
+// OTTO Extension — Plan-slice tool integration tests.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -14,10 +14,10 @@ import { deriveState, invalidateStateCache } from '../state.ts';
 
 function makeTmpBase(): string {
   const base = mkdtempSync(join(tmpdir(), 'gsd-plan-slice-'));
-  mkdirSync(join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'tasks'), { recursive: true });
-  mkdirSync(join(base, 'src', 'resources', 'extensions', 'gsd', 'tools'), { recursive: true });
-  writeFileSync(join(base, 'src', 'resources', 'extensions', 'gsd', 'tools', 'plan-milestone.ts'), '// fixture\n', 'utf-8');
-  writeFileSync(join(base, 'src', 'resources', 'extensions', 'gsd', 'tools', 'plan-task.ts'), '// fixture\n', 'utf-8');
+  mkdirSync(join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'tasks'), { recursive: true });
+  mkdirSync(join(base, 'src', 'resources', 'extensions', 'workflow', 'tools'), { recursive: true });
+  writeFileSync(join(base, 'src', 'resources', 'extensions', 'workflow', 'tools', 'plan-milestone.ts'), '// fixture\n', 'utf-8');
+  writeFileSync(join(base, 'src', 'resources', 'extensions', 'workflow', 'tools', 'plan-task.ts'), '// fixture\n', 'utf-8');
   writeFileSync(join(base, 'stale-input.py'), '# fixture\n', 'utf-8');
   return base;
 }
@@ -70,7 +70,7 @@ function validParams() {
 
 test('handlePlanSlice writes slice/task planning state and renders plan artifacts', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -91,14 +91,14 @@ test('handlePlanSlice writes slice/task planning state and renders plan artifact
     assert.deepEqual(slice?.target_repositories, ['project']);
     assert.deepEqual(tasks[0]?.target_repositories, ['project']);
 
-    const planPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md');
+    const planPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md');
     assert.ok(existsSync(planPath), 'slice plan should be rendered to disk');
     const parsedPlan = parsePlan(readFileSync(planPath, 'utf-8'));
     assert.equal(parsedPlan.goal, 'Persist slice planning through the DB.');
     assert.equal(parsedPlan.tasks.length, 2);
     assert.equal(parsedPlan.tasks[0]?.id, 'T01');
 
-    const taskPlanPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T01-PLAN.md');
+    const taskPlanPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T01-PLAN.md');
     assert.ok(existsSync(taskPlanPath), 'task plan should be rendered to disk');
     const taskPlan = parseTaskPlanFile(readFileSync(taskPlanPath, 'utf-8'));
     assert.deepEqual(taskPlan.frontmatter.skills_used, []);
@@ -109,7 +109,7 @@ test('handlePlanSlice writes slice/task planning state and renders plan artifact
 
 test('handlePlanSlice persists explicit slice/task target repositories', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -135,7 +135,7 @@ test('handlePlanSlice persists explicit slice/task target repositories', async (
 
 test('handlePlanSlice rejects unknown target repositories', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -153,14 +153,14 @@ test('handlePlanSlice rejects unknown target repositories', async () => {
 
 test('handlePlanSlice enforces absolute path scope to declared target repositories', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
     mkdirSync(join(base, 'frontend'), { recursive: true });
     mkdirSync(join(base, 'backend'), { recursive: true });
     writeFileSync(
-      join(base, '.gsd', 'PREFERENCES.md'),
+      join(base, '.otto/workflow', 'PREFERENCES.md'),
       [
         '---',
         'workspace:',
@@ -198,14 +198,14 @@ test('handlePlanSlice enforces absolute path scope to declared target repositori
 
 test('handlePlanSlice rejects relative traversal outside declared target repositories', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
     mkdirSync(join(base, 'frontend'), { recursive: true });
     mkdirSync(join(base, 'backend'), { recursive: true });
     writeFileSync(
-      join(base, '.gsd', 'PREFERENCES.md'),
+      join(base, '.otto/workflow', 'PREFERENCES.md'),
       [
         '---',
         'workspace:',
@@ -240,14 +240,14 @@ test('handlePlanSlice rejects relative traversal outside declared target reposit
   }
 });
 
-test('handlePlanSlice renders plan artifacts under worktree-local .gsd while using project DB', async () => {
+test('handlePlanSlice renders plan artifacts under worktree-local .otto/workflow while using project DB', async () => {
   const base = makeTmpBase();
-  const worktree = join(base, '.gsd', 'worktrees', 'M001');
-  mkdirSync(join(worktree, '.gsd'), { recursive: true });
-  mkdirSync(join(worktree, 'src', 'resources', 'extensions', 'gsd', 'tools'), { recursive: true });
-  writeFileSync(join(worktree, 'src', 'resources', 'extensions', 'gsd', 'tools', 'plan-milestone.ts'), '// fixture\n', 'utf-8');
-  writeFileSync(join(worktree, 'src', 'resources', 'extensions', 'gsd', 'tools', 'plan-task.ts'), '// fixture\n', 'utf-8');
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  const worktree = join(base, '.otto/workflow', 'worktrees', 'M001');
+  mkdirSync(join(worktree, '.otto/workflow'), { recursive: true });
+  mkdirSync(join(worktree, 'src', 'resources', 'extensions', 'workflow', 'tools'), { recursive: true });
+  writeFileSync(join(worktree, 'src', 'resources', 'extensions', 'workflow', 'tools', 'plan-milestone.ts'), '// fixture\n', 'utf-8');
+  writeFileSync(join(worktree, 'src', 'resources', 'extensions', 'workflow', 'tools', 'plan-task.ts'), '// fixture\n', 'utf-8');
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -255,10 +255,10 @@ test('handlePlanSlice renders plan artifacts under worktree-local .gsd while usi
     const result = await handlePlanSlice(validParams(), worktree);
     assert.ok(!('error' in result), `unexpected error: ${'error' in result ? result.error : ''}`);
 
-    const worktreePlan = join(worktree, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md');
-    const projectPlan = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md');
-    assert.ok(existsSync(worktreePlan), 'slice plan should be rendered to worktree-local .gsd');
-    assert.ok(!existsSync(projectPlan), 'slice plan should not be rendered to project .gsd');
+    const worktreePlan = join(worktree, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md');
+    const projectPlan = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md');
+    assert.ok(existsSync(worktreePlan), 'slice plan should be rendered to worktree-local .otto/workflow');
+    assert.ok(!existsSync(projectPlan), 'slice plan should not be rendered to project .otto/workflow');
     assert.equal(result.planPath, realpathSync(worktreePlan));
   } finally {
     cleanup(base);
@@ -267,7 +267,7 @@ test('handlePlanSlice renders plan artifacts under worktree-local .gsd while usi
 
 test('handlePlanSlice advances DB-derived state out of planning immediately', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -291,7 +291,7 @@ test('handlePlanSlice advances DB-derived state out of planning immediately', as
 
 test('handlePlanSlice clears sketch flag so DB-derived state leaves refining', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     insertMilestone({ id: 'M001', title: 'Milestone', status: 'active' });
@@ -317,13 +317,13 @@ test('handlePlanSlice clears sketch flag so DB-derived state leaves refining', a
 
 test('handlePlanSlice preserves sketch flag when render fails before artifacts exist', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     insertMilestone({ id: 'M001', title: 'Milestone', status: 'active' });
     insertSlice({ id: 'S02', milestoneId: 'M001', title: 'Planning slice', status: 'pending', demo: 'Rendered plans exist.', isSketch: true });
 
-    const sliceDir = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02');
+    const sliceDir = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02');
     rmSync(sliceDir, { recursive: true, force: true });
     writeFileSync(sliceDir, 'not a directory', 'utf-8');
 
@@ -338,7 +338,7 @@ test('handlePlanSlice preserves sketch flag when render fails before artifacts e
 
 test('handlePlanSlice leaves omitted enrichment fields empty instead of rendering placeholders', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -358,7 +358,7 @@ test('handlePlanSlice leaves omitted enrichment fields empty instead of renderin
     assert.equal(slice?.integration_closure, '');
     assert.equal(slice?.observability_impact, '');
 
-    const planPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md');
+    const planPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md');
     const content = readFileSync(planPath, 'utf-8');
     assert.doesNotMatch(content, /Not provided/i);
     assert.doesNotMatch(content, /^## Proof Level$/m);
@@ -371,7 +371,7 @@ test('handlePlanSlice leaves omitted enrichment fields empty instead of renderin
 
 test('handlePlanSlice rejects invalid payloads', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -385,7 +385,7 @@ test('handlePlanSlice rejects invalid payloads', async () => {
 
 test('handlePlanSlice explains string task IO fields must be arrays', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -407,7 +407,7 @@ test('handlePlanSlice explains string task IO fields must be arrays', async () =
 
 test('handlePlanSlice rejects absolute task IO paths outside the active worktree', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -433,7 +433,7 @@ test('handlePlanSlice rejects absolute task IO paths outside the active worktree
 
 test('handlePlanSlice rejects missing task input paths before persisting tasks', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -458,7 +458,7 @@ test('handlePlanSlice rejects missing task input paths before persisting tasks',
 
 test('handlePlanSlice rejects task input paths created by later tasks before persisting tasks', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -490,7 +490,7 @@ test('handlePlanSlice rejects task input paths created by later tasks before per
 
 test('handlePlanSlice accepts absolute task IO paths inside the active worktree', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -514,7 +514,7 @@ test('handlePlanSlice accepts absolute task IO paths inside the active worktree'
 
 test('handlePlanSlice rejects missing parent slice', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     insertMilestone({ id: 'M001', title: 'Milestone', status: 'active' });
@@ -528,11 +528,11 @@ test('handlePlanSlice rejects missing parent slice', async () => {
 
 test('handlePlanSlice surfaces render failures without changing parse-visible task-plan state for the failing task', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
-    const failingTaskPlanPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T01-PLAN.md');
+    const failingTaskPlanPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T01-PLAN.md');
     writeFileSync(failingTaskPlanPath, '---\nestimated_steps: 1\nestimated_files: 1\nskills_used: []\n---\n\n# T01: Cached task\n', 'utf-8');
     rmSync(failingTaskPlanPath, { force: true });
     mkdirSync(failingTaskPlanPath, { recursive: true });
@@ -551,7 +551,7 @@ test('handlePlanSlice surfaces render failures without changing parse-visible ta
 test('handlePlanSlice reactivates a deferred parent slice to pending', async (t) => {
   const base = makeTmpBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   insertMilestone({ id: 'M001', title: 'Milestone', status: 'active' });
   insertSlice({ id: 'S02', milestoneId: 'M001', title: 'Planning slice', status: 'deferred', demo: 'Rendered plans exist.' });
@@ -567,11 +567,11 @@ test('handlePlanSlice reactivates a deferred parent slice to pending', async (t)
 
 test('handlePlanSlice reruns idempotently and refreshes parse-visible state', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
-    writeFileSync(join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md'), '# S02: Cached\n\n**Goal:** old value\n\n## Tasks\n\n- [ ] **T01: Cached task**\n', 'utf-8');
+    writeFileSync(join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md'), '# S02: Cached\n\n**Goal:** old value\n\n## Tasks\n\n- [ ] **T01: Cached task**\n', 'utf-8');
 
     const first = await handlePlanSlice(validParams(), base);
     assert.ok(!('error' in first));
@@ -586,7 +586,7 @@ test('handlePlanSlice reruns idempotently and refreshes parse-visible state', as
     }, base);
     assert.ok(!('error' in second));
 
-    const parsedAfter = parsePlan(readFileSync(join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md'), 'utf-8'));
+    const parsedAfter = parsePlan(readFileSync(join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'S02-PLAN.md'), 'utf-8'));
     assert.equal(parsedAfter.goal, 'Updated goal from rerun.');
     const task = getTask('M001', 'S02', 'T01');
     assert.equal(task?.description, 'Updated slice handler description.');
@@ -597,7 +597,7 @@ test('handlePlanSlice reruns idempotently and refreshes parse-visible state', as
 
 test('handlePlanSlice removes omitted pending tasks when replanning a smaller task set', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -612,7 +612,7 @@ test('handlePlanSlice removes omitted pending tasks when replanning a smaller ta
 
     const first = await handlePlanSlice(fourTaskPlan, base);
     assert.ok(!('error' in first), `unexpected error: ${'error' in first ? first.error : ''}`);
-    const staleTaskPlanPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T04-PLAN.md');
+    const staleTaskPlanPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T04-PLAN.md');
     assert.ok(existsSync(staleTaskPlanPath), 'initial plan should render T04');
 
     const second = await handlePlanSlice({
@@ -631,7 +631,7 @@ test('handlePlanSlice removes omitted pending tasks when replanning a smaller ta
 
 test('handlePlanSlice rejects omitted completed tasks without changing slice or task state', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();
@@ -646,7 +646,7 @@ test('handlePlanSlice rejects omitted completed tasks without changing slice or 
 
     const first = await handlePlanSlice(fourTaskPlan, base);
     assert.ok(!('error' in first), `unexpected error: ${'error' in first ? first.error : ''}`);
-    const staleTaskPlanPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T04-PLAN.md');
+    const staleTaskPlanPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02', 'tasks', 'T04-PLAN.md');
     assert.ok(existsSync(staleTaskPlanPath), 'initial plan should render T04');
 
     updateTaskStatus('M001', 'S02', 'T04', 'complete', '2026-05-12T00:00:00.000Z');
@@ -680,7 +680,7 @@ test('regression: validateTasks surfaces clean per-field errors for non-array IO
   // so a future missing-import would surface as a per-field assertion failure
   // here, not a deep ReferenceError that's easy to mis-diagnose.
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedParentSlice();

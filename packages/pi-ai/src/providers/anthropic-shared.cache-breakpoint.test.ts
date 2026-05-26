@@ -1,4 +1,4 @@
-// @loop24/pi-ai + anthropic-shared.cache-breakpoint.test — coverage for #5027.
+// @otto/pi-ai + anthropic-shared.cache-breakpoint.test — coverage for #5027.
 // `convertMessages` must apply Anthropic `cache_control` to:
 //   - the last message (existing volatile-suffix anchor — preserved)
 //   - the most recent message flagged with `cacheBreakpoint: true`

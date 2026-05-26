@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Runtime tests for adaptive command-center terminal layout rendering.
 
 import assert from "node:assert/strict";
@@ -26,7 +26,7 @@ describe("AdaptiveLayoutComponent", () => {
 		}));
 
 		const output = render(component, 132);
-		assert.match(output, /GSD Command Center/);
+		assert.match(output, /OTTO Command Center/);
 		assert.match(output, /workflow · ready/);
 		assert.match(output, /2 running/);
 		assert.match(output, /watch tool output/);
@@ -45,7 +45,7 @@ describe("AdaptiveLayoutComponent", () => {
 		}));
 
 		const output = render(component, 68);
-		assert.match(output, /GSD compact/);
+		assert.match(output, /OTTO compact/);
 		assert.doesNotMatch(output, /signals/);
 		assert.doesNotMatch(output, /\bauto\b/i);
 	});
@@ -54,7 +54,7 @@ describe("AdaptiveLayoutComponent", () => {
 		const component = new AdaptiveLayoutComponent(() => ({
 			override: "auto",
 			activeToolCount: 0,
-			lastError: "Cannot find module @loop24/native",
+			lastError: "Cannot find module @otto/native",
 			cwd: "/tmp/demo",
 		}));
 

@@ -74,7 +74,7 @@ describe("worktree-bugfix", () => {
 
   it("detectWorktreeName returns name for worktree path", () => {
     assert.deepStrictEqual(
-      detectWorktreeName("/project/.gsd/worktrees/M005"),
+      detectWorktreeName("/project/.otto/workflow/worktrees/M005"),
       "M005",
       "detects worktree name",
     );
@@ -94,14 +94,14 @@ describe("worktree-bugfix", () => {
     initRepo(repo);
 
     // Create a fake worktree path structure
-    const wtPath = join(repo, ".gsd", "worktrees", "M005");
+    const wtPath = join(repo, ".otto/workflow", "worktrees", "M005");
     mkdirSync(wtPath, { recursive: true });
-    mkdirSync(join(wtPath, ".gsd", "milestones", "M005"), { recursive: true });
+    mkdirSync(join(wtPath, ".otto/workflow", "milestones", "M005"), { recursive: true });
     // Initialize git in the worktree so getService doesn't fail
     initRepo(wtPath);
 
     // captureIntegrationBranch should be a no-op — no META.json written
-    const metaPath = join(wtPath, ".gsd", "milestones", "M005", "M005-META.json");
+    const metaPath = join(wtPath, ".otto/workflow", "milestones", "M005", "M005-META.json");
     captureIntegrationBranch(wtPath, "M005");
     assert.ok(!existsSync(metaPath), "no META.json written in worktree");
   });
@@ -109,7 +109,7 @@ describe("worktree-bugfix", () => {
   it("detectWorktreeName prevents pull in worktree context", () => {
     // Verifies the guard pattern: if detectWorktreeName returns non-null,
     // the caller should skip pull/fetch operations
-    const inWorktree = detectWorktreeName("/project/.gsd/worktrees/M006");
+    const inWorktree = detectWorktreeName("/project/.otto/workflow/worktrees/M006");
     const inNormal = detectWorktreeName("/project");
     assert.ok(inWorktree !== null, "worktree detected → skip pull");
     assert.ok(inNormal === null, "normal repo → allow pull");

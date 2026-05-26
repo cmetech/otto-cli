@@ -1,4 +1,4 @@
-// the agent - /gsd migrate safety and audit regression tests.
+// the agent - /otto migrate safety and audit regression tests.
 // File Purpose: Verifies migration hardening contracts for backup, target selection, archive, and DB projections.
 
 import assert from "node:assert/strict";
@@ -110,22 +110,22 @@ test("resolveMigrationPaths treats explicit source as target project root", () =
   );
 });
 
-test("prepareMigrationTarget backs up and prunes stale .gsd before restore", () => {
+test("prepareMigrationTarget backs up and prunes stale .otto/workflow before restore", () => {
   const base = makeBase("gsd-migrate-safety-");
   try {
-    write(join(base, ".gsd", "STALE.md"), "old state\n");
+    write(join(base, ".otto/workflow", "STALE.md"), "old state\n");
 
     const backup = prepareMigrationTarget(base, new Date(2026, 4, 20, 12, 34, 56));
     assert.equal(backup.hadExistingGsd, true);
     assert.equal(basename(backup.backupPath!), "migrate-20260520-123456");
     assert.equal(existsSync(join(backup.backupPath!, "STALE.md")), true);
-    assert.equal(existsSync(join(base, ".gsd")), false, "old .gsd is removed before fresh write");
+    assert.equal(existsSync(join(base, ".otto/workflow")), false, "old .otto/workflow is removed before fresh write");
 
-    write(join(base, ".gsd", "NEW.md"), "failed migration output\n");
+    write(join(base, ".otto/workflow", "NEW.md"), "failed migration output\n");
     restoreMigrationTarget(backup);
 
-    assert.equal(existsSync(join(base, ".gsd", "STALE.md")), true, "backup restored");
-    assert.equal(existsSync(join(base, ".gsd", "NEW.md")), false, "failed output pruned");
+    assert.equal(existsSync(join(base, ".otto/workflow", "STALE.md")), true, "backup restored");
+    assert.equal(existsSync(join(base, ".otto/workflow", "NEW.md")), false, "failed output pruned");
   } finally {
     cleanup(base);
   }
@@ -151,7 +151,7 @@ test("assertMigrationHasSlices blocks zero-slice migrations", () => {
 test("assertMigrationTargetAvailable blocks existing worktree state", async () => {
   const base = makeBase("gsd-migrate-worktree-block-");
   try {
-    write(join(base, ".gsd", "worktrees", "M001", "marker"), "active worktree\n");
+    write(join(base, ".otto/workflow", "worktrees", "M001", "marker"), "active worktree\n");
     await assert.rejects(
       () => assertMigrationTargetAvailable(base),
       /worktree state/,
@@ -168,8 +168,8 @@ test("archiveLegacyPlanningDirectory preserves unmodeled legacy content with man
     const archive = await archiveLegacyPlanningDirectory(planning, base);
 
     assert.equal(archive.archived, true);
-    assert.equal(existsSync(join(base, ".gsd", "migration", "legacy", "planning", "quick", "001-fix", "001-PLAN.md")), true);
-    assert.equal(existsSync(join(base, ".gsd", "migration", "legacy", "planning", "config.json")), true);
+    assert.equal(existsSync(join(base, ".otto/workflow", "migration", "legacy", "planning", "quick", "001-fix", "001-PLAN.md")), true);
+    assert.equal(existsSync(join(base, ".otto/workflow", "migration", "legacy", "planning", "config.json")), true);
 
     const manifest = JSON.parse(readFileSync(archive.manifestPath, "utf-8"));
     assert.equal(manifest.strategy, "full-source-copy");
@@ -182,7 +182,7 @@ test("executeMigrationWrite restores backup when DB import verification fails", 
   const base = makeBase("gsd-migrate-restore-");
   try {
     const planning = createPlanningSource(base);
-    write(join(base, ".gsd", "OLD.md"), "known-good state\n");
+    write(join(base, ".otto/workflow", "OLD.md"), "known-good state\n");
 
     const project = projectFixture();
     const preview = generatePreview(project);
@@ -192,8 +192,8 @@ test("executeMigrationWrite restores backup when DB import verification fails", 
       /migration DB import verification failed/,
     );
 
-    assert.equal(existsSync(join(base, ".gsd", "OLD.md")), true, "original .gsd restored");
-    assert.equal(existsSync(join(base, ".gsd", "migration", "MIGRATION.md")), false, "failed audit output removed");
+    assert.equal(existsSync(join(base, ".otto/workflow", "OLD.md")), true, "original .otto/workflow restored");
+    assert.equal(existsSync(join(base, ".otto/workflow", "migration", "MIGRATION.md")), false, "failed audit output removed");
   } finally {
     cleanup(base);
   }
@@ -203,17 +203,17 @@ test("executeMigrationWrite records audit artifacts and verifies DB-backed proje
   const base = makeBase("gsd-migrate-success-");
   try {
     const planning = createPlanningSource(base);
-    write(join(base, ".gsd", "STALE.md"), "old state\n");
+    write(join(base, ".otto/workflow", "STALE.md"), "old state\n");
 
     const project = projectFixture();
     const preview = generatePreview(project);
     const result = await executeMigrationWrite(planning, base, project, preview);
 
-    assert.equal(existsSync(join(base, ".gsd", "STALE.md")), false, "fresh migration prunes stale files");
-    assert.equal(existsSync(join(result.backup.backupPath!, "STALE.md")), true, "old .gsd was backed up");
-    assert.equal(existsSync(join(base, ".gsd", "migration", "MIGRATION.md")), true);
-    assert.equal(existsSync(join(base, ".gsd", "migration", "manifest.json")), true);
-    assert.equal(existsSync(join(base, ".gsd", "migration", "legacy", "planning", "STATE.md")), true);
+    assert.equal(existsSync(join(base, ".otto/workflow", "STALE.md")), false, "fresh migration prunes stale files");
+    assert.equal(existsSync(join(result.backup.backupPath!, "STALE.md")), true, "old .otto/workflow was backed up");
+    assert.equal(existsSync(join(base, ".otto/workflow", "migration", "MIGRATION.md")), true);
+    assert.equal(existsSync(join(base, ".otto/workflow", "migration", "manifest.json")), true);
+    assert.equal(existsSync(join(base, ".otto/workflow", "migration", "legacy", "planning", "STATE.md")), true);
 
     assert.ok(getArtifact("migration/MIGRATION.md"), "migration audit imported as DB artifact");
     assert.ok(getArtifact("migration/manifest.json"), "migration manifest imported as DB artifact");

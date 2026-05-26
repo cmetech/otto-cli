@@ -7,13 +7,13 @@ import { writeUnitRuntimeRecord, readUnitRuntimeRecord } from '../unit-runtime.t
 import { resolveAutoSupervisorConfig } from '../preferences.ts';
 
 test('resolveAutoSupervisorConfig provides safe timeout defaults', () => {
-  // Isolate from any developer ~/.gsd/PREFERENCES.md that overrides these
+  // Isolate from any developer ~/.otto/workflow/PREFERENCES.md that overrides these
   // defaults — the test pins what resolveAutoSupervisorConfig() returns when
   // no preferences file exists, so it must not pick up the runner's home dir.
-  const previousWorkflowHome = process.env.GSD_HOME;
+  const previousWorkflowHome = process.env.OTTO_HOME;
   const previousCwd = process.cwd();
   const isolated = mkdtempSync(join(tmpdir(), 'gsd-supervisor-defaults-'));
-  process.env.GSD_HOME = isolated;
+  process.env.OTTO_HOME = isolated;
   process.chdir(isolated);
   try {
     const supervisor = resolveAutoSupervisorConfig();
@@ -22,9 +22,9 @@ test('resolveAutoSupervisorConfig provides safe timeout defaults', () => {
     assert.equal(supervisor.hard_timeout_minutes, 30);
   } finally {
     if (previousWorkflowHome === undefined) {
-      delete process.env.GSD_HOME;
+      delete process.env.OTTO_HOME;
     } else {
-      process.env.GSD_HOME = previousWorkflowHome;
+      process.env.OTTO_HOME = previousWorkflowHome;
     }
     process.chdir(previousCwd);
   }
@@ -63,7 +63,7 @@ test('writeUnitRuntimeRecord keeps explicit recovery attempt fields', () => {
     lastProgressKind: 'recovery-retry',
   });
 
-  const runtime = JSON.parse(readFileSync(join(base, '.gsd/runtime/units/research-milestone-M011.json'), 'utf8'));
+  const runtime = JSON.parse(readFileSync(join(base, '.otto/workflow/runtime/units/research-milestone-M011.json'), 'utf8'));
   assert.equal(runtime.recoveryAttempts, 2);
   assert.equal(runtime.lastRecoveryReason, 'idle');
   assert.equal(runtime.lastProgressKind, 'recovery-retry');

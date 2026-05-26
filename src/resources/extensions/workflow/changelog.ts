@@ -8,7 +8,7 @@
  * Entry point: handleChangelog() called from commands.ts
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -103,7 +103,7 @@ function formatRelease(release: GitHubRelease): string {
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 
-const RELEASES_URL = "https://api.github.com/repos/open-gsd/gsd-pi/releases?per_page=100";
+const RELEASES_URL = "https://api.github.com/repos/open-gsd/otto-pi/releases?per_page=100";
 
 export async function handleChangelog(
   args: string,
@@ -138,7 +138,7 @@ export async function handleChangelog(
   }
 
   // ── Determine version filter ────────────────────────────────────────────
-  const currentVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || "";
+  const currentVersion = process.env.OTTO_VERSION || "";
   let sinceVersion: string | undefined;
   let showCurrentOnly = false;
 
@@ -167,7 +167,7 @@ export async function handleChangelog(
   if (showCurrentOnly) {
     if (!currentVersion) {
       ctx.ui.notify(
-        "GSD_VERSION is not set — cannot determine current release. Provide a version instead.",
+        "OTTO_VERSION is not set — cannot determine current release. Provide a version instead.",
         "warning",
       );
       return;
@@ -198,7 +198,7 @@ export async function handleChangelog(
     : `for current release ${matched[0].name || matched[0].tag_name}`;
 
   const prompt = [
-    `Here are the raw GSD changelog entries ${versionRange}.`,
+    `Here are the raw OTTO changelog entries ${versionRange}.`,
     "Summarize the most important changes — group by category (Added, Changed, Fixed, etc.),",
     "keep only the most impactful items (max 5 per category), skip trivial changes,",
     "and include the version where each item appeared. Keep it concise and scannable.",

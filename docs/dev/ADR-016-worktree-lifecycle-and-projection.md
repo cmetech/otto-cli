@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-05-08
-**Author:** GSD architecture review
+**Author:** OTTO architecture review
 **Related:** ADR-014 (deep Auto Orchestration module), ADR-015 (runtime invariant modules), ADR-001 (branchless worktree architecture)
 
 ## Context
@@ -66,7 +66,7 @@ interface WorktreeStateProjection {
 
 All verbs are `MilestoneScope`-typed only. The legacy path-string variants (`syncProjectRootToWorktree(projectRoot, worktreePath, milestoneId)` and equivalents) and their `*ByScope` aliases are retired together with the helpers they wrap.
 
-Each verb's Implementation owns its direction's bug-hardened rules. `projectRootToWorktree` owns: identity-key safety check, additive milestone copy (#1886), ASSESSMENT verdict force-overwrite (#2821), `completed-units.json` forward-sync, WAL/SHM cleanup (#2478), `.gsd` symlink edge case (#2184). `projectWorktreeToRoot` owns the worktree → root rules (project root authoritative for diagnostics; markdown projections do not flow back; non-fatal sync). `finalizeProjectionForMerge` owns the post-merge final-capture rules and returns `{ synced: string[] }`, where `synced` lists the file classes captured during the final projection.
+Each verb's Implementation owns its direction's bug-hardened rules. `projectRootToWorktree` owns: identity-key safety check, additive milestone copy (#1886), ASSESSMENT verdict force-overwrite (#2821), `completed-units.json` forward-sync, WAL/SHM cleanup (#2478), `.otto/workflow` symlink edge case (#2184). `projectWorktreeToRoot` owns the worktree → root rules (project root authoritative for diagnostics; markdown projections do not flow back; non-fatal sync). `finalizeProjectionForMerge` owns the post-merge final-capture rules and returns `{ synced: string[] }`, where `synced` lists the file classes captured during the final projection.
 
 ### Dependency direction
 
@@ -105,9 +105,9 @@ The single-owner invariants above are scoped to the **auto-loop worktree transit
 The following sites are explicit carve-outs from the single-owner invariants. They are not bypasses; they predate the Lifecycle Module and are out of scope for the auto-loop deepening this ADR drives.
 
 - **`mergeMilestoneToMain` is exported from `auto-worktree.ts`** (the `export` keyword is preserved). Its body contains the squash-merge primitive. ADR-016 phase 2 / A3 (#5619) closed the *invocation* closure: the function is invoked only by `WorktreeLifecycle`, via a `WorktreeLifecycleDeps.mergeMilestoneToMain` field that `auto.ts:buildWorktreeLifecycleDeps()` populates. The export is the construction of that dep seam, not a caller bypass. Tests substitute the merge primitive through the same dep field.
-- **User-facing CLI verbs in `worktree-command.ts`** (`gsd worktree create / switch / return / merge`) chdir directly. These are user-driven mutations of the user's shell cwd, not auto-loop transitions. They never run inside an auto loop.
+- **User-facing CLI verbs in `worktree-command.ts`** (`otto worktree create / switch / return / merge`) chdir directly. These are user-driven mutations of the user's shell cwd, not auto-loop transitions. They never run inside an auto loop.
 - **Transient cwd-swap-and-restore inside git-merge primitives** (`slice-cadence.ts:mergeSliceToMain` / `resquashMilestoneOnMain`, and `auto-worktree.ts:mergeMilestoneToMain`) chdirs to the merge target's project root to run `git merge`, then restores the previous cwd before returning. This is a transient git-op cwd swap, not a session-level basePath transition. The `s.basePath` field is never mutated by these primitives.
-- **Transient cwd-escape before `git worktree remove`** (`doctor-git-checks.ts` orphan-worktree cleanup and `worktree-manager.ts` removal helper) chdirs out of a worktree directory before invoking `git worktree remove`, because git refuses to remove a directory the process is currently inside. These are primitive operations called from both auto-loop teardown and user-CLI / `gsd doctor` maintenance paths. The chdir target is the project root (or an equivalent safe parent); `s.basePath` is never mutated.
+- **Transient cwd-escape before `git worktree remove`** (`doctor-git-checks.ts` orphan-worktree cleanup and `worktree-manager.ts` removal helper) chdirs out of a worktree directory before invoking `git worktree remove`, because git refuses to remove a directory the process is currently inside. These are primitive operations called from both auto-loop teardown and user-CLI / `otto doctor` maintenance paths. The chdir target is the project root (or an equivalent safe parent); `s.basePath` is never mutated.
 
 Future architecture reviews should not re-suggest folding these sites into Lifecycle without first revisiting this section. If a strict closure becomes preferable (e.g. because user-CLI verbs grow auto-loop reentry), that change should land alongside an amended invariants section, not as a quiet refactor.
 

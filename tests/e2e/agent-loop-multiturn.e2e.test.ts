@@ -1,5 +1,5 @@
 /**
- * GSD-2 multi-iteration agent-loop e2e.
+ * OTTO-2 multi-iteration agent-loop e2e.
  *
  * Drives a 3-LLM-turn loop through the fake provider to prove the agent
  * sustains repeated tool_use → tool_result → next-turn cycles. Phase 1b
@@ -41,8 +41,8 @@ import {
 const MULTI_TURN_TIMEOUT_MS = 90_000;
 
 function binaryAvailable(): { ok: boolean; reason?: string } {
-	const bin = process.env.GSD_SMOKE_BINARY;
-	if (!bin) return { ok: false, reason: "GSD_SMOKE_BINARY not set; build with `npm run build:core`" };
+	const bin = process.env.OTTO_SMOKE_BINARY;
+	if (!bin) return { ok: false, reason: "OTTO_SMOKE_BINARY not set; build with `npm run build:core`" };
 	if (!existsSync(bin)) return { ok: false, reason: `binary not found at ${bin}` };
 	return { ok: true };
 }
@@ -59,7 +59,7 @@ describe("agent loop e2e — multi-iteration", () => {
 			// Iteration 1: agent calls a tool.
 			{
 				turn: 1,
-				expect: { modelId: "gsd-fake-model", lastUserText: "do two steps" },
+				expect: { modelId: "otto-fake-model", lastUserText: "do two steps" },
 				emit: {
 					kind: "tool_use",
 					calls: [{ id: "step-1", name: "read_file", input: { file_path: "/dev/null" } }],
@@ -89,7 +89,7 @@ describe("agent loop e2e — multi-iteration", () => {
 			prompt: "do two steps",
 			mode: "json",
 			timeoutMs: MULTI_TURN_TIMEOUT_MS,
-			extraEnv: { GSD_TOOL_APPROVAL: "auto" },
+			extraEnv: { OTTO_TOOL_APPROVAL: "auto" },
 		});
 
 		const events = parseJsonEvents(result.stdoutClean);
@@ -164,7 +164,7 @@ describe("agent loop e2e — multi-iteration", () => {
 			prompt: "loop forever",
 			mode: "json",
 			timeoutMs: MULTI_TURN_TIMEOUT_MS,
-			extraEnv: { GSD_TOOL_APPROVAL: "auto" },
+			extraEnv: { OTTO_TOOL_APPROVAL: "auto" },
 		});
 
 		const events = parseJsonEvents(result.stdoutClean);

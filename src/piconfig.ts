@@ -1,10 +1,10 @@
 // Single source of truth for brand strings read from package.json `piConfig`.
 //
 // Read once here, at module load, using only Node builtins — deliberately NO
-// import of the compiled @loop24/pi-coding-agent barrel. That keeps this module
+// import of the compiled @otto/pi-coding-agent barrel. That keeps this module
 // safe to pull in on the loader's earliest paths (the --version/--help
 // fast-path runs before heavy imports) and lets the brand-sensitive wrapper
-// files (brand.ts, app-paths.ts, help-text.ts, loop24-config.ts) share ONE
+// files (brand.ts, app-paths.ts, help-text.ts, otto-config.ts) share ONE
 // reader instead of each re-reading package.json with its own fallback literal.
 //
 // To rebrand: edit the `piConfig` block in the root package.json and run
@@ -18,8 +18,8 @@ import { readFileSync } from 'node:fs'
 
 const _pkgRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
-let _brand = 'LOOP24'
-let _command = 'loop24'
+let _brand = 'OTTO'
+let _command = 'otto'
 let _configDir = '.otto'
 let _tagline = 'compliant agent for developers'
 

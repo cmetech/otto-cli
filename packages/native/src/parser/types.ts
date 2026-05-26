@@ -1,7 +1,7 @@
 /**
  * Workflow file parser type definitions.
  *
- * Types for the native Rust parser that handles `.loop24/` directory files
+ * Types for the native Rust parser that handles `.otto/` directory files
  * containing YAML-like frontmatter and markdown sections.
  */
 

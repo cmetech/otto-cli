@@ -1,14 +1,14 @@
 /**
- * Guard used at the entry of /gsd subcommand handlers that require an
+ * Guard used at the entry of /otto subcommand handlers that require an
  * initialized project. Returns the project root path, or null after notifying
  * the user that no project is bound and how to fix it.
  */
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { workflowRootOrNull } from "../../paths.js";
 
 const NO_PROJECT_MESSAGE =
-  "No GSD project here. Run /gsd init in a project directory.";
+  "No OTTO project here. Run /otto init in a project directory.";
 
 export function requireProject(
   ctx: ExtensionCommandContext,

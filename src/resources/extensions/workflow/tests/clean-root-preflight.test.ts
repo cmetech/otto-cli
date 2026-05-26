@@ -25,8 +25,8 @@ function createTempRepo(): string {
   run("git config user.email test@example.com", dir);
   run("git config user.name Test", dir);
   writeFileSync(join(dir, "README.md"), "# test\n");
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
-  writeFileSync(join(dir, ".gsd", "STATE.md"), "# State\n");
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
+  writeFileSync(join(dir, ".otto/workflow", "STATE.md"), "# State\n");
   run("git add .", dir);
   run("git commit -m init", dir);
   run("git branch -M main", dir);
@@ -84,7 +84,7 @@ test("preflightCleanRoot — dirty tree warns user and auto-stashes", () => {
 
     // The stash entry must exist
     const stashList = run("git stash list", repo);
-    assert.ok(stashList.includes("gsd-preflight-stash"), "stash entry must be named gsd-preflight-stash");
+    assert.ok(stashList.includes("otto-preflight-stash"), "stash entry must be named otto-preflight-stash");
     assert.ok(stashList.includes(result.stashMarker!), "stash list must include the generated stash marker");
   } finally {
     try { rmSync(repo, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }); } catch { /* ignore */ }
@@ -310,7 +310,7 @@ test("postflightPopStash conflict warning names the exact stash ref", () => {
   }
 });
 
-test("postflightPopStash restores the matching GSD stash, not stash@{0}", () => {
+test("postflightPopStash restores the matching OTTO stash, not stash@{0}", () => {
   const repo = createTempRepo();
   try {
     writeFileSync(join(repo, "README.md"), "# target stash\n");
@@ -327,7 +327,7 @@ test("postflightPopStash restores the matching GSD stash, not stash@{0}", () => 
     assert.equal(content.replace(/\r\n/g, "\n"), "# target stash\n");
     const stashList = run("git stash list", repo);
     assert.ok(stashList.includes("unrelated newer stash"), "unrelated newer stash must remain");
-    assert.ok(!stashList.includes("gsd-preflight-stash [gsd-preflight-stash:M006"), "target stash should be consumed");
+    assert.ok(!stashList.includes("otto-preflight-stash [otto-preflight-stash:M006"), "target stash should be consumed");
   } finally {
     try { rmSync(repo, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }); } catch { /* ignore */ }
   }
@@ -342,7 +342,7 @@ test("postflightPopStash restores the exact preflight marker when another same-m
     assert.ok(preflight.stashMarker, "preflight must expose exact stash marker");
 
     writeFileSync(join(repo, "same-milestone.txt"), "newer same milestone stash\n");
-    run('git stash push --include-untracked -m "gsd-preflight-stash [gsd-preflight-stash:M007:other]"', repo);
+    run('git stash push --include-untracked -m "otto-preflight-stash [otto-preflight-stash:M007:other]"', repo);
 
     const postflight = postflightPopStash(repo, "M007", preflight.stashMarker, () => {});
     assert.equal(postflight.needsManualRecovery, false, "exact marker restore must not need manual recovery");
@@ -350,7 +350,7 @@ test("postflightPopStash restores the exact preflight marker when another same-m
     const content = readFileSync(join(repo, "README.md"), "utf-8");
     assert.equal(content.replace(/\r\n/g, "\n"), "# target stash\n");
     const stashList = run("git stash list", repo);
-    assert.ok(stashList.includes("gsd-preflight-stash:M007:other"), "newer same-milestone stash must remain");
+    assert.ok(stashList.includes("otto-preflight-stash:M007:other"), "newer same-milestone stash must remain");
     assert.ok(!stashList.includes(preflight.stashMarker), "exact target stash should be consumed");
   } finally {
     try { rmSync(repo, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }); } catch { /* ignore */ }
@@ -361,7 +361,7 @@ test("postflightPopStash falls back to milestone marker prefix when exact marker
   const repo = createTempRepo();
   try {
     writeFileSync(join(repo, "README.md"), "# fallback stash\n");
-    run('git stash push --include-untracked -m "gsd-preflight-stash [gsd-preflight-stash:M008:fallback]"', repo);
+    run('git stash push --include-untracked -m "otto-preflight-stash [otto-preflight-stash:M008:fallback]"', repo);
 
     const postflight = postflightPopStash(repo, "M008", undefined, () => {});
     assert.equal(postflight.needsManualRecovery, false, "fallback marker restore must not need manual recovery");
@@ -369,7 +369,7 @@ test("postflightPopStash falls back to milestone marker prefix when exact marker
     const content = readFileSync(join(repo, "README.md"), "utf-8");
     assert.equal(content.replace(/\r\n/g, "\n"), "# fallback stash\n");
     const stashList = run("git stash list", repo);
-    assert.ok(!stashList.includes("gsd-preflight-stash:M008:fallback"), "fallback stash should be consumed");
+    assert.ok(!stashList.includes("otto-preflight-stash:M008:fallback"), "fallback stash should be consumed");
   } finally {
     try { rmSync(repo, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }); } catch { /* ignore */ }
   }
@@ -480,29 +480,29 @@ test("postflightPopStash requires manual recovery when an untracked stash path i
   }
 });
 
-test("postflightPopStash skips apply and drops stash when payload is .gsd metadata only", () => {
+test("postflightPopStash skips apply and drops stash when payload is .otto/workflow metadata only", () => {
   const repo = createTempRepo();
   try {
-    writeFileSync(join(repo, ".gsd", "notifications.jsonl"), '{"msg":"before"}\n');
+    writeFileSync(join(repo, ".otto/workflow", "notifications.jsonl"), '{"msg":"before"}\n');
     const preflight = preflightCleanRoot(repo, "M013", () => {});
-    assert.equal(preflight.stashPushed, true, "preflight must stash .gsd metadata changes");
+    assert.equal(preflight.stashPushed, true, "preflight must stash .otto/workflow metadata changes");
 
-    writeFileSync(join(repo, ".gsd", "notifications.jsonl"), '{"msg":"after"}\n');
-    run("git add .gsd/notifications.jsonl", repo);
+    writeFileSync(join(repo, ".otto/workflow", "notifications.jsonl"), '{"msg":"after"}\n');
+    run("git add .otto/workflow/notifications.jsonl", repo);
     run('git commit -m "chore: update metadata"', repo);
 
     const postflight = postflightPopStash(repo, "M013", preflight.stashMarker, () => {});
-    assert.equal(postflight.needsManualRecovery, false, ".gsd-only stash must not stop auto-mode");
-    assert.equal(postflight.restored, true, ".gsd-only stash should be treated as successfully handled");
+    assert.equal(postflight.needsManualRecovery, false, ".otto/workflow-only stash must not stop auto-mode");
+    assert.equal(postflight.restored, true, ".otto/workflow-only stash should be treated as successfully handled");
     assert.equal(postflight.resolution, "already-present-dropped");
     assert.equal(
-      readFileSync(join(repo, ".gsd", "notifications.jsonl"), "utf-8"),
+      readFileSync(join(repo, ".otto/workflow", "notifications.jsonl"), "utf-8"),
       '{"msg":"after"}\n',
       "post-merge metadata must remain untouched when the stash is skipped",
     );
 
     const stashList = run("git stash list", repo);
-    assert.ok(!stashList.includes(preflight.stashMarker ?? ""), ".gsd-only stash must be dropped");
+    assert.ok(!stashList.includes(preflight.stashMarker ?? ""), ".otto/workflow-only stash must be dropped");
   } finally {
     try { rmSync(repo, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 }); } catch { /* ignore */ }
   }

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Successful auto-mode iteration cleanup helper.
 
 export interface WorkflowIterationRecoveryState {

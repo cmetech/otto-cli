@@ -1,10 +1,10 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests final provider request-time tool compatibility filtering.
 
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Type } from "@sinclair/typebox";
-import type { AgentTool } from "@loop24/pi-agent-core";
+import type { AgentTool } from "@otto/pi-agent-core";
 import { filterToolsForProviderRequest, getAdjustToolSetRequestCustomMessages } from "./sdk.js";
 import { registerToolCompatibility, resetToolCompatibilityRegistry } from "./tools/tool-compatibility-registry.js";
 

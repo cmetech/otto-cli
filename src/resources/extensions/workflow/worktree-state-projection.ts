@@ -1,4 +1,4 @@
-// LOOP24 — Worktree State Projection module: directional state-flow rules between project root and auto-worktree.
+// OTTO — Worktree State Projection module: directional state-flow rules between project root and auto-worktree.
 /**
  * Worktree State Projection module — first-class Module for directional
  * state-file flow between the project root and the auto-worktree.
@@ -9,7 +9,7 @@
  *   - The bug-hardened invariants encoded in `syncProjectRootToWorktree` /
  *     `syncStateToProjectRoot` (additive milestone copy #1886, ASSESSMENT
  *     verdict overwrite #2821, completed-units forward-sync, WAL/SHM
- *     cleanup #2478, .gsd symlink edge case #2184)
+ *     cleanup #2478, .otto/workflow symlink edge case #2184)
  *
  * Slice 7 (#5591): the bodies of the three projection verbs and their
  * private helpers (`isSamePath`, `forceOverwriteAssessmentsWithVerdict`,
@@ -43,8 +43,8 @@ import { logError, logWarning } from "./workflow-logger.js";
  * Check if two filesystem paths resolve to the same real location.
  * Returns false if either path cannot be resolved (e.g. doesn't exist).
  *
- * Detects the .gsd-as-symlink case (#2184) where the worktree's `.gsd`
- * resolves to the same physical directory as the project root's `.gsd` —
+ * Detects the .otto/workflow-as-symlink case (#2184) where the worktree's `.otto/workflow`
+ * resolves to the same physical directory as the project root's `.otto/workflow` —
  * a `cpSync` over those would fail with `ERR_FS_CP_EINVAL`.
  */
 function isSamePath(a: string, b: string): boolean {
@@ -163,7 +163,7 @@ function syncTopLevelMilestoneArtifacts(
 }
 
 /**
- * Root-level .gsd/ files copied from worktree back to project root for
+ * Root-level .otto/workflow/ files copied from worktree back to project root for
  * post-merge diagnostics. Markdown projections are NOT in this list — DB
  * remains authoritative.
  */
@@ -182,7 +182,7 @@ const ROOT_DIAGNOSTIC_FILES = [
 /**
  * Project state from project root onto the auto-worktree (raw-path body).
  *
- * Owns the rules: identity-key safety check (#2184 .gsd symlink), additive
+ * Owns the rules: identity-key safety check (#2184 .otto/workflow symlink), additive
  * milestone copy preserving worktree-local files (#1886), ASSESSMENT
  * verdict force-overwrite (#2821), forward-sync of `completed-units.json`,
  * WAL/SHM cleanup on legacy worktree-local DB (#2478).
@@ -197,9 +197,9 @@ export function _projectRootToWorktreeImpl(
 
   const contract = resolveWorkflowPathContract(worktreePath_, projectRoot);
   const prGsd = contract.projectGsd;
-  const wtGsd = contract.worktreeGsd ?? join(worktreePath_, ".gsd");
+  const wtGsd = contract.worktreeGsd ?? join(worktreePath_, ".otto/workflow");
 
-  // When .gsd is a symlink to the same external directory in both locations,
+  // When .otto/workflow is a symlink to the same external directory in both locations,
   // cpSync rejects the copy because source === destination (ERR_FS_CP_EINVAL).
   // Compare realpaths and skip when they resolve to the same physical path (#2184).
   if (isSamePath(prGsd, wtGsd)) return;
@@ -241,11 +241,11 @@ export function _projectRootToWorktreeImpl(
     { force: true },
   );
 
-  // Delete a legacy worktree-local gsd.db ONLY if it is empty (0 bytes).
+  // Delete a legacy worktree-local otto.db ONLY if it is empty (0 bytes).
   // Runtime opens contract.projectDb; this cleanup only removes corrupt
   // pre-upgrade local DB projections.
   try {
-    const wtDb = join(wtGsd, "gsd.db");
+    const wtDb = join(wtGsd, "otto.db");
     let deleteSidecars = false;
     if (existsSync(wtDb)) {
       const size = statSync(wtDb).size;
@@ -294,10 +294,10 @@ export function _projectWorktreeToRootImpl(
   if (!milestoneId) return;
 
   const contract = resolveWorkflowPathContract(worktreePath_, projectRoot);
-  const wtGsd = contract.worktreeGsd ?? join(worktreePath_, ".gsd");
+  const wtGsd = contract.worktreeGsd ?? join(worktreePath_, ".otto/workflow");
   const prGsd = contract.projectGsd;
 
-  // When .gsd is a symlink to the same external directory in both locations,
+  // When .otto/workflow is a symlink to the same external directory in both locations,
   // cpSync rejects the copy because source === destination (ERR_FS_CP_EINVAL).
   // Compare realpaths and skip when they resolve to the same physical path (#2184).
   if (isSamePath(wtGsd, prGsd)) return;
@@ -341,7 +341,7 @@ export function _finalizeProjectionForMergeImpl(
 ): { synced: string[] } {
   const contract = resolveWorkflowPathContract(worktreePath, mainBasePath);
   const mainGsd = contract.projectGsd;
-  const wtGsd = contract.worktreeGsd ?? join(worktreePath, ".gsd");
+  const wtGsd = contract.worktreeGsd ?? join(worktreePath, ".otto/workflow");
   const synced: string[] = [];
 
   // If both resolve to the same directory (symlink), no sync needed
@@ -350,16 +350,16 @@ export function _finalizeProjectionForMergeImpl(
   if (!existsSync(wtGsd) || !existsSync(mainGsd)) return { synced };
 
   // ── 0. Pre-upgrade worktree DB reconciliation ────────────────────────
-  // If the worktree has its own gsd.db (copied before the WAL transition),
+  // If the worktree has its own otto.db (copied before the WAL transition),
   // reconcile its hierarchy data into the project root DB before syncing
   // files. This handles in-flight worktrees that were created before the
   // upgrade to shared WAL mode.
-  const wtLocalDb = join(wtGsd, "gsd.db");
+  const wtLocalDb = join(wtGsd, "otto.db");
   const mainDb = contract.projectDb;
   if (existsSync(wtLocalDb) && existsSync(mainDb)) {
     try {
       reconcileWorktreeDb(mainDb, wtLocalDb);
-      synced.push("gsd.db (pre-upgrade reconcile)");
+      synced.push("otto.db (pre-upgrade reconcile)");
     } catch (err) {
       // Non-fatal — file sync below is the fallback
       logError(

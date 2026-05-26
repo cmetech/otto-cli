@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Unit tests for auto-mode session-lock validation adapter.
 
 import assert from "node:assert/strict";
@@ -22,7 +22,7 @@ function makeDeps(overrides?: Partial<WorkflowSessionLockDeps>): {
   const exitDetails: unknown[] = [];
   const handledStatuses: SessionLockStatus[] = [];
   const deps: WorkflowSessionLockDeps = {
-    lockBase: () => "/tmp/gsd-lock",
+    lockBase: () => "/tmp/otto-lock",
     validateSessionLock: () => ({ valid: true }),
     handleLostSessionLock: status => {
       calls.push("handleLostSessionLock");

@@ -559,7 +559,7 @@ Open `src/cli.ts`. Find the existing `doRtkBootstrap` function (around line 189)
 
 ```ts
   // RTK is opt-in. Resolution order (highest precedence first):
-  //   1. Env var LOOP24_RTK_DISABLED / GSD_RTK_DISABLED (handled above)
+  //   1. Env var LOOP24_RTK_DISABLED / OTTO_RTK_DISABLED (handled above)
   //   2. ~/.otto/settings.json experimental.rtk
   //   3. Project preferences experimental.rtk (only if cwd is inside a project)
   //   4. Default: disabled
@@ -578,7 +578,7 @@ Open `src/cli.ts`. Find the existing `doRtkBootstrap` function (around line 189)
 
     if (!rtkEnabled) {
       process.env[LOOP24_RTK_DISABLED_ENV] = '1'
-      process.env[GSD_RTK_DISABLED_ENV] = '1'
+      process.env[OTTO_RTK_DISABLED_ENV] = '1'
       rtkDisabled = true
     }
   }
@@ -924,7 +924,7 @@ export async function runInit(
   }
 
   // Create the project marker
-  const version = process.env.LOOP24_VERSION ?? process.env.GSD_VERSION ?? "0.0.0";
+  const version = process.env.LOOP24_VERSION ?? process.env.OTTO_VERSION ?? "0.0.0";
   const target = existingGsd;
 
   try {

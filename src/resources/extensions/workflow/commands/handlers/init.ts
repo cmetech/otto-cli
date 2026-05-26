@@ -1,8 +1,7 @@
 /**
- * /gsd init — bootstrap a new GSD project in cwd.
+ * /otto init — bootstrap a new OTTO project in cwd.
  *
- * This creates `.gsd/` during the legacy marker era. Detection already accepts
- * both `.gsd/` and `.otto/workflow/` for forward compatibility.
+ * This creates `.otto/workflow/`, the canonical project workflow directory.
  */
 import {
   accessSync,
@@ -13,12 +12,11 @@ import {
 } from "node:fs";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 
-import { _clearWorkflowRootCache } from "../../paths.js";
+import { _clearWorkflowRootCache, workflowDirUnder, WORKFLOW_DIR_DISPLAY } from "../../paths.js";
 
-const PROJECT_MARKER_GSD = ".gsd";
-const PROJECT_MARKER_OTTO = join(".otto", "workflow");
+const PROJECT_MARKER_OTTO = WORKFLOW_DIR_DISPLAY;
 
 function normHome(): string {
   return resolve(homedir());
@@ -36,7 +34,7 @@ function stateMdContents(): string {
   return [
     "# Workflow State",
     "",
-    "_New project. Run `/gsd new-project` to start your first milestone._",
+    "_New project. Run `/otto new-project` to start your first milestone._",
     "",
   ].join("\n");
 }
@@ -49,18 +47,13 @@ export async function runInit(
 
   if (cwd === normHome()) {
     ctx.ui.notify(
-      "Refusing to create .gsd/ in your home directory. cd into a project dir first.",
+      `Refusing to create ${PROJECT_MARKER_OTTO}/ in your home directory. cd into a project dir first.`,
       "warning",
     );
     return;
   }
 
-  const existingGsd = join(cwd, PROJECT_MARKER_GSD);
-  const existingOtto = join(cwd, PROJECT_MARKER_OTTO);
-  if (existsSync(existingGsd)) {
-    ctx.ui.notify(`Project already initialized at ${existingGsd}. Nothing to do.`, "info");
-    return;
-  }
+  const existingOtto = workflowDirUnder(cwd);
   if (existsSync(existingOtto)) {
     ctx.ui.notify(`Project already initialized at ${existingOtto}. Nothing to do.`, "info");
     return;
@@ -70,14 +63,14 @@ export async function runInit(
     accessSync(cwd, fsConstants.W_OK);
   } catch (err) {
     ctx.ui.notify(
-      `Cannot create .gsd/ in ${cwd}: ${(err as Error).message}`,
+      `Cannot create ${PROJECT_MARKER_OTTO}/ in ${cwd}: ${(err as Error).message}`,
       "error",
     );
     return;
   }
 
-  const version = process.env.LOOP24_VERSION ?? process.env.GSD_VERSION ?? "0.0.0";
-  const target = existingGsd;
+  const version = process.env.OTTO_VERSION ?? "0.0.0";
+  const target = existingOtto;
 
   try {
     mkdirSync(target, { recursive: true });
@@ -85,7 +78,7 @@ export async function runInit(
     writeFileSync(join(target, "STATE.md"), stateMdContents(), "utf-8");
   } catch (err) {
     ctx.ui.notify(
-      `Failed to create .gsd/: ${(err as Error).message}`,
+      `Failed to create ${PROJECT_MARKER_OTTO}/: ${(err as Error).message}`,
       "error",
     );
     return;
@@ -93,5 +86,5 @@ export async function runInit(
 
   _clearWorkflowRootCache();
 
-  ctx.ui.notify(`GSD project initialized at ${target}`, "success");
+  ctx.ui.notify(`OTTO project initialized at ${target}`, "success");
 }

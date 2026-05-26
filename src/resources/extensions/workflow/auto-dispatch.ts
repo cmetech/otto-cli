@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Declarative auto-mode dispatch rules and dispatch resolver.
 
 /**
@@ -557,7 +557,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
     // pre-planning guard at `pre-planning (no context) → discuss-milestone`
     // no longer fires. The plan-v2 gate correctly detects the missing context
     // but can only block — it cannot redispatch. Without this rule the
-    // milestone is stuck until `/loop24 doctor heal` repairs it (and heal
+    // milestone is stuck until `/otto doctor heal` repairs it (and heal
     // historically missed this check too).
     //
     // Fire BEFORE the execution-entry phase rules so we redispatch to
@@ -569,7 +569,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
       if (isRegistryMilestoneComplete(state, mid)) return null;
       if (hasMilestonePassedDiscuss(basePath, mid)) return null;
       // Align with the plan-v2 gate's lookup semantics: whitespace-only counts
-      // as missing, and an auto worktree may fall back to GSD_PROJECT_ROOT.
+      // as missing, and an auto worktree may fall back to OTTO_PROJECT_ROOT.
       if (hasFinalizedMilestoneContext(basePath, mid)) return null;
       // H6 fix (#4973): non-deep auto-mode has no human to answer the
       // depth-verification question, so pre-marking avoids a write-gate
@@ -587,7 +587,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
           midTitle,
           basePath,
           structuredQuestionsAvailable,
-          { headless: !!(process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) },
+          { headless: !!process.env.OTTO_HEADLESS },
         ),
       };
     },
@@ -645,7 +645,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
           uatContent ?? "",
           basePath,
         ),
-        pauseAfterDispatch: !(process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) && uatType !== "artifact-driven" && uatType !== "browser-executable" && uatType !== "runtime-executable",
+        pauseAfterDispatch: !process.env.OTTO_HEADLESS && uatType !== "artifact-driven" && uatType !== "browser-executable" && uatType !== "runtime-executable",
       };
     },
   },
@@ -737,7 +737,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
           midTitle,
           basePath,
           structuredQuestionsAvailable,
-          { headless: !!(process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) },
+          { headless: !!process.env.OTTO_HEADLESS },
         ),
       };
     },
@@ -800,7 +800,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
     // Deep mode research gate: capture user's research decision.
     // Fires after discuss-requirements (REQUIREMENTS.md exists) when no decision
     // marker has been written yet. Asks one yes/no question via ask_user_questions
-    // and writes .gsd/runtime/research-decision.json. Downstream research-project
+    // and writes .otto/workflow/runtime/research-decision.json. Downstream research-project
     // rule reads the marker to decide whether to fan out 4 parallel research subagents.
     // Light mode skips entirely.
     name: "deep: pre-planning (no research decision) → research-decision",
@@ -844,7 +844,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
       const researchInFlightStop = {
         action: "stop" as const,
         reason:
-          "Project research is already in progress. Wait for it to finish, or clear `.gsd/runtime/research-project-inflight` if the prior run crashed.",
+          "Project research is already in progress. Wait for it to finish, or clear `.otto/workflow/runtime/research-project-inflight` if the prior run crashed.",
         level: "info" as const,
       };
       if (existsSync(inflightMarkerPath)) return researchInFlightStop;
@@ -905,7 +905,7 @@ export const DISPATCH_RULES: DispatchRule[] = [
           midTitle,
           basePath,
           structuredQuestionsAvailable,
-          { headless: !!(process.env.LOOP24_HEADLESS ?? process.env.GSD_HEADLESS) },
+          { headless: !!process.env.OTTO_HEADLESS },
         ),
       };
     },
@@ -1655,12 +1655,12 @@ export const DISPATCH_RULES: DispatchRule[] = [
         };
       }
 
-      // Safety signal (#1703, #5097): detect milestones with only .gsd/
+      // Safety signal (#1703, #5097): detect milestones with only .otto/workflow/
       // artifacts. This no longer hard-blocks completion because some
       // milestones are intentionally planning/documentation-only.
       const artifactCheck = hasImplementationArtifacts(basePath, mid);
       if (artifactCheck === "absent") {
-        logWarning("dispatch", `Milestone ${mid} has no implementation files outside .gsd/ — continuing complete-milestone dispatch (planning-only/documentation-only milestone).`);
+        logWarning("dispatch", `Milestone ${mid} has no implementation files outside .otto/workflow/ — continuing complete-milestone dispatch (planning-only/documentation-only milestone).`);
       }
       if (artifactCheck === "unknown") {
         logWarning("dispatch", `Implementation artifact check inconclusive for ${mid} — proceeding (git context unavailable)`);

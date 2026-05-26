@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for post-execution retry bypass and verification gate failure handling.
 /**
  * post-exec-retry-bypass.test.ts — Tests for post-execution blocking failure retry bypass.
@@ -67,7 +67,7 @@ function setupTestEnvironment(): void {
   tempDir = join(tmpdir(), `post-exec-retry-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(tempDir, { recursive: true });
 
-  const workflowDir = join(tempDir, ".gsd");
+  const workflowDir = join(tempDir, ".otto/workflow");
   mkdirSync(workflowDir, { recursive: true });
 
   const milestonesDir = join(workflowDir, "milestones", "M001", "slices", "S01", "tasks");
@@ -77,7 +77,7 @@ function setupTestEnvironment(): void {
   invalidateAllCaches();
   _clearWorkflowRootCache();
 
-  dbPath = join(workflowDir, "gsd.db");
+  dbPath = join(workflowDir, "otto.db");
   openDatabase(dbPath);
 }
 
@@ -108,7 +108,7 @@ ${yamlLines.join("\n")}
 
 # Workflow Preferences
 `;
-  writeFileSync(join(tempDir, ".gsd", "PREFERENCES.md"), prefsContent);
+  writeFileSync(join(tempDir, ".otto/workflow", "PREFERENCES.md"), prefsContent);
   invalidateAllCaches();
   _clearWorkflowRootCache();
 }
@@ -331,7 +331,7 @@ describe("Post-execution blocking failure retry bypass", () => {
       per_unit_cost_cap_usd: 10,
     });
     writeFileSync(
-      join(tempDir, ".gsd", "metrics.json"),
+      join(tempDir, ".otto/workflow", "metrics.json"),
       JSON.stringify({
         version: 1,
         projectStartedAt: Date.now(),
@@ -441,7 +441,7 @@ describe("Post-execution blocking failure retry bypass", () => {
     assert.equal(pauseAutoMock.mock.callCount(), 1);
     assert.equal(s.pendingVerificationRetry, null);
 
-    const evidencePath = join(tempDir, ".gsd", "milestones", "M001", "slices", "S01", "tasks", "T01-VERIFY.json");
+    const evidencePath = join(tempDir, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-VERIFY.json");
     const evidence = JSON.parse(readFileSync(evidencePath, "utf-8"));
     assert.equal(evidence.passed, false);
     assert.equal(evidence.discoverySource, "none");

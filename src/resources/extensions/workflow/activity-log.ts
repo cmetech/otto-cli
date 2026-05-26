@@ -1,5 +1,5 @@
 /**
- * Activity Log — Save raw chat sessions to .gsd/activity/
+ * Activity Log — Save raw chat sessions to .otto/workflow/activity/
  *
  * Before each context wipe in auto-mode, dumps the full session
  * as JSONL. No formatting, no truncation, no information loss.
@@ -14,7 +14,7 @@ import { join } from "node:path";
 import { WorkflowError, IO_ERROR } from "./errors.js";
 
 const SEQ_PREFIX_RE = /^(\d+)-/;
-import type { ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionContext } from "@otto/pi-coding-agent";
 import { workflowRoot } from "./paths.js";
 import { buildAuditEnvelope, emitUokAuditEvent } from "./uok/audit.js";
 import { isUnifiedAuditEnabled } from "./uok/audit-toggle.js";

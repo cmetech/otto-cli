@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: SQLite schema metadata helpers for the workflow database facade and migrations.
 
 import type { DbAdapter } from "./db-adapter.js";

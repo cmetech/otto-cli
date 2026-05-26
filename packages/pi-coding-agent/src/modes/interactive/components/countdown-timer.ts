@@ -1,9 +1,9 @@
-// LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/countdown-timer.ts - Dialog countdown timer lifecycle.
+// OTTO + packages/pi-coding-agent/src/modes/interactive/components/countdown-timer.ts - Dialog countdown timer lifecycle.
 /**
  * Reusable countdown timer for dialog components.
  */
 
-import type { TUI } from "@loop24/pi-tui";
+import type { TUI } from "@otto/pi-tui";
 import { ManagedInterval } from "./animated-component.js";
 
 export class CountdownTimer {

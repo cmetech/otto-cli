@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Projection renderers for workflow database rows.
 // Workflow Extension — Projection Renderers (DB -> Markdown)
 // Renders PLAN.md, ROADMAP.md, SUMMARY.md, and STATE.md from database rows.
@@ -108,7 +108,7 @@ export function renderPlanProjection(basePath: string, milestoneId: string, slic
   const taskRows = getSliceTasks(milestoneId, sliceId);
 
   const content = renderPlanContent(sliceRow, taskRows);
-  const dir = join(basePath, ".gsd", "milestones", milestoneId, "slices", sliceId);
+  const dir = join(basePath, ".otto/workflow", "milestones", milestoneId, "slices", sliceId);
   mkdirSync(dir, { recursive: true });
   atomicWriteSync(join(dir, `${sliceId}-PLAN.md`), content);
 }
@@ -165,7 +165,7 @@ export function renderRoadmapProjection(basePath: string, milestoneId: string): 
   const sliceRows = getMilestoneSlices(milestoneId);
 
   const content = renderRoadmapContent(milestoneRow, sliceRows);
-  const dir = join(basePath, ".gsd", "milestones", milestoneId);
+  const dir = join(basePath, ".otto/workflow", "milestones", milestoneId);
   mkdirSync(dir, { recursive: true });
   atomicWriteSync(join(dir, `${milestoneId}-ROADMAP.md`), content);
 }
@@ -190,7 +190,7 @@ export function renderTopLevelRoadmapFromDb(basePath: string): void {
   }
 
   lines.push("");
-  const dir = join(basePath, ".gsd");
+  const dir = join(basePath, ".otto/workflow");
   mkdirSync(dir, { recursive: true });
   atomicWriteSync(join(dir, "ROADMAP.md"), lines.join("\n"));
 }
@@ -210,7 +210,7 @@ export function renderTopLevelQueueFromDb(basePath: string): void {
   }
 
   lines.push("");
-  const dir = join(basePath, ".gsd");
+  const dir = join(basePath, ".otto/workflow");
   mkdirSync(dir, { recursive: true });
   atomicWriteSync(join(dir, "QUEUE.md"), lines.join("\n"));
 }
@@ -327,7 +327,7 @@ export function renderSummaryProjection(basePath: string, milestoneId: string, s
 
   const evidenceRows = getVerificationEvidence(milestoneId, sliceId, taskId);
   const content = renderSummaryContent(taskRow, sliceId, milestoneId, evidenceRows);
-  const dir = join(basePath, ".gsd", "milestones", milestoneId, "slices", sliceId, "tasks");
+  const dir = join(basePath, ".otto/workflow", "milestones", milestoneId, "slices", sliceId, "tasks");
   mkdirSync(dir, { recursive: true });
   atomicWriteSync(join(dir, `${taskId}-SUMMARY.md`), content);
 }
@@ -412,7 +412,7 @@ export async function renderStateProjection(basePath: string): Promise<void> {
     }
     const state = await deriveState(basePath);
     const content = renderStateContent(state);
-    const dir = join(basePath, ".gsd");
+    const dir = join(basePath, ".otto/workflow");
     const statePath = join(dir, "STATE.md");
     const milestoneTotal = state.progress?.milestones?.total ?? 0;
     if (milestoneTotal === 0 && existsSync(statePath)) {
@@ -508,17 +508,17 @@ export async function regenerateIfMissing(
 
   switch (fileType) {
     case "PLAN":
-      filePath = join(basePath, ".gsd", "milestones", milestoneId, "slices", sliceId, `${sliceId}-PLAN.md`);
+      filePath = join(basePath, ".otto/workflow", "milestones", milestoneId, "slices", sliceId, `${sliceId}-PLAN.md`);
       break;
     case "ROADMAP":
-      filePath = join(basePath, ".gsd", "milestones", milestoneId, `${milestoneId}-ROADMAP.md`);
+      filePath = join(basePath, ".otto/workflow", "milestones", milestoneId, `${milestoneId}-ROADMAP.md`);
       break;
     case "SUMMARY":
       // For SUMMARY, we regenerate all task summaries in the slice
-      filePath = join(basePath, ".gsd", "milestones", milestoneId, "slices", sliceId, "tasks");
+      filePath = join(basePath, ".otto/workflow", "milestones", milestoneId, "slices", sliceId, "tasks");
       break;
     case "STATE":
-      filePath = join(basePath, ".gsd", "STATE.md");
+      filePath = join(basePath, ".otto/workflow", "STATE.md");
       break;
   }
 
@@ -528,7 +528,7 @@ export async function regenerateIfMissing(
     const doneTasks = taskRows.filter(t => t.status === "done" || t.status === "complete");
     let regenerated = 0;
     for (const task of doneTasks) {
-      const summaryPath = join(basePath, ".gsd", "milestones", milestoneId, "slices", sliceId, "tasks", `${task.id}-SUMMARY.md`);
+      const summaryPath = join(basePath, ".otto/workflow", "milestones", milestoneId, "slices", sliceId, "tasks", `${task.id}-SUMMARY.md`);
       if (!existsSync(summaryPath)) {
         try {
           renderSummaryProjection(basePath, milestoneId, sliceId, task.id);

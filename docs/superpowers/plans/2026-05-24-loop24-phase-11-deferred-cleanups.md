@@ -90,16 +90,16 @@ Root cause: `pi-coding-agent`'s tsconfig has `rootDir: ./src` which prevents imp
 5. Build + standing regression.
 6. Commit.
 
-### Task 5: Remove legacy `GSD_FIRST_RUN_BANNER` env var
+### Task 5: Remove legacy `OTTO_FIRST_RUN_BANNER` env var
 
 **Source of deferral:** item #5.
 
-- `src/loader.ts` sets both `LOOP24_FIRST_RUN_BANNER` and `GSD_FIRST_RUN_BANNER`
+- `src/loader.ts` sets both `LOOP24_FIRST_RUN_BANNER` and `OTTO_FIRST_RUN_BANNER`
 - One test reads the legacy var: `src/resources/extensions/workflow/tests/session-start-footer.test.ts`
 
 **Steps:**
 1. Update `session-start-footer.test.ts` to read `LOOP24_FIRST_RUN_BANNER`.
-2. Remove `process.env.GSD_FIRST_RUN_BANNER = '1'` from `src/loader.ts`.
+2. Remove `process.env.OTTO_FIRST_RUN_BANNER = '1'` from `src/loader.ts`.
 3. Build + standing regression.
 4. Commit.
 
@@ -132,7 +132,7 @@ Root cause: `pi-coding-agent`'s tsconfig has `rootDir: ./src` which prevents imp
 
 - `.gsd/` runtime directory references (session compat per Phase 10 decision)
 - customType protocol strings (session compat per Phase 10 decision)
-- `process.env.GSD_X` compat-shim fallback (intentional)
+- `process.env.OTTO_X` compat-shim fallback (intentional)
 - `@opengsd/engine-*` native binaries (intentional upstream reuse)
 - LICENSE / README "Fork attribution" block / LOOP24-PATCHES.md fork-history doc
 - Commit history rewrites

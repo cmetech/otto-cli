@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Session tree selector with filtering, labels, and branch navigation.
 
 import {
@@ -12,7 +12,7 @@ import {
 	Text,
 	TruncatedText,
 	truncateToWidth,
-} from "@loop24/pi-tui";
+} from "@otto/pi-tui";
 import type { SessionTreeNode } from "../../../core/session-manager.js";
 import { theme } from "../theme/theme.js";
 import { formatToolCallSummary } from "../utils/tool-call-summary.js";

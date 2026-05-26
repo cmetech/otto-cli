@@ -1,4 +1,4 @@
-<!-- Project/App: GSD-2 -->
+<!-- Project/App: OTTO -->
 <!-- File Purpose: ADR for unifying TUI rendering on copy-clean content surfaces. -->
 
 # ADR-019: Unify the TUI Style System Around Copy-Clean Content Surfaces

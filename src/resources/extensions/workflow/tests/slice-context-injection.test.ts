@@ -19,7 +19,7 @@ import {
 
 function makeSliceContextFixture(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-slice-context-"));
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   const sliceDir = join(milestoneDir, "slices", "S01");
   mkdirSync(join(sliceDir, "tasks"), { recursive: true });
   writeFileSync(

@@ -73,7 +73,7 @@ If a symbol is only referenced in a test, distinguish:
 ## 5. Don't delete
 
 End with:
-> To remove high-confidence items, run `/gsd workflow refactor "remove dead code"`
+> To remove high-confidence items, run `/otto workflow refactor "remove dead code"`
 > and pass the list above as context.
 
 The user decides. Do **not** delete files, `git rm`, or open a PR.

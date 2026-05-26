@@ -35,7 +35,7 @@ import { isClosedStatus } from "./status-guards.js";
 function assertNotAutoActive(action: string): void {
   if (isAutoActive()) {
     throw new Error(
-      `${action} cannot run while auto-mode is active. Stop auto-mode first with /gsd stop.`,
+      `${action} cannot run while auto-mode is active. Stop auto-mode first with /otto stop.`,
     );
   }
 }
@@ -105,7 +105,7 @@ export function unparkMilestone(basePath: string, milestoneId: string): boolean 
   const dbThinksParked = isDbAvailable() && getMilestone(milestoneId)?.status === "parked";
 
   // Recover the reverse desync too: DB can still say "parked" even when the
-  // PARKED marker was lost on disk, and /loop24 unpark should repair that state.
+  // PARKED marker was lost on disk, and /otto unpark should repair that state.
   if (!hadParkedFile && !dbThinksParked) return false;
 
   if (hadParkedFile) {

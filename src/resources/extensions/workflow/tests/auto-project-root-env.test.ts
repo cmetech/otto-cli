@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Behavior tests for auto-mode project-root environment cleanup.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -17,40 +17,45 @@ test.afterEach(() => {
   _restoreProjectRootEnvForTest();
 });
 
-test("auto-mode project-root env capture sets GSD_PROJECT_ROOT and restores an existing value", () => {
-  process.env.GSD_PROJECT_ROOT = "/before";
+test("auto-mode project-root env capture sets OTTO_PROJECT_ROOT and restores an existing value", () => {
+  delete process.env.OTTO_PROJECT_ROOT;
+  process.env.OTTO_PROJECT_ROOT = "/before";
 
   _captureProjectRootEnvForTest("/project");
-  assert.equal(process.env.GSD_PROJECT_ROOT, "/project");
+  assert.equal(process.env.OTTO_PROJECT_ROOT, "/project");
 
   _restoreProjectRootEnvForTest();
-  assert.equal(process.env.GSD_PROJECT_ROOT, "/before");
-  delete process.env.GSD_PROJECT_ROOT;
+  assert.equal(process.env.OTTO_PROJECT_ROOT, "/before");
+  assert.equal(process.env.OTTO_PROJECT_ROOT, "/before");
+  delete process.env.OTTO_PROJECT_ROOT;
+  delete process.env.OTTO_PROJECT_ROOT;
 });
 
-test("auto-mode project-root env restore deletes GSD_PROJECT_ROOT when it was initially absent", () => {
-  delete process.env.GSD_PROJECT_ROOT;
+test("auto-mode project-root env restore deletes OTTO_PROJECT_ROOT when it was initially absent", () => {
+  delete process.env.OTTO_PROJECT_ROOT;
+  delete process.env.OTTO_PROJECT_ROOT;
 
   _captureProjectRootEnvForTest("/project");
-  assert.equal(process.env.GSD_PROJECT_ROOT, "/project");
+  assert.equal(process.env.OTTO_PROJECT_ROOT, "/project");
 
   _restoreProjectRootEnvForTest();
-  assert.equal(process.env.GSD_PROJECT_ROOT, undefined);
+  assert.equal(process.env.OTTO_PROJECT_ROOT, undefined);
+  assert.equal(process.env.OTTO_PROJECT_ROOT, undefined);
 });
 
-test("cleanupAfterLoopExit restores captured GSD_PROJECT_ROOT", async () => {
+test("cleanupAfterLoopExit restores captured OTTO_PROJECT_ROOT", async () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-project-root-env-"));
   const previousCwd = process.cwd();
-  const previousProjectRoot = process.env.GSD_PROJECT_ROOT;
+  const previousProjectRoot = process.env.OTTO_PROJECT_ROOT;
 
   autoSession.reset();
   autoSession.active = true;
-  autoSession.basePath = join(base, ".gsd", "worktrees", "M001");
+  autoSession.basePath = join(base, ".otto/workflow", "worktrees", "M001");
   autoSession.originalBasePath = base;
   autoSession.projectRootEnvCaptured = true;
   autoSession.hadProjectRootEnv = true;
   autoSession.previousProjectRootEnv = "/previous/project";
-  process.env.GSD_PROJECT_ROOT = base;
+  process.env.OTTO_PROJECT_ROOT = base;
 
   try {
     await cleanupAfterLoopExit({
@@ -61,14 +66,14 @@ test("cleanupAfterLoopExit restores captured GSD_PROJECT_ROOT", async () => {
       },
     } as any);
 
-    assert.equal(process.env.GSD_PROJECT_ROOT, "/previous/project");
+    assert.equal(process.env.OTTO_PROJECT_ROOT, "/previous/project");
     assert.equal(autoSession.projectRootEnvCaptured, false);
     assert.equal(autoSession.previousProjectRootEnv, null);
   } finally {
     autoSession.reset();
     process.chdir(previousCwd);
-    if (previousProjectRoot === undefined) delete process.env.GSD_PROJECT_ROOT;
-    else process.env.GSD_PROJECT_ROOT = previousProjectRoot;
+    if (previousProjectRoot === undefined) delete process.env.OTTO_PROJECT_ROOT;
+    else process.env.OTTO_PROJECT_ROOT = previousProjectRoot;
     rmSync(base, { recursive: true, force: true });
   }
 });

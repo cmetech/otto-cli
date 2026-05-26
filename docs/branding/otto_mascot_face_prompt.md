@@ -8,7 +8,7 @@ Audience: brand asset library. Will be reused across favicons, social avatars, h
 Style: Identical to the reference image. Semi-realistic 3D character illustration in the warm Pixar-adjacent aesthetic. Same soft directional lighting from the upper-left, same fur rendering, same painterly softness, same color saturation, same level of detail. No style drift.
 
 FACE SPECIFICATION — match the reference exactly:
-- Front-facing otter portrait, very slight natural head tilt acceptable (no more than the reference).
+- Front-facing otto portrait, very slight natural head tilt acceptable (no more than the reference).
 - Warm chestnut-brown fur in the OTTO Brown family (#8E5A33 range) with subtle directional shading from an upper-left light source.
 - Two large round expressive dark eyes (near-black) with a single small white catchlight highlight in each.
 - Pale cream/tan muzzle area surrounding a small triangular dark-brown nose with a subtle glossy highlight at the top.

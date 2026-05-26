@@ -257,7 +257,7 @@ Analyze the just-completed unit (${unitId}) for skill drift.
    - **Minor**: Agent found a better approach but skill isn't wrong → note in KNOWLEDGE.md
    - **Significant**: Skill has outdated or incorrect guidance → propose fix
 
-5. **If significant drift found**, write a heal suggestion to \`.gsd/skill-review-queue.md\`:
+5. **If significant drift found**, write a heal suggestion to \`.otto/workflow/skill-review-queue.md\`:
 
 \`\`\`markdown
 ### {skill-name} (flagged {date})

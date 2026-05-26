@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: Prepare a clean cross-session handoff so the next agent (or you tomorrow) can pick up exactly where you left off. Writes a focused `continue.md` in the active slice directory and ensures `STATE.md` + summary artifacts are current. Use when asked to "hand off", "prepare handoff", "pause work", "bookmark this", "I'll come back to this later", before running out of context budget, or at the end of a long session with unfinished work. Closes the v1 `/gsd-pause-work` parity gap.
+description: Prepare a clean cross-session handoff so the next agent (or you tomorrow) can pick up exactly where you left off. Writes a focused `continue.md` in the active slice directory and ensures `STATE.md` + summary artifacts are current. Use when asked to "hand off", "prepare handoff", "pause work", "bookmark this", "I'll come back to this later", before running out of context budget, or at the end of a long session with unfinished work. Closes the v1 `/otto-pause-work` parity gap.
 ---
 
 <objective>
@@ -8,7 +8,7 @@ Leave the project in a state where a fresh agent with no memory of this session 
 </objective>
 
 <context>
-GSD already writes `STATE.md` (rebuilt after each unit) and summary files (`M###-SUMMARY.md`, `S##-SUMMARY.md`, `T##-SUMMARY.md`). The gap is the *mid-task* handoff: you're partway through a task, context is getting long, and the next session shouldn't start by re-deriving your mental state.
+OTTO already writes `STATE.md` (rebuilt after each unit) and summary files (`M###-SUMMARY.md`, `S##-SUMMARY.md`, `T##-SUMMARY.md`). The gap is the *mid-task* handoff: you're partway through a task, context is getting long, and the next session shouldn't start by re-deriving your mental state.
 
 `continue.md` exists for exactly this — see `auto-prompts.ts`, `guided-flow.ts`, `phase-anchor.ts`, `state.ts`. This skill is the deliberate authoring ritual.
 
@@ -41,15 +41,15 @@ Answer briefly:
 
 Before writing `continue.md`:
 
-- **Any task that's actually done?** Use `gsd_task_complete` (or the equivalent tool) to toggle state. Do NOT edit checkboxes by hand. This triggers `STATE.md` rebuild and `T##-SUMMARY.md` generation.
-- **Any slice-level decisions worth preserving?** Append to `S##-CONTEXT.md` if the slice has one, or `.gsd/DECISIONS.md` if the decision was project-wide.
-- **Any patterns or traps future agents should know about?** Append a single line to `.gsd/KNOWLEDGE.md`.
+- **Any task that's actually done?** Use `otto_task_complete` (or the equivalent tool) to toggle state. Do NOT edit checkboxes by hand. This triggers `STATE.md` rebuild and `T##-SUMMARY.md` generation.
+- **Any slice-level decisions worth preserving?** Append to `S##-CONTEXT.md` if the slice has one, or `.otto/workflow/DECISIONS.md` if the decision was project-wide.
+- **Any patterns or traps future agents should know about?** Append a single line to `.otto/workflow/KNOWLEDGE.md`.
 
 This shrinks what `continue.md` has to carry.
 
 ## Step 3: Write continue.md
 
-Create `.gsd/milestones/<MID>/slices/<SID>/continue.md` with the following shape. Keep it tight — one screenful max.
+Create `.otto/workflow/milestones/<MID>/slices/<SID>/continue.md` with the following shape. Keep it tight — one screenful max.
 
 ```markdown
 # Continue — S02 / T03
@@ -113,7 +113,7 @@ If any answer is no, the handoff is incomplete. Fix it before stopping.
 
 - [ ] `continue.md` exists in the active slice directory.
 - [ ] The "Next action" is concrete and executable without this session's context.
-- [ ] Completed tasks were marked done via `gsd_*` tools, not by hand-edited checkboxes.
+- [ ] Completed tasks were marked done via `otto_*` tools, not by hand-edited checkboxes.
 - [ ] `KNOWLEDGE.md` and `DECISIONS.md` have been updated if anything notable was learned.
 - [ ] Background processes are not orphaned.
 - [ ] A cold-read of `STATE.md` + `continue.md` + latest summary would produce the right next action.

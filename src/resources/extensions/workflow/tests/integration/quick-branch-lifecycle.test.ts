@@ -24,10 +24,10 @@ function run(command: string, cwd: string): string {
 function createTestRepo(): string {
   const repo = mkdtempSync(join(tmpdir(), "gsd-quick-lifecycle-"));
   run("git init -b main", repo);
-  run(`git config user.name "GSD Test"`, repo);
+  run(`git config user.name "OTTO Test"`, repo);
   run(`git config user.email "test@gsd.dev"`, repo);
-  mkdirSync(join(repo, ".gsd", "runtime"), { recursive: true });
-  mkdirSync(join(repo, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(repo, ".otto/workflow", "runtime"), { recursive: true });
+  mkdirSync(join(repo, ".otto/workflow", "milestones", "M001"), { recursive: true });
   writeFileSync(join(repo, "README.md"), "init\n");
   run("git add -A", repo);
   run(`git commit -m "init"`, repo);
@@ -48,7 +48,7 @@ test('QUICK_BRANCH_RE: matches quick-task branches', () => {
   assert.ok(!QUICK_BRANCH_RE.test("main"), "rejects main");
   assert.ok(!QUICK_BRANCH_RE.test("gsd/M001/S01"), "rejects slice branch");
   assert.ok(!QUICK_BRANCH_RE.test("gsd/quickly-something"), "rejects non-quick prefix");
-  assert.ok(!QUICK_BRANCH_RE.test("feature/gsd/quick/1"), "rejects nested prefix");
+  assert.ok(!QUICK_BRANCH_RE.test("feature/otto/quick/1"), "rejects nested prefix");
   // ═══════════════════════════════════════════════════════════════════════
   // captureIntegrationBranch: guard against quick-task branches
   // ═══════════════════════════════════════════════════════════════════════
@@ -129,7 +129,7 @@ test('cleanupQuickBranch: merges back and cleans up (same session)', async () =>
       slug: "fix-typo",
       description: "fix typo",
     };
-    const runtimeDir = join(repo, ".gsd", "runtime");
+    const runtimeDir = join(repo, ".otto/workflow", "runtime");
     mkdirSync(runtimeDir, { recursive: true });
     writeFileSync(join(runtimeDir, "quick-return.json"), JSON.stringify(returnState) + "\n");
 
@@ -174,7 +174,7 @@ test('cleanupQuickBranch: recovers from disk state (cross-session)', async () =>
     run(`git commit -m "add-docs"`, repo);
 
     // Write disk state manually (simulates what handleQuick would persist)
-    const runtimeDir = join(repo, ".gsd", "runtime");
+    const runtimeDir = join(repo, ".otto/workflow", "runtime");
     mkdirSync(runtimeDir, { recursive: true });
     writeFileSync(join(runtimeDir, "quick-return.json"), JSON.stringify({
       basePath: repo,

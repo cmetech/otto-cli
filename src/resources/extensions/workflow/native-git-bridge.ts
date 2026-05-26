@@ -16,7 +16,7 @@ import { isInfrastructureError } from "./auto/infra-errors.js";
 
 // Issue #453: keep auto-mode bookkeeping on the stable git CLI path unless a
 // caller explicitly opts into the native helper.
-const NATIVE_GSD_GIT_ENABLED = (process.env.LOOP24_ENABLE_NATIVE_GIT ?? process.env.GSD_ENABLE_NATIVE_GSD_GIT) === "1";
+const NATIVE_OTTO_GIT_ENABLED = (process.env.OTTO_ENABLE_NATIVE_GIT ?? process.env.OTTO_ENABLE_NATIVE_OTTO_GIT) === "1";
 const TRANSIENT_GIT_RETRY_CODES = new Set(["ENOBUFS", "EAGAIN"]);
 const GIT_RETRY_DELAY_MS = 200;
 
@@ -121,11 +121,11 @@ let loadAttempted = false;
 function loadNative(): typeof nativeModule {
   if (loadAttempted) return nativeModule;
   loadAttempted = true;
-  if (!NATIVE_GSD_GIT_ENABLED) return nativeModule;
+  if (!NATIVE_OTTO_GIT_ENABLED) return nativeModule;
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require("@loop24/native");
+    const mod = require("@otto/native");
     if (mod.gitCurrentBranch && mod.gitHasChanges) {
       nativeModule = mod;
     }
@@ -767,12 +767,12 @@ export function nativeIsIgnored(basePath: string, path: string): boolean {
 }
 
 function isDotWorkflowIgnored(basePath: string): boolean {
-  return [".gsd", ".gsd/"].some(path => nativeIsIgnored(basePath, path));
+  return [".otto/workflow", ".otto/workflow/"].some(path => nativeIsIgnored(basePath, path));
 }
 
 /**
  * Determine whether the project opts out of managed `.gitignore` via
- * `git.manage_gitignore: false` in `.gsd/PREFERENCES.md`. Uses a minimal
+ * `git.manage_gitignore: false` in `.otto/workflow/PREFERENCES.md`. Uses a minimal
  * inline parser to avoid importing the full preferences module (which would
  * introduce a circular dependency back into this low-level bridge).
  *
@@ -780,7 +780,7 @@ function isDotWorkflowIgnored(basePath: string): boolean {
  * file returns false (default: the agent may manage `.gitignore`).
  */
 function isGitignoreManagementDisabled(basePath: string): boolean {
-  const prefsPath = join(basePath, ".gsd", "PREFERENCES.md");
+  const prefsPath = join(basePath, ".otto/workflow", "PREFERENCES.md");
   if (!existsSync(prefsPath)) return false;
   try {
     const content = readFileSync(prefsPath, "utf-8");
@@ -794,11 +794,11 @@ function isGitignoreManagementDisabled(basePath: string): boolean {
 }
 
 /**
- * Self-heal path for the symlinked-`.gsd` staging failure: append `.gsd` to
+ * Self-heal path for the symlinked-`.otto/workflow` staging failure: append `.otto/workflow` to
  * `.gitignore` so subsequent `git add -A` calls succeed without the symlink
  * pathspec error. Honors the `git.manage_gitignore: false` opt-out.
  *
- * Returns true when `.gitignore` now contains an entry covering `.gsd`
+ * Returns true when `.gitignore` now contains an entry covering `.otto/workflow`
  * (either pre-existing or newly appended). Returns false when the opt-out
  * is set or the write fails.
  */
@@ -811,10 +811,10 @@ function trySelfHealWorkflowGitignore(basePath: string): boolean {
     const lines = new Set(
       existing.split("\n").map(l => l.trim()).filter(l => l && !l.startsWith("#")),
     );
-    if (lines.has(".gsd") || lines.has(".gsd/")) return true;
+    if (lines.has(".otto/workflow") || lines.has(".otto/workflow/")) return true;
 
     const prefix = existing.length > 0 && !existing.endsWith("\n") ? "\n" : "";
-    const block = `${prefix}\n# ── GSD self-heal: .gsd is a symlink to external state ──\n.gsd\n`;
+    const block = `${prefix}\n# ── OTTO self-heal: .otto/workflow is a symlink to external state ──\n.otto/workflow\n`;
     writeFileSync(gitignorePath, existing + block, "utf-8");
     return true;
   } catch {
@@ -823,8 +823,8 @@ function trySelfHealWorkflowGitignore(basePath: string): boolean {
 }
 
 /**
- * Stage untracked files individually while skipping anything under `.gsd`.
- * Used as a last-resort when `.gsd` is a symlink, not gitignored, and
+ * Stage untracked files individually while skipping anything under `.otto/workflow`.
+ * Used as a last-resort when `.otto/workflow` is a symlink, not gitignored, and
  * `git.manage_gitignore: false` forbids the self-heal path. Protects user
  * work by never silently dropping new real files.
  */
@@ -848,10 +848,10 @@ function stageUntrackedExcludingDotGsd(basePath: string): void {
     if (code !== "??") continue;
     // Skip runtime artifacts. Under `manage_gitignore: false` the user
     // may not have these in `.gitignore`, so we filter explicitly to avoid
-    // committing transient state (.gsd external link, migration lock,
+    // committing transient state (.otto/workflow external link, migration lock,
     // background shell scratch dir).
-    if (path === ".gsd" || path.startsWith(".gsd/")) continue;
-    if (path === ".gsd-id" || path === ".gsd.migrating") continue;
+    if (path === ".otto/workflow" || path.startsWith(".otto/workflow/")) continue;
+    if (path === ".otto/workflow-id" || path === ".otto/workflow.migrating") continue;
     if (path === ".bg-shell" || path.startsWith(".bg-shell/")) continue;
     untracked.push(path);
   }
@@ -866,7 +866,7 @@ function stageUntrackedExcludingDotGsd(basePath: string): void {
 
 /**
  * Handle `nativeAddAllWithExclusions` failing with "beyond a symbolic link"
- * when `.gsd` is a symlink. Self-heals by adding `.gsd` to `.gitignore`, or
+ * when `.otto/workflow` is a symlink. Self-heals by adding `.otto/workflow` to `.gitignore`, or
  * falls back to explicit per-file staging so user work is never dropped.
  */
 function fallbackStageWithSymlinkedDotGsd(basePath: string): void {
@@ -919,9 +919,9 @@ export function nativeAddAllWithExclusions(basePath: string, exclusions: readonl
     if (stderr.includes("ignored by one of your .gitignore files")) {
       return;
     }
-    // When .gsd is a symlink, git rejects `:!.gsd/...` pathspecs with
+    // When .otto/workflow is a symlink, git rejects `:!.otto/workflow/...` pathspecs with
     // "beyond a symbolic link". Hand off to the self-heal fallback which
-    // either adds `.gsd` to `.gitignore` and retries `git add -A`, or stages
+    // either adds `.otto/workflow` to `.gitignore` and retries `git add -A`, or stages
     // real files explicitly when `git.manage_gitignore: false` forbids the
     // self-heal path. Either way, user work is protected from silent drops.
     if (stderr.includes("beyond a symbolic link")) {
@@ -1069,7 +1069,7 @@ export function nativeMergeSquash(basePath: string, branch: string): GitMergeRes
       stderr.includes("overwritten by merge")
     ) {
       // Extract filenames from git stderr so callers can report which files
-      // are dirty instead of generically blaming .gsd/ (#2151).
+      // are dirty instead of generically blaming .otto/workflow/ (#2151).
       // Git lists them as tab-indented lines between the "would be overwritten"
       // header and the "Please commit" footer.
       const dirtyFiles = stderr

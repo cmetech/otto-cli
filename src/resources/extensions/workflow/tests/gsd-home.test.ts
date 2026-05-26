@@ -1,7 +1,7 @@
 /**
- * Tests for workflowHome() — GSD home directory resolution.
+ * Tests for workflowHome() — OTTO home directory resolution.
  *
- * @see https://github.com/open-gsd/gsd-pi/issues/5015
+ * @see https://github.com/open-gsd/otto-pi/issues/5015
  */
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
@@ -13,28 +13,28 @@ describe("workflowHome", () => {
   let workflowHome: () => string;
 
   beforeEach(async () => {
-    savedWorkflowHome = process.env.GSD_HOME;
+    savedWorkflowHome = process.env.OTTO_HOME;
     const mod = await import("../home.js");
     workflowHome = mod.workflowHome;
   });
 
   afterEach(() => {
     if (savedWorkflowHome !== undefined) {
-      process.env.GSD_HOME = savedWorkflowHome;
+      process.env.OTTO_HOME = savedWorkflowHome;
     } else {
-      delete process.env.GSD_HOME;
+      delete process.env.OTTO_HOME;
     }
   });
 
-  it("returns ~/.gsd by default", () => {
-    delete process.env.GSD_HOME;
-    assert.equal(workflowHome(), join(homedir(), ".gsd"));
+  it("returns ~/.otto by default", () => {
+    delete process.env.OTTO_HOME;
+    assert.equal(workflowHome(), join(homedir(), ".otto"));
   });
 
-  it("uses GSD_HOME env var when set", () => {
-    process.env.GSD_HOME = "/custom/gsd/home";
+  it("uses OTTO_HOME env var when set", () => {
+    process.env.OTTO_HOME = "/custom/otto/home";
     // resolve() normalizes to platform absolute path on Windows
-    assert.equal(workflowHome(), resolve("/custom/gsd/home"));
+    assert.equal(workflowHome(), resolve("/custom/otto/home"));
   });
 
   it("returns a non-empty string", () => {

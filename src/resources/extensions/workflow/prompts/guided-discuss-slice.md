@@ -10,7 +10,7 @@ Do **not** center the discussion on tech stack trivia, naming, or speculative ar
 
 ### Project Shape
 
-Before the first question round, read `.gsd/PROJECT.md` and look for `## Project Shape` → `**Complexity:**`. Verdicts are **`simple`** or **`complex`**; default to `complex` if missing or unclear.
+Before the first question round, read `.otto/workflow/PROJECT.md` and look for `## Project Shape` → `**Complexity:**`. Verdicts are **`simple`** or **`complex`**; default to `complex` if missing or unclear.
 
 - **`simple`** — use 1–2 plain-text rounds, then write context. Skip parallel-research investigation.
 - **`complex`** — investigate first, then ask structured 3–4-option questions.
@@ -31,7 +31,7 @@ Do **not** go deep; stop when you can ask grounded questions.
 
 **Never fabricate or simulate user input.** Never generate fake transcript markers like `[User]`, `[Human]`, or `User:`. Ask one question round, then wait for the user's actual response before continuing.
 
-**If `{{structuredQuestionsAvailable}}` is `true`:** Ask **1–3 questions per round** using `ask_user_questions`. In **`complex`** mode, each multi-choice question MUST present **3 or 4 concrete, researched options** plus final **"Other — let me discuss"** option; options must be grounded in the investigation above (codebase signals, library docs, prior `.gsd/` artifacts), not placeholders. In **`simple`** mode, 2 options is fine. Binary wrap-up gates are exempt. **Call `ask_user_questions` exactly once per turn — never make multiple calls with the same or overlapping questions. Wait for the user's response before asking the next round.**
+**If `{{structuredQuestionsAvailable}}` is `true`:** Ask **1–3 questions per round** using `ask_user_questions`. In **`complex`** mode, each multi-choice question MUST present **3 or 4 concrete, researched options** plus final **"Other — let me discuss"** option; options must be grounded in the investigation above (codebase signals, library docs, prior `.otto/workflow/` artifacts), not placeholders. In **`simple`** mode, 2 options is fine. Binary wrap-up gates are exempt. **Call `ask_user_questions` exactly once per turn — never make multiple calls with the same or overlapping questions. Wait for the user's response before asking the next round.**
 **If `{{structuredQuestionsAvailable}}` is `false`:** Ask **1–3 numbered plain-text questions per round**, then wait.
 Focus questions on:
 - **UX and user-facing behaviour** — what users see, click, trigger, or experience.
@@ -45,7 +45,7 @@ After answers, investigate new unknowns if needed, then ask the next round.
 
 After each answer round, decide whether you have enough signal to write context cleanly.
 
-- **Incremental persistence:** After every 2 question rounds, silently save `{{sliceId}}-CONTEXT-DRAFT.md` in `{{sliceDirPath}}` using `gsd_summary_save` with `milestone_id: {{milestoneId}}`, `slice_id: {{sliceId}}`, `artifact_type: "CONTEXT-DRAFT"`. Do NOT mention this to the user. Final context replaces it.
+- **Incremental persistence:** After every 2 question rounds, silently save `{{sliceId}}-CONTEXT-DRAFT.md` in `{{sliceDirPath}}` using `otto_summary_save` with `milestone_id: {{milestoneId}}`, `slice_id: {{sliceId}}`, `artifact_type: "CONTEXT-DRAFT"`. Do NOT mention this to the user. Final context replaces it.
 - If more signal is needed, investigate new unknowns and continue. Do **not** ask a meta "ready to wrap up?" question after every round.
 - Ask one wrap-up question only when the slice is well understood or the user wants to stop.
 - Offer exactly two choices: "Write the context file" *(recommended when understood)* or "One more pass". Use `ask_user_questions` if available; otherwise ask in plain text.
@@ -60,7 +60,7 @@ Once the user has explicitly confirmed they are ready to write the context file:
 
 1. Use the **Slice Context** template below.
 2. `mkdir -p {{sliceDirPath}}`
-3. Call `gsd_summary_save` with `milestone_id: {{milestoneId}}`, `slice_id: {{sliceId}}`, `artifact_type: "CONTEXT"`, and context as `content`; the tool writes to disk and DB. Fill:
+3. Call `otto_summary_save` with `milestone_id: {{milestoneId}}`, `slice_id: {{sliceId}}`, `artifact_type: "CONTEXT"`, and context as `content`; the tool writes to disk and DB. Fill:
    - **Goal** — one sentence.
    - **Why this Slice** — why now and what it unblocks.
    - **Scope / In Scope** — confirmed scope.

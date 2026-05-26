@@ -5,8 +5,8 @@ How a user adds capabilities to OTTO, and how a multi-layer capability like
 OTTO's extension model.
 
 > **Heads-up on the `.otto` rename.** This guide uses `~/.otto/agent/...` paths.
-> As of this writing the source tree still resolves to `~/.loop24/agent/...` —
-> the canonical `package.json` `piConfig.configDir` is still `".loop24"`. The
+> As of this writing the source tree still resolves to `~/.otto/agent/...` —
+> the canonical `package.json` `piConfig.configDir` is still `".otto"`. The
 > folder name is derived entirely from that one field (`config.ts:172`). To make
 > `.otto` real:
 >
@@ -15,7 +15,7 @@ OTTO's extension model.
 >    `packages/pi-coding-agent/package.json` and `pkg/package.json`.
 >
 > Everything below then resolves to `~/.otto/agent/...` automatically. If you
-> have not done this yet, mentally substitute `~/.loop24/` for `~/.otto/`.
+> have not done this yet, mentally substitute `~/.otto/` for `~/.otto/`.
 
 ---
 
@@ -26,12 +26,12 @@ matter here, and they are independent:
 
 | `piConfig` field | Current value | Controls |
 |---|---|---|
-| `configDir` | `.loop24` → target `.otto` | The config folder: `~/.otto/agent/` |
-| `name` | `loop24` | `APP_NAME`, and the env override var `LOOP24_CODING_AGENT_DIR` |
+| `configDir` | `.otto` → target `.otto` | The config folder: `~/.otto/agent/` |
+| `name` | `otto` | `APP_NAME`, and the env override var `OTTO_CODING_AGENT_DIR` |
 | `commandNamespace` | `otto` | The slash-command prefix: `/otto …` |
 
 So after the `configDir` rename, the agent dir becomes `~/.otto/agent/` but the
-env override var stays `LOOP24_CODING_AGENT_DIR` until you also change `name`.
+env override var stays `OTTO_CODING_AGENT_DIR` until you also change `name`.
 
 **Resolved paths** (from `config.ts`):
 
@@ -44,7 +44,7 @@ env override var stays `LOOP24_CODING_AGENT_DIR` until you also change `name`.
 | Skills | `initResources(skillsDir)` | `~/.agents/skills/` |
 | Settings | `getSettingsPath()` | `~/.otto/agent/settings.json` |
 
-Override the whole agent dir with the env var `LOOP24_CODING_AGENT_DIR`
+Override the whole agent dir with the env var `OTTO_CODING_AGENT_DIR`
 (`config.ts:178`, derived from `APP_NAME`).
 
 ---
@@ -59,7 +59,7 @@ model:
 | **Skill** | Domain expertise the agent pulls in mid-task | `~/.agents/skills/` + settings `skills` paths + project | A folder containing `SKILL.md` |
 | **Command (markdown)** | A `/slash` command whose body is injected as a prompt | `~/.otto/agent/prompts/` (user) or `<project>/.otto/prompts/` | One `.md` file = one `/name` |
 | **Command (code)** | A `/slash` command that runs real TypeScript | `~/.otto/agent/extensions/` | `pi.registerCommand()` in an extension |
-| **Subagent** | A named worker dispatched via the `Agent` tool | `~/.otto/agent/agents/` (user) or `<project>/.gsd/agents/` | A `.md` file with frontmatter |
+| **Subagent** | A named worker dispatched via the `Agent` tool | `~/.otto/agent/agents/` (user) or `<project>/.otto/workflow/agents/` | A `.md` file with frontmatter |
 
 ---
 
@@ -156,7 +156,7 @@ work."*
 
 For deterministic logic (calling an API, running shell, showing a UI dialog),
 write a `pi.registerCommand()` handler in an extension. This is what
-`/otto prompt-engineer` does (`src/resources/extensions/loop24/commands/prompt-engineer/`):
+`/otto prompt-engineer` does (`src/resources/extensions/otto/commands/prompt-engineer/`):
 it takes a rough description, calls the Claude API once, and prints a polished
 prompt.
 
@@ -189,7 +189,7 @@ pi.registerCommand("my-command", {
 
 ## 3. Subagents — named workers
 
-A subagent is a `.md` file in `~/.otto/agent/agents/` (or project `.gsd/agents/`)
+A subagent is a `.md` file in `~/.otto/agent/agents/` (or project `.otto/workflow/agents/`)
 with frontmatter and a body that becomes its system prompt
 (`subagent/agents.ts:89-107`). **This format is identical to Claude's agent
 format.**
@@ -218,7 +218,7 @@ By hand: drop the `.md` in the agents dir. Bundled product agents sync from
 ## 4. Importing existing Claude assets
 
 OTTO ships a Claude-import flow (`claude-import.ts`, reached through the
-GSD/workflow preferences wizard) that scans:
+OTTO/workflow preferences wizard) that scans:
 
 - `~/.claude/skills/**/SKILL.md` — skills
 - `~/.claude/plugins/` (marketplaces + flat) — plugins/components
@@ -278,7 +278,7 @@ end-to-end before committing it to the product.
      and ship the playbooks as `src/resources/prompts/*.md`, **or**
    - Wrap each playbook in a thin `pi.registerCommand()` TS extension that injects
      the playbook body into the agent turn.
-4. **Brand sanitization** — strip earendil/gsd/GPL attribution from the
+4. **Brand sanitization** — strip earendil/otto/GPL attribution from the
    customer-facing skill/agent/command text before bundling (per the OTTO
    rebrand). This is a content pass across ~29 files, not a mechanical rename.
 

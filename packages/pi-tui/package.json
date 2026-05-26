@@ -1,11 +1,11 @@
 {
-  "name": "@loop24/pi-tui",
+  "name": "@otto/pi-tui",
   "version": "1.0.1",
   "description": "Terminal User Interface library (vendored from pi-mono)",
   "type": "module",
   "gsd": {
     "linkable": true,
-    "scope": "@loop24",
+    "scope": "@otto",
     "name": "pi-tui"
   },
   "main": "./dist/index.js",

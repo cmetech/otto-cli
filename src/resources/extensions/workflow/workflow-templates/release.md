@@ -5,7 +5,7 @@ name: release
 version: 1
 mode: markdown-phase
 requires_project: false
-artifact_dir: .gsd/workflows/releases/
+artifact_dir: .otto/workflow/workflows/releases/
 </template_meta>
 
 <purpose>

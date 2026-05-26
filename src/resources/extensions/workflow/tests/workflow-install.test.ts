@@ -25,13 +25,13 @@ function makeTmpBase(): string {
 }
 
 beforeEach(() => {
-  savedWorkflowHome = process.env.GSD_HOME;
-  process.env.GSD_HOME = makeTmpBase();
+  savedWorkflowHome = process.env.OTTO_HOME;
+  process.env.OTTO_HOME = makeTmpBase();
 });
 
 afterEach(() => {
-  if (savedWorkflowHome === undefined) delete process.env.GSD_HOME;
-  else process.env.GSD_HOME = savedWorkflowHome;
+  if (savedWorkflowHome === undefined) delete process.env.OTTO_HOME;
+  else process.env.OTTO_HOME = savedWorkflowHome;
   for (const d of tmpDirs) {
     try { rmSync(d, { recursive: true, force: true, maxRetries: 3, retryDelay: 50 }); } catch { /* ignore */ }
   }

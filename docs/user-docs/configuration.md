@@ -1,20 +1,20 @@
 # Configuration
 
-GSD preferences live in `~/.gsd/PREFERENCES.md` (global) or `.gsd/PREFERENCES.md` (project-local). Manage interactively with `/gsd prefs`.
+OTTO preferences live in `~/.otto/PREFERENCES.md` (global) or `.otto/workflow/PREFERENCES.md` (project-local). Manage interactively with `/otto prefs`.
 
-## `/gsd prefs` Commands
+## `/otto prefs` Commands
 
 | Command | Description |
 |---------|-------------|
-| `/gsd prefs` | Open the global preferences wizard (default) |
-| `/gsd prefs global` | Interactive wizard for global preferences (`~/.gsd/PREFERENCES.md`) |
-| `/gsd prefs project` | Interactive wizard for project preferences (`.gsd/PREFERENCES.md`) |
-| `/gsd prefs status` | Show current preference files, merged values, and skill resolution status |
-| `/gsd prefs wizard` | Alias for `/gsd prefs global` |
-| `/gsd prefs setup` | Alias for `/gsd prefs wizard` — creates preferences file if missing |
-| `/gsd prefs import-claude` | Import Claude marketplace plugins and skills as namespaced GSD components |
-| `/gsd prefs import-claude global` | Import to global scope |
-| `/gsd prefs import-claude project` | Import to project scope |
+| `/otto prefs` | Open the global preferences wizard (default) |
+| `/otto prefs global` | Interactive wizard for global preferences (`~/.otto/PREFERENCES.md`) |
+| `/otto prefs project` | Interactive wizard for project preferences (`.otto/workflow/PREFERENCES.md`) |
+| `/otto prefs status` | Show current preference files, merged values, and skill resolution status |
+| `/otto prefs wizard` | Alias for `/otto prefs global` |
+| `/otto prefs setup` | Alias for `/otto prefs wizard` — creates preferences file if missing |
+| `/otto prefs import-claude` | Import Claude marketplace plugins and skills as namespaced OTTO components |
+| `/otto prefs import-claude global` | Import to global scope |
+| `/otto prefs import-claude project` | Import to project scope |
 
 ## Preferences File Format
 
@@ -48,20 +48,20 @@ planning_depth: deep
 
 | Scope | Path | Applies to |
 |-------|------|-----------|
-| Global | `~/.gsd/PREFERENCES.md` | All projects |
-| Project | `.gsd/PREFERENCES.md` | Current project only |
+| Global | `~/.otto/PREFERENCES.md` | All projects |
+| Project | `.otto/workflow/PREFERENCES.md` | Current project only |
 
 **Merge behavior:**
 - **Scalar fields** (`skill_discovery`, `budget_ceiling`): project wins if defined
 - **Array fields** (`always_use_skills`, etc.): concatenated (global first, then project)
 - **Object fields** (`models`, `git`, `auto_supervisor`): shallow-merged, project overrides per-key
 
-## Global API Keys (`/gsd config`)
+## Global API Keys (`/otto config`)
 
-Tool API keys are stored globally in `~/.gsd/agent/auth.json` and apply to all projects automatically. Set them once with `/gsd config` — no need to configure per-project `.env` files.
+Tool API keys are stored globally in `~/.otto/agent/auth.json` and apply to all projects automatically. Set them once with `/otto config` — no need to configure per-project `.env` files.
 
 ```bash
-/gsd config
+/otto config
 ```
 
 This opens an interactive wizard showing which keys are configured and which are missing. Select a tool to enter its key.
@@ -76,7 +76,7 @@ This opens an interactive wizard showing which keys are configured and which are
 
 ### How it works
 
-1. `/gsd config` saves keys to `~/.gsd/agent/auth.json`
+1. `/otto config` saves keys to `~/.otto/agent/auth.json`
 2. On every session start, `loadToolApiKeys()` reads the file and sets environment variables
 3. Keys apply to all projects — no per-project setup required
 4. Environment variables (`export BRAVE_API_KEY=...`) take precedence over saved keys
@@ -84,19 +84,19 @@ This opens an interactive wizard showing which keys are configured and which are
 
 ## MCP Servers
 
-GSD can connect to external MCP servers configured in project files. This is useful for local tools, internal APIs, self-hosted services, or integrations that aren't built in as native GSD extensions.
+OTTO can connect to external MCP servers configured in project files. This is useful for local tools, internal APIs, self-hosted services, or integrations that aren't built in as native OTTO extensions.
 
 ### Config file locations
 
-GSD reads MCP client configuration from these project-local paths:
+OTTO reads MCP client configuration from these project-local paths:
 
 - `.mcp.json`
-- `.gsd/mcp.json`
+- `.otto/workflow/mcp.json`
 
 If both files exist, server names are merged and the first definition found wins. Use:
 
 - `.mcp.json` for repo-shared MCP configuration you may want to commit
-- `.gsd/mcp.json` for local-only MCP configuration you do **not** want to share
+- `.otto/workflow/mcp.json` for local-only MCP configuration you do **not** want to share
 
 ### Supported transports
 
@@ -136,7 +136,7 @@ If both files exist, server names are merged and the first definition found wins
 
 ### Verifying a server
 
-After adding config, verify it from a GSD session:
+After adding config, verify it from a OTTO session:
 
 ```text
 mcp_servers
@@ -146,7 +146,7 @@ mcp_call(server="my-server", tool="<tool_name>", args={...})
 
 Recommended verification order:
 
-1. `mcp_servers` — confirms GSD can see the config file and parse the server entry
+1. `mcp_servers` — confirms OTTO can see the config file and parse the server entry
 2. `mcp_discover` — confirms the server process starts and responds to `tools/list`
 3. `mcp_call` — confirms at least one real tool invocation works
 
@@ -154,19 +154,19 @@ Recommended verification order:
 
 - Use absolute paths for local executables and scripts when possible.
 - For `stdio` servers, prefer setting required environment variables directly in the MCP config instead of relying on an interactive shell profile.
-- GSD and `gsd-mcp-server` both hydrate supported model and tool keys saved in `~/.gsd/agent/auth.json`, so MCP configs can safely reference them through `${ENV_VAR}` placeholders without committing raw credentials.
-- MCP server runtime variables such as `GSD_WORKFLOW_EXECUTORS_MODULE`, `GSD_WORKFLOW_WRITE_GATE_MODULE`, `GSD_WORKFLOW_PROJECT_ROOT`, `GSD_CLI_PATH`, `NODE_OPTIONS`, `NODE_PATH`, `PATH`, `LD_PRELOAD`, and `DYLD_INSERT_LIBRARIES` cannot be set through `secure_env_collect`; configure them explicitly in the operator environment or MCP config.
+- OTTO and `otto-mcp-server` both hydrate supported model and tool keys saved in `~/.otto/agent/auth.json`, so MCP configs can safely reference them through `${ENV_VAR}` placeholders without committing raw credentials.
+- MCP server runtime variables such as `OTTO_WORKFLOW_EXECUTORS_MODULE`, `OTTO_WORKFLOW_WRITE_GATE_MODULE`, `OTTO_WORKFLOW_PROJECT_ROOT`, `OTTO_CLI_PATH`, `NODE_OPTIONS`, `NODE_PATH`, `PATH`, `LD_PRELOAD`, and `DYLD_INSERT_LIBRARIES` cannot be set through `secure_env_collect`; configure them explicitly in the operator environment or MCP config.
 - When `secure_env_collect` writes to a local dotenv file, the accepted keys are also hydrated into the current MCP server process. When it pushes to Vercel or Convex, the values are sent to the remote destination only and are not added to `process.env`.
 - If a server is team-shared and safe to commit, `.mcp.json` is usually the better home.
-- If a server depends on machine-local paths, personal services, or local-only secrets, prefer `.gsd/mcp.json`.
+- If a server depends on machine-local paths, personal services, or local-only secrets, prefer `.otto/workflow/mcp.json`.
 
 ### Per-Model MCP Filtering
 
-Small-context models (e.g. Claude Haiku) suffer prompt-size blowouts when every available MCP server is announced to them. A subagent that only needs `gsd-workflow` does not need the 28 other servers in the prompt. GSD lets you restrict, per model, which MCP servers are exposed to the SDK by configuring `claude_code_mcp.per_model` in `.gsd/PREFERENCES.md`.
+Small-context models (e.g. Claude Haiku) suffer prompt-size blowouts when every available MCP server is announced to them. A subagent that only needs `otto-workflow` does not need the 28 other servers in the prompt. OTTO lets you restrict, per model, which MCP servers are exposed to the SDK by configuring `claude_code_mcp.per_model` in `.otto/workflow/PREFERENCES.md`.
 
 #### YAML shape
 
-The block lives in the YAML frontmatter of `.gsd/PREFERENCES.md` under `claude_code_mcp.per_model`. Each key is a **model-ID prefix**; each value has optional `allowed_servers` and `blocked_servers` arrays of MCP server names:
+The block lives in the YAML frontmatter of `.otto/workflow/PREFERENCES.md` under `claude_code_mcp.per_model`. Each key is a **model-ID prefix**; each value has optional `allowed_servers` and `blocked_servers` arrays of MCP server names:
 
 ```yaml
 claude_code_mcp:
@@ -190,24 +190,24 @@ Keys are matched against the active model ID by prefix; when multiple keys match
 
 #### Resolution order: allowlist-first, blocklist-removes
 
-When `allowed_servers` is present, only those servers (plus the implicit `gsd-workflow` allow described below) are exposed; everything else is blocked. `blocked_servers` then removes entries from the resulting set. On overlap, **the blocklist wins** — a server listed in both `allowed_servers` and `blocked_servers` is blocked.
+When `allowed_servers` is present, only those servers (plus the implicit `otto-workflow` allow described below) are exposed; everything else is blocked. `blocked_servers` then removes entries from the resulting set. On overlap, **the blocklist wins** — a server listed in both `allowed_servers` and `blocked_servers` is blocked.
 
 | `allowed_servers` | `blocked_servers` | Effective exposure                                                |
 |-------------------|-------------------|-------------------------------------------------------------------|
 | absent / empty    | absent / empty    | All discovered servers exposed                                    |
-| `[a, b]`          | absent / empty    | Only `a`, `b`, and `gsd-workflow`                                 |
+| `[a, b]`          | absent / empty    | Only `a`, `b`, and `otto-workflow`                                 |
 | absent / empty    | `[c]`             | All discovered servers except `c`                                 |
-| `[a, b]`          | `[b]`             | Only `a` and `gsd-workflow` (`b` removed by blocklist)            |
+| `[a, b]`          | `[b]`             | Only `a` and `otto-workflow` (`b` removed by blocklist)            |
 
-Blocking is implemented two ways depending on how the server arrives: user MCPs loaded by the SDK from `.mcp.json` / `.claude/settings.json` are blocked via `disallowedTools` patterns (`mcp__<name>__*`); the `gsd-workflow` server, which GSD controls directly, is dropped from the `mcpServers` map when explicitly blocked.
+Blocking is implemented two ways depending on how the server arrives: user MCPs loaded by the SDK from `.mcp.json` / `.claude/settings.json` are blocked via `disallowedTools` patterns (`mcp__<name>__*`); the `otto-workflow` server, which OTTO controls directly, is dropped from the `mcpServers` map when explicitly blocked.
 
-#### `gsd-workflow` implicit allow
+#### `otto-workflow` implicit allow
 
-GSD's own workflow MCP server (`gsd-workflow`) is **always allowed**, even when not listed in `allowed_servers`, because the GSD engine itself depends on it. The only way to remove `gsd-workflow` from a model's exposure is to name it explicitly in `blocked_servers`. Do this only if you understand that auto-mode tooling on that model will stop working.
+OTTO's own workflow MCP server (`otto-workflow`) is **always allowed**, even when not listed in `allowed_servers`, because the OTTO engine itself depends on it. The only way to remove `otto-workflow` from a model's exposure is to name it explicitly in `blocked_servers`. Do this only if you understand that auto-mode tooling on that model will stop working.
 
 #### Worked example
 
-A Haiku subagent that only needs `gsd-workflow` and a single search MCP, and a Sonnet model that has everything except a noisy analytics server:
+A Haiku subagent that only needs `otto-workflow` and a single search MCP, and a Sonnet model that has everything except a noisy analytics server:
 
 ```yaml
 claude_code_mcp:
@@ -215,24 +215,24 @@ claude_code_mcp:
     claude-haiku-4-5:
       allowed_servers:
         - google-search
-      # gsd-workflow is allowed implicitly; no need to list it.
+      # otto-workflow is allowed implicitly; no need to list it.
     claude-sonnet-4-6:
       blocked_servers:
         - analytics-noisy
 ```
 
-With this configuration, a Haiku-4-5 subagent sees only `gsd-workflow` and `google-search` regardless of how many servers `.mcp.json` defines; a Sonnet-4-6 session sees every discovered server except `analytics-noisy`. Other models match no prefix and are unaffected.
+With this configuration, a Haiku-4-5 subagent sees only `otto-workflow` and `google-search` regardless of how many servers `.mcp.json` defines; a Sonnet-4-6 session sees every discovered server except `analytics-noisy`. Other models match no prefix and are unaffected.
 
 ## Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `GSD_HOME` | `~/.gsd` | Global GSD directory. All paths derive from this unless individually overridden. Affects preferences, skills, sessions, and per-project state. (v2.39) |
-| `GSD_PROJECT_ID` | (auto-hash) | Override the automatic project identity hash. Per-project state goes to `$GSD_HOME/projects/<GSD_PROJECT_ID>/` instead of the computed hash. Useful for CI/CD or sharing state across clones of the same repo. (v2.39) |
-| `GSD_STATE_DIR` | `$GSD_HOME` | Per-project state root. Controls where `projects/<repo-hash>/` directories are created. Takes precedence over `GSD_HOME` for project state. |
-| `GSD_CODING_AGENT_DIR` | `$GSD_HOME/agent` | Agent directory containing managed resources, extensions, and auth. Takes precedence over `GSD_HOME` for agent paths. |
-| `GSD_ALLOWED_COMMAND_PREFIXES` | (built-in list) | Comma-separated command prefixes allowed for `!command` value resolution. Overrides `allowedCommandPrefixes` in settings.json. See [Custom Models — Command Allowlist](custom-models.md#command-allowlist). |
-| `GSD_FETCH_ALLOWED_URLS` | (none) | Comma-separated hostnames exempted from `fetch_page` URL blocking. Overrides `fetchAllowedUrls` in settings.json. See [URL Blocking](#url-blocking-fetch_page). |
+| `OTTO_HOME` | `~/.otto/workflow` | Global OTTO directory. All paths derive from this unless individually overridden. Affects preferences, skills, sessions, and per-project state. (v2.39) |
+| `OTTO_PROJECT_ID` | (auto-hash) | Override the automatic project identity hash. Per-project state goes to `$OTTO_HOME/projects/<OTTO_PROJECT_ID>/` instead of the computed hash. Useful for CI/CD or sharing state across clones of the same repo. (v2.39) |
+| `OTTO_STATE_DIR` | `$OTTO_HOME` | Per-project state root. Controls where `projects/<repo-hash>/` directories are created. Takes precedence over `OTTO_HOME` for project state. |
+| `OTTO_CODING_AGENT_DIR` | `$OTTO_HOME/agent` | Agent directory containing managed resources, extensions, and auth. Takes precedence over `OTTO_HOME` for agent paths. |
+| `OTTO_ALLOWED_COMMAND_PREFIXES` | (built-in list) | Comma-separated command prefixes allowed for `!command` value resolution. Overrides `allowedCommandPrefixes` in settings.json. See [Custom Models — Command Allowlist](custom-models.md#command-allowlist). |
+| `OTTO_FETCH_ALLOWED_URLS` | (none) | Comma-separated hostnames exempted from `fetch_page` URL blocking. Overrides `fetchAllowedUrls` in settings.json. See [URL Blocking](#url-blocking-fetch_page). |
 | `PI_DISABLE_SYNC_OUTPUT` | (unset) | Set to literal `1` to disable synchronized terminal output mode in the TUI on non-Windows platforms. By default synchronized output is enabled on macOS/Linux and always disabled on Windows. |
 | `PI_TOKEN_TELEMETRY` | (unset) | Set to literal `1` to emit opt-in per-call token telemetry as JSONL on stderr. Other values are ignored. |
 
@@ -242,12 +242,12 @@ Set `PI_TOKEN_TELEMETRY=1` when you need raw per-call token and cache data for c
 
 ```bash
 # Capture telemetry separately from headless JSONL events
-PI_TOKEN_TELEMETRY=1 gsd headless --json auto \
-  > gsd-events.jsonl \
+PI_TOKEN_TELEMETRY=1 otto headless --json auto \
+  > otto-events.jsonl \
   2> token-telemetry.jsonl
 
 # Capture telemetry from an interactive session
-PI_TOKEN_TELEMETRY=1 gsd 2> token-telemetry.jsonl
+PI_TOKEN_TELEMETRY=1 otto 2> token-telemetry.jsonl
 ```
 
 Each line is one JSON object with this shape:
@@ -303,12 +303,12 @@ models:
 
 ### Custom Model Definitions (`models.json`)
 
-Define custom models and providers in `~/.gsd/agent/models.json`. This lets you add models not included in the default registry — useful for self-hosted endpoints (Ollama, vLLM, LM Studio), fine-tuned models, proxies, or new provider releases.
+Define custom models and providers in `~/.otto/agent/models.json`. This lets you add models not included in the default registry — useful for self-hosted endpoints (Ollama, vLLM, LM Studio), fine-tuned models, proxies, or new provider releases.
 
-GSD resolves models.json with fallback logic:
-1. `~/.gsd/agent/models.json` — primary (GSD)
+OTTO resolves models.json with fallback logic:
+1. `~/.otto/agent/models.json` — primary (OTTO)
 2. `~/.pi/agent/models.json` — fallback (Pi)
-3. If neither exists, creates `~/.gsd/agent/models.json`
+3. If neither exists, creates `~/.otto/agent/models.json`
 
 **Quick example for local models (Ollama):**
 
@@ -344,15 +344,15 @@ models:
     provider: bedrock    # optional: target a specific provider
 ```
 
-When a model fails to switch (provider unavailable, rate limited, credits exhausted), GSD automatically tries the next model in the `fallbacks` list.
+When a model fails to switch (provider unavailable, rate limited, credits exhausted), OTTO automatically tries the next model in the `fallbacks` list.
 
 ### Community Provider Extensions
 
-For providers not built into GSD, community extensions can add full provider support with proper model definitions, thinking format configuration, and interactive API key setup.
+For providers not built into OTTO, community extensions can add full provider support with proper model definitions, thinking format configuration, and interactive API key setup.
 
 | Extension | Provider | Models | Install |
 |-----------|----------|--------|---------|
-| [`pi-dashscope`](https://www.npmjs.com/package/pi-dashscope) | Alibaba DashScope (ModelStudio) | Qwen3, GLM-5, MiniMax M2.5, Kimi K2.5 | `gsd install npm:pi-dashscope` |
+| [`pi-dashscope`](https://www.npmjs.com/package/pi-dashscope) | Alibaba DashScope (ModelStudio) | Qwen3, GLM-5, MiniMax M2.5, Kimi K2.5 | `otto install npm:pi-dashscope` |
 
 Community extensions are recommended over the built-in `alibaba-coding-plan` provider for DashScope models — they use the correct OpenAI-compatible endpoint and include per-model compatibility flags for thinking mode.
 
@@ -396,11 +396,11 @@ planning_depth: deep
 | Value | Behavior |
 |-------|----------|
 | `light` | Default. Uses the normal milestone discussion flow that writes milestone context and roadmap artifacts. |
-| `deep` | Runs staged project discovery first: workflow preferences, `.gsd/PROJECT.md`, `.gsd/REQUIREMENTS.md`, a research decision marker, and optional project research before milestone planning. |
+| `deep` | Runs staged project discovery first: workflow preferences, `.otto/workflow/PROJECT.md`, `.otto/workflow/REQUIREMENTS.md`, a research decision marker, and optional project research before milestone planning. |
 
-Enable deep mode for the current project with `/gsd new-project --deep` or `/gsd new-milestone --deep`; both write `planning_depth: deep` to `.gsd/PREFERENCES.md`. You can also set it manually in project or global preferences.
+Enable deep mode for the current project with `/otto new-project --deep` or `/otto new-milestone --deep`; both write `planning_depth: deep` to `.otto/workflow/PREFERENCES.md`. You can also set it manually in project or global preferences.
 
-In deep mode, `research-decision` writes `.gsd/runtime/research-decision.json` with `research` or `skip`. A `research` decision dispatches `research-project`, which writes `.gsd/research/STACK.md`, `FEATURES.md`, `ARCHITECTURE.md`, and `PITFALLS.md`; a `skip` decision proceeds directly to milestone work.
+In deep mode, `research-decision` writes `.otto/workflow/runtime/research-decision.json` with `research` or `skip`. A `research` decision dispatches `research-project`, which writes `.otto/workflow/research/STACK.md`, `FEATURES.md`, `ARCHITECTURE.md`, and `PITFALLS.md`; a `skip` decision proceeds directly to milestone work.
 
 ### `workspace`
 
@@ -445,11 +445,11 @@ Defaults and tuning:
 | `isolation_mode` | string | `same-tree` | Execution isolation mode. `same-tree` is currently the only supported value. |
 | `subagent_model` | string | `models.subagent` fallback | Optional model override for reactive task subagents. |
 
-When `enabled` is omitted, reactive execution uses the default-on safety threshold of three ready tasks before it attempts a parallel batch. When `enabled: true` is set explicitly, GSD uses the earlier opt-in threshold of two ready tasks.
+When `enabled` is omitted, reactive execution uses the default-on safety threshold of three ready tasks before it attempts a parallel batch. When `enabled: true` is set explicitly, OTTO uses the earlier opt-in threshold of two ready tasks.
 
 ### `taskIsolation`
 
-Controls optional filesystem isolation for explicit subagent tool calls that set `isolated: true`. This is a global `~/.gsd/agent/settings.json` setting.
+Controls optional filesystem isolation for explicit subagent tool calls that set `isolated: true`. This is a global `~/.otto/agent/settings.json` setting.
 
 ```json
 {
@@ -467,7 +467,7 @@ See [Subagents](./subagents.md#filesystem-isolation) for invocation, merge, and 
 
 ### `skill_discovery`
 
-Controls how GSD finds and applies skills during auto mode.
+Controls how OTTO finds and applies skills during auto mode.
 
 | Value | Behavior |
 |-------|----------|
@@ -553,11 +553,11 @@ verification_max_retries: 2       # max retry attempts (default: 2)
 | `verification_auto_fix` | boolean | `true` | Auto-retry when verification fails |
 | `verification_max_retries` | number | `2` | Maximum auto-fix retry attempts |
 
-Verification commands must be simple executable commands. Shell piping (`|`) is supported, but logical OR (`||`) is rejected. GSD also rejects redirects (`>` and `<`), semicolons, backticks, and command substitution (`$(...)`) because verification is run as a controlled command list, not as an arbitrary shell program.
+Verification commands must be simple executable commands. Shell piping (`|`) is supported, but logical OR (`||`) is rejected. OTTO also rejects redirects (`>` and `<`), semicolons, backticks, and command substitution (`$(...)`) because verification is run as a controlled command list, not as an arbitrary shell program.
 
-For task-level `verify` commands (`taskPlanVerify`), GSD splits command chains on `&&` and validates each segment independently. On Unix-like systems, commands run with `set -o pipefail` semantics, so any failing stage in a pipeline causes the verification command to fail.
+For task-level `verify` commands (`taskPlanVerify`), OTTO splits command chains on `&&` and validates each segment independently. On Unix-like systems, commands run with `set -o pipefail` semantics, so any failing stage in a pipeline causes the verification command to fail.
 
-When `verification_commands` is empty and no task-level `verify` command is available, GSD can auto-discover project checks. JavaScript projects use `package.json` scripts in this order: `typecheck`, `lint`, `test`. Python projects use the `python-project` discovery source and run `python3 -m pytest` when GSD finds files matching pytest's default test file patterns (`test_*.py` or `*_test.py`) under `tests/` or an explicit pytest configuration marker: `pytest.ini`, `[tool.pytest]`, `[tool.pytest.*]`, `[pytest]`, or `[tool:pytest]` in `pyproject.toml`.
+When `verification_commands` is empty and no task-level `verify` command is available, OTTO can auto-discover project checks. JavaScript projects use `package.json` scripts in this order: `typecheck`, `lint`, `test`. Python projects use the `python-project` discovery source and run `python3 -m pytest` when OTTO finds files matching pytest's default test file patterns (`test_*.py` or `*_test.py`) under `tests/` or an explicit pytest configuration marker: `pytest.ini`, `[tool.pytest]`, `[tool.pytest.*]`, `[pytest]`, or `[tool:pytest]` in `pyproject.toml`.
 
 ### `workspace`
 
@@ -581,7 +581,7 @@ workspace:
       commit_policy: skip
 ```
 
-`project` is always available as an implicit repository ID pointing at the project root. If plan/task `targetRepositories` is omitted, GSD defaults to `["project"]`.
+`project` is always available as an implicit repository ID pointing at the project root. If plan/task `targetRepositories` is omitted, OTTO defaults to `["project"]`.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
@@ -618,7 +618,7 @@ Public URLs (`https://example.com`, `http://8.8.8.8`) are not affected.
 
 **Allowing specific internal hosts:**
 
-If you need the agent to fetch from internal URLs (self-hosted docs, internal APIs behind a VPN), add their hostnames to `fetchAllowedUrls` in global settings (`~/.gsd/agent/settings.json`):
+If you need the agent to fetch from internal URLs (self-hosted docs, internal APIs behind a VPN), add their hostnames to `fetchAllowedUrls` in global settings (`~/.otto/agent/settings.json`):
 
 ```json
 {
@@ -626,10 +626,10 @@ If you need the agent to fetch from internal URLs (self-hosted docs, internal AP
 }
 ```
 
-Alternatively, set the `GSD_FETCH_ALLOWED_URLS` environment variable (comma-separated). The env var takes precedence over settings.json:
+Alternatively, set the `OTTO_FETCH_ALLOWED_URLS` environment variable (comma-separated). The env var takes precedence over settings.json:
 
 ```bash
-export GSD_FETCH_ALLOWED_URLS="internal-docs.company.com,192.168.1.50"
+export OTTO_FETCH_ALLOWED_URLS="internal-docs.company.com,192.168.1.50"
 ```
 
 Allowed hostnames bypass the blocklist checks. The protocol restriction (HTTP/HTTPS only) still applies — `file://` and `ftp://` cannot be allowlisted.
@@ -644,7 +644,7 @@ Auto-generate HTML reports after milestone completion:
 auto_report: true    # default: true
 ```
 
-Reports are written to `.gsd/reports/` as self-contained HTML files with embedded CSS/JS.
+Reports are written to `.otto/workflow/reports/` as self-contained HTML files with embedded CSS/JS.
 
 ### `unique_milestone_ids`
 
@@ -670,9 +670,9 @@ git:
   main_branch: main           # primary branch name
   merge_strategy: squash      # how worktree branches merge: "squash" or "merge"
   isolation: none             # git isolation: "none" (default), "worktree", or "branch"
-  commit_docs: true           # commit .gsd/ artifacts to git (set false to keep local)
-  manage_gitignore: true      # set false to prevent GSD from modifying .gitignore
-  worktree_post_create: .gsd/hooks/post-worktree-create  # script to run after worktree creation
+  commit_docs: true           # commit .otto/workflow/ artifacts to git (set false to keep local)
+  manage_gitignore: true      # set false to prevent OTTO from modifying .gitignore
+  worktree_post_create: .otto/workflow/hooks/post-worktree-create  # script to run after worktree creation
   auto_pr: false              # create a PR on milestone completion (requires push_branches)
   pr_target_branch: develop   # target branch for auto-created PRs (default: main branch)
 ```
@@ -688,8 +688,8 @@ git:
 | `main_branch` | string | `"main"` | Primary branch name |
 | `merge_strategy` | string | `"squash"` | How worktree branches merge: `"squash"` (combine all commits) or `"merge"` (preserve individual commits) |
 | `isolation` | string | `"none"` | Auto-mode isolation: `"none"` (no isolation — commits on current branch, no worktree or milestone branch), `"worktree"` (separate directory), or `"branch"` (work in project root — useful for submodule-heavy repos). `worktree` requires a committed `HEAD`; zero-commit repos temporarily run as `none` until the first commit exists |
-| `commit_docs` | boolean | `true` | Commit `.gsd/` planning artifacts to git. Set `false` to keep local-only |
-| `manage_gitignore` | boolean | `true` | When `false`, GSD will not modify `.gitignore` at all — no baseline patterns, no self-healing. Use if you manage your own `.gitignore` |
+| `commit_docs` | boolean | `true` | Commit `.otto/workflow/` planning artifacts to git. Set `false` to keep local-only |
+| `manage_gitignore` | boolean | `true` | When `false`, OTTO will not modify `.gitignore` at all — no baseline patterns, no self-healing. Use if you manage your own `.gitignore` |
 | `worktree_post_create` | string | (none) | Script to run after worktree creation. Receives `SOURCE_DIR` and `WORKTREE_DIR` env vars |
 | `auto_pr` | boolean | `false` | Automatically create a pull request when a milestone completes. Requires `auto_push: true` and `gh` CLI installed and authenticated |
 | `pr_target_branch` | string | (main branch) | Target branch for auto-created PRs (e.g. `develop`, `qa`). Defaults to `main_branch` if not set |
@@ -700,14 +700,14 @@ Script to run after a worktree is created (both auto-mode and manual `/worktree`
 
 ```yaml
 git:
-  worktree_post_create: .gsd/hooks/post-worktree-create
+  worktree_post_create: .otto/workflow/hooks/post-worktree-create
 ```
 
 The script receives two environment variables:
 - `SOURCE_DIR` — the original project root
 - `WORKTREE_DIR` — the newly created worktree path
 
-Example hook script (`.gsd/hooks/post-worktree-create`):
+Example hook script (`.otto/workflow/hooks/post-worktree-create`):
 
 ```bash
 #!/bin/bash
@@ -717,7 +717,7 @@ cp "$SOURCE_DIR/.env.local" "$WORKTREE_DIR/.env.local" 2>/dev/null || true
 ln -sf "$SOURCE_DIR/assets" "$WORKTREE_DIR/assets"
 ```
 
-The path can be absolute or relative to the project root. The script runs with a 30-second timeout. Failure is non-fatal — GSD logs a warning and continues.
+The path can be absolute or relative to the project root. The script runs with a 30-second timeout. Failure is non-fatal — OTTO logs a warning and continues.
 
 #### `git.auto_pr`
 
@@ -735,22 +735,22 @@ git:
 - [`gh` CLI](https://cli.github.com/) installed and authenticated (`gh auth login`)
 
 **How it works:**
-1. Milestone completes → GSD squash-merges the worktree to the main branch
+1. Milestone completes → OTTO squash-merges the worktree to the main branch
 2. Pushes the main branch to remote (if `auto_push: true`)
 3. Pushes the milestone branch to remote
 4. Creates a PR from the milestone branch to `pr_target_branch` via `gh pr create`
 
-If `pr_target_branch` is not set, the PR targets the `main_branch` (or auto-detected main branch). PR creation failure is non-fatal — GSD logs and continues.
+If `pr_target_branch` is not set, the PR targets the `main_branch` (or auto-detected main branch). PR creation failure is non-fatal — OTTO logs and continues.
 
 ### `github` (v2.39)
 
-GitHub sync configuration. When enabled, GSD auto-syncs milestones, slices, and tasks to GitHub Issues, PRs, and Milestones.
+GitHub sync configuration. When enabled, OTTO auto-syncs milestones, slices, and tasks to GitHub Issues, PRs, and Milestones.
 
 ```yaml
 github:
   enabled: true
   repo: "owner/repo"              # auto-detected from git remote if omitted
-  labels: [gsd, auto-generated]   # labels applied to created issues/PRs
+  labels: [otto, auto-generated]   # labels applied to created issues/PRs
   project: "Project ID"           # optional GitHub Project board
 ```
 
@@ -763,7 +763,7 @@ github:
 
 **Requirements:**
 - `gh` CLI installed and authenticated (`gh auth login`)
-- Sync mapping is persisted in `.gsd/.github-sync.json`
+- Sync mapping is persisted in `.otto/workflow/.github-sync.json`
 - Rate-limit aware — skips sync when GitHub API rate limit is low
 
 **Commands:**
@@ -772,7 +772,7 @@ github:
 
 ### `workspace` (v2.49)
 
-Multi-repository parent workspace configuration. This lets one `.gsd` state manage multiple child repositories and constrains planning file paths to declared repository roots.
+Multi-repository parent workspace configuration. This lets one `.otto/workflow` state manage multiple child repositories and constrains planning file paths to declared repository roots.
 
 ```yaml
 workspace:
@@ -804,7 +804,7 @@ workspace:
 
 ### `notifications`
 
-Control what notifications GSD sends during auto mode:
+Control what notifications OTTO sends during auto mode:
 
 ```yaml
 notifications:
@@ -816,7 +816,7 @@ notifications:
   on_attention: true          # notify when manual attention needed
 ```
 
-**macOS delivery:** GSD uses [`terminal-notifier`](https://github.com/julienXX/terminal-notifier) when available, falling back to `osascript`. We recommend installing `terminal-notifier` for reliable notification delivery:
+**macOS delivery:** OTTO uses [`terminal-notifier`](https://github.com/julienXX/terminal-notifier) when available, falling back to `osascript`. We recommend installing `terminal-notifier` for reliable notification delivery:
 
 ```bash
 brew install terminal-notifier
@@ -938,13 +938,13 @@ custom_instructions:
   - "Prefer functional patterns over classes"
 ```
 
-For project-specific knowledge, use the GSD knowledge and memory surfaces instead. `.gsd/KNOWLEDGE.md` is a hybrid projection: manually maintained Rules stay in the file, while generated Patterns and Lessons are backed by the `memories` table and rendered back into the file for review. Add durable operating rules with `/gsd knowledge rule <description>`; agent-discovered patterns and lessons are stored as memories and selected for prompt injection automatically.
+For project-specific knowledge, use the OTTO knowledge and memory surfaces instead. `.otto/workflow/KNOWLEDGE.md` is a hybrid projection: manually maintained Rules stay in the file, while generated Patterns and Lessons are backed by the `memories` table and rendered back into the file for review. Add durable operating rules with `/otto knowledge rule <description>`; agent-discovered patterns and lessons are stored as memories and selected for prompt injection automatically.
 
 ### `RUNTIME.md` — Runtime Context (v2.39)
 
-Declare project-level runtime context in `.gsd/RUNTIME.md`. This file is inlined into task execution prompts, giving the agent accurate information about your runtime environment without relying on hallucinated paths or URLs.
+Declare project-level runtime context in `.otto/workflow/RUNTIME.md`. This file is inlined into task execution prompts, giving the agent accurate information about your runtime environment without relying on hallucinated paths or URLs.
 
-**Location:** `.gsd/RUNTIME.md`
+**Location:** `.otto/workflow/RUNTIME.md`
 
 **Example:**
 
@@ -1006,7 +1006,7 @@ context_management:
 
 ### `service_tier` (v2.42)
 
-OpenAI service tier preference for supported models. Toggle with `/gsd fast`.
+OpenAI service tier preference for supported models. Toggle with `/otto fast`.
 
 | Value | Behavior |
 |-------|----------|
@@ -1020,7 +1020,7 @@ service_tier: priority
 
 ### `forensics_dedup` (v2.43)
 
-Opt-in: search existing issues and PRs before filing from `/gsd forensics`. Uses additional AI tokens.
+Opt-in: search existing issues and PRs before filing from `/otto forensics`. Uses additional AI tokens.
 
 ```yaml
 forensics_dedup: true    # default: false
@@ -1121,7 +1121,7 @@ notifications:
 auto_visualize: true
 
 # Service tier
-service_tier: priority         # "priority" or "flex" (for /gsd fast)
+service_tier: priority         # "priority" or "flex" (for /otto fast)
 
 # Diagnostics
 forensics_dedup: true          # deduplicate before filing forensics issues

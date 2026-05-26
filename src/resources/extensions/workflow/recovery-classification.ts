@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-015 Recovery Classification module for runtime failure taxonomy.
 
 import { classifyError, isTransient, type ErrorClass } from "./error-classifier.js";

@@ -55,7 +55,7 @@ function createTempRepo(): string {
   git(["init"], dir);
   git(["config", "user.email", "test@gsd.test"], dir);
   git(["config", "user.name", "Test"], dir);
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   writeFileSync(join(dir, "README.md"), "# test\n");
   git(["add", "."], dir);
   git(["commit", "-m", "init"], dir);
@@ -64,7 +64,7 @@ function createTempRepo(): string {
 }
 
 function seedMilestone(repoDir: string, milestoneId: string): void {
-  const msDir = join(repoDir, ".gsd", "milestones", milestoneId);
+  const msDir = join(repoDir, ".otto/workflow", "milestones", milestoneId);
   mkdirSync(msDir, { recursive: true });
   writeFileSync(join(msDir, "CONTEXT.md"), `# ${milestoneId} Context\n`);
   git(["add", "."], repoDir);

@@ -18,9 +18,9 @@ test(`blocked remediation warning uses /${CMD} dispatch reassess and hides inter
     },
     pi: {},
     s: {
-      basePath: "/tmp/gsd-test",
-      originalBasePath: "/tmp/gsd-test",
-      canonicalProjectRoot: "/tmp/gsd-test",
+      basePath: "/tmp/otto-test",
+      originalBasePath: "/tmp/otto-test",
+      canonicalProjectRoot: "/tmp/otto-test",
       resourceVersionOnStart: "test",
       currentMilestoneId: null,
       currentUnit: null,
@@ -46,7 +46,7 @@ test(`blocked remediation warning uses /${CMD} dispatch reassess and hides inter
           activeTask: null,
           recentDecisions: [],
           blockers: [
-            "Milestone M005 validation verdict is needs-remediation but all slices are complete. Add remediation slices via gsd_reassess_roadmap, or run `/gsd verdict pass --rationale \"...\"` to override.",
+            "Milestone M005 validation verdict is needs-remediation but all slices are complete. Add remediation slices via otto_reassess_roadmap, or run `/otto verdict pass --rationale \"...\"` to override.",
           ],
           nextAction: "Resolve M005 remediation before proceeding.",
           registry: [{ id: "M005", status: "active" }],
@@ -82,9 +82,9 @@ test(`blocked remediation warning uses /${CMD} dispatch reassess and hides inter
 
   const warning = notifications.find((n) => n.level === "warning")?.message ?? "";
   assert.match(warning, new RegExp(`/${CMD} dispatch reassess`));
-  assert.doesNotMatch(warning, /gsd_reassess_roadmap/);
+  assert.doesNotMatch(warning, /otto_reassess_roadmap/);
 
   const desktop = desktopMessages[0] ?? "";
   assert.match(desktop, new RegExp(`/${CMD} dispatch reassess`));
-  assert.doesNotMatch(desktop, /gsd_reassess_roadmap/);
+  assert.doesNotMatch(desktop, /otto_reassess_roadmap/);
 });

@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI } from "@otto/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 import type { ToolDeps } from "../state.js";
 import { getScreenshotFormatOverride, getScreenshotQualityDefault } from "../capture.js";

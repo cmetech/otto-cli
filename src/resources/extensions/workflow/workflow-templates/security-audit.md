@@ -5,7 +5,7 @@ name: security-audit
 version: 1
 mode: markdown-phase
 requires_project: false
-artifact_dir: .gsd/workflows/audits/
+artifact_dir: .otto/workflow/workflows/audits/
 </template_meta>
 
 <purpose>

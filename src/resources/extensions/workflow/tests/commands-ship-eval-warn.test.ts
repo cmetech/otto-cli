@@ -26,7 +26,7 @@ describe("checkSliceEvalReview", () => {
 
   beforeEach(() => {
     basePath = join(tmpdir(), `gsd-ship-eval-${randomUUID()}`);
-    sliceDir = join(basePath, ".gsd", "milestones", "M001", "slices", "S07");
+    sliceDir = join(basePath, ".otto/workflow", "milestones", "M001", "slices", "S07");
     mkdirSync(sliceDir, { recursive: true });
   });
 

@@ -20,7 +20,7 @@ function makeMockPi() {
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-journal-tool-test-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -64,16 +64,16 @@ async function executeToolWithContextRoot(tool: any, params: Record<string, unkn
 
 // ─── Registration ─────────────────────────────────────────────────────────────
 
-test("registerJournalTools registers gsd_journal_query tool", () => {
+test("registerJournalTools registers otto_journal_query tool", () => {
   const pi = makeMockPi();
   registerJournalTools(pi);
   assert.equal(pi.tools.length, 1, "Should register exactly one tool");
-  assert.equal(pi.tools[0].name, "gsd_journal_query");
+  assert.equal(pi.tools[0].name, "otto_journal_query");
 });
 
 // ─── Filtering ────────────────────────────────────────────────────────────────
 
-test("gsd_journal_query returns filtered entries", async () => {
+test("otto_journal_query returns filtered entries", async () => {
   const base = makeTmpBase();
   try {
     emitJournalEvent(base, makeEntry({ seq: 0, flowId: "flow-aaa", data: { unitId: "M001/S01/T01" } }));
@@ -99,7 +99,7 @@ test("gsd_journal_query returns filtered entries", async () => {
 
 // ─── Empty Results ────────────────────────────────────────────────────────────
 
-test("gsd_journal_query returns 'no entries' message for empty results", async () => {
+test("otto_journal_query returns 'no entries' message for empty results", async () => {
   const base = makeTmpBase();
   try {
     emitJournalEvent(base, makeEntry({ seq: 0, flowId: "flow-aaa" }));
@@ -117,7 +117,7 @@ test("gsd_journal_query returns 'no entries' message for empty results", async (
 
 // ─── Limit ────────────────────────────────────────────────────────────────────
 
-test("gsd_journal_query respects limit parameter", async () => {
+test("otto_journal_query respects limit parameter", async () => {
   const base = makeTmpBase();
   try {
     for (let i = 0; i < 5; i++) {
@@ -136,7 +136,7 @@ test("gsd_journal_query respects limit parameter", async () => {
   }
 });
 
-test("gsd_journal_query uses context cwd instead of process cwd", async () => {
+test("otto_journal_query uses context cwd instead of process cwd", async () => {
   const processBase = makeTmpBase();
   const contextBase = makeTmpBase();
   try {
@@ -160,7 +160,7 @@ test("gsd_journal_query uses context cwd instead of process cwd", async () => {
 
 // ─── Error Handling ───────────────────────────────────────────────────────────
 
-test("gsd_journal_query handles errors gracefully", async () => {
+test("otto_journal_query handles errors gracefully", async () => {
   const pi = makeMockPi();
   registerJournalTools(pi);
   const tool = pi.tools[0];

@@ -29,8 +29,8 @@ const VALIDATE_RULE = "validating-milestone → validate-milestone";
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-pipeline-variant-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S02", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S02", "tasks"), { recursive: true });
   return base;
 }
 
@@ -47,7 +47,7 @@ interface SeedOpts {
 }
 
 function seedMilestone(base: string, mid: string, opts: SeedOpts): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({
     id: mid,
     title: opts.title,
@@ -193,7 +193,7 @@ test("#4781 phase 2: parallel-research-slices rule skips dispatch for trivial va
   // analysis. Write a minimal one.
   const { writeFileSync } = await import("node:fs");
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     [
       "# M001",
       "## Slices",
@@ -217,11 +217,11 @@ test("#4781 phase 2: validate-milestone rule writes pass-through VALIDATION for 
   // findMissingSummaries checks slice SUMMARY files — write empty ones so
   // the safety guard doesn't stop first.
   const { writeFileSync } = await import("node:fs");
-  writeFileSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md"), "# S01\n");
-  writeFileSync(join(base, ".gsd", "milestones", "M001", "slices", "S02", "S02-SUMMARY.md"), "# S02\n");
+  writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md"), "# S01\n");
+  writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S02", "S02-SUMMARY.md"), "# S02\n");
   // Write a roadmap so findMissingSummaries can enumerate slice IDs.
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     [
       "# M001",
       "## Slices",
@@ -236,7 +236,7 @@ test("#4781 phase 2: validate-milestone rule writes pass-through VALIDATION for 
   assert.ok(result, "rule must return a result, not null");
   assert.strictEqual(result!.action, "skip", "trivial variant must return skip action");
 
-  const validationPath = join(base, ".gsd", "milestones", "M001", "M001-VALIDATION.md");
+  const validationPath = join(base, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md");
   assert.ok(existsSync(validationPath), "pass-through VALIDATION.md must be written");
 
   const { readFileSync } = await import("node:fs");
@@ -258,7 +258,7 @@ test("validate-milestone skip writes to project root when active worktree lacks 
 
   const { writeFileSync, readFileSync } = await import("node:fs");
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     [
       "# M001",
       "## Slices",
@@ -267,8 +267,8 @@ test("validate-milestone skip writes to project root when active worktree lacks 
     ].join("\n"),
   );
 
-  const worktree = join(base, ".gsd", "worktrees", "M001");
-  mkdirSync(join(worktree, ".gsd", "runtime"), { recursive: true });
+  const worktree = join(base, ".otto/workflow", "worktrees", "M001");
+  mkdirSync(join(worktree, ".otto/workflow", "runtime"), { recursive: true });
 
   const ctx = {
     ...makeCtx({ base: worktree, mid: "M001", phase: "validating-milestone" }),
@@ -283,11 +283,11 @@ test("validate-milestone skip writes to project root when active worktree lacks 
   assert.ok(result, "rule must return a result, not null");
   assert.strictEqual(result!.action, "skip", "trivial variant must still skip validation");
 
-  const validationPath = join(base, ".gsd", "milestones", "M001", "M001-VALIDATION.md");
+  const validationPath = join(base, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md");
   assert.ok(existsSync(validationPath), "pass-through VALIDATION.md must be written to the project root");
   assert.match(readFileSync(validationPath, "utf-8"), /skip_validation: true/);
 
-  const worktreeValidationPath = join(worktree, ".gsd", "milestones", "M001", "M001-VALIDATION.md");
+  const worktreeValidationPath = join(worktree, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md");
   assert.equal(existsSync(worktreeValidationPath), false, "missing worktree milestone projection must not receive a phantom validation");
 });
 
@@ -295,7 +295,7 @@ test("#4781 phase 2: validate-milestone skip path does not persist gates without
   const base = makeBase();
   t.after(() => cleanup(base));
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({
     id: "M001",
     title: TRIVIAL_INPUT.title,
@@ -320,7 +320,7 @@ test("#4781 phase 2: validate-milestone skip path does not persist gates without
 
   const { writeFileSync, readFileSync } = await import("node:fs");
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     [
       "# M001",
       "## Slices",
@@ -335,7 +335,7 @@ test("#4781 phase 2: validate-milestone skip path does not persist gates without
   assert.ok(result, "rule must return a result, not null");
   assert.strictEqual(result!.action, "skip", "trivial variant must still skip without slices");
 
-  const validationPath = join(base, ".gsd", "milestones", "M001", "M001-VALIDATION.md");
+  const validationPath = join(base, ".otto/workflow", "milestones", "M001", "M001-VALIDATION.md");
   const content = readFileSync(validationPath, "utf-8");
   assert.match(content, /skip_validation: true/);
 
@@ -353,10 +353,10 @@ test("#4781 phase 2: validate-milestone rule dispatches normally for standard va
 
   seedMilestone(base, "M001", STANDARD_INPUT);
   const { writeFileSync } = await import("node:fs");
-  writeFileSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md"), "# S01\n");
-  writeFileSync(join(base, ".gsd", "milestones", "M001", "slices", "S02", "S02-SUMMARY.md"), "# S02\n");
+  writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md"), "# S01\n");
+  writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S02", "S02-SUMMARY.md"), "# S02\n");
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     [
       "# M001",
       "## Slices",
@@ -385,7 +385,7 @@ test("#4781 phase 2: null variant (no milestone row) does NOT gate dispatch — 
   // which makes getMilestonePipelineVariant return null. Rules must NOT
   // short-circuit on null (silent downshift is the hazard we're guarding
   // against).
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 
   const ctx = makeCtx({
     base,

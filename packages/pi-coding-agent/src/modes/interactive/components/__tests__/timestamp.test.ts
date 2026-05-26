@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Timestamp formatting regression tests for transcript metadata.
 
 import { test, describe } from "node:test";

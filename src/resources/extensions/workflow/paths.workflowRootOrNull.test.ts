@@ -9,10 +9,10 @@ function tmpScratch(): string {
   return mkdtempSync(join(tmpdir(), "otto-wf-root-null-"));
 }
 
-test("returns null for cwd in $HOME when no .gsd/ or .otto/workflow/ exists", () => {
+test("returns null for cwd in $HOME when no .otto/workflow/ exists", () => {
   _clearWorkflowRootCache();
   const home = homedir();
-  const hasMarker = existsSync(join(home, ".gsd")) || existsSync(join(home, ".otto", "workflow"));
+  const hasMarker = existsSync(join(home, ".otto", "workflow"));
   if (hasMarker) return;
   assert.equal(workflowRootOrNull(home), null);
 });
@@ -27,14 +27,12 @@ test("returns null in a fresh tmpdir with no project markers", () => {
   }
 });
 
-test("returns path when .gsd/ exists in cwd", () => {
+test("ignores .otto/workflow/ when no .otto/workflow/ exists", () => {
   _clearWorkflowRootCache();
   const dir = tmpScratch();
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   try {
-    const result = workflowRootOrNull(dir);
-    assert.ok(result, "should return a path, not null");
-    assert.match(result, /\.gsd$/, "should end with .gsd");
+    assert.equal(workflowRootOrNull(dir), null);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -53,10 +51,10 @@ test("returns path when .otto/workflow/ exists in cwd", () => {
   }
 });
 
-test("prefers .otto/workflow/ when both exist", () => {
+test("returns .otto/workflow/ even when stale .otto/workflow/ also exists", () => {
   _clearWorkflowRootCache();
   const dir = tmpScratch();
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   mkdirSync(join(dir, ".otto", "workflow"), { recursive: true });
   try {
     const result = workflowRootOrNull(dir);

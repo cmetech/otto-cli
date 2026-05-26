@@ -63,7 +63,7 @@ console.log('\n=== prompt-db: scoped decisions from DB ===');
   assert.match(formatted, /\| # \| When \| Scope/, 'formatted decisions have table header');
 
   // Verify the expected wrapper format that inlineDecisionsFromDb would produce
-  const wrapped = `### Decisions\nSource: \`.gsd/DECISIONS.md\`\n\n${formatted}`;
+  const wrapped = `### Decisions\nSource: \`.otto\/workflow/DECISIONS.md\`\n\n${formatted}`;
   assert.match(wrapped, /^### Decisions/, 'wrapped decisions start with ### Decisions');
   assert.match(wrapped, /Source:.*DECISIONS\.md/, 'wrapped decisions have source path');
 
@@ -116,7 +116,7 @@ console.log('\n=== prompt-db: scoped requirements from DB ===');
   assert.doesNotMatch(formatted, /### R003/, 'formatted requirements exclude R003');
 
   // Verify the expected wrapper format that inlineRequirementsFromDb would produce
-  const wrapped = `### Requirements\nSource: \`.gsd/REQUIREMENTS.md\`\n\n${formatted}`;
+  const wrapped = `### Requirements\nSource: \`.otto\/workflow/REQUIREMENTS.md\`\n\n${formatted}`;
   assert.match(wrapped, /^### Requirements/, 'wrapped requirements start with ### Requirements');
   assert.match(wrapped, /Source:.*REQUIREMENTS\.md/, 'wrapped requirements have source path');
 
@@ -144,7 +144,7 @@ console.log('\n=== prompt-db: project content from DB ===');
   assert.deepStrictEqual(content, '# Test Project\n\nThis is the project description.', 'queryProject returns content');
 
   // Verify the expected wrapper format that inlineProjectFromDb would produce
-  const wrapped = `### Project\nSource: \`.gsd/PROJECT.md\`\n\n${content}`;
+  const wrapped = `### Project\nSource: \`.otto\/workflow/PROJECT.md\`\n\n${content}`;
   assert.match(wrapped, /^### Project/, 'wrapped project starts with ### Project');
   assert.match(wrapped, /Source:.*PROJECT\.md/, 'wrapped project has source path');
   assert.match(wrapped, /# Test Project/, 'wrapped project includes content');
@@ -293,21 +293,21 @@ console.log('\n=== prompt-db: DB helpers wrapper format matches expected pattern
   const decisions = queryDecisions({ milestoneId: 'M001' });
   assert.ok(decisions.length === 1, 'got 1 decision for M001');
   const dFormatted = formatDecisionsForPrompt(decisions);
-  const dWrapped = `### Decisions\nSource: \`.gsd/DECISIONS.md\`\n\n${dFormatted}`;
-  assert.match(dWrapped, /^### Decisions\nSource: `.gsd\/DECISIONS\.md`\n\n\| #/, 'decisions wrapper format correct');
+  const dWrapped = `### Decisions\nSource: \`.otto/workflow/DECISIONS.md\`\n\n${dFormatted}`;
+  assert.match(dWrapped, /^### Decisions\nSource: `.otto\/workflow\/DECISIONS\.md`\n\n\| #/, 'decisions wrapper format correct');
 
   // Simulate what inlineRequirementsFromDb does
   const reqs = queryRequirements({ sliceId: 'S01' });
   assert.ok(reqs.length === 1, 'got 1 requirement for S01');
   const rFormatted = formatRequirementsForPrompt(reqs);
-  const rWrapped = `### Requirements\nSource: \`.gsd/REQUIREMENTS.md\`\n\n${rFormatted}`;
-  assert.match(rWrapped, /^### Requirements\nSource: `.gsd\/REQUIREMENTS\.md`\n\n### R001/, 'requirements wrapper format correct');
+  const rWrapped = `### Requirements\nSource: \`.otto/workflow/REQUIREMENTS.md\`\n\n${rFormatted}`;
+  assert.match(rWrapped, /^### Requirements\nSource: `.otto\/workflow\/REQUIREMENTS\.md`\n\n### R001/, 'requirements wrapper format correct');
 
   // Simulate what inlineProjectFromDb does
   const project = queryProject();
   assert.ok(project !== null, 'project content exists');
-  const pWrapped = `### Project\nSource: \`.gsd/PROJECT.md\`\n\n${project}`;
-  assert.match(pWrapped, /^### Project\nSource: `.gsd\/PROJECT\.md`\n\n# Project Name/, 'project wrapper format correct');
+  const pWrapped = `### Project\nSource: \`.otto/workflow/PROJECT.md\`\n\n${project}`;
+  assert.match(pWrapped, /^### Project\nSource: `.otto\/workflow\/PROJECT\.md`\n\n# Project Name/, 'project wrapper format correct');
 
   closeDatabase();
 }
@@ -324,9 +324,9 @@ import { migrateFromMarkdown } from '../md-importer.ts';
 
 describe('prompt-db', () => {
 test('prompt-db: re-import updates DB when source markdown changes', () => {
-  // Create a temp dir simulating a project with .gsd/DECISIONS.md
+  // Create a temp dir simulating a project with .otto\/workflow/DECISIONS.md
   const tmpDir = mkdtempSync(join(tmpdir(), 'prompt-db-reimport-'));
-  const workflowDir = join(tmpDir, '.gsd');
+  const workflowDir = join(tmpDir, '.otto\/workflow');
   mkdirSync(workflowDir, { recursive: true });
 
   // Write initial DECISIONS.md with 2 decisions

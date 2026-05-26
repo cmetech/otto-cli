@@ -1,4 +1,4 @@
-// LOOP24 doctor report types
+// OTTO doctor report types
 export type DoctorSeverity = "info" | "warning" | "error";
 export type DoctorIssueCode =
   | "invalid_preferences"
@@ -120,7 +120,7 @@ export interface DoctorReport {
   basePath: string;
   issues: DoctorIssue[];
   fixesApplied: string[];
-  /** Per-domain check durations in milliseconds. Present on explicit /loop24 doctor runs. */
+  /** Per-domain check durations in milliseconds. Present on explicit /otto doctor runs. */
   timing?: { git: number; runtime: number; environment: number; workflowState: number };
 }
 

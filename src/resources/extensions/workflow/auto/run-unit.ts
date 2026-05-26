@@ -1,4 +1,4 @@
-// LOOP24 + src/resources/extensions/workflow/auto/run-unit.ts - Runs one auto-mode unit from session creation through agent completion.
+// OTTO + src/resources/extensions/workflow/auto/run-unit.ts - Runs one auto-mode unit from session creation through agent completion.
 
 /**
  * auto/run-unit.ts — Single unit execution: session create → prompt → await agent_end.
@@ -6,7 +6,7 @@
  * Imports from: auto/types, auto/resolve
  */
 
-import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@otto/pi-coding-agent";
 
 import type { AutoSession } from "./session.js";
 import { NEW_SESSION_TIMEOUT_MS } from "./session.js";

@@ -27,8 +27,8 @@ const fakeTheme = {
 function getSaveGateResultTool() {
   const pi = makeMockPi();
   registerDbTools(pi);
-  const tool = pi.tools.find((t: any) => t.name === 'gsd_save_gate_result');
-  assert.ok(tool, 'gsd_save_gate_result should be registered');
+  const tool = pi.tools.find((t: any) => t.name === 'otto_save_gate_result');
+  assert.ok(tool, 'otto_save_gate_result should be registered');
   return tool;
 }
 

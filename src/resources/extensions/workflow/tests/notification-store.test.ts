@@ -1,4 +1,4 @@
-// GSD Extension — Notification Store Tests
+// OTTO Extension — Notification Store Tests
 
 import { describe, test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
@@ -26,7 +26,7 @@ describe("notification-store", () => {
 
   beforeEach(() => {
     tmp = mkdtempSync(join(tmpdir(), "gsd-notif-test-"));
-    mkdirSync(join(tmp, ".gsd"), { recursive: true });
+    mkdirSync(join(tmp, ".otto/workflow"), { recursive: true });
     _resetNotificationStore();
   });
 
@@ -39,7 +39,7 @@ describe("notification-store", () => {
     initNotificationStore(tmp);
     appendNotification("test message", "info");
 
-    const filePath = join(tmp, ".gsd", "notifications.jsonl");
+    const filePath = join(tmp, ".otto/workflow", "notifications.jsonl");
     assert.ok(existsSync(filePath));
 
     const content = readFileSync(filePath, "utf-8").trim();
@@ -222,7 +222,7 @@ describe("notification-store", () => {
 
   test("reinit switches to new project path", () => {
     const tmp2 = mkdtempSync(join(tmpdir(), "gsd-notif-test2-"));
-    mkdirSync(join(tmp2, ".gsd"), { recursive: true });
+    mkdirSync(join(tmp2, ".otto/workflow"), { recursive: true });
 
     initNotificationStore(tmp);
     appendNotification("project1", "info");
@@ -245,7 +245,7 @@ describe("notification-store", () => {
   });
 
   test("session notification base resolves auto-worktree paths to project root", () => {
-    const worktreePath = join(tmp, ".gsd", "worktrees", "M001");
+    const worktreePath = join(tmp, ".otto/workflow", "worktrees", "M001");
     mkdirSync(worktreePath, { recursive: true });
 
     assert.equal(resolveNotificationStoreBasePath(worktreePath), tmp);
@@ -278,7 +278,7 @@ describe("notification-store", () => {
     appendNotification("msg1", "info");
 
     // Simulate another process holding the lock
-    const lockPath = join(tmp, ".gsd", "notifications.lock");
+    const lockPath = join(tmp, ".otto/workflow", "notifications.lock");
     writeFileSync(lockPath, String(Date.now()), "utf-8");
 
     // markAllRead should still work (best-effort) but not delete the foreign lock
@@ -295,7 +295,7 @@ describe("notification-store", () => {
     appendNotification("msg1", "info");
 
     // Simulate another process holding the lock
-    const lockPath = join(tmp, ".gsd", "notifications.lock");
+    const lockPath = join(tmp, ".otto/workflow", "notifications.lock");
     writeFileSync(lockPath, String(Date.now()), "utf-8");
 
     // clearNotifications should still work but not delete the foreign lock

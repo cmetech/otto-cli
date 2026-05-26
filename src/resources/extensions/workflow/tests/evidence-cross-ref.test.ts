@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for verification evidence cross-reference mismatch policy.
 
 import test from "node:test";

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-015 Tool Contract module for Unit prompt, policy, and tool parity.
 
 import {
@@ -40,7 +40,7 @@ export function compileUnitToolContract(unitType: string): ToolContractResult {
 
   const requiredWorkflowTools = getRequiredWorkflowToolsForAutoUnit(unitType);
   const closeoutTools = requiredWorkflowTools.filter((tool) =>
-    /^gsd_(?:task|slice|milestone|complete|validate|save|summary)/.test(tool),
+    /^otto_(?:task|slice|milestone|complete|validate|save|summary)/.test(tool),
   );
 
   if (requiresCloseoutTool(unitType) && closeoutTools.length === 0) {

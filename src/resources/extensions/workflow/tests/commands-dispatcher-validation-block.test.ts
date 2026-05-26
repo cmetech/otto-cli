@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Dispatcher regression tests for validation-blocked milestones.
 
 import test from "node:test";
@@ -32,7 +32,7 @@ interface SentMessage {
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), `gsd-dispatch-block-${randomUUID()}-`));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -83,7 +83,7 @@ function makeMockPi(): { pi: any; messages: SentMessage[] } {
 }
 
 function seedValidationBlockedMilestone(base: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M006", title: "Mark All Complete", status: "active" });
   insertSlice({
     id: "S01",
@@ -103,7 +103,7 @@ function seedValidationBlockedMilestone(base: string): void {
   invalidateStateCache();
 }
 
-test("dispatcher blocks bare /gsd while milestone validation needs attention", async () => {
+test("dispatcher blocks bare /otto while milestone validation needs attention", async () => {
   const base = makeBase();
   try {
     seedValidationBlockedMilestone(base);
@@ -116,9 +116,9 @@ test("dispatcher blocks bare /gsd while milestone validation needs attention", a
     assert.equal(messages.length, 1);
     assert.equal(messages[0].customType, "gsd-command-block");
     assert.equal(messages[0].display, true);
-    assert.match(messages[0].content, /\/gsd cannot run/);
-    assert.match(messages[0].content, /\/gsd validate-milestone/);
-    assert.match(messages[0].content, /\/gsd verdict pass --rationale/);
+    assert.match(messages[0].content, /\/otto cannot run/);
+    assert.match(messages[0].content, /\/otto validate-milestone/);
+    assert.match(messages[0].content, /\/otto verdict pass --rationale/);
     assert.ok(widgets.some(([key, value]) => key === "gsd-outcome" && value === undefined));
     assert.ok(widgets.some(([key, value]) => key === "gsd-progress" && value === undefined));
     assert.ok(statuses.some(([key, value]) => key === "gsd-step" && value === undefined));
@@ -150,7 +150,7 @@ test("dispatcher blocks workflow-advancing aliases while validation is blocked",
       assert.equal(calls.length, 0, command);
       assert.equal(messages.length, 1, command);
       assert.equal(messages[0].display, true, command);
-      assert.match(messages[0].content, new RegExp(`/gsd ${command.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} cannot run`), command);
+      assert.match(messages[0].content, new RegExp(`/otto ${command.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} cannot run`), command);
     } finally {
       closeDatabase();
       invalidateStateCache();

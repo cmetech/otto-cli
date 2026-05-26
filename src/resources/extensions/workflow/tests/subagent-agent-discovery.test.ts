@@ -12,7 +12,7 @@ function makeProjectRoot(t: test.TestContext): string {
 	return root;
 }
 
-function writeAgent(root: string, configDirName: ".gsd" | ".pi", name = "ping"): string {
+function writeAgent(root: string, configDirName: ".otto/workflow" | ".pi", name = "ping"): string {
 	const agentsDir = join(root, configDirName, "agents");
 	mkdirSync(agentsDir, { recursive: true });
 	writeFileSync(
@@ -22,9 +22,9 @@ function writeAgent(root: string, configDirName: ".gsd" | ".pi", name = "ping"):
 	return agentsDir;
 }
 
-test("discoverAgents finds project agents in .gsd/agents", (t) => {
+test("discoverAgents finds project agents in .otto/workflow/agents", (t) => {
 	const root = makeProjectRoot(t);
-	const agentsDir = writeAgent(root, ".gsd");
+	const agentsDir = writeAgent(root, ".otto/workflow");
 
 	const discovery = discoverAgents(root, "project");
 
@@ -45,7 +45,7 @@ test("discoverAgents falls back to legacy .pi/agents when needed", (t) => {
 
 test("discoverAgents accepts tools frontmatter as a YAML list", (t) => {
 	const root = makeProjectRoot(t);
-	const agentsDir = join(root, ".gsd", "agents");
+	const agentsDir = join(root, ".otto/workflow", "agents");
 	mkdirSync(agentsDir, { recursive: true });
 	writeFileSync(
 		join(agentsDir, "reviewer.md"),
@@ -70,7 +70,7 @@ test("discoverAgents accepts tools frontmatter as a YAML list", (t) => {
 
 test("discoverAgents still accepts comma-separated tools frontmatter", (t) => {
 	const root = makeProjectRoot(t);
-	const agentsDir = join(root, ".gsd", "agents");
+	const agentsDir = join(root, ".otto/workflow", "agents");
 	mkdirSync(agentsDir, { recursive: true });
 	writeFileSync(
 		join(agentsDir, "reviewer.md"),

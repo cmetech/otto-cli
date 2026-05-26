@@ -6,8 +6,8 @@
 Tools can provide `renderCall` (how the tool call looks) and `renderResult` (how the result looks):
 
 ```typescript
-import { Text } from "@loop24/pi-tui";
-import { keyHint } from "@loop24/pi-coding-agent";
+import { Text } from "@otto/pi-tui";
+import { keyHint } from "@otto/pi-coding-agent";
 
 pi.registerTool({
   name: "my_tool",
@@ -43,7 +43,7 @@ pi.registerTool({
 Register a renderer for custom message types:
 
 ```typescript
-import { Text } from "@loop24/pi-tui";
+import { Text } from "@otto/pi-tui";
 
 pi.registerMessageRenderer("my-extension", (message, options, theme) => {
   const { expanded } = options;
@@ -88,7 +88,7 @@ theme.strikethrough(text)
 ### Syntax Highlighting in Renderers
 
 ```typescript
-import { highlightCode, getLanguageFromPath } from "@loop24/pi-coding-agent";
+import { highlightCode, getLanguageFromPath } from "@otto/pi-coding-agent";
 
 const lang = getLanguageFromPath("/path/to/file.rs");  // "rust"
 const highlighted = highlightCode(code, lang, theme);

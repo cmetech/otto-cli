@@ -1,6 +1,6 @@
 # Provider Setup Guide
 
-Step-by-step setup instructions for every LLM provider GSD supports. If you ran the onboarding wizard (`gsd config`) and picked a provider, you may already be configured — check with `/model` inside a session.
+Step-by-step setup instructions for every LLM provider OTTO supports. If you ran the onboarding wizard (`otto config`) and picked a provider, you may already be configured — check with `/model` inside a session.
 
 ## Table of Contents
 
@@ -49,7 +49,7 @@ Step-by-step setup instructions for every LLM provider GSD supports. If you ran 
 
 ## Built-in Providers
 
-Built-in providers have models pre-registered in GSD. You only need to supply credentials.
+Built-in providers have models pre-registered in OTTO. You only need to supply credentials.
 
 ### Anthropic (Claude)
 
@@ -61,83 +61,83 @@ Built-in providers have models pre-registered in GSD. You only need to supply cr
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-Or run `gsd config` and paste your key when prompted.
+Or run `otto config` and paste your key when prompted.
 
 **Get a key:** [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys)
 
 **Option B — Claude Code CLI:**
 
-If you have a Claude Pro or Max subscription, you can authenticate through Anthropic's official Claude Code CLI. Install it, sign in with `claude`, then GSD will detect and route through it automatically:
+If you have a Claude Pro or Max subscription, you can authenticate through Anthropic's official Claude Code CLI. Install it, sign in with `claude`, then OTTO will detect and route through it automatically:
 
 ```bash
 # Install Claude Code CLI (see https://docs.anthropic.com/en/docs/claude-code)
 claude
-# Sign in when prompted, then start GSD
-gsd
+# Sign in when prompted, then start OTTO
+otto
 ```
 
-GSD detects your local Claude Code installation and uses it as the authenticated Anthropic surface. This is the TOS-compliant path for subscription users — GSD never handles your subscription credentials directly.
+OTTO detects your local Claude Code installation and uses it as the authenticated Anthropic surface. This is the TOS-compliant path for subscription users — OTTO never handles your subscription credentials directly.
 
-> **Note:** GSD does not support browser-based OAuth sign-in for Anthropic. Use an API key or the Claude Code CLI instead.
+> **Note:** OTTO does not support browser-based OAuth sign-in for Anthropic. Use an API key or the Claude Code CLI instead.
 
-**Option C — Use your Claude Pro/Max plan with GSD inside Claude Code:**
+**Option C — Use your Claude Pro/Max plan with OTTO inside Claude Code:**
 
-If you already have a Claude Pro or Max subscription and want to use GSD's planning, execution, and milestone orchestration directly from Claude Code — without switching to a separate terminal — you can connect GSD as an MCP server. This gives Claude Code access to GSD's full workflow toolset via the [Model Context Protocol](https://modelcontextprotocol.io), so you get GSD's structured project management powered by your existing Claude plan.
+If you already have a Claude Pro or Max subscription and want to use OTTO's planning, execution, and milestone orchestration directly from Claude Code — without switching to a separate terminal — you can connect OTTO as an MCP server. This gives Claude Code access to OTTO's full workflow toolset via the [Model Context Protocol](https://modelcontextprotocol.io), so you get OTTO's structured project management powered by your existing Claude plan.
 
 **Automatic setup (recommended):**
 
-When GSD detects a Claude Code model during startup, it automatically writes a `.mcp.json` file in your project root with the GSD workflow MCP server configured. No manual steps needed — just start GSD once with Claude Code as the provider and the config is created for you.
+When OTTO detects a Claude Code model during startup, it automatically writes a `.mcp.json` file in your project root with the OTTO workflow MCP server configured. No manual steps needed — just start OTTO once with Claude Code as the provider and the config is created for you.
 
-You can also trigger this manually from inside a GSD session:
+You can also trigger this manually from inside a OTTO session:
 
 ```bash
-/gsd mcp init
+/otto mcp init
 ```
 
-This writes (or updates) the `gsd-workflow` entry in your project's `.mcp.json`. Claude Code discovers this file automatically on its next session start.
+This writes (or updates) the `otto-workflow` entry in your project's `.mcp.json`. Claude Code discovers this file automatically on its next session start.
 
 **Manual setup:**
 
-If you prefer to configure it yourself, add GSD to your project's `.mcp.json`:
+If you prefer to configure it yourself, add OTTO to your project's `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
-    "gsd": {
+    "otto": {
       "command": "npx",
-      "args": ["gsd-mcp-server"],
+      "args": ["otto-mcp-server"],
       "env": {
-        "GSD_CLI_PATH": "/path/to/gsd"
+        "OTTO_CLI_PATH": "/path/to/otto"
       }
     }
   }
 }
 ```
 
-Or if `gsd-mcp-server` is installed globally:
+Or if `otto-mcp-server` is installed globally:
 
 ```json
 {
   "mcpServers": {
-    "gsd": {
-      "command": "gsd-mcp-server"
+    "otto": {
+      "command": "otto-mcp-server"
     }
   }
 }
 ```
 
-You can also add this to `~/.claude/settings.json` under `mcpServers` to make GSD available across all projects.
+You can also add this to `~/.claude/settings.json` under `mcpServers` to make OTTO available across all projects.
 
 **What's exposed:**
 
-The MCP server provides GSD's full workflow tool surface — milestone planning, task completion, slice management, roadmap reassessment, journal queries, and more. Session management tools (`gsd_execute`, `gsd_status`, `gsd_result`, `gsd_cancel`) let Claude Code start and monitor GSD auto-mode sessions. See [Commands → MCP Server Mode](./commands.md#mcp-server-mode) for the full tool list.
+The MCP server provides OTTO's full workflow tool surface — milestone planning, task completion, slice management, roadmap reassessment, journal queries, and more. Session management tools (`otto_execute`, `otto_status`, `otto_result`, `otto_cancel`) let Claude Code start and monitor OTTO auto-mode sessions. See [Commands → MCP Server Mode](./commands.md#mcp-server-mode) for the full tool list.
 
 **Verify the connection:**
 
-From inside a GSD session, check that the MCP server is reachable:
+From inside a OTTO session, check that the MCP server is reachable:
 
 ```bash
-/gsd mcp status
+/otto mcp status
 ```
 
 ### OpenAI
@@ -146,7 +146,7 @@ From inside a GSD session, check that the MCP server is reachable:
 export OPENAI_API_KEY="sk-..."
 ```
 
-Or run `gsd config` and choose "Paste an API key" then "OpenAI".
+Or run `otto config` and choose "Paste an API key" then "OpenAI".
 
 **Get a key:** [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 
@@ -172,15 +172,15 @@ Go to [openrouter.ai/keys](https://openrouter.ai/keys) and create a key.
 export OPENROUTER_API_KEY="sk-or-..."
 ```
 
-Or run `gsd config`, choose "Paste an API key", then "OpenRouter".
+Or run `otto config`, choose "Paste an API key", then "OpenRouter".
 
 **Step 3 — Switch to an OpenRouter model:**
 
-Inside a GSD session, type `/model` and select an OpenRouter model. Models are prefixed with `openrouter/` (e.g., `openrouter/anthropic/claude-sonnet-4`).
+Inside a OTTO session, type `/model` and select an OpenRouter model. Models are prefixed with `openrouter/` (e.g., `openrouter/anthropic/claude-sonnet-4`).
 
 **Optional — Add custom OpenRouter models via `models.json`:**
 
-If you want models not in the built-in list, add them to `~/.gsd/agent/models.json`:
+If you want models not in the built-in list, add them to `~/.otto/agent/models.json`:
 
 ```json
 {
@@ -205,7 +205,7 @@ If you want models not in the built-in list, add them to `~/.gsd/agent/models.js
 }
 ```
 
-Note: the `apiKey` field here is the *name* of the environment variable, not the literal key. GSD resolves it automatically. You can also use a literal value or a shell command (see [Value Resolution](./custom-models.md#value-resolution)).
+Note: the `apiKey` field here is the *name* of the environment variable, not the literal key. OTTO resolves it automatically. You can also use a literal value or a shell command (see [Value Resolution](./custom-models.md#value-resolution)).
 
 **Optional — Route through specific providers:**
 
@@ -258,7 +258,7 @@ export MISTRAL_API_KEY="..."
 Uses OAuth — sign in through the browser:
 
 ```bash
-gsd config
+otto config
 # Choose "Sign in with your browser" → "GitHub Copilot"
 ```
 
@@ -304,9 +304,9 @@ export AZURE_OPENAI_API_KEY="..."
 
 ## Local Providers
 
-Local providers run on your machine. They require a `models.json` configuration file because GSD needs to know the endpoint URL and which models are available.
+Local providers run on your machine. They require a `models.json` configuration file because OTTO needs to know the endpoint URL and which models are available.
 
-**Config file location:** `~/.gsd/agent/models.json`
+**Config file location:** `~/.otto/agent/models.json`
 
 The file reloads each time you open `/model` — no restart needed.
 
@@ -329,7 +329,7 @@ ollama pull llama3.1:8b
 ollama pull qwen2.5-coder:7b
 ```
 
-**Step 3 — Create `~/.gsd/agent/models.json`:**
+**Step 3 — Create `~/.otto/agent/models.json`:**
 
 ```json
 {
@@ -355,7 +355,7 @@ The `apiKey` is required by the config schema but Ollama ignores it — any valu
 
 **Step 4 — Select the model:**
 
-Inside GSD, type `/model` and pick your Ollama model.
+Inside OTTO, type `/model` and pick your Ollama model.
 
 **Ollama tips:**
 - Ollama does not support the `developer` role or `reasoning_effort` — always set `compat.supportsDeveloperRole: false` and `compat.supportsReasoningEffort: false`.
@@ -372,7 +372,7 @@ Download from [lmstudio.ai](https://lmstudio.ai).
 
 In LM Studio, go to the "Local Server" tab, load a model, and click "Start Server". The default port is 1234.
 
-**Step 3 — Create `~/.gsd/agent/models.json`:**
+**Step 3 — Create `~/.otto/agent/models.json`:**
 
 ```json
 {
@@ -460,17 +460,17 @@ The model `id` must match the `--model` flag you passed to `vllm serve`.
 
 ## Custom OpenAI-Compatible Endpoints
 
-Any server that implements the OpenAI Chat Completions API can work with GSD. This covers proxies (LiteLLM, Portkey, Helicone), self-hosted inference, and new providers.
+Any server that implements the OpenAI Chat Completions API can work with OTTO. This covers proxies (LiteLLM, Portkey, Helicone), self-hosted inference, and new providers.
 
 **Quickest path — use the onboarding wizard:**
 
 ```bash
-gsd config
+otto config
 # Choose "Paste an API key" → "Custom (OpenAI-compatible)"
 # Enter: base URL, API key, model ID
 ```
 
-This writes `~/.gsd/agent/models.json` for you automatically.
+This writes `~/.otto/agent/models.json` for you automatically.
 
 **Manual setup:**
 
@@ -538,19 +538,19 @@ For the full reference on `compat` fields, `modelOverrides`, value resolution, a
 
 ### "Authentication failed" with a valid key
 
-**Cause:** The key is set in your shell but not visible to GSD.
+**Cause:** The key is set in your shell but not visible to OTTO.
 
-**Fix:** Make sure the environment variable is exported in the same terminal where you run `gsd`. Or use `gsd config` to save the key to `~/.gsd/agent/auth.json` so it persists across sessions.
+**Fix:** Make sure the environment variable is exported in the same terminal where you run `otto`. Or use `otto config` to save the key to `~/.otto/agent/auth.json` so it persists across sessions.
 
 ### OpenRouter models not appearing in `/model`
 
-**Cause:** No `OPENROUTER_API_KEY` set, so GSD hides OpenRouter models.
+**Cause:** No `OPENROUTER_API_KEY` set, so OTTO hides OpenRouter models.
 
-**Fix:** Set the key and restart GSD:
+**Fix:** Set the key and restart OTTO:
 
 ```bash
 export OPENROUTER_API_KEY="sk-or-..."
-gsd
+otto
 ```
 
 ### Ollama returns empty responses
@@ -577,7 +577,7 @@ ollama pull llama3.1:8b
 
 **Cause:** Most local inference servers don't support the OpenAI `developer` message role.
 
-**Fix:** Add `compat.supportsDeveloperRole: false` to the provider config. This makes GSD send `system` messages instead:
+**Fix:** Add `compat.supportsDeveloperRole: false` to the provider config. This makes OTTO send `system` messages instead:
 
 ```json
 {
@@ -614,7 +614,7 @@ ollama pull llama3.1:8b
 
 ### Cost shows $0.00 for custom models
 
-**Expected behavior.** GSD defaults cost to zero for custom models. Override with the `cost` field if you want accurate cost tracking:
+**Expected behavior.** OTTO defaults cost to zero for custom models. Override with the `cost` field if you want accurate cost tracking:
 
 ```json
 "cost": { "input": 0.15, "output": 0.60, "cacheRead": 0.015, "cacheWrite": 0.19 }
@@ -628,9 +628,9 @@ Values are per million tokens.
 
 After configuring a provider:
 
-1. **Launch GSD:**
+1. **Launch OTTO:**
    ```bash
-   gsd
+   otto
    ```
 
 2. **Check available models:**
@@ -647,7 +647,7 @@ After configuring a provider:
 
 If the model doesn't appear, check:
 - The environment variable is set in the current shell
-- `models.json` is valid JSON (use `cat ~/.gsd/agent/models.json | python3 -m json.tool`)
+- `models.json` is valid JSON (use `cat ~/.otto/agent/models.json | python3 -m json.tool`)
 - The server is running (for local providers)
 
-For additional help, see [Troubleshooting](./troubleshooting.md) or run `/gsd doctor` inside a session.
+For additional help, see [Troubleshooting](./troubleshooting.md) or run `/otto doctor` inside a session.

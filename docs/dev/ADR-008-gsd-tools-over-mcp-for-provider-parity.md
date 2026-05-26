@@ -1,4 +1,4 @@
-# ADR-008: Expose GSD Workflow Tools Over MCP for Provider Parity
+# ADR-008: Expose OTTO Workflow Tools Over MCP for Provider Parity
 
 **Status:** Accepted (implemented)
 **Date:** 2026-04-09
@@ -21,7 +21,7 @@ Validation criterion #3 ("MCP-invoked workflow tools produce the same DB updates
 
 ## Context
 
-GSD currently has two different tool surfaces:
+OTTO currently has two different tool surfaces:
 
 1. **In-process extension tools** registered directly into the runtime via `pi.registerTool(...)`.
 2. **An external MCP server** that exposes session orchestration and read-only project inspection.
@@ -30,36 +30,36 @@ This split is now creating a real provider compatibility problem.
 
 ### What exists today
 
-The core GSD workflow tools are internal extension tools. Examples include:
+The core OTTO workflow tools are internal extension tools. Examples include:
 
-- `gsd_summary_save`
-- `gsd_plan_milestone`
-- `gsd_plan_slice`
-- `gsd_plan_task`
-- `gsd_task_complete` / `gsd_complete_task`
-- `gsd_slice_complete`
-- `gsd_complete_milestone`
-- `gsd_validate_milestone`
-- `gsd_replan_slice`
-- `gsd_reassess_roadmap`
+- `otto_summary_save`
+- `otto_plan_milestone`
+- `otto_plan_slice`
+- `otto_plan_task`
+- `otto_task_complete` / `otto_complete_task`
+- `otto_slice_complete`
+- `otto_complete_milestone`
+- `otto_validate_milestone`
+- `otto_replan_slice`
+- `otto_reassess_roadmap`
 
-These are registered in `src/resources/extensions/workflow/bootstrap/db-tools.ts` and related bootstrap files. GSD prompts assume these tools are available during discuss, plan, and execute flows.
+These are registered in `src/resources/extensions/workflow/bootstrap/db-tools.ts` and related bootstrap files. OTTO prompts assume these tools are available during discuss, plan, and execute flows.
 
 Separately, `packages/mcp-server/src/server.ts` exposes a different tool surface:
 
-- session control: `gsd_execute`, `gsd_status`, `gsd_result`, `gsd_cancel`, `gsd_query`, `gsd_resolve_blocker`
-- read-only inspection: `gsd_progress`, `gsd_roadmap`, `gsd_history`, `gsd_doctor`, `gsd_captures`, `gsd_knowledge`
+- session control: `otto_execute`, `otto_status`, `otto_result`, `otto_cancel`, `otto_query`, `otto_resolve_blocker`
+- read-only inspection: `otto_progress`, `otto_roadmap`, `otto_history`, `otto_doctor`, `otto_captures`, `otto_knowledge`
 
 That MCP server is useful, but it is **not** a transport for the internal workflow/mutation tools.
 
 ### The current failure mode
 
-The Claude Code CLI provider uses the Anthropic Agent SDK through `src/resources/extensions/claude-code-cli/stream-adapter.ts`. That adapter starts a Claude SDK session, but it does not forward the internal GSD tool registry into the SDK session, nor does it attach a GSD MCP server for those tools.
+The Claude Code CLI provider uses the Anthropic Agent SDK through `src/resources/extensions/claude-code-cli/stream-adapter.ts`. That adapter starts a Claude SDK session, but it does not forward the internal OTTO tool registry into the SDK session, nor does it attach a OTTO MCP server for those tools.
 
 As a result:
 
-- prompts tell the model to call tools like `gsd_complete_task`
-- the tools exist in GSD
+- prompts tell the model to call tools like `otto_complete_task`
+- the tools exist in OTTO
 - but Claude Code sessions do not actually receive those tools
 
 This produces a contract mismatch: the model is required to use tools that are unavailable in that provider path.
@@ -68,20 +68,20 @@ This produces a contract mismatch: the model is required to use tools that are u
 
 This is not a one-off Claude Code bug. It reveals a deeper architectural issue:
 
-- GSD’s core workflow contract is transport-specific
+- OTTO’s core workflow contract is transport-specific
 - prompt authors assume “internal extension tool availability”
 - provider integrations do not all share the same execution surface
 
-If GSD wants provider parity, its workflow tools need a transport-neutral exposure model.
+If OTTO wants provider parity, its workflow tools need a transport-neutral exposure model.
 
 ## Decision
 
-**Expose the GSD workflow tool contract over MCP as a first-class transport, and make MCP the compatibility layer for providers that cannot directly access the in-process GSD tool registry.**
+**Expose the OTTO workflow tool contract over MCP as a first-class transport, and make MCP the compatibility layer for providers that cannot directly access the in-process OTTO tool registry.**
 
 This means:
 
-1. GSD will keep its existing in-process tool registration for native runtime use.
-2. GSD will add an MCP execution surface for the same workflow tools.
+1. OTTO will keep its existing in-process tool registration for native runtime use.
+2. OTTO will add an MCP execution surface for the same workflow tools.
 3. Both surfaces must call the same underlying business logic.
 4. Provider integrations such as Claude Code will use the MCP surface when they cannot access native in-process tools directly.
 
@@ -91,7 +91,7 @@ The decision is explicitly **not** to replace the native tool system with MCP ev
 
 ### 1. One handler layer, multiple transports
 
-GSD tool behavior must not be implemented twice.
+OTTO tool behavior must not be implemented twice.
 
 The transport-neutral business logic for workflow tools should be shared by:
 
@@ -102,29 +102,29 @@ The MCP server should wrap the same handlers used by `db-tools.ts`, `query-tools
 
 ### 2. Add a workflow-tool MCP surface
 
-GSD will expose the workflow tools required for discuss, planning, execution, and completion over MCP.
+OTTO will expose the workflow tools required for discuss, planning, execution, and completion over MCP.
 
 Initial minimum set:
 
-- `gsd_summary_save`
-- `gsd_decision_save`
-- `gsd_plan_milestone`
-- `gsd_plan_slice`
-- `gsd_plan_task`
-- `gsd_task_complete`
-- `gsd_slice_complete`
-- `gsd_complete_milestone`
-- `gsd_validate_milestone`
-- `gsd_replan_slice`
-- `gsd_reassess_roadmap`
-- `gsd_save_gate_result`
-- selected read/query tools such as `gsd_milestone_status`
+- `otto_summary_save`
+- `otto_decision_save`
+- `otto_plan_milestone`
+- `otto_plan_slice`
+- `otto_plan_task`
+- `otto_task_complete`
+- `otto_slice_complete`
+- `otto_complete_milestone`
+- `otto_validate_milestone`
+- `otto_replan_slice`
+- `otto_reassess_roadmap`
+- `otto_save_gate_result`
+- selected read/query tools such as `otto_milestone_status`
 
 Aliases should be treated conservatively. MCP should prefer canonical names unless compatibility requires exposing aliases.
 
 ### 3. Preserve safety semantics
 
-The current GSD safety model includes write gates, discussion gates, queue-mode restrictions, and state integrity guarantees.
+The current OTTO safety model includes write gates, discussion gates, queue-mode restrictions, and state integrity guarantees.
 
 Those guarantees must continue to apply when tools are invoked over MCP. In particular:
 
@@ -134,14 +134,14 @@ Those guarantees must continue to apply when tools are invoked over MCP. In part
 
 ### 4. Make provider capability checks explicit
 
-Before dispatching a workflow that requires GSD workflow tools, GSD should check whether the selected provider/session can access the required tool surface.
+Before dispatching a workflow that requires OTTO workflow tools, OTTO should check whether the selected provider/session can access the required tool surface.
 
 If a provider cannot access either:
 
-- native in-process GSD tools, or
-- the GSD MCP workflow tool surface
+- native in-process OTTO tools, or
+- the OTTO MCP workflow tool surface
 
-then GSD must fail early with a clear compatibility error rather than allowing execution to continue in a degraded, state-breaking mode.
+then OTTO must fail early with a clear compatibility error rather than allowing execution to continue in a degraded, state-breaking mode.
 
 ### 5. Keep the existing session/read MCP server
 
@@ -165,15 +165,15 @@ This would fix the immediate failure for multi-provider users, but it does not s
 
 This is a valid short-term guardrail and may still be used before MCP support is complete.
 
-**Rejected as the long-term architecture** because it permanently excludes a supported provider from first-class GSD execution.
+**Rejected as the long-term architecture** because it permanently excludes a supported provider from first-class OTTO execution.
 
-### Alternative C: Inject the internal GSD tool registry directly into the Claude Agent SDK without MCP
+### Alternative C: Inject the internal OTTO tool registry directly into the Claude Agent SDK without MCP
 
-This would tightly couple GSD’s internal extension runtime to a provider-specific integration path. It would not generalize well to other providers or external tool clients.
+This would tightly couple OTTO’s internal extension runtime to a provider-specific integration path. It would not generalize well to other providers or external tool clients.
 
 **Rejected** because it creates a provider-specific bridge instead of a transport-neutral contract.
 
-### Alternative D: Replace native GSD tools entirely with MCP
+### Alternative D: Replace native OTTO tools entirely with MCP
 
 This would simplify the conceptual model, but it would force all runtimes through an external protocol boundary even when the native in-process path is faster and already works well.
 
@@ -183,7 +183,7 @@ This would simplify the conceptual model, but it would force all runtimes throug
 
 ### Positive
 
-1. **Provider parity improves.** Providers that can consume MCP tools can participate in full GSD workflow execution.
+1. **Provider parity improves.** Providers that can consume MCP tools can participate in full OTTO workflow execution.
 2. **The workflow contract becomes transport-neutral.** Prompts can rely on capabilities rather than a specific runtime implementation detail.
 3. **One compatibility story for external clients.** Claude Code, Cursor, and other MCP-capable clients can use the same workflow tool surface.
 4. **Better long-term architecture.** Internal tools and external transports converge on shared handlers instead of diverging implementations.
@@ -211,11 +211,11 @@ Refactor workflow tools so MCP and native registration can call the same transpo
 
 Priority targets:
 
-- `gsd_summary_save`
-- `gsd_task_complete`
-- `gsd_plan_milestone`
-- `gsd_plan_slice`
-- `gsd_plan_task`
+- `otto_summary_save`
+- `otto_task_complete`
+- `otto_plan_milestone`
+- `otto_plan_slice`
+- `otto_plan_task`
 
 ### Phase 2: Stand up the workflow-tool MCP server
 
@@ -227,25 +227,25 @@ Move or centralize write gates and related policy checks so MCP mutations cannot
 
 ### Phase 4: Attach MCP workflow tools to Claude Code sessions
 
-Update the Claude Code provider integration to pass a GSD-managed `mcpServers` configuration into the Claude Agent SDK session when required.
+Update the Claude Code provider integration to pass a OTTO-managed `mcpServers` configuration into the Claude Agent SDK session when required.
 
 ### Phase 5: Add provider capability gating
 
-Before tool-dependent flows begin, verify that the active provider can access the required GSD workflow tools via either native registration or MCP.
+Before tool-dependent flows begin, verify that the active provider can access the required OTTO workflow tools via either native registration or MCP.
 
 ### Phase 6: Update prompts and docs
 
-Prompt contracts should remain strict about using canonical GSD completion/planning tools, but documentation and runtime messaging must no longer assume that only native in-process tool registration satisfies that contract.
+Prompt contracts should remain strict about using canonical OTTO completion/planning tools, but documentation and runtime messaging must no longer assume that only native in-process tool registration satisfies that contract.
 
 ## Validation
 
 Success is defined by all of the following:
 
-1. A Claude Code-backed execution session can complete a task using canonical GSD workflow tools without manual summary writing.
+1. A Claude Code-backed execution session can complete a task using canonical OTTO workflow tools without manual summary writing.
 2. Native provider behavior remains unchanged.
 3. MCP-invoked workflow tools produce the same DB updates, rendered artifacts, and state transitions as native tool calls.
 4. Write-gate and discussion-gate protections still hold under MCP invocation.
-5. When required capabilities are unavailable, GSD fails early with a precise compatibility error.
+5. When required capabilities are unavailable, OTTO fails early with a precise compatibility error.
 
 ## Scope Notes
 

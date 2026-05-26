@@ -4,7 +4,7 @@
  * When mergeAndExit throws a non-MergeConflictError, the auto loop must
  * halt instead of continuing with unmerged work. A merge failure is a
  * recoverable human checkpoint, so the loop pauses (resumable via
- * `/gsd auto`) rather than hard-stopping. This test verifies the catch
+ * `/otto auto`) rather than hard-stopping. This test verifies the catch
  * block in auto/phases.ts calls pauseAuto and returns { action: "break" }
  * for non-conflict errors.
  */
@@ -18,7 +18,7 @@ console.log("\n=== #2766: Non-MergeConflictError stops auto mode ===");
 
 const notifications: Array<{ message: string; level?: string }> = [];
 const calls: string[] = [];
-const basePath = "/tmp/gsd-test";
+const basePath = "/tmp/otto-test";
 const ic = {
   ctx: {
     ui: {
@@ -115,7 +115,7 @@ if (result.action === "break") {
   assertTrue(result.reason === "merge-failed", "non-conflict merge error uses merge-failed reason");
 }
 assertTrue(
-  calls.join(" > ") === "invalidate > health > derive:/tmp/gsd-test > sync-sidebar > set-active:M001 > reconcile > preflight > merge > postflight > pause:Merge error on milestone M001: remote rejected push. Resolve and run /gsd auto to resume.",
+  calls.join(" > ") === "invalidate > health > derive:/tmp/otto-test > sync-sidebar > set-active:M001 > reconcile > preflight > merge > postflight > pause:Merge error on milestone M001: remote rejected push. Resolve and run /otto auto to resume.",
   `pre-dispatch pauses immediately after non-conflict merge failure (${calls.join(" > ")})`,
 );
 assertTrue(

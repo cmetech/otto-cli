@@ -1,7 +1,7 @@
 /**
  * zombie-gsd-state.test.ts — #2942
  *
- * A partially initialized `.gsd/` (symlink exists but neither `PREFERENCES.md`
+ * A partially initialized `.otto/workflow/` (symlink exists but neither `PREFERENCES.md`
  * nor `milestones/` is present) previously caused the init-wizard gate in
  * `showSmartEntry` to be skipped. The fix introduces
  * `hasWorkflowBootstrapArtifacts`, which requires at least one bootstrap artifact
@@ -26,30 +26,30 @@ function makeWorkflowDir(t: { after: (fn: () => void) => void }): string {
   return dir;
 }
 
-test("#2942: missing .gsd/ directory entirely → treated as un-bootstrapped", () => {
+test("#2942: missing .otto/workflow/ directory entirely → treated as un-bootstrapped", () => {
   assert.equal(
-    hasWorkflowBootstrapArtifacts("/nonexistent/path/does/not/exist/.gsd"),
+    hasWorkflowBootstrapArtifacts("/nonexistent/path/does/not/exist/.otto/workflow"),
     false,
   );
 });
 
-test("#2942: zombie .gsd/ (empty directory) must NOT count as bootstrapped", (t) => {
+test("#2942: zombie .otto/workflow/ (empty directory) must NOT count as bootstrapped", (t) => {
   const gsd = makeWorkflowDir(t);
   // Only the directory exists — neither PREFERENCES.md nor milestones/
   assert.equal(
     hasWorkflowBootstrapArtifacts(gsd),
     false,
-    "an empty .gsd/ is a zombie state — init wizard must still run",
+    "an empty .otto/workflow/ is a zombie state — init wizard must still run",
   );
 });
 
-test("#2942: .gsd/ with PREFERENCES.md counts as bootstrapped", (t) => {
+test("#2942: .otto/workflow/ with PREFERENCES.md counts as bootstrapped", (t) => {
   const gsd = makeWorkflowDir(t);
   writeFileSync(join(gsd, "PREFERENCES.md"), "# prefs\n");
   assert.equal(hasWorkflowBootstrapArtifacts(gsd), true);
 });
 
-test("#2942: .gsd/ with milestones/ directory counts as bootstrapped", (t) => {
+test("#2942: .otto/workflow/ with milestones/ directory counts as bootstrapped", (t) => {
   const gsd = makeWorkflowDir(t);
   mkdirSync(join(gsd, "milestones"));
   assert.equal(hasWorkflowBootstrapArtifacts(gsd), true);
@@ -63,19 +63,19 @@ test("#2942: both artifacts present → bootstrapped", (t) => {
 });
 
 test("#2942: injected existsFn — zombie via predicate is rejected", () => {
-  // Only the .gsd/ directory exists; artifacts are missing.
-  const existsFn = (p: string) => p === "/proj/.gsd";
-  assert.equal(hasWorkflowBootstrapArtifacts("/proj/.gsd", existsFn), false);
+  // Only the .otto/workflow/ directory exists; artifacts are missing.
+  const existsFn = (p: string) => p === "/proj/.otto/workflow";
+  assert.equal(hasWorkflowBootstrapArtifacts("/proj/.otto/workflow", existsFn), false);
 });
 
 test("#2942: injected existsFn — PREFERENCES.md alone is enough", () => {
   const existsFn = (p: string) =>
-    p === "/proj/.gsd" || p === "/proj/.gsd/PREFERENCES.md";
-  assert.equal(hasWorkflowBootstrapArtifacts("/proj/.gsd", existsFn), true);
+    p === "/proj/.otto/workflow" || p === "/proj/.otto/workflow/PREFERENCES.md";
+  assert.equal(hasWorkflowBootstrapArtifacts("/proj/.otto/workflow", existsFn), true);
 });
 
 test("#2942: injected existsFn — milestones/ alone is enough", () => {
   const existsFn = (p: string) =>
-    p === "/proj/.gsd" || p === "/proj/.gsd/milestones";
-  assert.equal(hasWorkflowBootstrapArtifacts("/proj/.gsd", existsFn), true);
+    p === "/proj/.otto/workflow" || p === "/proj/.otto/workflow/milestones";
+  assert.equal(hasWorkflowBootstrapArtifacts("/proj/.otto/workflow", existsFn), true);
 });

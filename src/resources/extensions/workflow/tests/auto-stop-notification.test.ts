@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Regression tests for auto-mode stop notification formatting.
 
 import test from "node:test";
@@ -21,11 +21,11 @@ test("auto stop notification keeps session totals on a separate line", () => {
 
 test("blocked stop notification uses blocked headline without repeating the marker", () => {
   const prefix = formatAutoStopNotificationPrefix(
-    "Blocked: M012 is already active in another GSD worker. Retry with /gsd auto after 1:58:59 PM.",
+    "Blocked: M012 is already active in another OTTO worker. Retry with /otto auto after 1:58:59 PM.",
   );
 
   assert.equal(
     prefix,
-    "Auto-mode blocked — M012 is already active in another GSD worker. Retry with /gsd auto after 1:58:59 PM.",
+    "Auto-mode blocked — M012 is already active in another OTTO worker. Retry with /otto auto after 1:58:59 PM.",
   );
 });

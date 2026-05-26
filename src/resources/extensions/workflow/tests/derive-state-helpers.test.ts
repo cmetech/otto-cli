@@ -1,4 +1,4 @@
-// GSD Extension — Tests for DB-authoritative deriveStateFromDb behavior
+// OTTO Extension — Tests for DB-authoritative deriveStateFromDb behavior
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
 //
 // Private helper behavior is exercised through deriveStateFromDb integration.
@@ -28,12 +28,12 @@ import {
 
 function createFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), 'gsd-helpers-'));
-  mkdirSync(join(base, '.gsd', 'milestones'), { recursive: true });
+  mkdirSync(join(base, '.otto/workflow', 'milestones'), { recursive: true });
   return base;
 }
 
 function writeFile(base: string, relativePath: string, content: string): void {
-  const full = join(base, '.gsd', relativePath);
+  const full = join(base, '.otto/workflow', relativePath);
   mkdirSync(join(full, '..'), { recursive: true });
   writeFileSync(full, content);
 }
@@ -139,11 +139,11 @@ describe('derive-state-helpers', () => {
     }
   });
 
-  // ─── resolveSliceDependencies: GSD_SLICE_LOCK with missing slice ────
-	  test('resolveSliceDependencies: GSD_SLICE_LOCK pointing to non-existent slice returns blocked', async () => {
+  // ─── resolveSliceDependencies: OTTO_SLICE_LOCK with missing slice ────
+	  test('resolveSliceDependencies: OTTO_SLICE_LOCK pointing to non-existent slice returns blocked', async () => {
 	    const base = createFixtureBase();
-	    const origLock = process.env.GSD_SLICE_LOCK;
-	    const origWorker = process.env.GSD_PARALLEL_WORKER;
+	    const origLock = process.env.OTTO_SLICE_LOCK;
+	    const origWorker = process.env.OTTO_PARALLEL_WORKER;
 	    try {
       writeFile(base, 'milestones/M001/M001-ROADMAP.md', ROADMAP_CONTENT);
       writeFile(base, 'milestones/M001/slices/S01/S01-PLAN.md', PLAN_CONTENT);
@@ -155,29 +155,29 @@ describe('derive-state-helpers', () => {
       insertSlice({ id: 'S01', milestoneId: 'M001', title: 'First', status: 'active', risk: 'low', depends: [] });
       insertTask({ id: 'T01', sliceId: 'S01', milestoneId: 'M001', title: 'First Task', status: 'pending' });
 
-	      process.env.GSD_SLICE_LOCK = 'S99';
-	      process.env.GSD_PARALLEL_WORKER = '1';
+	      process.env.OTTO_SLICE_LOCK = 'S99';
+	      process.env.OTTO_PARALLEL_WORKER = '1';
 
       invalidateStateCache();
       const state = await deriveStateFromDb(base);
 
       assert.equal(state.phase, 'blocked', 'slice-lock-miss: phase is blocked');
-      assert.ok(state.blockers.some(b => b.includes('GSD_SLICE_LOCK=S99')), 'slice-lock-miss: blocker mentions lock');
+      assert.ok(state.blockers.some(b => b.includes('OTTO_SLICE_LOCK=S99')), 'slice-lock-miss: blocker mentions lock');
 	    } finally {
-	      if (origLock !== undefined) process.env.GSD_SLICE_LOCK = origLock;
-	      else delete process.env.GSD_SLICE_LOCK;
-	      if (origWorker !== undefined) process.env.GSD_PARALLEL_WORKER = origWorker;
-	      else delete process.env.GSD_PARALLEL_WORKER;
+	      if (origLock !== undefined) process.env.OTTO_SLICE_LOCK = origLock;
+	      else delete process.env.OTTO_SLICE_LOCK;
+	      if (origWorker !== undefined) process.env.OTTO_PARALLEL_WORKER = origWorker;
+	      else delete process.env.OTTO_PARALLEL_WORKER;
 	      closeDatabase();
       cleanup(base);
     }
   });
 
-  // ─── resolveSliceDependencies: GSD_SLICE_LOCK with valid slice ──────
-	  test('resolveSliceDependencies: GSD_SLICE_LOCK targeting valid slice bypasses deps', async () => {
+  // ─── resolveSliceDependencies: OTTO_SLICE_LOCK with valid slice ──────
+	  test('resolveSliceDependencies: OTTO_SLICE_LOCK targeting valid slice bypasses deps', async () => {
 	    const base = createFixtureBase();
-	    const origLock = process.env.GSD_SLICE_LOCK;
-	    const origWorker = process.env.GSD_PARALLEL_WORKER;
+	    const origLock = process.env.OTTO_SLICE_LOCK;
+	    const origWorker = process.env.OTTO_PARALLEL_WORKER;
 	    try {
       writeFile(base, 'milestones/M001/M001-ROADMAP.md', ROADMAP_CONTENT);
       // S02 depends on S01 but we lock to S02 directly
@@ -191,8 +191,8 @@ describe('derive-state-helpers', () => {
       insertSlice({ id: 'S02', milestoneId: 'M001', title: 'Second', status: 'pending', risk: 'low', depends: ['S01'] });
       insertTask({ id: 'T01', sliceId: 'S02', milestoneId: 'M001', title: 'Task', status: 'pending' });
 
-	      process.env.GSD_SLICE_LOCK = 'S02';
-	      process.env.GSD_PARALLEL_WORKER = '1';
+	      process.env.OTTO_SLICE_LOCK = 'S02';
+	      process.env.OTTO_PARALLEL_WORKER = '1';
 
       invalidateStateCache();
       const state = await deriveStateFromDb(base);
@@ -200,10 +200,10 @@ describe('derive-state-helpers', () => {
       assert.equal(state.activeSlice?.id, 'S02', 'slice-lock-valid: activeSlice is S02 (locked)');
       assert.equal(state.phase, 'executing', 'slice-lock-valid: phase is executing');
 	    } finally {
-	      if (origLock !== undefined) process.env.GSD_SLICE_LOCK = origLock;
-	      else delete process.env.GSD_SLICE_LOCK;
-	      if (origWorker !== undefined) process.env.GSD_PARALLEL_WORKER = origWorker;
-	      else delete process.env.GSD_PARALLEL_WORKER;
+	      if (origLock !== undefined) process.env.OTTO_SLICE_LOCK = origLock;
+	      else delete process.env.OTTO_SLICE_LOCK;
+	      if (origWorker !== undefined) process.env.OTTO_PARALLEL_WORKER = origWorker;
+	      else delete process.env.OTTO_PARALLEL_WORKER;
 	      closeDatabase();
       cleanup(base);
     }
@@ -450,7 +450,7 @@ describe('derive-state-helpers', () => {
     try {
       // QUEUE-ORDER.json is a projection and should not drive DB derivation.
       const queueOrder = JSON.stringify({ order: ['M003', 'M001', 'M002'], updatedAt: new Date().toISOString() });
-      writeFileSync(join(base, '.gsd', 'QUEUE-ORDER.json'), queueOrder);
+      writeFileSync(join(base, '.otto/workflow', 'QUEUE-ORDER.json'), queueOrder);
       writeFile(base, 'milestones/M001/M001-CONTEXT.md', '# M001\n\nContext.');
       writeFile(base, 'milestones/M002/M002-CONTEXT.md', '# M002\n\nContext.');
       writeFile(base, 'milestones/M003/M003-CONTEXT.md', '# M003\n\nContext.');
@@ -475,11 +475,11 @@ describe('derive-state-helpers', () => {
 
 	  test('getActiveMilestoneId: DB lock path ignores PARKED flag projection', async () => {
 	    const base = createFixtureBase();
-	    const previousLock = process.env.GSD_MILESTONE_LOCK;
-	    const previousWorker = process.env.GSD_PARALLEL_WORKER;
+	    const previousLock = process.env.OTTO_MILESTONE_LOCK;
+	    const previousWorker = process.env.OTTO_PARALLEL_WORKER;
 	    try {
-	      process.env.GSD_MILESTONE_LOCK = 'M001';
-	      process.env.GSD_PARALLEL_WORKER = '1';
+	      process.env.OTTO_MILESTONE_LOCK = 'M001';
+	      process.env.OTTO_PARALLEL_WORKER = '1';
       writeFile(base, 'milestones/M001/M001-PARKED.md', '# Parked on disk');
 
       openDatabase(':memory:');
@@ -488,10 +488,10 @@ describe('derive-state-helpers', () => {
       const id = await getActiveMilestoneId(base);
       assert.equal(id, 'M001', 'DB status remains authoritative despite PARKED projection');
 	    } finally {
-	      if (previousLock === undefined) delete process.env.GSD_MILESTONE_LOCK;
-	      else process.env.GSD_MILESTONE_LOCK = previousLock;
-	      if (previousWorker === undefined) delete process.env.GSD_PARALLEL_WORKER;
-	      else process.env.GSD_PARALLEL_WORKER = previousWorker;
+	      if (previousLock === undefined) delete process.env.OTTO_MILESTONE_LOCK;
+	      else process.env.OTTO_MILESTONE_LOCK = previousLock;
+	      if (previousWorker === undefined) delete process.env.OTTO_PARALLEL_WORKER;
+	      else process.env.OTTO_PARALLEL_WORKER = previousWorker;
 	      closeDatabase();
       cleanup(base);
     }
@@ -537,7 +537,7 @@ describe('derive-state-helpers', () => {
     const base = createFixtureBase();
     try {
       // M001: queued shell — no content, no slices
-      mkdirSync(join(base, '.gsd', 'milestones', 'M001'), { recursive: true });
+      mkdirSync(join(base, '.otto/workflow', 'milestones', 'M001'), { recursive: true });
       // M002: real milestone with context
       writeFile(base, 'milestones/M002/M002-CONTEXT.md', '# M002: Real\n\nActive milestone.');
 

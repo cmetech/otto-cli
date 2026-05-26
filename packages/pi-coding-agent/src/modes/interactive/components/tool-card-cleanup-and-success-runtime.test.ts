@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Runtime tests for TUI tool cards, success notifications, and blocking errors.
 // GSD2 TUI Tests - Runtime coverage for tool-card cleanup and success notification rendering.
 // Runtime regression tests for the post-compaction tool-card cleanup and the
@@ -16,7 +16,7 @@
 import assert from "node:assert/strict";
 import { describe, it, before } from "node:test";
 
-import { Container, Text } from "@loop24/pi-tui";
+import { Container, Text } from "@otto/pi-tui";
 import stripAnsi from "strip-ansi";
 
 import { initTheme, theme } from "../theme/theme.js";

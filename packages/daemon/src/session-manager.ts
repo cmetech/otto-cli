@@ -16,8 +16,8 @@
 import { execSync } from 'node:child_process';
 import { basename, resolve } from 'node:path';
 import { EventEmitter } from 'node:events';
-import { RpcClient } from '@loop24-build/rpc-client';
-import type { RpcCostUpdateEvent, RpcExtensionUIRequest, RpcInitResult, SdkAgentEvent } from '@loop24-build/contracts';
+import { RpcClient } from '@otto-build/rpc-client';
+import type { RpcCostUpdateEvent, RpcExtensionUIRequest, RpcInitResult, SdkAgentEvent } from '@otto-build/contracts';
 import type {
   ManagedSession,
   StartSessionOptions,
@@ -77,7 +77,7 @@ export class SessionManager extends EventEmitter {
    *
    * Rejects if a session already exists for this projectDir.
    * Creates an RpcClient, starts the process, performs the v2 init handshake,
-   * wires event tracking, and sends '/loop24 auto' to begin execution.
+   * wires event tracking, and sends '/otto auto' to begin execution.
    */
   async startSession(options: StartSessionOptions): Promise<string> {
     const { projectDir } = options;
@@ -146,7 +146,7 @@ export class SessionManager extends EventEmitter {
       });
 
       // Kick off auto-mode
-      const command = options.command ?? '/gsd auto';
+      const command = options.command ?? '/otto auto';
       await client.prompt(command);
 
       this.logger.info('session started', { sessionId: session.sessionId, projectDir: resolvedDir });
@@ -283,11 +283,11 @@ export class SessionManager extends EventEmitter {
   /**
    * Resolve the CLI path.
    *
-   * 1. GSD_CLI_PATH env var (highest priority)
+   * 1. OTTO_CLI_PATH env var (highest priority)
    * 2. `which gsd` → resolve to the actual dist/cli.js
    */
   static resolveCLIPath(): string {
-    const envPath = process.env['GSD_CLI_PATH'];
+    const envPath = process.env['OTTO_CLI_PATH'];
     if (envPath) return resolve(envPath);
 
     try {
@@ -298,7 +298,7 @@ export class SessionManager extends EventEmitter {
     }
 
     throw new Error(
-      'Cannot find GSD CLI. Set GSD_CLI_PATH environment variable or ensure `gsd` is in PATH.'
+      'Cannot find OTTO CLI. Set OTTO_CLI_PATH environment variable or ensure `gsd` is in PATH.'
     );
   }
 

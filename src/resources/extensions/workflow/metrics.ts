@@ -1,10 +1,10 @@
-// LOOP24 + metrics.ts: token & cost tracking for auto-mode units
+// OTTO + metrics.ts: token & cost tracking for auto-mode units
 /**
  * Metrics — Token & Cost Tracking
  *
  * Accumulates per-unit usage data across auto-mode sessions.
  * Data is extracted from session entries before each context wipe,
- * written to .gsd/metrics.json, and surfaced in the dashboard.
+ * written to .otto/workflow/metrics.json, and surfaced in the dashboard.
  *
  * Data flow:
  *   1. Before newSession() wipes context, snapshotUnitMetrics() scans
@@ -16,7 +16,7 @@
 
 import { join } from "node:path";
 import { openSync, closeSync, unlinkSync, statSync, writeFileSync } from "node:fs";
-import type { ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionContext } from "@otto/pi-coding-agent";
 import { workflowRoot } from "./paths.js";
 import { getAndClearSkills } from "./skill-telemetry.js";
 import { loadJsonFile, loadJsonFileOrNull, saveJsonFile } from "./json-persistence.js";
@@ -27,7 +27,7 @@ import type { MilestoneScope } from "./workspace.js";
 import { logWarning } from "./workflow-logger.js";
 
 // Re-export from shared — import directly from format-utils to avoid pulling
-// in the full barrel (mod.js → ui.js → @loop24/pi-tui) which breaks when loaded
+// in the full barrel (mod.js → ui.js → @otto/pi-tui) which breaks when loaded
 // outside jiti's alias resolution (e.g. dynamic import in auto-loop reports).
 export { formatTokenCount } from "../shared/format-utils.js";
 

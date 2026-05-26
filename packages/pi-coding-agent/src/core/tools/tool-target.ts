@@ -1,4 +1,4 @@
-// LOOP24 - Shared target metadata for tool output rendering.
+// OTTO - Shared target metadata for tool output rendering.
 
 export type ToolTargetKind = "file" | "directory" | "search" | "command";
 

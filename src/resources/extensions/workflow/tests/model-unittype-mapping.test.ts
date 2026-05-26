@@ -18,10 +18,10 @@ import { resolveModelWithFallbacksForUnit } from "../preferences-models.ts";
 import { KNOWN_UNIT_LABELS } from "../preferences-types.ts";
 
 function withModelPreferences<T>(fn: () => T): T {
-  const oldHome = process.env.GSD_HOME;
+  const oldHome = process.env.OTTO_HOME;
   const home = mkdtempSync(join(tmpdir(), "gsd-model-map-"));
   try {
-    process.env.GSD_HOME = home;
+    process.env.OTTO_HOME = home;
     writeFileSync(join(home, "preferences.md"), [
       "---",
       "models:",
@@ -38,8 +38,8 @@ function withModelPreferences<T>(fn: () => T): T {
     ].join("\n"));
     return fn();
   } finally {
-    if (oldHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = oldHome;
+    if (oldHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = oldHome;
     rmSync(home, { recursive: true, force: true });
   }
 }
@@ -81,9 +81,9 @@ test("discuss-slice has discussion metrics and dashboard labels", () => {
 test("discuss-slice resolves to the slice context artifact path", () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-discuss-artifact-"));
   try {
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
     const path = resolveExpectedArtifactPath("discuss-slice", "M001/S01", base);
-    assert.equal(path, join(realpathSync(base), ".gsd", "milestones", "M001", "slices", "S01", "S01-CONTEXT.md"));
+    assert.equal(path, join(realpathSync(base), ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-CONTEXT.md"));
   } finally {
     rmSync(base, { recursive: true, force: true });
   }

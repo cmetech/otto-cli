@@ -1,5 +1,5 @@
 /**
- * Command — `/loop24 memory`
+ * Command — `/otto memory`
  *
  * Subcommands:
  *   list            — show recent active memories
@@ -15,7 +15,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve as resolvePath } from "node:path";
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { projectRoot } from "./commands/context.js";
 import { ingestFile, ingestNote, ingestUrl, summarizeIngest } from "./memory-ingest.js";
@@ -105,7 +105,7 @@ export async function handleMemory(
 ): Promise<void> {
   const parsed = parseArgs(args);
 
-  // `/loop24 memory` or `/loop24 memory help`
+  // `/otto memory` or `/otto memory help`
   if (parsed.sub === "" || parsed.sub === "help") {
     ctx.ui.notify(usage(), "info");
     return;
@@ -185,7 +185,7 @@ async function ensureDb(): Promise<void> {
 
 function handleList(ctx: ExtensionCommandContext): void {
   if (!isDbAvailable()) {
-    ctx.ui.notify("No GSD database available.", "warning");
+    ctx.ui.notify("No OTTO database available.", "warning");
     return;
   }
   const memories = getActiveMemoriesRanked(50);
@@ -207,7 +207,7 @@ function handleShow(ctx: ExtensionCommandContext, id: string | undefined): void 
   }
   const adapter = _getAdapter();
   if (!adapter) {
-    ctx.ui.notify("No GSD database available.", "warning");
+    ctx.ui.notify("No OTTO database available.", "warning");
     return;
   }
   const row = adapter.prepare("SELECT * FROM memories WHERE id = :id").get({ ":id": id });
@@ -251,7 +251,7 @@ function handleForget(ctx: ExtensionCommandContext, id: string | undefined): voi
 function handleStats(ctx: ExtensionCommandContext): void {
   const adapter = _getAdapter();
   if (!adapter) {
-    ctx.ui.notify("No GSD database available.", "warning");
+    ctx.ui.notify("No OTTO database available.", "warning");
     return;
   }
   try {

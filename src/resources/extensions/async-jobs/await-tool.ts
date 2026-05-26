@@ -5,7 +5,7 @@
  * If omitted, waits for any running job to complete.
  */
 
-import type { ToolDefinition } from "@loop24/pi-coding-agent";
+import type { ToolDefinition } from "@otto/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 import type { AsyncJobManager, Job } from "./job-manager.js";
 
@@ -83,16 +83,17 @@ export function createAwaitTool(getManager: () => AsyncJobManager): ToolDefiniti
 
 			// Wait for at least one to complete, or timeout
 			const TIMEOUT_SENTINEL = Symbol("timeout");
+			let timeoutTimer: ReturnType<typeof setTimeout> | undefined;
 			const timeoutPromise = new Promise<typeof TIMEOUT_SENTINEL>((resolve) => {
-				const timer = setTimeout(() => resolve(TIMEOUT_SENTINEL), timeoutMs);
-				// Allow the process to exit even if the timer is pending
-				if (typeof timer === "object" && "unref" in timer) timer.unref();
+				timeoutTimer = setTimeout(() => resolve(TIMEOUT_SENTINEL), timeoutMs);
 			});
 
 			const raceResult = await Promise.race([
 				Promise.race(running.map((j) => j.promise)).then(() => "completed" as const),
 				timeoutPromise,
-			]);
+			]).finally(() => {
+				if (timeoutTimer !== undefined) clearTimeout(timeoutTimer);
+			});
 
 			const timedOut = raceResult === TIMEOUT_SENTINEL;
 

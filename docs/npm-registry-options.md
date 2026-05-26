@@ -1,17 +1,17 @@
-# npm Registry Options for LOOP24
+# npm Registry Options for OTTO
 
-**Status:** decision-pending reference doc. Captures discussion from 2026-05-24 between owner and Claude (Opus 4.7) when deciding how to distribute LOOP24 via npm. Phase 7 prep is complete; Phase 7 publish is on hold pending registry choice.
+**Status:** decision-pending reference doc. Captures discussion from 2026-05-24 between owner and Claude (Opus 4.7) when deciding how to distribute OTTO via npm. Phase 7 prep is complete; Phase 7 publish is on hold pending registry choice.
 
 ---
 
 ## Where Phase 7 prep landed
 
 - Tag: `phase-7-npm-publish-prep` (commit `52bc276`)
-- `package.json` configured for `@ericsson/loop24` — name, description, keywords, bin, files, simplified `prepublishOnly`
-- `scripts/install.js` templated (19 edits) so `npx @ericsson/loop24` self-describes correctly — no more `@opengsd/gsd-pi` references
+- `package.json` configured for `@ericsson/otto` — name, description, keywords, bin, files, simplified `prepublishOnly`
+- `scripts/install.js` templated (19 edits) so `npx @ericsson/otto` self-describes correctly — no more `@opengsd/gsd-pi` references
 - README reframed for public release with fork attribution to `open-gsd/gsd-pi`
-- LOOP24-PATCHES.md leak-audited (one internal gitlab path generalized)
-- Tarball verified: 11.6 MB / 6951 files / no leaks / `loop24 --version` works after install in a fresh temp dir
+- OTTO-PATCHES.md leak-audited (one internal gitlab path generalized)
+- Tarball verified: 11.6 MB / 6951 files / no leaks / `otto --version` works after install in a fresh temp dir
 
 **What's NOT yet decided:**
 - Where to publish (public npmjs.org? private GitLab/Artifactory? both?)
@@ -25,7 +25,7 @@ Three options, picked based on audience:
 
 | Option | Audience | Trade |
 |---|---|---|
-| **Public npmjs.org** | Anyone with npm | Lowest friction for outside contributors; requires claiming the `@ericsson` org on npmjs.com (likely contested as a company-style name; fallbacks: `@ericssondevops`, `@cmetech`, or unscoped `loop24` — all free at last check) |
+| **Public npmjs.org** | Anyone with npm | Lowest friction for outside contributors; requires claiming the `@ericsson` org on npmjs.com (likely contested as a company-style name; fallbacks: `@ericssondevops`, `@cmetech`, or unscoped `otto` — all free at last check) |
 | **Private only** (Artifactory / GitLab Package Registry / Nexus / Verdaccio / GitHub Packages) | Internal Ericsson users | Compliance-aligned; no public exposure of internal tooling; requires registry infra (Ericsson likely has Artifactory available) |
 | **Both** (private as canonical, public as mirror) | Both | Sequential publishes; same tarball uploaded twice; one set of users gets it from each registry |
 
@@ -71,7 +71,7 @@ registry=https://artifactory.example.com/artifactory/api/npm/npm-local/
 # ~/.npmrc:          _authToken (NEVER commit; CI uses secrets)
 ```
 
-For LOOP24: **Option B**, so `@ericsson/loop24` resolves privately while `@anthropic-ai/sdk` etc. still come from public npmjs.org.
+For OTTO: **Option B**, so `@ericsson/otto` resolves privately while `@anthropic-ai/sdk` etc. still come from public npmjs.org.
 
 ---
 
@@ -83,12 +83,12 @@ Run `npm publish` once per registry. Same name + version, different `--registry`
 
 ```bash
 # From a single packed tarball (guarantees bytes match across registries)
-npm pack    # produces ericsson-loop24-1.1.0.tgz
+npm pack    # produces cmetech-otto-1.1.0.tgz
 
-npm publish ericsson-loop24-1.1.0.tgz \
-  --registry=https://artifactory.example.com/artifactory/api/npm/npm-loop24-local/
+npm publish cmetech-otto-1.1.0.tgz \
+  --registry=https://artifactory.example.com/artifactory/api/npm/npm-otto-local/
 
-npm publish ericsson-loop24-1.1.0.tgz \
+npm publish cmetech-otto-1.1.0.tgz \
   --registry=https://registry.npmjs.org/ --access public
 ```
 
@@ -108,7 +108,7 @@ Wrap in scripts to avoid mistakes:
 
 ### Pattern 2: Different names per registry (audience-driven)
 
-Publish two distinct identities — e.g., `@ericsson/loop24` (private, internal users) and `loop24` (public, anyone). At publish time, rewrite the `name` field in `package.json`, then publish each. Adds maintenance overhead (two changelogs, two README quickstarts) — only use this if internal and public versions genuinely differ (e.g., internal version has credentials baked in).
+Publish two distinct identities — e.g., `@ericsson/otto` (private, internal users) and `otto` (public, anyone). At publish time, rewrite the `name` field in `package.json`, then publish each. Adds maintenance overhead (two changelogs, two README quickstarts) — only use this if internal and public versions genuinely differ (e.g., internal version has credentials baked in).
 
 ### Pattern 3: Registry-side mirroring (set up once, automatic)
 
@@ -141,9 +141,9 @@ Some registries auto-replicate to others. Most have GOOD support for "private fe
 
 ```ini
 # ~/.npmrc
-@ericsson:registry=https://artifactory.example.com/artifactory/api/npm/npm-loop24-local/
-//artifactory.example.com/artifactory/api/npm/npm-loop24-local/:_authToken=<TOKEN>
-//artifactory.example.com/artifactory/api/npm/npm-loop24-local/:always-auth=true
+@ericsson:registry=https://artifactory.example.com/artifactory/api/npm/npm-otto-local/
+//artifactory.example.com/artifactory/api/npm/npm-otto-local/:_authToken=<TOKEN>
+//artifactory.example.com/artifactory/api/npm/npm-otto-local/:always-auth=true
 ```
 
 ```bash
@@ -158,16 +158,16 @@ Pros: version conflicts detected; dist-tags (`latest`, `beta`) handled atomicall
 
 ```bash
 npm pack
-curl -u <user>:<api-key> -T ericsson-loop24-1.1.0.tgz \
-  "https://artifactory.example.com/artifactory/api/npm/npm-loop24-local/@ericsson/loop24/-/loop24-1.1.0.tgz"
+curl -u <user>:<api-key> -T cmetech-otto-1.1.0.tgz \
+  "https://artifactory.example.com/artifactory/api/npm/npm-otto-local/@ericsson/otto/-/otto-1.1.0.tgz"
 ```
 
 Or the JFrog CLI (handles indexing better):
 
 ```bash
-jf rt upload ericsson-loop24-1.1.0.tgz \
-  "npm-loop24-local/@ericsson/loop24/-/loop24-1.1.0.tgz" \
-  --target-props "npm.name=@ericsson/loop24;npm.version=1.1.0"
+jf rt upload cmetech-otto-1.1.0.tgz \
+  "npm-otto-local/@ericsson/otto/-/otto-1.1.0.tgz" \
+  --target-props "npm.name=@ericsson/otto;npm.version=1.1.0"
 ```
 
 When to use: emergency restores, scripted bulk migration from another registry, validating a tarball is structurally valid in a sandbox repo before automating the real publish. **Generally don't use this for the routine publish path** — the metadata side doesn't always update cleanly.
@@ -190,7 +190,7 @@ Reserve manual upload for emergency / migration / sandbox-validation scenarios.
 
 ---
 
-## What LOOP24 changes when a registry URL is chosen
+## What OTTO changes when a registry URL is chosen
 
 Two edits, both small:
 
@@ -221,16 +221,16 @@ The Phase 7 prep commit already handles the rest (package shape, fork attributio
 4. **Test with `npm publish --dry-run`** before publishing for real.
 5. **Bump version 1.0.1 → 1.1.0** (signals meaningful divergence after Phase 3-6 work) — `npm version minor --no-git-tag-version`.
 6. **Publish**: `npm publish` (private only) or follow Pattern 1's `publish:both` script (private + public).
-7. **Verify**: `npm view @ericsson/loop24 --registry=<artifactory-url>`; install in a clean dir; smoke `loop24 --version`.
+7. **Verify**: `npm view @ericsson/otto --registry=<artifactory-url>`; install in a clean dir; smoke `otto --version`.
 8. **Tag**: `git tag -a phase-7-npm-publish -m "..."`.
-9. **Update `LOOP24-PATCHES.md`** with the actual publish results.
+9. **Update `OTTO-PATCHES.md`** with the actual publish results.
 
 ---
 
 ## Risks worth knowing
 
-- **`@ericsson` scope availability on public npmjs.org.** It was free at the 2026-05-24 check, but trademark-style company names often get reserved. If publishing public, claim it early; if it's contested, fall back to `@ericssondevops`, `@cmetech`, or unscoped `loop24`.
-- **Workspace pkgs ship as files inside the tarball.** Mirrors `@opengsd/gsd-pi`'s pattern. The `@loop24/*` workspace package names are unchanged — they're loaded as files at runtime via the postinstall script, not resolved from a registry. This works for npmjs.org and Artifactory equally.
+- **`@ericsson` scope availability on public npmjs.org.** It was free at the 2026-05-24 check, but trademark-style company names often get reserved. If publishing public, claim it early; if it's contested, fall back to `@ericssondevops`, `@cmetech`, or unscoped `otto`.
+- **Workspace pkgs ship as files inside the tarball.** Mirrors `@opengsd/gsd-pi`'s pattern. The `@otto/*` workspace package names are unchanged — they're loaded as files at runtime via the postinstall script, not resolved from a registry. This works for npmjs.org and Artifactory equally.
 - **`scripts/validate-pack.js:155`** still hardcodes `@opengsd/gsd-pi`. Dropped from `prepublishOnly` to unblock Phase 7 prep. Fix is straightforward (read the name from `package.json`) but not done yet.
 - **Phase 7 prep removed `sync-platform-versions`** from `prepublishOnly` because it references the deleted `native/scripts/` (Known Deferred Cleanups item 2). Native-platform support was dropped during Phase 0; the removed script wasn't doing anything useful for our fork.
 - **Multiple registries means version drift risk.** Always publish the same tarball — `npm pack` once, `npm publish <tarball>` twice — or you get the same `name@version` serving different bytes across registries.
@@ -239,8 +239,8 @@ The Phase 7 prep commit already handles the rest (package shape, fork attributio
 
 ## References
 
-- `docs/superpowers/plans/2026-05-24-loop24-phase-7-npm-publish.md` — the full Phase 7 plan
-- `LOOP24-PATCHES.md` Phase 7 section — what landed in the prep commit
-- `docs/superpowers/specs/2026-05-23-loop24-client-design.md` §7 — original distribution intent (internal Verdaccio/Nexus)
+- `docs/superpowers/plans/2026-05-24-otto-phase-7-npm-publish.md` — the full Phase 7 plan
+- `OTTO-PATCHES.md` Phase 7 section — what landed in the prep commit
+- `docs/superpowers/specs/2026-05-23-otto-client-design.md` §7 — original distribution intent (internal Verdaccio/Nexus)
 - `package.json` — current shape
-- `scripts/install.js` — npx entry point that gets executed when `npx @ericsson/loop24` runs
+- `scripts/install.js` — npx entry point that gets executed when `npx @ericsson/otto` runs

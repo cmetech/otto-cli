@@ -1,4 +1,4 @@
-// LOOP24 + packages/pi-coding-agent/src/modes/interactive/components/config-selector.ts - Package resource selector.
+// OTTO + packages/pi-coding-agent/src/modes/interactive/components/config-selector.ts - Package resource selector.
 /**
  * TUI component for managing package resources (enable/disable)
  */
@@ -15,7 +15,7 @@ import {
 	Spacer,
 	truncateToWidth,
 	visibleWidth,
-} from "@loop24/pi-tui";
+} from "@otto/pi-tui";
 import { CONFIG_DIR_NAME } from "../../../config.js";
 import type { PathMetadata, ResolvedPaths, ResolvedResource } from "../../../core/package-manager.js";
 import type { PackageSource, SettingsManager } from "../../../core/settings-manager.js";

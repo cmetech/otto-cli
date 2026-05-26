@@ -7,11 +7,11 @@ const pkg = JSON.parse(readFileSync("package.json", "utf8"));
 const version = pkg.version;
 const optionalDependencies = pkg.optionalDependencies ?? {};
 const enginePackages = Object.keys(optionalDependencies)
-  .filter((name) => name.startsWith("@opengsd/engine-"))
+  .filter((name) => name.startsWith("@cmetech/otto-engine-"))
   .sort();
 
 if (enginePackages.length === 0) {
-  process.stderr.write("ERROR: no @opengsd/engine-* optionalDependencies found\n");
+  process.stderr.write("ERROR: no @cmetech/otto-engine-* optionalDependencies found\n");
   process.exit(1);
 }
 
@@ -85,7 +85,7 @@ for (const spec of missing) {
 }
 process.stderr.write(
   allowAnyVersion
-    ? "Publish the missing @opengsd/engine-* packages before publishing @cmetech/otto.\n"
+    ? "Publish the missing @cmetech/otto-engine-* packages before publishing @cmetech/otto.\n"
     : "Run the native binary publish workflow for this version before publishing @cmetech/otto.\n",
 );
 process.exit(1);

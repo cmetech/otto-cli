@@ -193,7 +193,7 @@ export function resetApiProviders(): void {
 }
 
 /**
- * E2E-test-only: when `GSD_FAKE_LLM_TRANSCRIPT` is set, register a
+ * E2E-test-only: when `OTTO_FAKE_LLM_TRANSCRIPT` is set, register a
  * deterministic JSONL-replay provider under api "fake". The env var must
  * be set BEFORE this module is imported. Subprocess-spawned e2e tests do
  * this by setting it on the spawn env.
@@ -202,7 +202,7 @@ export function resetApiProviders(): void {
  * fails loudly instead of silently falling through to a real provider.
  */
 function registerFakeProviderIfEnabled(): void {
-	const transcriptPath = (process.env.LOOP24_FAKE_LLM_TRANSCRIPT ?? process.env.GSD_FAKE_LLM_TRANSCRIPT);
+	const transcriptPath = (process.env.OTTO_FAKE_LLM_TRANSCRIPT ?? process.env.OTTO_FAKE_LLM_TRANSCRIPT);
 	if (!transcriptPath) return;
 	try {
 		registerApiProvider(createFakeProvider({ transcriptPath }), "fake");

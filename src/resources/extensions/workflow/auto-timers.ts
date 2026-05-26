@@ -6,7 +6,7 @@
  * via startUnitSupervision() and torn down by the caller via clearUnitTimeout().
  */
 
-import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@otto/pi-coding-agent";
 import { readUnitRuntimeRecord, writeUnitRuntimeRecord } from "./unit-runtime.js";
 import { isDbAvailable, getMilestoneSlices, getSliceTasks } from "./db.js";
 import { resolveAutoSupervisorConfig } from "./preferences.js";

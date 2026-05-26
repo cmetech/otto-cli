@@ -13,7 +13,7 @@ import assert from 'node:assert/strict';
 
 function createFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-idle-recovery-test-"));
-  mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
   return base;
 }
 
@@ -111,7 +111,7 @@ test('writeBlockerPlaceholder: creates directory if missing', () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-idle-recovery-test-"));
   try {
     // Only create milestone dir, not slice dir
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
     // resolveSlicePath needs the slice dir to exist to resolve, so this should return null
     const result = writeBlockerPlaceholder("research-slice", "M001/S01", base, "test reason");
     // Since the slice dir doesn't exist, resolveExpectedArtifactPath returns null
@@ -170,10 +170,10 @@ const ROADMAP_COMPLETE = `# M001: Test Milestone
 test('verifyExpectedArtifact: complete-slice — all artifacts present + roadmap marked [x] returns true', () => {
   const base = createFixtureBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     writeFileSync(join(sliceDir, "S01-SUMMARY.md"), "# Summary\n", "utf-8");
     writeFileSync(join(sliceDir, "S01-UAT.md"), "# UAT\n", "utf-8");
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), ROADMAP_COMPLETE, "utf-8");
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"), ROADMAP_COMPLETE, "utf-8");
     const result = verifyExpectedArtifact("complete-slice", "M001/S01", base);
     assert.ok(result === true, "SUMMARY + UAT + roadmap [x] should verify as true");
   } finally {
@@ -184,10 +184,10 @@ test('verifyExpectedArtifact: complete-slice — all artifacts present + roadmap
 test('verifyExpectedArtifact: complete-slice — SUMMARY + UAT present but roadmap NOT marked [x] returns false', () => {
   const base = createFixtureBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     writeFileSync(join(sliceDir, "S01-SUMMARY.md"), "# Summary\n", "utf-8");
     writeFileSync(join(sliceDir, "S01-UAT.md"), "# UAT\n", "utf-8");
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), ROADMAP_INCOMPLETE, "utf-8");
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"), ROADMAP_INCOMPLETE, "utf-8");
     const result = verifyExpectedArtifact("complete-slice", "M001/S01", base);
     assert.ok(result === false, "roadmap not marked [x] should return false (crash recovery scenario)");
   } finally {
@@ -198,10 +198,10 @@ test('verifyExpectedArtifact: complete-slice — SUMMARY + UAT present but roadm
 test('verifyExpectedArtifact: complete-slice — SUMMARY present but UAT missing returns false', () => {
   const base = createFixtureBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     writeFileSync(join(sliceDir, "S01-SUMMARY.md"), "# Summary\n", "utf-8");
     // no UAT file
-    writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"), ROADMAP_COMPLETE, "utf-8");
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"), ROADMAP_COMPLETE, "utf-8");
     const result = verifyExpectedArtifact("complete-slice", "M001/S01", base);
     assert.ok(result === false, "missing UAT should return false");
   } finally {
@@ -212,7 +212,7 @@ test('verifyExpectedArtifact: complete-slice — SUMMARY present but UAT missing
 test('verifyExpectedArtifact: complete-slice — no roadmap file present is lenient (returns true)', () => {
   const base = createFixtureBase();
   try {
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     writeFileSync(join(sliceDir, "S01-SUMMARY.md"), "# Summary\n", "utf-8");
     writeFileSync(join(sliceDir, "S01-UAT.md"), "# UAT\n", "utf-8");
     // no roadmap file
@@ -228,7 +228,7 @@ test('verifyExpectedArtifact: complete-slice — no roadmap file present is leni
 test('buildLoopRemediationSteps: execute-task returns concrete steps', () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-loop-remediation-test-"));
   try {
-    mkdirSync(join(base, ".gsd", "milestones", "M002", "slices", "S03", "tasks"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M002", "slices", "S03", "tasks"), { recursive: true });
     const result = buildLoopRemediationSteps("execute-task", "M002/S03/T01", base);
     assert.ok(result !== null, "should return remediation steps");
     assert.ok(result!.includes("gsd undo-task"), "steps include undo-task command");
@@ -242,7 +242,7 @@ test('buildLoopRemediationSteps: execute-task returns concrete steps', () => {
 test('buildLoopRemediationSteps: plan-slice returns concrete steps', () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-loop-remediation-test-"));
   try {
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
     const result = buildLoopRemediationSteps("plan-slice", "M001/S01", base);
     assert.ok(result !== null, "should return remediation steps for plan-slice");
     assert.ok(result!.includes("S01-PLAN.md"), "steps mention the slice plan file");
@@ -255,7 +255,7 @@ test('buildLoopRemediationSteps: plan-slice returns concrete steps', () => {
 test('buildLoopRemediationSteps: research-slice returns concrete steps', () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-loop-remediation-test-"));
   try {
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
     const result = buildLoopRemediationSteps("research-slice", "M001/S01", base);
     assert.ok(result !== null, "should return remediation steps for research-slice");
     assert.ok(result!.includes("S01-RESEARCH.md"), "steps mention the slice research file");
@@ -301,9 +301,9 @@ test('writeBlockerPlaceholder: updates DB task status for execute-task (#2531)',
     const { openDatabase, closeDatabase, insertMilestone, insertSlice, insertTask, getTask, isDbAvailable } =
       await import("../../db.ts");
 
-    const dbPath = join(base, ".gsd", "gsd.db");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
     // Create the tasks directory (required for artifact path resolution)
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
 
     openDatabase(dbPath);
     try {
@@ -336,8 +336,8 @@ test('writeBlockerPlaceholder: does NOT update DB for non-execute-task types', a
     const { openDatabase, closeDatabase, insertMilestone, insertSlice, getSlice, isDbAvailable } =
       await import("../../db.ts");
 
-    const dbPath = join(base, ".gsd", "gsd.db");
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+    const dbPath = join(base, ".otto/workflow", "otto.db");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
 
     openDatabase(dbPath);
     try {
@@ -371,8 +371,8 @@ test('writeBlockerPlaceholder: updates execute-task plan checkbox after DB recov
       isDbAvailable,
     } = await import("../../db.ts");
 
-    const dbPath = join(base, ".gsd", "gsd.db");
-    const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+    const dbPath = join(base, ".otto/workflow", "otto.db");
+    const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
     const tasksDir = join(sliceDir, "tasks");
 
     mkdirSync(tasksDir, { recursive: true });
@@ -415,8 +415,8 @@ test('writeBlockerPlaceholder: updates DB slice status for complete-slice (#2653
     const { openDatabase, closeDatabase, insertMilestone, insertSlice, getSlice, isDbAvailable } =
       await import("../../db.ts");
 
-    const dbPath = join(base, ".gsd", "gsd.db");
-    mkdirSync(join(base, ".gsd", "milestones", "M001", "slices", "S01"), { recursive: true });
+    const dbPath = join(base, ".otto/workflow", "otto.db");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01"), { recursive: true });
 
     openDatabase(dbPath);
     try {
@@ -449,8 +449,8 @@ test('writeBlockerPlaceholder: inserts placeholder slice for plan-milestone so d
     const { openDatabase, closeDatabase, insertMilestone, getMilestoneSlices, isDbAvailable } =
       await import("../../db.ts");
 
-    const dbPath = join(base, ".gsd", "gsd.db");
-    mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+    const dbPath = join(base, ".otto/workflow", "otto.db");
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
 
     openDatabase(dbPath);
     try {

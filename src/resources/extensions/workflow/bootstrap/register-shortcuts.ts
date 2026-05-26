@@ -1,11 +1,11 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Registers workflow keyboard shortcuts for dashboard, notifications, and parallel overlays.
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-import type { ExtensionAPI, ExtensionContext } from "@loop24/pi-coding-agent";
-import { Key } from "@loop24/pi-tui";
+import type { ExtensionAPI, ExtensionContext } from "@otto/pi-coding-agent";
+import { Key } from "@otto/pi-tui";
 
 import { SHORTCUTS } from "../shortcut-defs.js";
 import { shortcutDesc } from "../../shared/mod.js";
@@ -28,8 +28,8 @@ export function registerShortcuts(pi: ExtensionAPI): void {
       import("../dashboard-overlay.js"),
       getProjectRoot(),
     ]);
-    if (!existsSync(join(basePath, ".gsd"))) {
-      ctx.ui.notify("No .gsd/ directory found. Run /gsd to start.", "info");
+    if (!existsSync(join(basePath, ".otto/workflow"))) {
+      ctx.ui.notify("No .otto/workflow/ directory found. Run /otto to start.", "info");
       return;
     }
     await ctx.ui.custom<boolean>(
@@ -54,9 +54,9 @@ export function registerShortcuts(pi: ExtensionAPI): void {
 
   const openParallelOverlay = async (ctx: ExtensionContext) => {
     const basePath = await getProjectRoot();
-    const parallelDir = join(basePath, ".gsd", "parallel");
+    const parallelDir = join(basePath, ".otto/workflow", "parallel");
     if (!existsSync(parallelDir)) {
-      ctx.ui.notify("No parallel workers found. Run /gsd parallel start first.", "info");
+      ctx.ui.notify("No parallel workers found. Run /otto parallel start first.", "info");
       return;
     }
     const { ParallelMonitorOverlay } = await import("../parallel-monitor-overlay.js");
@@ -97,5 +97,5 @@ export function registerShortcuts(pi: ExtensionAPI): void {
   });
 
   // No Ctrl+Shift+P fallback — conflicts with cycleModelBackward (shift+ctrl+p).
-  // Use Ctrl+Alt+P or /loop24 parallel watch instead.
+  // Use Ctrl+Alt+P or /otto parallel watch instead.
 }

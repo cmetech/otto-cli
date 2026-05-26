@@ -37,10 +37,10 @@ import { _synthesizePausedSessionRecoveryForTest } from "../auto.ts";
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-test-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   // Phase C pt 2: lock and paused-session live in the DB now. Open it
   // for every test base so the helpers below can write through.
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   return base;
 }
 
@@ -111,7 +111,7 @@ function writeTestLock(
 }
 
 function writeRoadmap(base: string, checked = false): void {
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   mkdirSync(join(milestoneDir, "slices", "S01", "tasks"), { recursive: true });
   writeFileSync(
     join(milestoneDir, "M001-ROADMAP.md"),
@@ -161,14 +161,14 @@ function writeRoadmap(base: string, checked = false): void {
 }
 
 function writeCompleteSliceArtifacts(base: string): void {
-  const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+  const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
   mkdirSync(sliceDir, { recursive: true });
   writeFileSync(join(sliceDir, "S01-SUMMARY.md"), "# Summary\nDone.\n", "utf-8");
   writeFileSync(join(sliceDir, "S01-UAT.md"), "# UAT\nPassed.\n", "utf-8");
 }
 
 function writeCompleteMilestoneSummary(base: string): void {
-  const milestoneDir = join(base, ".gsd", "milestones", "M001");
+  const milestoneDir = join(base, ".otto/workflow", "milestones", "M001");
   mkdirSync(milestoneDir, { recursive: true });
   writeFileSync(join(milestoneDir, "M001-SUMMARY.md"), "# Milestone Summary\nDone.\n", "utf-8");
 }
@@ -194,7 +194,7 @@ function writePausedSession(
 }
 
 function writeActivityLog(base: string, entries: Record<string, unknown>[]): void {
-  const activityDir = join(base, ".gsd", "activity");
+  const activityDir = join(base, ".otto/workflow", "activity");
   mkdirSync(activityDir, { recursive: true });
   writeFileSync(
     join(activityDir, "001-execute-task-M001-S01-T01.jsonl"),

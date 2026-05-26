@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Tests for capped GSD workflow protocol and doctor-heal payload helpers.
+// Project/App: OTTO
+// File Purpose: Tests for capped OTTO workflow protocol and doctor-heal payload helpers.
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -64,7 +64,7 @@ test("workflow protocol excerpt includes late verification and advance rules", (
 
 test("doctor heal summary omits duplicated full report body", () => {
   const report = [
-    "# GSD doctor heal prep.",
+    "# OTTO doctor heal prep.",
     "Scope: M001",
     "Status: warning",
     "Warnings: 9",
@@ -74,7 +74,7 @@ test("doctor heal summary omits duplicated full report body", () => {
 
   const summary = buildDoctorHealSummary(report, { maxChars: 900 });
 
-  assert.match(summary, /GSD doctor heal prep/);
+  assert.match(summary, /OTTO doctor heal prep/);
   assert.match(summary, /Warnings: 9/);
   assert.ok(summary.length <= 900);
   assert.doesNotMatch(summary, /VERY_LONG_FULL_REPORT_BODY VERY_LONG_FULL_REPORT_BODY VERY_LONG_FULL_REPORT_BODY/);

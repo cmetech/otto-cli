@@ -7,7 +7,7 @@
  */
 
 import { readFileSync } from 'node:fs'
-import { serializeJsonLine } from '@loop24/pi-coding-agent'
+import { serializeJsonLine } from '@otto/pi-coding-agent'
 
 // ---------------------------------------------------------------------------
 // Types

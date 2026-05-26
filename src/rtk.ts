@@ -8,8 +8,8 @@ import { Readable } from "node:stream";
 import { finished } from "node:stream/promises";
 import extractZip from "extract-zip";
 import {
-  GSD_RTK_DISABLED_ENV,
-  GSD_RTK_PATH_ENV,
+  OTTO_RTK_DISABLED_ENV,
+  OTTO_RTK_PATH_ENV,
   RTK_TELEMETRY_DISABLED_ENV,
   applyRtkProcessEnv,
   buildRtkEnv,
@@ -23,11 +23,10 @@ import {
 } from "./rtk-shared.js";
 
 export const RTK_VERSION = "0.33.1";
-export const LOOP24_SKIP_RTK_INSTALL_ENV = "LOOP24_SKIP_RTK_INSTALL";
-export const GSD_SKIP_RTK_INSTALL_ENV = "GSD_SKIP_RTK_INSTALL";
+export const OTTO_SKIP_RTK_INSTALL_ENV = "OTTO_SKIP_RTK_INSTALL";
 export {
-  GSD_RTK_DISABLED_ENV,
-  GSD_RTK_PATH_ENV,
+  OTTO_RTK_DISABLED_ENV,
+  OTTO_RTK_PATH_ENV,
   RTK_TELEMETRY_DISABLED_ENV,
   applyRtkProcessEnv,
   buildRtkEnv,
@@ -182,7 +181,7 @@ export function resolveRtkBinaryPath(options: ResolveRtkBinaryPathOptions = {}):
   const platform = options.platform ?? process.platform;
 
   if (options.binaryPath) return options.binaryPath;
-  const explicitPath = env[GSD_RTK_PATH_ENV];
+  const explicitPath = env[OTTO_RTK_PATH_ENV];
   if (explicitPath && existsSync(explicitPath)) {
     return explicitPath;
   }
@@ -262,14 +261,14 @@ export function validateRtkBinary(binaryPath: string, options: ValidateRtkBinary
 export async function ensureRtkAvailable(options: EnsureRtkOptions = {}): Promise<EnsureRtkResult> {
   const env = options.env ?? process.env;
   if (!isRtkEnabled(env)) {
-    return { enabled: false, supported: true, available: false, source: "disabled", reason: `${GSD_RTK_DISABLED_ENV} is set` };
+    return { enabled: false, supported: true, available: false, source: "disabled", reason: `${OTTO_RTK_DISABLED_ENV} is set` };
   }
-  if (isTruthy(env[LOOP24_SKIP_RTK_INSTALL_ENV] ?? env[GSD_SKIP_RTK_INSTALL_ENV])) {
-    const configuredPath = env[GSD_RTK_PATH_ENV];
+  if (isTruthy(env[OTTO_SKIP_RTK_INSTALL_ENV])) {
+    const configuredPath = env[OTTO_RTK_PATH_ENV];
     if (configuredPath && existsSync(configuredPath)) {
       return { enabled: true, supported: true, available: true, source: "managed", binaryPath: configuredPath };
     }
-    return { enabled: true, supported: true, available: false, source: "missing", reason: `${GSD_SKIP_RTK_INSTALL_ENV} is set` };
+    return { enabled: true, supported: true, available: false, source: "missing", reason: `${OTTO_SKIP_RTK_INSTALL_ENV} is set` };
   }
 
   const targetDir = options.targetDir ?? getManagedRtkDir(env);
@@ -362,7 +361,7 @@ export async function bootstrapRtk(options: EnsureRtkOptions = {}): Promise<Ensu
   const result = await ensureRtkAvailable(options);
   applyRtkProcessEnv(process.env);
   if (result.binaryPath) {
-    process.env[GSD_RTK_PATH_ENV] = result.binaryPath;
+    process.env[OTTO_RTK_PATH_ENV] = result.binaryPath;
   }
   return result;
 }

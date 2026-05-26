@@ -41,8 +41,8 @@ describe('normalizeFilePath backtick stripping (#3649)', () => {
 
   it('strips stray backticks from dash-annotated bare paths (#4550)', () => {
     assert.equal(
-      normalizeFilePath('.gsd/KNOWLEDGE.md` — append-only S05 lessons section'),
-      '.gsd/KNOWLEDGE.md',
+      normalizeFilePath('.otto/workflow/KNOWLEDGE.md` — append-only S05 lessons section'),
+      '.otto/workflow/KNOWLEDGE.md',
     )
   })
 

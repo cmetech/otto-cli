@@ -19,9 +19,9 @@ import { handleReassessRoadmap } from '../tools/reassess-roadmap.ts';
 
 function makeTmpBase(): string {
   const base = mkdtempSync(join(tmpdir(), 'gsd-reassess-'));
-  mkdirSync(join(base, '.gsd', 'milestones', 'M001', 'slices', 'S01'), { recursive: true });
-  mkdirSync(join(base, '.gsd', 'milestones', 'M001', 'slices', 'S02'), { recursive: true });
-  mkdirSync(join(base, '.gsd', 'milestones', 'M001', 'slices', 'S03'), { recursive: true });
+  mkdirSync(join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01'), { recursive: true });
+  mkdirSync(join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S02'), { recursive: true });
+  mkdirSync(join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S03'), { recursive: true });
   return base;
 }
 
@@ -75,7 +75,7 @@ function validReassessParams() {
 
 test('handleReassessRoadmap rejects invalid payloads (missing milestoneId)', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedMilestoneWithSlices();
@@ -90,7 +90,7 @@ test('handleReassessRoadmap rejects invalid payloads (missing milestoneId)', asy
 
 test('handleReassessRoadmap rejects missing milestone', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     // No milestone seeded
@@ -104,7 +104,7 @@ test('handleReassessRoadmap rejects missing milestone', async () => {
 
 test('handleReassessRoadmap rejects structural violation: modifying a completed slice', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedMilestoneWithSlices({ s01Status: 'complete', s02Status: 'pending', s03Status: 'pending' });
@@ -128,7 +128,7 @@ test('handleReassessRoadmap rejects structural violation: modifying a completed 
 
 test('handleReassessRoadmap rejects structural violation: removing a completed slice', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedMilestoneWithSlices({ s01Status: 'complete', s02Status: 'pending', s03Status: 'pending' });
@@ -152,7 +152,7 @@ test('handleReassessRoadmap rejects structural violation: removing a completed s
 
 test('handleReassessRoadmap succeeds when modifying only pending slices', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedMilestoneWithSlices({ s01Status: 'complete', s02Status: 'pending', s03Status: 'pending' });
@@ -162,7 +162,7 @@ test('handleReassessRoadmap succeeds when modifying only pending slices', async 
     assert.ok(!('error' in result), `unexpected error: ${'error' in result ? result.error : ''}`);
 
     // Verify assessments row exists in DB
-    const assessmentPath = join('.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-ASSESSMENT.md');
+    const assessmentPath = join('.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-ASSESSMENT.md');
     const assessment = getAssessment(assessmentPath);
     assert.ok(assessment, 'assessment row should exist in DB');
     assert.equal(assessment['milestone_id'], 'M001');
@@ -193,13 +193,13 @@ test('handleReassessRoadmap succeeds when modifying only pending slices', async 
     assert.equal(s01?.status, 'complete');
 
     // Verify ROADMAP.md re-rendered on disk
-    const roadmapPath = join(base, '.gsd', 'milestones', 'M001', 'M001-ROADMAP.md');
+    const roadmapPath = join(base, '.otto/workflow', 'milestones', 'M001', 'M001-ROADMAP.md');
     assert.ok(existsSync(roadmapPath), 'ROADMAP.md should be rendered to disk');
     const roadmapContent = readFileSync(roadmapPath, 'utf-8');
     assert.ok(roadmapContent.includes('Updated Slice Two'), 'ROADMAP.md should contain updated S02 title');
 
     // Verify ASSESSMENT.md exists on disk
-    const assessmentDiskPath = join(base, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'S01-ASSESSMENT.md');
+    const assessmentDiskPath = join(base, '.otto/workflow', 'milestones', 'M001', 'slices', 'S01', 'S01-ASSESSMENT.md');
     assert.ok(existsSync(assessmentDiskPath), 'ASSESSMENT.md should be rendered to disk');
     const assessmentContent = readFileSync(assessmentDiskPath, 'utf-8');
     assert.ok(assessmentContent.includes('confirmed'), 'ASSESSMENT.md should contain verdict');
@@ -211,7 +211,7 @@ test('handleReassessRoadmap succeeds when modifying only pending slices', async 
 
 test('handleReassessRoadmap cache invalidation: getMilestoneSlices reflects mutations', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedMilestoneWithSlices({ s01Status: 'complete', s02Status: 'pending', s03Status: 'pending' });
@@ -242,7 +242,7 @@ test('handleReassessRoadmap cache invalidation: getMilestoneSlices reflects muta
 
 test('handleReassessRoadmap is idempotent: calling twice with same params succeeds', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedMilestoneWithSlices({ s01Status: 'complete', s02Status: 'pending', s03Status: 'pending' });
@@ -267,7 +267,7 @@ test('handleReassessRoadmap is idempotent: calling twice with same params succee
 
 test('handleReassessRoadmap rejects slice with status "done" (alias for complete)', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedMilestoneWithSlices({ s01Status: 'done', s02Status: 'pending', s03Status: 'pending' });
@@ -291,7 +291,7 @@ test('handleReassessRoadmap rejects slice with status "done" (alias for complete
 
 test('handleReassessRoadmap returns structured error payloads with actionable messages', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     seedMilestoneWithSlices({ s01Status: 'complete', s02Status: 'complete', s03Status: 'pending' });
@@ -329,7 +329,7 @@ test('handleReassessRoadmap returns structured error payloads with actionable me
 
 test('handleReassessRoadmap invalidates stale milestone-validation when roadmap changes (#2957)', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     // Seed: M001 with S01-S04 all complete, plus a stale VALIDATION with needs-remediation
@@ -340,7 +340,7 @@ test('handleReassessRoadmap invalidates stale milestone-validation when roadmap 
     insertSlice({ id: 'S04', milestoneId: 'M001', title: 'Slice Four', status: 'complete', demo: 'Demo' });
 
     // Insert milestone-validation assessment with needs-remediation verdict (stale)
-    const validationPath = join('.gsd', 'milestones', 'M001', 'M001-VALIDATION.md');
+    const validationPath = join('.otto/workflow', 'milestones', 'M001', 'M001-VALIDATION.md');
     insertAssessment({
       path: validationPath,
       milestoneId: 'M001',
@@ -395,7 +395,7 @@ test('handleReassessRoadmap invalidates stale milestone-validation when roadmap 
 
 test('handleReassessRoadmap does NOT invalidate validation when no roadmap structural changes (#2957)', async () => {
   const base = makeTmpBase();
-  openDatabase(join(base, '.gsd', 'gsd.db'));
+  openDatabase(join(base, '.otto/workflow', 'otto.db'));
 
   try {
     // Seed: M001 with slices, plus a validation with pass verdict
@@ -404,7 +404,7 @@ test('handleReassessRoadmap does NOT invalidate validation when no roadmap struc
     insertSlice({ id: 'S02', milestoneId: 'M001', title: 'Slice Two', status: 'pending', demo: 'Demo' });
 
     // Insert milestone-validation assessment with pass verdict
-    const validationPath = join('.gsd', 'milestones', 'M001', 'M001-VALIDATION.md');
+    const validationPath = join('.otto/workflow', 'milestones', 'M001', 'M001-VALIDATION.md');
     insertAssessment({
       path: validationPath,
       milestoneId: 'M001',

@@ -4,7 +4,7 @@
  * `metrics.ts`.
  *
  * The previous version (PR #582, `972dd05f4`) re-implemented both
- * functions inline, citing a `paths.js → @loop24/pi-coding-agent` import
+ * functions inline, citing a `paths.js → @otto/pi-coding-agent` import
  * chain as the reason. That chain concern is no longer valid — the
  * real exports import cleanly from `metrics.ts`. All 10 math tests
  * were then exercising the test's own copy of the functions, not the

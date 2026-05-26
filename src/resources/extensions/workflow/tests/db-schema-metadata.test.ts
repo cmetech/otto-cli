@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for SQLite schema metadata helpers.
 
 import { describe, test } from "node:test";

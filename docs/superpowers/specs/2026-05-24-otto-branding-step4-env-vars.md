@@ -9,14 +9,14 @@ file-sequence step 4). Follows step 3 (config-dir rename).
 
 ~60 `LOOP24_*` environment variables are read across the codebase (full list in
 the inventory below). The product brand is now OTTO, so `OTTO_*` should be the
-**canonical** env prefix, with `LOOP24_*` (and the older `GSD_*`) accepted as
+**canonical** env prefix, with `LOOP24_*` (and the older `OTTO_*`) accepted as
 **fallbacks** so existing shells, CI, and scripts keep working. This matches the
 roadmap decision: "OTTO_* canonical + fallbacks."
 
 The codebase already has two partial patterns:
-- **Set-sites** dual-write: `process.env.LOOP24_X = process.env.GSD_X = value`
+- **Set-sites** dual-write: `process.env.LOOP24_X = process.env.OTTO_X = value`
   (e.g. loader.ts sets CODING_AGENT_DIR, PKG_ROOT, VERSION, …).
-- **User-input read-sites** dual-read: `process.env.LOOP24_HOME || process.env.GSD_HOME`.
+- **User-input read-sites** dual-read: `process.env.LOOP24_HOME || process.env.OTTO_HOME`.
 
 There is **no central shim**. A full per-read-site retrofit (~60 vars across many
 files) is high-churn and high-risk.
@@ -25,13 +25,13 @@ files) is high-churn and high-risk.
 
 Add **one** module, `src/env-normalize.ts`, whose module-load side effect runs
 **before** any brand var is read. For each known brand-var suffix it computes the
-effective value as the first set of `OTTO_<S>`, `LOOP24_<S>`, `GSD_<S>` (in that
+effective value as the first set of `OTTO_<S>`, `LOOP24_<S>`, `OTTO_<S>` (in that
 precedence) and writes the value back to **all three** names. Net effect:
 
-- A user who sets only `OTTO_X` → it propagates to `LOOP24_X`/`GSD_X`, so every
+- A user who sets only `OTTO_X` → it propagates to `LOOP24_X`/`OTTO_X`, so every
   existing `process.env.LOOP24_X` read keeps working unchanged.
-- A user who still sets `LOOP24_X` (or `GSD_X`) → unchanged behavior (fallback).
-- `OTTO_*` is the documented canonical; `LOOP24_*`/`GSD_*` are fallbacks.
+- A user who still sets `LOOP24_X` (or `OTTO_X`) → unchanged behavior (fallback).
+- `OTTO_*` is the documented canonical; `LOOP24_*`/`OTTO_*` are fallbacks.
 
 No read-site churn. The existing set-site dual-writes stay (harmless; the shim is
 about *user-provided* values at startup).
@@ -50,8 +50,8 @@ about *user-provided* values at startup).
 ### Special cases
 
 - **Home override:** `src/app-paths.ts` currently reads
-  `LOOP24_HOME || GSD_HOME`. Add `OTTO_HOME` as the highest-precedence option:
-  `OTTO_HOME || LOOP24_HOME || GSD_HOME`. (The normalization shim also mirrors
+  `LOOP24_HOME || OTTO_HOME`. Add `OTTO_HOME` as the highest-precedence option:
+  `OTTO_HOME || LOOP24_HOME || OTTO_HOME`. (The normalization shim also mirrors
   these, but app-paths reads at its own module load, so make the precedence
   explicit there too.)
 - **Agent dir:** pi's `config.ts` reads `ENV_AGENT_DIR =
@@ -101,4 +101,4 @@ suffix set from a single array so adding/removing a var is a one-line edit.)
 - No `git add -A`; `docs/branding/` untouched.
 
 ## Commit
-- `feat(otto-step4): OTTO_* canonical env vars with LOOP24_*/GSD_* fallback shim`
+- `feat(otto-step4): OTTO_* canonical env vars with LOOP24_*/OTTO_* fallback shim`

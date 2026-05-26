@@ -2,8 +2,8 @@
  * worktree-sync-tasks.test.ts
  *
  * DB-authoritative worktree contract: task and milestone markdown under a
- * worktree .gsd directory are legacy projections. syncWorktreeStateBack must
- * not copy them into the canonical project .gsd tree.
+ * worktree .otto/workflow directory are legacy projections. syncWorktreeStateBack must
+ * not copy them into the canonical project .otto/workflow tree.
  */
 
 import test from "node:test";
@@ -41,21 +41,21 @@ test("syncWorktreeStateBack does not copy task markdown projections from worktre
   const wtBase = makeTempDir("wt");
 
   try {
-    writeFile(wtBase, ".gsd/milestones/M001/M001-ROADMAP.md", "# Roadmap\n");
-    writeFile(wtBase, ".gsd/milestones/M001/slices/S01/S01-PLAN.md", "# Plan\n");
-    writeFile(wtBase, ".gsd/milestones/M001/slices/S01/tasks/T01-SUMMARY.md", "# Task Summary\n");
-    mkdirSync(join(mainBase, ".gsd"), { recursive: true });
+    writeFile(wtBase, ".otto/workflow/milestones/M001/M001-ROADMAP.md", "# Roadmap\n");
+    writeFile(wtBase, ".otto/workflow/milestones/M001/slices/S01/S01-PLAN.md", "# Plan\n");
+    writeFile(wtBase, ".otto/workflow/milestones/M001/slices/S01/tasks/T01-SUMMARY.md", "# Task Summary\n");
+    mkdirSync(join(mainBase, ".otto/workflow"), { recursive: true });
 
     const result = syncWorktreeStateBack(mainBase, wtBase, "M000");
 
     assert.equal(result.synced.some((p) => p.includes("milestones/")), false);
     assert.equal(
-      existsSync(join(mainBase, ".gsd/milestones/M001/M001-ROADMAP.md")),
+      existsSync(join(mainBase, ".otto/workflow/milestones/M001/M001-ROADMAP.md")),
       false,
       "milestone markdown projection must not be copied",
     );
     assert.equal(
-      existsSync(join(mainBase, ".gsd/milestones/M001/slices/S01/tasks/T01-SUMMARY.md")),
+      existsSync(join(mainBase, ".otto/workflow/milestones/M001/slices/S01/tasks/T01-SUMMARY.md")),
       false,
       "task summary projection must not be copied",
     );
@@ -69,16 +69,16 @@ test("syncWorktreeStateBack still copies diagnostic root files", () => {
   const wtBase = makeTempDir("wt");
 
   try {
-    writeFile(wtBase, ".gsd/completed-units.json", JSON.stringify({ units: ["M001/S01/T01"] }));
-    writeFile(wtBase, ".gsd/metrics.json", JSON.stringify({ version: 1, units: [] }));
-    mkdirSync(join(mainBase, ".gsd"), { recursive: true });
+    writeFile(wtBase, ".otto/workflow/completed-units.json", JSON.stringify({ units: ["M001/S01/T01"] }));
+    writeFile(wtBase, ".otto/workflow/metrics.json", JSON.stringify({ version: 1, units: [] }));
+    mkdirSync(join(mainBase, ".otto/workflow"), { recursive: true });
 
     const result = syncWorktreeStateBack(mainBase, wtBase, "M001");
 
     assert.ok(result.synced.includes("completed-units.json"));
     assert.ok(result.synced.includes("metrics.json"));
-    assert.ok(existsSync(join(mainBase, ".gsd/completed-units.json")));
-    assert.ok(existsSync(join(mainBase, ".gsd/metrics.json")));
+    assert.ok(existsSync(join(mainBase, ".otto/workflow/completed-units.json")));
+    assert.ok(existsSync(join(mainBase, ".otto/workflow/metrics.json")));
   } finally {
     cleanup(mainBase, wtBase);
   }

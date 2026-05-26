@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Host-owned verification verdict policy for auto-mode units.
 
 import type { VerificationResult as VerificationGateResult } from "./types.js";

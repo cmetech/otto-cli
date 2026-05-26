@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Mid-execution escalation artifact and state helpers for the workflow tasks.
 // Workflow Extension — ADR-011 Phase 2 Mid-Execution Escalation
 //
@@ -30,7 +30,7 @@ import { logWarning } from "./workflow-logger.js";
 
 /**
  * Canonical escalation artifact path, parallel to T##-SUMMARY.md:
- *   .gsd/milestones/{M}/slices/{S}/tasks/{T}-ESCALATION.json
+ *   .otto/workflow/milestones/{M}/slices/{S}/tasks/{T}-ESCALATION.json
  */
 export function escalationArtifactPath(
   basePath: string, milestoneId: string, sliceId: string, taskId: string,
@@ -42,7 +42,7 @@ export function escalationArtifactPath(
 
 // ─── Artifact I/O ─────────────────────────────────────────────────────────
 
-/** Build an EscalationArtifact from a gsd_complete_task escalation payload. */
+/** Build an EscalationArtifact from a otto_complete_task escalation payload. */
 export function buildEscalationArtifact(params: {
   taskId: string;
   sliceId: string;
@@ -243,7 +243,7 @@ export function resolveEscalation(
     }));
     return {
       status: "rejected-to-blocker",
-      message: `Escalation rejected. Task ${taskId} now flagged as a blocker — next /gsd auto will replan slice ${sliceId}.`,
+      message: `Escalation rejected. Task ${taskId} now flagged as a blocker — next /otto auto will replan slice ${sliceId}.`,
       artifactPath: task.escalation_artifact_path,
     };
   }
@@ -335,7 +335,7 @@ function formatOverrideBlock(art: EscalationArtifact): string {
 
 // ─── Display ──────────────────────────────────────────────────────────────
 
-/** Human-readable summary of an artifact for `/loop24 escalate show`. */
+/** Human-readable summary of an artifact for `/otto escalate show`. */
 export function formatEscalationForDisplay(art: EscalationArtifact): string {
   const resolved = art.respondedAt
     ? `\nResolved: ${art.respondedAt} — user chose "${art.userChoice}"${art.userRationale ? ` (rationale: ${art.userRationale})` : ""}`
@@ -354,16 +354,16 @@ export function formatEscalationForDisplay(art: EscalationArtifact): string {
     `Recommendation: ${art.recommendation} — ${art.recommendationRationale}`,
     resolved,
     "",
-    `Resolve with: /gsd escalate resolve ${art.taskId} <${art.options.map((o) => o.id).join("|")}|accept|reject-blocker> [rationale...]`,
+    `Resolve with: /otto escalate resolve ${art.taskId} <${art.options.map((o) => o.id).join("|")}|accept|reject-blocker> [rationale...]`,
   ].join("\n");
 }
 
-/** List actionable (unresolved) escalations for `/loop24 escalate list`. */
+/** List actionable (unresolved) escalations for `/otto escalate list`. */
 export function listActionableEscalations(milestoneId: string): TaskRow[] {
   return listEscalationArtifacts(milestoneId, /* includeResolved */ false);
 }
 
-/** List every escalation (including resolved) for `/loop24 escalate list --all`. */
+/** List every escalation (including resolved) for `/otto escalate list --all`. */
 export function listAllEscalations(milestoneId: string): TaskRow[] {
   return listEscalationArtifacts(milestoneId, /* includeResolved */ true);
 }

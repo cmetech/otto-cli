@@ -45,14 +45,14 @@ function getProps(tool: any): string[] {
 // ─── Stream 2: actor identity exposure on 8 mutating workflow tools ─────────
 
 const ACTOR_TOOLS = [
-  "gsd_plan_milestone",
-  "gsd_plan_slice",
-  "gsd_plan_task",
-  "gsd_task_complete",
-  "gsd_slice_complete",
-  "gsd_complete_milestone",
-  "gsd_replan_slice",
-  "gsd_reassess_roadmap",
+  "otto_plan_milestone",
+  "otto_plan_slice",
+  "otto_plan_task",
+  "otto_task_complete",
+  "otto_slice_complete",
+  "otto_complete_milestone",
+  "otto_replan_slice",
+  "otto_reassess_roadmap",
 ];
 
 for (const name of ACTOR_TOOLS) {
@@ -73,9 +73,9 @@ for (const name of ACTOR_TOOLS) {
 // ─── Stream 3: reopen tools registered with canonical + alias names ─────────
 
 const REOPEN_TOOLS = [
-  { canonical: "gsd_task_reopen", alias: "gsd_reopen_task" },
-  { canonical: "gsd_slice_reopen", alias: "gsd_reopen_slice" },
-  { canonical: "gsd_milestone_reopen", alias: "gsd_reopen_milestone" },
+  { canonical: "otto_task_reopen", alias: "otto_reopen_task" },
+  { canonical: "otto_slice_reopen", alias: "otto_reopen_slice" },
+  { canonical: "otto_milestone_reopen", alias: "otto_reopen_milestone" },
 ];
 
 for (const { canonical, alias } of REOPEN_TOOLS) {
@@ -91,16 +91,16 @@ for (const { canonical, alias } of REOPEN_TOOLS) {
 
 // ─── Reopen tool schemas accept minimal core params ──────────────────────────
 
-test("gsd_task_reopen — validates with only milestoneId/sliceId/taskId", () => {
-  const tool = getTool("gsd_task_reopen");
+test("otto_task_reopen — validates with only milestoneId/sliceId/taskId", () => {
+  const tool = getTool("otto_task_reopen");
   assert.ok(tool);
   const minimal = { milestoneId: "M001", sliceId: "S01", taskId: "T01" };
   const errors = [...Value.Errors(tool.parameters, minimal)];
   assert.strictEqual(errors.length, 0, `core params should validate; got: ${errors.map(e => `${e.path}: ${e.message}`).join(", ")}`);
 });
 
-test("gsd_task_reopen — accepts reason + actor fields", () => {
-  const tool = getTool("gsd_task_reopen");
+test("otto_task_reopen — accepts reason + actor fields", () => {
+  const tool = getTool("otto_task_reopen");
   assert.ok(tool);
   const full = {
     milestoneId: "M001",
@@ -114,16 +114,16 @@ test("gsd_task_reopen — accepts reason + actor fields", () => {
   assert.strictEqual(errors.length, 0, `full payload should validate; got: ${errors.map(e => `${e.path}: ${e.message}`).join(", ")}`);
 });
 
-test("gsd_slice_reopen — validates with only milestoneId/sliceId", () => {
-  const tool = getTool("gsd_slice_reopen");
+test("otto_slice_reopen — validates with only milestoneId/sliceId", () => {
+  const tool = getTool("otto_slice_reopen");
   assert.ok(tool);
   const minimal = { milestoneId: "M001", sliceId: "S01" };
   const errors = [...Value.Errors(tool.parameters, minimal)];
   assert.strictEqual(errors.length, 0, `core params should validate; got: ${errors.map(e => `${e.path}: ${e.message}`).join(", ")}`);
 });
 
-test("gsd_milestone_reopen — validates with only milestoneId", () => {
-  const tool = getTool("gsd_milestone_reopen");
+test("otto_milestone_reopen — validates with only milestoneId", () => {
+  const tool = getTool("otto_milestone_reopen");
   assert.ok(tool);
   const minimal = { milestoneId: "M001" };
   const errors = [...Value.Errors(tool.parameters, minimal)];
@@ -140,7 +140,7 @@ test("workflow MCP surface includes the reopen tools", async () => {
   // with our reopen tools as required, and assert the surface has them.
   const err = getWorkflowTransportSupportError(
     "claude-code",
-    ["gsd_task_reopen", "gsd_slice_reopen", "gsd_milestone_reopen"],
+    ["otto_task_reopen", "otto_slice_reopen", "otto_milestone_reopen"],
     { authMode: "externalCli", baseUrl: "local://test" },
   );
 
@@ -149,9 +149,9 @@ test("workflow MCP surface includes the reopen tools", async () => {
   // the error must NOT name our three reopen tools as missing from the surface.
   if (err !== null) {
     assert.ok(
-      !err.includes("gsd_task_reopen") &&
-      !err.includes("gsd_slice_reopen") &&
-      !err.includes("gsd_milestone_reopen"),
+      !err.includes("otto_task_reopen") &&
+      !err.includes("otto_slice_reopen") &&
+      !err.includes("otto_milestone_reopen"),
       `surface should include all three reopen tools, but error reports them missing: ${err}`,
     );
   }

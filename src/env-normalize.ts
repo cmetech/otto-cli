@@ -1,14 +1,8 @@
-// Brand env-var normalization (OTTO branding step 4).
+// Brand env-var normalization.
 //
-// OTTO_* is the canonical env prefix. LOOP24_* (current) and GSD_* (legacy) are
-// accepted as fallbacks so existing shells, CI, and scripts keep working.
-//
-// For each known brand-var suffix we resolve the effective value by precedence
-// OTTO_<S> > LOOP24_<S> > GSD_<S> (first one that is DEFINED — preserving "0"
-// and "" exactly) and mirror it back to whichever of the three names are unset.
-// Net effect: every existing `process.env.LOOP24_<S>` read keeps working, and a
-// user who sets only `OTTO_<S>` gets it propagated. Already-set names are never
-// clobbered, so this is idempotent and safe to run more than once.
+// OTTO_* is the only supported product env prefix. This module intentionally
+// does not mirror legacy prefixes into OTTO_* values; callers must read OTTO_*
+// directly.
 //
 // This module's side effect must run BEFORE any brand var is read. Import it as
 // the FIRST import in each process entry point (e.g. src/loader.ts), above
@@ -79,28 +73,14 @@ export const BRAND_ENV_SUFFIXES: readonly string[] = [
   "WORKTREE",
 ] as const;
 
-const PREFIXES = ["OTTO_", "LOOP24_", "GSD_"] as const;
-
 /**
- * Mirror each brand env var across the OTTO_/LOOP24_/GSD_ prefixes, resolving by
- * precedence OTTO > LOOP24 > GSD (first DEFINED value). Never clobbers an
- * already-set name. Pure with respect to env beyond the intended mirroring.
+ * Normalize brand environment variables.
+ *
+ * Kept as a side-effect hook for entry points that already import it early.
+ * With OTTO as the only active identity there is no alias mirroring to perform.
  */
 export function normalizeBrandEnv(env: NodeJS.ProcessEnv = process.env): void {
-  for (const suffix of BRAND_ENV_SUFFIXES) {
-    let value: string | undefined;
-    for (const prefix of PREFIXES) {
-      const v = env[prefix + suffix];
-      if (v !== undefined) {
-        value = v;
-        break;
-      }
-    }
-    if (value === undefined) continue;
-    for (const prefix of PREFIXES) {
-      if (env[prefix + suffix] === undefined) env[prefix + suffix] = value;
-    }
-  }
+  void env;
 }
 
 // Module-load side effect: normalize as early as possible.

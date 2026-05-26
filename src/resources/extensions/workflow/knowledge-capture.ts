@@ -1,4 +1,4 @@
-// LOOP24 — KNOWLEDGE.md write-side cutover (ADR-013 Stage 2c).
+// OTTO — KNOWLEDGE.md write-side cutover (ADR-013 Stage 2c).
 //
 // Replaces the legacy `appendKnowledge` file-append path for Patterns and
 // Lessons with `createMemory` calls. Rules (K###) continue to flow through
@@ -6,7 +6,7 @@
 // memories per ADR-013 line 39.
 //
 // Next-ID assignment is the cross-surface stable rule: read the existing
-// `.gsd/KNOWLEDGE.md` for the highest <prefix>### in that section, AND read
+// `.otto/workflow/KNOWLEDGE.md` for the highest <prefix>### in that section, AND read
 // the memories table for the highest `sourceKnowledgeId` with the matching
 // prefix, take the max, and increment. This stays stable across the
 // knowledge backfill mid-run (when some rows exist only in the file and
@@ -99,7 +99,7 @@ export function captureKnowledgeEntry(
 
 /**
  * Compute the next <prefix>### identifier across both the legacy
- * `.gsd/KNOWLEDGE.md` and the `memories.structured_fields.sourceKnowledgeId`
+ * `.otto/workflow/KNOWLEDGE.md` and the `memories.structured_fields.sourceKnowledgeId`
  * surface. Takes the max numeric suffix from either side and increments.
  *
  * Padded to three digits to match the existing `appendKnowledge` convention.

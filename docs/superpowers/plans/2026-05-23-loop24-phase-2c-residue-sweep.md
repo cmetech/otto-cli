@@ -20,7 +20,7 @@ In scope:
   - `src/resources/extensions/workflow/health-widget-core.ts:73` — `"  GSD  Project Initialized"`
   - `src/resources/extensions/workflow/init-wizard.ts:421` — `"GSD — Already Initialized"`
   - `src/resources/extensions/workflow/exit-command.ts` — `"Exit GSD gracefully"` / `"Exit GSD immediately (no cleanup)"`
-  - `src/resources/extensions/workflow/commands/catalog.ts` — `GSD_COMMAND_DESCRIPTION` content `"GSD — Get Shit Done: ..."`
+  - `src/resources/extensions/workflow/commands/catalog.ts` — `OTTO_COMMAND_DESCRIPTION` content `"GSD — Get Shit Done: ..."`
 - Hardcoded `~/.gsd/agent/extensions/gsd/` paths:
   - `src/resources/extensions/workflow/prompt-loader.ts:67`
   - `src/resources/extensions/workflow/workflow-plugins.ts:61`
@@ -49,7 +49,7 @@ Out of scope (deferred, document in LOOP24-PATCHES.md but don't touch):
 - `mcp-client/manager.ts:349` etc. — MCP client identifier `name: "gsd"` is sent to MCP servers as our client name; changing it would re-handshake against any servers tracking us by that name. Internal identifier, not user-visible. Leave for a coordinated change later.
 - Internal type names (`GSDState`, `GSDConfig`, function names like `registerGSDCommand`) — per Phase 0 Known Deferred Cleanup item 7. Massive refactor for zero user-visible impact.
 - `~/.gsd/crash/` log directory in `crash-log.ts` — affects only forensic dumps after an extension crash. Internal; can move when something else triggers a sweep.
-- `commands-extensions.ts` "MISSING_GSD_MARKER" — internal error code for third-party extension `package.json` validation. Not user-facing in the failure path most users hit.
+- `commands-extensions.ts` "MISSING_OTTO_MARKER" — internal error code for third-party extension `package.json` validation. Not user-facing in the failure path most users hit.
 - `PROTECTED_EXTENSION_COMMANDS = new Set(["gsd"])` in `packages/pi-coding-agent/src/core/extensions/runner.ts:119` — this protects the literal name `"gsd"` from being hijacked. After our rename, NOTHING registers the literal `"gsd"` anymore, so the protection list is effectively dead. Tempting to remove or rename, but it doesn't affect runtime correctness and removing it is the kind of change that could break some sibling tool's expectations. Leave for now.
 
 **Dependencies:**
@@ -75,7 +75,7 @@ src/resources/extensions/workflow/
 ├── health-widget-core.ts         # "GSD Project Initialized" → BRAND_NAME
 ├── init-wizard.ts                # "GSD — Already Initialized" → BRAND_NAME
 ├── exit-command.ts               # descriptions → BRAND_NAME
-├── commands/catalog.ts           # GSD_COMMAND_DESCRIPTION content → BRAND_NAME + slashCommand
+├── commands/catalog.ts           # OTTO_COMMAND_DESCRIPTION content → BRAND_NAME + slashCommand
 ├── prompt-loader.ts              # path string
 ├── workflow-plugins.ts           # path string
 ├── forensics.ts                  # path string
@@ -330,16 +330,16 @@ Add `import { BRAND } from "./strings.js"` if not present.
 
 - [ ] **Step 5: Update `commands/catalog.ts`**
 
-Find the `GSD_COMMAND_DESCRIPTION` export. It currently reads something like:
+Find the `OTTO_COMMAND_DESCRIPTION` export. It currently reads something like:
 ```typescript
-export const GSD_COMMAND_DESCRIPTION = "GSD — Get Shit Done: /gsd help|start|templates|next|auto|status|..."
+export const OTTO_COMMAND_DESCRIPTION = "GSD — Get Shit Done: /gsd help|start|templates|next|auto|status|..."
 ```
 
 Replace with templated form (path to strings.js is `../strings.js` from inside `commands/`):
 ```typescript
 import { BRAND, slashCommand } from "../strings.js"
 
-export const GSD_COMMAND_DESCRIPTION = `${BRAND} workflow: ${slashCommand("help")}|${slashCommand("start")}|${slashCommand("templates")}|${slashCommand("next")}|${slashCommand("auto")}|${slashCommand("status")}|...`
+export const OTTO_COMMAND_DESCRIPTION = `${BRAND} workflow: ${slashCommand("help")}|${slashCommand("start")}|${slashCommand("templates")}|${slashCommand("next")}|${slashCommand("auto")}|${slashCommand("status")}|...`
 ```
 
 Keep the same subcommand list — only the prose changes. Drop "Get Shit Done" (the LOOP24 brand is not the GSD brand).
@@ -370,10 +370,10 @@ user-visible surfaces:
 - health-widget-core.ts: 'GSD Project Initialized' → \`\${BRAND} Project Initialized\`
 - init-wizard.ts: title 'GSD — Already Initialized' → \`\${BRAND} — Already Initialized\`
 - exit-command.ts: /exit + /kill descriptions
-- commands/catalog.ts: GSD_COMMAND_DESCRIPTION drops 'Get Shit Done',
+- commands/catalog.ts: OTTO_COMMAND_DESCRIPTION drops 'Get Shit Done',
   templates the slash-command prefix via slashCommand() helper
 
-The internal constant name GSD_COMMAND_DESCRIPTION is kept (per Phase 0
+The internal constant name OTTO_COMMAND_DESCRIPTION is kept (per Phase 0
 Known Deferred Cleanups item 7 — internal identifiers stay)."
 ```
 
@@ -568,7 +568,7 @@ for f in auto.ts state.ts auto-verification.ts auto-dispatch.ts undo.ts commands
   echo "$f: $matches remaining"
 done
 ```
-Expected: build clean, all counts at 0 (or near 0 — internal references like `MISSING_GSD_MARKER` will still match because we're keeping those per scope).
+Expected: build clean, all counts at 0 (or near 0 — internal references like `MISSING_OTTO_MARKER` will still match because we're keeping those per scope).
 
 - [ ] **Step 4: Commit**
 
@@ -592,7 +592,7 @@ file templates the relevant strings via BRAND + slashCommand() from
 strings.ts. Phase 0.5 listed these explicitly as deferred residue —
 Phase 2c finishes the job.
 
-Internal identifiers (MISSING_GSD_MARKER error code, type names,
+Internal identifiers (MISSING_OTTO_MARKER error code, type names,
 function names, GsdState interface) are kept per Phase 0 Known
 Deferred Cleanups item 7."
 ```
@@ -687,7 +687,7 @@ Append a Phase 2c section AFTER Phase 2b.1, BEFORE "Known Deferred Cleanups":
 All user-visible `GSD` / `Get Shit Done` / `/gsd <sub>` literals now flow
 through `BRAND` / `CMD` / `slashCommand()` from `workflow/strings.ts`.
 Internal identifiers (function names, type names, error codes,
-`MISSING_GSD_MARKER`, etc.) are kept per Phase 0 Known Deferred Cleanups
+`MISSING_OTTO_MARKER`, etc.) are kept per Phase 0 Known Deferred Cleanups
 item 7.
 
 ### Out of scope (still residue, will be addressed when something triggers a sweep)
@@ -697,7 +697,7 @@ item 7.
   server. Internal protocol field, not user-facing.
 - `~/.gsd/crash/` log directory in `crash-log.ts`. Only matters after an
   extension crash; can move when something else changes there.
-- `commands-extensions.ts:215+`: `MISSING_GSD_MARKER` validation messages
+- `commands-extensions.ts:215+`: `MISSING_OTTO_MARKER` validation messages
   for third-party-extension `package.json` schema. Internal error code.
 - `runner.ts:119`: `PROTECTED_EXTENSION_COMMANDS = new Set(["gsd"])`.
   After our rename, nothing registers `"gsd"` literally anymore, so the

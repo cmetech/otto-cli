@@ -1,14 +1,14 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Ship command for creating pull requests from the agent milestone evidence.
 
 /**
- * Command — /loop24 ship
+ * Command — /otto ship
  *
  * Creates a PR from milestone artifacts: generates title + body from
  * roadmap, slice summaries, and metrics, then opens via `gh pr create`.
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -239,7 +239,7 @@ export async function handleShip(
     }
     if (result.kind === "absent") {
       ctx.ui.notify(
-        `Slice ${sliceId} has no EVAL-REVIEW.md — consider /gsd eval-review ${sliceId} (non-blocking).`,
+        `Slice ${sliceId} has no EVAL-REVIEW.md — consider /otto eval-review ${sliceId} (non-blocking).`,
         "warning",
       );
     } else if (result.kind === "malformed") {

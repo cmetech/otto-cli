@@ -1,4 +1,4 @@
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { parseExcavateArgs } from "./args.js";
 import { resolveSkillPaths } from "./paths.js";
 import { buildPlaybook } from "./playbook.js";

@@ -1,4 +1,4 @@
-// @loop24-build/mcp-server — Tests for env-writer utilities
+// @otto-build/mcp-server — Tests for env-writer utilities
 
 import { describe, it, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
@@ -41,15 +41,15 @@ describe('checkExistingEnvKeys', () => {
 
   it('finds key in process.env', async () => {
     const tmp = makeTempDir('env-check');
-    const saved = process.env.GSD_MCP_TEST_KEY_1;
+    const saved = process.env.OTTO_MCP_TEST_KEY_1;
     try {
-      process.env.GSD_MCP_TEST_KEY_1 = 'some-value';
+      process.env.OTTO_MCP_TEST_KEY_1 = 'some-value';
       const envPath = join(tmp, '.env');
-      const result = await checkExistingEnvKeys(['GSD_MCP_TEST_KEY_1'], envPath);
-      assert.deepStrictEqual(result, ['GSD_MCP_TEST_KEY_1']);
+      const result = await checkExistingEnvKeys(['OTTO_MCP_TEST_KEY_1'], envPath);
+      assert.deepStrictEqual(result, ['OTTO_MCP_TEST_KEY_1']);
     } finally {
-      delete process.env.GSD_MCP_TEST_KEY_1;
-      if (saved !== undefined) process.env.GSD_MCP_TEST_KEY_1 = saved;
+      delete process.env.OTTO_MCP_TEST_KEY_1;
+      if (saved !== undefined) process.env.OTTO_MCP_TEST_KEY_1 = saved;
       rmSync(tmp, { recursive: true, force: true });
     }
   });
@@ -278,18 +278,18 @@ describe('applySecrets', () => {
   it('writes keys to .env and hydrates process.env', async () => {
     const tmp = makeTempDir('apply');
     const envPath = join(tmp, '.env');
-    savedKeys.GSD_APPLY_TEST_A = process.env.GSD_APPLY_TEST_A;
+    savedKeys.OTTO_APPLY_TEST_A = process.env.OTTO_APPLY_TEST_A;
     try {
       const { applied, errors } = await applySecrets(
-        [{ key: 'GSD_APPLY_TEST_A', value: 'val-a' }],
+        [{ key: 'OTTO_APPLY_TEST_A', value: 'val-a' }],
         'dotenv',
         { envFilePath: envPath },
       );
-      assert.deepStrictEqual(applied, ['GSD_APPLY_TEST_A']);
+      assert.deepStrictEqual(applied, ['OTTO_APPLY_TEST_A']);
       assert.deepStrictEqual(errors, []);
-      assert.equal(process.env.GSD_APPLY_TEST_A, 'val-a');
+      assert.equal(process.env.OTTO_APPLY_TEST_A, 'val-a');
       const content = readFileSync(envPath, 'utf8');
-      assert.ok(content.includes('GSD_APPLY_TEST_A=val-a'));
+      assert.ok(content.includes('OTTO_APPLY_TEST_A=val-a'));
     } finally {
       rmSync(tmp, { recursive: true, force: true });
     }

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Post-unit verification gate for auto-mode units.
 
 /**
@@ -13,7 +13,7 @@
  * caller checks the result and handles control flow.
  */
 
-import type { ExtensionContext, ExtensionAPI } from "@loop24/pi-coding-agent";
+import type { ExtensionContext, ExtensionAPI } from "@otto/pi-coding-agent";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { workflowProjectionRoot, resolveSlicePath, resolveMilestoneFile } from "./paths.js";
 import { resolveCanonicalMilestoneRoot } from "./worktree-manager.js";
@@ -141,7 +141,7 @@ function messagesMentionTool(messages: unknown[] | null | undefined, toolName: s
 
 function unitActivityMentionsTool(basePath: string, unitType: string, unitId: string, toolName: string): boolean {
   const safeUnitId = unitId.replace(/\//g, "-");
-  const activityDir = join(basePath, ".gsd", "activity");
+  const activityDir = join(basePath, ".otto/workflow", "activity");
   if (!existsSync(activityDir)) return false;
 
   try {
@@ -157,7 +157,7 @@ function unitActivityMentionsTool(basePath: string, unitType: string, unitId: st
 }
 
 function hasRoadmapReassessmentArtifact(basePath: string, milestoneId: string): boolean {
-  const slicesDir = join(basePath, ".gsd", "milestones", milestoneId, "slices");
+  const slicesDir = join(basePath, ".otto/workflow", "milestones", milestoneId, "slices");
   if (!existsSync(slicesDir)) return false;
 
   try {
@@ -173,7 +173,7 @@ function hasRoadmapReassessmentArtifact(basePath: string, milestoneId: string): 
 
 function hasReassessmentEvidence(s: AutoSession, milestoneId: string): boolean {
   if (!s.currentUnit) return false;
-  const toolName = "gsd_reassess_roadmap";
+  const toolName = "otto_reassess_roadmap";
   const roots = [...new Set([s.basePath, s.canonicalProjectRoot].filter(Boolean))];
   return messagesMentionTool(s.lastUnitAgentEndMessages, toolName)
     || roots.some((root) => unitActivityMentionsTool(root, s.currentUnit!.type, s.currentUnit!.id, toolName))
@@ -186,7 +186,7 @@ function hasReassessmentEvidence(s: AutoSession, milestoneId: string): boolean {
  *
  * When validate-milestone writes verdict=needs-attention, human review is
  * required and auto-mode must pause. When it writes verdict=needs-remediation,
- * the agent is expected to also call gsd_reassess_roadmap in the same turn to
+ * the agent is expected to also call otto_reassess_roadmap in the same turn to
  * add remediation slices. If they don't, the state machine re-derives
  * `phase: validating-milestone` indefinitely (all slices still complete +
  * verdict still needs-remediation), wasting ~3 dispatches before the stuck
@@ -276,7 +276,7 @@ async function runValidateMilestonePostCheck(
       return "continue";
     }
     return setToolFailureRetry(
-      "You must call gsd_validate_milestone to persist the validation results. No VALIDATION.md was created.",
+      "You must call otto_validate_milestone to persist the validation results. No VALIDATION.md was created.",
     );
   }
 
@@ -287,7 +287,7 @@ async function runValidateMilestonePostCheck(
       return "continue";
     }
     return setToolFailureRetry(
-      "You must call gsd_validate_milestone to persist the validation results. VALIDATION.md exists but is empty.",
+      "You must call otto_validate_milestone to persist the validation results. VALIDATION.md exists but is empty.",
     );
   }
 
@@ -354,7 +354,7 @@ async function runValidateMilestonePostCheck(
   );
   process.stderr.write(
     `validate-milestone: pausing — verdict=needs-remediation with no incomplete slices for ${mid}. ` +
-      `The agent must call gsd_reassess_roadmap to add remediation slices before re-validation.\n`,
+      `The agent must call otto_reassess_roadmap to add remediation slices before re-validation.\n`,
   );
   await persistMilestoneValidationGate(
     "manual-attention",

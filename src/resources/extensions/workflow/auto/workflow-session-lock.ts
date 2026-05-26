@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Session-lock validation adapter for auto-mode loop.
 
 import type { SessionLockStatus } from "../session-lock.js";

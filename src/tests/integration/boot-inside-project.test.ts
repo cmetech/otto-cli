@@ -12,11 +12,11 @@ if (!existsSync(loader)) {
   throw new Error("dist/loader.js not found — run: npm run build");
 }
 
-test("otto --version exits 0 when run inside an existing .gsd/ project", () => {
+test("otto --version ignores stale .otto/workflow/ project marker", () => {
   const dir = mkdtempSync(join(tmpdir(), "otto-boot-in-project-"));
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   writeFileSync(
-    join(dir, ".gsd", "manifest.json"),
+    join(dir, ".otto/workflow", "manifest.json"),
     JSON.stringify({ version: 1, createdAt: new Date().toISOString(), otto: "test" }),
     "utf-8",
   );
@@ -27,6 +27,7 @@ test("otto --version exits 0 when run inside an existing .gsd/ project", () => {
       timeout: 30_000,
     });
     assert.equal(result.status, 0, `expected exit 0, got ${result.status}; stderr: ${result.stderr}`);
+    assert.equal(existsSync(join(dir, ".otto", "workflow")), false);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

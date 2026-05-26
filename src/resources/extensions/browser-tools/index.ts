@@ -1,5 +1,5 @@
 /** browser-tools — pi extension: full browser interaction via Playwright. */
-import { importExtensionModule, type ExtensionAPI } from "@loop24/pi-coding-agent";
+import { importExtensionModule, type ExtensionAPI } from "@otto/pi-coding-agent";
 
 let registrationPromise: Promise<void> | null = null;
 

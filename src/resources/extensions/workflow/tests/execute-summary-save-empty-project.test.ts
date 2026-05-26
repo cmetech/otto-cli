@@ -12,7 +12,7 @@ import { executeSummarySave } from "../tools/workflow-tool-executors.ts";
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-summary-save-empty-project-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -21,7 +21,7 @@ function cleanup(base: string): void {
 }
 
 function openTestDb(base: string): void {
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
 }
 
 async function inProjectDir<T>(dir: string, fn: () => Promise<T>): Promise<T> {
@@ -38,7 +38,7 @@ function setupBase(t: { after: (fn: () => void) => void }): string {
   const base = makeTmpBase();
   // Force deep planning so the root-artifact guard requires a verified approval gate,
   // matching the production flow that surfaces the regression.
-  writeFileSync(join(base, ".gsd", "PREFERENCES.md"), "---\nplanning_depth: deep\n---\n");
+  writeFileSync(join(base, ".otto/workflow", "PREFERENCES.md"), "---\nplanning_depth: deep\n---\n");
   openTestDb(base);
   markApprovalGateVerified("depth_verification_project_confirm", base);
   t.after(() => {

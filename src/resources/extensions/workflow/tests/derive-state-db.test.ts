@@ -23,12 +23,12 @@ import {
 
 function createFixtureBase(): string {
   const base = mkdtempSync(join(tmpdir(), 'gsd-derive-db-'));
-  mkdirSync(join(base, '.gsd', 'milestones'), { recursive: true });
+  mkdirSync(join(base, '.otto/workflow', 'milestones'), { recursive: true });
   return base;
 }
 
 function writeFile(base: string, relativePath: string, content: string): void {
-  const full = join(base, '.gsd', relativePath);
+  const full = join(base, '.otto/workflow', relativePath);
   mkdirSync(join(full, '..'), { recursive: true });
   writeFileSync(full, content);
 }
@@ -219,7 +219,7 @@ describe('derive-state-db', async () => {
         'runtime degrade: blocker explains unavailable DB',
       );
       assert.ok(
-        state.nextAction.includes('/gsd migrate'),
+        state.nextAction.includes('/otto migrate'),
         'runtime degrade: next action points to explicit migration',
       );
     } finally {
@@ -408,7 +408,7 @@ describe('derive-state-db', async () => {
     const base = createFixtureBase();
     try {
       // Write minimal milestone dir (needed for milestone discovery)
-      mkdirSync(join(base, '.gsd', 'milestones', 'M001'), { recursive: true });
+      mkdirSync(join(base, '.otto/workflow', 'milestones', 'M001'), { recursive: true });
       // Write REQUIREMENTS.md to disk (DB content is no longer used by deriveState)
       writeFile(base, 'REQUIREMENTS.md', REQUIREMENTS_CONTENT);
 
@@ -453,8 +453,8 @@ describe('derive-state-db', async () => {
       // Create milestone dirs on disk (needed for directory scanning)
       // Also write roadmap files to disk — resolveMilestoneFile checks file existence
       // The DB only provides content, not file discovery
-      mkdirSync(join(base, '.gsd', 'milestones', 'M001'), { recursive: true });
-      mkdirSync(join(base, '.gsd', 'milestones', 'M002'), { recursive: true });
+      mkdirSync(join(base, '.otto/workflow', 'milestones', 'M001'), { recursive: true });
+      mkdirSync(join(base, '.otto/workflow', 'milestones', 'M002'), { recursive: true });
       writeFile(base, 'milestones/M001/M001-ROADMAP.md', completedRoadmap);
       writeFile(base, 'milestones/M001/M001-VALIDATION.md', `---\nverdict: pass\nremediation_round: 0\n---\n\n# Validation\nPassed.`);
       writeFile(base, 'milestones/M001/M001-SUMMARY.md', summaryContent);
@@ -914,7 +914,7 @@ describe('derive-state-db', async () => {
       assert.deepStrictEqual(dbState.activeMilestone?.id, 'M001', 'needs-attention-db: activeMilestone is M001');
       assert.deepStrictEqual(dbState.registry[0]?.status, 'active', 'needs-attention-db: milestone stays active, not parked');
       assert.ok(
-        dbState.blockers.some(b => b.includes('needs-attention') && b.includes('/gsd park M001')),
+        dbState.blockers.some(b => b.includes('needs-attention') && b.includes('/otto park M001')),
         'needs-attention-db: blocker explains explicit park or override paths',
       );
 
@@ -1178,8 +1178,8 @@ describe('derive-state-db', async () => {
     const base = createFixtureBase();
     try {
       // Ghost: milestone dir exists with only META.json, no context/roadmap/summary
-      mkdirSync(join(base, '.gsd', 'milestones', 'M001'), { recursive: true });
-      writeFileSync(join(base, '.gsd', 'milestones', 'M001', 'META.json'), '{}');
+      mkdirSync(join(base, '.otto/workflow', 'milestones', 'M001'), { recursive: true });
+      writeFileSync(join(base, '.otto/workflow', 'milestones', 'M001', 'META.json'), '{}');
       // Real milestone
       writeFile(base, 'milestones/M002/M002-CONTEXT.md', '# M002: Real\n\nReal milestone.');
 
@@ -1240,7 +1240,7 @@ describe('derive-state-db', async () => {
       writeFile(base, 'milestones/M002/M002-CONTEXT.md', '# M002: Queued\n\nQueued milestone.');
 
       openDatabase(':memory:');
-      // Only insert M001 — simulates the state after migration guard ran then /gsd queue added M002
+      // Only insert M001 — simulates the state after migration guard ran then /otto queue added M002
       insertMilestone({ id: 'M001', title: 'First', status: 'complete' });
 
       invalidateStateCache();
@@ -1261,18 +1261,18 @@ describe('derive-state-db', async () => {
   });
 
   // ─── Queued milestone row not clobbered by later plan (#2416 root cause) ──
-  test('derive-state-db: queued milestone row survives gsd_plan_milestone INSERT OR IGNORE', async () => {
+  test('derive-state-db: queued milestone row survives otto_plan_milestone INSERT OR IGNORE', async () => {
     try {
       openDatabase(':memory:');
 
-      // Simulates gsd_milestone_generate_id inserting a minimal queued row
+      // Simulates otto_milestone_generate_id inserting a minimal queued row
       insertMilestone({ id: 'M001', status: 'queued' });
 
       const before = getAllMilestones();
       assert.equal(before.length, 1, 'queued-row: one row after generate_id');
       assert.equal(before[0]!.status, 'queued', 'queued-row: status is queued');
 
-      // Simulates gsd_plan_milestone calling insertMilestone (INSERT OR IGNORE)
+      // Simulates otto_plan_milestone calling insertMilestone (INSERT OR IGNORE)
       insertMilestone({ id: 'M001', title: 'Planned Title', status: 'active' });
 
       const after = getAllMilestones();
@@ -1296,10 +1296,10 @@ describe('derive-state-db', async () => {
       // M002: queued milestone — directory + slices dir exists, but no content files.
       // This is what happens when ensureMilestoneDbRow creates M002 but the DB row
       // is lost during worktree teardown.
-      mkdirSync(join(base, '.gsd', 'milestones', 'M002', 'slices'), { recursive: true });
+      mkdirSync(join(base, '.otto/workflow', 'milestones', 'M002', 'slices'), { recursive: true });
 
       // A worktree exists for M002, proving it's a legitimate milestone
-      mkdirSync(join(base, '.gsd', 'worktrees', 'M002'), { recursive: true });
+      mkdirSync(join(base, '.otto/workflow', 'worktrees', 'M002'), { recursive: true });
 
       // isGhostMilestone should NOT treat M002 as ghost when worktree exists
       assert.ok(!isGhostMilestone(base, 'M002'), 'ghost-wt: M002 with worktree is NOT a ghost');
@@ -1333,7 +1333,7 @@ describe('derive-state-db', async () => {
       writeFile(base, 'milestones/M001/M001-SUMMARY.md', '# M001 Summary\n\nDone.');
 
       // M002: queued milestone — directory exists with CONTEXT file and DB row
-      mkdirSync(join(base, '.gsd', 'milestones', 'M002', 'slices'), { recursive: true });
+      mkdirSync(join(base, '.otto/workflow', 'milestones', 'M002', 'slices'), { recursive: true });
       writeFile(base, 'milestones/M002/M002-CONTEXT.md', '# M002 Context\n\nPlanned milestone.');
 
       // DB has both M001 complete and M002 queued

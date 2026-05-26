@@ -66,10 +66,10 @@ test('planning-unit: blocks write to user source via relative path', () => {
   assert.strictEqual(r.block, true);
 });
 
-test('planning-unit: allows write to .gsd/ artifacts (planning artifacts live here)', () => {
+test('planning-unit: allows write to .otto\/workflow/ artifacts (planning artifacts live here)', () => {
   const r = shouldBlockPlanningUnit(
     'write',
-    join(BASE, '.gsd', 'milestones', 'M001', 'M001-CONTEXT.md'),
+    join(BASE, '.otto\/workflow', 'milestones', 'M001', 'M001-CONTEXT.md'),
     BASE,
     'discuss-milestone',
     PLANNING,
@@ -77,23 +77,23 @@ test('planning-unit: allows write to .gsd/ artifacts (planning artifacts live he
   assert.strictEqual(r.block, false);
 });
 
-test('planning-unit: allows edit to .gsd/ via relative path', () => {
-  const r = shouldBlockPlanningUnit('edit', '.gsd/PROJECT.md', BASE, 'plan-milestone', PLANNING);
+test('planning-unit: allows edit to .otto\/workflow/ via relative path', () => {
+  const r = shouldBlockPlanningUnit('edit', '.otto\/workflow/PROJECT.md', BASE, 'plan-milestone', PLANNING);
   assert.strictEqual(r.block, false);
 });
 
-test('planning-unit: allows canonical project .gsd writes from worktree-isolated base path', () => {
-  const worktreeBase = join(BASE, '.gsd', 'worktrees', 'M001');
-  const canonicalCaptures = join(BASE, '.gsd', 'CAPTURES.md');
+test('planning-unit: allows canonical project .otto/workflow writes from worktree-isolated base path', () => {
+  const worktreeBase = join(BASE, '.otto\/workflow', 'worktrees', 'M001');
+  const canonicalCaptures = join(BASE, '.otto\/workflow', 'CAPTURES.md');
   const r = shouldBlockPlanningUnit('edit', canonicalCaptures, worktreeBase, 'triage-captures', PLANNING);
   assert.strictEqual(r.block, false);
 });
 
-test('planning-unit: rejects sibling directory that prefixes ".gsd"', () => {
-  // <BASE>/.gsd-snapshot/x.md must NOT slip through a naive startsWith check.
+test('planning-unit: rejects sibling directory that prefixes ".otto\/workflow"', () => {
+  // <BASE>/.otto/workflow-snapshot/x.md must NOT slip through a naive startsWith check.
   const r = shouldBlockPlanningUnit(
     'write',
-    join(BASE, '.gsd-snapshot', 'x.md'),
+    join(BASE, '.otto/workflow-snapshot', 'x.md'),
     BASE,
     'plan-milestone',
     PLANNING,
@@ -104,7 +104,7 @@ test('planning-unit: rejects sibling directory that prefixes ".gsd"', () => {
 test('planning-unit: rejects path traversal escaping basePath', () => {
   const r = shouldBlockPlanningUnit(
     'write',
-    join(BASE, '.gsd', '..', '..', 'etc', 'passwd'),
+    join(BASE, '.otto\/workflow', '..', '..', 'etc', 'passwd'),
     BASE,
     'discuss-milestone',
     PLANNING,
@@ -125,7 +125,7 @@ test('planning-unit: allows read-only bash (cat)', () => {
 });
 
 test('planning-unit: allows read-only bash prefixed with cd', () => {
-  const r = shouldBlockPlanningUnit('bash', 'cd .gsd && cat PROJECT.md', BASE, 'plan-slice', PLANNING_DISPATCH);
+  const r = shouldBlockPlanningUnit('bash', 'cd .otto/workflow && cat PROJECT.md', BASE, 'plan-slice', PLANNING_DISPATCH);
   assert.strictEqual(r.block, false);
 });
 
@@ -282,7 +282,7 @@ test('complete-slice closeout policy blocks edits to user source', () => {
   const r = shouldBlockPlanningUnit('edit', join(BASE, 'src', 'main.ts'), BASE, 'complete-slice', PLANNING_DISPATCH_REVIEW);
   assert.strictEqual(r.block, true);
   assert.match(r.reason!, /complete-slice/);
-  assert.match(r.reason!, /writes are restricted to \.gsd/);
+  assert.match(r.reason!, /writes are restricted to \.otto\/workflow/);
 });
 
 test('complete-slice closeout policy blocks non-allowlisted verification bash', () => {
@@ -291,8 +291,8 @@ test('complete-slice closeout policy blocks non-allowlisted verification bash', 
   assert.match(r.reason!, /bash is restricted/);
 });
 
-test('complete-slice closeout policy allows gsd_exec verification surface', () => {
-  const r = shouldBlockPlanningUnit('gsd_exec', '', BASE, 'complete-slice', PLANNING_DISPATCH_REVIEW);
+test('complete-slice closeout policy allows otto_exec verification surface', () => {
+  const r = shouldBlockPlanningUnit('otto_exec', '', BASE, 'complete-slice', PLANNING_DISPATCH_REVIEW);
   assert.strictEqual(r.block, false);
 });
 
@@ -301,10 +301,10 @@ test('planning-dispatch: still blocks writes to user source (write isolation pre
   assert.strictEqual(r.block, true);
 });
 
-test('planning-dispatch: still allows writes inside .gsd/', () => {
+test('planning-dispatch: still allows writes inside .otto\/workflow/', () => {
   const r = shouldBlockPlanningUnit(
     'write',
-    join(BASE, '.gsd', 'milestones', 'M001', 'slices', 'S01', 'PLAN.md'),
+    join(BASE, '.otto\/workflow', 'milestones', 'M001', 'slices', 'S01', 'PLAN.md'),
     BASE,
     'plan-slice',
     PLANNING_DISPATCH,
@@ -324,8 +324,8 @@ test('planning-unit: allows ask_user_questions', () => {
   assert.strictEqual(r.block, false);
 });
 
-test('planning-unit: allows gsd_* MCP tools (own validation)', () => {
-  const r = shouldBlockPlanningUnit('gsd_summary_save', '', BASE, 'discuss-milestone', PLANNING);
+test('planning-unit: allows otto_* MCP tools (own validation)', () => {
+  const r = shouldBlockPlanningUnit('otto_summary_save', '', BASE, 'discuss-milestone', PLANNING);
   assert.strictEqual(r.block, false);
 });
 
@@ -383,10 +383,10 @@ test('verification-mode: run-uat still blocks subagent dispatch', () => {
 
 // ─── read-only mode ───────────────────────────────────────────────────────
 
-test('read-only: blocks any edit even to .gsd/', () => {
+test('read-only: blocks any edit even to .otto\/workflow/', () => {
   const r = shouldBlockPlanningUnit(
     'edit',
-    join(BASE, '.gsd', 'PROJECT.md'),
+    join(BASE, '.otto\/workflow', 'PROJECT.md'),
     BASE,
     'observer-unit',
     READ_ONLY,
@@ -438,8 +438,8 @@ test('docs-mode: blocks deep .md outside docs/', () => {
   assert.strictEqual(r.block, true);
 });
 
-test('docs-mode: still allows .gsd/ writes', () => {
-  const r = shouldBlockPlanningUnit('write', '.gsd/PROJECT.md', BASE, 'rewrite-docs', DOCS);
+test('docs-mode: still allows .otto\/workflow/ writes', () => {
+  const r = shouldBlockPlanningUnit('write', '.otto\/workflow/PROJECT.md', BASE, 'rewrite-docs', DOCS);
   assert.strictEqual(r.block, false);
 });
 
@@ -463,10 +463,10 @@ test('undefined policy: pass-through', () => {
 // ─── Windows path separator handling ──────────────────────────────────────
 
 if (sep === '\\') {
-  test('planning-unit: handles Windows backslash paths under .gsd', () => {
+  test('planning-unit: handles Windows backslash paths under .otto/workflow', () => {
     const r = shouldBlockPlanningUnit(
       'write',
-      `${BASE}\\.gsd\\PROJECT.md`,
+      `${BASE}\\.otto/workflow\\PROJECT.md`,
       BASE,
       'discuss-milestone',
       PLANNING,

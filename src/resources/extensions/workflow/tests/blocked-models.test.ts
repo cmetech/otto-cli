@@ -1,4 +1,4 @@
-// GSD — Tests for persistent blocked-models store (issue #4513)
+// OTTO — Tests for persistent blocked-models store (issue #4513)
 
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -14,7 +14,7 @@ import {
 
 function mkBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-blocked-models-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -61,8 +61,8 @@ test("blocked-models: dedupes repeated blocks", () => {
 test("blocked-models: corrupted JSON recovers to empty", () => {
   const base = mkBase();
   try {
-    const path = join(base, ".gsd", "runtime", "blocked-models.json");
-    mkdirSync(join(base, ".gsd", "runtime"), { recursive: true });
+    const path = join(base, ".otto/workflow", "runtime", "blocked-models.json");
+    mkdirSync(join(base, ".otto/workflow", "runtime"), { recursive: true });
     writeFileSync(path, "{not valid json", "utf-8");
 
     assert.equal(loadBlockedModels(base).length, 0);
@@ -87,11 +87,11 @@ test("blocked-models: returns false for missing provider or id", () => {
   }
 });
 
-test("blocked-models: file created under .gsd/runtime/", () => {
+test("blocked-models: file created under .otto/workflow/runtime/", () => {
   const base = mkBase();
   try {
     blockModel(base, "openai-codex", "gpt-5", "reason");
-    assert.ok(existsSync(join(base, ".gsd", "runtime", "blocked-models.json")));
+    assert.ok(existsSync(join(base, ".otto/workflow", "runtime", "blocked-models.json")));
   } finally {
     rmSync(base, { recursive: true, force: true });
   }

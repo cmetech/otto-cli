@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Public entry point for shared workspace boundary contracts.
 
 export * from "./rpc.js";

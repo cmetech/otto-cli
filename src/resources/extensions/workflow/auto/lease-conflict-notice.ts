@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Formats user-facing auto-mode milestone lease conflict notices.
 
 const LEASE_HELD_RE = /^Milestone\s+(\S+)\s+is held by worker\s+(.+?)\s+until\s+(.+?)\.?$/;
@@ -46,7 +46,7 @@ export function formatLeaseConflictNotice(input: LeaseConflictNoticeInput): stri
 
   if (!match) {
     return [
-      `Blocked: ${milestoneId} is already active in another GSD worker. Try /gsd status to inspect it, then rerun /gsd auto when it finishes.`,
+      `Blocked: ${milestoneId} is already active in another OTTO worker. Try /otto status to inspect it, then rerun /otto auto when it finishes.`,
       `Waiting unit: ${unitLabel}.`,
       `Details: ${input.reason}`,
     ].join("\n");
@@ -55,7 +55,7 @@ export function formatLeaseConflictNotice(input: LeaseConflictNoticeInput): stri
   const [, parsedMilestoneId, workerId, expiresAt] = match;
   const retryWindow = formatRetryWindow(expiresAt, input.now ?? new Date());
   return [
-    `Blocked: ${parsedMilestoneId} is already active in another GSD worker. Retry with /gsd auto ${retryWindow}.`,
+    `Blocked: ${parsedMilestoneId} is already active in another OTTO worker. Retry with /otto auto ${retryWindow}.`,
     `Waiting unit: ${unitLabel}.`,
     `Details: held by ${workerId}.`,
   ].join("\n");

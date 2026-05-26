@@ -32,7 +32,7 @@ import { createWorkspace, scopeMilestone } from "../workspace.js";
 
 function makeProjectDir(): string {
   const dir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-metrics-scope-")));
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   return dir;
 }
 
@@ -141,7 +141,7 @@ describe("ByScope variant is pinned to scope — cwd-drift does not move write t
     const startedAt = Date.now() - 3000;
 
     // Record projectRoot before writing
-    const expectedMetricsPath = join(ws.projectRoot, ".gsd", "metrics.json");
+    const expectedMetricsPath = join(ws.projectRoot, ".otto/workflow", "metrics.json");
 
     snapshotUnitMetricsByScope(scope, ctx, "execute-task", "M001/S01/T01", startedAt, "test-model");
 
@@ -169,10 +169,10 @@ describe("ByScope variant is pinned to scope — cwd-drift does not move write t
       snapshotUnitMetricsByScope(scope2, ctx, "execute-task", "M002/S01/T01", startedAt, "test-model");
 
       const metrics1 = JSON.parse(
-        readFileSync(join(ws1.projectRoot, ".gsd", "metrics.json"), "utf-8"),
+        readFileSync(join(ws1.projectRoot, ".otto/workflow", "metrics.json"), "utf-8"),
       ) as MetricsLedger;
       const metrics2 = JSON.parse(
-        readFileSync(join(ws2.projectRoot, ".gsd", "metrics.json"), "utf-8"),
+        readFileSync(join(ws2.projectRoot, ".otto/workflow", "metrics.json"), "utf-8"),
       ) as MetricsLedger;
 
       assert.equal(metrics1.units.length, 1);
@@ -221,7 +221,7 @@ describe("ByScope works without calling initMetrics", () => {
     assert.equal(unit!.id, "M001/S01/T01");
 
     // Verify on disk
-    const raw = readFileSync(join(projectDir, ".gsd", "metrics.json"), "utf-8");
+    const raw = readFileSync(join(projectDir, ".otto/workflow", "metrics.json"), "utf-8");
     const parsed: MetricsLedger = JSON.parse(raw);
     assert.equal(parsed.units.length, 1);
 
@@ -264,8 +264,8 @@ const { openSync, closeSync, unlinkSync, existsSync, readFileSync, mkdirSync, re
 const { dirname } = require('node:path');
 const { randomBytes } = require('node:crypto');
 
-const metricsPath = process.env.GSD_SCOPE_METRICS_PATH;
-const milestoneId = process.env.GSD_SCOPE_MILESTONE_ID;
+const metricsPath = process.env.OTTO_SCOPE_METRICS_PATH;
+const milestoneId = process.env.OTTO_SCOPE_MILESTONE_ID;
 const lockPath = metricsPath + '.lock';
 
 function acquireLock(lp, ms) {
@@ -317,8 +317,8 @@ try {
     const result = spawnSync(process.execPath, ["-e", MERGE_WORKER], {
       env: {
         ...process.env,
-        GSD_SCOPE_METRICS_PATH: metricsPath,
-        GSD_SCOPE_MILESTONE_ID: milestoneId,
+        OTTO_SCOPE_METRICS_PATH: metricsPath,
+        OTTO_SCOPE_MILESTONE_ID: milestoneId,
       },
       encoding: "utf-8",
       timeout: 10_000,
@@ -332,7 +332,7 @@ try {
   test("snapshotUnitMetricsByScope preserves a pre-existing entry written by a concurrent worker", () => {
     const ws = createWorkspace(projectDir);
     const scope = scopeMilestone(ws, "M002");
-    const metricsPath = join(ws.projectRoot, ".gsd", "metrics.json");
+    const metricsPath = join(ws.projectRoot, ".otto/workflow", "metrics.json");
 
     // Simulate a concurrent worker that already wrote M001's entry to disk
     spawnMergeWorker(metricsPath, "M001");
@@ -364,7 +364,7 @@ try {
     const scope = scopeMilestone(ws, "M001");
     const ctx = mockCtx([assistantMsg()]);
     const startedAt = Date.now() - 3000;
-    const metricsPath = join(ws.projectRoot, ".gsd", "metrics.json");
+    const metricsPath = join(ws.projectRoot, ".otto/workflow", "metrics.json");
 
     // Snapshot twice with same type+id+startedAt
     snapshotUnitMetricsByScope(scope, ctx, "execute-task", "M001/S01/T01", startedAt, "test-model");

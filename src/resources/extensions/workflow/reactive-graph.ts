@@ -287,7 +287,7 @@ export async function loadSliceTaskIO(
 // ─── State Persistence ────────────────────────────────────────────────────
 
 function reactiveStatePath(basePath: string, mid: string, sid: string): string {
-  return join(basePath, ".gsd", "runtime", `${mid}-${sid}-reactive.json`);
+  return join(basePath, ".otto/workflow", "runtime", `${mid}-${sid}-reactive.json`);
 }
 
 function isReactiveState(data: unknown): data is ReactiveExecutionState {

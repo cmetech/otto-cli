@@ -46,7 +46,7 @@ test('new-milestone --auto marks the slash command for headless-owned auto start
       commandArgs: [],
       auto: true,
     }),
-    '/gsd new-milestone --headless-chain-auto',
+    '/otto new-milestone --headless-chain-auto',
   )
 })
 
@@ -57,6 +57,6 @@ test('new-milestone without --auto keeps the normal guided-flow auto handoff', (
       commandArgs: [],
       auto: false,
     }),
-    '/gsd new-milestone',
+    '/otto new-milestone',
   )
 })

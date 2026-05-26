@@ -1,7 +1,7 @@
 /**
- * LOOP24 fake LLM provider — deterministic JSONL replay for e2e tests.
+ * OTTO fake LLM provider — deterministic JSONL replay for e2e tests.
  *
- * Activated only when `GSD_FAKE_LLM_TRANSCRIPT` env var is set. Reads a
+ * Activated only when `OTTO_FAKE_LLM_TRANSCRIPT` env var is set. Reads a
  * JSONL transcript file (one turn per line) and replays scripted responses
  * sequentially. Each turn carries structural assertions about the incoming
  * request — if the request shape drifts, the provider fails loudly so tests
@@ -15,7 +15,7 @@
  *   {
  *     "turn": 1,
  *     "expect": {
- *       "modelId": "gsd-fake-model",
+ *       "modelId": "otto-fake-model",
  *       "messageCount": 2,            // optional, exact match
  *       "lastUserText": "do X",       // optional, substring match
  *       "systemContains": ["..."],    // optional, all must be present

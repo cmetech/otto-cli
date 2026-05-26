@@ -13,8 +13,8 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { delimiter, join } from "node:path";
-import { AuthStorage } from "@loop24/pi-coding-agent";
-import { getEnvApiKey } from "@loop24/pi-ai";
+import { AuthStorage } from "@otto/pi-coding-agent";
+import { getEnvApiKey } from "@otto/pi-ai";
 import { loadEffectiveGSDPreferences } from "./preferences.js";
 import { getAuthPath, PROVIDER_REGISTRY, type ProviderCategory } from "./key-manager.js";
 import { homedir } from "node:os";
@@ -198,7 +198,7 @@ function isCliBinaryInPath(providerId: string): boolean {
 function modelsJsonPaths(): string[] {
   const home = homedir();
   return [
-    join(home, ".gsd", "agent", "models.json"),
+    join(home, ".otto", "agent", "models.json"),
     // Keep parity with custom-provider discovery during auto bootstrap.
     join(home, ".pi", "agent", "models.json"),
   ];
@@ -346,7 +346,7 @@ function checkLlmProviders(): ProviderCheckResult[] {
         category: "llm",
         status: "warning",
         message: `${label} — all credentials backed off (rate limited)`,
-        detail: `GSD will retry automatically`,
+        detail: `OTTO will retry automatically`,
         required: true,
       });
     } else {

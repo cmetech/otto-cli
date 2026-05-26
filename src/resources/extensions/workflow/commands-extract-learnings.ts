@@ -1,5 +1,5 @@
 /**
- * Command — /loop24 extract-learnings
+ * Command — /otto extract-learnings
  *
  * Analyses completed milestone artefacts and dispatches an LLM turn that
  * extracts structured knowledge into 4 categories (Decisions · Lessons ·
@@ -13,14 +13,14 @@
  *
  * Per ADR-013 step 6 (cutover), the memories table is the single source of
  * truth for cross-session durable knowledge. The legacy KNOWLEDGE.md table
- * appends and gsd_save_decision call-outs were removed from this flow; the
+ * appends and otto_save_decision call-outs were removed from this flow; the
  * pre-existing decisions table was migrated by the step 5 backfill.
  *
  * The same extraction steps are reused by the complete-milestone prompt
  * via buildExtractionStepsBlock — single source of truth.
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import { existsSync, readFileSync } from "node:fs";
 import { join, basename, relative } from "node:path";
@@ -51,7 +51,7 @@ export interface PhaseArtifacts {
 
 /**
  * Full context required by `buildExtractLearningsPrompt` to construct the
- * manual `/loop24 extract-learnings` dispatch prompt. Covers the milestone
+ * manual `/otto extract-learnings` dispatch prompt. Covers the milestone
  * identity, the output target, the inlined artefact contents, and any
  * missing optional artefacts that should be surfaced to the agent.
  */
@@ -74,7 +74,7 @@ export interface ExtractLearningsPromptContext {
   uatContent: string | null;
   /** Filenames of optional artefacts that were not available for inlining. */
   missingArtifacts: string[];
-  /** Display name of the enclosing project (from `.gsd/PROJECT.md` or dir basename). */
+  /** Display name of the enclosing project (from `.otto/workflow/PROJECT.md` or dir basename). */
   projectName: string;
 }
 
@@ -127,7 +127,7 @@ export interface FrontmatterContext {
 // ─── Pure functions ───────────────────────────────────────────────────────────
 
 /**
- * Parses the argument string passed to `/loop24 extract-learnings`.
+ * Parses the argument string passed to `/otto extract-learnings`.
  *
  * Returns `{ milestoneId: null }` for empty / whitespace-only input — the
  * handler surfaces a usage hint in that case. A non-empty trimmed value is
@@ -181,7 +181,7 @@ export function resolvePhaseArtifacts(milestoneDir: string, milestoneId: string)
  * Canonical structured-extraction instructions.
  *
  * Used in two places — kept in sync by construction:
- *   1. /loop24 extract-learnings manual path (buildExtractLearningsPrompt).
+ *   1. /otto extract-learnings manual path (buildExtractLearningsPrompt).
  *   2. complete-milestone auto path ({{extractLearningsSteps}} placeholder,
  *      injected by auto-prompts::buildCompleteMilestonePrompt).
  *
@@ -194,7 +194,7 @@ export function buildExtractionStepsBlock(ctx: ExtractionStepsContext): string {
 
 Perform the following steps IN ORDER. Each step is mandatory unless explicitly
 marked optional. These instructions are the single source of truth shared by
-\`/gsd extract-learnings\` and the auto-mode milestone-completion turn.
+\`/otto extract-learnings\` and the auto-mode milestone-completion turn.
 
 ### Step 1 — Classify findings into four categories
 
@@ -287,7 +287,7 @@ captured only in the LEARNINGS.md file written in Step 2.`;
 }
 
 /**
- * Build the full dispatch prompt for the manual `/loop24 extract-learnings` path.
+ * Build the full dispatch prompt for the manual `/otto extract-learnings` path.
  *
  * Composes a header block (title, project, output file), the inlined milestone
  * artefacts (roadmap, summary, optional verification and UAT reports), and the
@@ -329,7 +329,7 @@ export function buildExtractLearningsPrompt(ctx: ExtractLearningsPromptContext):
 Analyse the milestone artefacts inlined below and follow the Structured
 Learnings Extraction procedure in full. The procedure writes LEARNINGS.md
 as the milestone-local audit trail and persists the durable subset into the
-GSD memory store via \`capture_thought\` (categories: pattern, gotcha or
+OTTO memory store via \`capture_thought\` (categories: pattern, gotcha or
 convention, architecture). The memory store is the single source of truth
 for cross-session durable knowledge (ADR-013).
 
@@ -385,7 +385,7 @@ missing_artifacts:${missingValue}
 }
 
 /**
- * Extracts the project display name from `.gsd/PROJECT.md` frontmatter.
+ * Extracts the project display name from `.otto/workflow/PROJECT.md` frontmatter.
  *
  * Falls back to the project directory's basename if PROJECT.md is missing,
  * unreadable, or has no `name:` field. Never throws — surfacing the raw
@@ -411,13 +411,13 @@ export function extractProjectName(basePath: string): string {
 // ─── Handler ──────────────────────────────────────────────────────────────────
 
 /**
- * Handles the `/loop24 extract-learnings <MID>` slash command.
+ * Handles the `/otto extract-learnings <MID>` slash command.
  *
  * Resolves and reads the milestone artefacts, constructs the dispatch prompt
  * via {@link buildExtractLearningsPrompt}, and triggers a new LLM turn via
  * `pi.sendMessage({ triggerTurn: true })`. Returns quickly with a UI
  * notification (not an error) when the milestone cannot be found or required
- * artefacts are missing, matching the behaviour of sibling `/gsd` commands.
+ * artefacts are missing, matching the behaviour of sibling `/otto` commands.
  */
 export async function handleExtractLearnings(
   args: string,
@@ -427,7 +427,7 @@ export async function handleExtractLearnings(
   const { milestoneId } = parseExtractLearningsArgs(args);
 
   if (!milestoneId) {
-    ctx.ui.notify("Usage: /gsd extract-learnings <milestoneId>  (e.g. M001)", "warning");
+    ctx.ui.notify("Usage: /otto extract-learnings <milestoneId>  (e.g. M001)", "warning");
     return;
   }
 

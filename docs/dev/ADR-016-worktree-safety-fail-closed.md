@@ -1,11 +1,11 @@
-<!-- Project/App: GSD-2 -->
+<!-- Project/App: OTTO -->
 <!-- File Purpose: ADR for fail-closed Worktree Safety behavior. -->
 
 # ADR-016: Fail Closed for Source-Writing Worktree Safety
 
 **Status:** Accepted
 **Date:** 2026-05-09
-**Author:** GSD architecture review
+**Author:** OTTO architecture review
 **Related:** ADR-001 (branchless worktree architecture), ADR-014 (deep Auto Orchestration module), ADR-015 (runtime invariant modules)
 
 ## Context
@@ -18,12 +18,12 @@ That fallback was convenient for untracked project-root content, but it weakened
 
 Source-writing Units fail closed under worktree isolation unless Worktree Safety proves the Unit root is safe.
 
-A source-writing Unit is any Unit whose Tool Contract permits writes outside `.gsd/**`, currently tool policy modes `all` and `docs`. Planning-only Units may continue to write `.gsd/**` artifacts at the project root. Verification Units, such as `run-uat`, may run approved build/test commands but are not source-writing because their writes remain restricted to `.gsd/**`.
+A source-writing Unit is any Unit whose Tool Contract permits writes outside `.otto/workflow/**`, currently tool policy modes `all` and `docs`. Planning-only Units may continue to write `.otto/workflow/**` artifacts at the project root. Verification Units, such as `run-uat`, may run approved build/test commands but are not source-writing because their writes remain restricted to `.otto/workflow/**`.
 
 Worktree Safety validates:
 
 - the milestone id is present and path-safe
-- the Unit root is the canonical `<projectRoot>/.gsd/worktrees/<milestone>` path
+- the Unit root is the canonical `<projectRoot>/.otto/workflow/worktrees/<milestone>` path
 - the worktree root exists
 - `.git` is a worktree file, not a standalone `.git` directory
 - the root is registered by `git worktree list`

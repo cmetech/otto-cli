@@ -1,4 +1,4 @@
-// @loop24/pi-coding-agent + system-prompt-cache-stability.test — regression
+// @otto/pi-coding-agent + system-prompt-cache-stability.test — regression
 // coverage for #5019. The system prompt must NOT include a per-call timestamp
 // by default; embedding `Date.toLocaleString()` in the cached prefix
 // invalidates Anthropic prompt-cache hits on every request and incurs the

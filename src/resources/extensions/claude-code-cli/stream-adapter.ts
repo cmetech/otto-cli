@@ -1,4 +1,4 @@
-// LOOP24 - Claude Code CLI provider stream adapter
+// OTTO - Claude Code CLI provider stream adapter
 /**
  * Stream adapter: bridges the Claude Agent SDK into the agent's streamSimple contract.
  *
@@ -18,9 +18,9 @@ import type {
 	SimpleStreamOptions,
 	ThinkingLevel,
 	ToolCall,
-} from "@loop24/pi-ai";
-import type { ExtensionUIContext } from "@loop24/pi-coding-agent";
-import { EventStream } from "@loop24/pi-ai";
+} from "@otto/pi-ai";
+import type { ExtensionUIContext } from "@otto/pi-coding-agent";
+import { EventStream } from "@otto/pi-ai";
 import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -179,7 +179,7 @@ const SENSITIVE_FIELD_PATTERN = /(password|passphrase|secret|token|api[_\s-]*key
 
 /**
  * Construct an AssistantMessageEventStream using EventStream directly.
- * (The class itself is only re-exported as a type from the @loop24/pi-ai barrel.)
+ * (The class itself is only re-exported as a type from the @otto/pi-ai barrel.)
  */
 function createAssistantStream(): AssistantMessageEventStream {
 	return new EventStream<AssistantMessageEvent, AssistantMessage>(
@@ -335,7 +335,7 @@ export function buildPromptFromContext(context: Context): string {
 			"Do not emit <user_message>, <assistant_message>, or <prior_system_context> tags in your response.",
 	];
 
-	// The prior system context lists pi-native tool names (lowercase: bash, read, gsd_exec, etc.)
+	// The prior system context lists pi-native tool names (lowercase: bash, read, otto_exec, etc.)
 	// but this process runs inside Claude Code where tool names differ. Inject a remapping note
 	// before the prior context so the model uses correct names regardless of what the prior
 	// context describes.
@@ -344,9 +344,9 @@ export function buildPromptFromContext(context: Context): string {
 			"You are running inside Claude Code. Use these exact tool names — do not use lowercase or pi-native names:\n" +
 			"- Shell commands: 'Bash' (not 'bash')\n" +
 			"- File operations: 'Read', 'Write', 'Edit', 'Glob', 'Grep' (PascalCase, not lowercase)\n" +
-			"- GSD workflow tools (gsd_exec, gsd_slice_complete, gsd_task_complete, gsd_plan_slice, etc.) " +
-			"are MCP tools — call them as mcp__gsd-workflow__<tool_name> " +
-			"(e.g. mcp__gsd-workflow__gsd_exec, mcp__gsd-workflow__gsd_slice_complete)\n" +
+			"- OTTO workflow tools (otto_exec, otto_slice_complete, otto_task_complete, otto_plan_slice, etc.) " +
+			"are MCP tools — call them as mcp__otto-workflow__<tool_name> " +
+			"(e.g. mcp__otto-workflow__otto_exec, mcp__otto-workflow__otto_slice_complete)\n" +
 			"</tool_context>",
 	);
 
@@ -1042,7 +1042,7 @@ function formatToolInput(toolName: string, input: Record<string, unknown>): stri
  * takes an optional UI context and returns the callback or undefined.
  *
  * When UI is unavailable (headless / auto-mode sub-agents), returns a handler
- * that always approves — replacing the old GSD_AUTO_MODE → bypassPermissions
+ * that always approves — replacing the old OTTO_AUTO_MODE → bypassPermissions
  * workaround.
  */
 export function createClaudeCodeCanUseToolHandler(
@@ -1268,11 +1268,11 @@ export function makeAbortedMessage(model: string, lastTextContent: string): Assi
  * user sees a prompt instead of a silent refusal that Claude Code mistakes
  * for user rejection (#4383).
  *
- * Set `GSD_CLAUDE_CODE_PERMISSION_MODE` to `bypassPermissions` to restore
+ * Set `OTTO_CLAUDE_CODE_PERMISSION_MODE` to `bypassPermissions` to restore
  * the old always-approve behaviour, or to `default` / `plan` for stricter
  * modes.
  *
- * When `GSD_HEADLESS=1` is set (auto-mode / non-interactive runs), the
+ * When `OTTO_HEADLESS=1` is set (auto-mode / non-interactive runs), the
  * default flips to `bypassPermissions` because there is no UI to approve
  * permission dialogs — `acceptEdits` would hang verification commands like
  * `npx tsc --noEmit` or `npx vitest run` indefinitely (#4657). Explicit
@@ -1281,22 +1281,22 @@ export function makeAbortedMessage(model: string, lastTextContent: string): Assi
 export async function resolveClaudePermissionMode(
 	env: NodeJS.ProcessEnv = process.env,
 ): Promise<"bypassPermissions" | "acceptEdits" | "default" | "plan"> {
-	const override = env.GSD_CLAUDE_CODE_PERMISSION_MODE?.trim();
+	const override = env.OTTO_CLAUDE_CODE_PERMISSION_MODE?.trim();
 	if (override === "bypassPermissions" || override === "acceptEdits" || override === "default" || override === "plan") {
 		return override;
 	}
-	if (env.GSD_HEADLESS === "1") {
+	if (env.OTTO_HEADLESS === "1") {
 		console.warn(
-			"[claude-code-cli] Headless mode detected (GSD_HEADLESS=1): defaulting permissionMode to 'bypassPermissions' so verification Bash commands can run. Set GSD_CLAUDE_CODE_PERMISSION_MODE=acceptEdits to opt out.",
+			"[claude-code-cli] Headless mode detected (OTTO_HEADLESS=1): defaulting permissionMode to 'bypassPermissions' so verification Bash commands can run. Set OTTO_CLAUDE_CODE_PERMISSION_MODE=acceptEdits to opt out.",
 		);
 		return "bypassPermissions";
 	}
 	return "bypassPermissions";
 }
 
-// NOTE: These helpers intentionally mirror @loop24/pi-ai anthropic-shared
+// NOTE: These helpers intentionally mirror @otto/pi-ai anthropic-shared
 // behavior so this extension remains typecheck-stable even when the published
-// @loop24/pi-ai barrel lags behind monorepo source exports.
+// @otto/pi-ai barrel lags behind monorepo source exports.
 /** Return true for model IDs that support the adaptive thinking API (Opus 4.6/4.7, Sonnet 4.6/4.7, Haiku 4.5). */
 function modelSupportsAdaptiveThinking(modelId: string): boolean {
 	return (
@@ -1382,7 +1382,7 @@ export function buildSdkOptions(
 	// workflow MCP server is available, prefer its `ask_user_questions` tool over
 	// Claude Code's native `AskUserQuestion`; the MCP path carries stable IDs and
 	// routes responses through the elicitation bridge.
-	// Opt back into gated mode with GSD_CLAUDE_CODE_PERMISSION_MODE=acceptEdits.
+	// Opt back into gated mode with OTTO_CLAUDE_CODE_PERMISSION_MODE=acceptEdits.
 	// Include the workflow pattern in allowedTools whether the server is injected
 	// or declared in the project config — but not if explicitly blocked by user prefs.
 	const workflowMcpTools = filteredMcpServers

@@ -32,8 +32,8 @@ describe("quick task turn_end cleanup (#2668)", () => {
       git(repo, ["add", "quick.txt"]);
       git(repo, ["commit", "-m", "test: quick work"]);
 
-      mkdirSync(join(repo, ".gsd", "runtime"), { recursive: true });
-      writeFileSync(join(repo, ".gsd", "runtime", "quick-return.json"), JSON.stringify({
+      mkdirSync(join(repo, ".otto/workflow", "runtime"), { recursive: true });
+      writeFileSync(join(repo, ".otto/workflow", "runtime", "quick-return.json"), JSON.stringify({
         basePath: repo,
         originalBranch: "main",
         quickBranch: "quick/Q1-test",
@@ -52,7 +52,7 @@ describe("quick task turn_end cleanup (#2668)", () => {
 
       assert.equal(git(repo, ["branch", "--show-current"]), "main");
       assert.throws(() => git(repo, ["rev-parse", "--verify", "quick/Q1-test"]));
-      assert.equal(existsSync(join(repo, ".gsd", "runtime", "quick-return.json")), false);
+      assert.equal(existsSync(join(repo, ".otto/workflow", "runtime", "quick-return.json")), false);
     } finally {
       process.chdir(oldCwd);
       rmSync(repo, { recursive: true, force: true });

@@ -148,7 +148,7 @@ function validateProjectContent(content: string): ValidationResult {
 
   const capabilityBody = parsed.sections["Capability Contract"] ?? "";
   if (capabilityBody && !capabilityBody.includes("REQUIREMENTS.md")) {
-    warnings.push(err("missing-requirements-ref", "Capability Contract section should reference .gsd/REQUIREMENTS.md", "Capability Contract"));
+    warnings.push(err("missing-requirements-ref", "Capability Contract section should reference .otto/workflow/REQUIREMENTS.md", "Capability Contract"));
   }
 
   return { ok: errors.length === 0, errors, warnings };

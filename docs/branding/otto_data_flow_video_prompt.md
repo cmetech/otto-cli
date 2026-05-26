@@ -7,8 +7,8 @@ A 15-second cinematic hero clip that compresses the OTTO data-flow story — thr
 ## Tool guidance
 
 **For Seedance AI and HappyHorse AI:** paste the prompt block below into the text input. If the model supports image conditioning, attach:
-- `docs/branding/otto_mascot_face_reference.png` as the **character reference** (locks in the otter face).
-- `docs/branding/loop24_activity_flow_infographic_v3.png` as a **palette and composition reference** only. ⚠️ That PNG still uses the OTTER + Loop24 branding; the prompt below explicitly overrides to OTTO. Do not let the model carry over text labels from that PNG.
+- `docs/branding/otto_mascot_face_reference.png` as the **character reference** (locks in the otto face).
+- `docs/branding/otto_activity_flow_infographic_v3.png` as a **palette and composition reference** only. ⚠️ That PNG still uses the OTTO + OTTO branding; the prompt below explicitly overrides to OTTO. Do not let the model carry over text labels from that PNG.
 
 If the tool supports image-to-video conditioning, the activity-flow PNG also works as a strong start frame. The prompt's camera move and beam choreography are written to flow naturally from that frame.
 
@@ -27,7 +27,7 @@ A 15-second cinematic hero video for OTTO — a laptop-native AI agent. One cont
 - Subtle very fine film grain. Soft volumetric lighting. Mild atmospheric haze around glowing elements (natural bloom).
 - Exact palette — use these hex values:
   • #1E1E2E — background
-  • #8E5A33 — OTTO Brown (otter mascot fur)
+  • #8E5A33 — OTTO Brown (otto mascot fur)
   • #FAD22D — Yellow (outbound request beam, persona accent rim)
   • #1174E6 — Blue (OTTO Gateway node)
   • #FF8C0A — Orange (guardrails pulse)
@@ -46,7 +46,7 @@ A 15-second cinematic hero video for OTTO — a laptop-native AI agent. One cont
 [ LIGHTING & ATMOSPHERE ]
 - Key light: warm soft from upper-left, simulating an off-screen practical (lamp or window).
 - Rim light: subtle cool teal from behind, separating subjects from the dark background.
-- Practicals: the laptop screen glows warm and is responsible for illuminating the otter face. The Gateway, kiro-cli, and OSCAR nodes each emit their own colored light (blue, green, copper amber).
+- Practicals: the laptop screen glows warm and is responsible for illuminating the otto face. The Gateway, kiro-cli, and OSCAR nodes each emit their own colored light (blue, green, copper amber).
 - Atmosphere: very subtle dust motes catching the warm light, slow drift. Mild bloom around glowing nodes for realism.
 - Shadows: soft, gradient falloff. No hard shadows, no clipped blacks. Lifted blacks throughout.
 
@@ -60,7 +60,7 @@ A 15-second cinematic hero video for OTTO — a laptop-native AI agent. One cont
 - Termination: when a beam arrives at a node, particles dissolve into a soft pulse at the contact point. No sparks. No explosions.
 
 [ CHARACTER / MASCOT ANIMATION ]
-- The OTTO mascot face on the laptop screen matches the attached reference image: semi-realistic 3D otter, warm chestnut-brown fur, large dark expressive eyes, gentle smile, soft cream muzzle, subtle whiskers, rounded triangular ears.
+- The OTTO mascot face on the laptop screen matches the attached reference image: semi-realistic 3D otto, warm chestnut-brown fur, large dark expressive eyes, gentle smile, soft cream muzzle, subtle whiskers, rounded triangular ears.
 - Idle micro-animation: slow natural blink every ~3 seconds. Subtle chest-rise breathing motion (only suggested since only the face shows). Very subtle ear flick on the orange guardrail pulse moment.
 - Eye saccades: very small lateral eye flick when first appearing on screen (a moment of "noticing"), then settled and present.
 - Reaction beats: subtle nod when the return beam arrives at the laptop (acknowledges the answer). Slightly softer smile on the final hold before the end card.
@@ -76,9 +76,9 @@ A 15-second cinematic hero video for OTTO — a laptop-native AI agent. One cont
 [ SHOT 2 — OTTO ON LAPTOP (3.0–5.0s) ]
 3.0–3.7s: Camera settles into a medium-close framing on the laptop. The dark laptop sits on a clean wooden or matte-dark desk surface. Screen begins warming to glow.
 
-3.7–4.4s: The OTTO otter face fades onto the screen from soft black. Large dark eyes open with a subtle eyelid animation, ears settle into resting position. Warm screen light spills outward, illuminating the desk surface in a soft warm pool.
+3.7–4.4s: The OTTO otto face fades onto the screen from soft black. Large dark eyes open with a subtle eyelid animation, ears settle into resting position. Warm screen light spills outward, illuminating the desk surface in a soft warm pool.
 
-4.4–5.0s: A small ">_" terminal prompt cursor materializes beside the otter face, blinking once gently. The otter does a very subtle small lateral eye saccade — a moment of "ready and noticing" — and settles into present, intelligent stillness.
+4.4–5.0s: A small ">_" terminal prompt cursor materializes beside the otto face, blinking once gently. The otto does a very subtle small lateral eye saccade — a moment of "ready and noticing" — and settles into present, intelligent stillness.
 
 [ SHOT 3 — REQUEST BEAM (5.0–7.5s) ]
 5.0–5.5s: A small spark of yellow particles materializes just in front of the laptop screen, near the cursor.
@@ -90,7 +90,7 @@ A 15-second cinematic hero video for OTTO — a laptop-native AI agent. One cont
 [ SHOT 4 — GUARDRAILS (7.5–9.5s) ]
 7.5–7.9s: The yellow beam contacts the Gateway node. A soft circular impact pulse radiates outward from the contact point, fading quickly.
 
-7.9–8.3s: A small orange hexagonal glyph in the upper-right corner of the Gateway node pulses brightly once — the guardrails moment. Brief ambient brightening propagates across the scene from this orange flash. The otter on the laptop screen flicks one ear, just barely perceptible, registering the moment.
+7.9–8.3s: A small orange hexagonal glyph in the upper-right corner of the Gateway node pulses brightly once — the guardrails moment. Brief ambient brightening propagates across the scene from this orange flash. The otto on the laptop screen flicks one ear, just barely perceptible, registering the moment.
 
 8.3–9.5s: The beam color transmutes from yellow to green along its length. The transition is a smooth crossfade traveling particle-by-particle through the stream, not an instant flip. The green beam continues onward, fully approved, exiting the Gateway to the right.
 
@@ -106,10 +106,10 @@ A 15-second cinematic hero video for OTTO — a laptop-native AI agent. One cont
 
 12.8–13.4s: The two return streams converge at the Gateway and continue back along the original beam path toward the laptop screen.
 
-13.4–14.0s: The streams arrive at the laptop screen and dissolve into a soft pulse at the contact point. The otter face on the screen reacts: a small subtle nod, the smile softens by a hair — an acknowledgement that the answer has arrived. No exaggerated expression.
+13.4–14.0s: The streams arrive at the laptop screen and dissolve into a soft pulse at the contact point. The otto face on the screen reacts: a small subtle nod, the smile softens by a hair — an acknowledgement that the answer has arrived. No exaggerated expression.
 
 [ SHOT 7 — END CARD (14.0–15.0s) ]
-14.0–14.4s: Camera holds. Background elements (Gateway, kiro-cli, OSCAR) gently fade to lower opacity and drift back into ambient bokeh, leaving the laptop and otter face at full presence center-frame.
+14.0–14.4s: Camera holds. Background elements (Gateway, kiro-cli, OSCAR) gently fade to lower opacity and drift back into ambient bokeh, leaving the laptop and otto face at full presence center-frame.
 
 14.4–14.8s: A clean white wordmark "OTTO" fades in, centered, positioned in the upper third of the frame above the laptop. Typeface: clean sans-serif (Inter, IBM Plex Sans, or similar), regular weight, generous letter-spacing (~10%), color #FAFAFA. No drop shadow, no glow.
 
@@ -118,7 +118,7 @@ A 15-second cinematic hero video for OTTO — a laptop-native AI agent. One cont
 [ COLOR GRADING ]
 - Lifted blacks throughout — background sits at #1E1E2E, never crushed to pure black.
 - Warm-cool split: shadows lean cool/teal, highlights lean warm/amber.
-- Midtones cool-leaning in the background, so warm elements (otter, OSCAR, laptop screen) visually sing.
+- Midtones cool-leaning in the background, so warm elements (otto, OSCAR, laptop screen) visually sing.
 - Highlights kept controlled — no blown-out whites except the end-card wordmark.
 - Saturation: confident but not pushed. Premium product film, not consumer ad.
 - Gentle bloom on all glowing elements (Gateway node, OSCAR node, beams, laptop screen, kiro-cli node).

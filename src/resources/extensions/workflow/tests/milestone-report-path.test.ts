@@ -49,20 +49,20 @@ describe("_resolveReportBasePath", () => {
     assert.equal(_resolveReportBasePath(session), "/home/user/repo");
   });
 
-  test("uses GSD_PROJECT_ROOT for symlink-resolved worktree paths", () => {
-    const savedProjectRoot = process.env.GSD_PROJECT_ROOT;
-    process.env.GSD_PROJECT_ROOT = "/real/project";
+  test("uses OTTO_PROJECT_ROOT for symlink-resolved worktree paths", () => {
+    const savedProjectRoot = process.env.OTTO_PROJECT_ROOT;
+    process.env.OTTO_PROJECT_ROOT = "/real/project";
     try {
       const session = {
         originalBasePath: "",
-        basePath: "/Users/dev/.gsd/projects/abc123/worktrees/M001/slices/S01",
+        basePath: "/Users/dev/.otto/workflow/projects/abc123/worktrees/M001/slices/S01",
       };
 
       assert.equal(_resolveReportBasePath(session), "/real/project");
       assert.equal(_resolveDispatchGuardBasePath(session), "/real/project");
     } finally {
-      if (savedProjectRoot === undefined) delete process.env.GSD_PROJECT_ROOT;
-      else process.env.GSD_PROJECT_ROOT = savedProjectRoot;
+      if (savedProjectRoot === undefined) delete process.env.OTTO_PROJECT_ROOT;
+      else process.env.OTTO_PROJECT_ROOT = savedProjectRoot;
     }
   });
 });

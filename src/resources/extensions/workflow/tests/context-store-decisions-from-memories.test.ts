@@ -30,8 +30,8 @@ import {
 
 function makeTmpBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-decisions-memories-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   return base;
 }
 

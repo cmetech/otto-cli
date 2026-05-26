@@ -1,15 +1,15 @@
 /**
- * Regression tests for #2883: gsd_complete_slice tool invocation fails with
+ * Regression tests for #2883: otto_complete_slice tool invocation fails with
  * JSON truncation, causing stuck retry loop.
  *
- * When a GSD tool is invoked with malformed/truncated JSON arguments, the tool
+ * When a OTTO tool is invoked with malformed/truncated JSON arguments, the tool
  * execution fails (isError: true). But postUnitPreVerification only checks if
  * the expected artifact exists on disk — it does not know the tool itself failed.
  * When the artifact is missing (because the tool never ran), it sets up
  * pendingVerificationRetry, re-dispatching the same unit with the same truncated
  * input, creating a stuck loop.
  *
- * The fix adds a `lastToolInvocationError` field to AutoSession. When a GSD tool
+ * The fix adds a `lastToolInvocationError` field to AutoSession. When a OTTO tool
  * execution ends with isError, the error is recorded. postUnitPreVerification
  * checks this field before retrying — if a tool invocation error occurred, it
  * pauses auto-mode instead of retrying.
@@ -28,7 +28,7 @@ describe("#2883: tool invocation error tracking on AutoSession", () => {
 
   test("lastToolInvocationError is cleared on reset()", () => {
     const s = new AutoSession();
-    s.lastToolInvocationError = "Validation failed for tool gsd_complete_slice";
+    s.lastToolInvocationError = "Validation failed for tool otto_complete_slice";
     assert.ok(s.lastToolInvocationError);
     s.reset();
     assert.equal(s.lastToolInvocationError, null);
@@ -61,7 +61,7 @@ import { BLOCKED_WRITE_ERROR } from "../write-intercept.ts";
 describe("#2883: isToolInvocationError classification", () => {
   test("detects JSON validation failure pattern", () => {
     assert.equal(
-      isToolInvocationError("Validation failed for tool gsd_complete_slice: Expected ',' or '}' in JSON"),
+      isToolInvocationError("Validation failed for tool otto_complete_slice: Expected ',' or '}' in JSON"),
       true,
     );
   });
@@ -96,7 +96,7 @@ describe("#2883: isToolInvocationError classification", () => {
 
   test("detects 'Validation failed for tool' prefix", () => {
     assert.equal(
-      isToolInvocationError("Validation failed for tool gsd_slice_complete"),
+      isToolInvocationError("Validation failed for tool otto_slice_complete"),
       true,
     );
   });
@@ -114,11 +114,11 @@ describe("#2883: isToolInvocationError classification", () => {
     assert.equal(isToolInvocationError("Error [ERR_PACKAGE_PATH_NOT_EXPORTED]: Package subpath './x' is not defined"), true);
   });
 
-  test("detects raw write-gate CONTEXT failures for non-GSD write tools", () => {
+  test("detects raw write-gate CONTEXT failures for non-OTTO write tools", () => {
     resetWriteGateState(process.cwd());
     const result = shouldBlockContextWrite(
       "write",
-      "/tmp/project/.gsd/milestones/M001/M001-CONTEXT.md",
+      "/tmp/project/.otto/workflow/milestones/M001/M001-CONTEXT.md",
       "M001",
       false,
     );
@@ -128,7 +128,7 @@ describe("#2883: isToolInvocationError classification", () => {
     assert.equal(isToolInvocationError(result.reason ?? ""), true);
   });
 
-  test("detects raw pending-gate failures for non-GSD write tools", () => {
+  test("detects raw pending-gate failures for non-OTTO write tools", () => {
     const snapshot: WriteGateSnapshot = {
       verifiedDepthMilestones: [],
       activeQueuePhase: false,
@@ -156,7 +156,7 @@ describe("#2883: isToolInvocationError classification", () => {
     assert.equal(isToolInvocationError(bashResult.reason ?? ""), true);
   });
 
-  test("detects direct STATE.md/gsd.db write-intercept policy blocks", () => {
+  test("detects direct STATE.md/otto.db write-intercept policy blocks", () => {
     assert.equal(isDeterministicPolicyError(BLOCKED_WRITE_ERROR), true);
     assert.equal(isToolInvocationError(BLOCKED_WRITE_ERROR), true);
   });

@@ -1,4 +1,4 @@
-You are investigating a reported issue in a GSD debug session.
+You are investigating a reported issue in a OTTO debug session.
 
 ## Session
 
@@ -17,7 +17,7 @@ Goal semantics:
 
 ## Instructions
 
-1. Read `.gsd/debug/sessions/{{slug}}.json` for any prior session context.
+1. Read `.otto/workflow/debug/sessions/{{slug}}.json` for any prior session context.
 1a. Call `memory_query` with keywords from the issue (error text, subsystem, file paths). A prior session may have captured this exact gotcha — finding it now saves the investigation.
 2. Investigate the reported issue in `{{workingDirectory}}`.
 3. Follow the goal constraint above strictly.

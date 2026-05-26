@@ -20,7 +20,7 @@ test("milestone transition archives completed units and rebuilds state", async (
   const tempDir = realpathSync(mkdtempSync(join(tmpdir(), "gsd-cu-reset-")));
   const calls: string[] = [];
   try {
-    const workflowDir = join(tempDir, ".gsd");
+    const workflowDir = join(tempDir, ".otto/workflow");
     mkdirSync(workflowDir, { recursive: true });
 
     const completedKeysPath = join(workflowDir, "completed-units.json");

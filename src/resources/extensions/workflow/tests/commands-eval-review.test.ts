@@ -1,5 +1,5 @@
 /**
- * Unit tests for `/gsd eval-review` (commands-eval-review.ts).
+ * Unit tests for `/otto eval-review` (commands-eval-review.ts).
  *
  * Each prior review finding is paired with a regression test that asserts
  * the documented fix behavior. Tests are organized one `describe` per
@@ -140,7 +140,7 @@ describe("detectEvalReviewState", () => {
   });
 
   function setupSliceLayout(sliceFiles: Record<string, string>): void {
-    const sliceDir = join(basePath, ".gsd", "milestones", "M001", "slices", "S07");
+    const sliceDir = join(basePath, ".otto/workflow", "milestones", "M001", "slices", "S07");
     mkdirSync(sliceDir, { recursive: true });
     for (const [filename, content] of Object.entries(sliceFiles)) {
       writeFileSync(join(sliceDir, filename), content, "utf-8");
@@ -148,7 +148,7 @@ describe("detectEvalReviewState", () => {
   }
 
   it("returns no-slice-dir when the slice directory is missing (regression: no-slice-dir vs no-summary must be distinct states)", () => {
-    mkdirSync(join(basePath, ".gsd", "milestones", "M001", "slices"), { recursive: true });
+    mkdirSync(join(basePath, ".otto/workflow", "milestones", "M001", "slices"), { recursive: true });
     const result = detectEvalReviewState(
       { sliceId: "S07", force: false, show: false },
       basePath,
@@ -224,7 +224,7 @@ describe("buildEvalReviewContext", () => {
 
   beforeEach(() => {
     basePath = join(tmpdir(), `gsd-eval-ctx-test-${randomUUID()}`);
-    sliceDir = join(basePath, ".gsd", "milestones", "M001", "slices", "S07");
+    sliceDir = join(basePath, ".otto/workflow", "milestones", "M001", "slices", "S07");
     mkdirSync(sliceDir, { recursive: true });
     process.chdir(basePath);
   });
@@ -427,7 +427,7 @@ describe("buildEvalReviewContext", () => {
 
 describe("evalReviewWritePath", () => {
   it("computes the canonical write path purely from inputs", () => {
-    const sliceDir = join("/repo", ".gsd", "milestones", "M001", "slices", "S07");
+    const sliceDir = join("/repo", ".otto/workflow", "milestones", "M001", "slices", "S07");
     const expected = join(sliceDir, "S07-EVAL-REVIEW.md");
     assert.equal(evalReviewWritePath(sliceDir, "S07"), expected);
   });
@@ -446,7 +446,7 @@ describe("findEvalReviewFile", () => {
 
   beforeEach(() => {
     basePath = join(tmpdir(), `gsd-find-eval-${randomUUID()}`);
-    mkdirSync(join(basePath, ".gsd", "milestones", "M001", "slices", "S07"), { recursive: true });
+    mkdirSync(join(basePath, ".otto/workflow", "milestones", "M001", "slices", "S07"), { recursive: true });
   });
 
   afterEach(() => {
@@ -459,7 +459,7 @@ describe("findEvalReviewFile", () => {
   });
 
   it("returns the absolute path when EVAL-REVIEW.md is present", () => {
-    const target = join(basePath, ".gsd", "milestones", "M001", "slices", "S07", "S07-EVAL-REVIEW.md");
+    const target = join(basePath, ".otto/workflow", "milestones", "M001", "slices", "S07", "S07-EVAL-REVIEW.md");
     writeFileSync(target, "---\nschema: eval-review/v1\n---\n", "utf-8");
     const found = findEvalReviewFile(basePath, "M001", "S07");
     assert.equal(found, realpathSync(target));
@@ -524,7 +524,7 @@ describe("catalog registration", () => {
 
   it("appends eval-review to the WORKFLOW_COMMAND_DESCRIPTION pipe-separated list", () => {
     assert.ok(
-      WORKFLOW_COMMAND_DESCRIPTION.includes("|eval-review"),
+      WORKFLOW_COMMAND_DESCRIPTION.includes("|/otto eval-review"),
       "WORKFLOW_COMMAND_DESCRIPTION must include the eval-review token (pipe-prefixed)",
     );
   });
@@ -538,11 +538,11 @@ describe("buildEvalReviewPrompt", () => {
       milestoneId: "M001",
       sliceId: "S07",
       summary: "The slice did stuff.",
-      summaryPath: "/abs/.gsd/milestones/M001/slices/S07/S07-SUMMARY.md",
+      summaryPath: "/abs/.otto/workflow/milestones/M001/slices/S07/S07-SUMMARY.md",
       spec: "Required: log every LLM call.",
-      specPath: "/abs/.gsd/milestones/M001/slices/S07/S07-AI-SPEC.md",
-      outputPath: "/abs/.gsd/milestones/M001/slices/S07/S07-EVAL-REVIEW.md",
-      relativeOutputPath: ".gsd/milestones/M001/slices/S07/S07-EVAL-REVIEW.md",
+      specPath: "/abs/.otto/workflow/milestones/M001/slices/S07/S07-AI-SPEC.md",
+      outputPath: "/abs/.otto/workflow/milestones/M001/slices/S07/S07-EVAL-REVIEW.md",
+      relativeOutputPath: ".otto/workflow/milestones/M001/slices/S07/S07-EVAL-REVIEW.md",
       truncated: false,
       generatedAt: "2026-04-28T14:00:00Z",
       ...overrides,
@@ -574,7 +574,7 @@ describe("buildEvalReviewPrompt", () => {
 
   it("instructs the agent to write to the canonical output path", () => {
     const prompt = buildEvalReviewPrompt(ctxFixture());
-    assert.ok(prompt.includes("/abs/.gsd/milestones/M001/slices/S07/S07-EVAL-REVIEW.md"));
+    assert.ok(prompt.includes("/abs/.otto/workflow/milestones/M001/slices/S07/S07-EVAL-REVIEW.md"));
   });
 
   it("surfaces the truncation marker into the prompt body when inputs were truncated", () => {

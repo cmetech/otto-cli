@@ -1,4 +1,4 @@
-// LOOP24 - /loop24 migrate safety helpers.
+// OTTO - /otto migrate safety helpers.
 // File Purpose: Path resolution, target guards, backup, and restore support for v1 migration.
 
 import { cpSync, existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
@@ -64,7 +64,7 @@ function formatBackupTimestamp(date: Date): string {
 }
 
 function nextBackupPath(targetRoot: string, now: Date): string {
-  const backupRoot = join(targetRoot, ".gsd-backups");
+  const backupRoot = join(targetRoot, ".otto/workflow-backups");
   const baseName = `migrate-${formatBackupTimestamp(now)}`;
   let candidate = join(backupRoot, baseName);
   let suffix = 2;
@@ -122,7 +122,7 @@ export async function assertMigrationTargetAvailable(targetRoot: string): Promis
 
   if (hasWorktreeState(targetRoot)) {
     throw new MigrationBlockedError(
-      "Migration blocked - existing GSD worktree state is present. Resolve or clean worktrees before migrating.",
+      "Migration blocked - existing OTTO worktree state is present. Resolve or clean worktrees before migrating.",
     );
   }
 

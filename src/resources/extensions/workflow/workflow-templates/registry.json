@@ -8,7 +8,7 @@
       "mode": "auto-milestone",
       "phases": ["init", "discuss", "plan", "execute", "verify"],
       "triggers": ["new project", "greenfield", "from scratch", "build an app", "create a new"],
-      "artifact_dir": ".gsd/",
+      "artifact_dir": ".otto/workflow/",
       "estimated_complexity": "high",
       "requires_project": true
     },
@@ -19,7 +19,7 @@
       "mode": "markdown-phase",
       "phases": ["triage", "fix", "verify", "ship"],
       "triggers": ["bug", "issue", "fix", "broken", "regression", "error", "crash", "failing", "github.com/*/issues/*"],
-      "artifact_dir": ".gsd/workflows/bugfixes/",
+      "artifact_dir": ".otto/workflow/workflows/bugfixes/",
       "estimated_complexity": "low",
       "requires_project": false
     },
@@ -30,7 +30,7 @@
       "mode": "markdown-phase",
       "phases": ["scope", "plan", "implement", "verify"],
       "triggers": ["add", "feature", "implement", "build", "create", "new command", "new endpoint"],
-      "artifact_dir": ".gsd/workflows/features/",
+      "artifact_dir": ".otto/workflow/workflows/features/",
       "estimated_complexity": "medium",
       "requires_project": false
     },
@@ -41,7 +41,7 @@
       "mode": "markdown-phase",
       "phases": ["inventory", "plan", "migrate", "verify"],
       "triggers": ["refactor", "migrate", "rename", "restructure", "move", "reorganize", "clean up"],
-      "artifact_dir": ".gsd/workflows/refactors/",
+      "artifact_dir": ".otto/workflow/workflows/refactors/",
       "estimated_complexity": "medium",
       "requires_project": false
     },
@@ -52,7 +52,7 @@
       "mode": "markdown-phase",
       "phases": ["scope", "research", "synthesize"],
       "triggers": ["research", "investigate", "explore", "spike", "compare", "evaluate", "should we", "what if", "how does"],
-      "artifact_dir": ".gsd/workflows/spikes/",
+      "artifact_dir": ".otto/workflow/workflows/spikes/",
       "estimated_complexity": "low",
       "requires_project": false
     },
@@ -74,7 +74,7 @@
       "mode": "markdown-phase",
       "phases": ["scan", "triage", "remediate", "re-scan"],
       "triggers": ["security", "audit", "vulnerability", "owasp", "cve", "penetration", "hardening"],
-      "artifact_dir": ".gsd/workflows/audits/",
+      "artifact_dir": ".otto/workflow/workflows/audits/",
       "estimated_complexity": "medium",
       "requires_project": false
     },
@@ -85,7 +85,7 @@
       "mode": "markdown-phase",
       "phases": ["assess", "upgrade", "fix", "verify"],
       "triggers": ["upgrade", "update", "dependency", "deps", "bump", "outdated", "npm update", "renovate"],
-      "artifact_dir": ".gsd/workflows/upgrades/",
+      "artifact_dir": ".otto/workflow/workflows/upgrades/",
       "estimated_complexity": "medium",
       "requires_project": false
     },
@@ -217,7 +217,7 @@
       "mode": "markdown-phase",
       "phases": ["prepare", "bump", "publish", "announce"],
       "triggers": ["release", "ship release", "cut release", "tag release", "publish release"],
-      "artifact_dir": ".gsd/workflows/releases/",
+      "artifact_dir": ".otto/workflow/workflows/releases/",
       "estimated_complexity": "medium",
       "requires_project": false
     },
@@ -228,7 +228,7 @@
       "mode": "markdown-phase",
       "phases": ["survey", "migrate", "deprecate", "release"],
       "triggers": ["breaking change", "api break", "remove api", "deprecate"],
-      "artifact_dir": ".gsd/workflows/api-breaks/",
+      "artifact_dir": ".otto/workflow/workflows/api-breaks/",
       "estimated_complexity": "high",
       "requires_project": false
     },
@@ -239,7 +239,7 @@
       "mode": "markdown-phase",
       "phases": ["profile", "prioritize", "fix", "verify"],
       "triggers": ["performance", "slow", "perf audit", "bottleneck", "optimize"],
-      "artifact_dir": ".gsd/workflows/perf/",
+      "artifact_dir": ".otto/workflow/workflows/perf/",
       "estimated_complexity": "medium",
       "requires_project": false
     },
@@ -250,7 +250,7 @@
       "mode": "markdown-phase",
       "phases": ["survey", "design", "implement", "verify"],
       "triggers": ["observability", "logging", "metrics", "tracing", "opentelemetry"],
-      "artifact_dir": ".gsd/workflows/observability/",
+      "artifact_dir": ".otto/workflow/workflows/observability/",
       "estimated_complexity": "medium",
       "requires_project": false
     },
@@ -261,7 +261,7 @@
       "mode": "markdown-phase",
       "phases": ["discover", "design", "implement", "verify"],
       "triggers": ["ci bootstrap", "setup ci", "github actions", "build pipeline", "test pipeline"],
-      "artifact_dir": ".gsd/workflows/ci/",
+      "artifact_dir": ".otto/workflow/workflows/ci/",
       "estimated_complexity": "medium",
       "requires_project": false
     }

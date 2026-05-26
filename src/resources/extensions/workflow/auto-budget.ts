@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Pure budget and context guard decisions for auto-mode.
 /**
  * Budget alert level tracking and enforcement for auto-mode.

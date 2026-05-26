@@ -1,6 +1,6 @@
-import type { ExtensionAPI } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI } from "@otto/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
-import { StringEnum } from "@loop24/pi-ai";
+import { StringEnum } from "@otto/pi-ai";
 import {
 	validateWaitParams,
 	createRegionStableScript,

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Unit tests for auto-mode custom-engine iteration-data adapter.
 
 import assert from "node:assert/strict";

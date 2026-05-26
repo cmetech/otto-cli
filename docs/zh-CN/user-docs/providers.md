@@ -97,7 +97,7 @@ GSD 会检测你本地的 Claude Code 安装，并把它作为已认证的 Anthr
 /gsd mcp init
 ```
 
-这会在项目的 `.mcp.json` 中写入（或更新）`gsd-workflow` 条目。Claude Code 会在下一次启动会话时自动发现这个文件。
+这会在项目的 `.mcp.json` 中写入（或更新）`otto-workflow` 条目。Claude Code 会在下一次启动会话时自动发现这个文件。
 
 **手动配置**
 
@@ -110,7 +110,7 @@ GSD 会检测你本地的 Claude Code 安装，并把它作为已认证的 Anthr
       "command": "npx",
       "args": ["gsd-mcp-server"],
       "env": {
-        "GSD_CLI_PATH": "/path/to/gsd"
+        "OTTO_CLI_PATH": "/path/to/gsd"
       }
     }
   }
@@ -133,7 +133,7 @@ GSD 会检测你本地的 Claude Code 安装，并把它作为已认证的 Anthr
 
 **暴露了什么**
 
-MCP server 会暴露 GSD 的完整 workflow 工具面：milestone planning、task completion、slice 管理、roadmap reassessment、journal 查询等。会话管理工具（`gsd_execute`、`gsd_status`、`gsd_result`、`gsd_cancel`）允许 Claude Code 启动并监控 GSD 自动模式会话。完整工具列表见 [命令 → MCP Server 模式](./commands.md#mcp-server-mode)。
+MCP server 会暴露 GSD 的完整 workflow 工具面：milestone planning、task completion、slice 管理、roadmap reassessment、journal 查询等。会话管理工具（`otto_execute`、`otto_status`、`otto_result`、`otto_cancel`）允许 Claude Code 启动并监控 GSD 自动模式会话。完整工具列表见 [命令 → MCP Server 模式](./commands.md#mcp-server-mode)。
 
 **验证连接**
 

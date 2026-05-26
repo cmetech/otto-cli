@@ -7,11 +7,11 @@
  *   - gh:owner/repo/path[@ref] → raw.githubusercontent.com/owner/repo/<ref>/path
  *
  * Installed files land in `~/.otto/workflows/<name>.<ext>` by default, or
- * `.gsd/workflows/<name>.<ext>` with the `--project` flag.
+ * `.otto/workflow/workflows/<name>.<ext>` with the `--project` flag.
  *
  * A provenance file `~/.otto/workflows/.installed.json` (or project equivalent)
- * records source URL, timestamp, and sha256 so `/loop24 workflow uninstall` can
- * clean up and future `/loop24 workflow update` can refresh.
+ * records source URL, timestamp, and sha256 so `/otto workflow uninstall` can
+ * clean up and future `/otto workflow update` can refresh.
  */
 
 import {
@@ -77,7 +77,7 @@ export function globalInstallDir(): string {
 }
 
 export function projectInstallDir(basePath: string): string {
-  return join(basePath, ".gsd", "workflows");
+  return join(basePath, ".otto/workflow", "workflows");
 }
 
 /**
@@ -184,7 +184,7 @@ export async function fetchWorkflowSource(url: string): Promise<FetchedContent> 
   try {
     const res = await fetch(url, {
       signal: controller.signal,
-      headers: { "User-Agent": "gsd-workflow-install" },
+      headers: { "User-Agent": "otto-workflow-install" },
     });
 
     if (!res.ok) {

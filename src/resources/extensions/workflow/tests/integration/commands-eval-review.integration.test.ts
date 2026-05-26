@@ -1,7 +1,7 @@
-// Project/App: LOOP24
-// File Purpose: Integration tests for the /gsd eval-review helper chain.
+// Project/App: OTTO
+// File Purpose: Integration tests for the /otto eval-review helper chain.
 /**
- * Integration test for `/gsd eval-review` .
+ * Integration test for `/otto eval-review` .
  *
  * Walks the helper chain end-to-end (parseArgs → detectState → buildContext
  * → buildPrompt) against a real on-disk slice fixture, then validates the
@@ -78,7 +78,7 @@ function buildLayout(opts: { withSpec?: boolean; summaryBytes?: number } = {}): 
   const basePath = mkdtempSync(join(tmpdir(), "gsd-eval-review-int-"));
   const milestoneId = "M001";
   const sliceId = "S07";
-  const sliceDir = join(basePath, ".gsd", "milestones", milestoneId, "slices", sliceId);
+  const sliceDir = join(basePath, ".otto/workflow", "milestones", milestoneId, "slices", sliceId);
   mkdirSync(sliceDir, { recursive: true });
   const summary = opts.summaryBytes != null
     ? "S".repeat(opts.summaryBytes)
@@ -92,7 +92,7 @@ function buildLayout(opts: { withSpec?: boolean; summaryBytes?: number } = {}): 
 
 // ─── End-to-end helper-chain pass ─────────────────────────────────────────────
 
-describe("integration: /gsd eval-review helper chain on a real on-disk slice", () => {
+describe("integration: /otto eval-review helper chain on a real on-disk slice", () => {
   let layout: Layout;
   let cwd: string;
 
@@ -185,11 +185,11 @@ describe("integration: prompt-schema round-trip", () => {
       milestoneId: "M001",
       sliceId: "S07",
       summary: "fake",
-      summaryPath: "/fake/.gsd/milestones/M001/slices/S07/S07-SUMMARY.md",
+      summaryPath: "/fake/.otto/workflow/milestones/M001/slices/S07/S07-SUMMARY.md",
       spec: "fake",
-      specPath: "/fake/.gsd/milestones/M001/slices/S07/S07-AI-SPEC.md",
-      outputPath: "/fake/.gsd/milestones/M001/slices/S07/S07-EVAL-REVIEW.md",
-      relativeOutputPath: ".gsd/milestones/M001/slices/S07/S07-EVAL-REVIEW.md",
+      specPath: "/fake/.otto/workflow/milestones/M001/slices/S07/S07-AI-SPEC.md",
+      outputPath: "/fake/.otto/workflow/milestones/M001/slices/S07/S07-EVAL-REVIEW.md",
+      relativeOutputPath: ".otto/workflow/milestones/M001/slices/S07/S07-EVAL-REVIEW.md",
       truncated: false,
       generatedAt: "2026-04-28T14:00:00Z",
     } as const;

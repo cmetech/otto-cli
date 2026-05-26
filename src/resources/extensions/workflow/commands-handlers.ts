@@ -5,7 +5,7 @@
  * handleRunHook, handleUpdate, handleSkillHealth
  */
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { existsSync, readFileSync, mkdirSync } from "node:fs";
 import { join, resolve as resolvePath, sep } from "node:path";
 import { homedir } from "node:os";
@@ -37,7 +37,7 @@ import {
 } from "./bootstrap/register-hooks.js";
 import { BRAND, CONFIG_DIR_NAME, slashCommand } from "./strings.js";
 
-const UPDATE_REGISTRY_URL = "https://registry.npmjs.org/@ericsson%2floop24/latest";
+const UPDATE_REGISTRY_URL = "https://registry.npmjs.org/@ericsson%2fotto/latest";
 const UPDATE_FETCH_TIMEOUT_MS = 5000;
 
 // Detects a bun-installed gsd via `process.argv[1]`. Mirrors isBunInstall in
@@ -79,7 +79,7 @@ async function fetchLatestVersionForCommand(): Promise<string | null> {
 }
 
 export function dispatchDoctorHeal(pi: ExtensionAPI, scope: string | undefined, reportText: string, structuredIssues: string): void {
-  const workflowPath = process.env.LOOP24_WORKFLOW_PATH ?? process.env.GSD_WORKFLOW_PATH ?? join(workflowHome(), "agent", "WORKFLOW.md");
+  const workflowPath = process.env.OTTO_WORKFLOW_PATH ?? process.env.OTTO_WORKFLOW_PATH ?? join(workflowHome(), "agent", "WORKFLOW.md");
   const workflow = readFileSync(workflowPath, "utf-8");
   const prompt = loadPrompt("doctor-heal", {
     doctorSummary: buildDoctorHealSummary(reportText),
@@ -174,7 +174,7 @@ export async function handleSkillHealth(args: string, ctx: ExtensionCommandConte
 
   const basePath = projectRoot();
 
-  // /loop24 skill-health <skill-name> — detail view
+  // /otto skill-health <skill-name> — detail view
   if (args && !args.startsWith("--")) {
     const detail = formatSkillDetail(basePath, args);
     ctx.ui.notify(detail, "info");
@@ -222,7 +222,7 @@ export async function handleCapture(args: string, ctx: ExtensionCommandContext):
 
   const basePath = currentDirectoryRoot();
 
-  // Ensure .gsd/ exists — capture should work even without a milestone
+  // Ensure .otto/workflow/ exists — capture should work even without a milestone
   const workflowDir = workflowRoot(basePath);
   if (!existsSync(workflowDir)) {
     mkdirSync(workflowDir, { recursive: true });
@@ -273,7 +273,7 @@ export async function handleTriage(ctx: ExtensionCommandContext, pi: ExtensionAP
     roadmapContext: roadmapContext || "(no active roadmap)",
   });
 
-  const workflowPath = process.env.LOOP24_WORKFLOW_PATH ?? process.env.GSD_WORKFLOW_PATH ?? join(workflowHome(), "agent", "WORKFLOW.md");
+  const workflowPath = process.env.OTTO_WORKFLOW_PATH ?? process.env.OTTO_WORKFLOW_PATH ?? join(workflowHome(), "agent", "WORKFLOW.md");
   const workflow = readFileSync(workflowPath, "utf-8");
   const savedTools = scopeWorkflowWorkflowToolsForDispatch(pi);
 
@@ -476,7 +476,7 @@ export async function handleUpdate(ctx: ExtensionCommandContext): Promise<void> 
   const { execSync } = await import("node:child_process");
 
   const NPM_PACKAGE = "@cmetech/otto";
-  const current = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) || "0.0.0";
+  const current = (process.env.OTTO_VERSION ?? process.env.OTTO_VERSION) || "0.0.0";
 
   ctx.ui.notify(`Current version: v${current}\nChecking npm registry...`, "info");
 
@@ -499,7 +499,7 @@ export async function handleUpdate(ctx: ExtensionCommandContext): Promise<void> 
       stdio: ["ignore", "pipe", "ignore"],
     });
     ctx.ui.notify(
-      `Updated to v${latest}. Restart your GSD session to use the new version.`,
+      `Updated to v${latest}. Restart your OTTO session to use the new version.`,
       "info",
     );
   } catch {

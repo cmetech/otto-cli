@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for step-mode completion messages in auto-post-unit.
 
 import test from "node:test";
@@ -48,17 +48,17 @@ test("buildStepCompleteMessage: mid-flight step renders only the completion rece
   assert.ok(msg);
   assert.match(msg, /\x1b\[/);
   const text = plain(msg);
-  assert.match(text, /╭─ ✓ GSD Step Complete/);
+  assert.match(text, /╭─ ✓ OTTO Step Complete/);
   assert.match(text, /Completed: Step complete/);
   assert.match(text, /^    ╭─/m);
   assert.doesNotMatch(text, /^          ╭─/m);
   assert.doesNotMatch(text, /╭─ Next step/);
   assert.doesNotMatch(text, /Next: Execute T03: Wire notify/);
   assert.doesNotMatch(text, /\/clear/);
-  assert.doesNotMatch(text, /Continue: \/gsd next/);
-  assert.doesNotMatch(text, /Auto-run: \/gsd auto/);
-  assert.doesNotMatch(text, /\/gsd next/);
-  assert.doesNotMatch(text, /\/gsd auto/);
+  assert.doesNotMatch(text, /Continue: \/otto next/);
+  assert.doesNotMatch(text, /Auto-run: \/otto auto/);
+  assert.doesNotMatch(text, /\/otto next/);
+  assert.doesNotMatch(text, /\/otto auto/);
   assert.doesNotMatch(text, /\n│\n/);
   assert.doesNotMatch(text, /Ctrl\+N/);
 });
@@ -69,7 +69,7 @@ test("buildStepCompleteMessage: unknown phase still renders only the completion 
   const msg = buildStepCompleteMessage(state);
   assert.ok(msg);
   const text = plain(msg);
-  assert.match(text, /╭─ ✓ GSD Step Complete/);
+  assert.match(text, /╭─ ✓ OTTO Step Complete/);
   assert.doesNotMatch(text, /╭─ Next step/);
   assert.doesNotMatch(text, /Next: Continue/);
   assert.doesNotMatch(text, /\/clear/);
@@ -77,11 +77,11 @@ test("buildStepCompleteMessage: unknown phase still renders only the completion 
 
 test("STEP_COMPLETE_FALLBACK_MESSAGE: used when deriveState throws, stays a receipt without command hints", () => {
   const text = plain(STEP_COMPLETE_FALLBACK_MESSAGE);
-  assert.match(text, /╭─ ✓ GSD Step Complete/);
+  assert.match(text, /╭─ ✓ OTTO Step Complete/);
   assert.doesNotMatch(text, /╭─ Next step/);
   assert.doesNotMatch(text, /\/clear/);
-  assert.doesNotMatch(text, /\/gsd next/);
-  assert.doesNotMatch(text, /\/gsd auto/);
+  assert.doesNotMatch(text, /\/otto next/);
+  assert.doesNotMatch(text, /\/otto auto/);
   assert.doesNotMatch(text, /Next: Continue/);
   assert.doesNotMatch(text, /Ctrl\+N/);
 });
@@ -105,8 +105,8 @@ test("buildStepCompleteOutcome: durable handoff includes next commands", () => {
   assert.match(outcome.detail ?? "", /Execute T03: Wire notify/);
   assert.equal(outcome.unitLabel, "completing M011/S01");
   assert.equal(outcome.nextAction, "Advance one step, or resume automatic mode.");
-  assert.doesNotMatch(outcome.nextAction, /\/gsd/);
-  assert.deepEqual(outcome.commands, ["/gsd next", "/gsd auto", "/gsd status for overview"]);
+  assert.doesNotMatch(outcome.nextAction, /\/otto/);
+  assert.deepEqual(outcome.commands, ["/otto next", "/otto auto", "/otto status for overview"]);
 });
 
 test("setStepCompleteSurface: clears stale progress and installs durable outcome panel", () => {
@@ -131,7 +131,7 @@ test("setStepCompleteSurface: clears stale progress and installs durable outcome
   );
 
   assert.ok(message);
-  assert.match(plain(message), /╭─ ✓ GSD Step Complete/);
+  assert.match(plain(message), /╭─ ✓ OTTO Step Complete/);
   assert.ok(
     calls.some(([key, value]) => key === "gsd-progress" && value === undefined),
     "step completion must clear the live progress widget so stale provider-idle state is not preserved",
@@ -147,8 +147,8 @@ test("setStepCompleteSurface: clears stale progress and installs durable outcome
   assert.match(output, /Step complete/);
   assert.match(output, /completing M011\/S01/);
   assert.match(output, /Advance one step, or resume automatic mode/);
-  assert.match(output, /\/gsd next/);
-  assert.match(output, /\/gsd auto/);
+  assert.match(output, /\/otto next/);
+  assert.match(output, /\/otto auto/);
 });
 
 test("setStepCompleteSurface: execute-task renders only the task completion receipt", () => {
@@ -173,7 +173,7 @@ test("setStepCompleteSurface: execute-task renders only the task completion rece
 
   assert.ok(message);
   const text = plain(message);
-  assert.match(text, /╭─ ✓ GSD Task Complete/);
+  assert.match(text, /╭─ ✓ OTTO Task Complete/);
   assert.match(text, /Completed: executing M011\/S01\/T02/);
   assert.match(text, /^    ╭─/m);
   assert.doesNotMatch(text, /^          ╭─/m);
@@ -196,7 +196,7 @@ test("setStepCompleteFallbackSurface: fallback also clears progress and points t
     { type: "complete-slice", id: "M011/S01", startedAt: 123 },
   );
 
-  assert.match(plain(message), /╭─ ✓ GSD Step Complete/);
+  assert.match(plain(message), /╭─ ✓ OTTO Step Complete/);
   assert.ok(calls.some(([key, value]) => key === "gsd-progress" && value === undefined));
   const outcome = calls.find(([key, value]) => key === "gsd-outcome" && typeof value === "function");
   assert.ok(outcome);
@@ -205,9 +205,9 @@ test("setStepCompleteFallbackSurface: fallback also clears progress and points t
     { fg: (_color: string, text: string) => text, bold: (text: string) => text },
   );
   const output = component.render(120).join("\n");
-  assert.match(output, /\/gsd status/);
-  assert.match(output, /\/gsd next/);
-  assert.match(output, /\/gsd auto/);
+  assert.match(output, /\/otto status/);
+  assert.match(output, /\/otto next/);
+  assert.match(output, /\/otto auto/);
 });
 
 test("shouldReturnStepWizardAfterUnit: terminal milestone completion continues to merge-back path", () => {

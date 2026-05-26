@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Runtime key-value SQLite schema helper for the workflow database facade.
 
 import type { DbAdapter } from "./db-adapter.js";

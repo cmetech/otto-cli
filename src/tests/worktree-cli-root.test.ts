@@ -23,7 +23,7 @@ function makeRepo(): string {
   const base = realpathSync(mkdtempSync(join(tmpdir(), "gsd-worktree-cli-root-")));
   cleanupPaths.push(base);
   run("git init -b main", base);
-  run('git config user.name "GSD Test"', base);
+  run('git config user.name "OTTO Test"', base);
   run('git config user.email "gsd@example.com"', base);
   writeFileSync(join(base, "README.md"), "init\n", "utf-8");
   run("git add -A && git commit -m init", base);
@@ -32,14 +32,14 @@ function makeRepo(): string {
 
 afterEach(() => {
   process.chdir(originalCwd);
-  delete process.env.GSD_CLI_WORKTREE;
-  delete process.env.GSD_CLI_WORKTREE_BASE;
+  delete process.env.OTTO_CLI_WORKTREE;
+  delete process.env.OTTO_CLI_WORKTREE_BASE;
   for (const p of cleanupPaths.splice(0)) {
     rmSync(p, { recursive: true, force: true });
   }
 });
 
-test("gsd -w from inside a worktree creates the next worktree at the project root", async () => {
+test("otto -w from inside a worktree creates the next worktree at the project root", async () => {
   const base = makeRepo();
   const alpha = createWorktree(base, "alpha");
   process.chdir(alpha.path);
@@ -47,9 +47,9 @@ test("gsd -w from inside a worktree creates the next worktree at the project roo
   await handleWorktreeFlag("beta");
 
   const expected = worktreePath(base, "beta");
-  const nested = join(alpha.path, ".gsd", "worktrees", "beta");
-  assert.equal(process.env.GSD_CLI_WORKTREE_BASE, base);
-  assert.equal(process.env.GSD_CLI_WORKTREE, "beta");
+  const nested = join(alpha.path, ".otto/workflow", "worktrees", "beta");
+  assert.equal(process.env.OTTO_CLI_WORKTREE_BASE, base);
+  assert.equal(process.env.OTTO_CLI_WORKTREE, "beta");
   assert.equal(process.cwd(), expected);
   assert.equal(existsSync(expected), true);
   assert.equal(existsSync(nested), false);

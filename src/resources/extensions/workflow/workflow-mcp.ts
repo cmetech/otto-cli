@@ -23,45 +23,45 @@ export interface WorkflowCapabilityOptions {
 
 const MCP_WORKFLOW_TOOL_SURFACE = new Set([
   "ask_user_questions",
-  "gsd_decision_save",
-  "gsd_exec",
-  "gsd_exec_search",
-  "gsd_resume",
-  "gsd_complete_milestone",
-  "gsd_complete_task",
-  "gsd_complete_slice",
-  "gsd_generate_milestone_id",
-  "gsd_journal_query",
-  "gsd_milestone_complete",
-  "gsd_milestone_generate_id",
-  "gsd_milestone_reopen",
-  "gsd_checkpoint_db",
-  "gsd_milestone_status",
-  "gsd_milestone_validate",
-  "gsd_plan_task",
-  "gsd_plan_milestone",
-  "gsd_plan_slice",
-  "gsd_replan_slice",
-  "gsd_reassess_roadmap",
-  "gsd_reopen_milestone",
-  "gsd_reopen_slice",
-  "gsd_reopen_task",
-  "gsd_requirement_save",
-  "gsd_requirement_update",
-  "gsd_roadmap_reassess",
-  "gsd_save_decision",
-  "gsd_save_gate_result",
-  "gsd_save_requirement",
-  "gsd_skip_slice",
-  "gsd_slice_replan",
-  "gsd_slice_complete",
-  "gsd_slice_reopen",
-  "gsd_summary_save",
-  "gsd_task_plan",
-  "gsd_task_complete",
-  "gsd_task_reopen",
-  "gsd_update_requirement",
-  "gsd_validate_milestone",
+  "otto_decision_save",
+  "otto_exec",
+  "otto_exec_search",
+  "otto_resume",
+  "otto_complete_milestone",
+  "otto_complete_task",
+  "otto_complete_slice",
+  "otto_generate_milestone_id",
+  "otto_journal_query",
+  "otto_milestone_complete",
+  "otto_milestone_generate_id",
+  "otto_milestone_reopen",
+  "otto_checkpoint_db",
+  "otto_milestone_status",
+  "otto_milestone_validate",
+  "otto_plan_task",
+  "otto_plan_milestone",
+  "otto_plan_slice",
+  "otto_replan_slice",
+  "otto_reassess_roadmap",
+  "otto_reopen_milestone",
+  "otto_reopen_slice",
+  "otto_reopen_task",
+  "otto_requirement_save",
+  "otto_requirement_update",
+  "otto_roadmap_reassess",
+  "otto_save_decision",
+  "otto_save_gate_result",
+  "otto_save_requirement",
+  "otto_skip_slice",
+  "otto_slice_replan",
+  "otto_slice_complete",
+  "otto_slice_reopen",
+  "otto_summary_save",
+  "otto_task_plan",
+  "otto_task_complete",
+  "otto_task_reopen",
+  "otto_update_requirement",
+  "otto_validate_milestone",
 ]);
 
 function parseLookupOutput(output: Buffer | string): string {
@@ -108,10 +108,10 @@ function findWorkflowCliFromAncestorPath(startPath: string): string | null {
 
 function getBundledWorkflowMcpCliPath(env: NodeJS.ProcessEnv): string | null {
   const envAnchors = [
-    env.GSD_BIN_PATH?.trim(),
-    env.GSD_CLI_PATH?.trim(),
-    env.LOOP24_WORKFLOW_PATH?.trim(),
-    env.GSD_WORKFLOW_PATH?.trim(),
+    env.OTTO_BIN_PATH?.trim(),
+    env.OTTO_CLI_PATH?.trim(),
+    env.OTTO_WORKFLOW_PATH?.trim(),
+    env.OTTO_WORKFLOW_PATH?.trim(),
   ].filter((value): value is string => typeof value === "string" && value.length > 0);
 
   for (const anchor of envAnchors) {
@@ -197,6 +197,7 @@ function buildWorkflowLaunchEnv(
     Boolean(resolveTsHookPath) &&
     (
       (agentCliPath?.endsWith(".ts") ?? false) ||
+      (workflowCliPath?.endsWith(".ts") ?? false) ||
       (executorModulePath?.endsWith(".ts") ?? false) ||
       (writeGateModulePath?.endsWith(".ts") ?? false)
     );
@@ -209,14 +210,12 @@ function buildWorkflowLaunchEnv(
 
   return {
     ...(explicitEnv ?? {}),
-    ...(agentCliPath ? { GSD_CLI_PATH: agentCliPath, GSD_BIN_PATH: agentCliPath } : {}),
-    ...(executorModulePath ? { LOOP24_WORKFLOW_EXECUTORS_MODULE: executorModulePath, GSD_WORKFLOW_EXECUTORS_MODULE: executorModulePath } : {}),
-    ...(writeGateModulePath ? { LOOP24_WORKFLOW_WRITE_GATE_MODULE: writeGateModulePath, GSD_WORKFLOW_WRITE_GATE_MODULE: writeGateModulePath } : {}),
+    ...(agentCliPath ? { OTTO_CLI_PATH: agentCliPath, OTTO_BIN_PATH: agentCliPath } : {}),
+    ...(executorModulePath ? { OTTO_WORKFLOW_EXECUTORS_MODULE: executorModulePath } : {}),
+    ...(writeGateModulePath ? { OTTO_WORKFLOW_WRITE_GATE_MODULE: writeGateModulePath } : {}),
     ...(nodeOptions ? { NODE_OPTIONS: nodeOptions } : {}),
-    LOOP24_PERSIST_WRITE_GATE_STATE: "1",
-    GSD_PERSIST_WRITE_GATE_STATE: "1",
-    LOOP24_WORKFLOW_PROJECT_ROOT: projectRoot,
-    GSD_WORKFLOW_PROJECT_ROOT: projectRoot,
+    OTTO_PERSIST_WRITE_GATE_STATE: "1",
+    OTTO_WORKFLOW_PROJECT_ROOT: projectRoot,
   };
 }
 
@@ -224,20 +223,20 @@ export function detectWorkflowMcpLaunchConfig(
   projectRoot = process.cwd(),
   env: NodeJS.ProcessEnv = process.env,
 ): WorkflowMcpLaunchConfig | null {
-  const name = env.GSD_WORKFLOW_MCP_NAME?.trim() || "gsd-workflow";
-  const explicitCommand = env.GSD_WORKFLOW_MCP_COMMAND?.trim();
-  const explicitArgs = parseJsonEnv<unknown>(env, "GSD_WORKFLOW_MCP_ARGS");
-  const explicitEnv = parseJsonEnv<Record<string, string>>(env, "GSD_WORKFLOW_MCP_ENV");
-  const explicitCwd = env.GSD_WORKFLOW_MCP_CWD?.trim();
+  const name = env.OTTO_WORKFLOW_MCP_NAME?.trim() || "otto-workflow";
+  const explicitCommand = env.OTTO_WORKFLOW_MCP_COMMAND?.trim();
+  const explicitArgs = parseJsonEnv<unknown>(env, "OTTO_WORKFLOW_MCP_ARGS");
+  const explicitEnv = parseJsonEnv<Record<string, string>>(env, "OTTO_WORKFLOW_MCP_ENV");
+  const explicitCwd = env.OTTO_WORKFLOW_MCP_CWD?.trim();
   const workflowCliPath =
-    explicitEnv?.GSD_CLI_PATH?.trim()
-    || explicitEnv?.GSD_BIN_PATH?.trim()
-    || env.GSD_CLI_PATH?.trim()
-    || env.GSD_BIN_PATH?.trim();
+    explicitEnv?.OTTO_CLI_PATH?.trim()
+    || explicitEnv?.OTTO_BIN_PATH?.trim()
+    || env.OTTO_CLI_PATH?.trim()
+    || env.OTTO_BIN_PATH?.trim();
   const workflowProjectRoot =
-    explicitEnv?.GSD_WORKFLOW_PROJECT_ROOT?.trim() ||
-    env.GSD_WORKFLOW_PROJECT_ROOT?.trim() ||
-    env.GSD_PROJECT_ROOT?.trim() ||
+    explicitEnv?.OTTO_WORKFLOW_PROJECT_ROOT?.trim() ||
+    env.OTTO_WORKFLOW_PROJECT_ROOT?.trim() ||
+    env.OTTO_PROJECT_ROOT?.trim() ||
     explicitCwd ||
     projectRoot;
   const resolvedWorkflowProjectRoot = resolve(workflowProjectRoot);
@@ -307,32 +306,32 @@ export function buildWorkflowMcpServers(
 export function getRequiredWorkflowToolsForGuidedUnit(unitType: string): string[] {
   switch (unitType) {
     case "discuss-project":
-      return ["ask_user_questions", "gsd_summary_save"];
+      return ["ask_user_questions", "otto_summary_save"];
     case "discuss-requirements":
-      return ["ask_user_questions", "gsd_requirement_save", "gsd_summary_save"];
+      return ["ask_user_questions", "otto_requirement_save", "otto_summary_save"];
     case "research-decision":
       return ["ask_user_questions"];
     case "discuss-milestone":
       return [
-        "gsd_summary_save",
-        "gsd_requirement_save",
-        "gsd_requirement_update",
-        "gsd_plan_milestone",
-        "gsd_milestone_generate_id",
+        "otto_summary_save",
+        "otto_requirement_save",
+        "otto_requirement_update",
+        "otto_plan_milestone",
+        "otto_milestone_generate_id",
       ];
     case "discuss-slice":
-      return ["gsd_summary_save"];
+      return ["otto_summary_save"];
     case "research-milestone":
     case "research-slice":
-      return ["gsd_summary_save"];
+      return ["otto_summary_save"];
     case "plan-milestone":
-      return ["gsd_plan_milestone"];
+      return ["otto_plan_milestone"];
     case "plan-slice":
-      return ["gsd_plan_slice"];
+      return ["otto_plan_slice"];
     case "execute-task":
-      return ["gsd_task_complete"];
+      return ["otto_task_complete"];
     case "complete-slice":
-      return ["gsd_slice_complete", "gsd_task_reopen", "gsd_replan_slice"];
+      return ["otto_slice_complete", "otto_task_reopen", "otto_replan_slice"];
     default:
       return [];
   }
@@ -341,43 +340,43 @@ export function getRequiredWorkflowToolsForGuidedUnit(unitType: string): string[
 export function getRequiredWorkflowToolsForAutoUnit(unitType: string): string[] {
   switch (unitType) {
     case "discuss-project":
-      return ["ask_user_questions", "gsd_summary_save"];
+      return ["ask_user_questions", "otto_summary_save"];
     case "discuss-requirements":
-      return ["ask_user_questions", "gsd_requirement_save", "gsd_summary_save"];
+      return ["ask_user_questions", "otto_requirement_save", "otto_summary_save"];
     case "research-decision":
       return ["ask_user_questions"];
     case "discuss-milestone":
       return [
-        "gsd_summary_save",
-        "gsd_requirement_save",
-        "gsd_requirement_update",
-        "gsd_plan_milestone",
-        "gsd_milestone_generate_id",
+        "otto_summary_save",
+        "otto_requirement_save",
+        "otto_requirement_update",
+        "otto_plan_milestone",
+        "otto_milestone_generate_id",
       ];
     case "research-milestone":
     case "research-slice":
     case "run-uat":
-      return ["gsd_summary_save"];
+      return ["otto_summary_save"];
     case "plan-milestone":
-      return ["gsd_plan_milestone"];
+      return ["otto_plan_milestone"];
     case "plan-slice":
-      return ["gsd_plan_slice"];
+      return ["otto_plan_slice"];
     case "execute-task":
     case "execute-task-simple":
     case "reactive-execute":
-      return ["gsd_task_complete"];
+      return ["otto_task_complete"];
     case "complete-slice":
-      return ["gsd_slice_complete", "gsd_task_reopen", "gsd_replan_slice"];
+      return ["otto_slice_complete", "otto_task_reopen", "otto_replan_slice"];
     case "replan-slice":
-      return ["gsd_replan_slice"];
+      return ["otto_replan_slice"];
     case "reassess-roadmap":
-      return ["gsd_milestone_status", "gsd_reassess_roadmap"];
+      return ["otto_milestone_status", "otto_reassess_roadmap"];
     case "gate-evaluate":
-      return ["gsd_save_gate_result"];
+      return ["otto_save_gate_result"];
     case "validate-milestone":
-      return ["gsd_milestone_status", "gsd_validate_milestone", "gsd_reassess_roadmap"];
+      return ["otto_milestone_status", "otto_validate_milestone", "otto_reassess_roadmap"];
     case "complete-milestone":
-      return ["gsd_milestone_status", "gsd_complete_milestone"];
+      return ["otto_milestone_status", "otto_complete_milestone"];
     default:
       return [];
   }
@@ -409,7 +408,7 @@ function hasRequiredTool(requiredTool: string, activeTools: string[]): boolean {
 }
 
 function workflowMcpStructuredQuestionsOptIn(env: NodeJS.ProcessEnv = process.env): boolean {
-  const value = env.GSD_WORKFLOW_MCP_STRUCTURED_QUESTIONS;
+  const value = env.OTTO_WORKFLOW_MCP_STRUCTURED_QUESTIONS;
   return value === "1" || value === "true";
 }
 
@@ -445,7 +444,7 @@ export function getWorkflowTransportSupportError(
   const providerLabel = `"${provider}"`;
 
   if (!launch) {
-    return `Provider ${providerLabel} cannot run ${surface}${unitLabel}: the GSD workflow MCP server is not configured or discoverable. Detected Claude Code model but no workflow MCP. Please run /gsd mcp init . from your project root. You can also configure GSD_WORKFLOW_MCP_COMMAND, build packages/mcp-server/dist/cli.js, or install gsd-mcp-server on PATH.`;
+    return `Provider ${providerLabel} cannot run ${surface}${unitLabel}: the OTTO workflow MCP server is not configured or discoverable. Detected Claude Code model but no workflow MCP. Please run /otto mcp init . from your project root. You can also configure OTTO_WORKFLOW_MCP_COMMAND, build packages/mcp-server/dist/cli.js, or install gsd-mcp-server on PATH.`;
   }
 
   const uniqueRequired = [...new Set(requiredTools)];

@@ -130,7 +130,7 @@ function buildIc(opts: {
 
 const STASH_PUSHED: PreflightResult = {
   stashPushed: true,
-  stashMarker: "gsd-preflight-stash:M002:42:1700000000000:abc",
+  stashMarker: "otto-preflight-stash:M002:42:1700000000000:abc",
   summary: "Stashed uncommitted changes before merge (milestone M002).",
 };
 
@@ -188,7 +188,7 @@ test("happy path: merge succeeds and stash is popped", async () => {
 test("regression #5538-followup: postflight pop runs even when mergeAndExit throws non-conflict error", async () => {
   // The original bug: when mergeAndExit threw, the catch block called
   // stopAuto + return break BEFORE postflight pop ran. The user's
-  // gsd-preflight-stash:M00x stash was orphaned. This test exercises that
+  // otto-preflight-stash:M00x stash was orphaned. This test exercises that
   // exact scenario and asserts the pop is now invoked.
   const { ic, log } = buildIc({
     preflightResult: STASH_PUSHED,

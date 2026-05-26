@@ -1,6 +1,6 @@
 ---
 name: create-extension
-description: Create, debug, and iterate on Workflow extensions (TypeScript modules that add tools, commands, event hooks, custom UI, and providers to GSD). Use when asked to build an extension, add a tool the LLM can call, register a slash command, hook into workflow events, create custom TUI components, or modify agent behavior. Triggers on "create extension", "build extension", "add a tool", "register command", "hook into workflow", "custom tool", "gsd plugin", "gsd extension".
+description: Create, debug, and iterate on Workflow extensions (TypeScript modules that add tools, commands, event hooks, custom UI, and providers to OTTO). Use when asked to build an extension, add a tool the LLM can call, register a slash command, hook into workflow events, create custom TUI components, or modify agent behavior. Triggers on "create extension", "build extension", "add a tool", "register command", "hook into workflow", "custom tool", "otto plugin", "otto extension".
 ---
 
 <essential_principles>
@@ -9,9 +9,9 @@ description: Create, debug, and iterate on Workflow extensions (TypeScript modul
 
 **Workflow extension paths (community/user-installed extensions):**
 - Global: `~/.pi/agent/extensions/*.ts` or `~/.pi/agent/extensions/*/index.ts`
-- Project-local: `.gsd/extensions/*.ts` or `.gsd/extensions/*/index.ts`
+- Project-local: `.otto/workflow/extensions/*.ts` or `.otto/workflow/extensions/*/index.ts`
 
-Note: `~/.gsd/agent/extensions/` is reserved for bundled extensions synced from the gsd-pi package. Community extensions placed there are silently ignored by the loader.
+Note: `~/.otto/agent/extensions/` is reserved for bundled extensions synced from the otto-pi package. Community extensions placed there are silently ignored by the loader.
 
 **The three primitives:**
 1. **Events** — Listen and react (`pi.on("event", handler)`). Can block tool calls, modify messages, inject context.
@@ -19,8 +19,8 @@ Note: `~/.gsd/agent/extensions/` is reserved for bundled extensions synced from 
 3. **Commands** — Give users slash commands (`pi.registerCommand()`). Users type `/mycommand`.
 
 **Non-negotiable rules:**
-- Use `StringEnum` from `@loop24/pi-ai` for string enum params (NOT `Type.Union`/`Type.Literal` — breaks Google's API)
-- Truncate tool output to 50KB / 2000 lines max (use `truncateHead`/`truncateTail` from `@loop24/pi-coding-agent`)
+- Use `StringEnum` from `@otto/pi-ai` for string enum params (NOT `Type.Union`/`Type.Literal` — breaks Google's API)
+- Truncate tool output to 50KB / 2000 lines max (use `truncateHead`/`truncateTail` from `@otto/pi-coding-agent`)
 - Store stateful tool state in `details` for branching support
 - Check `signal?.aborted` in long-running tool executions
 - Use `pi.exec()` not `child_process` for shell commands
@@ -34,10 +34,10 @@ Note: `~/.gsd/agent/extensions/` is reserved for bundled extensions synced from 
 
 | Package | Purpose |
 |---------|---------|
-| `@loop24/pi-coding-agent` | `ExtensionAPI`, `ExtensionContext`, `Theme`, event types, tool utilities, `DynamicBorder`, `BorderedLoader`, `CustomEditor`, `highlightCode` |
+| `@otto/pi-coding-agent` | `ExtensionAPI`, `ExtensionContext`, `Theme`, event types, tool utilities, `DynamicBorder`, `BorderedLoader`, `CustomEditor`, `highlightCode` |
 | `@sinclair/typebox` | `Type.Object`, `Type.String`, `Type.Number`, `Type.Optional`, `Type.Boolean`, `Type.Array` |
-| `@loop24/pi-ai` | `StringEnum` (required for string enums), `Type` re-export |
-| `@loop24/pi-tui` | `Text`, `Box`, `Container`, `Spacer`, `Markdown`, `SelectList`, `Input`, `matchesKey`, `Key`, `truncateToWidth`, `visibleWidth` |
+| `@otto/pi-ai` | `StringEnum` (required for string enums), `Type` re-export |
+| `@otto/pi-tui` | `Text`, `Box`, `Container`, `Spacer`, `Markdown`, `SelectList`, `Input`, `matchesKey`, `Key`, `truncateToWidth`, `visibleWidth` |
 | Node.js built-ins | `node:fs`, `node:path`, `node:child_process`, etc. |
 
 </essential_principles>

@@ -3,7 +3,7 @@
  *
  * Discovers workflow definitions from three tiers (project > global > bundled)
  * in both YAML and markdown formats. Each plugin declares an execution mode
- * that controls how `/loop24 workflow <name>` dispatches it:
+ * that controls how `/otto workflow <name>` dispatches it:
  *
  *   oneshot         — prompt-only, no state or scaffolding
  *   yaml-step       — CustomWorkflowEngine run with GRAPH.yaml
@@ -69,11 +69,11 @@ function globalPluginsDir(): string {
 }
 
 function projectPluginsDir(basePath: string): string {
-  return join(basePath, ".gsd", "workflows");
+  return join(basePath, ".otto/workflow", "workflows");
 }
 
 function legacyDefsDir(basePath: string): string {
-  return join(basePath, ".gsd", "workflow-defs");
+  return join(basePath, ".otto/workflow", "workflow-defs");
 }
 
 // ─── Markdown frontmatter parsing ────────────────────────────────────────
@@ -289,7 +289,7 @@ function loadBundledPlugins(out: Map<string, WorkflowPlugin>): void {
 /**
  * Discover all workflow plugins. Project overrides global overrides bundled.
  *
- * The legacy `.gsd/workflow-defs/*.yaml` directory is also scanned as a
+ * The legacy `.otto/workflow/workflow-defs/*.yaml` directory is also scanned as a
  * fallback YAML source so existing user definitions keep working.
  */
 export function discoverPlugins(basePath: string): Map<string, WorkflowPlugin> {
@@ -318,7 +318,7 @@ export function resolvePlugin(basePath: string, name: string): WorkflowPlugin | 
 export function listPluginsFormatted(basePath: string): string {
   const plugins = discoverPlugins(basePath);
   if (plugins.size === 0) {
-    return "No workflow plugins found.\n\nRun /gsd workflow new to author one.";
+    return "No workflow plugins found.\n\nRun /otto workflow new to author one.";
   }
 
   const groups: Record<WorkflowMode, WorkflowPlugin[]> = {
@@ -347,15 +347,15 @@ export function listPluginsFormatted(basePath: string): string {
   }
 
   lines.push("Usage:");
-  lines.push("  /gsd workflow <name>          Run a plugin directly");
-  lines.push("  /gsd workflow info <name>     Show plugin details");
-  lines.push("  /gsd workflow install <src>   Install a plugin from a URL");
+  lines.push("  /otto workflow <name>          Run a plugin directly");
+  lines.push("  /otto workflow info <name>     Show plugin details");
+  lines.push("  /otto workflow install <src>   Install a plugin from a URL");
 
   return lines.join("\n");
 }
 
 /**
- * Format a single plugin's metadata for `/loop24 workflow info <name>`.
+ * Format a single plugin's metadata for `/otto workflow info <name>`.
  */
 export function formatPluginInfo(plugin: WorkflowPlugin): string {
   const lines = [

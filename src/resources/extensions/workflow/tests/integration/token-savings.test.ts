@@ -145,10 +145,10 @@ A test project for validating token savings with DB-scoped content.
 console.log('\n=== token-savings: plan-slice prompt ≥30% character savings ===');
 {
   const base = mkdtempSync(join(tmpdir(), 'gsd-token-savings-'));
-  mkdirSync(join(base, '.gsd'), { recursive: true });
-  writeFileSync(join(base, '.gsd', 'DECISIONS.md'), decisionsMarkdown);
-  writeFileSync(join(base, '.gsd', 'REQUIREMENTS.md'), requirementsMarkdown);
-  writeFileSync(join(base, '.gsd', 'PROJECT.md'), PROJECT_CONTENT);
+  mkdirSync(join(base, '.otto/workflow'), { recursive: true });
+  writeFileSync(join(base, '.otto/workflow', 'DECISIONS.md'), decisionsMarkdown);
+  writeFileSync(join(base, '.otto/workflow', 'REQUIREMENTS.md'), requirementsMarkdown);
+  writeFileSync(join(base, '.otto/workflow', 'PROJECT.md'), PROJECT_CONTENT);
 
   // Open :memory: DB and import
   openDatabase(':memory:');
@@ -164,8 +164,8 @@ console.log('\n=== token-savings: plan-slice prompt ≥30% character savings ===
   const dbRequirementsContent = formatRequirementsForPrompt(scopedRequirements);
 
   // ── Full-markdown equivalents (what inlineWorkflowRootFile would return) ──
-  const fullDecisionsContent = readFileSync(join(base, '.gsd', 'DECISIONS.md'), 'utf-8');
-  const fullRequirementsContent = readFileSync(join(base, '.gsd', 'REQUIREMENTS.md'), 'utf-8');
+  const fullDecisionsContent = readFileSync(join(base, '.otto/workflow', 'DECISIONS.md'), 'utf-8');
+  const fullRequirementsContent = readFileSync(join(base, '.otto/workflow', 'REQUIREMENTS.md'), 'utf-8');
 
   // DB-scoped total vs full-markdown total
   const dbTotal = dbDecisionsContent.length + dbRequirementsContent.length;
@@ -225,10 +225,10 @@ console.log('\n=== token-savings: plan-slice prompt ≥30% character savings ===
 console.log('\n=== token-savings: research-milestone prompt shows meaningful savings ===');
 {
   const base = mkdtempSync(join(tmpdir(), 'gsd-token-savings-'));
-  mkdirSync(join(base, '.gsd'), { recursive: true });
-  writeFileSync(join(base, '.gsd', 'DECISIONS.md'), decisionsMarkdown);
-  writeFileSync(join(base, '.gsd', 'REQUIREMENTS.md'), requirementsMarkdown);
-  writeFileSync(join(base, '.gsd', 'PROJECT.md'), PROJECT_CONTENT);
+  mkdirSync(join(base, '.otto/workflow'), { recursive: true });
+  writeFileSync(join(base, '.otto/workflow', 'DECISIONS.md'), decisionsMarkdown);
+  writeFileSync(join(base, '.otto/workflow', 'REQUIREMENTS.md'), requirementsMarkdown);
+  writeFileSync(join(base, '.otto/workflow', 'PROJECT.md'), PROJECT_CONTENT);
 
   openDatabase(':memory:');
   migrateFromMarkdown(base);
@@ -239,8 +239,8 @@ console.log('\n=== token-savings: research-milestone prompt shows meaningful sav
   const dbDecisionsContent = formatDecisionsForPrompt(scopedDecisions);
   const dbRequirementsContent = formatRequirementsForPrompt(allRequirements);
 
-  const fullDecisionsContent = readFileSync(join(base, '.gsd', 'DECISIONS.md'), 'utf-8');
-  const fullRequirementsContent = readFileSync(join(base, '.gsd', 'REQUIREMENTS.md'), 'utf-8');
+  const fullDecisionsContent = readFileSync(join(base, '.otto/workflow', 'DECISIONS.md'), 'utf-8');
+  const fullRequirementsContent = readFileSync(join(base, '.otto/workflow', 'REQUIREMENTS.md'), 'utf-8');
 
   // Decisions should still show savings (8 of 24 scoped to M001)
   const decisionsSavings = ((fullDecisionsContent.length - dbDecisionsContent.length) / fullDecisionsContent.length) * 100;
@@ -273,10 +273,10 @@ console.log('\n=== token-savings: research-milestone prompt shows meaningful sav
 console.log('\n=== token-savings: quality — correct scoping, no cross-contamination ===');
 {
   const base = mkdtempSync(join(tmpdir(), 'gsd-token-savings-'));
-  mkdirSync(join(base, '.gsd'), { recursive: true });
-  writeFileSync(join(base, '.gsd', 'DECISIONS.md'), decisionsMarkdown);
-  writeFileSync(join(base, '.gsd', 'REQUIREMENTS.md'), requirementsMarkdown);
-  writeFileSync(join(base, '.gsd', 'PROJECT.md'), PROJECT_CONTENT);
+  mkdirSync(join(base, '.otto/workflow'), { recursive: true });
+  writeFileSync(join(base, '.otto/workflow', 'DECISIONS.md'), decisionsMarkdown);
+  writeFileSync(join(base, '.otto/workflow', 'REQUIREMENTS.md'), requirementsMarkdown);
+  writeFileSync(join(base, '.otto/workflow', 'PROJECT.md'), PROJECT_CONTENT);
 
   openDatabase(':memory:');
   migrateFromMarkdown(base);

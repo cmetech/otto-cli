@@ -1,11 +1,11 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Registers workspace-aware dynamic filesystem and shell tools.
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname } from "node:path";
 
-import type { ExtensionAPI } from "@loop24/pi-coding-agent";
-import { createBashTool, createEditTool, createReadTool, createWriteTool } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI } from "@otto/pi-coding-agent";
+import { createBashTool, createEditTool, createReadTool, createWriteTool } from "@otto/pi-coding-agent";
 
 import { DEFAULT_BASH_TIMEOUT_SECS } from "../constants.js";
 import { setLogBasePath, logWarning } from "../workflow-logger.js";
@@ -15,7 +15,7 @@ export function safeWorkspaceCwd(): string {
   try {
     return process.cwd();
   } catch {
-    const projectRoot = (process.env.LOOP24_PROJECT_ROOT ?? process.env.GSD_PROJECT_ROOT);
+    const projectRoot = (process.env.OTTO_PROJECT_ROOT ?? process.env.OTTO_PROJECT_ROOT);
     if (projectRoot && existsSync(projectRoot)) return projectRoot;
     return homedir();
   }
@@ -31,9 +31,9 @@ export function resolveCtxCwd(ctx?: unknown): string {
 
 /**
  * Resolve the correct DB path for the current working directory.
- * If `basePath` is inside a `.gsd/worktrees/<MID>/` directory, returns
- * the project root's `.gsd/gsd.db` (shared WAL — R012). Otherwise
- * returns `<basePath>/.gsd/gsd.db`.
+ * If `basePath` is inside a `.otto/workflow/worktrees/<MID>/` directory, returns
+ * the project root's `.otto/workflow/otto.db` (shared WAL — R012). Otherwise
+ * returns `<basePath>/.otto/workflow/otto.db`.
  */
 export function resolveProjectRootDbPath(basePath: string): string {
   return resolveWorkflowPathContract(basePath).projectDb;
@@ -62,7 +62,7 @@ export async function ensureDbOpen(basePath: string = safeWorkspaceCwd()): Promi
       return opened;
     }
 
-    logWarning("bootstrap", "ensureDbOpen failed — no .gsd directory found");
+    logWarning("bootstrap", "ensureDbOpen failed — no .otto/workflow directory found");
     return false;
   } catch (err) {
     logWarning("bootstrap", `ensureDbOpen failed: ${(err as Error).message ?? String(err)}`);

@@ -137,7 +137,7 @@ async function runOne(
 			cwd,
 			shell: true,
 			stdio: ["pipe", "pipe", "pipe"],
-			env: { ...process.env, ...hook.env, GSD_HOOK_EVENT: name, GSD_HOOK_SCOPE: hook.scope },
+			env: { ...process.env, ...hook.env, OTTO_HOOK_EVENT: name, OTTO_HOOK_SCOPE: hook.scope },
 		});
 
 		let stdout = "";

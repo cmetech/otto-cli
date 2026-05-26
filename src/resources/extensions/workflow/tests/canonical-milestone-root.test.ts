@@ -4,7 +4,7 @@
  * milestone completion).
  *
  * Contract: given (basePath, milestoneId), return the worktree path if a
- * live git worktree exists for that milestone at .gsd/worktrees/<MID>/;
+ * live git worktree exists for that milestone at .otto/workflow/worktrees/<MID>/;
  * otherwise return basePath unchanged. A live worktree has a .git file
  * (not directory) — a bare directory without .git is a stale leftover.
  */
@@ -20,7 +20,7 @@ import { resolveCanonicalMilestoneRoot } from "../worktree-manager.ts";
 
 function makeTmpBase(): string {
   const base = join(tmpdir(), `gsd-canon-test-${randomUUID()}`);
-  mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
   return base;
 }
 
@@ -29,12 +29,12 @@ function cleanup(base: string): void {
 }
 
 /**
- * Create a worktree directory shape that looks live: the .gsd/worktrees/<MID>/
+ * Create a worktree directory shape that looks live: the .otto/workflow/worktrees/<MID>/
  * directory with a .git file containing a gitdir: pointer. We don't need a
  * real git worktree — the resolver only checks for the .git file's presence.
  */
 function makeLiveWorktree(base: string, mid: string): string {
-  const wtPath = join(base, ".gsd", "worktrees", mid);
+  const wtPath = join(base, ".otto/workflow", "worktrees", mid);
   mkdirSync(wtPath, { recursive: true });
   writeFileSync(
     join(wtPath, ".git"),
@@ -44,7 +44,7 @@ function makeLiveWorktree(base: string, mid: string): string {
 }
 
 function makeStaleWorktree(base: string, mid: string): string {
-  const wtPath = join(base, ".gsd", "worktrees", mid);
+  const wtPath = join(base, ".otto/workflow", "worktrees", mid);
   mkdirSync(wtPath, { recursive: true });
   // No .git file — this is the stale-leftover shape createWorktree() sees
   // and cleans up.

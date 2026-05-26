@@ -1,11 +1,11 @@
-// LOOP24 + Subagent launch contract and child process safety helpers.
+// OTTO + Subagent launch contract and child process safety helpers.
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { SessionManager } from "@loop24/pi-coding-agent";
+import { SessionManager } from "@otto/pi-coding-agent";
 import type { AgentConfig } from "./agents.js";
 
-export const SUBAGENT_CHILD_ENV_VAR = "GSD_SUBAGENT_CHILD";
+export const SUBAGENT_CHILD_ENV_VAR = "OTTO_SUBAGENT_CHILD";
 export const SUBAGENT_CHILD_ENV_VALUE = "1";
 
 export type SubagentContextMode = "fresh" | "fork";

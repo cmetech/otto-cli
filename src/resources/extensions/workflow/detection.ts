@@ -23,7 +23,7 @@ export interface ProjectDetection {
   /** Is this the first time the agent has been used on this machine? */
   isFirstEverLaunch: boolean;
 
-  /** Does ~/.gsd/ exist with preferences? */
+  /** Does ~/.otto/workflow/ exist with preferences? */
   hasGlobalSetup: boolean;
 
   /** v1 details (only when state === 'v1-planning') */
@@ -259,7 +259,7 @@ const TEST_MARKERS = [
 /** Directories skipped during bounded recursive project scans. */
 const RECURSIVE_SCAN_IGNORED_DIRS = new Set([
   ".git",
-  ".gsd",
+  ".otto",
   ".bg-shell",
   ".planning",
   ".plans",
@@ -1282,10 +1282,10 @@ export function hasProjectFileInAncestor(
 }
 
 /**
- * Check whether a project's `.gsd/` directory contains the bootstrap artifacts
+ * Check whether a project's `.otto/workflow/` directory contains the bootstrap artifacts
  * (`PREFERENCES.md` or `milestones/`) that indicate a completed init run.
  *
- * A zombie `.gsd/` state — symlink exists but neither artifact is present —
+ * A zombie `.otto/workflow/` state — symlink exists but neither artifact is present —
  * must be treated as "needs init wizard". The previous guard checked only
  * `existsSync(workflowRoot(basePath))`, which accepted zombie states and skipped
  * the wizard (#2942).

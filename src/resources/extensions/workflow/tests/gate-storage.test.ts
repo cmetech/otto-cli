@@ -26,7 +26,7 @@ describe("quality_gates CRUD", () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(join(tmpdir(), "gate-test-"));
-    dbPath = join(tmpDir, "gsd.db");
+    dbPath = join(tmpDir, "otto.db");
     openDatabase(dbPath);
     // Seed parent rows
     insertMilestone({

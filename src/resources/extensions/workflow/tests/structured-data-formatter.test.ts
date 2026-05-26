@@ -274,7 +274,7 @@ describe("structured-data-formatter: measureSavings", () => {
 // Dropped (#4836): the previous "realistic savings" suite asserted that the
 // compact formatter beat hand-authored "typical markdown" baselines by 30%+.
 // Those baselines were written by the test author to make the assertion pass
-// — they are not the format GSD actually emits anywhere else, so shifting
+// — they are not the format OTTO actually emits anywhere else, so shifting
 // the compact output by any amount could be absorbed by padding the baseline.
 // There was no regression signal.
 //

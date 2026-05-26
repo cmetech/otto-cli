@@ -39,7 +39,7 @@ test("computeCriticalPath follows milestone dependencies", () => {
 test("loadVisualizerData hydrates milestones, captures, stats, and health fields", async () => {
   const base = mkdtempSync(join(tmpdir(), "gsd-visualizer-data-"));
   try {
-    const msDir = join(base, ".gsd", "milestones", "M001");
+    const msDir = join(base, ".otto/workflow", "milestones", "M001");
     const sliceDir = join(msDir, "slices", "S01");
     mkdirSync(sliceDir, { recursive: true });
     writeFileSync(
@@ -56,7 +56,7 @@ test("loadVisualizerData hydrates milestones, captures, stats, and health fields
       "# S01 Plan\n\n## Tasks\n- [ ] **T01: Render data** `est:10m`\n",
     );
     writeFileSync(
-      join(base, ".gsd", "CAPTURES.md"),
+      join(base, ".otto/workflow", "CAPTURES.md"),
       [
         "# Captures",
         "",

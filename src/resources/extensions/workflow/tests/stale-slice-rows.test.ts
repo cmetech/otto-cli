@@ -24,11 +24,11 @@ afterEach(() => {
 describe("stale slice row DB-authoritative boundary", () => {
   test("a stale SUMMARY.md projection does not make a DB-pending slice complete", async () => {
     tempBase = mkdtempSync(join(tmpdir(), "gsd-stale-slice-"));
-    const sliceDir = join(tempBase, ".gsd", "milestones", "M001", "slices", "S01");
+    const sliceDir = join(tempBase, ".otto/workflow", "milestones", "M001", "slices", "S01");
     mkdirSync(sliceDir, { recursive: true });
     writeFileSync(join(sliceDir, "S01-SUMMARY.md"), "# S01 Summary\n", "utf-8");
 
-    openDatabase(join(tempBase, ".gsd", "gsd.db"));
+    openDatabase(join(tempBase, ".otto/workflow", "otto.db"));
     insertMilestone({ id: "M001", title: "DB authority", status: "active", depends_on: [] });
     insertSlice({
       id: "S01",

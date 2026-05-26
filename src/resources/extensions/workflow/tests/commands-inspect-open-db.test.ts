@@ -7,7 +7,7 @@ import fs from "node:fs";
 import { handleInspect } from "../commands-inspect.ts";
 import { closeDatabase, openDatabase } from "../db.ts";
 
-test("/gsd inspect opens existing database when it was not yet opened in session", async (t) => {
+test("/otto inspect opens existing database when it was not yet opened in session", async (t) => {
   closeDatabase();
 
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "gsd-inspect-db-"));
@@ -19,9 +19,9 @@ test("/gsd inspect opens existing database when it was not yet opened in session
     fs.rmSync(tmp, { recursive: true, force: true });
   });
 
-  const workflowDir = path.join(tmp, ".gsd");
+  const workflowDir = path.join(tmp, ".otto/workflow");
   fs.mkdirSync(workflowDir, { recursive: true });
-  const dbPath = path.join(workflowDir, "gsd.db");
+  const dbPath = path.join(workflowDir, "otto.db");
 
   assert.equal(openDatabase(dbPath), true);
   closeDatabase();
@@ -41,6 +41,6 @@ test("/gsd inspect opens existing database when it was not yet opened in session
 
   assert.equal(notifications.length, 1);
   assert.equal(notifications[0].level, "info");
-  assert.match(notifications[0].message, /=== GSD Database Inspect ===/);
-  assert.doesNotMatch(notifications[0].message, /No GSD database available/);
+  assert.match(notifications[0].message, /=== OTTO Database Inspect ===/);
+  assert.doesNotMatch(notifications[0].message, /No OTTO database available/);
 });

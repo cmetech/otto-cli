@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Bootstrap behavior tests for completed milestone orphan merges.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -25,9 +25,9 @@ function runGit(base: string, args: string[]): string {
 
 function makeRepoWithUnmergedCompletedMilestone(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-orphan-bootstrap-"));
-  mkdirSync(join(base, ".gsd", "milestones"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones"), { recursive: true });
   writeFileSync(
-    join(base, ".gsd", "PREFERENCES.md"),
+    join(base, ".otto/workflow", "PREFERENCES.md"),
     "---\ngit:\n  isolation: \"branch\"\n---\n",
   );
   runGit(base, ["init"]);
@@ -44,7 +44,7 @@ function makeRepoWithUnmergedCompletedMilestone(): string {
   runGit(base, ["commit", "-m", "feat: M002 work"]);
   runGit(base, ["checkout", "main"]);
 
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M002", title: "Completed milestone", status: "complete" });
   insertMilestone({ id: "M003", title: "Next milestone", status: "active" });
   closeDatabase();

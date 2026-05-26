@@ -19,7 +19,7 @@ function makeTmp(name: string): string {
 }
 
 function buildScaffold(base: string) {
-  const gsd = join(base, ".gsd");
+  const gsd = join(base, ".otto/workflow");
   const m = join(gsd, "milestones", "M001");
   const s = join(m, "slices", "S01", "tasks");
   mkdirSync(s, { recursive: true });
@@ -80,9 +80,9 @@ test("doctor does not report any reconciliation issue codes", async (t) => {
   }
 
   // No summary or UAT stubs should be created
-  const sliceSummaryPath = join(tmp, ".gsd", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md");
+  const sliceSummaryPath = join(tmp, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-SUMMARY.md");
   assert.ok(!existsSync(sliceSummaryPath), "should NOT have created summary stub");
 
-  const sliceUatPath = join(tmp, ".gsd", "milestones", "M001", "slices", "S01", "S01-UAT.md");
+  const sliceUatPath = join(tmp, ".otto/workflow", "milestones", "M001", "slices", "S01", "S01-UAT.md");
   assert.ok(!existsSync(sliceUatPath), "should NOT have created UAT stub");
 });

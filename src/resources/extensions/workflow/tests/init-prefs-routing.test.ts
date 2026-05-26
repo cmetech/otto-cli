@@ -1,4 +1,4 @@
-// GSD — /gsd init → unified preferences-write routing tests.
+// OTTO — /otto init → unified preferences-write routing tests.
 //
 // Verifies the refactor that routes init's preferences write through the same
 // writePreferencesFile helper used by handlePrefsWizard, and that the typed
@@ -234,7 +234,7 @@ test("init — preferences path is basePath-derived, not cwd-derived (#4457 revi
 });
 
 test("handlePrefsWizard — accepts pathOverride to target a non-cwd location", async () => {
-  // The wizard's signature must support pathOverride so /gsd init can route
+  // The wizard's signature must support pathOverride so /otto init can route
   // both the review and skip branches to the basePath-derived path.
   const { handlePrefsWizard } = await import("../commands-prefs-wizard.ts");
   assert.equal(handlePrefsWizard.length >= 2, true);

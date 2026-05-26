@@ -12,12 +12,12 @@ import { handleUpdate } from "../resources/extensions/workflow/commands-handlers
 
 test("update-cmd prints latest version before comparison (#3445)", async () => {
   const originalFetch = globalThis.fetch;
-  const originalVersion = process.env.GSD_VERSION;
+  const originalVersion = process.env.OTTO_VERSION;
   const originalStdoutWrite = process.stdout.write;
   const writes: string[] = [];
 
   try {
-    process.env.GSD_VERSION = "1.2.3";
+    process.env.OTTO_VERSION = "1.2.3";
     globalThis.fetch = async () => Response.json({ version: "1.2.3" });
     (process.stdout as any).write = (chunk: unknown) => {
       writes.push(String(chunk));
@@ -29,9 +29,9 @@ test("update-cmd prints latest version before comparison (#3445)", async () => {
     globalThis.fetch = originalFetch;
     (process.stdout as any).write = originalStdoutWrite;
     if (originalVersion === undefined) {
-      delete process.env.GSD_VERSION;
+      delete process.env.OTTO_VERSION;
     } else {
-      process.env.GSD_VERSION = originalVersion;
+      process.env.OTTO_VERSION = originalVersion;
     }
   }
 
@@ -75,14 +75,14 @@ test("resolveInstallCommand returns npm command when not running under Bun (#414
   }
 });
 
-test("/gsd update handler fetches latest version through the registry endpoint (#3806)", async () => {
+test("/otto update handler fetches latest version through the registry endpoint (#3806)", async () => {
   const originalFetch = globalThis.fetch;
-  const originalVersion = process.env.GSD_VERSION;
+  const originalVersion = process.env.OTTO_VERSION;
   const fetchUrls: string[] = [];
   const notifications: Array<{ message: string; level: string }> = [];
 
   try {
-    process.env.GSD_VERSION = "1.2.3";
+    process.env.OTTO_VERSION = "1.2.3";
     globalThis.fetch = async (input) => {
       fetchUrls.push(String(input));
       return Response.json({ version: "1.2.3" });
@@ -98,13 +98,13 @@ test("/gsd update handler fetches latest version through the registry endpoint (
   } finally {
     globalThis.fetch = originalFetch;
     if (originalVersion === undefined) {
-      delete process.env.GSD_VERSION;
+      delete process.env.OTTO_VERSION;
     } else {
-      process.env.GSD_VERSION = originalVersion;
+      process.env.OTTO_VERSION = originalVersion;
     }
   }
 
-  assert.deepEqual(fetchUrls, ["https://registry.npmjs.org/@ericsson%2floop24/latest"]);
+  assert.deepEqual(fetchUrls, ["https://registry.npmjs.org/@ericsson%2fotto/latest"]);
   assert.ok(notifications.some((notification) => notification.message.includes("Already up to date")));
 });
 
@@ -125,7 +125,7 @@ test("isBunInstall detects bun install via argv[1] even when process.versions.bu
 
     // Custom BUN_INSTALL location
     process.env.BUN_INSTALL = "/opt/bun";
-    process.argv[1] = "/opt/bun/bin/gsd";
+    process.argv[1] = "/opt/bun/bin/otto";
     assert.equal(isBunInstall(), true, "should detect bun install from $BUN_INSTALL/bin/ argv[1]");
 
     // Non-bun path must NOT match

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Normalize automated issue and pull request triage labels.
 
 export const CANONICAL_TRIAGE_LABELS = [

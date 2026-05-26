@@ -8,10 +8,10 @@
   "provides": {
     "tools": [
       "bash", "write", "read", "edit",
-      "gsd_decision_save", "gsd_summary_save",
-      "gsd_requirement_update", "gsd_milestone_generate_id"
+      "otto_decision_save", "otto_summary_save",
+      "otto_requirement_update", "otto_milestone_generate_id"
     ],
-    "commands": ["loop24", "kill", "worktree", "exit"],
+    "commands": ["otto", "kill", "worktree", "exit"],
     "hooks": [
       "session_start",
       "session_switch",

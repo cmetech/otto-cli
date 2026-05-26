@@ -5,7 +5,7 @@
  * the headless orchestrator to reduce stdout noise for orchestrators.
  *
  * Uses extracted parsing logic (mirrors headless.ts) to avoid
- * transitive @loop24/native import that breaks in test environment.
+ * transitive @otto/native import that breaks in test environment.
  */
 
 import test from 'node:test'
@@ -219,11 +219,11 @@ test('mapStatusToExitCode: unknown status returns EXIT_ERROR', () => {
 })
 
 test('isTerminalNotification: auto-mode pause notifications are terminal', () => {
-  assert.equal(isTerminalNotification(makeNotify('Auto-mode paused (Escape). Type to interact, or /gsd auto to resume.')), true)
+  assert.equal(isTerminalNotification(makeNotify('Auto-mode paused (Escape). Type to interact, or /otto auto to resume.')), true)
 })
 
 test('isTerminalNotification: step-mode pause notifications are terminal', () => {
-  assert.equal(isTerminalNotification(makeNotify('Step-mode paused (Escape). Type to interact, or /gsd next to resume.')), true)
+  assert.equal(isTerminalNotification(makeNotify('Step-mode paused (Escape). Type to interact, or /otto next to resume.')), true)
 })
 
 test('isTerminalNotification: idempotent advance pause notifications are terminal', () => {
@@ -231,25 +231,25 @@ test('isTerminalNotification: idempotent advance pause notifications are termina
 })
 
 test('isTerminalNotification: manual merge-resolution notifications are terminal', () => {
-  assert.equal(isTerminalNotification(makeNotify('Survivor-branch finalization for M001 failed: merge conflict. Resolve manually and re-run /gsd auto.')), true)
+  assert.equal(isTerminalNotification(makeNotify('Survivor-branch finalization for M001 failed: merge conflict. Resolve manually and re-run /otto auto.')), true)
 })
 
 test('isTerminalNotification: unmerged milestone command blocks are terminal', () => {
   assert.equal(
-    isTerminalNotification(makeCommandBlock('/gsd auto cannot start new workflow work because M001 is complete but not merged.')),
+    isTerminalNotification(makeCommandBlock('/otto auto cannot start new workflow work because M001 is complete but not merged.')),
     true,
   )
 })
 
 test('isTerminalNotification: validation-blocked command blocks are terminal', () => {
   assert.equal(
-    isTerminalNotification(makeCommandBlock('/gsd auto cannot run because the active milestone is blocked by validation.')),
+    isTerminalNotification(makeCommandBlock('/otto auto cannot run because the active milestone is blocked by validation.')),
     true,
   )
 })
 
 test('isBlockedNotification: pause notifications require intervention in headless mode', () => {
-  assert.equal(isBlockedNotification(makeNotify('Auto-mode paused (Escape). Type to interact, or /gsd auto to resume.')), true)
+  assert.equal(isBlockedNotification(makeNotify('Auto-mode paused (Escape). Type to interact, or /otto auto to resume.')), true)
   assert.equal(isBlockedNotification(makeNotify('Auto-mode paused due to provider error: connection reset')), true)
 })
 
@@ -258,17 +258,17 @@ test('isBlockedNotification: idempotent advance pause notifications are not bloc
 })
 
 test('isBlockedNotification: manual merge-resolution notifications require intervention', () => {
-  assert.equal(isBlockedNotification(makeNotify('Merge conflict on milestone M001: src/conflict.js. Resolve conflicts manually and run /gsd auto to resume.')), true)
-  assert.equal(isBlockedNotification(makeNotify('Merge error on milestone M001: remote rejected push. Resolve and run /gsd auto to resume.')), true)
+  assert.equal(isBlockedNotification(makeNotify('Merge conflict on milestone M001: src/conflict.js. Resolve conflicts manually and run /otto auto to resume.')), true)
+  assert.equal(isBlockedNotification(makeNotify('Merge error on milestone M001: remote rejected push. Resolve and run /otto auto to resume.')), true)
 })
 
 test('isBlockedNotification: blocking command blocks require intervention', () => {
   assert.equal(
-    isBlockedNotification(makeCommandBlock('/gsd auto cannot start new workflow work because M001 is complete but not merged.')),
+    isBlockedNotification(makeCommandBlock('/otto auto cannot start new workflow work because M001 is complete but not merged.')),
     true,
   )
   assert.equal(
-    isBlockedNotification(makeCommandBlock('/gsd auto cannot run because the active milestone is blocked by validation.')),
+    isBlockedNotification(makeCommandBlock('/otto auto cannot run because the active milestone is blocked by validation.')),
     true,
   )
 })

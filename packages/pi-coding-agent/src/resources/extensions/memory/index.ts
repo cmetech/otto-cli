@@ -11,9 +11,9 @@
  * - /memory command: view, clear, rebuild, stats
  */
 
-import type { ExtensionAPI } from "@loop24/pi-coding-agent";
-import { getAgentDir, SettingsManager } from "@loop24/pi-coding-agent";
-import { completeSimple } from "@loop24/pi-ai";
+import type { ExtensionAPI } from "@otto/pi-coding-agent";
+import { getAgentDir, SettingsManager } from "@otto/pi-coding-agent";
+import { completeSimple } from "@otto/pi-ai";
 import { createHash } from "crypto";
 import { existsSync, mkdirSync, rmSync } from "fs";
 import { join } from "path";

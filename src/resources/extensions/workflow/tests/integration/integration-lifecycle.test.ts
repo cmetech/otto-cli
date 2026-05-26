@@ -121,9 +121,9 @@ const ROADMAP_CONTENT = `# M001: Test Milestone\n\n**Vision:** Integration test 
 // ═══════════════════════════════════════════════════════════════════════════
 
 test('integration-lifecycle: full pipeline', async () => {
-    // ── Step 1: Set up temp dir with realistic .gsd/ structure ──────────
+    // ── Step 1: Set up temp dir with realistic .otto/workflow/ structure ──────────
     const base = mkdtempSync(join(tmpdir(), 'gsd-int-lifecycle-'));
-    const workflowDir = join(base, '.gsd');
+    const workflowDir = join(base, '.otto/workflow');
     mkdirSync(workflowDir, { recursive: true });
     mkdirSync(join(workflowDir, 'milestones', 'M001'), { recursive: true });
     mkdirSync(join(workflowDir, 'milestones', 'M002'), { recursive: true });

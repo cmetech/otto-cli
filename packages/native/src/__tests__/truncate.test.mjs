@@ -10,8 +10,8 @@ const require = createRequire(import.meta.url);
 const addonDir = path.resolve(__dirname, "..", "..", "..", "..", "native", "addon");
 const platformTag = `${process.platform}-${process.arch}`;
 const candidates = [
-  path.join(addonDir, `gsd_engine.${platformTag}.node`),
-  path.join(addonDir, "gsd_engine.dev.node"),
+  path.join(addonDir, `otto_engine.${platformTag}.node`),
+  path.join(addonDir, "otto_engine.dev.node"),
 ];
 
 let native;
@@ -114,14 +114,14 @@ describe("truncateHead", () => {
 
 // ── truncateOutput ───────────────────────────────────────────────────────
 
-// `truncateOutput` may be missing from published `@opengsd/engine-*`
+// `truncateOutput` may be missing from published `@cmetech/otto-engine-*`
 // binaries (see #4854 — coverage fix surfaced that some symbols weren't
 // in the shipped binary). Skip this suite when the function isn't
 // present rather than failing with a TypeError on every test.
 const truncateOutputSkip =
   typeof native.truncateOutput === "function"
     ? undefined
-    : "native.truncateOutput missing from @loop24/native binary — see #4854";
+    : "native.truncateOutput missing from @otto/native binary — see #4854";
 
 describe("truncateOutput", { skip: truncateOutputSkip }, () => {
   test("no truncation when fits", () => {

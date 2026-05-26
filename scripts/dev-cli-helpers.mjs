@@ -1,4 +1,4 @@
-// LOOP24 - Dev CLI child-process spawn helpers.
+// OTTO - Dev CLI child-process spawn helpers.
 
 import { join } from 'node:path'
 
@@ -29,11 +29,8 @@ export function buildDevCliChildEnv(baseEnv, devCliPath) {
     // must re-enter through this wrapper so source-mode TS imports keep
     // using resolve-ts. Pointing them at src/loader.ts directly makes Node
     // resolve .js specifiers without the TS resolver.
-    LOOP24_DEV_CLI_PATH: devCliPath,
-    GSD_DEV_CLI_PATH: devCliPath,
-    LOOP24_CLI_PATH: devCliPath,
-    GSD_CLI_PATH: devCliPath,
-    LOOP24_BIN_PATH: devCliPath,
-    GSD_BIN_PATH: devCliPath,
+    OTTO_DEV_CLI_PATH: devCliPath,
+    OTTO_CLI_PATH: devCliPath,
+    OTTO_BIN_PATH: devCliPath,
   }
 }

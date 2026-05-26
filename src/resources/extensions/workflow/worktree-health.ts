@@ -4,7 +4,7 @@
  * Used by doctor-checks.ts for health audits and by worktree-command.ts
  * for the enhanced `/worktree list` display.
  *
- * Only inspects worktrees under .gsd/worktrees/ — the agent owns what the agent creates.
+ * Only inspects worktrees under .otto/workflow/worktrees/ — the agent owns what the agent creates.
  */
 
 import { existsSync } from "node:fs";

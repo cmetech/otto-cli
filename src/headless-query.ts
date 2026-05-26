@@ -34,7 +34,7 @@ const { existsSync } = await import('node:fs')
  * #3471 contract can be exercised in tests without spawning a subprocess.
  */
 export function resolveWorkflowAgentExtensionsDir(env: NodeJS.ProcessEnv = process.env): string {
-  const agentRoot = env.GSD_AGENT_DIR || join((env.LOOP24_HOME ?? env.GSD_HOME) || join(homedir(), '.gsd'), 'agent')
+  const agentRoot = env.OTTO_AGENT_DIR || join((env.OTTO_HOME ?? env.OTTO_HOME) || join(homedir(), '.otto'), 'agent')
   return join(agentRoot, 'extensions', 'gsd')
 }
 

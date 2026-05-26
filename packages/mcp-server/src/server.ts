@@ -1,9 +1,9 @@
 /**
  * MCP Server — registers orchestration, project-state, and workflow tools.
  *
- * Session tools (6): gsd_execute, gsd_status, gsd_result, gsd_cancel, gsd_query, gsd_resolve_blocker
+ * Session tools (6): otto_execute, otto_status, otto_result, otto_cancel, otto_query, otto_resolve_blocker
  * Interactive tools (2): ask_user_questions, secure_env_collect via MCP form elicitation
- * Read-only tools (6): gsd_progress, gsd_roadmap, gsd_history, gsd_doctor, gsd_captures, gsd_knowledge
+ * Read-only tools (6): otto_progress, otto_roadmap, otto_history, otto_doctor, otto_captures, otto_knowledge
  * Workflow tools (29): headless-safe planning, metadata persistence, replanning, completion, validation, reassessment, gate result, status, and journal tools
  *
  * Uses dynamic imports for @modelcontextprotocol/sdk because TS Node16
@@ -167,7 +167,7 @@ function textContent(text: string): { content: Array<{ type: 'text'; text: strin
 }
 
 // ---------------------------------------------------------------------------
-// gsd_query filesystem reader
+// otto_query filesystem reader
 // ---------------------------------------------------------------------------
 
 /**
@@ -195,7 +195,7 @@ function normalizeQuery(query: string | undefined): QueryCategory {
 }
 
 async function readProjectState(projectDir: string, query: string | undefined): Promise<Record<string, unknown>> {
-  const workflowDir = join(resolve(projectDir), '.gsd');
+  const workflowDir = join(resolve(projectDir), '.otto', 'workflow');
   const category = normalizeQuery(query);
   const wanted = new Set<ProjectStateField>(QUERY_FIELDS[category]);
 
@@ -533,13 +533,13 @@ function isAskUserQuestionsWriteGateModule(value: unknown): value is AskUserQues
 async function loadAskUserQuestionsWriteGateModule(): Promise<AskUserQuestionsWriteGateModule | null> {
   if (!askUserQuestionsWriteGateModulePromise) {
     askUserQuestionsWriteGateModulePromise = (async () => {
-      const modulePath = (process.env.LOOP24_WORKFLOW_WRITE_GATE_MODULE ?? process.env.GSD_WORKFLOW_WRITE_GATE_MODULE)?.trim();
+      const modulePath = process.env.OTTO_WORKFLOW_WRITE_GATE_MODULE?.trim();
       if (!modulePath) return null;
       try {
         if (/^[a-z]{2,}:/i.test(modulePath) && !modulePath.startsWith('file:')) {
-          throw new Error('GSD_WORKFLOW_WRITE_GATE_MODULE only supports file: URLs or filesystem paths.');
+          throw new Error('OTTO_WORKFLOW_WRITE_GATE_MODULE only supports file: URLs or filesystem paths.');
         }
-        const baseRoot = (process.env.LOOP24_WORKFLOW_PROJECT_ROOT ?? process.env.GSD_WORKFLOW_PROJECT_ROOT)?.trim() || process.cwd();
+        const baseRoot = process.env.OTTO_WORKFLOW_PROJECT_ROOT?.trim() || process.cwd();
         const specifier = modulePath.startsWith('file:') ? modulePath : pathToFileURL(resolve(baseRoot, modulePath)).href;
         const loaded = await import(specifier);
         return isAskUserQuestionsWriteGateModule(loaded) ? loaded : null;
@@ -553,7 +553,7 @@ async function loadAskUserQuestionsWriteGateModule(): Promise<AskUserQuestionsWr
 }
 
 function askUserQuestionsWriteGateBasePath(deps: AskUserQuestionsHandlerDeps): string {
-  return deps.writeGateBasePath ?? (process.env.LOOP24_WORKFLOW_PROJECT_ROOT ?? process.env.GSD_WORKFLOW_PROJECT_ROOT)?.trim() ?? process.cwd();
+  return deps.writeGateBasePath ?? process.env.OTTO_WORKFLOW_PROJECT_ROOT?.trim() ?? process.cwd();
 }
 
 async function resolveAskUserQuestionsWriteGate(deps: AskUserQuestionsHandlerDeps): Promise<AskUserQuestionsWriteGateModule | null> {
@@ -886,19 +886,19 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_execute — start a new auto-mode session.
+  // otto_execute — start a new auto-mode session.
   //
   // If the JSON-RPC request is aborted while the session is starting (or
   // immediately after), we cancel the session so we don't leak a background
   // RpcClient process. Once the session is running the caller should use
-  // `gsd_cancel` to stop it via sessionId.
+  // `otto_cancel` to stop it via sessionId.
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_execute',
+    'otto_execute',
     'Start a auto-mode session for a project directory. Returns a sessionId for tracking.',
     {
       projectDir: z.string().describe('Absolute path to the project directory'),
-      command: z.string().optional().describe('Command to send (default: "/gsd auto")'),
+      command: z.string().optional().describe('Command to send (default: "/otto auto")'),
       model: z.string().optional().describe('Model ID override'),
       bare: z.boolean().optional().describe('Run in bare mode (skip user config)'),
     },
@@ -913,7 +913,7 @@ export async function createMcpServer(
         // newly-created session rather than leaving an orphaned process.
         if (extra?.signal?.aborted) {
           await sessionManager.cancelSession(sessionId).catch(() => { /* swallow */ });
-          return errorContent('gsd_execute aborted by client before returning');
+          return errorContent('otto_execute aborted by client before returning');
         }
 
         return jsonContent({ sessionId, status: 'started' });
@@ -924,13 +924,13 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_status — poll session status
+  // otto_status — poll session status
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_status',
-    'Get the current status of a GSD session including progress, recent events, and pending blockers.',
+    'otto_status',
+    'Get the current status of a OTTO session including progress, recent events, and pending blockers.',
     {
-      sessionId: z.string().describe('Session ID returned from gsd_execute'),
+      sessionId: z.string().describe('Session ID returned from otto_execute'),
     },
     async (args: Record<string, unknown>) => {
       const { sessionId } = args as { sessionId: string };
@@ -968,13 +968,13 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_result — get accumulated session result
+  // otto_result — get accumulated session result
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_result',
-    'Get the result of a GSD session. Returns partial results if the session is still running.',
+    'otto_result',
+    'Get the result of a OTTO session. Returns partial results if the session is still running.',
     {
-      sessionId: z.string().describe('Session ID returned from gsd_execute'),
+      sessionId: z.string().describe('Session ID returned from otto_execute'),
     },
     async (args: Record<string, unknown>) => {
       const { sessionId } = args as { sessionId: string };
@@ -988,21 +988,21 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_cancel — cancel a running session
+  // otto_cancel — cancel a running session
   //
   // Supports two lookup strategies:
-  //   1. sessionId  — the ID returned from gsd_execute (primary)
+  //   1. sessionId  — the ID returned from otto_execute (primary)
   //   2. projectDir — absolute path to the project directory (fallback)
   //
   // The projectDir fallback handles interactive sessions (started via
-  // `/loop24 auto` in the terminal) and post-restart MCP sessions that were
+  // `/otto auto` in the terminal) and post-restart MCP sessions that were
   // never registered with a sessionId in this server instance.
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_cancel',
-    'Cancel a running GSD session. Aborts the current operation and stops the process. Provide sessionId (from gsd_execute) or projectDir as a fallback for interactive/restarted sessions.',
+    'otto_cancel',
+    'Cancel a running OTTO session. Aborts the current operation and stops the process. Provide sessionId (from otto_execute) or projectDir as a fallback for interactive/restarted sessions.',
     {
-      sessionId: z.string().optional().describe('Session ID returned from gsd_execute'),
+      sessionId: z.string().optional().describe('Session ID returned from otto_execute'),
       projectDir: z.string().optional().describe('Absolute path to the project directory (fallback when sessionId is unavailable)'),
     },
     async (args: Record<string, unknown>) => {
@@ -1031,7 +1031,7 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_query — read project state from filesystem (no session needed).
+  // otto_query — read project state from filesystem (no session needed).
   //
   // `query` is optional: when omitted the tool returns all fields (STATE.md,
   // PROJECT.md, requirements, milestone listing). Accepted narrow values:
@@ -1039,8 +1039,8 @@ export async function createMcpServer(
   // Unknown values fall back to "all" for forward-compatibility.
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_query',
-    'Query GSD project state from the filesystem. By default returns STATE.md, PROJECT.md, requirements, and milestone listing. Pass `query` to narrow the response (accepted: "state"/"status", "project", "requirements", "milestones", "all"). Does not require an active session.',
+    'otto_query',
+    'Query OTTO project state from the filesystem. By default returns STATE.md, PROJECT.md, requirements, and milestone listing. Pass `query` to narrow the response (accepted: "state"/"status", "project", "requirements", "milestones", "all"). Does not require an active session.',
     {
       projectDir: z.string().describe('Absolute path to the project directory'),
       query: z
@@ -1061,13 +1061,13 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_resolve_blocker — resolve a pending blocker
+  // otto_resolve_blocker — resolve a pending blocker
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_resolve_blocker',
-    'Resolve a pending blocker in a GSD session by sending a response to the UI request.',
+    'otto_resolve_blocker',
+    'Resolve a pending blocker in a OTTO session by sending a response to the UI request.',
     {
-      sessionId: z.string().describe('Session ID returned from gsd_execute'),
+      sessionId: z.string().describe('Session ID returned from otto_execute'),
       response: z.string().describe('Response to send for the pending blocker'),
     },
     async (args: Record<string, unknown>) => {
@@ -1137,11 +1137,11 @@ export async function createMcpServer(
   // =======================================================================
 
   // -----------------------------------------------------------------------
-  // gsd_progress — structured project progress metrics
+  // otto_progress — structured project progress metrics
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_progress',
-    'Get structured project progress: active milestone/slice/task, phase, completion counts, blockers, and next action. No session required — reads directly from .gsd/ on disk.',
+    'otto_progress',
+    'Get structured project progress: active milestone/slice/task, phase, completion counts, blockers, and next action. No session required — reads directly from .otto/workflow/ on disk.',
     {
       projectDir: z.string().describe('Absolute path to the project directory'),
     },
@@ -1156,10 +1156,10 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_roadmap — milestone/slice/task structure with status
+  // otto_roadmap — milestone/slice/task structure with status
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_roadmap',
+    'otto_roadmap',
     'Get the full project roadmap structure: milestones with their slices, tasks, status, risk, and dependencies. Optionally filter to a single milestone. No session required.',
     {
       projectDir: z.string().describe('Absolute path to the project directory'),
@@ -1176,10 +1176,10 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_history — execution history with cost/token metrics
+  // otto_history — execution history with cost/token metrics
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_history',
+    'otto_history',
     'Get execution history with cost, token usage, model, and duration per unit. Returns totals across all units. No session required.',
     {
       projectDir: z.string().describe('Absolute path to the project directory'),
@@ -1196,11 +1196,11 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_doctor — lightweight structural health check
+  // otto_doctor — lightweight structural health check
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_doctor',
-    'Run a lightweight structural health check on the .gsd/ directory. Checks for missing files, status inconsistencies, and orphaned state. No session required.',
+    'otto_doctor',
+    'Run a lightweight structural health check on the .otto/workflow/ directory. Checks for missing files, status inconsistencies, and orphaned state. No session required.',
     {
       projectDir: z.string().describe('Absolute path to the project directory'),
       scope: z.string().optional().describe('Limit checks to a specific milestone (e.g. "M001")'),
@@ -1216,10 +1216,10 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_captures — pending captures and ideas
+  // otto_captures — pending captures and ideas
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_captures',
+    'otto_captures',
     'Get captured ideas and thoughts from CAPTURES.md with triage status. Filter by pending, actionable, or all. No session required.',
     {
       projectDir: z.string().describe('Absolute path to the project directory'),
@@ -1236,10 +1236,10 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_knowledge — project knowledge base
+  // otto_knowledge — project knowledge base
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_knowledge',
+    'otto_knowledge',
     'Get the project knowledge base: rules, patterns, and lessons learned accumulated during development. No session required.',
     {
       projectDir: z.string().describe('Absolute path to the project directory'),
@@ -1255,22 +1255,22 @@ export async function createMcpServer(
   );
 
   // -----------------------------------------------------------------------
-  // gsd_graph — knowledge graph for the workflow projects
+  // otto_graph — knowledge graph for the workflow projects
   //
   // Modes:
-  //   build   Parse .loop24/ artifacts and write graph.json atomically.
+  //   build   Parse .otto/ artifacts and write graph.json atomically.
   //   query   Search the graph for nodes matching a term (BFS, budget-trimmed).
   //   status  Check whether graph.json exists and whether it is stale (>24h).
   //   diff    Compare graph.json with the last build snapshot.
   // -----------------------------------------------------------------------
   server.tool(
-    'gsd_graph',
+    'otto_graph',
     [
-      'Manage the GSD project knowledge graph. No session required.',
+      'Manage the OTTO project knowledge graph. No session required.',
       '',
       'Modes:',
-      '  build   Parse .gsd/ artifacts (STATE.md, milestone ROADMAPs, slice PLANs,',
-      '          KNOWLEDGE.md) and write .gsd/graphs/graph.json atomically.',
+      '  build   Parse .otto/workflow/ artifacts (STATE.md, milestone ROADMAPs, slice PLANs,',
+      '          KNOWLEDGE.md) and write .otto/workflow/graphs/graph.json atomically.',
       '  query   Search graph nodes by term (BFS from seed matches, budget-trimmed).',
       '          Returns matching nodes and reachable edges within the token budget.',
       '  status  Show whether graph.json exists, its age, node/edge counts, and',

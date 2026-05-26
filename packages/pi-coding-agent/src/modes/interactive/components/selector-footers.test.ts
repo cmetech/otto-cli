@@ -2,7 +2,7 @@
 
 import assert from "node:assert/strict";
 import { before, describe, it } from "node:test";
-import type { Component } from "@loop24/pi-tui";
+import type { Component } from "@otto/pi-tui";
 import { stripVTControlCharacters } from "node:util";
 import { AuthStorage } from "../../../core/auth-storage.js";
 import { initTheme } from "../theme/theme.js";

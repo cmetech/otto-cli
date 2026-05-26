@@ -1,4 +1,4 @@
-// LOOP24 — UnitContextComposer (#4782 phase 2).
+// OTTO — UnitContextComposer (#4782 phase 2).
 //
 // Reads a unit type's manifest and orchestrates artifact inlining through
 // a caller-provided resolver. Returns a joined context block suitable for
@@ -115,21 +115,21 @@ const CONTEXT_MODE_LANE_LABELS: Record<Exclude<ContextModePolicy, "none">, strin
 
 const CONTEXT_MODE_GUIDANCE_BY_LANE: Record<Exclude<ContextModePolicy, "none">, string> = {
   interview:
-    "Use `gsd_resume` to restore prior discussion, `gsd_exec` for noisy discovery, and `gsd_exec_search` before repeating scans.",
+    "Use `otto_resume` to restore prior discussion, `otto_exec` for noisy discovery, and `otto_exec_search` before repeating scans.",
   research:
-    "Use `gsd_exec` for noisy research scans, `gsd_exec_search` before reruns, and `gsd_resume` to restore prior findings.",
+    "Use `otto_exec` for noisy research scans, `otto_exec_search` before reruns, and `otto_resume` to restore prior findings.",
   triage:
-    "Use `gsd_resume` to restore prior triage context, `gsd_exec_search` to reuse evidence, and `gsd_exec` for noisy validation checks.",
+    "Use `otto_resume` to restore prior triage context, `otto_exec_search` to reuse evidence, and `otto_exec` for noisy validation checks.",
   planning:
-    "Use `gsd_resume` for planning continuity, `gsd_exec` for noisy checks, and `gsd_exec_search` before rerunning diagnostics.",
+    "Use `otto_resume` for planning continuity, `otto_exec` for noisy checks, and `otto_exec_search` before rerunning diagnostics.",
   execution:
-    "Use `gsd_exec` for builds, tests, and diagnostics, `gsd_exec_search` before reruns, and `gsd_resume` after compaction or resume.",
+    "Use `otto_exec` for builds, tests, and diagnostics, `otto_exec_search` before reruns, and `otto_resume` after compaction or resume.",
   verification:
-    "Use `gsd_exec` for verification commands, `gsd_exec_search` to reuse prior evidence, and `gsd_resume` after compaction or resume.",
+    "Use `otto_exec` for verification commands, `otto_exec_search` to reuse prior evidence, and `otto_resume` after compaction or resume.",
   orchestration:
-    "Use `gsd_resume` before resuming orchestration, `gsd_exec_search` to reuse prior runs, and `gsd_exec` for noisy coordination checks.",
+    "Use `otto_resume` before resuming orchestration, `otto_exec_search` to reuse prior runs, and `otto_exec` for noisy coordination checks.",
   docs:
-    "Use `gsd_resume` for prior context, `gsd_exec_search` for saved evidence, and `gsd_exec` for noisy doc validation commands.",
+    "Use `otto_resume` for prior context, `otto_exec_search` for saved evidence, and `otto_exec` for noisy doc validation commands.",
 };
 
 /**

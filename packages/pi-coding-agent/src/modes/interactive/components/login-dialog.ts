@@ -1,7 +1,7 @@
 // Login Dialog Component — OAuth login flow UI
 // Copyright (c) 2026 Jeremy McSpadden <jeremy@fluxlabs.net>
-import { getOAuthProviders } from "@loop24/pi-ai/oauth";
-import { Container, type Focusable, getEditorKeybindings, Input, Spacer, Text, truncateToWidth, type TUI } from "@loop24/pi-tui";
+import { getOAuthProviders } from "@otto/pi-ai/oauth";
+import { Container, type Focusable, getEditorKeybindings, Input, Spacer, Text, truncateToWidth, type TUI } from "@otto/pi-tui";
 import { execFile } from "child_process";
 import { theme } from "../theme/theme.js";
 import { DynamicBorder } from "./dynamic-border.js";

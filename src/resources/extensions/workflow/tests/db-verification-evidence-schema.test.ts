@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Tests for verification evidence schema helpers.
 
 import { describe, test } from "node:test";

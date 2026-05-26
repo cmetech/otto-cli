@@ -1,4 +1,4 @@
-// GSD Extension — Interactive Routing Bypass Tests
+// OTTO Extension — Interactive Routing Bypass Tests
 
 import test, { describe } from "node:test";
 import assert from "node:assert/strict";
@@ -10,14 +10,14 @@ import { resolvePreferredModelConfig } from "../auto-model-selection.ts";
 
 function withRoutingPrefs<T>(fn: () => T): T {
   const originalCwd = process.cwd();
-  const originalWorkflowHome = process.env.GSD_HOME;
+  const originalWorkflowHome = process.env.OTTO_HOME;
   const tempProject = mkdtempSync(join(tmpdir(), "gsd-interactive-routing-"));
   const tempWorkflowHome = mkdtempSync(join(tmpdir(), "gsd-interactive-routing-home-"));
 
   try {
-    mkdirSync(join(tempProject, ".gsd"), { recursive: true });
+    mkdirSync(join(tempProject, ".otto/workflow"), { recursive: true });
     writeFileSync(
-      join(tempProject, ".gsd", "PREFERENCES.md"),
+      join(tempProject, ".otto/workflow", "PREFERENCES.md"),
       [
         "---",
         "dynamic_routing:",
@@ -30,13 +30,13 @@ function withRoutingPrefs<T>(fn: () => T): T {
       ].join("\n"),
       "utf-8",
     );
-    process.env.GSD_HOME = tempWorkflowHome;
+    process.env.OTTO_HOME = tempWorkflowHome;
     process.chdir(tempProject);
     return fn();
   } finally {
     process.chdir(originalCwd);
-    if (originalWorkflowHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = originalWorkflowHome;
+    if (originalWorkflowHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = originalWorkflowHome;
     rmSync(tempProject, { recursive: true, force: true });
     rmSync(tempWorkflowHome, { recursive: true, force: true });
   }

@@ -1,5 +1,5 @@
 /**
- * Regression coverage for the `/gsd setup prefs` crash:
+ * Regression coverage for the `/otto setup prefs` crash:
  *   "Cannot read properties of undefined (reading 'models')"
  *
  * Originally caused by unsafe `prefs?.preferences.models` access (optional-
@@ -70,17 +70,17 @@ test("buildCategorySummaries({}) reports models as not configured without throwi
 // ─── Model resolvers tolerate missing/partial preference shapes ────────────
 
 function withHome(content: string | null, fn: () => void): void {
-  const oldHome = process.env.GSD_HOME;
+  const oldHome = process.env.OTTO_HOME;
   const home = mkdtempSync(join(tmpdir(), "gsd-prefs-missing-"));
   try {
-    process.env.GSD_HOME = home;
+    process.env.OTTO_HOME = home;
     if (content !== null) {
       writeFileSync(join(home, "PREFERENCES.md"), content);
     }
     fn();
   } finally {
-    if (oldHome === undefined) delete process.env.GSD_HOME;
-    else process.env.GSD_HOME = oldHome;
+    if (oldHome === undefined) delete process.env.OTTO_HOME;
+    else process.env.OTTO_HOME = oldHome;
     rmSync(home, { recursive: true, force: true });
   }
 }

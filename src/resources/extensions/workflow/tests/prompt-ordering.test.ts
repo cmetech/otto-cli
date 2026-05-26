@@ -246,7 +246,7 @@ describe("real-world prompt reordering", () => {
       "T1.1 completed: scaffolded auth module.",
       "",
       "## Backing Source Artifacts",
-      "- Slice plan: `.gsd/slices/S1.md`",
+      "- Slice plan: `.otto/workflow/slices/S1.md`",
       "",
       "## Output Template",
       "Use standard task summary format.",

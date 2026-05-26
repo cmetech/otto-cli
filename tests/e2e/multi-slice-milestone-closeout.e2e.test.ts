@@ -1,4 +1,4 @@
-// Project/App: GSD-2
+// Project/App: OTTO-2
 // File Purpose: E2E gate for multi-slice headless milestone closeout agreement.
 
 import { execFileSync } from "node:child_process";
@@ -11,15 +11,15 @@ import { describe, test } from "node:test";
 import {
 	artifactsFor,
 	createTmpProject,
-	gsdSync,
+	ottoSync,
 	parseJsonEvents,
 	type TranscriptTurn,
 	writeTranscript,
 } from "./_shared/index.ts";
 
 function binaryAvailable(): { ok: boolean; reason?: string } {
-	const bin = process.env.GSD_SMOKE_BINARY;
-	if (!bin) return { ok: false, reason: "GSD_SMOKE_BINARY not set; build with `npm run build:core` and re-export." };
+	const bin = process.env.OTTO_SMOKE_BINARY;
+	if (!bin) return { ok: false, reason: "OTTO_SMOKE_BINARY not set; build with `npm run build:core` and re-export." };
 	if (!existsSync(bin)) return { ok: false, reason: `binary not found at ${bin}` };
 	return { ok: true };
 }
@@ -139,7 +139,7 @@ function completeSliceInput(
 function buildTranscript(): string {
 	const turns: TranscriptTurn[] = [];
 
-	pushTool(turns, "gsd_summary_save", {
+	pushTool(turns, "otto_summary_save", {
 		artifact_type: "PROJECT",
 		content: [
 			"# Project",
@@ -151,8 +151,8 @@ function buildTranscript(): string {
 			"- [ ] M001: Multi-Slice Closeout Agreement - Update two source modules and prove milestone closeout state agrees.",
 			"",
 		].join("\n"),
-	}, "project", { modelId: "gsd-fake-model", lastUserText: "Headless Milestone Creation" });
-	pushTool(turns, "gsd_requirement_save", {
+	}, "project", { modelId: "otto-fake-model", lastUserText: "Headless Milestone Creation" });
+	pushTool(turns, "otto_requirement_save", {
 		class: "core-capability",
 		description: "The answer module returns the requested ready value.",
 		why: "S01 needs one observable source behavior change.",
@@ -162,8 +162,8 @@ function buildTranscript(): string {
 		supporting_slices: "",
 		validation: "The answer verification command exits 0.",
 		notes: "Multi-slice closeout e2e fixture.",
-	}, "answer-requirement", { hasToolResultFor: "gsd_summary_save" });
-	pushTool(turns, "gsd_requirement_save", {
+	}, "answer-requirement", { hasToolResultFor: "otto_summary_save" });
+	pushTool(turns, "otto_requirement_save", {
 		class: "core-capability",
 		description: "The status module returns the requested done value.",
 		why: "S02 proves the workflow can continue after one completed slice.",
@@ -173,11 +173,11 @@ function buildTranscript(): string {
 		supporting_slices: "",
 		validation: "The full fixture test command exits 0.",
 		notes: "Multi-slice closeout e2e fixture.",
-	}, "status-requirement", { hasToolResultFor: "gsd_requirement_save" });
-	pushTool(turns, "gsd_summary_save", {
+	}, "status-requirement", { hasToolResultFor: "otto_requirement_save" });
+	pushTool(turns, "otto_summary_save", {
 		artifact_type: "REQUIREMENTS",
 		content: "# Requirements\n",
-	}, "requirements", { hasToolResultFor: "gsd_requirement_save" });
+	}, "requirements", { hasToolResultFor: "otto_requirement_save" });
 	pushTool(turns, "ask_user_questions", {
 		questions: [{
 			id: "depth_verification_M001_confirm",
@@ -194,8 +194,8 @@ function buildTranscript(): string {
 				},
 			],
 		}],
-	}, "depth-check", { hasToolResultFor: "gsd_summary_save" });
-	pushTool(turns, "gsd_summary_save", {
+	}, "depth-check", { hasToolResultFor: "otto_summary_save" });
+	pushTool(turns, "otto_summary_save", {
 		milestone_id: "M001",
 		artifact_type: "CONTEXT",
 		content: [
@@ -215,7 +215,7 @@ function buildTranscript(): string {
 			"",
 		].join("\n"),
 	}, "context", { hasToolResultFor: "ask_user_questions" });
-	pushTool(turns, "gsd_plan_milestone", {
+	pushTool(turns, "otto_plan_milestone", {
 		milestoneId: "M001",
 		title: "Multi Slice Closeout Agreement",
 		vision: "Two sequential source changes complete cleanly and close the milestone with all state surfaces in agreement.",
@@ -272,18 +272,18 @@ function buildTranscript(): string {
 		],
 		requirementCoverage: "R001 is owned by S01; R002 is owned by S02.",
 		boundaryMapMarkdown: "| Boundary | Decision |\n| --- | --- |\n| S01 -> S02 | S02 depends on S01 remaining green under the full test command. |\n",
-	}, "roadmap", { hasToolResultFor: "gsd_summary_save" });
-	pushText(turns, "Milestone M001 ready.", { hasToolResultFor: "gsd_plan_milestone" });
+	}, "roadmap", { hasToolResultFor: "otto_summary_save" });
+	pushText(turns, "Milestone M001 ready.", { hasToolResultFor: "otto_plan_milestone" });
 
-	pushTool(turns, "gsd_summary_save", {
+	pushTool(turns, "otto_summary_save", {
 		milestone_id: "M001",
 		slice_id: "S01",
 		artifact_type: "RESEARCH",
 		content: "# S01 - Research\n\nUse `src/answer.js` and verify with `node --test test/answer.test.js`.\n",
 	}, "s01-research");
-	pushText(turns, "Slice S01 researched.", { hasToolResultFor: "gsd_summary_save" });
-	pushTool(turns, "gsd_plan_slice", slicePlanInput("S01", "Update answer module", "src/answer.js", "node --test test/answer.test.js", "answer() returns ready."), "s01-plan");
-	pushText(turns, "Slice S01 planned.", { hasToolResultFor: "gsd_plan_slice" });
+	pushText(turns, "Slice S01 researched.", { hasToolResultFor: "otto_summary_save" });
+	pushTool(turns, "otto_plan_slice", slicePlanInput("S01", "Update answer module", "src/answer.js", "node --test test/answer.test.js", "answer() returns ready."), "s01-plan");
+	pushText(turns, "Slice S01 planned.", { hasToolResultFor: "otto_plan_slice" });
 	pushTool(turns, "write", {
 		path: "src/answer.js",
 		content: "export function answer() {\n\treturn \"ready\";\n}\n",
@@ -292,20 +292,20 @@ function buildTranscript(): string {
 		command: "node --test test/answer.test.js",
 		timeout: 30,
 	}, "verify-answer", { hasToolResultFor: "write" });
-	pushTool(turns, "gsd_task_complete", completeTaskInput("S01", "src/answer.js", "node --test test/answer.test.js", "Updated answer() to return ready."), "s01-task", { hasToolResultFor: "bash" });
-	pushText(turns, "S01/T01 complete.", { hasToolResultFor: "gsd_task_complete" });
-	pushTool(turns, "gsd_slice_complete", completeSliceInput("S01", "Update answer module", "src/answer.js", "node --test test/answer.test.js", "answer() now returns ready."), "s01-complete");
-	pushText(turns, "Slice S01 complete.", { hasToolResultFor: "gsd_slice_complete" });
+	pushTool(turns, "otto_task_complete", completeTaskInput("S01", "src/answer.js", "node --test test/answer.test.js", "Updated answer() to return ready."), "s01-task", { hasToolResultFor: "bash" });
+	pushText(turns, "S01/T01 complete.", { hasToolResultFor: "otto_task_complete" });
+	pushTool(turns, "otto_slice_complete", completeSliceInput("S01", "Update answer module", "src/answer.js", "node --test test/answer.test.js", "answer() now returns ready."), "s01-complete");
+	pushText(turns, "Slice S01 complete.", { hasToolResultFor: "otto_slice_complete" });
 
-	pushTool(turns, "gsd_summary_save", {
+	pushTool(turns, "otto_summary_save", {
 		milestone_id: "M001",
 		slice_id: "S02",
 		artifact_type: "RESEARCH",
 		content: "# S02 - Research\n\nUse `src/status.js` and verify the whole fixture with `npm test`.\n",
 	}, "s02-research");
-	pushText(turns, "Slice S02 researched.", { hasToolResultFor: "gsd_summary_save" });
-	pushTool(turns, "gsd_plan_slice", slicePlanInput("S02", "Update status module", "src/status.js", "npm test", "status() returns done."), "s02-plan");
-	pushText(turns, "Slice S02 planned.", { hasToolResultFor: "gsd_plan_slice" });
+	pushText(turns, "Slice S02 researched.", { hasToolResultFor: "otto_summary_save" });
+	pushTool(turns, "otto_plan_slice", slicePlanInput("S02", "Update status module", "src/status.js", "npm test", "status() returns done."), "s02-plan");
+	pushText(turns, "Slice S02 planned.", { hasToolResultFor: "otto_plan_slice" });
 	pushTool(turns, "write", {
 		path: "src/status.js",
 		content: "export function status() {\n\treturn \"done\";\n}\n",
@@ -314,12 +314,12 @@ function buildTranscript(): string {
 		command: "npm test",
 		timeout: 30,
 	}, "verify-status", { hasToolResultFor: "write" });
-	pushTool(turns, "gsd_task_complete", completeTaskInput("S02", "src/status.js", "npm test", "Updated status() to return done."), "s02-task", { hasToolResultFor: "bash" });
-	pushText(turns, "S02/T01 complete.", { hasToolResultFor: "gsd_task_complete" });
-	pushTool(turns, "gsd_slice_complete", completeSliceInput("S02", "Update status module", "src/status.js", "npm test", "status() now returns done."), "s02-complete");
-	pushText(turns, "Slice S02 complete.", { hasToolResultFor: "gsd_slice_complete" });
+	pushTool(turns, "otto_task_complete", completeTaskInput("S02", "src/status.js", "npm test", "Updated status() to return done."), "s02-task", { hasToolResultFor: "bash" });
+	pushText(turns, "S02/T01 complete.", { hasToolResultFor: "otto_task_complete" });
+	pushTool(turns, "otto_slice_complete", completeSliceInput("S02", "Update status module", "src/status.js", "npm test", "status() now returns done."), "s02-complete");
+	pushText(turns, "Slice S02 complete.", { hasToolResultFor: "otto_slice_complete" });
 
-	pushTool(turns, "gsd_validate_milestone", {
+	pushTool(turns, "otto_validate_milestone", {
 		milestoneId: "M001",
 		verdict: "pass",
 		remediationRound: 0,
@@ -330,8 +330,8 @@ function buildTranscript(): string {
 		verificationClasses: "| Class | Planned Check | Evidence | Verdict |\n| --- | --- | --- | --- |\n| Contract | Focused and full node:test commands exit 0. | `node --test test/answer.test.js` and `npm test` exited 0. | PASS |\n| Integration | Both modules are verified together. | S02 `npm test` exercised both tests after both source changes. | PASS |\n| Operational | Headless process exits cleanly. | No blocked/error operator notification was emitted. | PASS |\n| UAT | Slice UAT summaries pass. | S01 and S02 closeout UAT content recorded PASS. | PASS |",
 		verdictRationale: "All planned slices, requirements, verification classes, and closeout surfaces passed.",
 	}, "validate-milestone");
-	pushText(turns, "Milestone M001 validation complete - verdict: pass.", { hasToolResultFor: "gsd_validate_milestone" });
-	pushTool(turns, "gsd_complete_milestone", {
+	pushText(turns, "Milestone M001 validation complete - verdict: pass.", { hasToolResultFor: "otto_validate_milestone" });
+	pushTool(turns, "otto_complete_milestone", {
 		milestoneId: "M001",
 		title: "Multi Slice Closeout Agreement",
 		oneLiner: "Updated two source modules across two slices and verified the full fixture.",
@@ -346,7 +346,7 @@ function buildTranscript(): string {
 		followUps: "None.",
 		deviations: "None.",
 	}, "complete-milestone");
-	pushText(turns, "Milestone M001 complete.", { hasToolResultFor: "gsd_complete_milestone" });
+	pushText(turns, "Milestone M001 complete.", { hasToolResultFor: "otto_complete_milestone" });
 
 	return writeTranscript(turns);
 }
@@ -397,13 +397,13 @@ describe("multi-slice milestone closeout e2e (fake LLM)", () => {
 		}, null, 2) + "\n");
 
 		const transcript = buildTranscript();
-		const result = gsdSync(
+		const result = ottoSync(
 			[
 				"headless",
 				"--output-format",
 				"stream-json",
 				"--model",
-				"gsd-fake-model",
+				"otto-fake-model",
 				"--timeout",
 				"180000",
 				"--max-restarts",
@@ -419,7 +419,7 @@ describe("multi-slice milestone closeout e2e (fake LLM)", () => {
 				cwd: project.dir,
 				timeoutMs: 210_000,
 				env: {
-					GSD_FAKE_LLM_TRANSCRIPT: transcript,
+					OTTO_FAKE_LLM_TRANSCRIPT: transcript,
 				},
 			},
 		);
@@ -458,14 +458,14 @@ describe("multi-slice milestone closeout e2e (fake LLM)", () => {
 			"full fixture verification command must pass after milestone completion",
 		);
 
-		assert.ok(existsSync(join(project.dir, ".gsd", "milestones", "M001", "M001-VALIDATION.md")), "milestone validation artifact is present");
-		assert.ok(existsSync(join(project.dir, ".gsd", "milestones", "M001", "M001-SUMMARY.md")), "milestone summary artifact is present");
+		assert.ok(existsSync(join(project.dir, ".otto", "workflow", "milestones", "M001", "M001-VALIDATION.md")), "milestone validation artifact is present");
+		assert.ok(existsSync(join(project.dir, ".otto", "workflow", "milestones", "M001", "M001-SUMMARY.md")), "milestone summary artifact is present");
 		for (const sliceId of ["S01", "S02"]) {
-			assert.ok(existsSync(join(project.dir, ".gsd", "milestones", "M001", "slices", sliceId, `${sliceId}-SUMMARY.md`)), `${sliceId} summary artifact is present`);
-			assert.ok(existsSync(join(project.dir, ".gsd", "milestones", "M001", "slices", sliceId, "tasks", "T01-SUMMARY.md")), `${sliceId}/T01 summary artifact is present`);
+			assert.ok(existsSync(join(project.dir, ".otto", "workflow", "milestones", "M001", "slices", sliceId, `${sliceId}-SUMMARY.md`)), `${sliceId} summary artifact is present`);
+			assert.ok(existsSync(join(project.dir, ".otto", "workflow", "milestones", "M001", "slices", sliceId, "tasks", "T01-SUMMARY.md")), `${sliceId}/T01 summary artifact is present`);
 		}
 
-		const db = new DatabaseSync(join(project.dir, ".gsd", "gsd.db"));
+		const db = new DatabaseSync(join(project.dir, ".otto", "workflow", "otto.db"));
 		t.after(() => db.close());
 		assert.equal(scalar(db, "SELECT status AS value FROM milestones WHERE id = :id", { id: "M001" }), "complete");
 		assert.equal(scalar(db, "SELECT COUNT(*) AS value FROM slices WHERE milestone_id = :mid AND status = 'complete'", { mid: "M001" }), "2");

@@ -6,13 +6,13 @@
 **Deciders:** Lex Christopherson
 **Advisors:** Claude Opus 4.6, Gemini 2.5 Pro, GPT-5.4 (Codex)
 
-> **Superseded — read this first.** The DB-authoritative runtime model took the place of this ADR's primary motivation (`.gsd/` merge conflicts, planning-artifact visibility): the project-root database is canonical, markdown files are projections, and cross-branch state clobbering is no longer the failure mode this ADR was trying to fix. The remaining worktree concerns (lifecycle ownership, fail-closed source-writing, drift repair) were consolidated by **ADR-014** (deep Auto Orchestration), **ADR-015** (runtime invariant modules), the **ADR-016 trio** (worktree lifecycle/projection split, fail-closed safety), and **ADR-017** (drift-driven reconciliation). Slice branches inside milestone worktrees were retained. The historical analysis below is preserved for context; the decisions in §Decision were not adopted.
+> **Superseded — read this first.** The DB-authoritative runtime model took the place of this ADR's primary motivation (`.otto/workflow/` merge conflicts, planning-artifact visibility): the project-root database is canonical, markdown files are projections, and cross-branch state clobbering is no longer the failure mode this ADR was trying to fix. The remaining worktree concerns (lifecycle ownership, fail-closed source-writing, drift repair) were consolidated by **ADR-014** (deep Auto Orchestration), **ADR-015** (runtime invariant modules), the **ADR-016 trio** (worktree lifecycle/projection split, fail-closed safety), and **ADR-017** (drift-driven reconciliation). Slice branches inside milestone worktrees were retained. The historical analysis below is preserved for context; the decisions in §Decision were not adopted.
 
 ## Context
 
-GSD uses git for isolation during autonomous coding sessions. The current architecture (shipped in M003, v2.13.0) creates a **worktree per milestone** with **slice branches inside each worktree**. Each slice (`S01`, `S02`, ...) gets its own branch (`gsd/M001/S01`) within the worktree, which merges back to the milestone branch (`milestone/M001`) via `--no-ff` when the slice completes. The milestone branch squash-merges to `main` when the milestone completes.
+OTTO uses git for isolation during autonomous coding sessions. The current architecture (shipped in M003, v2.13.0) creates a **worktree per milestone** with **slice branches inside each worktree**. Each slice (`S01`, `S02`, ...) gets its own branch (`otto/M001/S01`) within the worktree, which merges back to the milestone branch (`milestone/M001`) via `--no-ff` when the slice completes. The milestone branch squash-merges to `main` when the milestone completes.
 
-This architecture replaced a previous "branch-per-slice" model that had severe `.gsd/` merge conflicts. M003 solved the merge conflicts but retained slice branches inside worktrees, inheriting complexity that has produced persistent, user-facing failures.
+This architecture replaced a previous "branch-per-slice" model that had severe `.otto/workflow/` merge conflicts. M003 solved the merge conflicts but retained slice branches inside worktrees, inheriting complexity that has produced persistent, user-facing failures.
 
 ### Problems
 
@@ -22,11 +22,11 @@ When `research-slice` or `plan-slice` dispatches, the agent writes artifacts (e.
 
 Documented in the auto-stop architecture doc as "The Branch-Switching Problem."
 
-**2. `.gsd/` state clobbering across branches**
+**2. `.otto/workflow/` state clobbering across branches**
 
-`.gsd/` is gitignored (line 52 of `.gitignore`: `.gsd/`). Planning artifacts (roadmaps, plans, summaries, decisions, requirements) live in `.gsd/milestones/` but are invisible to git. When multiple branches or worktrees operate from the same repo, they share a single `.gsd/` directory on disk. Branch A's M001 roadmap overwrites Branch B's M001 roadmap. GSD reads corrupted state, shows wrong milestone as complete, or enters infinite dispatch loops.
+`.otto/workflow/` is gitignored (line 52 of `.gitignore`: `.otto/workflow/`). Planning artifacts (roadmaps, plans, summaries, decisions, requirements) live in `.otto/workflow/milestones/` but are invisible to git. When multiple branches or worktrees operate from the same repo, they share a single `.otto/workflow/` directory on disk. Branch A's M001 roadmap overwrites Branch B's M001 roadmap. OTTO reads corrupted state, shows wrong milestone as complete, or enters infinite dispatch loops.
 
-The codebase has a contradictory workaround: `smartStage()` (git-service.ts:304-352) force-adds `GSD_DURABLE_PATHS` (milestones/, DECISIONS.md, PROJECT.md, REQUIREMENTS.md, QUEUE.md) despite the `.gitignore`. This means `.gsd/milestones/` IS partially tracked on some branches but the gitignore claims otherwise. The code fights the configuration.
+The codebase has a contradictory workaround: `smartStage()` (git-service.ts:304-352) force-adds `OTTO_DURABLE_PATHS` (milestones/, DECISIONS.md, PROJECT.md, REQUIREMENTS.md, QUEUE.md) despite the `.gitignore`. This means `.otto/workflow/milestones/` IS partially tracked on some branches but the gitignore claims otherwise. The code fights the configuration.
 
 **3. Merge/conflict code complexity**
 
@@ -36,7 +36,7 @@ The current slice branch model requires:
 - `git-self-heal.ts` — 198 lines, 3 recovery functions for merge failures
 - `fix-merge` dispatch unit — dedicated LLM session to resolve conflicts the auto-resolver can't handle
 - `smartStage()` — 49 lines of runtime exclusion during staging
-- Conflict categorization — 80 lines classifying `.gsd/` vs runtime vs code conflicts
+- Conflict categorization — 80 lines classifying `.otto/workflow/` vs runtime vs code conflicts
 
 Total: **~582 lines** of merge/branch/conflict code across 3 files, plus the `fix-merge` prompt template and dispatch logic. This code exists solely because of slice branches.
 
@@ -48,14 +48,14 @@ Branch-mode (`git-service.ts:mergeSliceToMain`) and worktree-mode (`auto-worktre
 
 - v2.11.1: URGENT fix for parse cache staleness causing repeated unit dispatch (directly caused by branch switching invalidation timing)
 - v2.13.1: Windows hotfix for multi-line commit messages in `mergeSliceToMilestone`
-- 15+ separate bug fixes for `.gsd/` merge conflicts in the pre-M003 era
+- 15+ separate bug fixes for `.otto/workflow/` merge conflicts in the pre-M003 era
 - Persistent user complaints about loop detection failures and state corruption
 
 ## Decision
 
 **Eliminate slice branches entirely.** All work within a milestone worktree commits sequentially on a single branch (`milestone/<MID>`). No branch creation, no branch switching, no slice merges, no conflict resolution within a worktree.
 
-Track `.gsd/` planning artifacts in git. Gitignore only runtime/ephemeral state.
+Track `.otto/workflow/` planning artifacts in git. Gitignore only runtime/ephemeral state.
 
 ### The Architecture
 
@@ -95,49 +95,49 @@ main ─────────────────────────
 | Branch switching | Never happens. All work on one branch. |
 | Conflict resolution | No merges within a worktree means no conflicts within a worktree. |
 
-### `.gsd/` Tracking Model
+### `.otto/workflow/` Tracking Model
 
 **Tracked in git (travels with the branch):**
 ```
-.gsd/milestones/         — roadmaps, plans, summaries, research, contexts, task plans/summaries
-.gsd/PROJECT.md          — project overview
-.gsd/DECISIONS.md        — architectural decision register
-.gsd/REQUIREMENTS.md     — requirements register
-.gsd/QUEUE.md            — work queue
+.otto/workflow/milestones/         — roadmaps, plans, summaries, research, contexts, task plans/summaries
+.otto/workflow/PROJECT.md          — project overview
+.otto/workflow/DECISIONS.md        — architectural decision register
+.otto/workflow/REQUIREMENTS.md     — requirements register
+.otto/workflow/QUEUE.md            — work queue
 ```
 
 **Gitignored (ephemeral, runtime, infrastructure):**
 ```
-.gsd/runtime/            — dispatch records, timeout tracking
-.gsd/activity/           — JSONL session dumps
-.gsd/worktrees/          — git worktree working directories
-.gsd/auto.lock           — crash detection sentinel
-.gsd/metrics.json        — token/cost accumulator
-.gsd/completed-units.json — dispatch idempotency tracker
-.gsd/STATE.md            — rendered state projection
-.gsd/gsd.db              — authoritative runtime database (local, gitignored)
-.gsd/DISCUSSION-MANIFEST.json — discussion phase tracking
-.gsd/milestones/**/*-CONTINUE.md — interrupted-work markers
-.gsd/milestones/**/continue.md   — legacy continue markers
+.otto/workflow/runtime/            — dispatch records, timeout tracking
+.otto/workflow/activity/           — JSONL session dumps
+.otto/workflow/worktrees/          — git worktree working directories
+.otto/workflow/auto.lock           — crash detection sentinel
+.otto/workflow/metrics.json        — token/cost accumulator
+.otto/workflow/completed-units.json — dispatch idempotency tracker
+.otto/workflow/STATE.md            — rendered state projection
+.otto/workflow/otto.db              — authoritative runtime database (local, gitignored)
+.otto/workflow/DISCUSSION-MANIFEST.json — discussion phase tracking
+.otto/workflow/milestones/**/*-CONTINUE.md — interrupted-work markers
+.otto/workflow/milestones/**/continue.md   — legacy continue markers
 ```
 
 ### `.gitignore` Update
 
-Replace the current blanket `.gsd/` ignore with explicit runtime-only ignores:
+Replace the current blanket `.otto/workflow/` ignore with explicit runtime-only ignores:
 
 ```gitignore
-# ── GSD: Runtime / Ephemeral ─────────────────────────────────
-.gsd/auto.lock
-.gsd/completed-units.json
-.gsd/STATE.md
-.gsd/metrics.json
-.gsd/gsd.db
-.gsd/activity/
-.gsd/runtime/
-.gsd/worktrees/
-.gsd/DISCUSSION-MANIFEST.json
-.gsd/milestones/**/*-CONTINUE.md
-.gsd/milestones/**/continue.md
+# ── OTTO: Runtime / Ephemeral ─────────────────────────────────
+.otto/workflow/auto.lock
+.otto/workflow/completed-units.json
+.otto/workflow/STATE.md
+.otto/workflow/metrics.json
+.otto/workflow/otto.db
+.otto/workflow/activity/
+.otto/workflow/runtime/
+.otto/workflow/worktrees/
+.otto/workflow/DISCUSSION-MANIFEST.json
+.otto/workflow/milestones/**/*-CONTINUE.md
+.otto/workflow/milestones/**/continue.md
 ```
 
 Planning artifacts (milestones/, PROJECT.md, DECISIONS.md, REQUIREMENTS.md, QUEUE.md) are NOT in `.gitignore` and are tracked normally.
@@ -166,11 +166,11 @@ The function simplifies dramatically:
 5. `git commit` with milestone summary
 6. Remove worktree + delete branch
 
-No conflict categorization. No runtime file stripping. No `.gsd/` special handling. Planning artifacts merge cleanly because they're in `.gsd/milestones/M001/` which doesn't exist on `main` until this merge.
+No conflict categorization. No runtime file stripping. No `.otto/workflow/` special handling. Planning artifacts merge cleanly because they're in `.otto/workflow/milestones/M001/` which doesn't exist on `main` until this merge.
 
 ### What `smartStage()` Becomes
 
-The force-add of `GSD_DURABLE_PATHS` is no longer needed — planning artifacts are not gitignored, so `git add -A` picks them up naturally. The function reduces to:
+The force-add of `OTTO_DURABLE_PATHS` is no longer needed — planning artifacts are not gitignored, so `git add -A` picks them up naturally. The function reduces to:
 
 1. `git add -A`
 2. `git reset HEAD -- <runtime paths>` (unstage runtime files)
@@ -195,7 +195,7 @@ The `fix-merge` dispatch unit type is eliminated. Within a worktree, there are n
 
 The `shouldUseWorktreeIsolation()` three-tier preference resolution is replaced by a single behavior: worktree isolation is always used. The `git.isolation: "branch"` preference is deprecated.
 
-Projects with existing `gsd/M001/S01` slice branches can still be read by state derivation, but new work never creates slice branches.
+Projects with existing `otto/M001/S01` slice branches can still be read by state derivation, but new work never creates slice branches.
 
 ### Risks
 
@@ -212,7 +212,7 @@ Squash merge collapses all commits into one on `main`. Mitigations:
 
 **3. SQLite DB desync after `git reset`**
 
-If tracked markdown rolls back via `git reset --hard`, the gitignored `gsd.db` does not. Current GSD treats the database as authoritative during runtime and does not silently import markdown projections. Operators should use explicit recovery/import commands when markdown is the intended source after database loss or corruption.
+If tracked markdown rolls back via `git reset --hard`, the gitignored `otto.db` does not. Current OTTO treats the database as authoritative during runtime and does not silently import markdown projections. Operators should use explicit recovery/import commands when markdown is the intended source after database loss or corruption.
 
 **4. Disk space with multiple worktrees**
 
@@ -226,15 +226,15 @@ After `research-slice` or `plan-slice`, immediately merge the slice branch back 
 
 **Rejected:** Adds another merge path instead of removing the root cause. Still requires conflict resolution, self-healing, branch switching.
 
-### B. Keep `.gsd/` gitignored, bootstrap from git history for manual worktrees
+### B. Keep `.otto/workflow/` gitignored, bootstrap from git history for manual worktrees
 
-When GSD detects an empty `.gsd/` in a worktree, reconstruct state from the branch's git history using `git show <commit>:.gsd/...`.
+When OTTO detects an empty `.otto/workflow/` in a worktree, reconstruct state from the branch's git history using `git show <commit>:.otto/workflow/...`.
 
 **Rejected:** Recovery logic, not architecture. Doesn't fix the fundamental problem of branch-agnostic state. Fails when git history has been rewritten.
 
-### C. Branch-scoped `.gsd/` directories (`.gsd/branches/<branch-name>/milestones/...`)
+### C. Branch-scoped `.otto/workflow/` directories (`.otto/workflow/branches/<branch-name>/milestones/...`)
 
-Each branch writes to a namespaced subdirectory within `.gsd/`.
+Each branch writes to a namespaced subdirectory within `.otto/workflow/`.
 
 **Rejected:** Adds complexity instead of removing it. Requires renaming/moving on branch creation, doesn't work with standard git tools (`git checkout` doesn't rename directories).
 
@@ -246,7 +246,7 @@ This architecture was stress-tested by three independent models:
 
 **GPT-5.4 (Codex)** read the full codebase and confirmed the model is sound. Identified that `smartStage()` already force-adds durable paths (validating the tracked-artifact approach) and that `resolveMainWorktreeRoot` in PR #487 is architecturally wrong (adopted — PR to be closed).
 
-**Codebase analysis** confirmed `.gsd/milestones/` is already partially tracked on `main` despite the `.gitignore`, that `GSD_DURABLE_PATHS` exists as a code-level acknowledgment that planning artifacts should be tracked, and that the README already documents the correct runtime-only gitignore pattern.
+**Codebase analysis** confirmed `.otto/workflow/milestones/` is already partially tracked on `main` despite the `.gitignore`, that `OTTO_DURABLE_PATHS` exists as a code-level acknowledgment that planning artifacts should be tracked, and that the README already documents the correct runtime-only gitignore pattern.
 
 ### Codex (GPT-5.4) Dissent — "No Slice Branches Is a Redesign"
 
@@ -258,7 +258,7 @@ Rebuttal: In the branchless model, there is no integration step to crash between
 
 **Concern 2: "Concurrent edits to shared root docs (PROJECT.md, DECISIONS.md) from two terminals."**
 
-Rebuttal: Valid edge case. If `/gsd queue` edits `DECISIONS.md` on `main` while auto-mode edits it in a worktree, there's a content conflict at squash-merge time. This is a standard git content conflict — no different from two developers editing the same file. Handled by normal merge resolution. Not caused by or solved by slice branches.
+Rebuttal: Valid edge case. If `/otto queue` edits `DECISIONS.md` on `main` while auto-mode edits it in a worktree, there's a content conflict at squash-merge time. This is a standard git content conflict — no different from two developers editing the same file. Handled by normal merge resolution. Not caused by or solved by slice branches.
 
 **Concern 3: "Slice→milestone merges provide continuous integration. Removing them pushes conflict discovery to the end."**
 
@@ -266,12 +266,12 @@ Rebuttal: In a single-user sequential workflow, there is nothing to integrate ag
 
 **Concern 4: "Replace slice branches with another explicit slice-boundary primitive. Don't just delete them."**
 
-Response: Accepted in spirit. Commits with conventional tags (`feat(M001/S01):`, `feat(M001/S01/T01):`) serve as the slice boundary primitive. `git log --grep="M001/S01"` isolates a slice's history. `git revert` targets specific commits. Git tags (`gsd/M001/S01-complete`) can mark slice completion if needed. The boundary primitive is commit metadata, not branches.
+Response: Accepted in spirit. Commits with conventional tags (`feat(M001/S01):`, `feat(M001/S01/T01):`) serve as the slice boundary primitive. `git log --grep="M001/S01"` isolates a slice's history. `git revert` targets specific commits. Git tags (`otto/M001/S01-complete`) can mark slice completion if needed. The boundary primitive is commit metadata, not branches.
 
 ## Action Items
 
 1. Close PR #487 (`resolveMainWorktreeRoot`) — contradicts this architecture
-2. Implement as a GSD milestone with phases:
+2. Implement as a OTTO milestone with phases:
    - Update `.gitignore` and force-add existing planning artifacts
    - Remove slice branch creation/switching/merging code
    - Simplify `mergeMilestoneToMain()` and `smartStage()`

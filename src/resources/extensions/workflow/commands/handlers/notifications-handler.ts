@@ -1,7 +1,7 @@
-// Project/App: LOOP24
-// File Purpose: Handles /loop24 notifications commands and opens the notification history overlay.
+// Project/App: OTTO
+// File Purpose: Handles /otto notifications commands and opens the notification history overlay.
 
-import type { ExtensionAPI, ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 
 import {
   readNotifications,
@@ -39,7 +39,7 @@ export async function handleNotificationsCommand(
   ctx: ExtensionCommandContext,
   pi: ExtensionAPI,
 ): Promise<boolean> {
-  // /loop24 notifications clear
+  // /otto notifications clear
   if (args === "clear") {
     clearNotifications();
     // Suppress persistence so the confirmation toast doesn't re-populate the store
@@ -52,7 +52,7 @@ export async function handleNotificationsCommand(
     return true;
   }
 
-  // /loop24 notifications tail [N]
+  // /otto notifications tail [N]
   if (args === "tail" || args.startsWith("tail ")) {
     const countStr = args.replace(/^tail\s*/, "").trim();
     const count = countStr ? parseInt(countStr, 10) : 20;
@@ -69,17 +69,17 @@ export async function handleNotificationsCommand(
       `${severityIcon(e.severity)} [${formatTimestamp(e.ts)}] ${e.message}`,
     );
     const suffix = all.length > entries.length
-      ? `\n... and ${all.length - entries.length} more (open /gsd notifications to browse all)`
+      ? `\n... and ${all.length - entries.length} more (open /otto notifications to browse all)`
       : "";
     ctx.ui.notify(`Last ${entries.length} notification(s):\n${lines.join("\n")}${suffix}`, "info");
     return true;
   }
 
-  // /loop24 notifications filter <severity>
+  // /otto notifications filter <severity>
   if (args.startsWith("filter ")) {
     const severity = args.replace(/^filter\s+/, "").trim().toLowerCase();
     if (!["error", "warning", "info", "success"].includes(severity)) {
-      ctx.ui.notify("Usage: /gsd notifications filter <error|warning|info|success>", "warning");
+      ctx.ui.notify("Usage: /otto notifications filter <error|warning|info|success>", "warning");
       return true;
     }
     const entries = readNotifications().filter((e) => e.severity === severity);
@@ -93,13 +93,13 @@ export async function handleNotificationsCommand(
       `${severityIcon(e.severity)} [${formatTimestamp(e.ts)}] ${e.message}`,
     );
     const suffix = entries.length > 20
-      ? `\n... and ${entries.length - 20} more (open /gsd notifications to browse all)`
+      ? `\n... and ${entries.length - 20} more (open /otto notifications to browse all)`
       : "";
     ctx.ui.notify(`${severity} notifications (${entries.length}):\n${lines.join("\n")}${suffix}`, "info");
     return true;
   }
 
-  // /loop24 notifications (no args) — open overlay in TUI, or print summary
+  // /otto notifications (no args) — open overlay in TUI, or print summary
   if (args === "" || args === "status") {
     // Try overlay first (TUI mode)
     if (ctx.hasUI) {
@@ -137,7 +137,7 @@ export async function handleNotificationsCommand(
 
   // Unknown subcommand
   ctx.ui.notify(
-    "Usage: /gsd notifications [clear|tail [N]|filter <severity>]",
+    "Usage: /otto notifications [clear|tail [N]|filter <severity>]",
     "warning",
   );
   return true;

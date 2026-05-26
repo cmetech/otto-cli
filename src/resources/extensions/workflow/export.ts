@@ -1,7 +1,7 @@
 // Workflow Extension — Session/Milestone Export
 // Generate shareable reports of milestone work in JSON or markdown format.
 
-import type { ExtensionCommandContext } from "@loop24/pi-coding-agent";
+import type { ExtensionCommandContext } from "@otto/pi-coding-agent";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join, basename } from "node:path";
 import { execFile } from "node:child_process";
@@ -76,7 +76,7 @@ export function writeExportFile(
     const slices = visualizerData?.bySlice ?? aggregateBySlice(units);
 
     const md = [
-      `# GSD Session Report — ${projectName}`,
+      `# OTTO Session Report — ${projectName}`,
       ``,
       `**Generated**: ${new Date().toISOString()}`,
       `**Units completed**: ${totals.units}`,
@@ -123,7 +123,7 @@ export async function handleExport(args: string, ctx: ExtensionCommandContext, b
       const { basename: bn } = await import("node:path");
       const data = await loadVisualizerData(basePath);
       const projName = basename(basePath);
-      const workflowVersion = (process.env.LOOP24_VERSION ?? process.env.GSD_VERSION) ?? "0.0.0";
+      const workflowVersion = process.env.OTTO_VERSION ?? "0.0.0";
       const doneMilestones = data.milestones.filter(m => m.status === "complete").length;
 
       const htmlOpts = {
@@ -221,7 +221,7 @@ export async function handleExport(args: string, ctx: ExtensionCommandContext, b
           phase: data.phase,
         });
         ctx.ui.notify(
-          `HTML report saved: .gsd/reports/${bn(outPath)}\nOpening in browser...`,
+          `HTML report saved: .otto/workflow/reports/${bn(outPath)}\nOpening in browser...`,
           "success",
         );
         openInBrowser(outPath);
@@ -276,7 +276,7 @@ export async function handleExport(args: string, ctx: ExtensionCommandContext, b
     const slices = aggregateBySlice(units);
 
     const md = [
-      `# GSD Session Report — ${projectName}`,
+      `# OTTO Session Report — ${projectName}`,
       ``,
       `**Generated**: ${new Date().toISOString()}`,
       `**Units completed**: ${totals.units}`,

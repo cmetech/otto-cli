@@ -116,7 +116,7 @@ await pi.emitExtensionEvent({
 // Returns { cancel: true, reason } | { message: "..." } | undefined
 ```
 
-The GSD extension provides typed wrapper helpers in
+The OTTO extension provides typed wrapper helpers in
 `src/resources/extensions/workflow/hook-emitter.ts` (`emitBeforeCommit`,
 `emitVerifyResult`, `emitBudgetThreshold`, etc.) for call sites that don't
 have direct access to the `pi` API.
@@ -135,7 +135,7 @@ pi.on("event_name", async (event, ctx: ExtensionContext) => {
 ### Type Narrowing for Tool Events
 
 ```typescript
-import { isToolCallEventType, isToolResultEventType } from "@loop24/pi-coding-agent";
+import { isToolCallEventType, isToolResultEventType } from "@otto/pi-coding-agent";
 
 pi.on("tool_call", async (event, ctx) => {
   if (isToolCallEventType("bash", event)) {

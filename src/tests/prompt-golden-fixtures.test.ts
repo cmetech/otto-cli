@@ -1,5 +1,5 @@
-// Project/App: LOOP24
-// File Purpose: Characterization tests for representative GSD prompt fixture metrics.
+// Project/App: OTTO
+// File Purpose: Characterization tests for representative OTTO prompt fixture metrics.
 
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -88,7 +88,7 @@ async function loadPromptBuilders(base: string): Promise<{
   buildPlanSlicePrompt: typeof import("../resources/extensions/workflow/auto-prompts.ts").buildPlanSlicePrompt;
   invalidateAllCaches: typeof import("../resources/extensions/workflow/cache.ts").invalidateAllCaches;
 }> {
-  process.env.GSD_HOME = join(base, ".test-gsd-home");
+  process.env.OTTO_HOME = join(base, ".test-gsd-home");
   const prompts = await import("../resources/extensions/workflow/auto-prompts.ts");
   const cache = await import("../resources/extensions/workflow/cache.ts");
   return { ...prompts, invalidateAllCaches: cache.invalidateAllCaches };
@@ -96,12 +96,12 @@ async function loadPromptBuilders(base: string): Promise<{
 
 function makePromptFixtureRoot(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-prompt-golden-"));
-  const sliceDir = join(base, ".gsd", "milestones", "M001", "slices", "S01");
+  const sliceDir = join(base, ".otto/workflow", "milestones", "M001", "slices", "S01");
   const tasksDir = join(sliceDir, "tasks");
   mkdirSync(tasksDir, { recursive: true });
 
   writeFileSync(
-    join(base, ".gsd", "milestones", "M001", "M001-ROADMAP.md"),
+    join(base, ".otto/workflow", "milestones", "M001", "M001-ROADMAP.md"),
     [
       "# M001 Roadmap",
       "",

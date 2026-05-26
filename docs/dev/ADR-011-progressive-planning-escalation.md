@@ -154,7 +154,7 @@ Escalation maps to the `manual-attention` gate outcome:
 4. The notification system (persistent notification panel, PR #3587) surfaces the escalation
 5. User responds via the notification panel
 6. The scheduler resumes execution with the user's decision injected into carry-forward context
-7. The decision is recorded via `gsd_decision_save` with source: `"escalation"`
+7. The decision is recorded via `otto_decision_save` with source: `"escalation"`
 
 **`continueWithDefault` semantics:**
 - `true`: The executor continues with its recommended option. If the user later chooses differently:
@@ -258,7 +258,7 @@ Only plan S01 during plan-milestone. Don't plan S02–S04 at all until S01 compl
 13. Add escalation detection to post-unit processing
 14. Add escalation display to notification panel with interactive options
 15. Wire user response into carry-forward context for resumed/next task
-16. Record escalation decisions via `gsd_decision_save` with source: `"escalation"`
+16. Record escalation decisions via `otto_decision_save` with source: `"escalation"`
 17. Add escalation events to Audit Plane ledger
 18. Tests: escalation pause, user response injection, `continueWithDefault` behavior, audit trail
 

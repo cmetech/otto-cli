@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Worktree State Projection Module — typed-Interface contract tests for projectRootToWorktree (ADR-016).
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -12,8 +12,8 @@ import { createWorkspace, scopeMilestone } from "../workspace.js";
 
 function makeProjectRoot(): { dir: string; cleanup: () => void } {
   const dir = mkdtempSync(join(tmpdir(), "gsd-projection-"));
-  // .gsd directory is required for the workspace contract resolution
-  mkdirSync(join(dir, ".gsd"), { recursive: true });
+  // .otto/workflow directory is required for the workspace contract resolution
+  mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   return {
     dir,
     cleanup: () => rmSync(dir, { recursive: true, force: true }),

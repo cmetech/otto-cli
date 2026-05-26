@@ -1,9 +1,9 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: ADR-017 stale-sketch-flag drift handler. Relocated from
 // gsd-db.ts where autoHealSketchFlags previously lived with zero callers.
 //
 // Recovers from two scenarios (per ADR-011):
-//   1. Crash between gsd_plan_slice's PLAN.md write and the sketch flag flip.
+//   1. Crash between otto_plan_slice's PLAN.md write and the sketch flag flip.
 //   2. Flag-OFF downgrade: when progressive_planning is off, dispatch routes
 //      sketch slices to plan-slice, which writes PLAN.md but leaves
 //      is_sketch=1 — the next reconciliation pass clears it.

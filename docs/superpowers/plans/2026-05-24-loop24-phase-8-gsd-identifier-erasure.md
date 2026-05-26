@@ -4,7 +4,7 @@
 
 > **NEVER `git add -A` in this repo.** Always stage explicit file paths from the task's scope. `docs/branding/` is the user's active working area — keep hands off.
 
-**Goal:** Erase remaining GSD identifiers, filenames, content-file references, and env var names from the codebase. Replace with descriptive names that reflect actual purpose. Internal env vars get `LOOP24_X` canonical names with `GSD_X` fallback during transition. **Deferred to separate phases:** npm workspace scope (`@gsd/pi-coding-agent` etc.) and customType protocol strings (`"gsd-add-tests"` etc., which would break session-file forward compatibility without migration logic).
+**Goal:** Erase remaining GSD identifiers, filenames, content-file references, and env var names from the codebase. Replace with descriptive names that reflect actual purpose. Internal env vars get `LOOP24_X` canonical names with `OTTO_X` fallback during transition. **Deferred to separate phases:** npm workspace scope (`@gsd/pi-coding-agent` etc.) and customType protocol strings (`"gsd-add-tests"` etc., which would break session-file forward compatibility without migration logic).
 
 **Architecture:** Sequential renames, each task atomic and reversible. Task 1 produces a naming map that pre-resolves all collisions; remaining tasks execute the renames in order of lowest blast radius first. **Success criteria for every task: `npm run build` clean AND regression suite pass.** No task moves to the next without both.
 
@@ -68,8 +68,8 @@ node --import ./src/resources/extensions/workflow/tests/resolve-ts.mjs --experim
 
 In scope (this phase):
 - File renames: 5 TS files (`gsd-*.ts`) + their tests, 1 directory (`gsd-parser/`), 1 content file (`GSD-WORKFLOW.md`), 1 skill dir (`create-gsd-extension/`)
-- Identifier renames: function names (`registerGSDCommand` → `registerWorkflowCommand`, etc.), type names (`GSDState` → context-aware), error codes (`MISSING_GSD_MARKER`)
-- Internal env var renames: 11 vars with LOOP24_X canonical + GSD_X fallback compat shim
+- Identifier renames: function names (`registerGSDCommand` → `registerWorkflowCommand`, etc.), type names (`GSDState` → context-aware), error codes (`MISSING_OTTO_MARKER`)
+- Internal env var renames: 11 vars with LOOP24_X canonical + OTTO_X fallback compat shim
 - Content sweep inside the 15 remaining content files from Cleanup C residue
 
 Out of scope (later phases):
@@ -99,21 +99,21 @@ Out of scope (later phases):
 
 ---
 
-## Env var rename targets (LOOP24_X canonical, GSD_X fallback)
+## Env var rename targets (LOOP24_X canonical, OTTO_X fallback)
 
 | Old | New (canonical) | Fallback reads old |
 |---|---|---|
-| `GSD_DEBUG` | `LOOP24_DEBUG` | yes |
-| `GSD_HOME` | `LOOP24_HOME` (already canonical per Phase 0; just deprecate GSD_HOME) | yes |
-| `GSD_PKG_ROOT` | `LOOP24_PKG_ROOT` | yes |
-| `GSD_WORKFLOW_PATH` | `LOOP24_WORKFLOW_PATH` (also renames the file it points at via Task 6) | yes |
-| `GSD_CODING_AGENT_DIR` | `LOOP24_AGENT_DIR` | yes |
-| `GSD_VERSION` | `LOOP24_VERSION` | yes |
-| `GSD_FIRST_RUN_BANNER` | `LOOP24_FIRST_RUN_BANNER` (already canonical; just deprecate GSD_) | yes |
-| `GSD_BIN_PATH` | `LOOP24_BIN_PATH` | yes |
-| `GSD_SKIP_RTK_INSTALL` | `LOOP24_SKIP_RTK_INSTALL` | yes |
-| `GSD_RTK_DISABLED` | `LOOP24_RTK_DISABLED` | yes |
-| `GSD_TEST_CLONE_MARKETPLACES` | `LOOP24_TEST_CLONE_MARKETPLACES` | yes |
+| `OTTO_DEBUG` | `LOOP24_DEBUG` | yes |
+| `OTTO_HOME` | `LOOP24_HOME` (already canonical per Phase 0; just deprecate OTTO_HOME) | yes |
+| `OTTO_PKG_ROOT` | `LOOP24_PKG_ROOT` | yes |
+| `OTTO_WORKFLOW_PATH` | `LOOP24_WORKFLOW_PATH` (also renames the file it points at via Task 6) | yes |
+| `OTTO_CODING_AGENT_DIR` | `LOOP24_AGENT_DIR` | yes |
+| `OTTO_VERSION` | `LOOP24_VERSION` | yes |
+| `OTTO_FIRST_RUN_BANNER` | `LOOP24_FIRST_RUN_BANNER` (already canonical; just deprecate OTTO_) | yes |
+| `OTTO_BIN_PATH` | `LOOP24_BIN_PATH` | yes |
+| `OTTO_SKIP_RTK_INSTALL` | `LOOP24_SKIP_RTK_INSTALL` | yes |
+| `OTTO_RTK_DISABLED` | `LOOP24_RTK_DISABLED` | yes |
+| `OTTO_TEST_CLONE_MARKETPLACES` | `LOOP24_TEST_CLONE_MARKETPLACES` | yes |
 
 ---
 
@@ -141,9 +141,9 @@ grep -rohE "\\b(register|handle|get|set|read|write|create|init|load|save|build|r
 grep -rohE "\\bGSD[A-Z][A-Za-z0-9_]*" src/ packages/ 2>/dev/null \
   | grep -v "/dist/" | grep -v "/node_modules/" | sort -u
 
-# Constant identifiers matching GSD_XXX (not env vars — those are in the env section)
+# Constant identifiers matching OTTO_XXX (not env vars — those are in the env section)
 # Filter to all-caps identifiers used in code contexts (NOT inside process.env reads)
-grep -rohE "\\bGSD_[A-Z_]+" src/ packages/ 2>/dev/null \
+grep -rohE "\\bOTTO_[A-Z_]+" src/ packages/ 2>/dev/null \
   | grep -v "/dist/" | grep -v "/node_modules/" | sort -u
 ```
 
@@ -160,8 +160,8 @@ Naming policy (user-approved): drop the GSD prefix; use descriptive names that r
 | `GSDNoProjectError` | `NoProjectError` or `WorkflowNoProjectError` (verify free) |
 | `readGsdState`, `writeGsdState` | **collision** — `writeWorkflowState` exists → use `readWorkflowDbState`, `writeWorkflowDbState` |
 | `getGsdArgumentCompletions` | `getWorkflowArgumentCompletions` (verify free) |
-| `GSD_COMMAND_DESCRIPTION` | `WORKFLOW_COMMAND_DESCRIPTION` |
-| `MISSING_GSD_MARKER` | `MISSING_WORKFLOW_MARKER` |
+| `OTTO_COMMAND_DESCRIPTION` | `WORKFLOW_COMMAND_DESCRIPTION` |
+| `MISSING_OTTO_MARKER` | `MISSING_WORKFLOW_MARKER` |
 
 For each row in your inventory:
 1. Propose the new name
@@ -191,7 +191,7 @@ Source: identifier inventory in commit <SHA at time of writing>
 
 | Old | New | Setters (files that write) | Readers (files that read) |
 |---|---|---|---|
-| GSD_DEBUG | LOOP24_DEBUG | (none — set externally) | <N> files |
+| OTTO_DEBUG | LOOP24_DEBUG | (none — set externally) | <N> files |
 | ... | ... | ... | ... |
 
 ## Out of scope
@@ -360,23 +360,23 @@ Then update every import site found in Step 1 via the `Edit` tool.
 
 ---
 
-## Task 4: Rename `src/resources/GSD-WORKFLOW.md` + `GSD_WORKFLOW_PATH` env var
+## Task 4: Rename `src/resources/GSD-WORKFLOW.md` + `OTTO_WORKFLOW_PATH` env var
 
 **Files:**
 - Rename: `src/resources/GSD-WORKFLOW.md` → `src/resources/WORKFLOW.md`
-- Modify: `src/loader.ts` — set `LOOP24_WORKFLOW_PATH` (canonical) + keep `GSD_WORKFLOW_PATH` (fallback) pointing at the new path
-- Modify: every reader of `GSD_WORKFLOW_PATH` — read `LOOP24_WORKFLOW_PATH` first, fall back to `GSD_WORKFLOW_PATH`
+- Modify: `src/loader.ts` — set `LOOP24_WORKFLOW_PATH` (canonical) + keep `OTTO_WORKFLOW_PATH` (fallback) pointing at the new path
+- Modify: every reader of `OTTO_WORKFLOW_PATH` — read `LOOP24_WORKFLOW_PATH` first, fall back to `OTTO_WORKFLOW_PATH`
 - Modify: any code that constructs the literal filename `GSD-WORKFLOW.md`
 
 - [ ] **Step 1: Find every reference**
 
 ```bash
 cd /Users/coreyellis/Projects/repos/local/loop24-client
-grep -rn "GSD-WORKFLOW\\|GSD_WORKFLOW_PATH" src/ packages/ scripts/ 2>/dev/null | grep -v "/dist/" | grep -v "/node_modules/"
+grep -rn "GSD-WORKFLOW\\|OTTO_WORKFLOW_PATH" src/ packages/ scripts/ 2>/dev/null | grep -v "/dist/" | grep -v "/node_modules/"
 ```
 
 Expected hits (from earlier audit):
-- `src/loader.ts:173` — `process.env.GSD_WORKFLOW_PATH = join(resourcesDir, 'GSD-WORKFLOW.md')`
+- `src/loader.ts:173` — `process.env.OTTO_WORKFLOW_PATH = join(resourcesDir, 'GSD-WORKFLOW.md')`
 - `src/resource-loader.ts:575`, `:629`, `:631` — fallback path + sync logic
 
 - [ ] **Step 2: Rename the file**
@@ -389,19 +389,19 @@ git mv src/resources/GSD-WORKFLOW.md src/resources/WORKFLOW.md
 
 ```typescript
 // Before:
-process.env.GSD_WORKFLOW_PATH = join(resourcesDir, 'GSD-WORKFLOW.md')
+process.env.OTTO_WORKFLOW_PATH = join(resourcesDir, 'GSD-WORKFLOW.md')
 
 // After:
 const workflowPath = join(resourcesDir, 'WORKFLOW.md')
 process.env.LOOP24_WORKFLOW_PATH = workflowPath
-process.env.GSD_WORKFLOW_PATH = workflowPath  // fallback for any reader not yet migrated
+process.env.OTTO_WORKFLOW_PATH = workflowPath  // fallback for any reader not yet migrated
 ```
 
 - [ ] **Step 4: Update readers (resource-loader.ts and any others)**
 
 Pattern for every reader:
 ```typescript
-const workflowPath = process.env.LOOP24_WORKFLOW_PATH || process.env.GSD_WORKFLOW_PATH
+const workflowPath = process.env.LOOP24_WORKFLOW_PATH || process.env.OTTO_WORKFLOW_PATH
 ```
 
 - [ ] **Step 5: Build + regression**
@@ -412,7 +412,7 @@ const workflowPath = process.env.LOOP24_WORKFLOW_PATH || process.env.GSD_WORKFLO
 refactor(phase8): rename GSD-WORKFLOW.md → WORKFLOW.md + LOOP24_WORKFLOW_PATH env var
 
 Renames the runtime workflow content file and introduces the
-LOOP24_WORKFLOW_PATH env var as canonical. GSD_WORKFLOW_PATH stays
+LOOP24_WORKFLOW_PATH env var as canonical. OTTO_WORKFLOW_PATH stays
 set (loader writes both) so any reader not yet migrated continues
 to work.
 
@@ -479,8 +479,8 @@ Same pattern as Task 6 but for non-function identifiers:
 - `GSDState` → per naming map (likely `WorkflowDbState`)
 - `GSDConfig` → `WorkflowConfig` (verify free)
 - `GSDNoProjectError` → per naming map
-- `GSD_COMMAND_DESCRIPTION` → `WORKFLOW_COMMAND_DESCRIPTION`
-- `MISSING_GSD_MARKER` → `MISSING_WORKFLOW_MARKER`
+- `OTTO_COMMAND_DESCRIPTION` → `WORKFLOW_COMMAND_DESCRIPTION`
+- `MISSING_OTTO_MARKER` → `MISSING_WORKFLOW_MARKER`
 - Any other `GSD<...>` types/constants found in Task 1
 
 Build + regression after each name. Commit per name or small batch.
@@ -495,29 +495,29 @@ For each of the 11 env vars in the "Env var rename targets" table at the top of 
 
 ```typescript
 // Before:
-const val = process.env.GSD_DEBUG
+const val = process.env.OTTO_DEBUG
 
 // After:
-const val = process.env.LOOP24_DEBUG ?? process.env.GSD_DEBUG
+const val = process.env.LOOP24_DEBUG ?? process.env.OTTO_DEBUG
 ```
 
 **Pattern (SETTERS):**
 
 ```typescript
 // Before:
-process.env.GSD_DEBUG = '1'
+process.env.OTTO_DEBUG = '1'
 
 // After:
 process.env.LOOP24_DEBUG = '1'
-process.env.GSD_DEBUG = '1'  // fallback for any reader not migrated yet
+process.env.OTTO_DEBUG = '1'  // fallback for any reader not migrated yet
 ```
 
-**Note:** `LOOP24_HOME` and `LOOP24_FIRST_RUN_BANNER` are already canonical from Phase 0. For those two, just ensure every READER reads `LOOP24_X` first and falls back to `GSD_X`. (Setters already write both.)
+**Note:** `LOOP24_HOME` and `LOOP24_FIRST_RUN_BANNER` are already canonical from Phase 0. For those two, just ensure every READER reads `LOOP24_X` first and falls back to `OTTO_X`. (Setters already write both.)
 
 - [ ] **Step 1: For each var, find every reader + setter site**
 
 ```bash
-for v in GSD_DEBUG GSD_HOME GSD_PKG_ROOT GSD_WORKFLOW_PATH GSD_CODING_AGENT_DIR GSD_VERSION GSD_FIRST_RUN_BANNER GSD_BIN_PATH GSD_SKIP_RTK_INSTALL GSD_RTK_DISABLED GSD_TEST_CLONE_MARKETPLACES; do
+for v in OTTO_DEBUG OTTO_HOME OTTO_PKG_ROOT OTTO_WORKFLOW_PATH OTTO_CODING_AGENT_DIR OTTO_VERSION OTTO_FIRST_RUN_BANNER OTTO_BIN_PATH OTTO_SKIP_RTK_INSTALL OTTO_RTK_DISABLED OTTO_TEST_CLONE_MARKETPLACES; do
   echo "--- $v ---"
   grep -rn "$v" src/ packages/ scripts/ 2>/dev/null | grep -v "/dist/" | grep -v "/node_modules/" | head -10
 done
@@ -595,7 +595,7 @@ Add a new section between Phase 7 and Cleanup C documenting Phase 8: what files 
 - [ ] **Step 4: Tag**
 
 ```bash
-git tag -a phase-8-gsd-identifier-erasure -m "Phase 8 complete: GSD file/identifier/content-file/env-var erasure. Filenames renamed with prefix dropped (gsd-db.ts → db.ts). Identifiers renamed to descriptive Workflow-prefixed names (registerGSDCommand → registerWorkflowCommand). Env vars get LOOP24_X canonical + GSD_X fallback shim. GSD-WORKFLOW.md → WORKFLOW.md with corresponding env-var rename. 65/65 regression pass at each step. Deferred: @gsd/* npm scope (Phase 9), customType strings (Phase 10), LICENSE/README fork-attribution (MIT-required)."
+git tag -a phase-8-gsd-identifier-erasure -m "Phase 8 complete: GSD file/identifier/content-file/env-var erasure. Filenames renamed with prefix dropped (gsd-db.ts → db.ts). Identifiers renamed to descriptive Workflow-prefixed names (registerGSDCommand → registerWorkflowCommand). Env vars get LOOP24_X canonical + OTTO_X fallback shim. GSD-WORKFLOW.md → WORKFLOW.md with corresponding env-var rename. 65/65 regression pass at each step. Deferred: @gsd/* npm scope (Phase 9), customType strings (Phase 10), LICENSE/README fork-attribution (MIT-required)."
 ```
 
 ---

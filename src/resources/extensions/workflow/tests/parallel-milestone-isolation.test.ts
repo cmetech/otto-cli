@@ -25,7 +25,7 @@ import { recordDispatchClaim } from "../db/unit-dispatches.ts";
 
 function makeBase(): string {
   const base = mkdtempSync(join(tmpdir(), "gsd-parallel-iso-"));
-  mkdirSync(join(base, ".gsd"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow"), { recursive: true });
   return base;
 }
 
@@ -37,7 +37,7 @@ function cleanup(base: string): void {
 test("two workers contesting the same milestone: only one wins the lease", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Contested", status: "active" });
 
   const w1 = registerAutoWorker({ projectRootRealpath: base });
@@ -57,7 +57,7 @@ test("two workers contesting the same milestone: only one wins the lease", (t) =
 test("two workers on different milestones can both proceed independently", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "First", status: "active" });
   insertMilestone({ id: "M002", title: "Second", status: "active" });
 
@@ -78,7 +78,7 @@ test("two workers on different milestones can both proceed independently", (t) =
 test("dispatch ledger ties unit_id uniqueness to active status", (t) => {
   const base = makeBase();
   t.after(() => cleanup(base));
-  openDatabase(join(base, ".gsd", "gsd.db"));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "T", status: "active" });
 
   const w1 = registerAutoWorker({ projectRootRealpath: base });

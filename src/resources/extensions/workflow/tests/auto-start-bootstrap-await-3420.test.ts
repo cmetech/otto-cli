@@ -26,7 +26,7 @@ test("checkAutoStartAfterDiscuss waits until discussion artifacts exist before r
   const base = mkdtempSync(join(tmpdir(), "gsd-bootstrap-await-"));
   const notifications: string[] = [];
   t.after(() => rmSync(base, { recursive: true, force: true }));
-  mkdirSync(join(base, ".gsd", "milestones", "M001"), { recursive: true });
+  mkdirSync(join(base, ".otto/workflow", "milestones", "M001"), { recursive: true });
   setPendingAutoStart(base, {
     basePath: base,
     milestoneId: "M001",
@@ -37,8 +37,8 @@ test("checkAutoStartAfterDiscuss waits until discussion artifacts exist before r
   assert.equal(checkAutoStartAfterDiscuss(), false);
   assert.deepEqual(notifications, []);
 
-  writeFileSync(join(base, ".gsd", "milestones", "M001", "M001-CONTEXT.md"), "# Context\n", "utf-8");
-  writeFileSync(join(base, ".gsd", "STATE.md"), "# State\n", "utf-8");
+  writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "M001-CONTEXT.md"), "# Context\n", "utf-8");
+  writeFileSync(join(base, ".otto/workflow", "STATE.md"), "# State\n", "utf-8");
 
   assert.equal(checkAutoStartAfterDiscuss(), true);
   assert.deepEqual(notifications, ["Milestone M001 ready."]);

@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Detect project-root file writes during isolated milestone worktree units.
 
 import { execFileSync } from "node:child_process";
@@ -23,7 +23,7 @@ export interface RootWriteLeak {
 export type RootDirtySnapshot = Map<string, RootDirtyEntry>;
 
 function isRootRuntimePath(path: string): boolean {
-  return path === ".gsd" || path.startsWith(".gsd/");
+  return path === ".otto/workflow" || path.startsWith(".otto/workflow/");
 }
 
 function fileFingerprint(rootPath: string, relPath: string): string {
@@ -96,6 +96,6 @@ export function formatRootWriteLeakMessage(leak: RootWriteLeak): string {
     `Expected worktree: ${leak.worktreePath}`,
     "Root files changed during isolated auto-mode:",
     files,
-    "Review the root diff, then commit, stash, or discard those root changes before resuming /gsd auto.",
+    "Review the root diff, then commit, stash, or discard those root changes before resuming /otto auto.",
   ].join("\n");
 }

@@ -12,7 +12,7 @@ import ts from "typescript";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const extensionApiStubs = `
-declare module "@loop24/pi-coding-agent" {
+declare module "@otto/pi-coding-agent" {
 	export interface ExtensionContext {
 		hasUI: boolean;
 		sessionManager: { getBranch(): Array<{ type: string; message: { role?: string; toolName?: string; details?: unknown } }> };
@@ -37,11 +37,11 @@ declare module "@sinclair/typebox" {
 	};
 }
 
-declare module "@loop24/pi-ai" {
+declare module "@otto/pi-ai" {
 	export function StringEnum<T extends readonly string[]>(values: T): unknown;
 }
 
-declare module "@loop24/pi-tui" {
+declare module "@otto/pi-tui" {
 	export class Text {
 		constructor(text: string, x: number, y: number);
 	}
@@ -68,7 +68,7 @@ function renderTemplate(template: string): string {
 		.replaceAll("{{Items}}", "Items");
 }
 
-describe("extension templates use @loop24/* imports", () => {
+describe("extension templates use @otto/* imports", () => {
 	const templates = ["extension-skeleton.ts", "stateful-tool-skeleton.ts"];
 
 	for (const template of templates) {

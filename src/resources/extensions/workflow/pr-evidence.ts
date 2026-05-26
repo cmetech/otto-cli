@@ -1,4 +1,4 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Shared pull request evidence generator for the workflow shipping paths.
 
 export type PrChangeType = "feat" | "fix" | "refactor" | "test" | "docs" | "chore";

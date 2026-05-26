@@ -25,30 +25,30 @@ import { GIT_NO_PROMPT_ENV } from "./git-constants.js";
  * but retained for backwards compatibility during migration.
  */
 const RUNTIME_PATTERNS = [
-  ".gsd/activity/",
-  ".gsd/audit/",
-  ".gsd/forensics/",
-  ".gsd/runtime/",
-  ".gsd/worktrees/",
-  ".gsd/parallel/",
-  ".gsd/auto.lock",
-  ".gsd/metrics.json",
-  ".gsd/completed-units*.json", // covers completed-units.json and archived completed-units-{MID}.json
-  ".gsd/state-manifest.json",
-  ".gsd/STATE.md",
-  ".gsd/gsd.db*",
-  ".gsd/journal/",
-  ".gsd/doctor-history.jsonl",
-  ".gsd/event-log.jsonl",
-  ".gsd/DISCUSSION-MANIFEST.json",
-  ".gsd/milestones/**/*-CONTINUE.md",
-  ".gsd/milestones/**/continue.md",
+  ".otto/workflow/activity/",
+  ".otto/workflow/audit/",
+  ".otto/workflow/forensics/",
+  ".otto/workflow/runtime/",
+  ".otto/workflow/worktrees/",
+  ".otto/workflow/parallel/",
+  ".otto/workflow/auto.lock",
+  ".otto/workflow/metrics.json",
+  ".otto/workflow/completed-units*.json", // covers completed-units.json and archived completed-units-{MID}.json
+  ".otto/workflow/state-manifest.json",
+  ".otto/workflow/STATE.md",
+  ".otto/workflow/otto.db*",
+  ".otto/workflow/journal/",
+  ".otto/workflow/doctor-history.jsonl",
+  ".otto/workflow/event-log.jsonl",
+  ".otto/workflow/DISCUSSION-MANIFEST.json",
+  ".otto/workflow/milestones/**/*-CONTINUE.md",
+  ".otto/workflow/milestones/**/continue.md",
 ] as const;
 
 const BASELINE_PATTERNS = [
   // ── workflow state directory (symlink to external storage) ──
-  ".gsd",
-  ".gsd-id",
+  ".otto/workflow",
+  ".otto/workflow-id",
   ".mcp.json",
   ".bg-shell/",
 
@@ -108,22 +108,22 @@ const BASELINE_PATTERNS = [
 ];
 
 /**
- * Check whether `.gsd` is covered by the project's `.gitignore`.
+ * Check whether `.otto/workflow` is covered by the project's `.gitignore`.
  *
  * Uses `git check-ignore` for accurate evaluation — this respects nested
  * .gitignore files, global gitignore, and negation patterns. Returns true
- * only when git would actually ignore `.gsd/`.
+ * only when git would actually ignore `.otto/workflow/`.
  *
  * Returns false (not ignored) if:
  *   - No `.gitignore` exists
- *   - `.gsd` is not listed in any active ignore rule
+ *   - `.otto/workflow` is not listed in any active ignore rule
  *   - Not a git repo or git is unavailable
  */
 export function isGitignored(basePath: string): boolean {
-  // Check both `.gsd` and `.gsd/` because `.gsd/` in .gitignore (trailing
+  // Check both `.otto/workflow` and `.otto/workflow/` because `.otto/workflow/` in .gitignore (trailing
   // slash = directory-only pattern) only matches the directory form. Using
   // both paths covers all gitignore pattern variants.
-  for (const path of [".gsd", ".gsd/"]) {
+  for (const path of [".otto/workflow", ".otto/workflow/"]) {
     try {
       // git check-ignore exits 0 when the path IS ignored, 1 when it is NOT.
       execFileSync("git", ["check-ignore", "-q", path], {
@@ -131,7 +131,7 @@ export function isGitignored(basePath: string): boolean {
         stdio: "pipe",
         env: GIT_NO_PROMPT_ENV,
       });
-      return true; // exit 0 → .gsd is ignored
+      return true; // exit 0 → .otto/workflow is ignored
     } catch {
       // exit 1 → this form is NOT ignored, try the other
     }
@@ -140,21 +140,21 @@ export function isGitignored(basePath: string): boolean {
 }
 
 /**
- * Check whether `.gsd/` contains files tracked by git.
- * If so, the project intentionally keeps `.gsd/` in version control
- * and we must NOT add `.gsd` to `.gitignore` or attempt migration.
+ * Check whether `.otto/workflow/` contains files tracked by git.
+ * If so, the project intentionally keeps `.otto/workflow/` in version control
+ * and we must NOT add `.otto/workflow` to `.gitignore` or attempt migration.
  *
- * Returns true if git tracks at least one file under `.gsd/`.
+ * Returns true if git tracks at least one file under `.otto/workflow/`.
  * Returns false (safe to ignore) if:
  *   - Not a git repo
- *   - `.gsd/` is a symlink (external state, should be ignored)
- *   - `.gsd/` doesn't exist
- *   - No tracked files found under `.gsd/`
+ *   - `.otto/workflow/` is a symlink (external state, should be ignored)
+ *   - `.otto/workflow/` doesn't exist
+ *   - No tracked files found under `.otto/workflow/`
  */
 export function hasGitTrackedWorkflowFiles(basePath: string): boolean {
-  const localGsd = join(basePath, ".gsd");
+  const localGsd = join(basePath, ".otto/workflow");
 
-  // If .gsd doesn't exist or is already a symlink, no tracked files concern
+  // If .otto/workflow doesn't exist or is already a symlink, no tracked files concern
   if (!existsSync(localGsd)) return false;
   try {
     if (lstatSync(localGsd).isSymbolicLink()) return false;
@@ -162,9 +162,9 @@ export function hasGitTrackedWorkflowFiles(basePath: string): boolean {
     return false;
   }
 
-  // Check if git tracks any files under .gsd/
+  // Check if git tracks any files under .otto/workflow/
   try {
-    const tracked = nativeLsFiles(basePath, ".gsd");
+    const tracked = nativeLsFiles(basePath, ".otto/workflow");
     if (tracked.length > 0) return true;
 
     // nativeLsFiles swallows git failures and returns []. An empty result
@@ -189,9 +189,9 @@ export function hasGitTrackedWorkflowFiles(basePath: string): boolean {
  * Creates the file if missing; appends missing patterns.
  * Returns true if the file was created or modified, false if already complete.
  *
- * **Safety check:** If `.gsd/` contains git-tracked files (i.e., the project
- * intentionally keeps `.gsd/` in version control), the `.gsd` ignore pattern
- * is excluded to prevent data loss. Only the `.gsd` pattern is affected —
+ * **Safety check:** If `.otto/workflow/` contains git-tracked files (i.e., the project
+ * intentionally keeps `.otto/workflow/` in version control), the `.otto/workflow` ignore pattern
+ * is excluded to prevent data loss. Only the `.otto/workflow` pattern is affected —
  * all other baseline patterns are still applied normally.
  */
 export function ensureGitignore(
@@ -216,11 +216,11 @@ export function ensureGitignore(
       .filter((l) => l && !l.startsWith("#")),
   );
 
-  // Determine which patterns to apply. If .gsd/ has tracked files,
-  // exclude the ".gsd" pattern to prevent deleting tracked state.
+  // Determine which patterns to apply. If .otto/workflow/ has tracked files,
+  // exclude the ".otto/workflow" pattern to prevent deleting tracked state.
   const workflowIsTracked = hasGitTrackedWorkflowFiles(basePath);
   const patternsToApply = workflowIsTracked
-    ? BASELINE_PATTERNS.filter((p) => p !== ".gsd")
+    ? BASELINE_PATTERNS.filter((p) => p !== ".otto/workflow")
     : BASELINE_PATTERNS;
 
   // Find patterns not yet present
@@ -231,7 +231,7 @@ export function ensureGitignore(
   // Build the block to append
   const block = [
     "",
-    "# ── GSD baseline (auto-generated) ──",
+    "# ── OTTO baseline (auto-generated) ──",
     ...missing,
     "",
   ].join("\n");
@@ -253,7 +253,7 @@ export function ensureGitignore(
  *
  * Note: These are strictly runtime/ephemeral paths (activity logs, lock files,
  * metrics, STATE.md). They are always safe to untrack, even when the project
- * intentionally keeps other `.gsd/` files (like PROJECT.md, milestones/) in
+ * intentionally keeps other `.otto/workflow/` files (like PROJECT.md, milestones/) in
  * version control.
  */
 export function untrackRuntimeFiles(basePath: string): void {
@@ -271,7 +271,7 @@ export function untrackRuntimeFiles(basePath: string): void {
 }
 
 /**
- * Ensure basePath/.gsd/PREFERENCES.md exists as an empty template.
+ * Ensure basePath/.otto/workflow/PREFERENCES.md exists as an empty template.
  * Creates the file with frontmatter only if it doesn't exist.
  * Returns true if created, false if already exists.
  *
@@ -298,15 +298,15 @@ skill_discovery: {}
 auto_supervisor: {}
 ---
 
-# GSD Skill Preferences
+# OTTO Skill Preferences
 
 Project-specific guidance for skill selection and execution preferences.
 
-See \`~/.gsd/agent/extensions/gsd/docs/preferences-reference.md\` for full field documentation and examples.
+See \`~/.otto/workflow/agent/extensions/gsd/docs/preferences-reference.md\` for full field documentation and examples.
 
 ## Fields
 
-- \`always_use_skills\`: Skills that must be available during all GSD operations
+- \`always_use_skills\`: Skills that must be available during all OTTO operations
 - \`prefer_skills\`: Skills to prioritize when multiple options exist
 - \`avoid_skills\`: Skills to minimize or avoid (with lower priority than prefer)
 - \`skill_rules\`: Context-specific rules (e.g., "use tool X for Y type of work")

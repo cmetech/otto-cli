@@ -62,7 +62,7 @@ function checkProjectLevel(workflowRoot: string, issues: DoctorIssue[]): void {
         code: 'missing_state_md',
         scope: 'project',
         unitId: '',
-        message: 'STATE.md is missing — run /gsd status to regenerate',
+        message: 'STATE.md is missing — run /otto status to regenerate',
         file: statePath,
       });
     }
@@ -192,7 +192,7 @@ export function runDoctorLite(projectDir: string, scope?: string): DoctorResult 
         code: 'no_gsd_directory',
         scope: 'project',
         unitId: '',
-        message: 'No .gsd/ directory found — project not initialized',
+        message: 'No .otto/workflow/ directory found — project not initialized',
       }],
       counts: { error: 0, warning: 0, info: 1 },
     };

@@ -1,12 +1,12 @@
-// Project/App: LOOP24
+// Project/App: OTTO
 // File Purpose: Routes work to appropriate models while preserving configured ceilings.
 
 import type { ComplexityTier, ClassificationResult, TaskMetadata } from "./complexity-classifier.js";
 import { tierOrdinal } from "./complexity-classifier.js";
 import type { ResolvedModelConfig } from "./preferences.js";
-import { getProviderCapabilities, type ProviderCapabilities } from "@loop24/pi-ai";
-import { getToolCompatibility, getAllToolCompatibility } from "@loop24/pi-coding-agent";
-import type { ToolCompatibility } from "@loop24/pi-coding-agent";
+import { getProviderCapabilities, type ProviderCapabilities } from "@otto/pi-ai";
+import { getToolCompatibility, getAllToolCompatibility } from "@otto/pi-coding-agent";
+import type { ToolCompatibility } from "@otto/pi-coding-agent";
 import { incrementLegacyTelemetry } from "./legacy-telemetry.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

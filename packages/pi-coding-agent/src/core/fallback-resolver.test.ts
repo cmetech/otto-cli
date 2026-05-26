@@ -4,7 +4,7 @@
 import { describe, it, beforeEach, mock } from "node:test";
 import assert from "node:assert/strict";
 import { FallbackResolver } from "./fallback-resolver.js";
-import type { Api, Model } from "@loop24/pi-ai";
+import type { Api, Model } from "@otto/pi-ai";
 import type { AuthStorage } from "./auth-storage.js";
 import type { ModelRegistry } from "./model-registry.js";
 import type { FallbackChainEntry, SettingsManager } from "./settings-manager.js";

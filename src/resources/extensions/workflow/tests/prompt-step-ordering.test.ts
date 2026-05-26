@@ -17,7 +17,7 @@ import { registerHooks } from '../bootstrap/register-hooks.ts';
 
 function makePromptBase(): string {
   const base = mkdtempSync(join(tmpdir(), 'gsd-prompt-order-'));
-  const msDir = join(base, '.gsd', 'milestones', 'M001');
+  const msDir = join(base, '.otto/workflow', 'milestones', 'M001');
   const sliceDir = join(msDir, 'slices', 'S01');
   mkdirSync(sliceDir, { recursive: true });
   writeFileSync(
@@ -37,15 +37,15 @@ function numberedStepIndex(prompt: string, needle: RegExp): number {
 }
 
 describe('prompt step ordering (#3696)', () => {
-  test('complete-milestone prompt orders durable writes before gsd_complete_milestone', async () => {
+  test('complete-milestone prompt orders durable writes before otto_complete_milestone', async () => {
     const base = makePromptBase();
     try {
       const prompt = await buildCompleteMilestonePrompt('M001', 'Milestone', base, 'minimal');
-      const guardIdx = numberedStepIndex(prompt, /gsd_milestone_status/);
-      const requirementIdx = numberedStepIndex(prompt, /gsd_requirement_update/);
+      const guardIdx = numberedStepIndex(prompt, /otto_milestone_status/);
+      const requirementIdx = numberedStepIndex(prompt, /otto_requirement_update/);
       const projectIdx = numberedStepIndex(prompt, /PROJECT\.md/);
       const learningsIdx = numberedStepIndex(prompt, /Extract structured learnings/);
-      const completeIdx = numberedStepIndex(prompt, /gsd_complete_milestone/);
+      const completeIdx = numberedStepIndex(prompt, /otto_complete_milestone/);
 
       assert.ok(guardIdx < requirementIdx);
       assert.ok(requirementIdx < completeIdx);
@@ -57,11 +57,11 @@ describe('prompt step ordering (#3696)', () => {
     }
   });
 
-  test('complete-slice prompt exposes gsd_requirement_update', async () => {
+  test('complete-slice prompt exposes otto_requirement_update', async () => {
     const base = makePromptBase();
     try {
       const prompt = await buildCompleteSlicePrompt('M001', 'Milestone', 'S01', 'Done', base, 'minimal');
-      assert.match(prompt, /gsd_requirement_update/);
+      assert.match(prompt, /otto_requirement_update/);
     } finally {
       rmSync(base, { recursive: true, force: true });
     }

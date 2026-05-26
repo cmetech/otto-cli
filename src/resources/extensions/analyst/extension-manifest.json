@@ -1,0 +1,13 @@
+{
+  "id": "analyst",
+  "name": "Analyst",
+  "version": "1.0.0",
+  "description": "Ingest local data files, analyze with SQL, and produce saved dashboards/reports",
+  "tier": "bundled",
+  "requires": { "platform": ">=2.29.0" },
+  "provides": {
+    "tools": ["ingest", "scratchpad", "create_deliverable", "list_deliverables"],
+    "commands": ["deliverables"],
+    "hooks": ["session_start", "turn_start", "session_shutdown"]
+  }
+}

@@ -10,7 +10,7 @@ import { randomUUID } from "node:crypto";
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type JobStatus = "running" | "completed" | "failed" | "cancelled";
-export type JobType = "bash";
+export type JobType = "bash" | "analysis";
 
 export interface Job {
 	id: string;

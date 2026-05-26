@@ -14,7 +14,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-import { workflowRoot } from "./paths.js";
+import { workflowRoot, workflowRootOrNull } from "./paths.js";
 import { parse as parseYaml } from "yaml";
 import type { PostUnitHookConfig, PreDispatchHookConfig, TokenProfile } from "./types.js";
 import type { DynamicRoutingConfig } from "./model-router.js";
@@ -114,16 +114,18 @@ function legacyGlobalPreferencesPath(): string {
   return join(homedir(), ".pi", "agent", "gsd-preferences.md");
 }
 
-function projectPreferencesPath(basePath: string = process.cwd()): string {
-  return join(workflowRoot(basePath), "PREFERENCES.md");
+function projectPreferencesPath(basePath: string = process.cwd()): string | null {
+  const root = workflowRootOrNull(basePath);
+  return root === null ? null : join(root, "PREFERENCES.md");
 }
 // Legacy lowercase files can still exist in older projects. Keep them as a
 // compatibility-only fallback, but route new reads/writes through PREFERENCES.md.
 function legacyGlobalPreferencesPathLowercase(): string {
   return join(workflowHome(), "preferences.md");
 }
-function legacyProjectPreferencesPathLowercase(basePath: string = process.cwd()): string {
-  return join(workflowRoot(basePath), "preferences.md");
+function legacyProjectPreferencesPathLowercase(basePath: string = process.cwd()): string | null {
+  const root = workflowRootOrNull(basePath);
+  return root === null ? null : join(root, "preferences.md");
 }
 
 export function getGlobalGSDPreferencesPath(): string {
@@ -135,7 +137,7 @@ export function getLegacyGlobalGSDPreferencesPath(): string {
 }
 
 export function getProjectGSDPreferencesPath(basePath?: string): string {
-  return projectPreferencesPath(basePath);
+  return projectPreferencesPath(basePath) ?? join(workflowRoot(basePath ?? process.cwd()), "PREFERENCES.md");
 }
 
 
@@ -177,8 +179,11 @@ export function loadGlobalGSDPreferences(): LoadedGSDPreferences | null {
 }
 
 export function loadProjectGSDPreferences(basePath?: string): LoadedGSDPreferences | null {
-  return loadPreferencesFile(projectPreferencesPath(basePath), "project")
-    ?? loadPreferencesFile(legacyProjectPreferencesPathLowercase(basePath), "project");
+  const primary = projectPreferencesPath(basePath);
+  const legacy = legacyProjectPreferencesPathLowercase(basePath);
+  return (primary ? loadPreferencesFile(primary, "project") : null)
+    ?? (legacy ? loadPreferencesFile(legacy, "project") : null)
+    ?? null;
 }
 
 export function loadEffectiveGSDPreferences(
@@ -254,7 +259,8 @@ function stripInheritedPlanningDepth(
   return { ...loaded, preferences };
 }
 
-function loadPreferencesFile(path: string, scope: "global" | "project"): LoadedGSDPreferences | null {
+function loadPreferencesFile(path: string | null, scope: "global" | "project"): LoadedGSDPreferences | null {
+  if (!path) return null;
   if (!existsSync(path)) return null;
 
   const raw = readFileSync(path, "utf-8");

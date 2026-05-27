@@ -100,6 +100,42 @@ function createStreamSpy(): {
 // ─── Registration ─────────────────────────────────────────────────────────────
 
 describe("ModelRegistry authMode — registration", () => {
+	it("treats direct Anthropic as request-ready when OTTO gateway is configured", () => {
+		const previousGatewayUrl = process.env.OTTO_GATEWAY_URL;
+		const previousDisabled = process.env.OTTO_GATEWAY_DISABLED;
+		process.env.OTTO_GATEWAY_URL = "http://127.0.0.1:18080";
+		delete process.env.OTTO_GATEWAY_DISABLED;
+		try {
+			const registry = createRegistry(() => false);
+			assert.equal(registry.isProviderRequestReady("anthropic"), true);
+			assert.ok(
+				registry.getAvailable().some((model) => model.provider === "anthropic" && model.id === "claude-opus-4-6"),
+				"direct Anthropic models should be selectable through the OTTO gateway",
+			);
+		} finally {
+			if (previousGatewayUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
+			else process.env.OTTO_GATEWAY_URL = previousGatewayUrl;
+			if (previousDisabled === undefined) delete process.env.OTTO_GATEWAY_DISABLED;
+			else process.env.OTTO_GATEWAY_DISABLED = previousDisabled;
+		}
+	});
+
+	it("does not treat direct Anthropic as request-ready when gateway is disabled", () => {
+		const previousGatewayUrl = process.env.OTTO_GATEWAY_URL;
+		const previousDisabled = process.env.OTTO_GATEWAY_DISABLED;
+		process.env.OTTO_GATEWAY_URL = "http://127.0.0.1:18080";
+		process.env.OTTO_GATEWAY_DISABLED = "1";
+		try {
+			const registry = createRegistry(() => false);
+			assert.equal(registry.isProviderRequestReady("anthropic"), false);
+		} finally {
+			if (previousGatewayUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
+			else process.env.OTTO_GATEWAY_URL = previousGatewayUrl;
+			if (previousDisabled === undefined) delete process.env.OTTO_GATEWAY_DISABLED;
+			else process.env.OTTO_GATEWAY_DISABLED = previousDisabled;
+		}
+	});
+
 	it("includes GPT-5.5 in the authenticated all-models menu backing list", () => {
 		const registry = createInMemoryRegistry({
 			openai: { type: "api_key", key: "sk-test" },
@@ -470,6 +506,46 @@ describe("ModelRegistry authMode — getAvailable", () => {
 // ─── getApiKey ────────────────────────────────────────────────────────────────
 
 describe("ModelRegistry authMode — getApiKey", () => {
+	it("returns gateway token for direct Anthropic when OTTO gateway is configured", async () => {
+		const previousGatewayUrl = process.env.OTTO_GATEWAY_URL;
+		const previousGatewayToken = process.env.OTTO_GATEWAY_TOKEN;
+		const previousDisabled = process.env.OTTO_GATEWAY_DISABLED;
+		process.env.OTTO_GATEWAY_URL = "http://127.0.0.1:18080";
+		process.env.OTTO_GATEWAY_TOKEN = "gw-token";
+		delete process.env.OTTO_GATEWAY_DISABLED;
+		try {
+			const registry = createRegistry(() => false);
+			const model = registry.getAll().find((m) => m.provider === "anthropic" && m.id === "claude-opus-4-6")!;
+			assert.equal(await registry.getApiKey(model), "gw-token");
+			assert.equal(await registry.getApiKeyForProvider("anthropic"), "gw-token");
+		} finally {
+			if (previousGatewayUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
+			else process.env.OTTO_GATEWAY_URL = previousGatewayUrl;
+			if (previousGatewayToken === undefined) delete process.env.OTTO_GATEWAY_TOKEN;
+			else process.env.OTTO_GATEWAY_TOKEN = previousGatewayToken;
+			if (previousDisabled === undefined) delete process.env.OTTO_GATEWAY_DISABLED;
+			else process.env.OTTO_GATEWAY_DISABLED = previousDisabled;
+		}
+	});
+
+	it("returns gateway placeholder for direct Anthropic when gateway auth is disabled", async () => {
+		const previousGatewayUrl = process.env.OTTO_GATEWAY_URL;
+		const previousGatewayToken = process.env.OTTO_GATEWAY_TOKEN;
+		process.env.OTTO_GATEWAY_URL = "http://127.0.0.1:18080";
+		delete process.env.OTTO_GATEWAY_TOKEN;
+		try {
+			const registry = createRegistry(() => false);
+			const model = registry.getAll().find((m) => m.provider === "anthropic" && m.id === "claude-opus-4-6")!;
+			assert.equal(await registry.getApiKey(model), "otto-gateway");
+			assert.equal(await registry.getApiKeyForProvider("anthropic"), "otto-gateway");
+		} finally {
+			if (previousGatewayUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
+			else process.env.OTTO_GATEWAY_URL = previousGatewayUrl;
+			if (previousGatewayToken === undefined) delete process.env.OTTO_GATEWAY_TOKEN;
+			else process.env.OTTO_GATEWAY_TOKEN = previousGatewayToken;
+		}
+	});
+
 	it("returns undefined for externalCli provider", async () => {
 		const registry = createRegistry();
 		registry.registerProvider("cli", {

@@ -32,6 +32,7 @@ describe("OTTO gateway routing branch in buildAnthropicClientOptions", () => {
 	beforeEach(() => {
 		delete process.env.OTTO_GATEWAY_URL;
 		delete process.env.OTTO_GATEWAY_TOKEN;
+		delete process.env.OTTO_GATEWAY_FORCE_DIRECT;
 		delete process.env.ANTHROPIC_BASE_URL;
 	});
 
@@ -95,5 +96,43 @@ describe("OTTO gateway routing branch in buildAnthropicClientOptions", () => {
 
 		assert.equal(opts.apiKey, "test-api-key", "whitespace-only gateway URL should not trigger gateway branch");
 		assert.equal(opts.baseURL, "https://api.anthropic.com", "baseURL should fall back to model.baseUrl when gateway URL is whitespace");
+	});
+
+	it("normalizes gateway root URL before passing it to the SDK", () => {
+		process.env.OTTO_GATEWAY_URL = " https://gateway.otto.local/v1/ ";
+
+		const opts = buildAnthropicClientOptions(anthropicModel(), "test-api-key", false) as GatewayOptions;
+
+		assert.equal(opts.baseURL, "https://gateway.otto.local", "Anthropic SDK baseURL must be gateway root, not /v1");
+	});
+
+	it("uses a placeholder bearer token in gateway mode when no direct key is available", () => {
+		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
+
+		const opts = buildAnthropicClientOptions(anthropicModel(), "", false) as GatewayOptions;
+
+		assert.equal(opts.apiKey, null);
+		assert.equal(opts.authToken, "otto-gateway", "SDK should initialize even when gateway auth is disabled and no direct key exists");
+	});
+
+	it("bypasses gateway when direct fallback is active and a direct key is available", () => {
+		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
+		process.env.OTTO_GATEWAY_FORCE_DIRECT = "1";
+
+		const opts = buildAnthropicClientOptions(anthropicModel(), "direct-api-key", false) as GatewayOptions;
+
+		assert.equal(opts.apiKey, "direct-api-key");
+		assert.equal(opts.baseURL, "https://api.anthropic.com");
+	});
+
+	it("keeps gateway routing during fallback mode when no direct key is available", () => {
+		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
+		process.env.OTTO_GATEWAY_FORCE_DIRECT = "1";
+
+		const opts = buildAnthropicClientOptions(anthropicModel(), "", false) as GatewayOptions;
+
+		assert.equal(opts.apiKey, null);
+		assert.equal(opts.baseURL, "https://gateway.otto.local");
+		assert.equal(opts.authToken, "otto-gateway");
 	});
 });

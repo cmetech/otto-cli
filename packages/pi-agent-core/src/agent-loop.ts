@@ -5,8 +5,10 @@
 
 import {
 	type AssistantMessage,
+	classifyRemoteToolCall,
 	type Context,
 	EventStream,
+	formatRemoteToolResultText,
 	streamSimple,
 	type ToolResultMessage,
 	validateToolArguments,
@@ -40,6 +42,72 @@ export const ZERO_USAGE = {
 	totalTokens: 0,
 	cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
 } as const;
+
+export const DEFAULT_STREAM_IDLE_TIMEOUT_MS = 120_000;
+
+function resolveStreamIdleTimeoutMs(): number | undefined {
+	const raw = process.env.OTTO_STREAM_IDLE_TIMEOUT_MS?.trim();
+	if (raw === "0") return undefined;
+	if (!raw) return DEFAULT_STREAM_IDLE_TIMEOUT_MS;
+	const parsed = Number(raw);
+	return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_STREAM_IDLE_TIMEOUT_MS;
+}
+
+async function nextStreamEvent<T>(
+	iterator: AsyncIterator<T>,
+	timeoutMs: number | undefined,
+): Promise<IteratorResult<T>> {
+	if (!timeoutMs) return iterator.next();
+
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	try {
+		return await Promise.race([
+			iterator.next(),
+			new Promise<IteratorResult<T>>((_, reject) => {
+				timer = setTimeout(() => {
+					reject(new Error(`Provider stream timed out after ${timeoutMs}ms without an event.`));
+				}, timeoutMs);
+			}),
+		]);
+	} finally {
+		if (timer) clearTimeout(timer);
+	}
+}
+
+function hasRemotePayload(toolCall: AgentToolCall): boolean {
+	const remote = toolCall.remote;
+	return Boolean(
+		remote?.purpose ||
+			remote?.locations?.length ||
+			remote?.rawInput ||
+			(toolCall.arguments && Object.keys(toolCall.arguments).length > 0),
+	);
+}
+
+function dedupeRemoteToolCalls(toolCalls: AgentToolCall[]): AgentToolCall[] {
+	const deduped: AgentToolCall[] = [];
+	const remoteIndexById = new Map<string, number>();
+
+	for (const toolCall of toolCalls) {
+		if (toolCall.executionDomain !== "remote") {
+			deduped.push(toolCall);
+			continue;
+		}
+
+		const existingIndex = remoteIndexById.get(toolCall.id);
+		if (existingIndex === undefined) {
+			remoteIndexById.set(toolCall.id, deduped.length);
+			deduped.push(toolCall);
+			continue;
+		}
+
+		if (!hasRemotePayload(deduped[existingIndex]) && hasRemotePayload(toolCall)) {
+			deduped[existingIndex] = toolCall;
+		}
+	}
+
+	return deduped;
+}
 
 /**
  * Build an AssistantMessage for an unhandled error caught outside runLoop.
@@ -321,6 +389,7 @@ async function runLoop(
 					currentContext.messages.push(result);
 					newMessages.push(result);
 				}
+				hasMoreToolCalls = toolResults.length > 0 || message.stopReason === "pauseTurn";
 
 				// Schema overload detection (#2783): count only preparation-phase
 				// errors (schema validation, tool-not-found, tool-blocked) toward the
@@ -442,52 +511,66 @@ async function streamAssistantResponse(
 	let partialMessage: AssistantMessage | null = null;
 	let addedPartial = false;
 
-	for await (const event of response) {
-		switch (event.type) {
-			case "start":
-				partialMessage = event.partial;
-				context.messages.push(partialMessage);
-				addedPartial = true;
-				stream.push({ type: "message_start", message: { ...partialMessage } });
-				break;
-
-			case "text_start":
-			case "text_delta":
-			case "text_end":
-			case "thinking_start":
-			case "thinking_delta":
-			case "thinking_end":
-			case "toolcall_start":
-			case "toolcall_delta":
-			case "toolcall_end":
-			case "server_tool_use":
-			case "web_search_result":
-				if (partialMessage) {
+	const iterator = response[Symbol.asyncIterator]();
+	const idleTimeoutMs = resolveStreamIdleTimeoutMs();
+	try {
+		while (true) {
+			const next = await nextStreamEvent(iterator, idleTimeoutMs);
+			if (next.done) break;
+			const event = next.value;
+			switch (event.type) {
+				case "start":
 					partialMessage = event.partial;
-					context.messages[context.messages.length - 1] = partialMessage;
-					stream.push({
-						type: "message_update",
-						assistantMessageEvent: event,
-						message: { ...partialMessage },
-					});
-				}
-				break;
+					context.messages.push(partialMessage);
+					addedPartial = true;
+					stream.push({ type: "message_start", message: { ...partialMessage } });
+					break;
 
-			case "done":
-			case "error": {
-				const finalMessage = await response.result();
-				if (addedPartial) {
-					context.messages[context.messages.length - 1] = finalMessage;
-				} else {
-					context.messages.push(finalMessage);
+				case "text_start":
+				case "text_delta":
+				case "text_end":
+				case "thinking_start":
+				case "thinking_delta":
+				case "thinking_end":
+				case "toolcall_start":
+				case "toolcall_delta":
+				case "toolcall_end":
+				case "server_tool_use":
+				case "web_search_result":
+					if (partialMessage) {
+						partialMessage = event.partial;
+						context.messages[context.messages.length - 1] = partialMessage;
+						stream.push({
+							type: "message_update",
+							assistantMessageEvent: event,
+							message: { ...partialMessage },
+						});
+					}
+					break;
+
+				case "done":
+				case "error": {
+					const finalMessage = await response.result();
+					if (addedPartial) {
+						context.messages[context.messages.length - 1] = finalMessage;
+					} else {
+						context.messages.push(finalMessage);
+					}
+					if (!addedPartial) {
+						stream.push({ type: "message_start", message: { ...finalMessage } });
+					}
+					stream.push({ type: "message_end", message: finalMessage });
+					return finalMessage;
 				}
-				if (!addedPartial) {
-					stream.push({ type: "message_start", message: { ...finalMessage } });
-				}
-				stream.push({ type: "message_end", message: finalMessage });
-				return finalMessage;
 			}
 		}
+	} catch (error) {
+		try {
+			void iterator.return?.();
+		} catch {
+			// Best-effort cleanup only. The timeout path must not wait on an idle iterator.
+		}
+		throw error;
 	}
 
 	return await response.result();
@@ -516,11 +599,15 @@ async function executeToolCalls(
 	signal: AbortSignal | undefined,
 	stream: EventStream<AgentEvent, AgentMessage[]>,
 ): Promise<ToolExecutionResult> {
-	const toolCalls = assistantMessage.content.filter((c) => c.type === "toolCall") as AgentToolCall[];
+	const gatewayRouted = Boolean(process.env.OTTO_GATEWAY_URL?.trim());
+	const toolCalls = assistantMessage.content
+		.filter((c) => c.type === "toolCall")
+		.map((c) => classifyRemoteToolCall(c as AgentToolCall, { gatewayRouted })) as AgentToolCall[];
+	const runnableToolCalls = dedupeRemoteToolCalls(toolCalls);
 	if (config.toolExecution === "sequential") {
-		return executeToolCallsSequential(currentContext, assistantMessage, toolCalls, config, signal, stream);
+		return executeToolCallsSequential(currentContext, assistantMessage, runnableToolCalls, config, signal, stream);
 	}
-	return executeToolCallsParallel(currentContext, assistantMessage, toolCalls, config, signal, stream);
+	return executeToolCallsParallel(currentContext, assistantMessage, runnableToolCalls, config, signal, stream);
 }
 
 async function executeToolCallsSequential(
@@ -549,7 +636,11 @@ async function executeToolCallsSequential(
 			if (preparation.isError) {
 				preparationErrorCount++;
 			}
-			results.push(emitToolCallOutcome(toolCall, preparation.result, preparation.isError, stream));
+			if (preparation.appendToContext === false) {
+				emitToolCallEventOutcome(toolCall, preparation.result, preparation.isError, stream);
+			} else {
+				results.push(emitToolCallOutcome(toolCall, preparation.result, preparation.isError, stream));
+			}
 		} else {
 			const executed = await executePreparedToolCall(preparation, signal, stream);
 			results.push(
@@ -608,7 +699,11 @@ async function executeToolCallsParallel(
 			if (preparation.isError) {
 				preparationErrorCount++;
 			}
-			results.push(emitToolCallOutcome(toolCall, preparation.result, preparation.isError, stream));
+			if (preparation.appendToContext === false) {
+				emitToolCallEventOutcome(toolCall, preparation.result, preparation.isError, stream);
+			} else {
+				results.push(emitToolCallOutcome(toolCall, preparation.result, preparation.isError, stream));
+			}
 		} else {
 			runnableCalls.push(preparation);
 		}
@@ -670,6 +765,7 @@ type ImmediateToolCallOutcome = {
 	kind: "immediate";
 	result: AgentToolResult<any>;
 	isError: boolean;
+	appendToContext?: boolean;
 };
 
 type ExecutedToolCallOutcome = {
@@ -684,11 +780,31 @@ async function prepareToolCall(
 	config: AgentLoopConfig,
 	signal: AbortSignal | undefined,
 ): Promise<PreparedToolCall | ImmediateToolCallOutcome> {
+	if (toolCall.executionDomain === "remote") {
+		return {
+			kind: "immediate",
+			result: {
+				content: [{ type: "text", text: formatRemoteToolResultText(toolCall) }],
+				details: {
+					executionDomain: "remote",
+					reason: "remote_gateway_tool_event",
+					toolName: toolCall.name,
+					argsKeys: Object.keys(toolCall.arguments ?? {}),
+					remote: toolCall.remote ?? {},
+				},
+			},
+			isError: false,
+			appendToContext: false,
+		};
+	}
+
 	const tool = currentContext.tools?.find((t) => t.name === toolCall.name);
 	if (!tool) {
 		return {
 			kind: "immediate",
-			result: createErrorToolResult(`Tool ${toolCall.name} not found`),
+			result: createToolNotFoundResult(toolCall, currentContext, {
+				gatewayRouted: Boolean(process.env.OTTO_GATEWAY_URL?.trim()),
+			}),
 			isError: true,
 		};
 	}
@@ -800,6 +916,29 @@ function createErrorToolResult(message: string): AgentToolResult<any> {
 	};
 }
 
+function createToolNotFoundResult(
+	toolCall: AgentToolCall,
+	currentContext: AgentContext,
+	options?: { gatewayRouted?: boolean },
+): AgentToolResult<any> {
+	const activeTools = (currentContext.tools ?? []).map((tool) => tool.name);
+	const argsKeys = Object.keys(toolCall.arguments ?? {});
+	const gatewayRouted = options?.gatewayRouted === true;
+	const message = gatewayRouted
+		? `Rejected tool call "${toolCall.name}": not in the active OTTO tool list for this gateway-routed request.`
+		: `Tool ${toolCall.name} not found`;
+	return {
+		content: [{ type: "text", text: message }],
+		details: {
+			reason: "tool_not_in_active_list",
+			toolName: toolCall.name,
+			activeTools,
+			argsKeys,
+			gatewayRouted,
+		},
+	};
+}
+
 function emitToolCallOutcome(
 	toolCall: AgentToolCall,
 	result: AgentToolResult<any>,
@@ -826,6 +965,21 @@ function emitToolCallOutcome(
 
 	emitMessagePair(stream, toolResultMessage);
 	return toolResultMessage;
+}
+
+function emitToolCallEventOutcome(
+	toolCall: AgentToolCall,
+	result: AgentToolResult<any>,
+	isError: boolean,
+	stream: EventStream<AgentEvent, AgentMessage[]>,
+): void {
+	stream.push({
+		type: "tool_execution_end",
+		toolCallId: toolCall.id,
+		toolName: toolCall.name,
+		result,
+		isError,
+	});
 }
 
 function skipToolCall(

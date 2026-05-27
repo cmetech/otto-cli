@@ -33,4 +33,9 @@ export type {
 export * from "./utils/overflow.js";
 export * from "./utils/typebox-helpers.js";
 export * from "./utils/repair-tool-json.js";
+export {
+	classifyRemoteToolCall,
+	formatRemoteToolResultText,
+	type RemoteToolClassificationContext,
+} from "./utils/remote-tool.js";
 export * from "./utils/validation.js";

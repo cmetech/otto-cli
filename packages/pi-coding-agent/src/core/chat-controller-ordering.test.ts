@@ -1143,6 +1143,44 @@ test("chat-controller rolls up low-signal direct tool execution events on agent_
 	assert.match(host.chatContainer.children[0].render(120).join("\n"), /Setup \/ shell 3 actions/);
 });
 
+test("chat-controller keeps display-only remote tool events emitted after assistant answer", async () => {
+	installTheme();
+
+	const host = createHost();
+	host.getMarkdownThemeWithSettings = () => ({});
+
+	await handleAgentEvent(host, { type: "message_start", message: makeAssistant([]) } as any);
+	await handleAgentEvent(host, {
+		type: "message_end",
+		message: makeAssistant([{ type: "text", text: "The first line is: # Project" }]),
+	} as any);
+	await handleAgentEvent(host, {
+		type: "tool_execution_start",
+		toolCallId: "tooluse_remote",
+		toolName: "read",
+		args: {
+			operations: [{ mode: "Line", path: "/repo/CLAUDE.md" }],
+			__tool_use_purpose: "Reading CLAUDE.md to find the first line",
+		},
+	} as any);
+	await handleAgentEvent(host, {
+		type: "tool_execution_end",
+		toolCallId: "tooluse_remote",
+		toolName: "read",
+		isError: false,
+		result: {
+			content: [{ type: "text", text: "Remote tool reported by kiro-acp: read (tooluse_remote)" }],
+			details: { executionDomain: "remote", remote: { source: "kiro-acp" } },
+		},
+	} as any);
+	await handleAgentEvent(host, { type: "agent_end", messages: [] } as any);
+
+	assert.equal(host.chatContainer.children.length, 2);
+	assert.equal(host.chatContainer.children[0]?.constructor?.name, "AssistantMessageComponent");
+	assert.equal(host.chatContainer.children[1]?.constructor?.name, "ToolExecutionComponent");
+	assert.match(host.chatContainer.children[1].render(120).join("\n"), /Remote tool reported by kiro-acp/);
+});
+
 // Regression test for issue #4144: interleaved text/tool content must render in content[] index order.
 // Stream: [text "A", toolCall T1, text "B", toolCall T2, text "C"]
 // Expected chatContainer order: textRun(A), toolExec(T1), textRun(B), toolExec(T2), textRun(C)

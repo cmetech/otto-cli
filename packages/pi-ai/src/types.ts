@@ -165,6 +165,15 @@ export interface ToolCall {
 	name: string;
 	arguments: Record<string, any>;
 	thoughtSignature?: string; // Google-specific: opaque signature for reusing thought context
+	executionDomain?: "local" | "remote";
+	remote?: {
+		source: "kiro-acp";
+		kind?: string;
+		title?: string;
+		locations?: Array<{ path?: string; line?: number; column?: number }>;
+		rawInput?: Record<string, unknown>;
+		purpose?: string;
+	};
 }
 
 /** Server-side tool use (e.g., Anthropic native web search). Executed by the API, not the client. */

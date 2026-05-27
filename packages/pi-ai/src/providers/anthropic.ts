@@ -71,6 +71,12 @@ function hasBearerAuthorizationHeader(model: Model<"anthropic-messages">): boole
 	return typeof authHeader === "string" && authHeader.trim().toLowerCase().startsWith("bearer ");
 }
 
+function normalizeGatewayUrl(url: string): string {
+	let normalized = url.trim().replace(/\/+$/, "");
+	if (normalized.endsWith("/v1")) normalized = normalized.slice(0, -3);
+	return normalized.replace(/\/+$/, "");
+}
+
 export function buildAnthropicClientOptions(
 	model: Model<"anthropic-messages">,
 	apiKey: string,
@@ -87,7 +93,8 @@ export function buildAnthropicClientOptions(
 	// The gateway handles upstream Anthropic auth, so we send no x-api-key.
 	// Per Phase 1 design — env-var only, no persistent config yet.
 	const ottoGatewayUrl = process.env.OTTO_GATEWAY_URL?.trim();
-	if (ottoGatewayUrl) {
+	const directFallbackActive = process.env.OTTO_GATEWAY_FORCE_DIRECT?.trim() === "1";
+	if (ottoGatewayUrl && !(directFallbackActive && apiKey.trim())) {
 		const ottoGatewayToken = process.env.OTTO_GATEWAY_TOKEN?.trim();
 		const betaFeatures: string[] = [];
 		if (needsInterleavedBeta) {
@@ -95,8 +102,8 @@ export function buildAnthropicClientOptions(
 		}
 		return {
 			apiKey: null,
-			authToken: ottoGatewayToken ?? apiKey,
-			baseURL: ottoGatewayUrl,
+			authToken: ottoGatewayToken || apiKey || "otto-gateway",
+			baseURL: normalizeGatewayUrl(ottoGatewayUrl),
 			dangerouslyAllowBrowser: true,
 			defaultHeaders: mergeHeaders(
 				{
@@ -232,7 +239,9 @@ export const streamSimpleAnthropic: StreamFunction<"anthropic-messages", SimpleS
 	context: Context,
 	options?: SimpleStreamOptions,
 ): AssistantMessageEventStream => {
-	const apiKey = options?.apiKey || getEnvApiKey(model.provider);
+	const gatewayUrl = process.env.OTTO_GATEWAY_URL?.trim();
+	const directFallbackActive = process.env.OTTO_GATEWAY_FORCE_DIRECT?.trim() === "1";
+	const apiKey = options?.apiKey || getEnvApiKey(model.provider) || (gatewayUrl && !directFallbackActive ? "otto-gateway" : undefined);
 	if (!apiKey) {
 		throw new Error(`No API key for provider: ${model.provider}`);
 	}

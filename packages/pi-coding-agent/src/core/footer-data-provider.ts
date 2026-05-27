@@ -1,5 +1,6 @@
 import { existsSync, type FSWatcher, readFileSync, statSync, watch } from "fs";
 import { dirname, join, resolve } from "path";
+import type { GatewayStatus } from "./gateway-health.js";
 
 /**
  * Find the git HEAD path by walking up from cwd.
@@ -43,6 +44,7 @@ export class FooterDataProvider {
 	private gitWatcher: FSWatcher | null = null;
 	private branchChangeCallbacks = new Set<() => void>();
 	private availableProviderCount = 0;
+	private gatewayStatus: GatewayStatus | null = null;
 
 	constructor() {
 		this.setupGitWatcher();
@@ -96,9 +98,17 @@ export class FooterDataProvider {
 		return this.availableProviderCount;
 	}
 
+	getGatewayStatus(): GatewayStatus | null {
+		return this.gatewayStatus;
+	}
+
 	/** Internal: update available provider count */
 	setAvailableProviderCount(count: number): void {
 		this.availableProviderCount = count;
+	}
+
+	setGatewayStatus(status: GatewayStatus | null): void {
+		this.gatewayStatus = status;
 	}
 
 	/** Internal: cleanup */
@@ -140,5 +150,5 @@ export class FooterDataProvider {
 /** Read-only view for extensions - excludes setExtensionStatus, setAvailableProviderCount and dispose */
 export type ReadonlyFooterDataProvider = Pick<
 	FooterDataProvider,
-	"getGitBranch" | "getExtensionStatuses" | "getAvailableProviderCount" | "onBranchChange"
+	"getGitBranch" | "getExtensionStatuses" | "getAvailableProviderCount" | "getGatewayStatus" | "onBranchChange"
 >;

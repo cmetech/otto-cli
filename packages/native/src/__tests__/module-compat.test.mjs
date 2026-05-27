@@ -120,4 +120,32 @@ describe("@otto/native module compatibility (#2861)", () => {
       );
     },
   );
+
+  test("local release addon is attempted before local dev addon", () => {
+    // A stale debug addon can terminate Node during require() before JS can
+    // catch/report the failure. The platform-specific release addon must win
+    // when both files exist.
+    const loaderSourcePath = path.resolve(__dirname, "..", "native.ts");
+    const source = readFileSync(loaderSourcePath, "utf8");
+
+    const releaseCandidate = "otto_engine.${platformTag}.node";
+    const devCandidate = "otto_engine.dev.node";
+    const releaseIndex = source.indexOf(releaseCandidate);
+    const devIndex = source.indexOf(devCandidate);
+
+    assert.notEqual(
+      releaseIndex,
+      -1,
+      "native loader must define a platform-specific release addon candidate",
+    );
+    assert.notEqual(
+      devIndex,
+      -1,
+      "native loader must define a dev addon fallback candidate",
+    );
+    assert.ok(
+      releaseIndex < devIndex,
+      "native loader must try otto_engine.${platformTag}.node before otto_engine.dev.node",
+    );
+  });
 });

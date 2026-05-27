@@ -69,6 +69,20 @@ export interface BuildSystemPromptOptions {
 	includeDateTime?: boolean;
 }
 
+function gatewayToolBoundarySection(selectedTools: string[] | undefined): string {
+	if (!process.env.OTTO_GATEWAY_URL?.trim()) return "";
+
+	const toolNames = selectedTools && selectedTools.length > 0 ? selectedTools.join(", ") : "(none)";
+	return [
+		"",
+		"Gateway tool boundary:",
+		`- This request is routed through the OTTO gateway. Use only the OTTO tool names and schemas supplied for this request: ${toolNames}.`,
+		"- Do not call Kiro/ACP/internal gateway tools unless that exact tool name is also supplied by OTTO in the current tool list.",
+		"- Do not use Kiro internal argument shapes such as `operations`, `rawInput`, or `__tool_use_purpose` for OTTO local tools; follow the supplied OTTO JSON schema exactly.",
+		"- If a needed capability is not in the supplied tool list, answer with the limitation or use an available OTTO tool that directly fits the request.",
+	].join("\n");
+}
+
 /** Build the system prompt with tools, guidelines, and context */
 export function buildSystemPrompt(options: BuildSystemPromptOptions = {}): string {
 	const {
@@ -101,6 +115,7 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions = {}): strin
 		: "";
 
 	const appendSection = appendSystemPrompt ? `\n\n${appendSystemPrompt}` : "";
+	const gatewaySection = gatewayToolBoundarySection(selectedTools);
 
 	const contextFiles = providedContextFiles ?? [];
 	const skillsBase = providedSkills ?? [];
@@ -153,6 +168,10 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions = {}): strin
 			for (const guideline of promptGuidelines) {
 				prompt += guideline + "\n";
 			}
+		}
+
+		if (gatewaySection) {
+			prompt += `\n${gatewaySection}`;
 		}
 
 		return prompt;
@@ -242,6 +261,11 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions = {}): strin
 		const normalized = guideline.trim();
 		if (normalized.length > 0) {
 			addGuideline(normalized);
+		}
+	}
+	if (gatewaySection) {
+		for (const guideline of gatewaySection.split("\n").filter((line) => line.startsWith("- "))) {
+			addGuideline(guideline.slice(2));
 		}
 	}
 

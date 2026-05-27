@@ -5,7 +5,8 @@ import { type Component, truncateToWidth, visibleWidth } from "@otto/pi-tui";
 import { BRAND_NAME } from "../../../config.js";
 import type { AgentSession } from "../../../core/agent-session.js";
 import type { ReadonlyFooterDataProvider } from "../../../core/footer-data-provider.js";
-import { theme } from "../theme/theme.js";
+import { formatGatewayFooterStatus } from "../../../core/gateway-health.js";
+import { theme, type ThemeColor } from "../theme/theme.js";
 import { providerAuthBadge, providerDisplayName } from "./model-selector.js";
 import { renderFooterStrip } from "./transcript-design.js";
 
@@ -19,6 +20,46 @@ function sanitizeStatusText(text: string): string {
 		.replace(/[\r\n\t]/g, " ")
 		.replace(/ +/g, " ")
 		.trim();
+}
+
+export function shouldUseFooterEmoji(
+	platform: NodeJS.Platform = process.platform,
+	env: NodeJS.ProcessEnv = process.env,
+): boolean {
+	const override = env.OTTO_TUI_EMOJI?.trim().toLowerCase();
+	if (override === "1" || override === "true" || override === "yes" || override === "on") return true;
+	if (override === "0" || override === "false" || override === "no" || override === "off") return false;
+
+	// PowerShell, cmd.exe, Git Bash for Windows, and WSL are common OTTO user
+	// environments. Emoji support varies by host/font, so default to stable
+	// text there and let users opt in with OTTO_TUI_EMOJI=1.
+	if (platform === "win32") return false;
+	if (env.WSL_DISTRO_NAME || env.WSL_INTEROP) return false;
+	return true;
+}
+
+function thinkingStatusText(level: string, useEmoji: boolean): string {
+	return useEmoji ? `🧠 ${level}` : `think ${level}`;
+}
+
+function compactExtensionStatusText(text: string, useEmoji: boolean): string {
+	const sanitized = sanitizeStatusText(text);
+	if (sanitized === "LangFlow offline") return "LF offline";
+	if (sanitized.startsWith("LangFlow ok")) return sanitized.replace(/^LangFlow/, "LF");
+	if (!useEmoji && sanitized.startsWith("🔔 ")) return sanitized.replace(/^🔔\s*/, "");
+	return sanitized;
+}
+
+function extensionStatusColor(compactedText: string): ThemeColor | null {
+	if (compactedText.startsWith("LF ok")) return "success";
+	if (compactedText === "LF offline") return "warning";
+	return null;
+}
+
+function formatExtensionStatusText(text: string, useEmoji: boolean): string {
+	const compacted = compactExtensionStatusText(text, useEmoji);
+	const color = extensionStatusColor(compacted);
+	return color ? theme.fg(color, compacted) : compacted;
 }
 
 function truncateFooterPath(text: string, width: number): string {
@@ -129,6 +170,7 @@ export class FooterComponent implements Component {
 
 		// Build stats line as separate groups joined by a dim middle-dot separator
 		const sep = ` ${theme.fg("dim", "\u00B7")} `;
+		const useFooterEmoji = shouldUseFooterEmoji();
 
 		// Group 1: total tokens.
 		const tokenGroup: string[] = [];
@@ -211,8 +253,7 @@ export class FooterComponent implements Component {
 		let rightSideWithoutProvider = modelName;
 		if (displayModel?.reasoning) {
 			const thinkingLevel = state.thinkingLevel || "off";
-			rightSideWithoutProvider =
-				thinkingLevel === "off" ? `${modelName} • thinking off` : `${modelName} • ${thinkingLevel}`;
+			rightSideWithoutProvider = `${modelName}${sep}${thinkingStatusText(thinkingLevel, useFooterEmoji)}`;
 		}
 
 		// Prepend the provider in parentheses if there are multiple providers and there's enough room.
@@ -239,15 +280,19 @@ export class FooterComponent implements Component {
 		// fits alongside pwd. Falls back to pwd-only if the combined line would
 		// exceed width.
 		const extensionStatuses = this.footerData.getExtensionStatuses();
+		const gatewayStatus = formatGatewayFooterStatus(this.footerData.getGatewayStatus(), {
+			routed: displayModel?.provider === "anthropic" && displayModel?.api === "anthropic-messages",
+		});
 		const extStatusText =
 			extensionStatuses.size > 0
 				? Array.from(extensionStatuses.entries())
 						.sort(([a], [b]) => a.localeCompare(b))
-						.map(([, text]) => sanitizeStatusText(text))
-						.join(" ")
+						.map(([, text]) => formatExtensionStatusText(text, useFooterEmoji))
+						.join(sep)
 				: "";
 
-		const footerRight = [rightSide, extStatusText].filter(Boolean).join(" ");
+		const gatewayText = gatewayStatus ? theme.fg(gatewayStatus.color, gatewayStatus.label) : "";
+		const footerRight = [gatewayText, rightSide, extStatusText].filter(Boolean).join(sep);
 		const brandSegment = theme.fg("accent", `● ${BRAND_NAME}`);
 		const dimStatsLeft = theme.fg("dim", statsLeft);
 		const innerWidth = Math.max(1, width - 2);

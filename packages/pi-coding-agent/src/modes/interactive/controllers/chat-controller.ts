@@ -930,6 +930,9 @@ export async function handleAgentEvent(host: InteractiveModeStateHost & {
 			const component = host.pendingTools.get(event.toolCallId);
 			if (component) {
 				component.updateResult({ ...event.result, isError: event.isError });
+				if ((event.result as any)?.details?.executionDomain === "remote") {
+					component.setExpanded(true);
+				}
 				replaceCompactToolRowsWithPhaseSummary(host);
 				host.ui.requestRender();
 			}

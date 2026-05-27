@@ -595,6 +595,13 @@ export class ModelRegistry {
 	 */
 	isProviderRequestReady(provider: string): boolean {
 		if (this.disabledModelProviders.has(provider.trim().toLowerCase())) return false;
+		if (
+			provider === "anthropic" &&
+			process.env.OTTO_GATEWAY_URL?.trim() &&
+			process.env.OTTO_GATEWAY_DISABLED?.trim() !== "1"
+		) {
+			return true;
+		}
 		const config = this.registeredProviders.get(provider);
 		if (config?.isReady) return config.isReady();
 		const authMode = this.getProviderAuthMode(provider);
@@ -617,6 +624,8 @@ export class ModelRegistry {
 	async getApiKey(model: Model<Api>, sessionId?: string): Promise<string | undefined> {
 		const authMode = this.getProviderAuthMode(model.provider);
 		if (authMode === "externalCli" || authMode === "none") return undefined;
+		const gatewayKey = this.getGatewayApiKeyForProvider(model.provider);
+		if (gatewayKey) return gatewayKey;
 		return this.authStorage.getApiKey(model.provider, sessionId, { baseUrl: model.baseUrl });
 	}
 
@@ -628,7 +637,16 @@ export class ModelRegistry {
 	async getApiKeyForProvider(provider: string, sessionId?: string): Promise<string | undefined> {
 		const authMode = this.getProviderAuthMode(provider);
 		if (authMode === "externalCli" || authMode === "none") return undefined;
+		const gatewayKey = this.getGatewayApiKeyForProvider(provider);
+		if (gatewayKey) return gatewayKey;
 		return this.authStorage.getApiKey(provider, sessionId);
+	}
+
+	private getGatewayApiKeyForProvider(provider: string): string | undefined {
+		if (provider !== "anthropic") return undefined;
+		if (!process.env.OTTO_GATEWAY_URL?.trim()) return undefined;
+		if (process.env.OTTO_GATEWAY_DISABLED?.trim() === "1") return undefined;
+		return process.env.OTTO_GATEWAY_TOKEN?.trim() || "otto-gateway";
 	}
 
 	/**

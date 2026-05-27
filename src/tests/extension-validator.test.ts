@@ -11,26 +11,32 @@ import {
 } from '../extension-validator.ts'
 
 describe('checkInstallDiscriminator', () => {
-  test('returns null for valid gsd.extension === true', () => {
-    const result = checkInstallDiscriminator({ gsd: { extension: true }, pi: { extensions: ['./index.ts'] } })
+  test('returns null for valid otto.extension === true', () => {
+    const result = checkInstallDiscriminator({ otto: { extension: true }, ottoPackage: { extensions: ['./index.ts'] } })
     assert.equal(result, null)
   })
 
-  test('returns error when gsd section is missing', () => {
+  test('rejects legacy gsd.extension marker', () => {
+    const result = checkInstallDiscriminator({ gsd: { extension: true }, pi: { extensions: ['./index.ts'] } })
+    assert.ok(result !== null)
+    assert.equal(result.code, 'MISSING_WORKFLOW_MARKER')
+  })
+
+  test('returns error when extension marker is missing', () => {
     const result = checkInstallDiscriminator({ pi: { extensions: ['./index.ts'] } })
     assert.ok(result !== null)
     assert.equal(result.code, 'MISSING_WORKFLOW_MARKER')
-    assert.equal(result.field, 'gsd.extension')
+    assert.equal(result.field, 'otto.extension')
   })
 
-  test('returns error when gsd.extension is number 1 (not boolean true)', () => {
-    const result = checkInstallDiscriminator({ gsd: { extension: 1 } })
+  test('returns error when otto.extension is number 1 (not boolean true)', () => {
+    const result = checkInstallDiscriminator({ otto: { extension: 1 } })
     assert.ok(result !== null)
     assert.equal(result.code, 'MISSING_WORKFLOW_MARKER', 'strict === true check must reject numeric 1')
   })
 
-  test("returns error when gsd.extension is string 'true'", () => {
-    const result = checkInstallDiscriminator({ gsd: { extension: 'true' } })
+  test("returns error when otto.extension is string 'true'", () => {
+    const result = checkInstallDiscriminator({ otto: { extension: 'true' } })
     assert.ok(result !== null)
     assert.equal(result.code, 'MISSING_WORKFLOW_MARKER', "strict === true check must reject string 'true'")
   })
@@ -41,21 +47,21 @@ describe('checkInstallDiscriminator', () => {
     assert.equal(result.code, 'MISSING_WORKFLOW_MARKER')
   })
 
-  test('returns error when gsd.extension is undefined', () => {
-    const result = checkInstallDiscriminator({ gsd: {} })
+  test('returns error when otto.extension is undefined', () => {
+    const result = checkInstallDiscriminator({ otto: {} })
     assert.ok(result !== null)
     assert.equal(result.code, 'MISSING_WORKFLOW_MARKER')
-    assert.equal(result.field, 'gsd.extension')
+    assert.equal(result.field, 'otto.extension')
   })
 
-  test('returns error when gsd is an array (not object)', () => {
-    const result = checkInstallDiscriminator({ gsd: ['extension'] })
+  test('returns error when otto is an array (not object)', () => {
+    const result = checkInstallDiscriminator({ otto: ['extension'] })
     assert.ok(result !== null)
     assert.equal(result.code, 'MISSING_WORKFLOW_MARKER')
   })
 
   test('returns error when input is a string (not object)', () => {
-    const result = checkInstallDiscriminator('{"gsd":{"extension":true}}')
+    const result = checkInstallDiscriminator('{"otto":{"extension":true}}')
     assert.ok(result !== null)
     assert.equal(result.code, 'MISSING_WORKFLOW_MARKER')
   })
@@ -150,7 +156,7 @@ describe('checkDependencyPlacement', () => {
 describe('validateExtensionPackage', () => {
   test('returns valid for conforming package', () => {
     const result = validateExtensionPackage(
-      { gsd: { extension: true }, peerDependencies: { '@otto/pi-coding-agent': '>=2.50.0' } },
+      { otto: { extension: true }, peerDependencies: { '@otto/pi-coding-agent': '>=2.50.0' } },
       { extensionId: 'acme.browser' }
     )
     assert.equal(result.valid, true)
@@ -173,19 +179,19 @@ describe('validateExtensionPackage', () => {
   })
 
   test('valid is always errors.length === 0', () => {
-    const validPkg = { gsd: { extension: true } }
+    const validPkg = { otto: { extension: true } }
     const validResult = validateExtensionPackage(validPkg, { extensionId: 'acme.tool' })
     assert.equal(validResult.valid, true)
     assert.equal(validResult.errors.length, 0)
 
-    const invalidPkg = { gsd: { extension: 1 } }
+    const invalidPkg = { otto: { extension: 1 } }
     const invalidResult = validateExtensionPackage(invalidPkg, { extensionId: 'acme.tool' })
     assert.equal(invalidResult.valid, false)
     assert.ok(invalidResult.errors.length > 0)
   })
 
   test('adds warning when extensionId is not provided', () => {
-    const result = validateExtensionPackage({ gsd: { extension: true } }, {})
+    const result = validateExtensionPackage({ otto: { extension: true } }, {})
     assert.equal(result.valid, true)
     assert.equal(result.warnings.length, 1)
     assert.equal(result.warnings[0].code, 'NAMESPACE_CHECK_SKIPPED')

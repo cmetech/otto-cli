@@ -1,9 +1,10 @@
 {
-  "name": "pi-extension-google-search",
+  "name": "@cmetech/otto-extension-google-search-stub",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "pi": {
+  "otto": {
+    "extension": true,
     "extensions": ["./index.ts"]
   }
 }

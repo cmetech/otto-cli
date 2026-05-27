@@ -1,0 +1,25 @@
+{
+  "name": "@example/otto-mixed-package",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "otto": {
+    "extension": true,
+    "extensions": [
+      "./extensions"
+    ],
+    "skills": [
+      "./skills"
+    ],
+    "prompts": [
+      "./prompts"
+    ],
+    "themes": [
+      "./themes"
+    ]
+  },
+  "peerDependencies": {
+    "@otto/pi-coding-agent": "*"
+  }
+}
+

@@ -1,0 +1,12 @@
+{
+  "name": "@example/otto-skill-only",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "otto": {
+    "skills": [
+      "./skills"
+    ]
+  }
+}
+

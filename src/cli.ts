@@ -13,7 +13,7 @@ import { loadStoredEnvKeys } from './wizard.js'
 import { migratePiCredentials } from './pi-migration.js'
 import { shouldRunOnboarding, runOnboarding } from './onboarding.js'
 import { runOttoWizard, shouldRunOTTOWizard, selectConfigSection } from './otto-wizard.js'
-import { applyConfigToEnv, configPath } from './otto-config.js'
+import { applyConfigToEnv, configPath, detectLocalGateway } from './otto-config.js'
 import { COMMAND_NAMESPACE, CONFIG_DIR_NAME } from './brand.js'
 import chalk from 'chalk'
 import { checkForUpdates } from './update-check.js'
@@ -338,6 +338,7 @@ const subcommandsExemptFromEarlyTtyCheck = new Set([
   'headless',
   'install',
   'list',
+  'package',
   'remove',
   'sessions',
   'update',
@@ -365,7 +366,7 @@ const packageCommandNames: ReadonlySet<PackageCommand> = new Set(['install', 're
 if (packageCommandNames.has(cliFlags.messages[0] as PackageCommand)) {
   const { runPackageCommand } = await loadPiCodingAgentModule()
   const packageCommand = await runPackageCommand({
-    appName: 'gsd',
+    appName: 'otto',
     args: process.argv.slice(2),
     cwd: process.cwd(),
     agentDir,
@@ -376,6 +377,24 @@ if (packageCommandNames.has(cliFlags.messages[0] as PackageCommand)) {
   if (packageCommand.handled) {
     process.exit(packageCommand.exitCode)
   }
+}
+
+if (cliFlags.messages[0] === 'package') {
+  const { runPackageCommand } = await loadPiCodingAgentModule()
+  const packageCommand = await runPackageCommand({
+    appName: 'otto package',
+    args: process.argv.slice(3),
+    cwd: process.cwd(),
+    agentDir,
+    stdout: process.stdout,
+    stderr: process.stderr,
+    allowedCommands: new Set(['install', 'remove', 'list', 'update']),
+  })
+  if (packageCommand.handled) {
+    process.exit(packageCommand.exitCode)
+  }
+  process.stderr.write('[otto] Usage: otto package <install|remove|list|update> [source]\n')
+  process.exit(1)
 }
 
 // `otto config [gateway|langflow|llm|all]` — interactive menu if no second arg,
@@ -619,6 +638,10 @@ if (shouldRunOTTOWizard({ isPrint: isPrintMode, isTTY: !!process.stdin.isTTY }))
   // Config file missing AND no env override — headless / piped stdin / CI.
   // Emit a single warn line so the user knows the wizard is available.
   process.stderr.write(MISSING_CONFIG_WARN)
+}
+
+if (!process.env.OTTO_GATEWAY_URL?.trim() && !process.env.OTTO_GATEWAY_DISABLED?.trim()) {
+  await detectLocalGateway({ timeoutMs: 350 })
 }
 
 // Run onboarding wizard on first launch (no LLM provider configured)

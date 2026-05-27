@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Writable } from "node:stream";
 import { describe, it } from "node:test";
-import { runPackageCommand } from "./package-commands.js";
+import { parsePackageCommand, runPackageCommand } from "./package-commands.js";
 
 function createCaptureStream() {
 	let output = "";
@@ -38,6 +38,30 @@ function createTestDirs(prefix: string, t: { after: (fn: () => void) => void }) 
 }
 
 describe("runPackageCommand lifecycle hooks", () => {
+	it("does not parse uninstall as a package command", () => {
+		assert.equal(parsePackageCommand(["uninstall", "npm:@acme/otto-demo"]), undefined);
+	});
+
+	it("uses OTTO config paths in package command help", async (t) => {
+		const { cwd, agentDir } = createTestDirs("help", t);
+		const stdout = createCaptureStream();
+		const stderr = createCaptureStream();
+
+		const result = await runPackageCommand({
+			appName: "otto",
+			args: ["install", "--help"],
+			cwd,
+			agentDir,
+			stdout: stdout.stream,
+			stderr: stderr.stream,
+		});
+
+		assert.equal(result.handled, true);
+		assert.equal(result.exitCode, 0);
+		assert.ok(stdout.getOutput().includes(".otto/settings.json"));
+		assert.equal(stdout.getOutput().includes(".pi/settings.json"), false);
+	});
+
 	it("executes registered beforeInstall and afterInstall handlers for local packages", async (t) => {
 		const { cwd, agentDir, extensionDir } = createTestDirs("install", t);
 
@@ -45,7 +69,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 			"package.json": JSON.stringify({
 				name: "ext-registered",
 				type: "module",
-				pi: { extensions: ["./index.js"] },
+				otto: { extensions: ["./index.js"] },
 			}),
 			"index.js": [
 				'import { writeFileSync } from "node:fs";',
@@ -64,7 +88,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 		const stdout = createCaptureStream();
 		const stderr = createCaptureStream();
 		const result = await runPackageCommand({
-			appName: "pi",
+			appName: "otto",
 			args: ["install", extensionDir],
 			cwd,
 			agentDir,
@@ -86,7 +110,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 			"package.json": JSON.stringify({
 				name: "ext-legacy",
 				type: "module",
-				pi: { extensions: ["./index.js"] },
+				otto: { extensions: ["./index.js"] },
 			}),
 			"index.js": [
 				'import { writeFileSync } from "node:fs";',
@@ -110,7 +134,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 		const stdout = createCaptureStream();
 		const stderr = createCaptureStream();
 		const installResult = await runPackageCommand({
-			appName: "pi",
+			appName: "otto",
 			args: ["install", extensionDir],
 			cwd,
 			agentDir,
@@ -124,7 +148,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 		assert.equal(readFileSync(join(extensionDir, "legacy-after-install.txt"), "utf-8"), "ok");
 
 		const removeResult = await runPackageCommand({
-			appName: "pi",
+			appName: "otto",
 			args: ["remove", extensionDir],
 			cwd,
 			agentDir,
@@ -145,7 +169,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 			"package.json": JSON.stringify({
 				name: "ext-empty",
 				type: "module",
-				pi: { extensions: ["./index.js"] },
+				otto: { extensions: ["./index.js"] },
 			}),
 			"index.js": "export default function () {}",
 		});
@@ -153,7 +177,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 		const stdout = createCaptureStream();
 		const stderr = createCaptureStream();
 		const installResult = await runPackageCommand({
-			appName: "pi",
+			appName: "otto",
 			args: ["install", extensionDir],
 			cwd,
 			agentDir,
@@ -164,7 +188,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 		assert.equal(installResult.exitCode, 0);
 
 		const removeResult = await runPackageCommand({
-			appName: "pi",
+			appName: "otto",
 			args: ["remove", extensionDir],
 			cwd,
 			agentDir,
@@ -183,7 +207,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 			"package.json": JSON.stringify({
 				name: "ext-runtime-deps",
 				type: "module",
-				pi: { extensions: ["./index.js"] },
+				otto: { extensions: ["./index.js"] },
 			}),
 			"index.js": "export default function () {}",
 			"extension-manifest.json": JSON.stringify({
@@ -197,7 +221,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 		const stdout = createCaptureStream();
 		const stderr = createCaptureStream();
 		const result = await runPackageCommand({
-			appName: "pi",
+			appName: "otto",
 			args: ["install", extensionDir],
 			cwd,
 			agentDir,
@@ -217,7 +241,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 			"package.json": JSON.stringify({
 				name: "ext-after-remove",
 				type: "module",
-				pi: { extensions: ["./index.js"] },
+				otto: { extensions: ["./index.js"] },
 			}),
 			"index.js": [
 				'import { writeFileSync, existsSync } from "node:fs";',
@@ -237,7 +261,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 		const stderr = createCaptureStream();
 
 		await runPackageCommand({
-			appName: "pi",
+			appName: "otto",
 			args: ["install", extensionDir],
 			cwd,
 			agentDir,
@@ -246,7 +270,7 @@ describe("runPackageCommand lifecycle hooks", () => {
 		});
 
 		await runPackageCommand({
-			appName: "pi",
+			appName: "otto",
 			args: ["remove", extensionDir],
 			cwd,
 			agentDir,

@@ -37,12 +37,12 @@ function createFixture(): string {
     version: "1.0.0",
     packages: {
       "": { name: "@cmetech/otto", version: "1.0.0" },
-      "extensions/google-search": { name: "@gsd-extensions/google-search", version: "1.0.0" },
+      "extensions/google-search": { name: "@example/otto-google-search", version: "1.0.0" },
       "packages/pi-coding-agent": { name: "@otto/pi-coding-agent", version: "1.0.0" },
     },
   });
   writeJson(root, "extensions/google-search/package.json", {
-    name: "@gsd-extensions/google-search",
+    name: "@example/otto-google-search",
     version: "1.0.0",
     peerDependencies: {
       "@otto/pi-coding-agent": "*",

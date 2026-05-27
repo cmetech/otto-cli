@@ -46,7 +46,7 @@ test('renders OTTO block logo', () => {
 test('renders version and title', () => {
   const out = strip(capture({ version: '2.38.0' }))
   assert.ok(out.includes('v2.38.0'), 'version missing')
-  assert.ok(out.includes('Project Console'), 'command-center title missing')
+  assert.ok(out.includes('Orchestrating Tools, Tasks and Outcomes'), 'expanded OTTO title missing')
 })
 
 test('renders OTTO project state or fallback hint', (t) => {
@@ -106,9 +106,9 @@ test('omits remote channel when not provided', () => {
 
 test('Project row truncates with ellipsis when milestone text overflows panel width', (t) => {
   const tmp = mkdtempSync(join(tmpdir(), 'otto-welcome-test-'))
-  mkdirSync(join(tmp, CONFIG_DIR_NAME))
+  mkdirSync(join(tmp, CONFIG_DIR_NAME, 'workflow'), { recursive: true })
   writeFileSync(
-    join(tmp, CONFIG_DIR_NAME, 'STATE.md'),
+    join(tmp, CONFIG_DIR_NAME, 'workflow', 'STATE.md'),
     [
       '**Active Milestone:** M001: Todo App – Core add/complete/delete with localStorage persistence and offline sync support',
       '**Phase:** evaluating-gates',
@@ -136,8 +136,8 @@ test('Project row truncates with ellipsis when milestone text overflows panel wi
 
 test('Project row does not truncate short milestone text', (t) => {
   const tmp = mkdtempSync(join(tmpdir(), 'otto-welcome-test-'))
-  mkdirSync(join(tmp, CONFIG_DIR_NAME))
-  writeFileSync(join(tmp, CONFIG_DIR_NAME, 'STATE.md'), '**Active Milestone:** M001: Short title\n')
+  mkdirSync(join(tmp, CONFIG_DIR_NAME, 'workflow'), { recursive: true })
+  writeFileSync(join(tmp, CONFIG_DIR_NAME, 'workflow', 'STATE.md'), '**Active Milestone:** M001: Short title\n')
   const origCwd = process.cwd()
   process.chdir(tmp)
   const origColumns = (process.stderr as any).columns
@@ -154,6 +154,78 @@ test('Project row does not truncate short milestone text', (t) => {
   assert.ok(projectLine, 'Project row should be present')
   assert.ok(projectLine!.includes('M001: Short title'), 'short title should appear in full')
   assert.ok(!projectLine!.includes('…'), 'short title should not be truncated')
+})
+
+test('detects active project state from .otto/workflow/STATE.md', (t) => {
+  const tmp = mkdtempSync(join(tmpdir(), 'otto-welcome-workflow-state-'))
+  mkdirSync(join(tmp, CONFIG_DIR_NAME, 'workflow'), { recursive: true })
+  writeFileSync(
+    join(tmp, CONFIG_DIR_NAME, 'workflow', 'STATE.md'),
+    [
+      '**Active Milestone:** M002: Gateway routing',
+      '**Phase:** execute',
+      '**Active Slice:** S03: footer status',
+      '**Next Action:** /otto next',
+    ].join('\n'),
+  )
+  const origCwd = process.cwd()
+  process.chdir(tmp)
+
+  t.after(() => {
+    process.chdir(origCwd)
+    rmSync(tmp, { recursive: true, force: true })
+  })
+
+  const out = strip(capture({ version: '1.0.0' }))
+  assert.ok(out.includes('M002: Gateway routing'), 'active milestone should come from .otto/workflow/STATE.md')
+  assert.ok(out.includes('Status active'), 'active workflow state should set status active')
+})
+
+test('counts MCP servers from project workflow and global config locations', (t) => {
+  const tmp = mkdtempSync(join(tmpdir(), 'otto-welcome-mcp-'))
+  const home = join(tmp, 'home')
+  const project = join(tmp, 'project')
+  mkdirSync(join(project, CONFIG_DIR_NAME, 'workflow'), { recursive: true })
+  mkdirSync(home, { recursive: true })
+  writeFileSync(
+    join(project, CONFIG_DIR_NAME, 'workflow', 'mcp.json'),
+    JSON.stringify({ mcpServers: { local: { command: 'node' } } }),
+  )
+  writeFileSync(
+    join(home, 'mcp.json'),
+    JSON.stringify({ servers: { global: { command: 'node' }, local: { command: 'node' } } }),
+  )
+
+  const origCwd = process.cwd()
+  const origHome = process.env.OTTO_HOME
+  const savedKeys = {
+    BRAVE_API_KEY: process.env.BRAVE_API_KEY,
+    BRAVE_ANSWERS_KEY: process.env.BRAVE_ANSWERS_KEY,
+    JINA_API_KEY: process.env.JINA_API_KEY,
+    TAVILY_API_KEY: process.env.TAVILY_API_KEY,
+    CONTEXT7_API_KEY: process.env.CONTEXT7_API_KEY,
+  }
+  process.chdir(project)
+  process.env.OTTO_HOME = home
+  delete process.env.BRAVE_API_KEY
+  delete process.env.BRAVE_ANSWERS_KEY
+  delete process.env.JINA_API_KEY
+  delete process.env.TAVILY_API_KEY
+  delete process.env.CONTEXT7_API_KEY
+
+  t.after(() => {
+    process.chdir(origCwd)
+    if (origHome === undefined) delete process.env.OTTO_HOME
+    else process.env.OTTO_HOME = origHome
+    for (const [key, value] of Object.entries(savedKeys)) {
+      if (value === undefined) delete process.env[key]
+      else process.env[key] = value
+    }
+    rmSync(tmp, { recursive: true, force: true })
+  })
+
+  const out = strip(capture({ version: '1.0.0' }))
+  assert.ok(out.includes('2 servers configured'), 'MCP row should count unique project/global servers')
 })
 
 test('command-center renders one OTTO block logo with a full-width closing rule', (t) => {

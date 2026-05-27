@@ -1,0 +1,16 @@
+{
+  "name": "@example/otto-extension-only",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "otto": {
+    "extension": true,
+    "extensions": [
+      "./extensions"
+    ]
+  },
+  "peerDependencies": {
+    "@otto/pi-coding-agent": "*"
+  }
+}
+

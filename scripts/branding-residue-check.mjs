@@ -41,6 +41,10 @@ const checks = [
     name: "old workflow runtime/user-facing residue",
     pattern: `${oldWorkflowPrefix}_[A-Z0-9_]*|${oldWorkflowPrefix}_SMOKE_BINARY|\\bprocess\\.env\\.${oldWorkflowPrefix}|\\bimport\\.meta\\.env\\.${oldWorkflowPrefix}|${oldWorkflowLower}\\.db|${oldWorkflowLower}-fake|${oldWorkflowLower}-workflow|mcp__otto-workflow__${oldWorkflowLower}_|\\b${oldWorkflowLower}_(plan_milestone|task_complete|task_reopen|replan_slice|slice_complete|complete_slice|exec_search|exec|summary_save|requirement_save|requirement_update|reassess_roadmap|plan_slice|decision_save)`,
   },
+  {
+    name: "old expanded brand phrase",
+    pattern: "Get Shit Done",
+  },
 ];
 
 let failed = false;

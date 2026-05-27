@@ -34,6 +34,8 @@ export interface OttoConfig {
   }
 }
 
+export const DEFAULT_GATEWAY_URL = "http://127.0.0.1:18080"
+
 export const DEFAULT_CONFIG: OttoConfig = {
   gateway: {
     // Placeholder — real otto-gateway port confirmed when SURF-V2-01 ships.
@@ -43,8 +45,14 @@ export const DEFAULT_CONFIG: OttoConfig = {
   langflow: {
     url: "http://127.0.0.1:7860",
     apiKey: null,
-    enabled: true,
+    enabled: false,
   },
+}
+
+export function normalizeGatewayUrl(url: string): string {
+  let normalized = url.trim().replace(/\/+$/, "")
+  if (normalized.endsWith("/v1")) normalized = normalized.slice(0, -3)
+  return normalized.replace(/\/+$/, "")
 }
 
 // ─── Paths ────────────────────────────────────────────────────────────────────
@@ -84,7 +92,7 @@ export function loadConfig(): OttoConfig {
 
   return {
     gateway: {
-      url: typeof gw.url === "string" && gw.url.trim() ? gw.url.trim() : DEFAULT_CONFIG.gateway.url,
+      url: typeof gw.url === "string" && gw.url.trim() ? normalizeGatewayUrl(gw.url) : DEFAULT_CONFIG.gateway.url,
       token: typeof gw.token === "string" && gw.token.trim() ? gw.token.trim() : DEFAULT_CONFIG.gateway.token,
     },
     langflow: {
@@ -134,7 +142,7 @@ export function saveConfig(cfg: OttoConfig): void {
  */
 export function applyConfigToEnv(cfg: OttoConfig): void {
   if (!process.env.OTTO_GATEWAY_URL?.trim() && cfg.gateway.url) {
-    process.env.OTTO_GATEWAY_URL = cfg.gateway.url
+    process.env.OTTO_GATEWAY_URL = normalizeGatewayUrl(cfg.gateway.url)
   }
   if (!process.env.OTTO_GATEWAY_TOKEN?.trim() && cfg.gateway.token) {
     process.env.OTTO_GATEWAY_TOKEN = cfg.gateway.token
@@ -178,7 +186,7 @@ export interface LangflowProbeResult extends ProbeResult {
  * otto extension's session_start probe (which has its own 1500ms timeout).
  */
 export async function probeGateway(url: string, timeoutMs = 2000): Promise<ProbeResult> {
-  const target = `${url.replace(/\/+$/, "")}/health`
+  const target = `${normalizeGatewayUrl(url)}/health`
   const ctl = new AbortController()
   const timer = setTimeout(() => ctl.abort(), timeoutMs)
   try {
@@ -194,6 +202,27 @@ export async function probeGateway(url: string, timeoutMs = 2000): Promise<Probe
   } finally {
     clearTimeout(timer)
   }
+}
+
+export interface DetectGatewayResult extends ProbeResult {
+  url?: string
+}
+
+export async function detectLocalGateway(options: {
+  defaultUrl?: string
+  timeoutMs?: number
+} = {}): Promise<DetectGatewayResult> {
+  if (process.env.OTTO_GATEWAY_DISABLED?.trim() === "1") {
+    return { ok: false, reason: "gateway disabled" }
+  }
+  if (process.env.OTTO_GATEWAY_URL?.trim()) {
+    return { ok: false, reason: "explicit gateway already configured" }
+  }
+  const url = normalizeGatewayUrl(options.defaultUrl ?? DEFAULT_GATEWAY_URL)
+  const probe = await probeGateway(url, options.timeoutMs ?? 500)
+  if (!probe.ok) return probe
+  process.env.OTTO_GATEWAY_URL = url
+  return { ok: true, url }
 }
 
 /**

@@ -8,9 +8,7 @@
     "otto-extension"
   ],
   "otto": {
-    "extension": true
-  },
-  "pi": {
+    "extension": true,
     "extensions": [
       "./index.ts"
     ]

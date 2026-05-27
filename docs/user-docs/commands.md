@@ -191,12 +191,13 @@ Plugins are plain YAML (`.yaml`) or markdown (`.md`) files. See
 | `/otto extensions enable <id>` | Enable a disabled extension |
 | `/otto extensions disable <id>` | Disable an extension |
 | `/otto extensions info <id>` | Show extension details |
-| `/otto extensions install <spec>` | Install a user extension. `<spec>` is an npm package, a git URL, or a local path. Restart OTTO to activate. (v2.78) |
-| `/otto extensions uninstall <id>` | Remove a user-installed extension. Warns if other extensions depend on it. (v2.78) |
-| `/otto extensions update [id]` | Update a single user-installed npm extension to its latest version, or all of them when `id` is omitted. Git/local installs are skipped — reinstall to update. (v2.78) |
 | `/otto extensions validate <path>` | Validate an extension package directory against the manifest schema before publishing or installing. (v2.78) |
 
-Install sources are auto-detected: starts with `http(s)://` or ends with `.git` → git clone; contains `/` or `.` and exists on disk → local copy; otherwise → `npm pack`. Installed extensions land in `~/.otto/extensions/<id>/` and the registry records the source so `update` can re-fetch.
+Install sources are managed from the terminal through the package manager:
+`otto install <source>`, `otto remove <source>`, `otto list`, and `otto package update [source]`.
+Install sources are resolved as `npm:` packages, git URLs, or local paths.
+See [OTTO Package Management](./package-management.md) for the manifest format,
+source types, install scopes, and sample packages.
 
 ## cmux Integration
 

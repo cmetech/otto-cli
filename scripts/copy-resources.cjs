@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const { spawnSync } = require('child_process');
 const { createHash } = require('crypto');
-const { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } = require('fs');
+const { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } = require('fs');
 const { dirname, join } = require('path');
 
 const SKIP_DIRS = new Set(['tests', '__tests__']);
@@ -30,6 +30,9 @@ function copyNonTsFiles(srcDir, destDir) {
     }
 
     if (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')) {
+      continue;
+    }
+    if (entry.name.endsWith('.js') && existsSync(srcPath.replace(/\.js$/, '.ts'))) {
       continue;
     }
 

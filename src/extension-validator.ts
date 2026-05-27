@@ -12,7 +12,7 @@
 export interface ValidationError {
   code: string;    // "MISSING_WORKFLOW_MARKER" | "RESERVED_NAMESPACE" | "WRONG_DEP_FIELD"
   message: string; // Human-readable, actionable
-  field?: string;  // e.g. "dependencies", "gsd.extension"
+  field?: string;  // e.g. "dependencies", "otto.extension"
 }
 
 export interface ValidationWarning {
@@ -27,62 +27,51 @@ export interface ValidationResult {
 }
 
 export interface ValidationOptions {
-  allowWorkflowNamespace?: boolean;  // Per D-05: --allow-gsd-namespace flag pass-through
-  extensionId?: string;         // The manifest ID to check against gsd.* namespace (per D-04)
+  allowWorkflowNamespace?: boolean;  // Maintainer-only reserved namespace override
+  extensionId?: string;         // The manifest ID to check against reserved namespaces
 }
 
 // ─── Individual Check Functions ───────────────────────────────────────────────
 
 /**
- * Per D-03: Check that pkg.gsd.extension === true with STRICT equality (not truthiness).
- * Packages without this marker are not recognized as extensions.
+ * Check that pkg.otto.extension === true with STRICT equality (not truthiness).
  */
 export function checkInstallDiscriminator(pkg: unknown): ValidationError | null {
   if (typeof pkg !== 'object' || pkg === null) {
     return {
       code: 'MISSING_WORKFLOW_MARKER',
-      message: 'package.json must declare "gsd": { "extension": true } to be recognized as a Workflow extension.',
-      field: 'gsd.extension',
+      message: 'package.json must declare "otto": { "extension": true } to be recognized as an OTTO extension.',
+      field: 'otto.extension',
     }
   }
 
   const obj = pkg as Record<string, unknown>
-  const gsd = obj.gsd
-
-  if (typeof gsd !== 'object' || gsd === null) {
-    return {
-      code: 'MISSING_WORKFLOW_MARKER',
-      message: 'package.json must declare "gsd": { "extension": true } to be recognized as a Workflow extension.',
-      field: 'gsd.extension',
-    }
+  const marker = obj.otto
+  if (typeof marker === 'object' && marker !== null && (marker as Record<string, unknown>).extension === true) {
+    return null
   }
 
-  const workflowObj = gsd as Record<string, unknown>
-  if (workflowObj.extension !== true) {
-    return {
-      code: 'MISSING_WORKFLOW_MARKER',
-      message: 'package.json must declare "gsd": { "extension": true } to be recognized as a Workflow extension.',
-      field: 'gsd.extension',
-    }
+  return {
+    code: 'MISSING_WORKFLOW_MARKER',
+    message: 'package.json must declare "otto": { "extension": true } to be recognized as an OTTO extension.',
+    field: 'otto.extension',
   }
-
-  return null
 }
 
 /**
- * Per D-04/D-05: Check that the extension ID does not use the reserved gsd.* namespace,
+ * Check that the extension ID does not use a reserved OTTO core namespace,
  * unless allowWorkflowNamespace is explicitly set to true.
- * Per D-06: Only checks extension manifest ID — not pkg.name.
+ * Only checks extension manifest ID — not pkg.name.
  */
 export function checkNamespaceReservation(extensionId: string, opts: ValidationOptions): ValidationError | null {
   if (opts.allowWorkflowNamespace === true) {
     return null
   }
 
-  if (extensionId.startsWith('gsd.')) {
+  if (extensionId.startsWith('otto.') || extensionId.startsWith('gsd.')) {
     return {
       code: 'RESERVED_NAMESPACE',
-      message: `Extension ID "${extensionId}" is reserved for GSD core extensions. Use a different namespace for community extensions (e.g., "my-tool" or "acme.my-tool"). To override: pass --allow-gsd-namespace (maintainers only).`,
+      message: `Extension ID "${extensionId}" is reserved for OTTO core extensions. Use a different namespace for community extensions (e.g., "my-tool" or "acme.my-tool"). To override: pass --allow-gsd-namespace (maintainers only).`,
       field: 'extensionId',
     }
   }
@@ -107,11 +96,11 @@ export function checkDependencyPlacement(pkg: unknown): ValidationError[] {
   const fieldsToCheck: Array<{ field: string; reason: string }> = [
     {
       field: 'dependencies',
-      reason: 'Extensions must not bundle GSD host packages — the host provides them at runtime.',
+      reason: 'Extensions must not bundle OTTO host packages — the host provides them at runtime.',
     },
     {
       field: 'devDependencies',
-      reason: 'GSD host packages are provided by the host at runtime; listing them in devDependencies misrepresents the runtime contract.',
+      reason: 'OTTO host packages are provided by the host at runtime; listing them in devDependencies misrepresents the runtime contract.',
     },
   ]
 

@@ -18,9 +18,11 @@ import { existsSync } from 'node:fs'
 import { BRAND_NAME, COMMAND_NAMESPACE } from './brand.js'
 import { ANSI_BRAND_YELLOW, ANSI_RESET } from './brand-colors.js'
 import {
+  DEFAULT_GATEWAY_URL,
   loadConfig,
   saveConfig,
   configPath,
+  normalizeGatewayUrl,
   probeGateway,
   probeLangflow,
   type OttoConfig,
@@ -59,9 +61,9 @@ async function promptGateway(
 ): Promise<{ url: string; token: string | null } | "cancelled"> {
   const { green, red } = colors
 
-  const gatewayUrlDefault = existing.url ?? "http://127.0.0.1:8080/v1"
+  const gatewayUrlDefault = existing.url ?? DEFAULT_GATEWAY_URL
   const gatewayUrlAns = await p.text({
-    message: 'Gateway URL?',
+    message: 'Gateway base URL? (root, no /v1)',
     placeholder: gatewayUrlDefault,
     initialValue: gatewayUrlDefault,
     validate: (val) => {
@@ -72,7 +74,7 @@ async function promptGateway(
     },
   })
   if (p.isCancel(gatewayUrlAns)) { p.cancel('Setup cancelled.'); return "cancelled" }
-  const gatewayUrl = (gatewayUrlAns as string).trim()
+  const gatewayUrl = normalizeGatewayUrl(gatewayUrlAns as string)
 
   const wantsToken = await p.confirm({
     message: 'Does the gateway require a bearer token?',

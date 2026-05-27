@@ -26,6 +26,8 @@ const OTTO_LOGO: readonly string[] = [
   ' ╚═════╝    ╚═╝      ╚═╝    ╚═════╝',
 ]
 
+const OTTO_EXPANDED_TITLE = 'Orchestrating Tools, Tasks and Outcomes'
+
 interface WorkflowState {
   milestone?: string
   phase?: string
@@ -35,7 +37,7 @@ interface WorkflowState {
 
 function readAgentState(): WorkflowState | undefined {
   try {
-    const raw = readFileSync(join(process.cwd(), CONFIG_DIR_NAME, 'STATE.md'), 'utf-8')
+    const raw = readFileSync(join(process.cwd(), CONFIG_DIR_NAME, 'workflow', 'STATE.md'), 'utf-8')
     const state: WorkflowState = {}
     const milestone = raw.match(/^\*\*Active Milestone:\*\*\s*(.+)$/m)
     if (milestone) state.milestone = milestone[1].trim()
@@ -58,7 +60,8 @@ function readAgentState(): WorkflowState | undefined {
 function countMcpServers(): number {
   const configPaths = [
     join(process.cwd(), '.mcp.json'),
-    join(process.cwd(), CONFIG_DIR_NAME, 'mcp.json'),
+    join(process.cwd(), CONFIG_DIR_NAME, 'workflow', 'mcp.json'),
+    join(process.env.OTTO_HOME || join(os.homedir(), CONFIG_DIR_NAME), 'mcp.json'),
   ]
   const seen = new Set<string>()
   for (const p of configPaths) {
@@ -170,7 +173,7 @@ export function buildWelcomeScreenLines(opts: WelcomeScreenOptions): string[] {
   const value = (s: string) => chalk.hex('#dce4f2')(s)
   const accent = (s: string) => chalk.hex('#8db7ff')(s)
   const panelRows = [
-    rightAlign(`${accent(BRAND_NAME)} ${chalk.bold(value('Project Console'))}`, chalk.dim(`v${version}`), panelWidth),
+    rightAlign(`${accent(BRAND_NAME)} ${chalk.bold(value(OTTO_EXPANDED_TITLE))}`, chalk.dim(`v${version}`), panelWidth),
     rightAlign(`${label('Project')} ${value(projectText)}`, `${label('Command')} ${accent(commandText)}`, panelWidth),
     rightAlign(`${label('Workspace')} ${value(shortCwd)}`, `${label('Mode')} ${value(modeText)}`, panelWidth),
     rightAlign(`${label('MCP')} ${chalk.dim(mcpText)}`, `${label('Status')} ${value(state?.milestone ? 'active' : 'idle')}`, panelWidth),

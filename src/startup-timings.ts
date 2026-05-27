@@ -14,7 +14,7 @@ export function markStartup(label: string): void {
 export function printStartupTimings(): void {
   if (!ENABLED || timings.length === 0) return;
   const total = timings.reduce((sum, timing) => sum + timing.ms, 0);
-  process.stderr.write("\n--- GSD Startup Timings ---\n");
+  process.stderr.write("\n--- OTTO Startup Timings ---\n");
   for (const timing of timings) {
     process.stderr.write(`  ${timing.label}: ${timing.ms}ms\n`);
   }

@@ -46,6 +46,19 @@ describe('resolveExtensionEntries', () => {
     assert.ok(entries[0].endsWith('main.js'))
   })
 
+  test('returns declared extensions from otto.extensions array', (t) => {
+    const dir = makeTempDir()
+    t.after(() => rmSync(dir, { recursive: true, force: true }));
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({
+      otto: { extensions: ['main.js'] }
+    }))
+    writeFileSync(join(dir, 'main.js'), 'module.exports = function() {}')
+    writeFileSync(join(dir, 'index.js'), 'should not be returned')
+    const entries = resolveExtensionEntries(dir)
+    assert.equal(entries.length, 1)
+    assert.ok(entries[0].endsWith('main.js'))
+  })
+
   test('returns empty array when pi manifest has no extensions (library opt-out)', (t) => {
     const dir = makeTempDir()
     t.after(() => rmSync(dir, { recursive: true, force: true }));

@@ -73,6 +73,17 @@ const SUBCOMMAND_HELP: Record<string, string> = {
     'List installed package sources from user and project settings.',
   ].join('\n'),
 
+  package: [
+    `Usage: ${CMD} package <install|remove|list|update> [source]`,
+    '',
+    'Manage OTTO packages without conflicting with OTTO self-update.',
+    '',
+    'Examples:',
+    `  ${CMD} package update`,
+    `  ${CMD} package update npm:@acme/otto-pack`,
+    `  ${CMD} package list`,
+  ].join('\n'),
+
   worktree: [
     `Usage: ${CMD} worktree <command> [args]`,
     '',
@@ -207,6 +218,7 @@ export function printHelp(version: string): void {
   process.stdout.write('  install <source>         Install a package/extension source\n')
   process.stdout.write('  remove <source>          Remove an installed package source\n')
   process.stdout.write('  list                     List installed package sources\n')
+  process.stdout.write('  package <cmd>            Manage packages, including package update\n')
   process.stdout.write(`  update                   Update ${BRAND} to the latest version\n`)
   process.stdout.write('  upgrade                  Alias for update\n')
   process.stdout.write('  sessions                 List and resume a past session\n')

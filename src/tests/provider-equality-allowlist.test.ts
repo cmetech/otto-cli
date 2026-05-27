@@ -68,6 +68,8 @@ const ALLOWED_FILES: Record<string, string> = {
     "claude-code-specific streaming UI",
   "packages/pi-coding-agent/src/modes/interactive/components/assistant-message.ts":
     "claude-code-specific message rendering",
+  "packages/pi-coding-agent/src/modes/interactive/components/footer.ts":
+    "gateway footer routed/bypass transport display",
 
   // GitHub Copilot transport-specific request/auth transforms.
   "packages/pi-ai/src/utils/oauth/github-copilot.ts":

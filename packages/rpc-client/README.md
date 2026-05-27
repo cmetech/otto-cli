@@ -1,6 +1,6 @@
 # @otto-build/rpc-client
 
-Standalone RPC client SDK for GSD. Spawn the agent process, perform a v2 protocol handshake, send commands, and consume typed events via an async generator — all in a few lines of TypeScript.
+Standalone RPC client SDK for OTTO. Spawn the agent process, perform a v2 protocol handshake, send commands, and consume typed events via an async generator — all in a few lines of TypeScript.
 
 Public protocol types are shared through `@otto-build/contracts` and re-exported from this package for compatibility.
 

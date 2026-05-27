@@ -6,25 +6,40 @@ function isExtensionFile(name: string): boolean {
   return name.endsWith('.ts') || name.endsWith('.js')
 }
 
+function isPackageManifest(value: unknown): value is { extensions?: unknown } {
+  if (!value || typeof value !== 'object') return false
+  const obj = value as Record<string, unknown>
+  return ['extensions', 'skills', 'prompts', 'themes'].some((key) => Array.isArray(obj[key]))
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object'
+}
+
 /**
  * Resolves the entry-point file(s) for a single extension directory.
  *
- * 1. If the directory contains a package.json with a `pi` manifest object,
+ * 1. If the directory contains a package.json with an `otto` or legacy `pi` manifest object,
  *    the manifest is authoritative:
- *    - `pi.extensions` array → resolve each entry relative to the directory.
- *    - `pi: {}` (no extensions) → return empty (library opt-out, e.g. cmux).
- * 2. Only when no `pi` manifest exists does it fall back to `index.ts` → `index.js`.
+ *    - `otto.extensions` / `pi.extensions` array → resolve each entry relative to the directory.
+ *    - empty manifest → return empty (library opt-out, e.g. cmux).
+ * 2. Only when no package manifest exists does it fall back to `index.ts` → `index.js`.
  */
 export function resolveExtensionEntries(dir: string): string[] {
   const packageJsonPath = join(dir, 'package.json')
   if (existsSync(packageJsonPath)) {
     try {
       const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
-      if (pkg?.pi && typeof pkg.pi === 'object') {
-        // When a pi manifest exists, it is authoritative — don't fall through
+      const manifest = isPackageManifest(pkg?.otto)
+        ? pkg.otto
+        : isObject(pkg?.pi)
+          ? pkg.pi
+          : undefined
+      if (manifest) {
+        // When a package manifest exists, it is authoritative — don't fall through
         // to index.ts/index.js auto-detection. This allows library directories
-        // (like cmux) to opt out by declaring "pi": {} with no extensions.
-        const declared = pkg.pi.extensions
+        // (like cmux) to opt out by declaring no extensions.
+        const declared = (manifest as Record<string, unknown>).extensions
         if (!Array.isArray(declared) || declared.length === 0) {
           return []
         }
@@ -56,7 +71,7 @@ export function resolveExtensionEntries(dir: string): string[] {
  *
  * - Top-level .ts/.js files are treated as standalone extension entry points.
  * - Subdirectories are resolved via `resolveExtensionEntries()` (package.json →
- *   pi.extensions, then index.ts/index.js fallback).
+ *   otto.extensions/pi.extensions, then index.ts/index.js fallback).
  */
 export function discoverExtensionEntryPaths(extensionsDir: string): string[] {
   if (!existsSync(extensionsDir)) {

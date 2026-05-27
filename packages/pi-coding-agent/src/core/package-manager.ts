@@ -86,7 +86,7 @@ type LocalSource = {
 
 type ParsedSource = NpmSource | GitSource | LocalSource;
 
-interface PiManifest {
+interface PackageManifest {
 	extensions?: string[];
 	skills?: string[];
 	prompts?: string[];
@@ -400,11 +400,23 @@ function collectAutoThemeEntries(dir: string): string[] {
 	return entries;
 }
 
-function readPiManifestFile(packageJsonPath: string): PiManifest | null {
+function isPackageManifest(value: unknown): value is PackageManifest {
+	if (!value || typeof value !== "object") return false;
+	const obj = value as Record<string, unknown>;
+	return RESOURCE_TYPES.some((resourceType) => Array.isArray(obj[resourceType]));
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+	return Boolean(value) && typeof value === "object";
+}
+
+function readPackageManifestFile(packageJsonPath: string): PackageManifest | null {
 	try {
 		const content = readFileSync(packageJsonPath, "utf-8");
-		const pkg = JSON.parse(content) as { pi?: PiManifest };
-		return pkg.pi ?? null;
+		const pkg = JSON.parse(content) as { otto?: unknown; pi?: unknown };
+		if (isPackageManifest(pkg.otto)) return pkg.otto;
+		if (isObject(pkg.pi)) return pkg.pi as PackageManifest;
+		return null;
 	} catch {
 		return null;
 	}
@@ -413,7 +425,7 @@ function readPiManifestFile(packageJsonPath: string): PiManifest | null {
 function resolveExtensionEntries(dir: string): string[] | null {
 	const packageJsonPath = join(dir, "package.json");
 	if (existsSync(packageJsonPath)) {
-		const manifest = readPiManifestFile(packageJsonPath);
+		const manifest = readPackageManifestFile(packageJsonPath);
 		if (manifest) {
 			// When a pi manifest exists, it is authoritative — don't fall through
 			// to index.ts/index.js auto-detection. This allows library directories
@@ -1158,20 +1170,12 @@ export class DefaultPackageManager implements PackageManager {
 	}
 
 	private async installNpm(source: NpmSource, scope: SourceScope, temporary: boolean): Promise<void> {
-		if (scope === "user" && !temporary) {
-			await this.runCommand("npm", ["install", "-g", source.spec]);
-			return;
-		}
 		const installRoot = this.getNpmInstallRoot(scope, temporary);
 		this.ensureNpmProject(installRoot);
 		await this.runCommand("npm", ["install", source.spec, "--prefix", installRoot]);
 	}
 
 	private async uninstallNpm(source: NpmSource, scope: SourceScope): Promise<void> {
-		if (scope === "user") {
-			await this.runCommand("npm", ["uninstall", "-g", source.name]);
-			return;
-		}
 		const installRoot = this.getNpmInstallRoot(scope, false);
 		if (!existsSync(installRoot)) {
 			return;
@@ -1276,7 +1280,7 @@ export class DefaultPackageManager implements PackageManager {
 		this.ensureGitIgnore(installRoot);
 		const packageJsonPath = join(installRoot, "package.json");
 		if (!existsSync(packageJsonPath)) {
-			const pkgJson = { name: "pi-extensions", private: true };
+			const pkgJson = { name: "otto-packages", private: true };
 			writeFileSync(packageJsonPath, JSON.stringify(pkgJson, null, 2), "utf-8");
 		}
 	}
@@ -1298,7 +1302,7 @@ export class DefaultPackageManager implements PackageManager {
 		if (scope === "project") {
 			return join(this.cwd, CONFIG_DIR_NAME, "npm");
 		}
-		return join(this.getGlobalNpmRoot(), "..");
+		return join(this.agentDir, "npm");
 	}
 
 	private getGlobalNpmRoot(): string {
@@ -1317,7 +1321,7 @@ export class DefaultPackageManager implements PackageManager {
 		if (scope === "project") {
 			return join(this.cwd, CONFIG_DIR_NAME, "npm", "node_modules", source.name);
 		}
-		return join(this.getGlobalNpmRoot(), source.name);
+		return join(this.agentDir, "npm", "node_modules", source.name);
 	}
 
 	private getGitInstallPath(source: GitSource, scope: SourceScope): string {
@@ -1345,7 +1349,7 @@ export class DefaultPackageManager implements PackageManager {
 			.update(`${prefix}-${suffix ?? ""}`)
 			.digest("hex")
 			.slice(0, 8);
-		return join(tmpdir(), "pi-extensions", prefix, hash, suffix ?? "");
+		return join(tmpdir(), "otto-packages", prefix, hash, suffix ?? "");
 	}
 
 	private getBaseDirForScope(scope: SourceScope): string {
@@ -1396,7 +1400,7 @@ export class DefaultPackageManager implements PackageManager {
 		const manifest = this.readPiManifest(packageRoot);
 		if (manifest) {
 			for (const resourceType of RESOURCE_TYPES) {
-				const entries = manifest[resourceType as keyof PiManifest];
+				const entries = manifest[resourceType as keyof PackageManifest];
 				this.addManifestEntries(
 					entries,
 					packageRoot,
@@ -1430,7 +1434,7 @@ export class DefaultPackageManager implements PackageManager {
 		metadata: PathMetadata,
 	): void {
 		const manifest = this.readPiManifest(packageRoot);
-		const entries = manifest?.[resourceType as keyof PiManifest];
+		const entries = manifest?.[resourceType as keyof PackageManifest];
 		if (entries) {
 			this.addManifestEntries(entries, packageRoot, resourceType, target, metadata);
 			return;
@@ -1481,7 +1485,7 @@ export class DefaultPackageManager implements PackageManager {
 		resourceType: ResourceType,
 	): { allFiles: string[]; enabledByManifest: Set<string> } {
 		const manifest = this.readPiManifest(packageRoot);
-		const entries = manifest?.[resourceType as keyof PiManifest];
+		const entries = manifest?.[resourceType as keyof PackageManifest];
 		if (entries && entries.length > 0) {
 			const allFiles = this.collectFilesFromManifestEntries(entries, packageRoot, resourceType);
 			const manifestPatterns = entries.filter(isPattern);
@@ -1498,7 +1502,7 @@ export class DefaultPackageManager implements PackageManager {
 		return { allFiles, enabledByManifest: new Set(allFiles) };
 	}
 
-	private readPiManifest(packageRoot: string): PiManifest | null {
+	private readPiManifest(packageRoot: string): PackageManifest | null {
 		const packageJsonPath = join(packageRoot, "package.json");
 		if (!existsSync(packageJsonPath)) {
 			return null;
@@ -1506,8 +1510,10 @@ export class DefaultPackageManager implements PackageManager {
 
 		try {
 			const content = readFileSync(packageJsonPath, "utf-8");
-			const pkg = JSON.parse(content) as { pi?: PiManifest };
-			return pkg.pi ?? null;
+			const pkg = JSON.parse(content) as { otto?: unknown; pi?: unknown };
+			if (isPackageManifest(pkg.otto)) return pkg.otto;
+			if (isObject(pkg.pi)) return pkg.pi as PackageManifest;
+			return null;
 		} catch {
 			return null;
 		}

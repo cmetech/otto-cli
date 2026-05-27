@@ -29,7 +29,7 @@ import * as _bundledMcpServerStdio from "@modelcontextprotocol/sdk/server/stdio.
 import * as _bundledMcpServerSse from "@modelcontextprotocol/sdk/server/sse.js";
 import * as _bundledMcpServerStreamableHttp from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import * as _bundledMcpTypes from "@modelcontextprotocol/sdk/types.js";
-import { getAgentDir, isBunBinary } from "../../config.js";
+import { CONFIG_DIR_NAME, getAgentDir, isBunBinary } from "../../config.js";
 // NOTE: This import works because loader.ts exports are NOT re-exported from index.ts,
 // avoiding a circular dependency. Extensions can import from @otto/pi-coding-agent.
 import * as _bundledPiCodingAgent from "../../index.js";
@@ -948,20 +948,29 @@ export async function loadExtensions(paths: string[], cwd: string, eventBus?: Ev
 	};
 }
 
-interface PiManifest {
+interface ExtensionPackageManifest {
 	extensions?: string[];
 	themes?: string[];
 	skills?: string[];
 	prompts?: string[];
 }
 
-function readPiManifest(packageJsonPath: string): PiManifest | null {
+function isExtensionPackageManifest(value: unknown): value is ExtensionPackageManifest {
+	if (!value || typeof value !== "object") return false;
+	const obj = value as Record<string, unknown>;
+	return ["extensions", "themes", "skills", "prompts"].some((key) => Array.isArray(obj[key]));
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+	return Boolean(value) && typeof value === "object";
+}
+
+function readExtensionPackageManifest(packageJsonPath: string): ExtensionPackageManifest | null {
 	try {
 		const content = fs.readFileSync(packageJsonPath, "utf-8");
 		const pkg = JSON.parse(content);
-		if (pkg.pi && typeof pkg.pi === "object") {
-			return pkg.pi as PiManifest;
-		}
+		if (isExtensionPackageManifest(pkg.otto)) return pkg.otto;
+		if (isObject(pkg.pi)) return pkg.pi as ExtensionPackageManifest;
 		return null;
 	} catch {
 		return null;
@@ -976,16 +985,16 @@ function isExtensionFile(name: string): boolean {
  * Resolve extension entry points from a directory.
  *
  * Checks for:
- * 1. package.json with "pi.extensions" field -> returns declared paths
+ * 1. package.json with "otto.extensions" or legacy "pi.extensions" field -> returns declared paths
  * 2. index.ts or index.js -> returns the index file
  *
  * Returns resolved paths or null if no entry points found.
  */
 function resolveExtensionEntries(dir: string): string[] | null {
-	// Check for package.json with "pi" field first
+	// Check for package.json with an OTTO/Pi package manifest first.
 	const packageJsonPath = path.join(dir, "package.json");
 	if (fs.existsSync(packageJsonPath)) {
-		const manifest = readPiManifest(packageJsonPath);
+		const manifest = readExtensionPackageManifest(packageJsonPath);
 		if (manifest) {
 			// When a pi manifest exists, it is authoritative — don't fall through
 			// to index.ts/index.js auto-detection. This allows library directories
@@ -1088,15 +1097,15 @@ export async function discoverAndLoadExtensions(
 		}
 	};
 
-	// 1. Project-local extensions: cwd/.pi/extensions/
+	// 1. Project-local extensions: cwd/<config-dir>/extensions/
 	// Only loaded when the project path has been explicitly trusted (TOFU model).
-	const localExtDir = path.join(cwd, ".pi", "extensions");
+	const localExtDir = path.join(cwd, CONFIG_DIR_NAME, "extensions");
 	const localDiscovered = discoverExtensionsInDir(localExtDir);
 	if (localDiscovered.length > 0) {
 		const untrusted = getUntrustedExtensionPaths(cwd, localDiscovered, agentDir);
 		if (untrusted.length > 0) {
 			process.stderr.write(
-				`[pi] Skipping ${untrusted.length} project-local extension(s) in ${localExtDir} — project not trusted. Use trustProject() to enable.\n`,
+				`[${CONFIG_DIR_NAME.slice(1)}] Skipping ${untrusted.length} project-local extension(s) in ${localExtDir} — project not trusted. Use trustProject() to enable.\n`,
 			);
 		}
 		const trusted = localDiscovered.filter((p) => !untrusted.includes(p));

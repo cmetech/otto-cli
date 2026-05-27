@@ -2,7 +2,7 @@
   "id": "google-search",
   "name": "Google Search (deprecated stub)",
   "version": "1.0.0",
-  "description": "Deprecation stub. The google_search tool moved to @gsd-extensions/google-search. Install with: gsd extensions install @gsd-extensions/google-search",
+  "description": "Deprecation stub. The google_search tool moved to a package. Install replacement packages with: otto install <source>",
   "tier": "bundled",
   "deprecated": true,
   "requires": { "platform": ">=2.29.0" },

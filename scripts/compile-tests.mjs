@@ -9,7 +9,7 @@
  * Usage: node scripts/compile-tests.mjs
  */
 
-import { cp, mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, rm as removePath, stat, writeFile } from 'node:fs/promises';
 import { existsSync, symlinkSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
@@ -75,6 +75,18 @@ async function collectAllFiles(dir) {
 // Dirs to skip when copying assets (node_modules are never useful in dist-test)
 const ASSET_SKIP_DIRS = new Set(['node_modules', 'integration']);
 
+export function shouldCopyAsset(fileName, siblingNames) {
+  if (fileName.endsWith('.js.map')) {
+    const tsSibling = `${fileName.slice(0, -'.js.map'.length)}.ts`;
+    return !siblingNames.has(tsSibling);
+  }
+  if (fileName.endsWith('.js')) {
+    const tsSibling = `${fileName.slice(0, -'.js'.length)}.ts`;
+    return !siblingNames.has(tsSibling);
+  }
+  return true;
+}
+
 /**
  * Recursively copy files from srcDir to destDir.
  * Skips node_modules only. Copies everything: .ts/.tsx originals (for jiti),
@@ -89,13 +101,14 @@ async function copyAssets(srcDir, destDir) {
   } catch {
     return; // directory doesn't exist, nothing to copy
   }
+  const siblingNames = new Set(entries.map(entry => entry.name));
   for (const entry of entries) {
     if (ASSET_SKIP_DIRS.has(entry.name)) continue;
     const srcPath = join(srcDir, entry.name);
     const destPath = join(destDir, entry.name);
     if (entry.isDirectory()) {
       await copyAssets(srcPath, destPath);
-    } else {
+    } else if (shouldCopyAsset(entry.name, siblingNames)) {
       await mkdir(destDir, { recursive: true });
       await cp(srcPath, destPath, { force: true });
     }
@@ -227,6 +240,7 @@ async function main() {
     return;
   }
 
+  await removePath(DIST_TEST_DIR, { recursive: true, force: true });
   console.log(`Compiling ${entryPoints.length} files to dist-test/...`);
 
   // bundle:false transforms TypeScript but keeps import specifiers verbatim.

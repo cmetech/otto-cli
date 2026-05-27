@@ -6,15 +6,24 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { join } from "node:path";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 
 import { runUpdate } from "../update-cmd.ts";
 import { handleUpdate } from "../resources/extensions/workflow/commands-handlers.ts";
 
-test("update-cmd prints latest version before comparison (#3445)", async () => {
+test("update-cmd prints latest version before comparison (#3445)", async (t) => {
   const originalFetch = globalThis.fetch;
   const originalVersion = process.env.OTTO_VERSION;
   const originalStdoutWrite = process.stdout.write;
   const writes: string[] = [];
+  const root = mkdtempSync(join(tmpdir(), "otto-update-diagnostics-"));
+  const agentDir = join(root, "agent");
+  const skillsDir = join(root, "skills");
+
+  t.after(() => {
+    rmSync(root, { recursive: true, force: true });
+  });
 
   try {
     process.env.OTTO_VERSION = "1.2.3";
@@ -24,7 +33,7 @@ test("update-cmd prints latest version before comparison (#3445)", async () => {
       return true;
     };
 
-    await runUpdate();
+    await runUpdate({ agentDir, skillsDir });
   } finally {
     globalThis.fetch = originalFetch;
     (process.stdout as any).write = originalStdoutWrite;
@@ -40,6 +49,37 @@ test("update-cmd prints latest version before comparison (#3445)", async () => {
   const comparisonIdx = output.indexOf("Already up to date.");
   assert.ok(latestPrintIdx !== -1, "Must print latest version");
   assert.ok(latestPrintIdx < comparisonIdx, "Must print latest BEFORE comparison result");
+});
+
+test("update-cmd refreshes bundled resources when already up to date", async (t) => {
+  const originalFetch = globalThis.fetch;
+  const originalVersion = process.env.OTTO_VERSION;
+  const originalStdoutWrite = process.stdout.write;
+  const root = mkdtempSync(join(tmpdir(), "otto-update-resources-"));
+  const agentDir = join(root, "agent");
+  const skillsDir = join(root, "skills");
+
+  t.after(() => {
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  try {
+    process.env.OTTO_VERSION = "1.2.3";
+    globalThis.fetch = async () => Response.json({ version: "1.2.3" });
+    (process.stdout as any).write = () => true;
+
+    await runUpdate({ agentDir, skillsDir });
+  } finally {
+    globalThis.fetch = originalFetch;
+    (process.stdout as any).write = originalStdoutWrite;
+    if (originalVersion === undefined) {
+      delete process.env.OTTO_VERSION;
+    } else {
+      process.env.OTTO_VERSION = originalVersion;
+    }
+  }
+
+  assert.equal(existsSync(join(agentDir, "managed-resources.json")), true);
 });
 
 test("update-check exports resolveInstallCommand (#4145)", async () => {

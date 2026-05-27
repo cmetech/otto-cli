@@ -158,6 +158,7 @@ The corresponding architecture diagram for the Gateway itself lives in [`docs/br
 ## Documentation
 
 - [`docs/INSTALL.md`](docs/INSTALL.md) — install / uninstall / troubleshoot
+- [`docs/user-docs/package-management.md`](docs/user-docs/package-management.md) — install packages that extend OTTO
 - [`docs/branding/`](docs/branding/) — naming, logo prompts, infographics (activity flow + gateway architecture)
 - [`docs/superpowers/specs/`](docs/superpowers/specs/) — design specifications
 - [`docs/superpowers/plans/`](docs/superpowers/plans/) — implementation plans (one per phase)

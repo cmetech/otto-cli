@@ -1,0 +1,10 @@
+{
+  "name": "mixed-sample",
+  "displayName": "Mixed Sample",
+  "colors": {
+    "background": "#121212",
+    "foreground": "#f1f1f1",
+    "accent": "#7cc7ff",
+    "muted": "#999999"
+  }
+}

@@ -1,6 +1,6 @@
 # Migration from v1
 
-If you have projects with `.planning` directories from the original Get Shit Done (v1), you can migrate them to OTTO's `.otto/workflow` format.
+If you have projects with `.planning` directories from the original upstream v1 project, you can migrate them to OTTO's `.otto/workflow` format.
 
 ## Running the Migration
 

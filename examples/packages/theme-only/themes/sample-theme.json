@@ -1,0 +1,11 @@
+{
+  "name": "sample-theme",
+  "displayName": "Sample Theme",
+  "colors": {
+    "background": "#101418",
+    "foreground": "#f4f7f9",
+    "accent": "#4fb286",
+    "muted": "#8b9aa6"
+  }
+}
+

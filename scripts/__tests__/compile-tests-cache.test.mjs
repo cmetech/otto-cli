@@ -7,6 +7,7 @@ import test from 'node:test';
 import {
   buildCompileFingerprint,
   isCompileCacheFresh,
+  shouldCopyAsset,
 } from '../compile-tests.mjs';
 
 test('buildCompileFingerprint is stable across input ordering', () => {
@@ -42,4 +43,24 @@ test('isCompileCacheFresh requires dist-test and matching schema/hash', () => {
   assert.equal(isCompileCacheFresh({ ...fingerprint, schemaVersion: 0 }, fingerprint, true), false);
   assert.equal(isCompileCacheFresh({ ...fingerprint, hash: 'different' }, fingerprint, true), false);
   assert.equal(isCompileCacheFresh(null, fingerprint, true), false);
+});
+
+test('shouldCopyAsset skips generated JS siblings shadowed by same-base TS source', () => {
+  const siblingNames = new Set([
+    'catalog.ts',
+    'catalog.js',
+    'catalog.js.map',
+    'hand-authored.js',
+    'hand-authored.js.map',
+    'helper.mjs',
+    'README.md',
+  ]);
+
+  assert.equal(shouldCopyAsset('catalog.js', siblingNames), false);
+  assert.equal(shouldCopyAsset('catalog.js.map', siblingNames), false);
+  assert.equal(shouldCopyAsset('catalog.ts', siblingNames), true);
+  assert.equal(shouldCopyAsset('hand-authored.js', siblingNames), true);
+  assert.equal(shouldCopyAsset('hand-authored.js.map', siblingNames), true);
+  assert.equal(shouldCopyAsset('helper.mjs', siblingNames), true);
+  assert.equal(shouldCopyAsset('README.md', siblingNames), true);
 });

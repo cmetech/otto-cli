@@ -9,6 +9,10 @@ import {
   loadConfig,
   saveConfig,
   configPath,
+  DEFAULT_GATEWAY_URL,
+  normalizeGatewayUrl,
+  detectLocalGateway,
+  applyConfigToEnv,
   type OttoConfig,
 } from "../otto-config.js"
 import { CONFIG_DIR_NAME } from "../piconfig.js"
@@ -45,6 +49,13 @@ test("loadConfig returns DEFAULT_CONFIG when no file exists", () => {
   assert.deepEqual(cfg, DEFAULT_CONFIG)
 })
 
+test("default config keeps LangFlow disabled until user connects", () => {
+  const cfg = loadConfig()
+  assert.equal(cfg.langflow.url, "http://127.0.0.1:7860")
+  assert.equal(cfg.langflow.apiKey, null)
+  assert.equal(cfg.langflow.enabled, false)
+})
+
 test("loadConfig returns DEFAULT_CONFIG (with warn) when file is invalid JSON", () => {
   const p = configPath()
   mkdirSync(join(tmpHome, CONFIG_DIR_NAME), { recursive: true })
@@ -61,7 +72,7 @@ test("loadConfig merges file values over defaults", () => {
     langflow: { url: "http://lf:7860", apiKey: "lf-key", enabled: false },
   })
   const cfg = loadConfig()
-  assert.equal(cfg.gateway.url, "http://custom-gateway:9000/v1")
+  assert.equal(cfg.gateway.url, "http://custom-gateway:9000")
   assert.equal(cfg.gateway.token, "tok-abc")
   assert.equal(cfg.langflow.url, "http://lf:7860")
   assert.equal(cfg.langflow.apiKey, "lf-key")
@@ -76,10 +87,18 @@ test("loadConfig fills missing fields from defaults (partial file)", () => {
     langflow: {},
   } as Partial<OttoConfig> as OttoConfig)
   const cfg = loadConfig()
-  assert.equal(cfg.gateway.url, "http://x:1/v1")
+  assert.equal(cfg.gateway.url, "http://x:1")
   assert.equal(cfg.gateway.token, null, "missing token defaults to null")
   assert.equal(cfg.langflow.url, "http://127.0.0.1:7860", "missing langflow.url defaults to localhost")
-  assert.equal(cfg.langflow.enabled, true, "missing enabled defaults to true")
+  assert.equal(cfg.langflow.enabled, false, "missing enabled defaults to false")
+})
+
+test("applyConfigToEnv marks LangFlow disabled when config is disabled", () => {
+  applyConfigToEnv({
+    gateway: { url: null, token: null },
+    langflow: { url: "http://127.0.0.1:7860", apiKey: null, enabled: false },
+  })
+  assert.equal(process.env.OTTO_LANGFLOW_DISABLED, "1")
 })
 
 test("saveConfig writes the file with mode 0600", () => {
@@ -116,7 +135,7 @@ test("saveConfig is atomic — partial write does not corrupt existing file", ()
     langflow: { url: "http://lf:7860", apiKey: null, enabled: true },
   })
   const cfg = loadConfig()
-  assert.equal(cfg.gateway.url, "http://updated:2/v1")
+  assert.equal(cfg.gateway.url, "http://updated:2")
   assert.equal(cfg.gateway.token, "new-tok")
 })
 
@@ -156,7 +175,7 @@ test("brand.ts picks up config.json values through env propagation", () => {
     },
   )
   assert.equal(result.status, 0, `node probe failed: ${result.stderr}`)
-  assert.equal(result.stdout.trim(), "http://from-config-file:9999/v1")
+  assert.equal(result.stdout.trim(), "http://from-config-file:9999")
 })
 
 test("env var wins over config.json when both are set", () => {
@@ -258,6 +277,37 @@ test("probeGateway strips trailing slash from url before appending /health", asy
       assert.equal(receivedPath, "/health")
     },
   )
+})
+
+test("normalizeGatewayUrl returns gateway root and strips a trailing /v1", () => {
+  assert.equal(normalizeGatewayUrl(" http://127.0.0.1:18080/ "), "http://127.0.0.1:18080")
+  assert.equal(normalizeGatewayUrl("http://127.0.0.1:18080/v1"), "http://127.0.0.1:18080")
+  assert.equal(normalizeGatewayUrl("http://127.0.0.1:18080/v1/"), "http://127.0.0.1:18080")
+})
+
+test("detectLocalGateway sets OTTO_GATEWAY_URL when the default gateway health check succeeds", async () => {
+  await withMockServer(
+    (req, res) => {
+      assert.equal(req.url, "/health")
+      res.statusCode = 200
+      res.setHeader("content-type", "application/json")
+      res.end(JSON.stringify({ status: "ok" }))
+    },
+    async (url) => {
+      const detected = await detectLocalGateway({ defaultUrl: url, timeoutMs: 500 })
+      assert.equal(detected.ok, true)
+      assert.equal(detected.url, url)
+      assert.equal(process.env.OTTO_GATEWAY_URL, url)
+    },
+  )
+})
+
+test("detectLocalGateway does not override an explicit OTTO_GATEWAY_URL", async () => {
+  process.env.OTTO_GATEWAY_URL = "http://configured.example:18080"
+  const detected = await detectLocalGateway({ defaultUrl: DEFAULT_GATEWAY_URL, timeoutMs: 50 })
+  assert.equal(detected.ok, false)
+  assert.equal(detected.reason, "explicit gateway already configured")
+  assert.equal(process.env.OTTO_GATEWAY_URL, "http://configured.example:18080")
 })
 
 test("probeLangflow returns ok=true with version when /api/v1/version responds", async () => {

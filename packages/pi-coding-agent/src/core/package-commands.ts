@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { CONFIG_DIR_NAME } from "../config.js";
 import { DefaultPackageManager } from "./package-manager.js";
 import { prepareLifecycleHooks, runLifecycleHooks } from "./lifecycle-hooks.js";
 import { SettingsManager } from "./settings-manager.js";
@@ -64,7 +65,7 @@ function printPackageCommandHelp(
 Install a package, add it to settings, and run lifecycle hooks.
 
 Options:
-  -l, --local    Install project-locally (.pi/settings.json)
+  -l, --local    Install project-locally (${CONFIG_DIR_NAME}/settings.json)
 
 Examples:
   ${appName} install npm:@foo/bar
@@ -82,7 +83,7 @@ Examples:
 Remove a package and its source from settings.
 
 Options:
-  -l, --local    Remove from project settings (.pi/settings.json)
+  -l, --local    Remove from project settings (${CONFIG_DIR_NAME}/settings.json)
 
 Example:
   ${appName} remove npm:@foo/bar
@@ -114,7 +115,8 @@ export function parsePackageCommand(
 	if (command !== "install" && command !== "remove" && command !== "update" && command !== "list") {
 		return undefined;
 	}
-	if (allowedCommands && !allowedCommands.has(command)) {
+	const canonicalCommand: PackageCommand = command;
+	if (allowedCommands && !allowedCommands.has(canonicalCommand)) {
 		return undefined;
 	}
 
@@ -129,7 +131,7 @@ export function parsePackageCommand(
 			continue;
 		}
 		if (arg === "-l" || arg === "--local") {
-			if (command === "install" || command === "remove") {
+			if (canonicalCommand === "install" || canonicalCommand === "remove") {
 				local = true;
 			} else {
 				invalidOption = invalidOption ?? arg;
@@ -145,7 +147,7 @@ export function parsePackageCommand(
 		}
 	}
 
-	return { command, source, local, help, invalidOption };
+	return { command: canonicalCommand, source, local, help, invalidOption };
 }
 
 export async function runPackageCommand(

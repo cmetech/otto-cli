@@ -2,11 +2,15 @@ export type ParsedArgs =
   | { ok: true; target: string; workspace: string }
   | { ok: false; error: string };
 
-const DEFAULT_WORKSPACE = "./analysis-workspace";
+const DEFAULT_WORKSPACE = "./.otto/excavate";
+
+export interface ParseExcavateOptions {
+  allowMissingTarget?: boolean;
+}
 
 // Parse `<target> [--workspace <dir>|--workspace=<dir>]`. Quotes are not
 // required for the PoC-scale usage; tokens split on whitespace.
-export function parseExcavateArgs(raw: string): ParsedArgs {
+export function parseExcavateArgs(raw: string, options: ParseExcavateOptions = {}): ParsedArgs {
   const tokens = (raw ?? "").trim().split(/\s+/).filter(Boolean);
   let target: string | undefined;
   let workspace = DEFAULT_WORKSPACE;
@@ -26,6 +30,9 @@ export function parseExcavateArgs(raw: string): ParsedArgs {
     }
   }
 
-  if (!target) return { ok: false, error: "excavate requires a target path: /otto excavate <path>" };
+  if (!target && !options.allowMissingTarget) {
+    return { ok: false, error: "excavate requires a target path: /otto excavate <path>" };
+  }
+  if (!target) target = "";
   return { ok: true, target, workspace };
 }

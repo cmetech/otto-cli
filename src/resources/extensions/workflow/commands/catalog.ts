@@ -15,7 +15,7 @@ export interface WorkflowCommandDefinition {
 type CompletionMap = Record<string, readonly WorkflowCommandDefinition[]>;
 
 export const WORKFLOW_COMMAND_DESCRIPTION =
-  `${BRAND} workflow: ${slashCommand("help")}|${slashCommand("start")}|${slashCommand("templates")}|${slashCommand("next")}|${slashCommand("auto")}|${slashCommand("stop")}|${slashCommand("pause")}|${slashCommand("status")}|${slashCommand("widget")}|${slashCommand("visualize")}|${slashCommand("brief")}|${slashCommand("report")}|${slashCommand("queue")}|${slashCommand("quick")}|${slashCommand("discuss")}|${slashCommand("capture")}|${slashCommand("triage")}|${slashCommand("dispatch")}|${slashCommand("verdict")}|${slashCommand("history")}|${slashCommand("undo")}|${slashCommand("undo-task")}|${slashCommand("reset-slice")}|${slashCommand("rate")}|${slashCommand("skip")}|${slashCommand("export")}|${slashCommand("cleanup")}|${slashCommand("closeout")}|${slashCommand("model")}|${slashCommand("mode")}|${slashCommand("prefs")}|${slashCommand("config")}|${slashCommand("keys")}|${slashCommand("hooks")}|${slashCommand("run-hook")}|${slashCommand("skill-health")}|${slashCommand("doctor")}|${slashCommand("debug")}|${slashCommand("logs")}|${slashCommand("forensics")}|${slashCommand("changelog")}|${slashCommand("migrate")}|${slashCommand("remote")}|${slashCommand("steer")}|${slashCommand("knowledge")}|${slashCommand("new-milestone")}|${slashCommand("new-project")}|${slashCommand("parallel")}|${slashCommand("cmux")}|${slashCommand("park")}|${slashCommand("unpark")}|${slashCommand("init")}|${slashCommand("setup")}|${slashCommand("onboarding")}|${slashCommand("inspect")}|${slashCommand("extensions")}|${slashCommand("update")}|${slashCommand("upgrade")}|${slashCommand("fast")}|${slashCommand("mcp")}|${slashCommand("rethink")}|${slashCommand("workflow")}|${slashCommand("codebase")}|${slashCommand("notifications")}|${slashCommand("ship")}|${slashCommand("do")}|${slashCommand("session-report")}|${slashCommand("backlog")}|${slashCommand("pr-branch")}|${slashCommand("add-tests")}|${slashCommand("scan")}|${slashCommand("language")}|${slashCommand("worktree")}|${slashCommand("eval-review")}`;
+  `${BRAND} workflow: ${slashCommand("help")}|${slashCommand("start")}|${slashCommand("templates")}|${slashCommand("next")}|${slashCommand("auto")}|${slashCommand("stop")}|${slashCommand("pause")}|${slashCommand("status")}|${slashCommand("widget")}|${slashCommand("visualize")}|${slashCommand("brief")}|${slashCommand("report")}|${slashCommand("queue")}|${slashCommand("quick")}|${slashCommand("discuss")}|${slashCommand("capture")}|${slashCommand("triage")}|${slashCommand("dispatch")}|${slashCommand("verdict")}|${slashCommand("history")}|${slashCommand("undo")}|${slashCommand("undo-task")}|${slashCommand("reset-slice")}|${slashCommand("rate")}|${slashCommand("skip")}|${slashCommand("export")}|${slashCommand("cleanup")}|${slashCommand("closeout")}|${slashCommand("model")}|${slashCommand("mode")}|${slashCommand("prefs")}|${slashCommand("config")}|${slashCommand("keys")}|${slashCommand("hooks")}|${slashCommand("run-hook")}|${slashCommand("skill-health")}|${slashCommand("doctor")}|${slashCommand("debug")}|${slashCommand("logs")}|${slashCommand("forensics")}|${slashCommand("changelog")}|${slashCommand("migrate")}|${slashCommand("remote")}|${slashCommand("steer")}|${slashCommand("knowledge")}|${slashCommand("new-milestone")}|${slashCommand("new-project")}|${slashCommand("parallel")}|${slashCommand("cmux")}|${slashCommand("park")}|${slashCommand("unpark")}|${slashCommand("init")}|${slashCommand("setup")}|${slashCommand("onboarding")}|${slashCommand("inspect")}|${slashCommand("extensions")}|${slashCommand("update")}|${slashCommand("upgrade")}|${slashCommand("fast")}|${slashCommand("mcp")}|${slashCommand("langflow")}|${slashCommand("excavate")}|${slashCommand("rethink")}|${slashCommand("workflow")}|${slashCommand("codebase")}|${slashCommand("notifications")}|${slashCommand("ship")}|${slashCommand("do")}|${slashCommand("session-report")}|${slashCommand("backlog")}|${slashCommand("pr-branch")}|${slashCommand("add-tests")}|${slashCommand("scan")}|${slashCommand("language")}|${slashCommand("worktree")}|${slashCommand("eval-review")}`;
 
 export const TOP_LEVEL_SUBCOMMANDS: readonly WorkflowCommandDefinition[] = [
   { cmd: "help", desc: "Categorized command reference with descriptions" },
@@ -80,9 +80,11 @@ export const TOP_LEVEL_SUBCOMMANDS: readonly WorkflowCommandDefinition[] = [
   { cmd: "extensions", desc: "Manage extensions (list, enable, disable, info)" },
   { cmd: "fast", desc: "Toggle OpenAI service tier (on/off/flex/status)" },
   { cmd: "mcp", desc: "MCP server status, connectivity, and local config bootstrap (status, check, init)" },
+  { cmd: "langflow", desc: "LangFlow control plane (status, connect, disconnect, flows, show, samples, import, delete, export, run, build)" },
+  { cmd: "excavate", desc: "Reverse-engineer a codebase into provenance-cited behavioral specs" },
   { cmd: "rethink", desc: "Conversational project reorganization — reorder, park, discard, add milestones" },
   { cmd: "workflow", desc: "Custom workflow lifecycle (new, run, list, info, install, uninstall, validate, pause, resume) or run <name> directly" },
-  { cmd: "codebase", desc: "Generate, refresh, and inspect the codebase map cache (.otto/workflow/CODEBASE.md)" },
+  { cmd: "codebase", desc: "Ask codebase questions, run excavation, or manage the codebase map cache (CODEBASE.md)" },
   { cmd: "ship", desc: "Create PR from milestone artifacts and open for review" },
   { cmd: "do", desc: `Route freeform text to the right ${BRAND} command` },
   { cmd: "session-report", desc: "Session cost, tokens, and work summary" },
@@ -180,6 +182,22 @@ const NESTED_COMPLETIONS: CompletionMap = {
     { cmd: "discord", desc: "Configure Discord integration" },
     { cmd: "status", desc: "Show remote connection status" },
     { cmd: "disconnect", desc: "Disconnect remote integrations" },
+  ],
+  langflow: [
+    { cmd: "status", desc: "Show configured URL and health" },
+    { cmd: "connect", desc: "Enable LangFlow and save URL" },
+    { cmd: "disconnect", desc: "Disable LangFlow without deleting saved credentials" },
+    { cmd: "flows", desc: "List server flows" },
+    { cmd: "show", desc: "Show full server flow JSON" },
+    { cmd: "samples", desc: "Copy bundled sample flows to .otto/langflow/samples" },
+    { cmd: "import", desc: "Import a flow JSON file or bundled sample (--update|--replace|--new)" },
+    { cmd: "delete", desc: "Delete a server flow (--yes required)" },
+    { cmd: "export", desc: "Export server flow JSON to .otto/langflow/exported" },
+    { cmd: "run", desc: "Execute a flow with input text" },
+    { cmd: "build", desc: "Create a flow JSON from natural language" },
+  ],
+  excavate: [
+    { cmd: "--workspace ./.otto/excavate", desc: "Write excavation artifacts to a custom workspace directory" },
   ],
   history: [
     { cmd: "--cost", desc: "Show cost breakdown per entry" },
@@ -291,6 +309,8 @@ const NESTED_COMPLETIONS: CompletionMap = {
     { cmd: "resume", desc: "Resume paused custom workflow auto-mode" },
   ],
   codebase: [
+    { cmd: "ask", desc: "Ask a question using excavation artifacts plus source code" },
+    { cmd: "excavate", desc: "Build the excavation knowledge base (alias for /otto excavate)" },
     { cmd: "generate", desc: "Generate or regenerate CODEBASE.md" },
     { cmd: "generate --max-files", desc: "Generate with custom file limit (default: 500)" },
     { cmd: "generate --collapse-threshold", desc: "Generate with custom collapse threshold (default: 20)" },
@@ -505,6 +525,25 @@ export function getWorkflowArgumentCompletions(prefix: string) {
 
   if (command === "extensions" && parts.length === 3 && ["enable", "disable", "info"].includes(subcommand)) {
     return getExtensionCompletions(third, subcommand);
+  }
+
+  if (command === "langflow" && parts.length <= 3) {
+    const flagCompletions: Record<string, readonly WorkflowCommandDefinition[]> = {
+      import: [
+        { cmd: "--update", desc: "Patch an existing matching flow instead of importing a duplicate" },
+        { cmd: "--replace", desc: "Delete the matching flow, then import the JSON again" },
+        { cmd: "--new", desc: "Always import as a new flow" },
+      ],
+      delete: [
+        { cmd: "--yes", desc: "Confirm deletion" },
+      ],
+      export: [
+        { cmd: "--out", desc: "Write exported JSON to a specific file path" },
+        { cmd: "--overwrite", desc: "Allow replacing an existing export file" },
+      ],
+    };
+    const options = flagCompletions[subcommand];
+    if (options) return filterOptions(third, options, `langflow ${subcommand}`);
   }
 
   if (command === "undo" && parts.length <= 2) {

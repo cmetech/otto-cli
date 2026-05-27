@@ -52,4 +52,19 @@ describe("buildPlaybook", () => {
     assert.ok(playbook.indexOf("Gate 1") < playbook.indexOf("test-vector-generator"));
     assert.ok(playbook.indexOf("test-vector-generator") < playbook.indexOf("Gate 2"));
   });
+  it("can disable Git checkpointing and use provenance stage logs instead", () => {
+    const noGitPlaybook = buildPlaybook({
+      target: "/repo",
+      workspace: "./analysis-workspace",
+      skillPaths: resolveSkillPaths("/tmp/skills"),
+      gitMode: "no-git",
+    });
+
+    assert.match(noGitPlaybook, /Git is NOT available/);
+    assert.match(noGitPlaybook, /provenance\/stage-log\.jsonl/);
+    assert.match(noGitPlaybook, /git_mode: "no-git"/);
+    assert.doesNotMatch(noGitPlaybook, /git init -q/);
+    assert.doesNotMatch(noGitPlaybook, /run `git add`/);
+    assert.doesNotMatch(noGitPlaybook, /run `git commit`/);
+  });
 });

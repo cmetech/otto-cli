@@ -605,7 +605,7 @@ function warnCustomWorkflowModule(varName: string, value: string): void {
   if (warnedCustomWorkflowModuleVars.has(varName)) return;
   warnedCustomWorkflowModuleVars.add(varName);
   process.stderr.write(
-    `[gsd-mcp-server] WARNING: ${varName} is set (${value}). ` +
+    `[otto-mcp-server] WARNING: ${varName} is set (${value}). ` +
     `Custom workflow modules will be loaded from this path. ` +
     `Unset for production use.\n`,
   );

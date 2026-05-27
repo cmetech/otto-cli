@@ -529,7 +529,7 @@ describe('CLI integration', () => {
       [join(__dirname, 'cli.js'), '--help'],
       { encoding: 'utf-8', timeout: 5000 },
     );
-    assert.ok(result.includes('Usage: gsd-daemon'));
+    assert.ok(result.includes('Usage: otto-daemon'));
     assert.ok(result.includes('--config'));
     assert.ok(result.includes('--verbose'));
   });

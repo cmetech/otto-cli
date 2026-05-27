@@ -1,11 +1,11 @@
 {
   "name": "@otto-build/daemon",
   "version": "1.0.2",
-  "description": "GSD daemon — background process for project monitoring and Discord integration",
+  "description": "OTTO daemon — background process for project monitoring and Discord integration",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/open-gsd/gsd-pi.git",
+    "url": "git+https://github.com/cmetech/otto-cli.git",
     "directory": "packages/daemon"
   },
   "publishConfig": {
@@ -21,7 +21,7 @@
     }
   },
   "bin": {
-    "gsd-daemon": "./dist/cli.js"
+    "otto-daemon": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",

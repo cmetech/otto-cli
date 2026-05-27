@@ -11,7 +11,7 @@ const PACKAGES_DIR = join(REPO_ROOT, 'packages')
  * Returns the canonical list of linkable workspace packages.
  *
  * A package is "linkable" if its `package.json` contains:
- *   { "gsd": { "linkable": true, "scope": "@otto" | "@otto-build", "name": "<pkgname>" } }
+ *   { "otto": { "linkable": true, "scope": "@otto" | "@otto-build", "name": "<pkgname>" } }
  *
  * Each returned entry has:
  *   - dir: directory name under packages/ (e.g. "pi-agent-core")
@@ -42,28 +42,28 @@ function getLinkablePackages() {
 		} catch (err) {
 			throw new Error(`Invalid package.json at ${pkgJsonPath}: ${err.message}`)
 		}
-		const gsd = pkg.gsd
-		if (!gsd || gsd.linkable !== true) continue
-		if (!gsd.scope || !gsd.name) {
+		const otto = pkg.otto ?? pkg.gsd
+		if (!otto || otto.linkable !== true) continue
+		if (!otto.scope || !otto.name) {
 			throw new Error(
-				`${pkgJsonPath}: "gsd.linkable" is true but "gsd.scope" or "gsd.name" is missing.`
+				`${pkgJsonPath}: "otto.linkable" is true but "otto.scope" or "otto.name" is missing.`
 			)
 		}
-		if (gsd.scope !== '@otto' && gsd.scope !== '@otto-build') {
+		if (otto.scope !== '@otto' && otto.scope !== '@otto-build') {
 			throw new Error(
-				`${pkgJsonPath}: "gsd.scope" must be "@otto" or "@otto-build" (got "${gsd.scope}").`
+				`${pkgJsonPath}: "otto.scope" must be "@otto" or "@otto-build" (got "${otto.scope}").`
 			)
 		}
-		const expectedName = `${gsd.scope}/${gsd.name}`
+		const expectedName = `${otto.scope}/${otto.name}`
 		if (pkg.name !== expectedName) {
 			throw new Error(
-				`${pkgJsonPath}: package.json "name" (${pkg.name}) does not match gsd.scope/gsd.name (${expectedName}).`
+				`${pkgJsonPath}: package.json "name" (${pkg.name}) does not match otto.scope/otto.name (${expectedName}).`
 			)
 		}
 		out.push({
 			dir,
-			scope: gsd.scope,
-			name: gsd.name,
+			scope: otto.scope,
+			name: otto.name,
 			packageName: pkg.name,
 			path: pkgPath,
 			packageJsonPath: pkgJsonPath,

@@ -163,7 +163,7 @@ const RTK_SKIP =
 const RTK_VERSION = '0.33.1'
 const RTK_REPO = 'rtk-ai/rtk'
 const RTK_ENV = { ...process.env, RTK_TELEMETRY_DISABLED: '1' }
-const managedBinDir = join(process.env.OTTO_HOME || join(homedir(), '.gsd'), 'agent', 'bin')
+const managedBinDir = join(process.env.OTTO_HOME || join(homedir(), '.otto'), 'agent', 'bin')
 const managedBinaryPath = join(managedBinDir, platform() === 'win32' ? 'rtk.exe' : 'rtk')
 
 // ── Step: npm install -g ───────────────────────────────────────────────────
@@ -322,6 +322,42 @@ function findBinaryRecursively(rootDir, binaryName) {
   return null
 }
 
+function quotePowerShellLiteral(value) {
+  return `'${String(value).replaceAll("'", "''")}'`
+}
+
+async function extractZipArchive(archivePath, extractDir) {
+  mkdirSync(extractDir, { recursive: true })
+
+  if (platform() === 'win32') {
+    const command = [
+      'Expand-Archive',
+      '-LiteralPath', quotePowerShellLiteral(archivePath),
+      '-DestinationPath', quotePowerShellLiteral(extractDir),
+      '-Force',
+    ].join(' ')
+    const result = spawnSync('powershell.exe', [
+      '-NoLogo',
+      '-NoProfile',
+      '-NonInteractive',
+      '-ExecutionPolicy',
+      'Bypass',
+      '-Command',
+      command,
+    ], {
+      encoding: 'utf-8',
+      timeout: 30_000,
+    })
+    if (result.error || result.status !== 0) {
+      throw new Error(result.error?.message || result.stderr?.trim() || 'zip extraction failed')
+    }
+    return
+  }
+
+  const extractZip = (await import('extract-zip')).default
+  await extractZip(archivePath, { dir: extractDir })
+}
+
 function validateRtkBinary(binaryPath) {
   const result = spawnSync(binaryPath, ['rewrite', 'git status'], {
     encoding: 'utf-8',
@@ -375,9 +411,7 @@ async function installRtk() {
 
     mkdirSync(extractDir, { recursive: true })
     if (assetName.endsWith('.zip')) {
-      // extract-zip may not be available when running via npx — use tar for .tar.gz
-      const extractZip = (await import('extract-zip')).default
-      await extractZip(archivePath, { dir: extractDir })
+      await extractZipArchive(archivePath, extractDir)
     } else {
       const extractResult = spawnSync('tar', ['xzf', archivePath, '-C', extractDir], {
         encoding: 'utf-8',

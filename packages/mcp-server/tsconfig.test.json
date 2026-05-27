@@ -6,14 +6,15 @@
     "incremental": false,
     "outDir": "./dist"
   },
-  "include": [
-    "src/**/*.ts"
+  "files": [
+    "src/mcp-server.test.ts",
+    "src/remote-questions.test.ts"
   ],
+  "include": [],
   "exclude": [
     "node_modules",
     "dist",
     "**/*.d.ts",
-    "src/**/*.d.ts",
-    "src/workflow-tools.test.ts"
+    "src/**/*.d.ts"
   ]
 }

@@ -274,7 +274,7 @@ export function detectWorkflowMcpLaunchConfig(
     };
   }
 
-  const binPath = lookupCommand("gsd-mcp-server");
+  const binPath = lookupCommand("otto-mcp-server");
   if (binPath) {
     return {
       name,
@@ -444,7 +444,7 @@ export function getWorkflowTransportSupportError(
   const providerLabel = `"${provider}"`;
 
   if (!launch) {
-    return `Provider ${providerLabel} cannot run ${surface}${unitLabel}: the OTTO workflow MCP server is not configured or discoverable. Detected Claude Code model but no workflow MCP. Please run /otto mcp init . from your project root. You can also configure OTTO_WORKFLOW_MCP_COMMAND, build packages/mcp-server/dist/cli.js, or install gsd-mcp-server on PATH.`;
+    return `Provider ${providerLabel} cannot run ${surface}${unitLabel}: the OTTO workflow MCP server is not configured or discoverable. Detected Claude Code model but no workflow MCP. Please run /otto mcp init . from your project root. You can also configure OTTO_WORKFLOW_MCP_COMMAND, build packages/mcp-server/dist/cli.js, or install otto-mcp-server on PATH.`;
   }
 
   const uniqueRequired = [...new Set(requiredTools)];

@@ -57,7 +57,7 @@ export function buildProjectWorkflowMcpServerConfig(
 
   if (!launch) {
     throw new Error(
-      "Unable to resolve the OTTO workflow MCP server. Build this checkout or install gsd-mcp-server on PATH.",
+      "Unable to resolve the OTTO workflow MCP server. Build this checkout or install otto-mcp-server on PATH.",
     );
   }
 

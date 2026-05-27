@@ -1,16 +1,16 @@
 {
   "name": "@otto-build/contracts",
   "version": "1.0.2",
-  "description": "Shared public contracts for GSD workspace boundaries",
+  "description": "Shared public contracts for OTTO workspace boundaries",
   "license": "MIT",
-  "gsd": {
+  "otto": {
     "linkable": true,
     "scope": "@otto-build",
     "name": "contracts"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/open-gsd/gsd-pi.git",
+    "url": "git+https://github.com/cmetech/otto-cli.git",
     "directory": "packages/contracts"
   },
   "publishConfig": {

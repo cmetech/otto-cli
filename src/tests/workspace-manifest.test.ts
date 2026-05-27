@@ -48,7 +48,7 @@ describe("workspace manifest (live project)", () => {
 
 		for (const pkg of packages) {
 			assert.equal(pkg.packageName, `${pkg.scope}/${pkg.name}`,
-				`${pkg.packageName}: gsd.scope/gsd.name mismatch`);
+				`${pkg.packageName}: otto.scope/otto.name mismatch`);
 		}
 	});
 
@@ -61,12 +61,12 @@ describe("workspace manifest (live project)", () => {
 		}
 	});
 
-	test("every linkable package's package.json 'name' matches its gsd.scope/gsd.name", () => {
+	test("every linkable package's package.json 'name' matches its otto.scope/otto.name", () => {
 		const manifest = require(manifestModulePath);
 		for (const pkg of manifest.getLinkablePackages()) {
 			const pkgJson = JSON.parse(readFileSync(pkg.packageJsonPath, "utf8"));
 			assert.equal(pkgJson.name, `${pkg.scope}/${pkg.name}`,
-				`${pkg.packageJsonPath}: name != gsd.scope/gsd.name`);
+				`${pkg.packageJsonPath}: name != otto.scope/otto.name`);
 		}
 	});
 });
@@ -130,7 +130,7 @@ describe("verify-workspace-coverage CI gate", () => {
 			writePackage("pkg-a", {
 				name: "@otto/pkg-a",
 				version: "1.0.0",
-				gsd: { linkable: true, scope: "@otto", name: "pkg-a" },
+				otto: { linkable: true, scope: "@otto", name: "pkg-a" },
 			}, {
 				"src/index.ts": "export const x = 1;",
 			});
@@ -155,7 +155,7 @@ describe("verify-workspace-coverage CI gate", () => {
 			writePackage("pkg-a", {
 				name: "@otto/pkg-a",
 				version: "1.0.0",
-				gsd: { linkable: true, scope: "@otto", name: "pkg-a" },
+				otto: { linkable: true, scope: "@otto", name: "pkg-a" },
 			}, {
 				"src/index.ts": "export const x = 1;",
 				"src/index.test.ts": "import test from 'node:test'; test('ok', () => {});",
@@ -163,7 +163,7 @@ describe("verify-workspace-coverage CI gate", () => {
 			writePackage("pkg-b", {
 				name: "@otto-build/pkg-b",
 				version: "1.0.0",
-				gsd: { linkable: true, scope: "@otto-build", name: "pkg-b" },
+				otto: { linkable: true, scope: "@otto-build", name: "pkg-b" },
 			}, {
 				"src/thing.test.js": "",
 			});
@@ -179,7 +179,7 @@ describe("verify-workspace-coverage CI gate", () => {
 			writePackage("internal-pkg", {
 				name: "@otto-build/internal-pkg",
 				version: "1.0.0",
-				// Intentionally no gsd.linkable — this package should be skipped entirely.
+				// Intentionally no otto.linkable — this package should be skipped entirely.
 			}, {
 				"src/index.ts": "export const x = 1;",
 			});
@@ -190,11 +190,11 @@ describe("verify-workspace-coverage CI gate", () => {
 			assert.ok(out !== undefined);
 		});
 
-		test("FAILS when package.json 'name' disagrees with gsd.scope/gsd.name", () => {
+		test("FAILS when package.json 'name' disagrees with otto.scope/otto.name", () => {
 			writePackage("pkg-bad", {
 				name: "@otto/wrong-name",
 				version: "1.0.0",
-				gsd: { linkable: true, scope: "@otto", name: "pkg-bad" },
+				otto: { linkable: true, scope: "@otto", name: "pkg-bad" },
 			}, {
 				"src/x.test.ts": "",
 			});
@@ -213,7 +213,7 @@ describe("verify-workspace-coverage CI gate", () => {
 			assert.ok(threw, "expected exit non-zero for name mismatch");
 			// Either the manifest itself throws (preferred) or the verify script reports it.
 			assert.ok(
-				/name.*gsd\.scope\/gsd\.name|gsd\.scope\/gsd\.name.*name/i.test(stderr),
+				/name.*otto\.scope\/otto\.name|otto\.scope\/otto\.name.*name/i.test(stderr),
 				`expected stderr to explain name mismatch. got: ${stderr}`
 			);
 			// Ensure the fake manifest file was actually loaded in the child process

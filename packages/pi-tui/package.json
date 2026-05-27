@@ -3,7 +3,7 @@
   "version": "1.0.2",
   "description": "Terminal User Interface library (vendored from pi-mono)",
   "type": "module",
-  "gsd": {
+  "otto": {
     "linkable": true,
     "scope": "@otto",
     "name": "pi-tui"

@@ -148,10 +148,10 @@ try {
   // --- Verify every linkable workspace package resolved correctly post-install ---
   // This catches the Windows-style failure where symlinkSync fails silently and
   // node_modules/@otto/ is never populated, causing ERR_MODULE_NOT_FOUND at runtime.
-  // Checks every package with `gsd.linkable: true` — not just a hand-picked subset —
+  // Checks every package with `otto.linkable: true` — not just a hand-picked subset —
   // so any future addition is automatically covered.
   console.log('==> Verifying workspace package resolution (every linkable package)...');
-  const installedRoot = join(installDir, 'node_modules', '@ericsson', 'otto');
+  const installedRoot = join(installDir, 'node_modules', '@cmetech', 'otto');
   let resolutionFailed = false;
   for (const pkg of getLinkablePackages()) {
     const pkgPath = join(installedRoot, 'node_modules', pkg.scope, pkg.name);
@@ -173,7 +173,7 @@ try {
   console.log(`    All ${getLinkablePackages().length} linkable packages are resolvable.`);
 
   // --- Run the binary to confirm end-to-end resolution ---
-  console.log('==> Running installed binary (gsd -v)...');
+  console.log('==> Running installed binary (otto -v)...');
   const loaderPath = join(installedRoot, 'dist', 'loader.js');
   const bundledWorkflowMcpCliPath = join(installedRoot, 'packages', 'mcp-server', 'dist', 'cli.js');
   if (!existsSync(bundledWorkflowMcpCliPath)) {
@@ -189,13 +189,13 @@ try {
       timeout: 15000,
       maxBuffer: DEFAULT_MAX_BUFFER,
     }).trim();
-    console.log(`    gsd -v => ${versionOutput}`);
+    console.log(`    otto -v => ${versionOutput}`);
     if (!versionOutput.match(/^\d+\.\d+\.\d+/)) {
-      console.log('ERROR: gsd -v returned unexpected output (expected a version string).');
+      console.log('ERROR: otto -v returned unexpected output (expected a version string).');
       process.exit(1);
     }
   } catch (err) {
-    console.log('ERROR: Running gsd -v failed after install.');
+    console.log('ERROR: Running otto -v failed after install.');
     if (err.stdout) console.log(err.stdout);
     if (err.stderr) console.log(err.stderr);
     process.exit(1);

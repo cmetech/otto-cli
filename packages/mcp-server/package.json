@@ -1,16 +1,16 @@
 {
   "name": "@otto-build/mcp-server",
   "version": "1.0.2",
-  "description": "MCP server exposing GSD orchestration tools for compatible clients",
+  "description": "MCP server exposing OTTO orchestration tools for compatible clients",
   "license": "MIT",
-  "gsd": {
+  "otto": {
     "linkable": true,
     "scope": "@otto-build",
     "name": "mcp-server"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/open-gsd/gsd-pi.git",
+    "url": "git+https://github.com/cmetech/otto-cli.git",
     "directory": "packages/mcp-server"
   },
   "publishConfig": {
@@ -26,7 +26,7 @@
     }
   },
   "bin": {
-    "gsd-mcp-server": "./dist/cli.js"
+    "otto-mcp-server": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",

@@ -1,0 +1,14 @@
+{
+  "name": "otto-sample-text-status",
+  "description": "OTTO sample flow placeholder for status and import smoke tests.",
+  "endpoint_name": "otto-sample-text-status",
+  "data": {
+    "nodes": [],
+    "edges": [],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  }
+}

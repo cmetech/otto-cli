@@ -33,6 +33,12 @@ export interface RunFlowResult {
   raw: unknown;           // entire response envelope, for callers that need it
 }
 
+export interface LangFlowSummary {
+  id: string;
+  name: string;
+  endpointName?: string;
+}
+
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 export class LangFlowClient {
@@ -89,6 +95,49 @@ export class LangFlowClient {
   }
 
   /**
+   * List flows currently known to the LangFlow server. Normalizes only the
+   * fields OTTO needs for display and name/endpoint resolution.
+   */
+  async listFlows(timeoutMsOverride?: number): Promise<LangFlowSummary[]> {
+    const timeoutMs = timeoutMsOverride ?? this.opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    const res = await this._fetch(`${this.opts.baseUrl}/api/v1/flows/`, { method: "GET" }, timeoutMs);
+    const bodyText = await res.text();
+    if (!res.ok) {
+      throw new Error(`langflow flows: ${res.status} ${res.statusText} — ${bodyText.slice(0, 500)}`);
+    }
+    let raw: unknown;
+    try {
+      raw = JSON.parse(bodyText);
+    } catch {
+      throw new Error(`langflow flows: response was not JSON — ${bodyText.slice(0, 200)}`);
+    }
+    if (!Array.isArray(raw)) return [];
+    return raw.flatMap((item) => {
+      const record = item as { id?: unknown; name?: unknown; endpoint_name?: unknown; endpointName?: unknown };
+      if (typeof record.id !== "string" || typeof record.name !== "string") return [];
+      const endpointName =
+        typeof record.endpoint_name === "string" ? record.endpoint_name :
+        typeof record.endpointName === "string" ? record.endpointName :
+        undefined;
+      return [{ id: record.id, name: record.name, endpointName }];
+    });
+  }
+
+  async getFlow(flowId: string, timeoutMsOverride?: number): Promise<unknown> {
+    const timeoutMs = timeoutMsOverride ?? this.opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    const res = await this._fetch(`${this.opts.baseUrl}/api/v1/flows/${encodeURIComponent(flowId)}`, { method: "GET" }, timeoutMs);
+    const bodyText = await res.text();
+    if (!res.ok) {
+      throw new Error(`langflow get: ${res.status} ${res.statusText} — ${bodyText.slice(0, 500)}`);
+    }
+    try {
+      return JSON.parse(bodyText);
+    } catch {
+      throw new Error(`langflow get: response was not JSON — ${bodyText.slice(0, 200)}`);
+    }
+  }
+
+  /**
    * Import a flow into LangFlow by POSTing its JSON definition.
    * Endpoint: POST /api/v1/flows/  (JSON body — distinct from the
    * /api/v1/flows/upload/ multipart endpoint used by the bundled
@@ -117,6 +166,43 @@ export class LangFlowClient {
       return JSON.parse(bodyText);
     } catch {
       throw new Error(`langflow import: response was not JSON — ${bodyText.slice(0, 200)}`);
+    }
+  }
+
+  async updateFlow(flowId: string, payload: unknown, timeoutMsOverride?: number): Promise<unknown> {
+    const timeoutMs = timeoutMsOverride ?? this.opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    const res = await this._fetch(
+      `${this.opts.baseUrl}/api/v1/flows/${encodeURIComponent(flowId)}`,
+      {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      },
+      timeoutMs,
+    );
+    const bodyText = await res.text();
+    if (!res.ok) {
+      throw new Error(`langflow update: ${res.status} ${res.statusText} — ${bodyText.slice(0, 500)}`);
+    }
+    try {
+      return JSON.parse(bodyText);
+    } catch {
+      throw new Error(`langflow update: response was not JSON — ${bodyText.slice(0, 200)}`);
+    }
+  }
+
+  async deleteFlow(flowId: string, timeoutMsOverride?: number): Promise<unknown> {
+    const timeoutMs = timeoutMsOverride ?? this.opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    const res = await this._fetch(`${this.opts.baseUrl}/api/v1/flows/${encodeURIComponent(flowId)}`, { method: "DELETE" }, timeoutMs);
+    const bodyText = await res.text();
+    if (!res.ok) {
+      throw new Error(`langflow delete: ${res.status} ${res.statusText} — ${bodyText.slice(0, 500)}`);
+    }
+    if (!bodyText.trim()) return {};
+    try {
+      return JSON.parse(bodyText);
+    } catch {
+      return { message: bodyText };
     }
   }
 

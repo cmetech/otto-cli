@@ -192,6 +192,42 @@ Claude Code should inspect the catalog and examples to determine whether the loc
 - system message
 - user message
 
+### Chat Input handles
+
+For standard chat flows, Chat Input usually emits a Message output:
+
+    data.sourceHandle:
+      dataType: ChatInput
+      id: <chat-input-node-id>
+      name: message
+      output_types: [Message]
+
+The target handle should be built from the downstream component template field, not guessed. If the target field is `input_value` and accepts `Message`, use that field metadata exactly.
+
+### Chat Output handles
+
+For standard chat flows, Chat Output usually receives the final response on `input_value`.
+
+Current Langflow exports commonly define ChatOutput `input_value` as a HandleInput with:
+
+    data.targetHandle:
+      fieldName: input_value
+      id: <chat-output-node-id>
+      inputTypes: [Data, JSON, DataFrame, Table, Message]
+      type: other
+
+Do not set ChatOutput target handle `type` to `str` when the ChatOutput template field says `type: "other"`. Langflow may import the file but remove the visual edge.
+
+For model-to-output edges, the model source handle should use the source component output metadata. Common model response outputs look like:
+
+    data.sourceHandle:
+      dataType: <ModelComponentType>
+      id: <model-node-id>
+      name: text_output
+      output_types: [Message]
+
+Some components use `message` or another output name; inspect `outputs[].name` and `outputs[].types` before generating the edge.
+
 ## Edges for RAG flows
 
 A RAG flow usually has this logical structure:
@@ -282,6 +318,17 @@ If edge validation fails, Claude Code should:
 
 Do not randomly mutate handles.
 
+If Langflow imports a flow and reports that connections were removed, treat that as an edge validation failure even when the import API returned success. Repair the specific removed connection by comparing:
+
+- source node `data.type`
+- source node `data.node.outputs[].name`
+- source node `data.node.outputs[].types`
+- target node `data.type`
+- target node `data.node.template[<fieldName>].input_types`
+- target node `data.node.template[<fieldName>].type`
+
+Then regenerate only `id`, `sourceHandle`, `targetHandle`, `data.sourceHandle`, and `data.targetHandle` for the failing edge.
+
 ## Import feedback strategy
 
 If Langflow import fails due to edge handles, Claude Code should:
@@ -326,4 +373,9 @@ Before declaring a generated flow complete, Claude Code should verify:
 - every edge has data.sourceHandle
 - every edge has data.targetHandle
 - source and target data types are compatible
+- every source handle output name exists in source `outputs`
+- every target handle field name exists in target `template`
+- every target handle type matches the target template field type when present
+- Chat Input has a downstream edge on `message` in normal chat flows
+- Chat Output has an incoming edge to `input_value` in normal chat flows
 - no handles were invented from memory

@@ -10,14 +10,15 @@ function withTempDir(fn: (dir: string) => Promise<void> | void): Promise<void> {
   return Promise.resolve(fn(dir)).finally(() => rmSync(dir, { recursive: true, force: true }));
 }
 
-test("creates flows/{generated,templates,imported} and catalog/", async () => {
+test("creates .otto/langflow artifact directories", async () => {
   await withTempDir(async (dir) => {
     const result = await ensureRepoConventions(dir);
-    assert.ok(existsSync(join(dir, "flows/generated")));
-    assert.ok(existsSync(join(dir, "flows/templates")));
-    assert.ok(existsSync(join(dir, "flows/imported")));
-    assert.ok(existsSync(join(dir, "catalog")));
-    assert.ok(result.created.includes("flows/generated"));
+    assert.ok(existsSync(join(dir, ".otto/langflow/generated")));
+    assert.ok(existsSync(join(dir, ".otto/langflow/samples")));
+    assert.ok(existsSync(join(dir, ".otto/langflow/imported")));
+    assert.ok(existsSync(join(dir, ".otto/langflow/catalog")));
+    assert.ok(existsSync(join(dir, ".otto/langflow/runs")));
+    assert.ok(result.created.includes(".otto/langflow/generated"));
   });
 });
 
@@ -25,18 +26,18 @@ test("appends catalog cache entries to a fresh .gitignore", async () => {
   await withTempDir(async (dir) => {
     await ensureRepoConventions(dir);
     const gi = readFileSync(join(dir, ".gitignore"), "utf-8");
-    assert.match(gi, /catalog\/components\.raw\.json/);
-    assert.match(gi, /catalog\/components\.normalized\.json/);
-    assert.match(gi, /catalog\/component-index\.md/);
+    assert.match(gi, /\.otto\/langflow\/catalog\/components\.raw\.json/);
+    assert.match(gi, /\.otto\/langflow\/catalog\/components\.normalized\.json/);
+    assert.match(gi, /\.otto\/langflow\/catalog\/component-index\.md/);
   });
 });
 
 test("does not duplicate entries when .gitignore already contains them", async () => {
   await withTempDir(async (dir) => {
-    writeFileSync(join(dir, ".gitignore"), "node_modules/\ncatalog/components.raw.json\n");
+    writeFileSync(join(dir, ".gitignore"), "node_modules/\n.otto/langflow/catalog/components.raw.json\n");
     await ensureRepoConventions(dir);
     const gi = readFileSync(join(dir, ".gitignore"), "utf-8");
-    const occurrences = gi.split("catalog/components.raw.json").length - 1;
+    const occurrences = gi.split(".otto/langflow/catalog/components.raw.json").length - 1;
     assert.equal(occurrences, 1, "should keep just one entry");
   });
 });

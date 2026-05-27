@@ -18,6 +18,7 @@ import { inspectComponentTool } from "./inspect-component.js";
 import { validateFlowTool } from "./validate-flow.js";
 import { importFlowTool } from "./import-flow.js";
 import { smokeTestFlowTool } from "./smoke-test-flow.js";
+import { makeLangFlowTool } from "./langflow.js";
 
 export const OTTO_TOOL_NAMES = [
   "otto__refresh_catalog",
@@ -27,6 +28,7 @@ export const OTTO_TOOL_NAMES = [
   "otto__validate_flow",
   "otto__import_flow",
   "otto__smoke_test_flow",
+  "otto__langflow",
 ] as const;
 
 export function registerOttoTools(pi: ExtensionAPI): void {
@@ -37,4 +39,5 @@ export function registerOttoTools(pi: ExtensionAPI): void {
   pi.registerTool(validateFlowTool);
   pi.registerTool(importFlowTool);
   pi.registerTool(smokeTestFlowTool);
+  pi.registerTool(makeLangFlowTool(pi));
 }

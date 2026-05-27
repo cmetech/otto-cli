@@ -110,6 +110,11 @@ If the user does not specify otherwise, assume:
 - output type: chat
 - generated flow location: `flows/generated/`
 - local Langflow URL: `http://127.0.0.1:7860`
+- if a local OTTO gateway is configured or reachable, LLM-backed flows should prefer the OTTO gateway
+- OTTO gateway default base URL: `http://127.0.0.1:18080`
+- OTTO gateway default API shape: Anthropic Messages (`/v1/messages`), not Ollama and not OpenAI chat completions
+- OTTO gateway model default: `claude-sonnet-4`
+- OTTO gateway credential placeholder: `${OTTO_GATEWAY_TOKEN}`
 - catalog file: `catalog/components.normalized.json`
 - raw catalog file: `catalog/components.raw.json`
 - secrets should be placeholders or Langflow globals
@@ -141,6 +146,36 @@ If validation fails, Claude Code should:
 Claude Code should not claim the flow is valid unless validation passes.
 
 If validation cannot run because tooling is missing, Claude Code should clearly say that only JSON syntax validation was completed.
+
+The OTTO `otto__validate_flow` tool also performs local static graph checks even when `lfx` is unavailable. Those checks are part of the builder contract:
+
+- every edge source and target must exist in `data.nodes`
+- every edge must include `sourceHandle`, `targetHandle`, `data.sourceHandle`, and `data.targetHandle`
+- every source handle output name must exist in the source component outputs
+- every target handle field name must exist in the target component template
+- when a target template field exposes a `type`, `data.targetHandle.type` must match it
+- Chat Input nodes must have a downstream edge from their `message` output for normal chat flows
+- Chat Output nodes must have an incoming edge to their `input_value` field
+
+If validation reports an edge mismatch, Claude Code should repair the edge from component metadata instead of mutating random handle strings.
+
+## Flow compliance checklist
+
+Before declaring a generated flow complete, Claude Code must verify basic flow compliance:
+
+- The graph has one clear valid user-entry path, usually Chat Input.
+- The graph has at least one terminal output path, usually Chat Output.
+- Chat Output must be connected to the final response-producing component.
+- Required components must not be left disconnected.
+- Every edge source and target must exist in `data.nodes`.
+- Every edge must use catalog-confirmed, exported-flow-confirmed, or validation-confirmed handles.
+- For Chat Input, connect the `message` output from the ChatInput node to a compatible downstream `input_value` or message field.
+- For Chat Output, connect the final response component's Message-producing output, often `text_output` or `message`, to ChatOutput `input_value`.
+- ChatOutput `input_value` is usually a `HandleInput` whose template field type is `other`; the target handle must use `type: other`, not `type: str`, unless the exported component metadata explicitly differs.
+- The flow should validate and repair any invalid edge until Langflow will not remove connections on import.
+- If Langflow imports the flow but reports that connections were removed, treat that as failed validation. Inspect the removed connection, regenerate that edge from the source output and target template metadata, revalidate, and re-import only after the edge metadata matches.
+- External calls such as model, gateway, HTTP, database, or retrieval calls should have failure handling when catalog-valid components support it.
+- If catalog-valid failure handling cannot be represented, Claude Code should document that limitation instead of inventing unavailable router/error components.
 
 ## Import behavior
 

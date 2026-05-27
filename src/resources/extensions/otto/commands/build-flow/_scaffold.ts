@@ -8,18 +8,19 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const DIRS = [
-  "flows/generated",
-  "flows/templates",
-  "flows/imported",
-  "catalog",
+const REL_DIRS = [
+  ".otto/langflow/generated",
+  ".otto/langflow/samples",
+  ".otto/langflow/imported",
+  ".otto/langflow/catalog",
+  ".otto/langflow/runs",
 ] as const;
 
 const GITIGNORE_ENTRIES = [
   "# OTTO flow-builder catalog cache (regenerable)",
-  "catalog/components.raw.json",
-  "catalog/components.normalized.json",
-  "catalog/component-index.md",
+  ".otto/langflow/catalog/components.raw.json",
+  ".otto/langflow/catalog/components.normalized.json",
+  ".otto/langflow/catalog/component-index.md",
 ] as const;
 
 export interface ScaffoldResult {
@@ -29,7 +30,7 @@ export interface ScaffoldResult {
 
 export async function ensureRepoConventions(cwd: string): Promise<ScaffoldResult> {
   const created: string[] = [];
-  for (const rel of DIRS) {
+  for (const rel of REL_DIRS) {
     const abs = join(cwd, rel);
     if (!existsSync(abs)) {
       mkdirSync(abs, { recursive: true });

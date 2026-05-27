@@ -17,12 +17,16 @@ import { LangFlowClient } from "./clients/langflow.js";
 import { loadFlowTriggers } from "./commands/flow-triggers/_loader.js";
 import type { FlowTrigger, FlowTriggerInput } from "./commands/flow-triggers/_schema.js";
 import { ANSI_BRAND_YELLOW, ANSI_BRAND_GREEN, ANSI_DIM, ANSI_RESET } from "../../brand-colors.js";
+import { effectiveLangFlowConfig } from "./langflow/config.js";
 import { registerOttoTools } from "./tools/_loader.js";
+import { executeLangFlowTool } from "./tools/langflow.js";
 import { registerBuildFlowCommand } from "./commands/build-flow/command.js";
 import { registerPromptEngineerCommand } from "./commands/prompt-engineer/command.js";
+import { parseLangFlowNaturalLanguage } from "./commands/langflow/natural-language.js";
 
 const _here = dirname(fileURLToPath(import.meta.url));
 const FLOW_TRIGGERS_DIR = join(_here, "commands", "flow-triggers");
+const SKILLS_DIR = join(_here, "skills");
 
 const LANGFLOW_DEFAULT_URL = "http://127.0.0.1:7860";
 
@@ -96,7 +100,11 @@ function buildHandler(trigger: FlowTrigger): (args: string, ctx: ExtensionComman
 }
 
 export default function Otto(pi: ExtensionAPI): void {
-  pi.on("session_start", async () => {
+  pi.on("resources_discover", () => ({
+    skillPaths: [SKILLS_DIR],
+  }));
+
+  pi.on("session_start", async (_event, ctx) => {
     const yellow = ANSI_BRAND_YELLOW;
     const green  = ANSI_BRAND_GREEN;
     const dim    = ANSI_DIM;
@@ -121,16 +129,52 @@ export default function Otto(pi: ExtensionAPI): void {
       process.stderr.write(`  ${yellow}gateway:${reset} ${dim}direct (no OTTO_GATEWAY_URL set)${reset}\n`);
     }
 
-    // ── LangFlow connection probe (Phase 3) ──
-    const lfClient = getLangFlowClient();
-    const lfUrl = process.env.LANGFLOW_SERVER_URL || LANGFLOW_DEFAULT_URL;
-    const lfVersion = await lfClient.getVersion();
+    // ── LangFlow connection probe ──
+    const cfg = effectiveLangFlowConfig();
+    const langflowDisabled = cfg.enabled === false;
+    const lfUrl = cfg.url || LANGFLOW_DEFAULT_URL;
     const lfHost = new URL(lfUrl).host;
-    if (lfVersion) {
-      process.stderr.write(`  ${yellow}langflow:${reset} ${green}connected${reset} ${dim}(v${lfVersion.version} @ ${lfHost})${reset}\n`);
+    if (langflowDisabled) {
+      ctx?.ui.setStatus("otto-langflow", undefined);
+      process.stderr.write(`  ${yellow}langflow:${reset} ${dim}disabled (${lfHost})${reset}\n`);
     } else {
-      process.stderr.write(`  ${yellow}langflow:${reset} ${dim}offline (${lfHost})${reset}\n`);
+      const lfClient = getLangFlowClient();
+      const lfVersion = await lfClient.getVersion();
+      if (lfVersion) {
+        ctx?.ui.setStatus("otto-langflow", `LangFlow ok v${lfVersion.version}`);
+        process.stderr.write(`  ${yellow}langflow:${reset} ${green}connected${reset} ${dim}(v${lfVersion.version} @ ${lfHost})${reset}\n`);
+      } else {
+        ctx?.ui.setStatus("otto-langflow", "LangFlow offline");
+        process.stderr.write(`  ${yellow}langflow:${reset} ${dim}offline (${lfHost})${reset}\n`);
+      }
     }
+  });
+
+  pi.on("input", async (event, ctx) => {
+    if (event.source === "extension") return { action: "continue" };
+    const intent = parseLangFlowNaturalLanguage(event.text);
+    if (!intent) return { action: "continue" };
+
+    ctx.ui.setWorkingMessage("LangFlow");
+    try {
+      const toolResult = await executeLangFlowTool(intent, ctx.cwd, pi);
+      const text = toolResult.content.map((part) => part.type === "text" ? part.text : "").filter(Boolean).join("\n");
+      pi.sendMessage({
+        customType: "otto-langflow",
+        content: text || "LangFlow command completed.",
+        display: true,
+        details: toolResult.details,
+      });
+      const isError = "isError" in toolResult && toolResult.isError === true;
+      ctx.ui.notify(text.length > 1500 ? `${text.slice(0, 1500)}\n...` : text, isError ? "error" : "info");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      ctx.ui.notify(`LangFlow command failed: ${message}`, "error");
+    } finally {
+      ctx.ui.setWorkingMessage();
+    }
+
+    return { action: "handled" };
   });
 
   // ── Register flow-builder tools (Phase 4) ──

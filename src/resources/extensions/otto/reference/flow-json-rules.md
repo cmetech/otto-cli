@@ -114,6 +114,25 @@ A node usually has this general shape:
 
 The actual `data.node` content should come from the local component catalog or a known-good exported flow.
 
+## Flow compliance checklist
+
+Every generated flow should be reviewed as a graph, not just as JSON.
+
+Minimum compliance requirements:
+
+- There is a clear valid user-entry path, usually Chat Input.
+- There is at least one terminal output path, usually Chat Output.
+- Chat Output must be connected to the final response-producing component.
+- Required processing, model, parser, retriever, and output components are not disconnected.
+- The primary happy path is traceable from input to output.
+- Chat Input should normally expose a `message` output. Connect that output to the next component's compatible input field, usually `input_value` when the target accepts `Message`.
+- Chat Output should normally receive the final response on its `input_value` field. In current Langflow exports, ChatOutput `input_value` is commonly a `HandleInput` with template `type: "other"` and `input_types` including `Message`.
+- Do not generate a ChatOutput target handle with `type: "str"` when the ChatOutput template says `type: "other"`. Langflow may import the JSON but silently remove that connection.
+- Any branch that handles blocked, invalid, or failed work has a terminal output or a documented sink.
+- External calls such as model, gateway, HTTP, database, or retrieval calls include failure handling when catalog-valid components support it.
+- If the local catalog has no router, try/catch, fallback, or error-output component that can express failure handling, document that limitation in the summary instead of inventing one.
+- Validate and repair invalid edges until Langflow will not remove connections on import.
+
 ## Node ID rules
 
 Use readable and stable node IDs.
@@ -231,6 +250,18 @@ Example shape:
     }
 
 The exact handle content must come from existing examples, exported flows, or catalog metadata.
+
+For each edge, validate handle metadata against the two node definitions:
+
+- `data.sourceHandle.id` equals the source node id.
+- `data.sourceHandle.name` exists in the source node `outputs[].name`.
+- `data.sourceHandle.output_types` is compatible with the selected source output `types`.
+- `data.targetHandle.id` equals the target node id.
+- `data.targetHandle.fieldName` exists in the target node `template`.
+- `data.targetHandle.inputTypes` is compatible with the target template field `input_types`.
+- `data.targetHandle.type` matches the target template field `type` when that field provides a type.
+
+If a connection disappears after import, the edge is not valid even if JSON syntax passed. Regenerate that edge from the component metadata and revalidate.
 
 Do not invent handles.
 

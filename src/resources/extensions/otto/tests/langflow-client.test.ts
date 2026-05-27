@@ -64,6 +64,31 @@ test("runFlow POSTs to /api/v1/run/<flowId> with correct body shape", async () =
   );
 });
 
+test("listFlows GETs /api/v1/flows/ and normalizes id, name, and endpoint", async () => {
+  let receivedApiKeyHeader: string | undefined;
+  await withMockServer(
+    (req, res) => {
+      assert.equal(req.method, "GET");
+      assert.equal(req.url, "/api/v1/flows/");
+      receivedApiKeyHeader = req.headers["x-api-key"] as string | undefined;
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify([
+        { id: "flow-1", name: "Echo", endpoint_name: "echo" },
+        { id: "flow-2", name: "Summarize" },
+      ]));
+    },
+    async (url) => {
+      const client = new LangFlowClient({ baseUrl: url, apiKey: "secret-key" });
+      const flows = await client.listFlows();
+      assert.equal(receivedApiKeyHeader, "secret-key");
+      assert.deepEqual(flows, [
+        { id: "flow-1", name: "Echo", endpointName: "echo" },
+        { id: "flow-2", name: "Summarize", endpointName: undefined },
+      ]);
+    },
+  );
+});
+
 test("runFlow omits x-api-key header when no apiKey configured", async () => {
   let receivedApiKeyHeader: string | undefined;
   await withMockServer(
@@ -92,6 +117,59 @@ test("runFlow surfaces 4xx errors with status + body", async () => {
         () => client.runFlow("missing-flow", { input_value: "x" }),
         (err: Error) => err.message.includes("404") && err.message.includes("Flow not found"),
       );
+    },
+  );
+});
+
+test("getFlow GETs /api/v1/flows/<id> and returns parsed flow JSON", async () => {
+  await withMockServer(
+    (req, res) => {
+      assert.equal(req.method, "GET");
+      assert.equal(req.url, "/api/v1/flows/flow-1");
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ id: "flow-1", name: "Echo", data: { nodes: [], edges: [] } }));
+    },
+    async (url) => {
+      const client = new LangFlowClient({ baseUrl: url });
+      const flow = await client.getFlow("flow-1");
+      assert.equal((flow as { id: string }).id, "flow-1");
+    },
+  );
+});
+
+test("updateFlow PATCHes /api/v1/flows/<id> with JSON payload", async () => {
+  let receivedBody = "";
+  await withMockServer(
+    (req, res) => {
+      assert.equal(req.method, "PATCH");
+      assert.equal(req.url, "/api/v1/flows/flow-1");
+      req.on("data", (chunk) => (receivedBody += chunk.toString()));
+      req.on("end", () => {
+        res.setHeader("content-type", "application/json");
+        res.end(JSON.stringify({ id: "flow-1", name: "Updated" }));
+      });
+    },
+    async (url) => {
+      const client = new LangFlowClient({ baseUrl: url });
+      const result = await client.updateFlow("flow-1", { name: "Updated" });
+      assert.deepEqual(JSON.parse(receivedBody), { name: "Updated" });
+      assert.equal((result as { id: string }).id, "flow-1");
+    },
+  );
+});
+
+test("deleteFlow DELETEs /api/v1/flows/<id>", async () => {
+  await withMockServer(
+    (req, res) => {
+      assert.equal(req.method, "DELETE");
+      assert.equal(req.url, "/api/v1/flows/flow-1");
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ message: "Flow deleted successfully" }));
+    },
+    async (url) => {
+      const client = new LangFlowClient({ baseUrl: url });
+      const result = await client.deleteFlow("flow-1");
+      assert.match(JSON.stringify(result), /deleted/i);
     },
   );
 });

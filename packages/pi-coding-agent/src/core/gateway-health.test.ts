@@ -91,10 +91,35 @@ describe("gateway health monitor", () => {
 		});
 	});
 
-	it("formats compact footer labels", () => {
-		assert.equal(formatGatewayFooterStatus({ mode: "gateway", health: "healthy" }, { routed: true })?.label, "GW routed");
-		assert.equal(formatGatewayFooterStatus({ mode: "gateway", health: "healthy" }, { routed: false })?.label, "GW bypass");
-		assert.equal(formatGatewayFooterStatus({ mode: "gateway", health: "unhealthy" })?.label, "GW down");
-		assert.equal(formatGatewayFooterStatus({ mode: "fallback", health: "unhealthy" })?.label, "GW fallback");
+	it("formats compact footer labels with color driven by health and label by routing", () => {
+		// healthy + routed: green "GW routed"
+		assert.deepEqual(
+			formatGatewayFooterStatus({ mode: "gateway", health: "healthy" }, { routed: true }),
+			{ label: "GW routed", color: "success" },
+		);
+		// healthy + bypass: green "GW bypass" — GW is up, user chose to bypass
+		assert.deepEqual(
+			formatGatewayFooterStatus({ mode: "gateway", health: "healthy" }, { routed: false }),
+			{ label: "GW bypass", color: "success" },
+		);
+		// unhealthy + not routing through GW: red "GW down" — config is broken even though user isn't using it
+		assert.deepEqual(
+			formatGatewayFooterStatus({ mode: "gateway", health: "unhealthy" }, { routed: false }),
+			{ label: "GW down", color: "error" },
+		);
+		assert.deepEqual(
+			formatGatewayFooterStatus({ mode: "gateway", health: "unhealthy" }),
+			{ label: "GW down", color: "error" },
+		);
+		// unhealthy + forced direct: red "GW fallback" — was supposed to route, failed over
+		assert.deepEqual(
+			formatGatewayFooterStatus({ mode: "fallback", health: "unhealthy" }),
+			{ label: "GW fallback", color: "error" },
+		);
+		// checking: dim "GW ..."
+		assert.deepEqual(
+			formatGatewayFooterStatus({ mode: "gateway", health: "checking" }),
+			{ label: "GW ...", color: "dim" },
+		);
 	});
 });

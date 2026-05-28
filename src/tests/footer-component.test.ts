@@ -80,11 +80,26 @@ test("FooterComponent renders gateway health and fallback states compactly", () 
   );
 
   try {
-    assert.match(stripVTControlCharacters(makeFooter({ mode: "gateway", health: "healthy" }, "otto-gateway").render(160)[1]), /GW routed/);
-    assert.match(stripVTControlCharacters(makeFooter({ mode: "gateway", health: "healthy" }).render(160)[1]), /GW bypass/);
-    assert.match(stripVTControlCharacters(makeFooter({ mode: "gateway", health: "healthy" }, "claude-code").render(160)[1]), /GW bypass/);
-    assert.match(stripVTControlCharacters(makeFooter({ mode: "gateway", health: "unhealthy" }).render(160)[1]), /GW down/);
-    assert.match(stripVTControlCharacters(makeFooter({ mode: "fallback", health: "unhealthy" }).render(160)[1]), /GW fallback/);
+    // Labels: routing decision. Colors: gateway health.
+    const routedLine = makeFooter({ mode: "gateway", health: "healthy" }, "otto-gateway").render(160)[1];
+    assert.match(stripVTControlCharacters(routedLine), /GW routed/);
+    assert.ok(routedLine.includes(`${theme.getFgAnsi("success")}GW routed`), "GW routed must render in success color");
+
+    const bypassHealthyLine = makeFooter({ mode: "gateway", health: "healthy" }).render(160)[1];
+    assert.match(stripVTControlCharacters(bypassHealthyLine), /GW bypass/);
+    assert.ok(bypassHealthyLine.includes(`${theme.getFgAnsi("success")}GW bypass`), "GW bypass with healthy gateway must render in success color");
+
+    const bypassClaudeLine = makeFooter({ mode: "gateway", health: "healthy" }, "claude-code").render(160)[1];
+    assert.match(stripVTControlCharacters(bypassClaudeLine), /GW bypass/);
+    assert.ok(bypassClaudeLine.includes(`${theme.getFgAnsi("success")}GW bypass`), "GW bypass on claude-code provider must render in success color");
+
+    const downLine = makeFooter({ mode: "gateway", health: "unhealthy" }).render(160)[1];
+    assert.match(stripVTControlCharacters(downLine), /GW down/);
+    assert.ok(downLine.includes(`${theme.getFgAnsi("error")}GW down`), "GW down must render in error color");
+
+    const fallbackLine = makeFooter({ mode: "fallback", health: "unhealthy" }).render(160)[1];
+    assert.match(stripVTControlCharacters(fallbackLine), /GW fallback/);
+    assert.ok(fallbackLine.includes(`${theme.getFgAnsi("error")}GW fallback`), "GW fallback must render in error color");
   } finally {
     if (previousGatewayUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
     else process.env.OTTO_GATEWAY_URL = previousGatewayUrl;

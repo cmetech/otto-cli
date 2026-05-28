@@ -44,15 +44,15 @@ export function formatGatewayFooterStatus(
 	status: GatewayStatus | null,
 	options: { routed?: boolean } = {},
 ): GatewayFooterStatus | null {
+	// Color = gateway health (green up / red down / dim checking).
+	// Label = routing relationship (routed / bypass / fallback / down).
 	if (!status) return null;
-	if (status.mode === "fallback") return { label: "GW fallback", color: "warning" };
-	if (status.health === "healthy") {
-		return options.routed
-			? { label: "GW routed", color: "success" }
-			: { label: "GW bypass", color: "warning" };
-	}
+	if (status.mode === "fallback") return { label: "GW fallback", color: "error" };
 	if (status.health === "checking") return { label: "GW ...", color: "dim" };
-	return { label: "GW down", color: "error" };
+	if (status.health === "unhealthy") return { label: "GW down", color: "error" };
+	return options.routed
+		? { label: "GW routed", color: "success" }
+		: { label: "GW bypass", color: "success" };
 }
 
 export interface GatewayHealthMonitorOptions {

@@ -240,7 +240,7 @@ jobs:
       - name: Run e2e suite (against built binary)
         run: |
           chmod +x dist/loader.js
-          export GSD_SMOKE_BINARY="$(pwd)/dist/loader.js"
+          export OTTO_SMOKE_BINARY="$(pwd)/dist/loader.js"
           npm run test:e2e
 
       - name: Upload e2e artifacts on failure
@@ -329,7 +329,7 @@ jobs:
         shell: bash
         continue-on-error: true
         run: |
-          export GSD_SMOKE_BINARY="$(pwd)/dist/loader.js"
+          export OTTO_SMOKE_BINARY="$(pwd)/dist/loader.js"
           npm run test:e2e:windows-smoke
 
       - name: Upload Windows e2e artifacts on failure

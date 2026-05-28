@@ -12,6 +12,9 @@
   "files": [
     "otto_engine.node"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",

@@ -144,13 +144,20 @@ jobs:
       - name: Copy binaries to platform packages
         run: |
           for platform in darwin-arm64 darwin-x64 linux-x64-gnu linux-arm64-gnu win32-x64-msvc; do
-            cp "artifacts/native-${platform}/gsd_engine.node" "native/npm/${platform}/gsd_engine.node"
+            cp "artifacts/native-${platform}/gsd_engine.node" "native/npm/${platform}/otto_engine.node"
             echo "Copied binary for ${platform}"
             ls -la "native/npm/${platform}/"
           done
 
       - name: Sync platform package versions
         run: node native/scripts/sync-platform-versions.cjs
+
+      - name: Validate platform package contents
+        run: |
+          for platform in darwin-arm64 darwin-x64 linux-x64-gnu linux-arm64-gnu win32-x64-msvc; do
+            test -s "native/npm/${platform}/otto_engine.node" || { echo "::error::native/npm/${platform}/otto_engine.node missing or empty"; exit 1; }
+            (cd "native/npm/${platform}" && npm pack --dry-run)
+          done
 
       - name: Detect prerelease version
         id: version-check
@@ -171,7 +178,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ github.event.inputs.publish_auth == 'token' && secrets.NPM_TOKEN || '' }}
         run: |
           for platform in darwin-arm64 darwin-x64 linux-x64-gnu linux-arm64-gnu win32-x64-msvc; do
-            echo "Publishing @opengsd/engine-${platform}..."
+            echo "Publishing @cmetech/otto-engine-${platform}..."
             cd "native/npm/${platform}"
             if OUTPUT=$(npm publish --access public ${{ steps.version-check.outputs.tag_flag }} 2>&1); then
               echo "$OUTPUT"
@@ -195,7 +202,7 @@ jobs:
           for attempt in $(seq 1 5); do
             FAILED=0
             for platform in darwin-arm64 darwin-x64 linux-x64-gnu linux-arm64-gnu win32-x64-msvc; do
-              PKG="@opengsd/engine-${platform}"
+              PKG="@cmetech/otto-engine-${platform}"
               PUBLISHED=$(npm view "${PKG}@${VERSION}" version 2>/dev/null || echo "")
               if [ "${PUBLISHED}" != "${VERSION}" ]; then
                 FAILED=1
@@ -209,7 +216,7 @@ jobs:
             if [ "$attempt" = "5" ]; then
               echo "::error::One or more platform packages not found after 5 attempts. Aborting."
               for platform in darwin-arm64 darwin-x64 linux-x64-gnu linux-arm64-gnu win32-x64-msvc; do
-                PKG="@opengsd/engine-${platform}"
+                PKG="@cmetech/otto-engine-${platform}"
                 PUBLISHED=$(npm view "${PKG}@${VERSION}" version 2>/dev/null || echo "")
                 if [ "${PUBLISHED}" = "${VERSION}" ]; then
                   echo "  ✓ ${PKG}@${VERSION}"
@@ -242,7 +249,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ github.event.inputs.publish_auth == 'token' && secrets.NPM_TOKEN || '' }}
         run: |
           # --ignore-scripts: skip prepublishOnly since we built explicitly above
-          if OUTPUT=$(npm publish --ignore-scripts ${{ steps.version-check.outputs.tag_flag }} 2>&1); then
+          if OUTPUT=$(npm publish --ignore-scripts --access public ${{ steps.version-check.outputs.tag_flag }} 2>&1); then
             echo "$OUTPUT"
           else
             if echo "$OUTPUT" | grep -q "cannot publish over the previously published\|You cannot publish over"; then
@@ -261,16 +268,16 @@ jobs:
           npm init -y > /dev/null 2>&1
 
           # Wait for npm registry with exponential backoff (5s, 10s, 20s, 30s, 30s, 30s, 30s — max ~155s vs fixed 5min)
-          echo "Waiting for @opengsd/gsd-pi@${VERSION} to appear on npm..."
+          echo "Waiting for @cmetech/otto@${VERSION} to appear on npm..."
           DELAY=5
           for attempt in $(seq 1 8); do
-            PUBLISHED=$(npm view "@opengsd/gsd-pi@${VERSION}" version 2>/dev/null || echo "")
+            PUBLISHED=$(npm view "@cmetech/otto@${VERSION}" version 2>/dev/null || echo "")
             if [ "${PUBLISHED}" = "${VERSION}" ]; then
               echo "  ✓ Version ${VERSION} visible on npm (attempt ${attempt})"
               break
             fi
             if [ "$attempt" = "8" ]; then
-              echo "::warning::@opengsd/gsd-pi@${VERSION} not visible on npm after 8 attempts — skipping smoke test"
+              echo "::warning::@cmetech/otto@${VERSION} not visible on npm after 8 attempts — skipping smoke test"
               exit 0
             fi
             echo "  Attempt ${attempt}: not yet visible, retrying in ${DELAY}s..."
@@ -280,15 +287,15 @@ jobs:
           done
 
           # Install and verify with backoff (5s, 10s, 20s)
-          echo "Installing @opengsd/gsd-pi@${VERSION}..."
+          echo "Installing @cmetech/otto@${VERSION}..."
           DELAY=5
           for attempt in 1 2 3; do
-            if npm install "@opengsd/gsd-pi@${VERSION}" 2>&1 | tee /tmp/install-output.txt; then
+            if npm install "@cmetech/otto@${VERSION}" 2>&1 | tee /tmp/install-output.txt; then
               echo "  ✓ Install succeeded"
-              RAW=$(node node_modules/@opengsd/gsd-pi/dist/loader.js --version 2>&1 || echo "FAILED")
+              RAW=$(node node_modules/@cmetech/otto/dist/loader.js --version 2>&1 || echo "FAILED")
               ACTUAL=$(echo "$RAW" | sed 's/\x1b\[[0-9;]*m//g' | grep -oE "^${VERSION}$" | head -1)
               if [ "$ACTUAL" = "$VERSION" ]; then
-                echo "  ✓ gsd --version = ${VERSION}"
+                echo "  ✓ otto --version = ${VERSION}"
                 echo "Published package is functional"
                 exit 0
               else
@@ -302,7 +309,7 @@ jobs:
             sleep "$DELAY"
             DELAY=$((DELAY * 2))
           done
-          echo "::error::Smoke test failed — @opengsd/gsd-pi@${VERSION} not installable"
+          echo "::error::Smoke test failed — @cmetech/otto@${VERSION} not installable"
           exit 1
 
       - name: Verify dist-tag after publish
@@ -312,7 +319,7 @@ jobs:
           echo "Verifying npm dist-tag 'latest' points to ${VERSION}..."
           DELAY=5
           for attempt in $(seq 1 6); do
-            LATEST=$(npm view @opengsd/gsd-pi dist-tags.latest 2>/dev/null || echo "")
+            LATEST=$(npm view @cmetech/otto dist-tags.latest 2>/dev/null || echo "")
             if [ "${LATEST}" = "${VERSION}" ]; then
               echo "  ✓ npm dist-tags.latest = ${VERSION}"
               exit 0
@@ -322,5 +329,5 @@ jobs:
             DELAY=$((DELAY * 2))
             if [ "$DELAY" -gt 30 ]; then DELAY=30; fi
           done
-          echo "::error::dist-tags.latest is '${LATEST}' but expected '${VERSION}' — run: npm dist-tag add @opengsd/gsd-pi@${VERSION} latest"
+          echo "::error::dist-tags.latest is '${LATEST}' but expected '${VERSION}' — run: npm dist-tag add @cmetech/otto@${VERSION} latest"
           exit 1

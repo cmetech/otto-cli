@@ -1,6 +1,6 @@
 {
   "name": "@cmetech/otto-engine-win32-x64-msvc",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "OTTO native engine binary for win32-x64-msvc",
   "os": [
     "win32"

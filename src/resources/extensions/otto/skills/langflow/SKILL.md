@@ -29,6 +29,7 @@ Use `otto__langflow` with these actions:
 - For `delete_flow`, set `confirmDelete: true` only when the user clearly asked to delete/remove the flow. If deletion intent is ambiguous, ask one concise confirmation question.
 - For `run_flow`, set `flow` and `input`.
 - If required fields are missing and cannot be inferred, ask one concise clarification question.
+- If `otto__langflow` reports that LangFlow is not connected or authentication is missing, do not retry the tool call. Tell the user to run `/otto langflow connect`, provide the LangFlow URL/API key if prompted, then retry their request.
 </required_behavior>
 
 <examples>

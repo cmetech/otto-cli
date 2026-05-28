@@ -87,3 +87,34 @@ test("otto__langflow lists flows with a prefix filter", async () => {
     },
   );
 });
+
+test("otto__langflow fails fast with connect instructions on LangFlow auth failure", async () => {
+  await withMockServer(
+    (req, res) => {
+      assert.equal(req.url, "/api/v1/flows/");
+      res.statusCode = 403;
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ detail: "No authentication credentials provided" }));
+    },
+    async (url) => {
+      saveConfig({
+        gateway: { url: null, token: null },
+        langflow: { url, apiKey: null, enabled: true },
+      });
+
+      const tool = makeLangFlowTool({ sendMessage() {} } as never);
+      const result = await tool.execute(
+        "tool-1",
+        { action: "list_flows" },
+        undefined,
+        undefined,
+        { cwd: tmpProject } as never,
+      );
+
+      assert.equal((result as { isError?: boolean }).isError, true);
+      assert.match(text(result), /LangFlow is not connected or authentication is missing/);
+      assert.match(text(result), /\/otto langflow connect/);
+      assert.doesNotMatch(text(result), /LangFlow action failed/);
+    },
+  );
+});

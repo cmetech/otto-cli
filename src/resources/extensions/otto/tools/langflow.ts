@@ -82,6 +82,7 @@ interface LangFlowToolDetails {
   flowId?: string;
   path?: string;
   count?: number;
+  connectionIssue?: boolean;
 }
 
 function result(text: string, details: LangFlowToolDetails, isError = false): AgentToolResult<LangFlowToolDetails> {
@@ -97,6 +98,22 @@ function requireEnabled(action: LangFlowToolAction): AgentToolResult<LangFlowToo
   const cfg = effectiveLangFlowConfig();
   if (cfg.enabled) return undefined;
   return result("LangFlow is disabled. Run `/otto langflow connect [url]` or ask to connect LangFlow first.", { action }, true);
+}
+
+function connectionFailureResult(
+  action: LangFlowToolAction,
+  message: string,
+): AgentToolResult<LangFlowToolDetails> | undefined {
+  if (!/\b(401|403)\b|authentication|credentials|forbidden|unauthorized/i.test(message)) return undefined;
+  return result(
+    [
+      "LangFlow is not connected or authentication is missing.",
+      "Run `/otto langflow connect`, provide the LangFlow URL/API key if prompted, then retry the request.",
+      "Do not retry this LangFlow action until the connection is configured.",
+    ].join(" "),
+    { action, connectionIssue: true },
+    true,
+  );
 }
 
 function ensureArtifactDirs(projectRoot: string): ReturnType<typeof resolveLangFlowArtifacts> {
@@ -187,119 +204,126 @@ export async function executeLangFlowTool(params: Params, projectRoot: string, p
     if (disabled) return disabled;
   }
 
-  switch (params.action) {
-    case "status": {
-      const cfg = effectiveLangFlowConfig();
-      if (!cfg.enabled) return result(`LangFlow disabled (${cfg.url}).`, { action: params.action });
-      const version = await makeClient().getVersion(1500);
-      return version
-        ? result(`LangFlow connected at ${cfg.url} (v${version.version}).`, { action: params.action })
-        : result(`LangFlow configured at ${cfg.url}, but health check failed.`, { action: params.action }, true);
-    }
-    case "list_flows": {
-      const prefix = params.prefix?.trim().toLowerCase();
-      let flows = await makeClient().listFlows();
-      if (prefix) {
-        flows = flows.filter((flow) =>
-          flow.name.toLowerCase().startsWith(prefix) ||
-          flow.id.toLowerCase().startsWith(prefix) ||
-          flow.endpointName?.toLowerCase().startsWith(prefix)
-        );
+  try {
+    switch (params.action) {
+      case "status": {
+        const cfg = effectiveLangFlowConfig();
+        if (!cfg.enabled) return result(`LangFlow disabled (${cfg.url}).`, { action: params.action });
+        const version = await makeClient().getVersion(1500);
+        return version
+          ? result(`LangFlow connected at ${cfg.url} (v${version.version}).`, { action: params.action })
+          : result(`LangFlow configured at ${cfg.url}, but health check failed. Run \`/otto langflow connect\` if this server requires authentication.`, { action: params.action }, true);
       }
-      return result(formatFlows(flows), { action: params.action, count: flows.length });
-    }
-    case "show_flow": {
-      if (!params.flow?.trim()) return result("show_flow requires `flow`.", { action: params.action }, true);
-      const client = makeClient();
-      const flow = await resolveExistingFlow(client, params.flow) ?? { id: params.flow };
-      const raw = await client.getFlow(flow.id);
-      return result(JSON.stringify(raw, null, 2), { action: params.action, flowId: flow.id });
-    }
-    case "import_flow": {
-      if (!params.file?.trim()) return result("import_flow requires `file`.", { action: params.action }, true);
-      const paths = ensureArtifactDirs(projectRoot);
-      const source = resolveFlowJson(projectRoot, params.file);
-      const client = makeClient();
-      const existing = findMatchingImportedFlow(source.payload, await client.listFlows());
-      if (existing && !params.update && !params.replace && !params.createNew) {
-        return result(
-          `LangFlow flow already exists: ${existing.name} (${existing.id}). Set update, replace, or createNew.`,
-          { action: params.action, flowId: existing.id },
-          true,
-        );
+      case "list_flows": {
+        const prefix = params.prefix?.trim().toLowerCase();
+        let flows = await makeClient().listFlows();
+        if (prefix) {
+          flows = flows.filter((flow) =>
+            flow.name.toLowerCase().startsWith(prefix) ||
+            flow.id.toLowerCase().startsWith(prefix) ||
+            flow.endpointName?.toLowerCase().startsWith(prefix)
+          );
+        }
+        return result(formatFlows(flows), { action: params.action, count: flows.length });
       }
-      if (existing && params.update) {
-        await client.updateFlow(existing.id, source.payload);
+      case "show_flow": {
+        if (!params.flow?.trim()) return result("show_flow requires `flow`.", { action: params.action }, true);
+        const client = makeClient();
+        const flow = await resolveExistingFlow(client, params.flow) ?? { id: params.flow };
+        const raw = await client.getFlow(flow.id);
+        return result(JSON.stringify(raw, null, 2), { action: params.action, flowId: flow.id });
+      }
+      case "import_flow": {
+        if (!params.file?.trim()) return result("import_flow requires `file`.", { action: params.action }, true);
+        const paths = ensureArtifactDirs(projectRoot);
+        const source = resolveFlowJson(projectRoot, params.file);
+        const client = makeClient();
+        const existing = findMatchingImportedFlow(source.payload, await client.listFlows());
+        if (existing && !params.update && !params.replace && !params.createNew) {
+          return result(
+            `LangFlow flow already exists: ${existing.name} (${existing.id}). Set update, replace, or createNew.`,
+            { action: params.action, flowId: existing.id },
+            true,
+          );
+        }
+        if (existing && params.update) {
+          await client.updateFlow(existing.id, source.payload);
+          copyFileSync(source.path, join(paths.imported, basename(source.path)));
+          return result(`Updated LangFlow flow ${existing.id} from ${basename(source.path)}.`, { action: params.action, flowId: existing.id });
+        }
+        if (existing && params.replace) {
+          await client.deleteFlow(existing.id);
+        }
+        const imported = await client.importFlow(source.payload);
         copyFileSync(source.path, join(paths.imported, basename(source.path)));
-        return result(`Updated LangFlow flow ${existing.id} from ${basename(source.path)}.`, { action: params.action, flowId: existing.id });
+        const id = typeof imported === "object" && imported && "id" in imported ? String((imported as { id: unknown }).id) : undefined;
+        return result(`Imported LangFlow flow ${id ?? "unknown"} from ${basename(source.path)}.`, { action: params.action, flowId: id });
       }
-      if (existing && params.replace) {
-        await client.deleteFlow(existing.id);
+      case "export_flow": {
+        if (!params.flow?.trim()) return result("export_flow requires `flow`.", { action: params.action }, true);
+        const paths = ensureArtifactDirs(projectRoot);
+        const client = makeClient();
+        const flow = await resolveExistingFlow(client, params.flow);
+        const flowId = flow?.id ?? params.flow;
+        const raw = await client.getFlow(flowId);
+        const name = flow?.name ?? (flowIdentity(raw).name ?? flowId);
+        const outPath = params.out?.trim() ? resolve(projectRoot, params.out) : join(paths.exported, `${slugify(name)}.json`);
+        if (existsSync(outPath) && !params.overwrite) {
+          return result(`Refusing to overwrite existing file: ${outPath}. Set overwrite true.`, { action: params.action, flowId, path: outPath }, true);
+        }
+        writeFileSync(outPath, JSON.stringify(raw, null, 2) + "\n");
+        return result(`Exported LangFlow flow ${flowId} to ${outPath}.`, { action: params.action, flowId, path: outPath });
       }
-      const imported = await client.importFlow(source.payload);
-      copyFileSync(source.path, join(paths.imported, basename(source.path)));
-      const id = typeof imported === "object" && imported && "id" in imported ? String((imported as { id: unknown }).id) : undefined;
-      return result(`Imported LangFlow flow ${id ?? "unknown"} from ${basename(source.path)}.`, { action: params.action, flowId: id });
-    }
-    case "export_flow": {
-      if (!params.flow?.trim()) return result("export_flow requires `flow`.", { action: params.action }, true);
-      const paths = ensureArtifactDirs(projectRoot);
-      const client = makeClient();
-      const flow = await resolveExistingFlow(client, params.flow);
-      const flowId = flow?.id ?? params.flow;
-      const raw = await client.getFlow(flowId);
-      const name = flow?.name ?? (flowIdentity(raw).name ?? flowId);
-      const outPath = params.out?.trim() ? resolve(projectRoot, params.out) : join(paths.exported, `${slugify(name)}.json`);
-      if (existsSync(outPath) && !params.overwrite) {
-        return result(`Refusing to overwrite existing file: ${outPath}. Set overwrite true.`, { action: params.action, flowId, path: outPath }, true);
+      case "delete_flow": {
+        if (!params.flow?.trim()) return result("delete_flow requires `flow`.", { action: params.action }, true);
+        if (!params.confirmDelete) return result("delete_flow requires confirmDelete: true.", { action: params.action }, true);
+        const client = makeClient();
+        const flow = await resolveExistingFlow(client, params.flow);
+        const flowId = flow?.id ?? params.flow;
+        await client.deleteFlow(flowId);
+        return result(`Deleted LangFlow flow ${flowId}.`, { action: params.action, flowId });
       }
-      writeFileSync(outPath, JSON.stringify(raw, null, 2) + "\n");
-      return result(`Exported LangFlow flow ${flowId} to ${outPath}.`, { action: params.action, flowId, path: outPath });
-    }
-    case "delete_flow": {
-      if (!params.flow?.trim()) return result("delete_flow requires `flow`.", { action: params.action }, true);
-      if (!params.confirmDelete) return result("delete_flow requires confirmDelete: true.", { action: params.action }, true);
-      const client = makeClient();
-      const flow = await resolveExistingFlow(client, params.flow);
-      const flowId = flow?.id ?? params.flow;
-      await client.deleteFlow(flowId);
-      return result(`Deleted LangFlow flow ${flowId}.`, { action: params.action, flowId });
-    }
-    case "run_flow": {
-      if (!params.flow?.trim()) return result("run_flow requires `flow`.", { action: params.action }, true);
-      if (!params.input?.trim()) return result("run_flow requires `input`.", { action: params.action }, true);
-      const client = makeClient();
-      const flow = await resolveExistingFlow(client, params.flow);
-      const flowId = flow?.id ?? params.flow;
-      const run = await client.runFlow(flowId, { input_value: params.input, input_type: "chat", output_type: "chat" });
-      const paths = ensureArtifactDirs(projectRoot);
-      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const runPath = join(paths.runs, `${stamp}.json`);
-      writeFileSync(runPath, JSON.stringify({ at: new Date().toISOString(), flow: flowId, input: params.input, text: run.text, raw: run.raw }, null, 2) + "\n");
-      return result(`${run.text}\n\nRun saved: ${runPath}`, { action: params.action, flowId, path: runPath });
-    }
-    case "build_flow": {
-      if (!params.description?.trim()) return result("build_flow requires `description`.", { action: params.action }, true);
-      ensureArtifactDirs(projectRoot);
-      try {
-        await ensureRepoConventions(projectRoot);
-      } catch {
-        // Artifact dirs are enough for the tool path; continue with the builder prompt.
+      case "run_flow": {
+        if (!params.flow?.trim()) return result("run_flow requires `flow`.", { action: params.action }, true);
+        if (!params.input?.trim()) return result("run_flow requires `input`.", { action: params.action }, true);
+        const client = makeClient();
+        const flow = await resolveExistingFlow(client, params.flow);
+        const flowId = flow?.id ?? params.flow;
+        const run = await client.runFlow(flowId, { input_value: params.input, input_type: "chat", output_type: "chat" });
+        const paths = ensureArtifactDirs(projectRoot);
+        const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const runPath = join(paths.runs, `${stamp}.json`);
+        writeFileSync(runPath, JSON.stringify({ at: new Date().toISOString(), flow: flowId, input: params.input, text: run.text, raw: run.raw }, null, 2) + "\n");
+        return result(`${run.text}\n\nRun saved: ${runPath}`, { action: params.action, flowId, path: runPath });
       }
-      const referenceContext = await loadReferenceDocs();
-      const prompt = composeBuildFlowPrompt({
-        description: params.description,
-        referenceContext,
-        runtimeDefaults: buildFlowRuntimeDefaults({
-          localGatewayReachable: await probeLocalOttoGateway(),
-        }),
-      });
-      pi.sendMessage(
-        { customType: "otto-langflow-build", content: prompt, display: false },
-        { triggerTurn: true },
-      );
-      return result("Started a LangFlow build turn for the requested flow.", { action: params.action });
+      case "build_flow": {
+        if (!params.description?.trim()) return result("build_flow requires `description`.", { action: params.action }, true);
+        ensureArtifactDirs(projectRoot);
+        try {
+          await ensureRepoConventions(projectRoot);
+        } catch {
+          // Artifact dirs are enough for the tool path; continue with the builder prompt.
+        }
+        const referenceContext = await loadReferenceDocs();
+        const prompt = composeBuildFlowPrompt({
+          description: params.description,
+          referenceContext,
+          runtimeDefaults: buildFlowRuntimeDefaults({
+            localGatewayReachable: await probeLocalOttoGateway(),
+          }),
+        });
+        pi.sendMessage(
+          { customType: "otto-langflow-build", content: prompt, display: false },
+          { triggerTurn: true },
+        );
+        return result("Started a LangFlow build turn for the requested flow.", { action: params.action });
+      }
     }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const connectionFailure = connectionFailureResult(params.action, message);
+    if (connectionFailure) return connectionFailure;
+    throw err;
   }
 }
 
@@ -313,6 +337,7 @@ export function makeLangFlowTool(pi: Pick<ExtensionAPI, "sendMessage">): ToolDef
     promptSnippet: "Manage LangFlow flows: build, list, show, import, export, delete, run, and status.",
     promptGuidelines: [
       "Use otto__langflow for natural-language LangFlow requests.",
+      "If otto__langflow reports that LangFlow is not connected or authentication is missing, do not retry; tell the user to run /otto langflow connect.",
       "For delete_flow, set confirmDelete true only when the user explicitly asks to delete/remove a flow.",
       "For import_flow over an existing flow, use update, replace, or createNew only when the user requested that behavior.",
       "For build_flow, pass the user's full flow description.",

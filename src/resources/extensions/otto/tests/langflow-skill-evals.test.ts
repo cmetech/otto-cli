@@ -17,6 +17,8 @@ test("LangFlow natural-language skill is bundled and points at otto__langflow", 
   const skill = readFileSync(skillPath, "utf-8");
   assert.match(skill, /name:\s*langflow/);
   assert.match(skill, /otto__langflow/);
+  assert.match(skill, /Do not retry/i);
+  assert.match(skill, /\/otto langflow connect/);
   for (const action of LANGFLOW_TOOL_ACTIONS) {
     assert.match(skill, new RegExp(action), `skill should document ${action}`);
   }

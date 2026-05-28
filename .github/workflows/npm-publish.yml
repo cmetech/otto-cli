@@ -99,9 +99,16 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           CHANNEL="${{ github.event.inputs.channel }}"
-          echo "Publishing @cmetech/otto@${VERSION} with --tag ${CHANNEL}..."
+          # --provenance attaches a sigstore-backed attestation linking the
+          # tarball to this workflow run + commit. Requires OIDC, so we only
+          # pass it in trusted-publishing mode; the token escape hatch skips it.
+          PROVENANCE_FLAG=""
+          if [ "${{ github.event.inputs.publish_auth || 'trusted' }}" = "trusted" ]; then
+            PROVENANCE_FLAG="--provenance"
+          fi
+          echo "Publishing @cmetech/otto@${VERSION} with --tag ${CHANNEL} ${PROVENANCE_FLAG}..."
           # --ignore-scripts: skip prepublishOnly since we built explicitly above
-          if OUTPUT=$(npm publish --ignore-scripts --access public --tag "${CHANNEL}" 2>&1); then
+          if OUTPUT=$(npm publish --ignore-scripts --access public $PROVENANCE_FLAG --tag "${CHANNEL}" 2>&1); then
             echo "$OUTPUT"
           else
             if echo "$OUTPUT" | grep -q "cannot publish over the previously published\|You cannot publish over"; then

@@ -188,10 +188,17 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ github.event.inputs.publish_auth == 'token' && secrets.NPM_TOKEN || '' }}
         run: |
+          # --provenance attaches a sigstore-backed attestation linking the
+          # tarball to this workflow run + commit. Requires OIDC, so we only
+          # pass it in trusted-publishing mode; the token escape hatch skips it.
+          PROVENANCE_FLAG=""
+          if [ "${{ github.event.inputs.publish_auth || 'trusted' }}" = "trusted" ]; then
+            PROVENANCE_FLAG="--provenance"
+          fi
           for platform in darwin-arm64 darwin-x64 linux-x64-gnu linux-arm64-gnu win32-x64-msvc; do
             echo "Publishing @cmetech/otto-engine-${platform}..."
             cd "native/npm/${platform}"
-            if OUTPUT=$(npm publish --access public ${{ steps.channel-check.outputs.tag_flag }} 2>&1); then
+            if OUTPUT=$(npm publish --access public $PROVENANCE_FLAG ${{ steps.channel-check.outputs.tag_flag }} 2>&1); then
               echo "$OUTPUT"
             else
               if echo "$OUTPUT" | grep -q "cannot publish over the previously published"; then

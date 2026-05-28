@@ -1,28 +1,31 @@
 # OTTO Release
 
-This repo publishes the npm CLI package `@cmetech/otto` and the platform native
-engine packages `@cmetech/otto-engine-*`.
+This repo publishes the npm CLI package `@cmetech/otto` and the platform
+native engine packages `@cmetech/otto-engine-*`.
 
-## One-Time Setup
+## How publishing is authenticated
 
-1. Create an npm automation token for the `cmetech` npm account.
-2. Add it to this GitHub repository as the secret `NPM_TOKEN`.
-3. Confirm GitHub Actions can access the repository and npm registry.
+We use **npm Trusted Publishing** (OIDC). The GitHub Actions workflow exchanges
+its `id-token` for a short-lived npm credential at publish time — there is no
+long-lived `NPM_TOKEN` to manage or rotate.
 
-Interactive `npm login` is only for local checks. GitHub Actions uses
-`NPM_TOKEN` when `publish_auth=token` is selected.
+Each package has a trusted publisher record configured on npmjs.com pointing at
+this repo's workflow filename:
 
-## Release 1.0.3+
+| Package | Workflow filename |
+|---|---|
+| `@cmetech/otto` | `npm-publish.yml` |
+| `@cmetech/otto-engine-darwin-arm64` | `build-native.yml` |
+| `@cmetech/otto-engine-darwin-x64` | `build-native.yml` |
+| `@cmetech/otto-engine-linux-x64-gnu` | `build-native.yml` |
+| `@cmetech/otto-engine-linux-arm64-gnu` | `build-native.yml` |
+| `@cmetech/otto-engine-win32-x64-msvc` | `build-native.yml` |
 
-Publishing is handled by the `Build Native Binaries` workflow. It:
+To inspect or modify a record: visit
+`https://www.npmjs.com/package/<package-name>/access` while signed in as a
+`cmetech` org member and scroll to **Trusted Publisher**.
 
-1. Builds native binaries on macOS, Linux, and Windows runners.
-2. Publishes `@cmetech/otto-engine-*` packages first.
-3. Verifies the native packages are visible on npm.
-4. Builds the production `dist/` output.
-5. Validates the packed `@cmetech/otto` package installs in a temp project.
-6. Publishes `@cmetech/otto`.
-7. Installs the published package and checks `otto --version`.
+## Publishing a release
 
 From a clean, pushed `main` branch:
 
@@ -30,17 +33,28 @@ From a clean, pushed `main` branch:
 npm run release:publish
 ```
 
+This triggers the `Build Native Binaries` workflow, which:
+
+1. Builds native binaries on macOS, Linux, and Windows runners.
+2. Publishes `@cmetech/otto-engine-*` packages via trusted publishing.
+3. Verifies the native packages are visible on npm.
+4. Builds the production `dist/` output.
+5. Validates the packed `@cmetech/otto` package installs in a temp project.
+6. Publishes `@cmetech/otto` via trusted publishing.
+7. Installs the published package globally and checks `otto --version`.
+
 Equivalent manual workflow inputs:
 
 ```text
 Workflow: Build Native Binaries
 publish: true
-publish_auth: token
+publish_auth: trusted
 ```
 
-For first publish of a scoped package, every scoped package must be public.
-The root and native package manifests set `publishConfig.access=public`, and
-the workflow also passes `--access public`.
+The `publish_auth=token` option still exists in the workflow as an escape
+hatch but should not be needed in normal operation. Use it only if trusted
+publishing breaks (e.g. npm OIDC outage) and you need to fall back to a
+short-lived granular access token.
 
 ## Local Verification
 
@@ -60,3 +74,11 @@ sudo chown -R $(id -u):$(id -g) ~/.npm
 
 The `otto` command on PATH runs `dist/loader.js`, so always finish runtime
 changes with `npm run build`.
+
+## Bootstrap history
+
+The first publish of each `@cmetech/*` package on May 28, 2026 used a
+short-lived granular access token (`NPM_TOKEN`) because npm requires a
+package to exist before a trusted publisher record can be configured.
+After 1.0.3 was live, trusted publisher records were added for all 6
+packages and the token was revoked.

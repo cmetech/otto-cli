@@ -123,7 +123,7 @@
     "release:changelog": "node scripts/generate-changelog.mjs",
     "release:bump": "node scripts/bump-version.mjs",
     "release:update-changelog": "node scripts/update-changelog.mjs",
-    "release:publish": "gh workflow run build-native.yml -f publish=true -f publish_auth=token",
+    "release:publish": "gh workflow run build-native.yml -f publish=true -f publish_auth=trusted",
     "docker:build-runtime": "docker build --target runtime -t ghcr.io/cmetech/otto .",
     "docker:build-builder": "docker build --target builder -t ghcr.io/open-gsd/otto-ci-builder .",
     "prepublishOnly": "npm run sync-pkg-version && npm run verify:version-sync && npm run verify:piconfig-sync && npm run branding:check && node scripts/prepublish-check.mjs && npm run build && npm run typecheck:extensions && npm run verify:native-platform-packages && npm run validate-pack",

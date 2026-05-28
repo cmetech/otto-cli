@@ -4,9 +4,10 @@ import { createServer, type Server, type IncomingMessage, type ServerResponse } 
 
 /**
  * End-to-end check: simulate the OTTO dev gateway in front of a fake
- * Anthropic upstream. Verify that when OTTO_GATEWAY_URL is set, our
- * patched Anthropic provider produces SDK options whose baseURL targets
- * the gateway and whose auth header is bearer-style.
+ * Anthropic upstream. Verify that when an otto-gateway namespaced model
+ * is selected and OTTO_GATEWAY_URL is set, our Anthropic transport produces
+ * SDK options whose baseURL targets the gateway and whose auth header is
+ * bearer-style.
  *
  * We don't actually instantiate the @anthropic-ai/sdk client here — that
  * would require pulling in the real SDK and stubbing fetch. Instead we
@@ -19,16 +20,26 @@ import { buildAnthropicClientOptions } from "../../../packages/pi-ai/src/provide
 
 function makeModel(): unknown {
   return {
-    id: "claude-sonnet-4",
-    name: "Claude Sonnet 4",
+    id: "gpt-5.4",
+    name: "OTTO Gateway gpt-5.4",
     api: "anthropic-messages",
-    provider: "anthropic",
-    baseUrl: "https://api.anthropic.com",
+    provider: "otto-gateway",
+    baseUrl: "http://127.0.0.1:18080",
     reasoning: true,
     input: ["text"],
     cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
     contextWindow: 200000,
     maxTokens: 8192,
+  };
+}
+
+function makeDirectAnthropicModel(): unknown {
+  return {
+    ...(makeModel() as Record<string, unknown>),
+    id: "claude-sonnet-4",
+    name: "Claude Sonnet 4",
+    provider: "anthropic",
+    baseUrl: "https://api.anthropic.com",
   };
 }
 
@@ -68,7 +79,7 @@ test("gateway routing options round-trip end-to-end (mock gateway hit)", async (
           type: "message",
           role: "assistant",
           content: [{ type: "text", text: "pong" }],
-          model: "claude-sonnet-4",
+          model: "gpt-5.4",
           stop_reason: "end_turn",
           usage: { input_tokens: 1, output_tokens: 1 },
         }));
@@ -96,7 +107,7 @@ test("gateway routing options round-trip end-to-end (mock gateway hit)", async (
             "content-type": "application/json",
             Authorization: `Bearer ${opts.authToken}`,
           },
-          body: JSON.stringify({ model: "claude-sonnet-4", max_tokens: 10, messages: [{ role: "user", content: "ping" }] }),
+          body: JSON.stringify({ model: "gpt-5.4", max_tokens: 10, messages: [{ role: "user", content: "ping" }] }),
         });
         const body = (await res.json()) as { content: { text: string }[] };
 
@@ -115,6 +126,6 @@ test("gateway routing options round-trip end-to-end (mock gateway hit)", async (
 test("absence of OTTO_GATEWAY_URL keeps the direct-to-Anthropic path", () => {
   delete process.env.OTTO_GATEWAY_URL;
   delete process.env.OTTO_GATEWAY_TOKEN;
-  const opts = buildAnthropicClientOptions(makeModel() as never, "real-apikey", false) as { apiKey: string | null };
+  const opts = buildAnthropicClientOptions(makeDirectAnthropicModel() as never, "real-apikey", false) as { apiKey: string | null };
   assert.equal(opts.apiKey, "real-apikey", "apiKey is set when no gateway configured");
 });

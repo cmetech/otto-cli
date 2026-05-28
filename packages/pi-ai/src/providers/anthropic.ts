@@ -94,7 +94,11 @@ export function buildAnthropicClientOptions(
 	// Per Phase 1 design — env-var only, no persistent config yet.
 	const ottoGatewayUrl = process.env.OTTO_GATEWAY_URL?.trim();
 	const directFallbackActive = process.env.OTTO_GATEWAY_FORCE_DIRECT?.trim() === "1";
-	if (ottoGatewayUrl && !(directFallbackActive && apiKey.trim())) {
+	const shouldRouteViaOttoGateway =
+		model.provider === "otto-gateway" &&
+		ottoGatewayUrl &&
+		!(directFallbackActive && apiKey.trim());
+	if (shouldRouteViaOttoGateway) {
 		const ottoGatewayToken = process.env.OTTO_GATEWAY_TOKEN?.trim();
 		const betaFeatures: string[] = [];
 		if (needsInterleavedBeta) {
@@ -241,7 +245,9 @@ export const streamSimpleAnthropic: StreamFunction<"anthropic-messages", SimpleS
 ): AssistantMessageEventStream => {
 	const gatewayUrl = process.env.OTTO_GATEWAY_URL?.trim();
 	const directFallbackActive = process.env.OTTO_GATEWAY_FORCE_DIRECT?.trim() === "1";
-	const apiKey = options?.apiKey || getEnvApiKey(model.provider) || (gatewayUrl && !directFallbackActive ? "otto-gateway" : undefined);
+	const gatewayPlaceholder =
+		model.provider === "otto-gateway" && gatewayUrl && !directFallbackActive ? "otto-gateway" : undefined;
+	const apiKey = options?.apiKey || getEnvApiKey(model.provider) || gatewayPlaceholder;
 	if (!apiKey) {
 		throw new Error(`No API key for provider: ${model.provider}`);
 	}

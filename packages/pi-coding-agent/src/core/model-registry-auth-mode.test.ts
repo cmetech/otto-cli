@@ -100,23 +100,66 @@ function createStreamSpy(): {
 // ─── Registration ─────────────────────────────────────────────────────────────
 
 describe("ModelRegistry authMode — registration", () => {
-	it("treats direct Anthropic as request-ready when OTTO gateway is configured", () => {
+	it("does not treat direct Anthropic as request-ready when OTTO gateway is configured", () => {
 		const previousGatewayUrl = process.env.OTTO_GATEWAY_URL;
 		const previousDisabled = process.env.OTTO_GATEWAY_DISABLED;
 		process.env.OTTO_GATEWAY_URL = "http://127.0.0.1:18080";
 		delete process.env.OTTO_GATEWAY_DISABLED;
 		try {
 			const registry = createRegistry(() => false);
-			assert.equal(registry.isProviderRequestReady("anthropic"), true);
-			assert.ok(
+			assert.equal(registry.isProviderRequestReady("anthropic"), false);
+			assert.equal(
 				registry.getAvailable().some((model) => model.provider === "anthropic" && model.id === "claude-opus-4-6"),
-				"direct Anthropic models should be selectable through the OTTO gateway",
+				false,
+				"direct Anthropic models should require direct Anthropic auth",
 			);
 		} finally {
 			if (previousGatewayUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
 			else process.env.OTTO_GATEWAY_URL = previousGatewayUrl;
 			if (previousDisabled === undefined) delete process.env.OTTO_GATEWAY_DISABLED;
 			else process.env.OTTO_GATEWAY_DISABLED = previousDisabled;
+		}
+	});
+
+	it("treats otto-gateway as request-ready when OTTO gateway is configured", () => {
+		const previousGatewayUrl = process.env.OTTO_GATEWAY_URL;
+		const previousDisabled = process.env.OTTO_GATEWAY_DISABLED;
+		const previousHealth = process.env.OTTO_GATEWAY_HEALTH;
+		process.env.OTTO_GATEWAY_URL = "http://127.0.0.1:18080";
+		delete process.env.OTTO_GATEWAY_DISABLED;
+		delete process.env.OTTO_GATEWAY_HEALTH;
+		try {
+			const registry = createRegistry(() => false);
+			assert.equal(registry.isProviderRequestReady("otto-gateway"), true);
+		} finally {
+			if (previousGatewayUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
+			else process.env.OTTO_GATEWAY_URL = previousGatewayUrl;
+			if (previousDisabled === undefined) delete process.env.OTTO_GATEWAY_DISABLED;
+			else process.env.OTTO_GATEWAY_DISABLED = previousDisabled;
+			if (previousHealth === undefined) delete process.env.OTTO_GATEWAY_HEALTH;
+			else process.env.OTTO_GATEWAY_HEALTH = previousHealth;
+		}
+	});
+
+	it("treats otto-gateway as not request-ready when health monitor marks gateway unhealthy", () => {
+		const previousGatewayUrl = process.env.OTTO_GATEWAY_URL;
+		const previousDisabled = process.env.OTTO_GATEWAY_DISABLED;
+		const previousHealth = process.env.OTTO_GATEWAY_HEALTH;
+		process.env.OTTO_GATEWAY_URL = "http://127.0.0.1:18080";
+		process.env.OTTO_GATEWAY_HEALTH = "unhealthy";
+		delete process.env.OTTO_GATEWAY_DISABLED;
+		try {
+			const registry = createRegistry(() => false);
+			assert.equal(registry.isProviderRequestReady("otto-gateway"), false);
+			assert.match(registry.getProviderUnavailableReason("otto-gateway") ?? "", /Gateway is down/);
+			assert.equal(registry.getAvailable().some((model) => model.provider === "otto-gateway"), false);
+		} finally {
+			if (previousGatewayUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
+			else process.env.OTTO_GATEWAY_URL = previousGatewayUrl;
+			if (previousDisabled === undefined) delete process.env.OTTO_GATEWAY_DISABLED;
+			else process.env.OTTO_GATEWAY_DISABLED = previousDisabled;
+			if (previousHealth === undefined) delete process.env.OTTO_GATEWAY_HEALTH;
+			else process.env.OTTO_GATEWAY_HEALTH = previousHealth;
 		}
 	});
 
@@ -506,7 +549,7 @@ describe("ModelRegistry authMode — getAvailable", () => {
 // ─── getApiKey ────────────────────────────────────────────────────────────────
 
 describe("ModelRegistry authMode — getApiKey", () => {
-	it("returns gateway token for direct Anthropic when OTTO gateway is configured", async () => {
+	it("does not return gateway token for direct Anthropic when OTTO gateway is configured", async () => {
 		const previousGatewayUrl = process.env.OTTO_GATEWAY_URL;
 		const previousGatewayToken = process.env.OTTO_GATEWAY_TOKEN;
 		const previousDisabled = process.env.OTTO_GATEWAY_DISABLED;
@@ -516,8 +559,8 @@ describe("ModelRegistry authMode — getApiKey", () => {
 		try {
 			const registry = createRegistry(() => false);
 			const model = registry.getAll().find((m) => m.provider === "anthropic" && m.id === "claude-opus-4-6")!;
-			assert.equal(await registry.getApiKey(model), "gw-token");
-			assert.equal(await registry.getApiKeyForProvider("anthropic"), "gw-token");
+			assert.equal(await registry.getApiKey(model), undefined);
+			assert.equal(await registry.getApiKeyForProvider("anthropic"), undefined);
 		} finally {
 			if (previousGatewayUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
 			else process.env.OTTO_GATEWAY_URL = previousGatewayUrl;
@@ -528,16 +571,38 @@ describe("ModelRegistry authMode — getApiKey", () => {
 		}
 	});
 
-	it("returns gateway placeholder for direct Anthropic when gateway auth is disabled", async () => {
+	it("returns gateway token for otto-gateway when OTTO gateway is configured", async () => {
+		const previousGatewayUrl = process.env.OTTO_GATEWAY_URL;
+		const previousGatewayToken = process.env.OTTO_GATEWAY_TOKEN;
+		const previousDisabled = process.env.OTTO_GATEWAY_DISABLED;
+		process.env.OTTO_GATEWAY_URL = "http://127.0.0.1:18080";
+		process.env.OTTO_GATEWAY_TOKEN = "gw-token";
+		delete process.env.OTTO_GATEWAY_DISABLED;
+		try {
+			const registry = createRegistry(() => false);
+			const model = makeModel("otto-gateway", "gpt-5.4", "anthropic-messages");
+			assert.equal(await registry.getApiKey(model), "gw-token");
+			assert.equal(await registry.getApiKeyForProvider("otto-gateway"), "gw-token");
+		} finally {
+			if (previousGatewayUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
+			else process.env.OTTO_GATEWAY_URL = previousGatewayUrl;
+			if (previousGatewayToken === undefined) delete process.env.OTTO_GATEWAY_TOKEN;
+			else process.env.OTTO_GATEWAY_TOKEN = previousGatewayToken;
+			if (previousDisabled === undefined) delete process.env.OTTO_GATEWAY_DISABLED;
+			else process.env.OTTO_GATEWAY_DISABLED = previousDisabled;
+		}
+	});
+
+	it("returns gateway placeholder for otto-gateway when gateway auth is disabled", async () => {
 		const previousGatewayUrl = process.env.OTTO_GATEWAY_URL;
 		const previousGatewayToken = process.env.OTTO_GATEWAY_TOKEN;
 		process.env.OTTO_GATEWAY_URL = "http://127.0.0.1:18080";
 		delete process.env.OTTO_GATEWAY_TOKEN;
 		try {
 			const registry = createRegistry(() => false);
-			const model = registry.getAll().find((m) => m.provider === "anthropic" && m.id === "claude-opus-4-6")!;
+			const model = makeModel("otto-gateway", "gpt-5.4", "anthropic-messages");
 			assert.equal(await registry.getApiKey(model), "otto-gateway");
-			assert.equal(await registry.getApiKeyForProvider("anthropic"), "otto-gateway");
+			assert.equal(await registry.getApiKeyForProvider("otto-gateway"), "otto-gateway");
 		} finally {
 			if (previousGatewayUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
 			else process.env.OTTO_GATEWAY_URL = previousGatewayUrl;

@@ -62,7 +62,11 @@ export async function getModelCandidates(host: any): Promise<Model<any>[]> {
 
 	host.session.modelRegistry.refresh();
 	try {
-		return await host.session.modelRegistry.getAvailable();
+		const registry = host.session.modelRegistry;
+		const models = typeof registry.getAllWithDiscovered === "function"
+			? registry.getAllWithDiscovered()
+			: registry.getAvailable();
+		return models.filter((model: Model<any>) => registry.isProviderRequestReady(model.provider));
 	} catch {
 		return [];
 	}
@@ -73,4 +77,3 @@ export async function updateAvailableProviderCount(host: any): Promise<void> {
 	const uniqueProviders = new Set(models.map((m) => m.provider));
 	host.footerDataProvider.setAvailableProviderCount(uniqueProviders.size);
 }
-

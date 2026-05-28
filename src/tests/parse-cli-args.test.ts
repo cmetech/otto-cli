@@ -113,6 +113,12 @@ describe('parseCliArgs — list flags and accumulators', () => {
     assert.equal(flags.listModels, true)
     assert.equal(flags.print, true)
   })
+
+  test('--discover sets discovered model listing flag', () => {
+    const flags = parse('--list-models', '--discover')
+    assert.equal(flags.listModels, true)
+    assert.equal(flags.discover, true)
+  })
 })
 
 describe('parseCliArgs — removed web interface flags', () => {

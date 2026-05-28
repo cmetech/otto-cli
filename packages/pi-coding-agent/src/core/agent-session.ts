@@ -1202,6 +1202,8 @@ export class AgentSession {
 
 		// Validate provider readiness
 		if (!this._modelRegistry.isProviderRequestReady(this.model.provider)) {
+			const unavailableReason = this._modelRegistry.getProviderUnavailableReason(this.model.provider);
+			if (unavailableReason) throw new Error(unavailableReason);
 			const isOAuth = this._modelRegistry.isUsingOAuth(this.model);
 			if (isOAuth) {
 				throw new Error(
@@ -2842,6 +2844,8 @@ export class AgentSession {
 		if (options.summarize && entriesToSummarize.length > 0 && !extensionSummary) {
 			const model = this.model!;
 			if (!this._modelRegistry.isProviderRequestReady(model.provider)) {
+				const unavailableReason = this._modelRegistry.getProviderUnavailableReason(model.provider);
+				if (unavailableReason) throw new Error(unavailableReason);
 				throw new Error(`No API key for ${model.provider}`);
 			}
 			const apiKey = await this._modelRegistry.getApiKey(model, this.sessionId);

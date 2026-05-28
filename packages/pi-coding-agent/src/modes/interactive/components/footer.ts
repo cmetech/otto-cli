@@ -62,6 +62,15 @@ function formatExtensionStatusText(text: string, useEmoji: boolean): string {
 	return color ? theme.fg(color, compacted) : compacted;
 }
 
+export function isGatewayRoutedModel(displayModel: { provider?: string; api?: string } | undefined): boolean {
+	if (!displayModel) return false;
+	if (displayModel.provider !== "otto-gateway") return false;
+	if (displayModel.api !== "anthropic-messages") return false;
+	if (!process.env.OTTO_GATEWAY_URL?.trim()) return false;
+	if (process.env.OTTO_GATEWAY_DISABLED?.trim() === "1") return false;
+	return true;
+}
+
 function truncateFooterPath(text: string, width: number): string {
 	if (visibleWidth(text) <= width) return text;
 	const tailMatch = text.match(/( \([^)]+\)(?: • .*)?)$/);
@@ -281,7 +290,7 @@ export class FooterComponent implements Component {
 		// exceed width.
 		const extensionStatuses = this.footerData.getExtensionStatuses();
 		const gatewayStatus = formatGatewayFooterStatus(this.footerData.getGatewayStatus(), {
-			routed: displayModel?.provider === "anthropic" && displayModel?.api === "anthropic-messages",
+			routed: isGatewayRoutedModel(displayModel),
 		});
 		const extStatusText =
 			extensionStatuses.size > 0

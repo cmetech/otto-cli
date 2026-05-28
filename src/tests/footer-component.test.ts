@@ -51,6 +51,10 @@ test("FooterComponent renders a rounded operations-console footer with extension
 });
 
 test("FooterComponent renders gateway health and fallback states compactly", () => {
+  const previousGatewayUrl = process.env.OTTO_GATEWAY_URL;
+  const previousGatewayDisabled = process.env.OTTO_GATEWAY_DISABLED;
+  process.env.OTTO_GATEWAY_URL = "http://127.0.0.1:18080";
+  delete process.env.OTTO_GATEWAY_DISABLED;
   const makeFooter = (gatewayStatus: unknown, provider = "anthropic") => new FooterComponent(
     {
       state: {
@@ -75,10 +79,18 @@ test("FooterComponent renders gateway health and fallback states compactly", () 
     } as any,
   );
 
-  assert.match(stripVTControlCharacters(makeFooter({ mode: "gateway", health: "healthy" }).render(160)[1]), /GW routed/);
-  assert.match(stripVTControlCharacters(makeFooter({ mode: "gateway", health: "healthy" }, "claude-code").render(160)[1]), /GW bypass/);
-  assert.match(stripVTControlCharacters(makeFooter({ mode: "gateway", health: "unhealthy" }).render(160)[1]), /GW down/);
-  assert.match(stripVTControlCharacters(makeFooter({ mode: "fallback", health: "unhealthy" }).render(160)[1]), /GW fallback/);
+  try {
+    assert.match(stripVTControlCharacters(makeFooter({ mode: "gateway", health: "healthy" }, "otto-gateway").render(160)[1]), /GW routed/);
+    assert.match(stripVTControlCharacters(makeFooter({ mode: "gateway", health: "healthy" }).render(160)[1]), /GW bypass/);
+    assert.match(stripVTControlCharacters(makeFooter({ mode: "gateway", health: "healthy" }, "claude-code").render(160)[1]), /GW bypass/);
+    assert.match(stripVTControlCharacters(makeFooter({ mode: "gateway", health: "unhealthy" }).render(160)[1]), /GW down/);
+    assert.match(stripVTControlCharacters(makeFooter({ mode: "fallback", health: "unhealthy" }).render(160)[1]), /GW fallback/);
+  } finally {
+    if (previousGatewayUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
+    else process.env.OTTO_GATEWAY_URL = previousGatewayUrl;
+    if (previousGatewayDisabled === undefined) delete process.env.OTTO_GATEWAY_DISABLED;
+    else process.env.OTTO_GATEWAY_DISABLED = previousGatewayDisabled;
+  }
 });
 
 test("FooterComponent separates gateway, thinking, LangFlow, and notification statuses", () => {

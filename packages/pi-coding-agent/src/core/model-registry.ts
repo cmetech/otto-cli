@@ -595,11 +595,7 @@ export class ModelRegistry {
 	 */
 	isProviderRequestReady(provider: string): boolean {
 		if (this.disabledModelProviders.has(provider.trim().toLowerCase())) return false;
-		if (
-			provider === "anthropic" &&
-			process.env.OTTO_GATEWAY_URL?.trim() &&
-			process.env.OTTO_GATEWAY_DISABLED?.trim() !== "1"
-		) {
+		if (provider === "otto-gateway" && this.getGatewayUrl()) {
 			return true;
 		}
 		const config = this.registeredProviders.get(provider);
@@ -607,6 +603,21 @@ export class ModelRegistry {
 		const authMode = this.getProviderAuthMode(provider);
 		if (authMode === "externalCli" || authMode === "none") return true;
 		return this.authStorage.hasAuth(provider);
+	}
+
+	getProviderUnavailableReason(provider: string): string | undefined {
+		if (provider === "otto-gateway") {
+			if (process.env.OTTO_GATEWAY_DISABLED?.trim() === "1") {
+				return "OTTO Gateway is disabled. Unset OTTO_GATEWAY_DISABLED or select a non-gateway model.";
+			}
+			if (process.env.OTTO_GATEWAY_HEALTH?.trim() === "unhealthy") {
+				return "OTTO Gateway is down. Start the gateway or select a non-gateway model.";
+			}
+			if (!process.env.OTTO_GATEWAY_URL?.trim()) {
+				return "OTTO Gateway URL is not configured. Set OTTO_GATEWAY_URL or select a non-gateway model.";
+			}
+		}
+		return undefined;
 	}
 
 	/**
@@ -643,10 +654,16 @@ export class ModelRegistry {
 	}
 
 	private getGatewayApiKeyForProvider(provider: string): string | undefined {
-		if (provider !== "anthropic") return undefined;
-		if (!process.env.OTTO_GATEWAY_URL?.trim()) return undefined;
-		if (process.env.OTTO_GATEWAY_DISABLED?.trim() === "1") return undefined;
+		if (provider !== "otto-gateway") return undefined;
+		if (!this.getGatewayUrl()) return undefined;
 		return process.env.OTTO_GATEWAY_TOKEN?.trim() || "otto-gateway";
+	}
+
+	private getGatewayUrl(): string | undefined {
+		const url = process.env.OTTO_GATEWAY_URL?.trim();
+		if (!url || process.env.OTTO_GATEWAY_DISABLED?.trim() === "1") return undefined;
+		if (process.env.OTTO_GATEWAY_HEALTH?.trim() === "unhealthy") return undefined;
+		return url.replace(/\/+$/, "");
 	}
 
 	/**
@@ -855,8 +872,10 @@ export class ModelRegistry {
 			const adapter = getDiscoveryAdapter(providerName, providerApis);
 			if (!adapter.supportsDiscovery) continue;
 
-			// Skip if cache is still fresh
-			if (!this.discoveryCache.isStale(providerName)) {
+			const bypassCache = providerName === "otto-gateway";
+			// Skip if cache is still fresh. Gateway discovery is intentionally
+			// live-only so a stopped local gateway does not leave stale models visible.
+			if (!bypassCache && !this.discoveryCache.isStale(providerName)) {
 				const cached = this.discoveryCache.get(providerName);
 				if (cached) {
 					results.push({
@@ -882,6 +901,9 @@ export class ModelRegistry {
 					fetchedAt: Date.now(),
 				});
 			} catch (error) {
+				if (providerName === "otto-gateway") {
+					this.discoveryCache.clear(providerName);
+				}
 				results.push({
 					provider: providerName,
 					models: [],
@@ -911,6 +933,18 @@ export class ModelRegistry {
 	 */
 	isDiscovered(model: Model<Api>): boolean {
 		return this.discoveredModels.some((m) => m.provider === model.provider && m.id === model.id);
+	}
+
+	/**
+	 * Remove discovered models, optionally scoped to one provider.
+	 * Used for live-only providers such as OTTO Gateway when health changes.
+	 */
+	clearDiscoveredModels(provider?: string): void {
+		if (!provider) {
+			this.discoveredModels = [];
+			return;
+		}
+		this.discoveredModels = this.discoveredModels.filter((m) => m.provider !== provider);
 	}
 
 	/**
@@ -964,6 +998,9 @@ export class ModelRegistry {
 
 	private getAutoDiscoverableProviders(): string[] {
 		const discoverable = new Set<string>(getDiscoverableProviders());
+		if (this.getGatewayUrl()) {
+			discoverable.add("otto-gateway");
+		}
 		for (const provider of new Set(this.models.map((m) => m.provider))) {
 			const apis = this.getProviderApis(provider);
 			for (const api of apis) {
@@ -977,6 +1014,7 @@ export class ModelRegistry {
 	}
 
 	private getProviderBaseUrl(provider: string): string | undefined {
+		if (provider === "otto-gateway") return this.getGatewayUrl();
 		const fromModels = this.models.find((m) => m.provider === provider && typeof m.baseUrl === "string" && m.baseUrl.length > 0);
 		if (fromModels?.baseUrl) return fromModels.baseUrl;
 		return this.registeredProviders.get(provider)?.baseUrl;
@@ -989,6 +1027,16 @@ export class ModelRegistry {
 		contextWindow: number;
 		maxTokens: number;
 	} {
+		if (provider === "otto-gateway") {
+			return {
+				api: "anthropic-messages",
+				baseUrl: this.getGatewayUrl() ?? "",
+				input: ["text"],
+				contextWindow: 128000,
+				maxTokens: 16384,
+			};
+		}
+
 		const first = this.models.find((m) => m.provider === provider);
 		if (first) {
 			return {

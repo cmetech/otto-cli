@@ -685,7 +685,13 @@ if (cliFlags.listModels !== undefined) {
   await listModelsLoader.reload()
   flushPendingProviderRegistrations(listModelsLoader, modelRegistry)
 
-  const models = modelRegistry.getAvailable()
+  if (cliFlags.discover) {
+    await modelRegistry.discoverModels()
+  }
+
+  const models = cliFlags.discover
+    ? modelRegistry.getAllWithDiscovered().filter((model) => modelRegistry.isProviderRequestReady(model.provider))
+    : modelRegistry.getAvailable()
   if (models.length === 0) {
     console.log('No models available. Set API keys in environment variables.')
     process.exit(0)

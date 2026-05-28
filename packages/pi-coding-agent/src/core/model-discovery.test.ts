@@ -35,6 +35,12 @@ describe("getDiscoveryAdapter", () => {
 		assert.equal(adapter.supportsDiscovery, true);
 	});
 
+	it("returns an adapter for otto-gateway", () => {
+		const adapter = getDiscoveryAdapter("otto-gateway");
+		assert.equal(adapter.provider, "otto-gateway");
+		assert.equal(adapter.supportsDiscovery, true);
+	});
+
 	it("returns a static adapter for anthropic", () => {
 		const adapter = getDiscoveryAdapter("anthropic");
 		assert.equal(adapter.provider, "anthropic");
@@ -75,6 +81,7 @@ describe("getDiscoverableProviders", () => {
 		assert.ok(providers.includes("ollama"));
 		assert.ok(providers.includes("openrouter"));
 		assert.ok(providers.includes("google"));
+		assert.ok(providers.includes("otto-gateway"));
 		assert.ok(!providers.includes("anthropic"));
 		assert.ok(!providers.includes("bedrock"));
 	});
@@ -84,6 +91,33 @@ describe("getDiscoverableProviders", () => {
 		assert.ok(Array.isArray(providers));
 		for (const p of providers) {
 			assert.equal(typeof p, "string");
+		}
+	});
+});
+
+describe("OTTO Gateway discovery URL handling", () => {
+	it("discovers otto-gateway models from /v1/models with bearer auth", async () => {
+		const adapter = getDiscoveryAdapter("otto-gateway");
+		const prevFetch = globalThis.fetch;
+		let requestedUrl = "";
+		let authHeader: string | null = null;
+		globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+			requestedUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+			authHeader = new Headers(init?.headers).get("authorization");
+			return new Response(JSON.stringify({ data: [{ id: "gpt-5.4", context_window: 272000 }] }), {
+				status: 200,
+				headers: { "content-type": "application/json" },
+			});
+		}) as typeof globalThis.fetch;
+
+		try {
+			const models = await adapter.fetchModels("gw-token", "http://127.0.0.1:18080");
+			assert.equal(requestedUrl, "http://127.0.0.1:18080/v1/models");
+			assert.equal(authHeader, "Bearer gw-token");
+			assert.equal(models[0]?.id, "gpt-5.4");
+			assert.equal(models[0]?.contextWindow, 272000);
+		} finally {
+			globalThis.fetch = prevFetch;
 		}
 	});
 });

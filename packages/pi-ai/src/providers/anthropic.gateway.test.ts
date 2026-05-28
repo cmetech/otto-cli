@@ -19,6 +19,16 @@ function anthropicModel(overrides: Partial<Model<"anthropic-messages">> = {}): M
 	};
 }
 
+function ottoGatewayModel(overrides: Partial<Model<"anthropic-messages">> = {}): Model<"anthropic-messages"> {
+	return anthropicModel({
+		id: "gpt-5.4",
+		name: "GPT-5.4 via OTTO Gateway",
+		provider: "otto-gateway",
+		baseUrl: "http://127.0.0.1:18080",
+		...overrides,
+	});
+}
+
 type GatewayOptions = {
 	baseURL: string;
 	apiKey: string | null;
@@ -47,10 +57,20 @@ describe("OTTO gateway routing branch in buildAnthropicClientOptions", () => {
 		assert.equal(opts.baseURL, "https://api.anthropic.com", "baseURL should match the model's baseUrl");
 	});
 
-	it("routes through gateway URL when OTTO_GATEWAY_URL is set", () => {
+	it("keeps direct Anthropic options direct when OTTO_GATEWAY_URL is set", () => {
 		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
 
 		const opts = buildAnthropicClientOptions(anthropicModel(), "test-api-key", false) as GatewayOptions;
+
+		assert.equal(opts.baseURL, "https://api.anthropic.com", "direct Anthropic should use its configured baseURL");
+		assert.equal(opts.apiKey, "test-api-key", "direct Anthropic should keep x-api-key auth");
+		assert.equal(opts.authToken, undefined, "direct Anthropic should not use gateway bearer auth");
+	});
+
+	it("routes otto-gateway models through gateway URL when OTTO_GATEWAY_URL is set", () => {
+		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
+
+		const opts = buildAnthropicClientOptions(ottoGatewayModel(), "test-api-key", false) as GatewayOptions;
 
 		assert.equal(opts.baseURL, "https://gateway.otto.local", "baseURL should match OTTO_GATEWAY_URL");
 		assert.equal(opts.apiKey, null, "apiKey should be null when routing through the gateway");
@@ -60,7 +80,7 @@ describe("OTTO gateway routing branch in buildAnthropicClientOptions", () => {
 		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
 		process.env.OTTO_GATEWAY_TOKEN = "gateway-secret-token";
 
-		const opts = buildAnthropicClientOptions(anthropicModel(), "test-api-key", false) as GatewayOptions;
+		const opts = buildAnthropicClientOptions(ottoGatewayModel(), "test-api-key", false) as GatewayOptions;
 
 		assert.equal(opts.authToken, "gateway-secret-token", "authToken should be the OTTO_GATEWAY_TOKEN value");
 		assert.notEqual(opts.authToken, "test-api-key", "authToken should not fall back to apiKey when token is set");
@@ -69,7 +89,7 @@ describe("OTTO gateway routing branch in buildAnthropicClientOptions", () => {
 	it("falls back to apiKey as bearer credential when OTTO_GATEWAY_TOKEN is unset", () => {
 		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
 
-		const opts = buildAnthropicClientOptions(anthropicModel(), "test-api-key", false) as GatewayOptions;
+		const opts = buildAnthropicClientOptions(ottoGatewayModel(), "test-api-key", false) as GatewayOptions;
 
 		assert.equal(opts.authToken, "test-api-key", "authToken should fall back to apiKey arg when OTTO_GATEWAY_TOKEN is unset");
 	});
@@ -78,7 +98,7 @@ describe("OTTO gateway routing branch in buildAnthropicClientOptions", () => {
 		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
 
 		const opts = buildAnthropicClientOptions(
-			anthropicModel({
+			ottoGatewayModel({
 				headers: { "X-Custom-Header": "custom-value", "X-Trace-Id": "abc-123" },
 			}),
 			"test-api-key",
@@ -92,16 +112,16 @@ describe("OTTO gateway routing branch in buildAnthropicClientOptions", () => {
 	it("OTTO_GATEWAY_URL with only whitespace is treated as unset", () => {
 		process.env.OTTO_GATEWAY_URL = "   \t  ";
 
-		const opts = buildAnthropicClientOptions(anthropicModel(), "test-api-key", false) as GatewayOptions;
+		const opts = buildAnthropicClientOptions(ottoGatewayModel(), "test-api-key", false) as GatewayOptions;
 
 		assert.equal(opts.apiKey, "test-api-key", "whitespace-only gateway URL should not trigger gateway branch");
-		assert.equal(opts.baseURL, "https://api.anthropic.com", "baseURL should fall back to model.baseUrl when gateway URL is whitespace");
+		assert.equal(opts.baseURL, "http://127.0.0.1:18080", "baseURL should fall back to model.baseUrl when gateway URL is whitespace");
 	});
 
 	it("normalizes gateway root URL before passing it to the SDK", () => {
 		process.env.OTTO_GATEWAY_URL = " https://gateway.otto.local/v1/ ";
 
-		const opts = buildAnthropicClientOptions(anthropicModel(), "test-api-key", false) as GatewayOptions;
+		const opts = buildAnthropicClientOptions(ottoGatewayModel(), "test-api-key", false) as GatewayOptions;
 
 		assert.equal(opts.baseURL, "https://gateway.otto.local", "Anthropic SDK baseURL must be gateway root, not /v1");
 	});
@@ -109,7 +129,7 @@ describe("OTTO gateway routing branch in buildAnthropicClientOptions", () => {
 	it("uses a placeholder bearer token in gateway mode when no direct key is available", () => {
 		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
 
-		const opts = buildAnthropicClientOptions(anthropicModel(), "", false) as GatewayOptions;
+		const opts = buildAnthropicClientOptions(ottoGatewayModel(), "", false) as GatewayOptions;
 
 		assert.equal(opts.apiKey, null);
 		assert.equal(opts.authToken, "otto-gateway", "SDK should initialize even when gateway auth is disabled and no direct key exists");
@@ -129,7 +149,7 @@ describe("OTTO gateway routing branch in buildAnthropicClientOptions", () => {
 		process.env.OTTO_GATEWAY_URL = "https://gateway.otto.local";
 		process.env.OTTO_GATEWAY_FORCE_DIRECT = "1";
 
-		const opts = buildAnthropicClientOptions(anthropicModel(), "", false) as GatewayOptions;
+		const opts = buildAnthropicClientOptions(ottoGatewayModel(), "", false) as GatewayOptions;
 
 		assert.equal(opts.apiKey, null);
 		assert.equal(opts.baseURL, "https://gateway.otto.local");

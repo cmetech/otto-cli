@@ -56,7 +56,7 @@ import type {
 	ExtensionWidgetOptions,
 } from "../../core/extensions/index.js";
 import { FooterDataProvider, type ReadonlyFooterDataProvider } from "../../core/footer-data-provider.js";
-import { GatewayHealthMonitor } from "../../core/gateway-health.js";
+import { GatewayHealthMonitor, type GatewayStatus } from "../../core/gateway-health.js";
 import { type AppAction, KeybindingsManager } from "../../core/keybindings.js";
 import { createCompactionSummaryMessage } from "../../core/messages.js";
 import { resolveModelScope } from "../../core/model-resolver.js";
@@ -333,6 +333,7 @@ export class InteractiveMode {
 	private footer: FooterComponent;
 	private footerDataProvider: FooterDataProvider;
 	private gatewayHealthMonitor: GatewayHealthMonitor | undefined;
+	private gatewayModelsVisible = false;
 	private keybindings: KeybindingsManager;
 	private version: string;
 	private isInitialized = false;
@@ -471,10 +472,13 @@ export class InteractiveMode {
 		this.gatewayHealthMonitor = new GatewayHealthMonitor({
 			getActiveProviderReady: () => {
 				const model = this.session.state.model;
-				return model ? this.session.modelRegistry.isProviderRequestReady(model.provider) : false;
+				return model
+					? model.provider !== "otto-gateway" && this.session.modelRegistry.isProviderRequestReady(model.provider)
+					: false;
 			},
 			onStateChange: (state) => {
 				this.footerDataProvider.setGatewayStatus(state);
+				void this.syncGatewayModelsForHealth(state);
 				this.ui.requestRender();
 			},
 		});
@@ -502,7 +506,9 @@ export class InteractiveMode {
 				const models =
 					this.session.scopedModels.length > 0
 						? this.session.scopedModels.map((s) => s.model)
-						: this.session.modelRegistry.getAvailable();
+						: this.session.modelRegistry
+								.getAllWithDiscovered()
+								.filter((model) => this.session.modelRegistry.isProviderRequestReady(model.provider));
 
 				if (models.length === 0) return null;
 
@@ -583,6 +589,26 @@ export class InteractiveMode {
 		if (this.editor !== this.defaultEditor) {
 			this.editor.setAutocompleteProvider?.(this.autocompleteProvider);
 		}
+	}
+
+	private async syncGatewayModelsForHealth(state: GatewayStatus | null): Promise<void> {
+		if (state?.health === "checking") return;
+		if (state?.health === "healthy") {
+			if (this.gatewayModelsVisible) return;
+			const results = await this.session.modelRegistry.discoverModels(["otto-gateway"]);
+			const result = results[0];
+			this.gatewayModelsVisible = !result?.error;
+			await this.updateAvailableProviderCount();
+			this.ui.requestRender();
+			return;
+		}
+
+		if (!this.gatewayModelsVisible) return;
+		this.session.modelRegistry.clearDiscoveredModels("otto-gateway");
+		this.session.modelRegistry.getDiscoveryCache().clear("otto-gateway");
+		this.gatewayModelsVisible = false;
+		await this.updateAvailableProviderCount();
+		this.ui.requestRender();
 	}
 
 	private installStdinErrorRecovery(): void {

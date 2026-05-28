@@ -211,6 +211,7 @@ export function printHelp(version: string): void {
   process.stdout.write('  --extension <path>       Load additional extension\n')
   process.stdout.write('  --tools <a,b,c>          Restrict available tools\n')
   process.stdout.write('  --list-models [search]   List available models and exit\n')
+  process.stdout.write('  --discover               Include discovered provider models with --list-models\n')
   process.stdout.write('  --version, -v            Print version and exit\n')
   process.stdout.write('  --help, -h               Print this help and exit\n')
   process.stdout.write('\nSubcommands:\n')

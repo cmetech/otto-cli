@@ -10,6 +10,7 @@ export interface CliFlags {
   worktree?: boolean | string
   model?: string
   listModels?: string | true
+  discover?: boolean
   extensions: string[]
   appendSystemPrompt?: string
   tools?: string[]
@@ -49,6 +50,8 @@ export function parseCliArgs(argv: string[]): CliFlags {
       flags.tools = args[++i].split(',')
     } else if (arg === '--list-models') {
       flags.listModels = (i + 1 < args.length && !args[i + 1].startsWith('-')) ? args[++i] : true
+    } else if (arg === '--discover') {
+      flags.discover = true
     } else if (!arg.startsWith('--') && !arg.startsWith('-')) {
       flags.messages.push(arg)
     }

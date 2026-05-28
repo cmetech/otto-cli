@@ -37,6 +37,14 @@ npm run build    # Build
 npm test         # Run tests
 ```
 
+When changing runtime code, always finish with a production build:
+
+```bash
+npm run build
+```
+
+The `otto` command installed on the PATH points at `dist/loader.js`. Test compilation writes to `dist-test/` and does not update the executable that users run.
+
 If `npm run build` fails after running tests (e.g. `Cannot find module '@loop24/*'` errors), run `npm ci` first to restore workspace symlinks, then try again.
 
 ### Before pushing

@@ -208,3 +208,73 @@ describe("ModelRegistry discovery — OpenAI-compatible custom providers", () =>
 		}
 	});
 });
+
+describe("ModelRegistry discovery — OTTO Gateway", () => {
+	it("discovers gateway models as anthropic-messages under otto-gateway", async () => {
+		const previousUrl = process.env.OTTO_GATEWAY_URL;
+		const previousToken = process.env.OTTO_GATEWAY_TOKEN;
+		const previousDisabled = process.env.OTTO_GATEWAY_DISABLED;
+		process.env.OTTO_GATEWAY_URL = "http://127.0.0.1:18080";
+		process.env.OTTO_GATEWAY_TOKEN = "gw-token";
+		delete process.env.OTTO_GATEWAY_DISABLED;
+
+		const prevFetch = globalThis.fetch;
+		globalThis.fetch = (async () => new Response(
+			JSON.stringify({ data: [{ id: "gpt-5.4", name: "GPT-5.4", context_window: 272000 }] }),
+			{ status: 200, headers: { "content-type": "application/json" } },
+		)) as typeof globalThis.fetch;
+
+		try {
+			const registry = new ModelRegistry(AuthStorage.inMemory({}), join(testDir, "models.json"));
+			registry.getDiscoveryCache().clear("otto-gateway");
+			const results = await registry.discoverModels(["otto-gateway"]);
+			assert.equal(results[0]?.error, undefined);
+
+			const model = registry.getAllWithDiscovered().find((m) => m.provider === "otto-gateway" && m.id === "gpt-5.4");
+			assert.ok(model);
+			assert.equal(model.api, "anthropic-messages");
+			assert.equal(model.baseUrl, "http://127.0.0.1:18080");
+			assert.equal(model.contextWindow, 272000);
+		} finally {
+			globalThis.fetch = prevFetch;
+			if (previousUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
+			else process.env.OTTO_GATEWAY_URL = previousUrl;
+			if (previousToken === undefined) delete process.env.OTTO_GATEWAY_TOKEN;
+			else process.env.OTTO_GATEWAY_TOKEN = previousToken;
+			if (previousDisabled === undefined) delete process.env.OTTO_GATEWAY_DISABLED;
+			else process.env.OTTO_GATEWAY_DISABLED = previousDisabled;
+		}
+	});
+
+	it("does not surface cached gateway models when the gateway is unreachable", async () => {
+		const previousUrl = process.env.OTTO_GATEWAY_URL;
+		const previousToken = process.env.OTTO_GATEWAY_TOKEN;
+		const previousDisabled = process.env.OTTO_GATEWAY_DISABLED;
+		process.env.OTTO_GATEWAY_URL = "http://127.0.0.1:18080";
+		process.env.OTTO_GATEWAY_TOKEN = "gw-token";
+		delete process.env.OTTO_GATEWAY_DISABLED;
+
+		const prevFetch = globalThis.fetch;
+		globalThis.fetch = (async () => {
+			throw new Error("connect ECONNREFUSED 127.0.0.1:18080");
+		}) as typeof globalThis.fetch;
+
+		try {
+			const registry = new ModelRegistry(AuthStorage.inMemory({}), join(testDir, "models.json"));
+			registry.getDiscoveryCache().set("otto-gateway", [{ id: "gpt-stale", name: "Stale Gateway Model" }], 60_000);
+
+			const results = await registry.discoverModels(["otto-gateway"]);
+
+			assert.match(results[0]?.error ?? "", /ECONNREFUSED/);
+			assert.equal(registry.getAllWithDiscovered().some((m) => m.provider === "otto-gateway"), false);
+		} finally {
+			globalThis.fetch = prevFetch;
+			if (previousUrl === undefined) delete process.env.OTTO_GATEWAY_URL;
+			else process.env.OTTO_GATEWAY_URL = previousUrl;
+			if (previousToken === undefined) delete process.env.OTTO_GATEWAY_TOKEN;
+			else process.env.OTTO_GATEWAY_TOKEN = previousToken;
+			if (previousDisabled === undefined) delete process.env.OTTO_GATEWAY_DISABLED;
+			else process.env.OTTO_GATEWAY_DISABLED = previousDisabled;
+		}
+	});
+});

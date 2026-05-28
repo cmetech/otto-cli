@@ -64,6 +64,7 @@ describe("gateway health monitor", () => {
 			monitor.stop();
 
 			assert.equal(process.env.OTTO_GATEWAY_FORCE_DIRECT, "1");
+			assert.equal(process.env.OTTO_GATEWAY_HEALTH, "unhealthy");
 			assert.deepEqual(states.at(-1), "fallback:unhealthy");
 		});
 	});
@@ -82,6 +83,7 @@ describe("gateway health monitor", () => {
 			monitor.stop();
 
 			assert.equal(process.env.OTTO_GATEWAY_FORCE_DIRECT, undefined);
+			assert.equal(process.env.OTTO_GATEWAY_HEALTH, "healthy");
 			const state = monitor.getState();
 			assert.ok(state);
 			assert.equal(state.mode, "gateway");

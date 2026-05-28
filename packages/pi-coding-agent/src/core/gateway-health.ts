@@ -93,6 +93,7 @@ export class GatewayHealthMonitor {
 		if (process.env.OTTO_GATEWAY_DISABLED?.trim() === "1") {
 			this.setState(null);
 			this.clearFallback();
+			this.clearHealthEnv();
 			return null;
 		}
 
@@ -100,6 +101,7 @@ export class GatewayHealthMonitor {
 		if (!rawUrl) {
 			this.setState(null);
 			this.clearFallback();
+			this.clearHealthEnv();
 			return null;
 		}
 
@@ -108,9 +110,11 @@ export class GatewayHealthMonitor {
 		if (probed.health === "healthy") {
 			this.failureCount = 0;
 			this.clearFallback();
+			this.setHealthEnv("healthy");
 			this.setState(probed);
 		} else {
 			this.failureCount += 1;
+			this.setHealthEnv("unhealthy");
 			if (this.options.getActiveProviderReady()) {
 				process.env.OTTO_GATEWAY_FORCE_DIRECT = "1";
 				this.setState({ ...probed, mode: "fallback" });
@@ -147,5 +151,13 @@ export class GatewayHealthMonitor {
 
 	private clearFallback(): void {
 		delete process.env.OTTO_GATEWAY_FORCE_DIRECT;
+	}
+
+	private setHealthEnv(health: "healthy" | "unhealthy"): void {
+		process.env.OTTO_GATEWAY_HEALTH = health;
+	}
+
+	private clearHealthEnv(): void {
+		delete process.env.OTTO_GATEWAY_HEALTH;
 	}
 }

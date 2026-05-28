@@ -153,6 +153,33 @@ class OpenAIDiscoveryAdapter implements ProviderDiscoveryAdapter {
 	}
 }
 
+// ─── OTTO Gateway Adapter ───────────────────────────────────────────────────
+
+class OttoGatewayDiscoveryAdapter implements ProviderDiscoveryAdapter {
+	provider = "otto-gateway";
+	supportsDiscovery = true;
+
+	async fetchModels(apiKey: string, baseUrl?: string): Promise<DiscoveredModel[]> {
+		const origin = (baseUrl ?? "").trim().replace(/\/+$/, "");
+		if (!origin) {
+			throw new Error("OTTO Gateway model discovery requires OTTO_GATEWAY_URL");
+		}
+		const headers: Record<string, string> = {};
+		const token = apiKey.trim();
+		if (token) headers.Authorization = `Bearer ${token}`;
+		const response = await fetchWithTimeout(`${origin}/v1/models`, { headers });
+
+		if (!response.ok) {
+			throw new Error(`OTTO Gateway models API returned ${response.status}: ${response.statusText}`);
+		}
+
+		const data = (await response.json()) as { data?: Array<Record<string, unknown>> };
+		return (data.data ?? [])
+			.map((m) => parseOpenAICompatibleModel(m))
+			.filter((m): m is DiscoveredModel => !!m);
+	}
+}
+
 // ─── Ollama Adapter ──────────────────────────────────────────────────────────
 
 class OllamaDiscoveryAdapter implements ProviderDiscoveryAdapter {
@@ -287,6 +314,7 @@ const adapters: Record<string, ProviderDiscoveryAdapter> = {
 	ollama: new OllamaDiscoveryAdapter(),
 	openrouter: new OpenRouterDiscoveryAdapter(),
 	google: new GoogleDiscoveryAdapter(),
+	"otto-gateway": new OttoGatewayDiscoveryAdapter(),
 	anthropic: new StaticDiscoveryAdapter("anthropic"),
 	bedrock: new StaticDiscoveryAdapter("bedrock"),
 	"azure-openai": new StaticDiscoveryAdapter("azure-openai"),

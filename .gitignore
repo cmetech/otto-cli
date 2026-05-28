@@ -24,6 +24,7 @@ pnpm-lock.yaml
 bun.lock
 
 # GSD project state and generated runtime files
+.otto/
 .gsd/
 .gsd
 .gsd-id

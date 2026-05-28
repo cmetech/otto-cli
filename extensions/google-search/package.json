@@ -1,6 +1,6 @@
 {
   "name": "@cmetech/otto-extension-google-search",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Web search via Google with AI-synthesized answers and source citations",
   "type": "module",
   "keywords": [

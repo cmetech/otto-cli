@@ -1,6 +1,6 @@
 {
   "name": "@cmetech/otto-engine-linux-x64-gnu",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "OTTO native engine binary for linux-x64-gnu",
   "os": [
     "linux"

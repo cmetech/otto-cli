@@ -197,9 +197,10 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "Verifying platform packages at version ${VERSION}..."
-          # Exponential backoff: 5s, 10s, 20s, 30s, 30s (max 5 attempts, ~95s worst case vs fixed 30s + single check)
+          # First-publish registry propagation can take 10-15 min. Budget: 20 attempts, max 60s delay (~18 min worst case).
           DELAY=5
-          for attempt in $(seq 1 5); do
+          MAX_ATTEMPTS=20
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
             FAILED=0
             for platform in darwin-arm64 darwin-x64 linux-x64-gnu linux-arm64-gnu win32-x64-msvc; do
               PKG="@cmetech/otto-engine-${platform}"
@@ -213,8 +214,8 @@ jobs:
               echo "All platform packages verified (attempt ${attempt})."
               break
             fi
-            if [ "$attempt" = "5" ]; then
-              echo "::error::One or more platform packages not found after 5 attempts. Aborting."
+            if [ "$attempt" = "$MAX_ATTEMPTS" ]; then
+              echo "::error::One or more platform packages not found after ${MAX_ATTEMPTS} attempts. Aborting."
               for platform in darwin-arm64 darwin-x64 linux-x64-gnu linux-arm64-gnu win32-x64-msvc; do
                 PKG="@cmetech/otto-engine-${platform}"
                 PUBLISHED=$(npm view "${PKG}@${VERSION}" version 2>/dev/null || echo "")
@@ -226,10 +227,10 @@ jobs:
               done
               exit 1
             fi
-            echo "  Attempt ${attempt}: not all packages visible yet, retrying in ${DELAY}s..."
+            echo "  Attempt ${attempt}/${MAX_ATTEMPTS}: not all packages visible yet, retrying in ${DELAY}s..."
             sleep "$DELAY"
             DELAY=$((DELAY * 2))
-            if [ "$DELAY" -gt 30 ]; then DELAY=30; fi
+            if [ "$DELAY" -gt 60 ]; then DELAY=60; fi
           done
 
       - name: Install dependencies
@@ -267,23 +268,24 @@ jobs:
           cd "$TMPDIR"
           npm init -y > /dev/null 2>&1
 
-          # Wait for npm registry with exponential backoff (5s, 10s, 20s, 30s, 30s, 30s, 30s — max ~155s vs fixed 5min)
+          # First-publish registry propagation can take 10-15 min. Budget: 20 attempts, max 60s delay (~18 min worst case).
           echo "Waiting for @cmetech/otto@${VERSION} to appear on npm..."
           DELAY=5
-          for attempt in $(seq 1 8); do
+          MAX_ATTEMPTS=20
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
             PUBLISHED=$(npm view "@cmetech/otto@${VERSION}" version 2>/dev/null || echo "")
             if [ "${PUBLISHED}" = "${VERSION}" ]; then
               echo "  ✓ Version ${VERSION} visible on npm (attempt ${attempt})"
               break
             fi
-            if [ "$attempt" = "8" ]; then
-              echo "::warning::@cmetech/otto@${VERSION} not visible on npm after 8 attempts — skipping smoke test"
+            if [ "$attempt" = "$MAX_ATTEMPTS" ]; then
+              echo "::warning::@cmetech/otto@${VERSION} not visible on npm after ${MAX_ATTEMPTS} attempts — skipping smoke test"
               exit 0
             fi
-            echo "  Attempt ${attempt}: not yet visible, retrying in ${DELAY}s..."
+            echo "  Attempt ${attempt}/${MAX_ATTEMPTS}: not yet visible, retrying in ${DELAY}s..."
             sleep "$DELAY"
             DELAY=$((DELAY * 2))
-            if [ "$DELAY" -gt 30 ]; then DELAY=30; fi
+            if [ "$DELAY" -gt 60 ]; then DELAY=60; fi
           done
 
           # Install and verify with backoff (5s, 10s, 20s)
@@ -318,16 +320,17 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "Verifying npm dist-tag 'latest' points to ${VERSION}..."
           DELAY=5
-          for attempt in $(seq 1 6); do
+          MAX_ATTEMPTS=20
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
             LATEST=$(npm view @cmetech/otto dist-tags.latest 2>/dev/null || echo "")
             if [ "${LATEST}" = "${VERSION}" ]; then
               echo "  ✓ npm dist-tags.latest = ${VERSION}"
               exit 0
             fi
-            echo "  Attempt ${attempt}/6: latest=${LATEST}, expected=${VERSION}, retrying in ${DELAY}s..."
+            echo "  Attempt ${attempt}/${MAX_ATTEMPTS}: latest=${LATEST}, expected=${VERSION}, retrying in ${DELAY}s..."
             sleep "$DELAY"
             DELAY=$((DELAY * 2))
-            if [ "$DELAY" -gt 30 ]; then DELAY=30; fi
+            if [ "$DELAY" -gt 60 ]; then DELAY=60; fi
           done
           echo "::error::dist-tags.latest is '${LATEST}' but expected '${VERSION}' — run: npm dist-tag add @cmetech/otto@${VERSION} latest"
           exit 1

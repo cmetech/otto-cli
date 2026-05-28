@@ -1571,6 +1571,57 @@ test("chat-controller: agent_end without message_end must not remove streaming c
 	);
 });
 
+test("chat-controller: agent_end with error finalizes pending tool rows", async () => {
+	installTheme();
+
+	const host = createHost();
+	const toolId = "agent-tool-1";
+	const toolCall = {
+		type: "toolCall",
+		id: toolId,
+		name: "Agent",
+		arguments: { prompt: "do work" },
+	};
+
+	await handleAgentEvent(host, {
+		type: "message_start",
+		message: makeAssistant([]),
+	} as any);
+
+	await handleAgentEvent(host, {
+		type: "message_update",
+		message: makeAssistant([toolCall]),
+		assistantMessageEvent: {
+			type: "toolcall_delta",
+			contentIndex: 0,
+			toolCall,
+			partial: makeAssistant([toolCall]),
+		},
+	} as any);
+
+	assert.equal(host.chatContainer.children.length, 1, "pending tool should render");
+	const component = host.chatContainer.children[0] as any;
+	assert.equal(host.pendingTools.size, 1, "tool should be pending before agent_end");
+
+	await handleAgentEvent(host, {
+		type: "agent_end",
+		messages: [
+			{
+				...makeAssistant([{ type: "text", text: "" }]),
+				stopReason: "error",
+				errorMessage: "Provider stream timed out after 120000ms without an event.",
+			},
+		],
+	} as any);
+
+	assert.equal(host.pendingTools.size, 0, "pending tool map should clear after agent_end");
+	assert.equal(component.result?.isError, true, "pending tool should be marked as failed");
+	assert.match(
+		component.result?.content?.map((part: any) => part.text ?? "").join("\n") ?? "",
+		/Provider stream timed out after 120000ms without an event/,
+	);
+});
+
 test("chat-controller: agent_end after message_end must not alter DOM", async () => {
 	const host = createHost();
 	const content = [{ type: "text", text: "complete answer" }];

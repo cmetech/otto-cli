@@ -282,6 +282,18 @@ function replaceCompactToolRowsWithPhaseSummary(
 	}
 }
 
+function agentEndErrorMessage(event: InteractiveModeEvent): string | undefined {
+	if (event.type !== "agent_end") return undefined;
+	const messages = Array.isArray((event as any).messages) ? (event as any).messages as any[] : [];
+	for (let i = messages.length - 1; i >= 0; i--) {
+		const message = messages[i];
+		if (message?.role === "assistant" && typeof message.errorMessage === "string" && message.errorMessage.trim()) {
+			return message.errorMessage;
+		}
+	}
+	return undefined;
+}
+
 export async function handleAgentEvent(host: InteractiveModeStateHost & {
 	init: () => Promise<void>;
 	getMarkdownThemeWithSettings: () => any;
@@ -940,6 +952,17 @@ export async function handleAgentEvent(host: InteractiveModeStateHost & {
 		}
 
 		case "agent_end":
+			{
+				const finalError = agentEndErrorMessage(event);
+				if (finalError && host.pendingTools.size > 0) {
+					const pendingComponents = Array.from(host.pendingTools.values());
+					const [first, ...rest] = pendingComponents;
+					first?.completeWithError(finalError);
+					for (const component of rest) {
+						component.completeWithError();
+					}
+				}
+			}
 			if (host.loadingAnimation) {
 				host.loadingAnimation.stop();
 				host.loadingAnimation = undefined;

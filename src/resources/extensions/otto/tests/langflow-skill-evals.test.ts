@@ -46,3 +46,10 @@ test("LangFlow natural-language parser routes list flow requests deterministical
     prefix: "otto",
   });
 });
+
+test("LangFlow natural-language parser routes UUID lookup requests to show_flow", () => {
+  assert.deepEqual(parseLangFlowNaturalLanguage("what is the uuid of the otto-hello-world langflow flow"), {
+    action: "show_flow",
+    flow: "otto-hello-world",
+  });
+});

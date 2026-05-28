@@ -37,6 +37,13 @@ export function parseLangFlowNaturalLanguage(text: string): LangFlowNaturalLangu
   const input = text.trim();
   if (!input || !mentionsLangFlow(input)) return undefined;
 
+  if (/\b(?:uuid|id|identifier)\b/i.test(input) && /\bflows?\b/i.test(input)) {
+    const flow =
+      extractAfter(input, /\b(?:uuid|id|identifier)\s+of\s+(?:the\s+)?([A-Za-z0-9_.-]+)\s+(?:lang\s*flow|langflow)?\s*flows?\b/i) ??
+      extractAfter(input, /\b(?:flow|named)\s+([A-Za-z0-9_.-]+)/i);
+    return { action: "show_flow", flow };
+  }
+
   if (/\b(list|show|see|display)\b/i.test(input) && /\bflows?\b/i.test(input)) {
     return { action: "list_flows", prefix: extractPrefix(input) };
   }

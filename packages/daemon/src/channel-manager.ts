@@ -19,8 +19,8 @@ import type { Logger } from './logger.js';
 // Constants
 // ---------------------------------------------------------------------------
 
-const DEFAULT_CATEGORY_NAME = 'GSD Projects';
-const ARCHIVE_CATEGORY_NAME = 'GSD Archive';
+const DEFAULT_CATEGORY_NAME = 'OTTO Projects';
+const ARCHIVE_CATEGORY_NAME = 'OTTO Archive';
 const CHANNEL_PREFIX = 'gsd-';
 const MAX_CHANNEL_NAME_LENGTH = 100; // Discord's limit
 

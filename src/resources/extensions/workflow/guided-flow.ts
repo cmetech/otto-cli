@@ -2307,7 +2307,7 @@ export async function showSmartEntry(
         return;
       }
       const choice = await showNextAction(ctx, {
-        title: "OTTO — Get Shit Done",
+        title: "OTTO — Orchestrating Tools, Tasks and Outcomes",
         summary: ["No active milestone."],
         actions: [
           {

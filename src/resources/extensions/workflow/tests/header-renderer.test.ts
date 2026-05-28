@@ -32,7 +32,7 @@ test("renderHeaderLines uses the command-center splash layout", () => {
 
   assert.match(raw, rgbPattern(splashPalette.border), "logo and divider should use the recommended olive border");
   assert.match(raw, rgbPattern(splashPalette.accent), "header accents should use the recommended blue");
-  assert.match(plain, /Project Console/);
+  assert.match(plain, /Orchestrating Tools, Tasks and Outcomes/);
   assert.match(plain, /\/otto start/);
   assert.match(plain, /\/otto templates/);
   assert.match(plain, /claude-sonnet-4-6/);

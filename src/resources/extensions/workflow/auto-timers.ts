@@ -25,6 +25,7 @@ import { recoverTimedOutUnit, type RecoveryContext } from "./auto-timeout-recove
 import { resolveAgentEndCancelled } from "./auto/resolve.js";
 import type { PauseAutoOptions } from "./auto/loop-deps.js";
 import type { AutoSession } from "./auto/session.js";
+import { parseUnitId } from "./unit-id.js";
 import { logWarning, logError } from "./workflow-logger.js";
 
 export interface SupervisionContext {
@@ -105,6 +106,30 @@ export function parseEstimateMinutes(estimate: string): number | null {
   return matched ? totalMinutes : null;
 }
 
+export function resolveTaskEstimateForUnit(
+  s: Pick<AutoSession, "currentMilestoneId">,
+  unitType: string,
+  unitId: string,
+): string | undefined {
+  if (unitType !== "execute-task" || !isDbAvailable() || !s.currentMilestoneId) {
+    return undefined;
+  }
+
+  const parsed = parseUnitId(unitId);
+  const taskId = parsed.task ?? unitId;
+  try {
+    const slices = getMilestoneSlices(s.currentMilestoneId);
+    for (const slice of slices) {
+      const tasks = getSliceTasks(s.currentMilestoneId, slice.id);
+      const task = tasks.find(t => t.id === taskId || t.id === unitId);
+      if (task?.estimate) return task.estimate;
+    }
+  } catch (err) {
+    logWarning("timer", `operation failed: ${err instanceof Error ? err.message : String(err)}`);
+  }
+  return undefined;
+}
+
 export function startUnitSupervision(sctx: SupervisionContext): void {
   const { s, ctx, pi, unitType, unitId, prefs, buildSnapshotOpts, buildRecoveryContext, pauseAuto } = sctx;
 
@@ -114,24 +139,8 @@ export function startUnitSupervision(sctx: SupervisionContext): void {
   // If the task has an est: annotation, use it to extend the hard and soft timeouts
   // so longer tasks don't get prematurely timed out.
   let taskEstimate = sctx.taskEstimate;
-  if (!taskEstimate && unitType === "task" && isDbAvailable()) {
-    // Look up the task estimate from the DB (#2243).
-    try {
-      if (s.currentMilestoneId) {
-        const slices = getMilestoneSlices(s.currentMilestoneId);
-        for (const slice of slices) {
-          const tasks = getSliceTasks(s.currentMilestoneId, slice.id);
-          const task = tasks.find(t => t.id === unitId);
-          if (task?.estimate) {
-            taskEstimate = task.estimate;
-            break;
-          }
-        }
-      }
-    } catch (err) {
-      // Non-fatal — fall through with no estimate
-      logWarning("timer", `operation failed: ${err instanceof Error ? err.message : String(err)}`);
-    }
+  if (!taskEstimate) {
+    taskEstimate = resolveTaskEstimateForUnit(s, unitType, unitId);
   }
   const estimateMinutes = taskEstimate ? parseEstimateMinutes(taskEstimate) : null;
   const MAX_TIMEOUT_SCALE = 6; // Cap at 6x (60min task). Prevents 2h+ tasks from creating 120min+ timeout windows.

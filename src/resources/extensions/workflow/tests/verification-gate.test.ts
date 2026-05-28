@@ -53,10 +53,19 @@ describe("verification-gate: discovery", () => {
 
   test("discoverCommands from task plan verify field", () => {
     const result = discoverCommands({
-      taskPlanVerify: "npm run lint && npm run test",
+      taskPlanVerify: "npm run lint\nnpm run test",
       cwd: tmp,
     });
     assert.deepStrictEqual(result.commands, ["npm run lint", "npm run test"]);
+    assert.equal(result.source, "task-plan");
+  });
+
+  test("discoverCommands preserves shell operators inside one task-plan verify command", () => {
+    const result = discoverCommands({
+      taskPlanVerify: "cd packages/app && npm test",
+      cwd: tmp,
+    });
+    assert.deepStrictEqual(result.commands, ["cd packages/app && npm test"]);
     assert.equal(result.source, "task-plan");
   });
 
@@ -217,18 +226,16 @@ describe("verification-gate: discovery", () => {
       cwd: tmp,
     });
     assert.equal(result.source, "task-plan");
-    assert.deepStrictEqual(result.commands, ["npm run lint", "npm run test"]);
+    assert.deepStrictEqual(result.commands, ["npm run lint && npm run test"]);
   });
 
-  test("mixed prose and commands in taskPlanVerify — only commands kept", () => {
+  test("mixed prose and commands in one taskPlanVerify line is treated as prose", () => {
     const result = discoverCommands({
       taskPlanVerify: "Check that everything works && npm run test",
       cwd: tmp,
     });
-    // "Check that everything works" is prose (starts with capital, 4+ words)
-    // "npm run test" is a valid command
-    assert.equal(result.source, "task-plan");
-    assert.deepStrictEqual(result.commands, ["npm run test"]);
+    assert.equal(result.source, "task-plan-prose");
+    assert.deepStrictEqual(result.commands, []);
   });
 
   test("taskPlanVerify splits newline-delimited commands", () => {

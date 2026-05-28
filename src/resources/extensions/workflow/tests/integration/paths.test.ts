@@ -25,7 +25,7 @@ describe('paths', () => {
   test('Case 1: .otto/workflow exists at basePath — fast path', () => {
     const root = tmp();
     try {
-      mkdirSync(join(root, ".otto/workflow"));
+      mkdirSync(join(root, ".otto/workflow"), { recursive: true });
       _clearWorkflowRootCache();
       const result = workflowRoot(root);
       assert.deepStrictEqual(result, join(root, ".otto/workflow"), "fast path: returns basePath/.otto/workflow");
@@ -36,7 +36,7 @@ describe('paths', () => {
     const root = tmp();
     try {
       initGit(root);
-      mkdirSync(join(root, ".otto/workflow"));
+      mkdirSync(join(root, ".otto/workflow"), { recursive: true });
       const sub = join(root, "src", "deep");
       mkdirSync(sub, { recursive: true });
       _clearWorkflowRootCache();
@@ -74,7 +74,7 @@ describe('paths', () => {
   test('Case 5: cache — second call returns same value without re-probing', () => {
     const root = tmp();
     try {
-      mkdirSync(join(root, ".otto/workflow"));
+      mkdirSync(join(root, ".otto/workflow"), { recursive: true });
       _clearWorkflowRootCache();
       const first = workflowRoot(root);
       const second = workflowRoot(root);
@@ -87,7 +87,7 @@ describe('paths', () => {
     const outer = tmp();
     try {
       initGit(outer);
-      mkdirSync(join(outer, ".otto/workflow"));
+      mkdirSync(join(outer, ".otto/workflow"), { recursive: true });
       const inner = join(outer, "nested");
       mkdirSync(join(inner, ".otto/workflow"), { recursive: true });
       _clearWorkflowRootCache();

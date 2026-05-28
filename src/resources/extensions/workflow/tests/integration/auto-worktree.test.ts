@@ -151,6 +151,7 @@ describe("auto-worktree lifecycle", () => {
     const storage = join(fakeHome, ".otto/workflow", "projects", "abc123def456");
     mkdirSync(join(storage, "milestones", "M001"), { recursive: true });
     writeFileSync(join(storage, "milestones", "M001", "CONTEXT.md"), "# M001\n");
+    mkdirSync(join(tempDir, ".otto"), { recursive: true });
     symlinkSync(storage, join(tempDir, ".otto/workflow"));
     process.env.OTTO_HOME = join(fakeHome, ".otto/workflow");
 

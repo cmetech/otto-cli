@@ -34,7 +34,7 @@ export function showHelp(ctx: ExtensionCommandContext, args = ""): void {
   const p = (sub: string, col: number = COL_SHORT) => `  ${padSlash(sub, col)}`;
 
   const summaryLines = [
-    `${BRAND} — Get Shit Done\n`,
+    `${BRAND} — Orchestrating Tools, Tasks and Outcomes\n`,
     "QUICK START",
     `${p("start <tpl>")} Start a workflow template`,
     `  ${slashCommand("").trimEnd()}${" ".repeat(Math.max(1, COL_SHORT - slashCommand("").trimEnd().length))}Open the state-aware home menu`,
@@ -77,7 +77,7 @@ export function showHelp(ctx: ExtensionCommandContext, args = ""): void {
 
   const pf = (sub: string) => `  ${padSlash(sub, COL_FULL)}`;
   const fullLines = [
-    `${BRAND} — Get Shit Done\n`,
+    `${BRAND} — Orchestrating Tools, Tasks and Outcomes\n`,
     "WORKFLOW",
     `${pf("start <tpl>")} Start a workflow template (bugfix, spike, feature, hotfix, etc.)`,
     `${pf("templates")} List available workflow templates  [info <name>]`,
@@ -123,7 +123,7 @@ export function showHelp(ctx: ExtensionCommandContext, args = ""): void {
     "",
     "PROJECT KNOWLEDGE",
     `${pf("knowledge <type> <text>")} Add a rule to KNOWLEDGE.md or capture a pattern/lesson to memories`,
-    `${pf("codebase [generate|update|stats]")} Manage the CODEBASE.md cache used in prompt context`,
+    `${pf("codebase [ask|excavate|generate|update|stats]")} Ask codebase questions, run excavation, or manage CODEBASE.md`,
     "",
     "SHIPPING & BACKLOG",
     `${pf("ship")} Create a PR from milestone artifacts  [--dry-run|--draft|--base|--force]`,
@@ -152,6 +152,10 @@ export function showHelp(ctx: ExtensionCommandContext, args = ""): void {
     `${pf("extensions")} Manage extensions  [list|enable|disable|info]`,
     `${pf("fast")} Toggle OpenAI service tier  [on|off|flex|status]`,
     `${pf("mcp")} MCP server management  [status|check|test|enable|disable|import|delete|init]`,
+    "",
+    "INTEGRATIONS & ANALYSIS",
+    `${pf("langflow")} LangFlow control plane  [status|connect|disconnect|flows|show|samples|import|delete|export|run|build]`,
+    `${pf("excavate <path>")} Reverse-engineer a codebase into provenance-cited specs  [--workspace <dir>]`,
     "",
     "MAINTENANCE",
     `${pf("doctor")} Diagnose and repair .otto/workflow/ state  [audit|fix|heal] [scope]`,

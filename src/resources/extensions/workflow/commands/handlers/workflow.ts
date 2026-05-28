@@ -559,6 +559,13 @@ export async function handleWorkflowCommand(trimmed: string, ctx: ExtensionComma
     return handleCustomWorkflow(sub, ctx, pi);
   }
 
+  // ── LangFlow control plane (`/otto langflow ...`) ──
+  if (trimmed === "langflow" || trimmed.startsWith("langflow ")) {
+    const { handleLangFlowCommand } = await import("../../../otto/commands/langflow/command.js");
+    await handleLangFlowCommand(trimmed.replace(/^langflow\s*/, "").trim(), ctx, pi, projectRoot());
+    return true;
+  }
+
   if (trimmed === "queue") {
     if (requireNotAutoActive(slashCommand("queue"), ctx)) return true;
     await showQueue(ctx, pi, projectRoot());

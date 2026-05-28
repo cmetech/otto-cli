@@ -21,6 +21,8 @@ const LOGO: readonly string[] = [
   " ╚═════╝    ╚═╝      ╚═╝    ╚═════╝",
 ];
 
+const OTTO_EXPANDED_TITLE = "Orchestrating Tools, Tasks and Outcomes";
+
 /** Label column width for Model/Provider/Directory/Branch rows. */
 const LABEL_COL_WIDTH = 10;
 
@@ -258,7 +260,7 @@ export function renderHeaderLines(data: HeaderData, width: number): string[] {
   const mcpRow = formatMcpRow(data.mcpServers, Math.max(1, panelWidth - 9)) || color("none configured", colors.dim);
   const panelLines = [
     rightAlign(
-      `${color("OTTO", colors.accent)} ${bold(color("Project Console", colors.text))}`,
+      `${color("OTTO", colors.accent)} ${bold(color(OTTO_EXPANDED_TITLE, colors.text))}`,
       color("idle", colors.muted),
       panelWidth,
     ),
@@ -312,7 +314,7 @@ function renderStackedHeader(data: HeaderData, width: number): string[] {
   const lines: string[] = [];
 
   // Title
-  lines.push(panelLine(`${color("OTTO", colors.accent)} ${bold(color("Project Console", colors.text))}`, outerWidth));
+  lines.push(panelLine(`${color("OTTO", colors.accent)} ${bold(color(OTTO_EXPANDED_TITLE, colors.text))}`, outerWidth));
 
   // Info
   lines.push(panelLine(formatInfoLine("Project", data.directory, innerWidth), outerWidth));

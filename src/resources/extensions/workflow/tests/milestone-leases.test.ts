@@ -12,6 +12,8 @@ import {
   insertMilestone,
   _getAdapter,
 } from "../db.ts";
+import { pauseAuto } from "../auto.ts";
+import { autoSession } from "../auto-runtime-state.ts";
 import { registerAutoWorker } from "../db/auto-workers.ts";
 import {
   claimMilestoneLease,
@@ -53,6 +55,27 @@ test("first claim returns ok=true with token=1", (t) => {
 
 test("second claim by different worker is rejected while lease is held", (t) => {
   const base = makeBase();
+  const otherBase = makeBase();
+  t.after(() => cleanup(base));
+  t.after(() => cleanup(otherBase));
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
+  insertMilestone({ id: "M001", title: "Test", status: "active" });
+
+  const w1 = registerAutoWorker({ projectRootRealpath: base });
+  const w2 = registerAutoWorker({ projectRootRealpath: otherBase });
+  const first = claimMilestoneLease(w1, "M001");
+  assert.equal(first.ok, true);
+
+  const second = claimMilestoneLease(w2, "M001");
+  assert.equal(second.ok, false);
+  if (!second.ok) {
+    assert.equal(second.error, "held_by");
+    assert.equal(second.byWorker, w1);
+  }
+});
+
+test("same process worker can re-enter a held milestone lease", (t) => {
+  const base = makeBase();
   t.after(() => cleanup(base));
   openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
@@ -63,11 +86,40 @@ test("second claim by different worker is rejected while lease is held", (t) => 
   assert.equal(first.ok, true);
 
   const second = claimMilestoneLease(w2, "M001");
-  assert.equal(second.ok, false);
-  if (!second.ok) {
-    assert.equal(second.error, "held_by");
-    assert.equal(second.byWorker, w1);
+  assert.equal(second.ok, true);
+  if (second.ok) {
+    assert.equal(second.token, 2);
   }
+  const row = getMilestoneLease("M001");
+  assert.equal(row!.worker_id, w2);
+});
+
+test("pauseAuto releases a held milestone lease before marking worker stopping", async (t) => {
+  const base = makeBase();
+  t.after(() => {
+    autoSession.resetAfterStop();
+    cleanup(base);
+  });
+  openDatabase(join(base, ".otto/workflow", "otto.db"));
+  insertMilestone({ id: "M001", title: "Test", status: "active" });
+
+  const workerId = registerAutoWorker({ projectRootRealpath: base });
+  const claim = claimMilestoneLease(workerId, "M001");
+  assert.equal(claim.ok, true);
+  if (!claim.ok) return;
+
+  autoSession.active = true;
+  autoSession.basePath = base;
+  autoSession.currentMilestoneId = "M001";
+  autoSession.workerId = workerId;
+  autoSession.milestoneLeaseToken = claim.token;
+
+  await pauseAuto();
+
+  const row = getMilestoneLease("M001");
+  assert.equal(row!.status, "released");
+  assert.equal(autoSession.workerId, null);
+  assert.equal(autoSession.milestoneLeaseToken, null);
 });
 
 test("releaseMilestoneLease frees the lease for takeover", (t) => {

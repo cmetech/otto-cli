@@ -169,7 +169,7 @@ test("dispatcher still allows recovery commands while validation is blocked", as
 
     assert.equal(calls.length, 1);
     assert.equal(calls[0].kind, "info");
-    // help text begins with "<BRAND> — Get Shit Done"
+    // help text begins with "<BRAND> — Orchestrating Tools, Tasks and Outcomes"
     assert.ok(
       calls[0].message.includes(BRAND),
       `expected help text to mention brand "${BRAND}"; got: ${calls[0].message.slice(0, 120)}`,

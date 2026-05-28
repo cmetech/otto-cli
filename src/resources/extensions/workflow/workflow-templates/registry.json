@@ -3,7 +3,7 @@
   "templates": {
     "full-project": {
       "name": "Full Project",
-      "description": "Complete GSD workflow with roadmap, milestones, slices, and full ceremony",
+      "description": "Complete OTTO workflow with roadmap, milestones, slices, and full ceremony",
       "file": "full-project.md",
       "mode": "auto-milestone",
       "phases": ["init", "discuss", "plan", "execute", "verify"],

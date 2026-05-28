@@ -411,6 +411,37 @@ async function runHeadlessOnce(options: HeadlessOptions, restartCount: number): 
     process.exit(exitCode)
   }
 
+  // LangFlow control-plane commands are deterministic CLI operations. Run them
+  // directly in headless mode so e2e and automation do not need a chat session.
+  if (options.command === 'langflow') {
+    const { handleLangFlowCommand } = await import('./resources/extensions/otto/commands/langflow/command.js')
+    let exitCode = 0
+    const ctx = {
+      cwd: process.cwd(),
+      ui: {
+        notify(message: string, type?: string) {
+          const line = `[otto] ${message}\n`
+          if (type === 'error' || type === 'warning') process.stderr.write(line)
+          else process.stdout.write(line)
+          if (type === 'error') exitCode = 1
+        },
+        setStatus() {
+          /* no status bar in direct headless mode */
+        },
+      },
+      async newSession() {
+        return { cancelled: true }
+      },
+    }
+    const pi = {
+      sendMessage(message: { content?: string }) {
+        if (message.content) process.stdout.write(`${message.content}\n`)
+      },
+    }
+    await handleLangFlowCommand(options.commandArgs.join(' '), ctx as never, pi as never, process.cwd())
+    process.exit(exitCode)
+  }
+
   // Resolve CLI path for the child process
   const cliPath = process.env.OTTO_BIN_PATH || process.argv[1]
   if (!cliPath) {

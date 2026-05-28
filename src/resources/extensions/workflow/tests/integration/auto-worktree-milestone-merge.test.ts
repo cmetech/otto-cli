@@ -64,6 +64,7 @@ function createTempRepoWithExternalGsd(): { repo: string; externalState: string 
   run("git config user.name Test", repo);
 
   mkdirSync(join(externalState, "worktrees"), { recursive: true });
+  mkdirSync(join(repo, ".otto"), { recursive: true });
   symlinkSync(externalState, join(repo, ".otto/workflow"));
 
   writeFileSync(join(repo, "README.md"), "# test\n");

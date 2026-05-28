@@ -91,7 +91,7 @@ async function assertTrustedStdioServer(
 	if (!ctx?.hasUI) {
 		throw new Error(
 			`MCP server "${config.name}" is a project-local stdio command from ${config.sourcePath}. ` +
-			"Run this from an interactive GSD session and approve the server before use.",
+			"Run this from an interactive OTTO session and approve the server before use.",
 		);
 	}
 

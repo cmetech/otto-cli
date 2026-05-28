@@ -114,7 +114,7 @@ export function buildVisualBriefPrompt(
 	const version = options.version?.trim() || undefined;
 	const shell = renderHtmlShellTemplate({
 		title: request.subject,
-		documentTitle: `GSD ${VISUAL_BRIEF_KIND[request.mode]} - ${request.subject}`,
+		documentTitle: `OTTO ${VISUAL_BRIEF_KIND[request.mode]} - ${request.subject}`,
 		subtitle: "Visual brief",
 		kind: VISUAL_BRIEF_KIND[request.mode],
 		version,

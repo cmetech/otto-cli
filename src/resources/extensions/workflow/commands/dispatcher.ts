@@ -34,6 +34,7 @@ const REQUIRES_PROJECT = new Set([
   "wt", "eval-review", "extract-learnings", "memory", "mode", "prefs",
   "cmux", "hooks", "run-hook", "skill-health", "forensics", "logs",
   "debug", "recover", "escalate",
+  "langflow",
 ]);
 
 function commandName(trimmed: string): string {
@@ -99,6 +100,11 @@ export async function dispatchWorkflowCommand(
           await runInit(ctx, cwd);
           return true;
         }
+      }
+      if (subcommand === "excavate") {
+        const { handleExcavateCommand } = await import("../../excavate/command.js");
+        await handleExcavateCommand(trimmed.slice("excavate".length).trim(), ctx, pi);
+        return true;
       }
       const needsProject = REQUIRES_PROJECT.has(subcommand);
       if (needsProject) {

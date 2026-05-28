@@ -25,16 +25,15 @@ function writeIndexTs(dir: string, content = "export default function() {}"): vo
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 test("validateExtensionPackage: valid package returns { valid: true }", (t) => {
-  // EXTR-02: otto.extension: true, peerDependencies, pi.extensions
+  // EXTR-02: otto.extension: true, peerDependencies, otto.extensions
   const dir = makeTempDir();
   t.after(() => rmSync(dir, { recursive: true, force: true }));
 
   writeIndexTs(dir);
   writePackageJson(dir, {
-    name: "@gsd-extensions/test",
+    name: "@example/otto-test",
     version: "1.0.0",
-    otto: { extension: true },
-    pi: { extensions: ["./index.ts"] },
+    otto: { extension: true, extensions: ["./index.ts"] },
     peerDependencies: { "@otto/pi-coding-agent": "*" },
     dependencies: { "some-lib": "^1.0.0" },
   });
@@ -50,9 +49,9 @@ test("validateExtensionPackage: missing otto.extension marker returns error", (t
 
   writeIndexTs(dir);
   writePackageJson(dir, {
-    name: "@gsd-extensions/test",
+    name: "@example/otto-test",
     version: "1.0.0",
-    pi: { extensions: ["./index.ts"] },
+    otto: { extensions: ["./index.ts"] },
     peerDependencies: { "@otto/pi-coding-agent": "*" },
   });
 
@@ -61,13 +60,13 @@ test("validateExtensionPackage: missing otto.extension marker returns error", (t
   assert.ok(result.errors.some(e => e.includes("otto")), `Expected error about otto, got: ${JSON.stringify(result.errors)}`);
 });
 
-test("validateExtensionPackage: missing pi.extensions returns error", (t) => {
+test("validateExtensionPackage: missing otto.extensions returns error", (t) => {
   const dir = makeTempDir();
   t.after(() => rmSync(dir, { recursive: true, force: true }));
 
   writeIndexTs(dir);
   writePackageJson(dir, {
-    name: "@gsd-extensions/test",
+    name: "@example/otto-test",
     version: "1.0.0",
     otto: { extension: true },
     peerDependencies: { "@otto/pi-coding-agent": "*" },
@@ -75,19 +74,18 @@ test("validateExtensionPackage: missing pi.extensions returns error", (t) => {
 
   const result = validateExtensionPackage(dir);
   assert.equal(result.valid, false);
-  assert.ok(result.errors.some(e => e.includes("pi")), `Expected error about pi.extensions, got: ${JSON.stringify(result.errors)}`);
+  assert.ok(result.errors.some(e => e.includes("otto")), `Expected error about otto.extensions, got: ${JSON.stringify(result.errors)}`);
 });
 
-test("validateExtensionPackage: pi.extensions entry path not found returns error", (t) => {
+test("validateExtensionPackage: otto.extensions entry path not found returns error", (t) => {
   const dir = makeTempDir();
   t.after(() => rmSync(dir, { recursive: true, force: true }));
 
   // Do NOT create index.ts
   writePackageJson(dir, {
-    name: "@gsd-extensions/test",
+    name: "@example/otto-test",
     version: "1.0.0",
-    otto: { extension: true },
-    pi: { extensions: ["./index.ts"] },
+    otto: { extension: true, extensions: ["./index.ts"] },
     peerDependencies: { "@otto/pi-coding-agent": "*" },
   });
 
@@ -102,10 +100,9 @@ test("validateExtensionPackage: @otto/* in dependencies (not peerDependencies) r
 
   writeIndexTs(dir);
   writePackageJson(dir, {
-    name: "@gsd-extensions/test",
+    name: "@example/otto-test",
     version: "1.0.0",
-    otto: { extension: true },
-    pi: { extensions: ["./index.ts"] },
+    otto: { extension: true, extensions: ["./index.ts"] },
     dependencies: { "@otto/pi-coding-agent": "^2.0.0" },
   });
 
@@ -120,10 +117,9 @@ test("validateExtensionPackage: @otto/* in devDependencies returns error", (t) =
 
   writeIndexTs(dir);
   writePackageJson(dir, {
-    name: "@gsd-extensions/test",
+    name: "@example/otto-test",
     version: "1.0.0",
-    otto: { extension: true },
-    pi: { extensions: ["./index.ts"] },
+    otto: { extension: true, extensions: ["./index.ts"] },
     peerDependencies: { "@otto/pi-coding-agent": "*" },
     devDependencies: { "@otto/pi-tui": "^2.0.0" },
   });

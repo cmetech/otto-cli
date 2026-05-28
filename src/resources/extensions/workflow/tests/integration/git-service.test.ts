@@ -1639,6 +1639,7 @@ describe('git-service', async () => {
     writeFileSync(join(externalGsd, "STATE.md"), "# State");
 
     // Symlink .otto/workflow -> external directory
+    mkdirSync(join(repo, ".otto"), { recursive: true });
     symlinkSync(externalGsd, join(repo, ".otto/workflow"));
 
     // Add .gitignore so .otto/workflow/ is ignored
@@ -1687,6 +1688,7 @@ describe('git-service', async () => {
     writeFileSync(join(externalGsd, "activity", "log.jsonl"), "log data");
     writeFileSync(join(externalGsd, "STATE.md"), "# State");
 
+    mkdirSync(join(repo, ".otto"), { recursive: true });
     symlinkSync(externalGsd, join(repo, ".otto/workflow"));
 
     createFile(repo, "src/app.ts", "export const x = 1;");
@@ -1731,6 +1733,7 @@ describe('git-service', async () => {
     writeFileSync(join(externalGsd, "activity", "log.jsonl"), "log data");
     writeFileSync(join(externalGsd, "STATE.md"), "# State");
 
+    mkdirSync(join(repo, ".otto"), { recursive: true });
     symlinkSync(externalGsd, join(repo, ".otto/workflow"));
 
     // Create PREFERENCES.md inside the symlink target (the linked .otto/workflow dir)
@@ -1922,6 +1925,7 @@ describe('git-service', async () => {
     mkdirSync(join(externalGsd, "activity"), { recursive: true });
     mkdirSync(join(externalGsd, "runtime"), { recursive: true });
 
+    mkdirSync(join(repo, ".otto"), { recursive: true });
     symlinkSync(externalGsd, join(repo, ".otto/workflow"));
 
     // .gitignore blocks .otto/workflow (as ensureGitignore would do for symlink projects)

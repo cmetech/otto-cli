@@ -29,11 +29,11 @@ export function buildCommands(): RESTPostAPIChatInputApplicationCommandsJSONBody
       .toJSON(),
     new SlashCommandBuilder()
       .setName('gsd-start')
-      .setDescription('Start a new GSD session')
+      .setDescription('Start a new OTTO session')
       .toJSON(),
     new SlashCommandBuilder()
       .setName('gsd-stop')
-      .setDescription('Stop a running GSD session')
+      .setDescription('Stop a running OTTO session')
       .toJSON(),
     new SlashCommandBuilder()
       .setName('gsd-verbose')

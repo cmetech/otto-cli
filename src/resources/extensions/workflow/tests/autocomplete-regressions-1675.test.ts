@@ -9,6 +9,7 @@ import { slashCommand } from "../strings.ts";
 
 function createMockPi() {
   const commands = new Map<string, any>();
+  const sentUserMessages: string[] = [];
   return {
     registerCommand(name: string, options: any) {
       commands.set(name, options);
@@ -17,7 +18,11 @@ function createMockPi() {
     registerShortcut() {},
     on() {},
     sendMessage() {},
+    sendUserMessage(message: string) {
+      sentUserMessages.push(message);
+    },
     commands,
+    sentUserMessages,
   };
 }
 
@@ -75,6 +80,36 @@ test("/otto debug completions include list|status|continue|--diagnose", () => {
   for (const expected of ["debug list", "debug status", "debug continue", "debug --diagnose"]) {
     assert.ok(values.includes(expected), `missing completion: ${expected}`);
   }
+});
+
+test("/otto completions include excavate and its workspace option", () => {
+  const pi = createMockPi();
+  registerWorkflowCommand(pi as any);
+
+  const gsd = pi.commands.get(COMMAND_NAMESPACE);
+  const topLevel = gsd.getArgumentCompletions("ex");
+  assert.ok(
+    topLevel.some((c: any) => c.value === "excavate"),
+    "top-level completions should include excavate",
+  );
+
+  const nested = gsd.getArgumentCompletions("excavate ");
+  assert.ok(
+    nested.some((c: any) => c.value === "excavate --workspace ./.otto/excavate"),
+    "excavate completions should include --workspace",
+  );
+});
+
+test("/otto excavate routes to the excavate playbook without requiring an OTTO project", async () => {
+  const ctx = createMockCtx();
+  const pi = createMockPi();
+
+  await dispatchWorkflowCommand("excavate ./repo", ctx as any, pi as any);
+
+  assert.equal(pi.sentUserMessages.length, 1);
+  assert.match(pi.sentUserMessages[0]!, /OTTO excavate/);
+  assert.match(pi.sentUserMessages[0]!, /\.\/repo/);
+  assert.match(pi.sentUserMessages[0]!, /\.otto\/excavate/);
 });
 
 test("/otto widget completions include full|small|min|off", () => {

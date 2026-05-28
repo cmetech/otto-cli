@@ -689,9 +689,9 @@ async function getWorkflowToolExecutors(): Promise<WorkflowToolExecutors> {
       }
 
       throw new Error(
-        "Unable to load GSD workflow executor bridge for MCP mutation tools. " +
+        "Unable to load OTTO workflow executor bridge for MCP mutation tools. " +
         "Set OTTO_WORKFLOW_EXECUTORS_MODULE to an importable workflow-tool-executors module, " +
-        "or run the MCP server from a GSD checkout that includes src/resources/extensions/workflow/tools/workflow-tool-executors.(js|ts). " +
+        "or run the MCP server from a OTTO checkout that includes src/resources/extensions/workflow/tools/workflow-tool-executors.(js|ts). " +
         `Attempts: ${attempts.join("; ")}`,
       );
     })();
@@ -721,7 +721,7 @@ async function getWorkflowWriteGateModule(): Promise<WorkflowWriteGateModule> {
       }
 
       throw new Error(
-        "Unable to load GSD write-gate bridge for workflow MCP tools. " +
+        "Unable to load OTTO write-gate bridge for workflow MCP tools. " +
         `Attempts: ${attempts.join("; ")}`,
       );
     })();
@@ -1687,7 +1687,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
 
   server.tool(
     "otto_milestone_generate_id",
-    "Generate the next milestone ID for a new GSD milestone.",
+    "Generate the next milestone ID for a new OTTO milestone.",
     milestoneGenerateIdParams,
     async (args: Record<string, unknown>) => {
       const { projectDir } = parseWorkflowArgs(milestoneGenerateIdSchema, args);
@@ -1701,7 +1701,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
 
   server.tool(
     "otto_generate_milestone_id",
-    "Alias for otto_milestone_generate_id. Generate the next milestone ID for a new GSD milestone.",
+    "Alias for otto_milestone_generate_id. Generate the next milestone ID for a new OTTO milestone.",
     milestoneGenerateIdParams,
     async (args: Record<string, unknown>) => {
       logAliasUsage("otto_generate_milestone_id", "otto_milestone_generate_id");
@@ -1929,7 +1929,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
 
   server.tool(
     "otto_summary_save",
-    "Save a GSD summary/research/context/assessment artifact to the database and disk. Omit milestone_id only for root-level PROJECT/PROJECT-DRAFT/REQUIREMENTS/REQUIREMENTS-DRAFT artifacts.",
+    "Save a OTTO summary/research/context/assessment artifact to the database and disk. Omit milestone_id only for root-level PROJECT/PROJECT-DRAFT/REQUIREMENTS/REQUIREMENTS-DRAFT artifacts.",
     summarySaveParams,
     async (args: Record<string, unknown>) => {
       const parsed = parseWorkflowArgs(summarySaveSchema, args);
@@ -2170,7 +2170,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
 
   server.tool(
     "otto_capture_thought",
-    "Record a durable project insight into the GSD memory store. Categories: architecture, convention, gotcha, preference, environment, pattern. Mirrors the in-process capture_thought tool for external MCP clients.",
+    "Record a durable project insight into the OTTO memory store. Categories: architecture, convention, gotcha, preference, environment, pattern. Mirrors the in-process capture_thought tool for external MCP clients.",
     captureThoughtParams,
     async (args: Record<string, unknown>) => {
       const { projectDir, ...params } = parseWorkflowArgs(captureThoughtSchema, args);
@@ -2209,7 +2209,7 @@ export function registerWorkflowTools(realServer: McpToolServer): void {
 
   server.tool(
     "otto_memory_query",
-    "Search the GSD memory store by keyword. Returns ranked memories with id, category, content, confidence, scope, and tags. Mirrors the in-process memory_query tool for external MCP clients.",
+    "Search the OTTO memory store by keyword. Returns ranked memories with id, category, content, confidence, scope, and tags. Mirrors the in-process memory_query tool for external MCP clients.",
     memoryQueryParams,
     async (args: Record<string, unknown>) => {
       const { projectDir, ...params } = parseWorkflowArgs(memoryQuerySchema, args);

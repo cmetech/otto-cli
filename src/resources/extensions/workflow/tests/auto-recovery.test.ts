@@ -1247,7 +1247,7 @@ test("hasImplementationArtifacts uses milestone path history instead of rolling 
     for (let i = 0; i < 205; i++) {
       writeFileSync(join(base, "docs", `note-${i}.md`), `# Note ${i}\n`);
       execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
-      execFileSync("git", ["commit", "-m", `docs: filler ${i}`], { cwd: base, stdio: "ignore" });
+      execFileSync("git", ["commit", "--allow-empty", "-m", `docs: filler ${i}`], { cwd: base, stdio: "ignore" });
     }
 
     const result = hasImplementationArtifacts(base, "M001");

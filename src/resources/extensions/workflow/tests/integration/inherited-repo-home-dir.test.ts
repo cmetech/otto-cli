@@ -171,6 +171,7 @@ describe("isInheritedRepo with stale .otto/workflow at parent git root", () => {
     mkdirSync(projectDir, { recursive: true });
 
     const externalState = mkdtempSync(join(tmpdir(), "gsd-ext-state-"));
+    mkdirSync(join(projectDir, ".otto"), { recursive: true });
     symlinkSync(externalState, join(projectDir, ".otto/workflow"));
 
     // Before fix: the walk-up loop started at normalizedBase (projectDir),

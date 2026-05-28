@@ -344,10 +344,12 @@ test("enterMilestone enters existing worktree when path resolves", (t) => {
 
 test("enterMilestone returns ok:false reason:lease-conflict when another worker holds the lease", (t) => {
   const base = makeDbBase();
+  const holderBase = makeDbBase();
   t.after(() => cleanupDbBase(base));
+  t.after(() => cleanupDbBase(holderBase));
   openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Test", status: "active" });
-  const holder = registerAutoWorker({ projectRootRealpath: base });
+  const holder = registerAutoWorker({ projectRootRealpath: holderBase });
   const contender = registerAutoWorker({ projectRootRealpath: base });
   const claim = claimMilestoneLease(holder, "M001");
   assert.equal(claim.ok, true);

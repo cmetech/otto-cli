@@ -90,7 +90,7 @@ function withProject(basePath: string, body: string): string {
 
 function buildHelp(): string {
   return [
-    "GSD Remote Commands:",
+    "OTTO Remote Commands:",
     "",
     "/status   — current milestone, unit, and cost",
     "/progress — roadmap overview (done / open milestones)",
@@ -126,7 +126,7 @@ async function buildStatus(basePath: string): Promise<string> {
     // auto.ts not loaded or available — fall through to disk-based status
   }
 
-  const lines: string[] = ["GSD Status"];
+  const lines: string[] = ["OTTO Status"];
   lines.push("");
 
   if (autoData && (autoData.active || autoData.paused)) {
@@ -175,7 +175,7 @@ async function buildStatus(basePath: string): Promise<string> {
 async function buildProgress(basePath: string): Promise<string> {
   const milestones = await readMilestonesFromDb();
   if (milestones.length === 0) {
-    return "No milestones found in .gsd database.\n\nRun /gsd to start GSD first.";
+    return "No milestones found in .otto workflow database.\n\nRun /otto to start OTTO first.";
   }
 
   const done = milestones.filter(m => m.status === "complete");
@@ -185,7 +185,7 @@ async function buildProgress(basePath: string): Promise<string> {
   );
   const parked = milestones.filter(m => m.status === "parked");
 
-  const lines: string[] = ["GSD Progress"];
+  const lines: string[] = ["OTTO Progress"];
   lines.push(`${done.length}/${milestones.length} milestones complete`);
   lines.push("");
 
@@ -239,7 +239,7 @@ async function buildBudget(basePath: string): Promise<string> {
     return "No metrics data available yet.\n\nMetrics are collected during auto-mode runs.";
   }
 
-  const lines: string[] = ["GSD Budget"];
+  const lines: string[] = ["OTTO Budget"];
   lines.push("");
   lines.push(`Cost:    $${totals.cost.toFixed(4)}`);
   lines.push(`Tokens:  ${formatTokens(totals.tokens.total)}`);

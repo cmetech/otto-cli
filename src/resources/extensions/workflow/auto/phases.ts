@@ -93,6 +93,16 @@ import {
 export const STUCK_WINDOW_SIZE = 6;
 const STUCK_RECOVERY_ATTEMPTS_KEY = "stuck_recovery_attempts";
 
+export function resolveDispatchRecoveryAttempts(
+  unitRecoveryCount: Map<string, number>,
+  unitType: string,
+  unitId: string,
+): number | undefined {
+  return (unitRecoveryCount.get(`${unitType}/${unitId}`) ?? 0) > 0
+    ? 0
+    : undefined;
+}
+
 // ─── Path Comparison Helper ───────────────────────────────────────────────
 /** Compare two paths for physical identity, tolerating trailing slashes and symlinks. */
 function isSamePathLocal(a: string, b: string): boolean {
@@ -2247,7 +2257,7 @@ export async function runUnitPhase(
       lastProgressAt: unitStartedAt,
       progressCount: 0,
       lastProgressKind: "dispatch",
-      recoveryAttempts: 0, // Reset so re-dispatched units get full recovery budget (#2322)
+      recoveryAttempts: resolveDispatchRecoveryAttempts(s.unitRecoveryCount, unitType, unitId),
     },
   );
 

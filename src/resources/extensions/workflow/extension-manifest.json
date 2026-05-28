@@ -1,8 +1,8 @@
 {
   "id": "gsd",
-  "name": "GSD Workflow",
+  "name": "OTTO Workflow",
   "version": "1.0.0",
-  "description": "Core GSD workflow engine — milestone planning, execution, and tracking",
+  "description": "Core OTTO workflow engine — milestone planning, execution, and tracking",
   "tier": "core",
   "requires": { "platform": ">=2.29.0" },
   "provides": {

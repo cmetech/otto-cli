@@ -36,12 +36,14 @@ function cleanup(base: string): void {
 
 test("two workers contesting the same milestone: only one wins the lease", (t) => {
   const base = makeBase();
+  const otherBase = makeBase();
   t.after(() => cleanup(base));
+  t.after(() => cleanup(otherBase));
   openDatabase(join(base, ".otto/workflow", "otto.db"));
   insertMilestone({ id: "M001", title: "Contested", status: "active" });
 
   const w1 = registerAutoWorker({ projectRootRealpath: base });
-  const w2 = registerAutoWorker({ projectRootRealpath: base });
+  const w2 = registerAutoWorker({ projectRootRealpath: otherBase });
 
   const r1 = claimMilestoneLease(w1, "M001");
   const r2 = claimMilestoneLease(w2, "M001");

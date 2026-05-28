@@ -446,7 +446,7 @@ async function runSingleAgent(
 				task,
 				exitCode: 1,
 				messages: [],
-				stderr: `Agent "${agentName}" is blocked: it conflicts with the active GSD phase "${activePhase}". Use the built-in GSD workflow instead.`,
+				stderr: `Agent "${agentName}" is blocked: it conflicts with the active OTTO phase "${activePhase}". Use the built-in OTTO workflow instead.`,
 				usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, contextTokens: 0, turns: 0 },
 				step,
 			};

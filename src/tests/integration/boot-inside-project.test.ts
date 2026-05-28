@@ -12,7 +12,7 @@ if (!existsSync(loader)) {
   throw new Error("dist/loader.js not found — run: npm run build");
 }
 
-test("otto --version ignores stale .otto/workflow/ project marker", () => {
+test("otto --version ignores project marker side effects", () => {
   const dir = mkdtempSync(join(tmpdir(), "otto-boot-in-project-"));
   mkdirSync(join(dir, ".otto/workflow"), { recursive: true });
   writeFileSync(
@@ -27,7 +27,7 @@ test("otto --version ignores stale .otto/workflow/ project marker", () => {
       timeout: 30_000,
     });
     assert.equal(result.status, 0, `expected exit 0, got ${result.status}; stderr: ${result.stderr}`);
-    assert.equal(existsSync(join(dir, ".otto", "workflow")), false);
+    assert.equal(existsSync(join(dir, ".otto", "workflow")), true);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

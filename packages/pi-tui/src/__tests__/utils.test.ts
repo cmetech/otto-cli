@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { alignRight, padRight, visibleWidth } from "../utils.js";
+import { alignRight, jsVisibleWidth, padRight, visibleWidth } from "../utils.js";
 
 describe("TUI text utilities", () => {
 	it("padRight truncates and pads to exact visible width", () => {
@@ -18,5 +18,10 @@ describe("TUI text utilities", () => {
 
 		assert.equal(visibleWidth(aligned), 12);
 		assert.equal(visibleWidth(alignRight("left", "right", 6)), 6);
+	});
+
+	it("jsVisibleWidth handles ANSI controls, wide glyphs, tabs, and newlines", () => {
+		assert.equal(jsVisibleWidth("\x1b[31m漢字\x1b[39m"), 4);
+		assert.equal(jsVisibleWidth("a\tb\nc"), 6);
 	});
 });

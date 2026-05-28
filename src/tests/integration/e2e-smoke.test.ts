@@ -433,7 +433,7 @@ test("gsd headless without .otto/workflow/ directory exits 1 with clean error", 
 
   const combined = stripAnsi(result.stdout + result.stderr);
   assert.ok(
-    combined.includes(".otto/workflow/") || combined.includes("No .gsd"),
+    combined.includes(".otto/workflow") || combined.includes("No .gsd"),
     `expected .otto/workflow/ missing error, got:\n${combined.slice(0, 500)}`,
   );
 

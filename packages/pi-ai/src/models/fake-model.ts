@@ -13,7 +13,7 @@ export const FAKE_MODEL_ID = "otto-fake-model" as const;
 
 export const FAKE_MODEL: Model<"fake"> = {
 	id: FAKE_MODEL_ID,
-	name: "GSD Fake (e2e replay)",
+	name: "OTTO Fake (e2e replay)",
 	api: "fake",
 	provider: FAKE_PROVIDER,
 	baseUrl: "https://fake.gsd.local/v1",

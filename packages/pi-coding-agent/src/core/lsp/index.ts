@@ -453,7 +453,7 @@ export function createLspTool(cwd: string): AgentTool<typeof lspSchema, LspToolD
 					if (matchedButMissing.length > 0) {
 						diagnostics.push("\nDetected projects missing language servers:");
 						diagnostics.push(...matchedButMissing);
-						diagnostics.push("\nInstall the missing server command and restart GSD, or run: lsp reload");
+						diagnostics.push("\nInstall the missing server command and restart OTTO, or run: lsp reload");
 					} else {
 						diagnostics.push("No recognized project markers found in the working directory.");
 						diagnostics.push("LSP auto-detects projects via files like package.json, Cargo.toml, go.mod, pyproject.toml, etc.");

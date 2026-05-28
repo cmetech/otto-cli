@@ -56,6 +56,7 @@ import type {
 	ExtensionWidgetOptions,
 } from "../../core/extensions/index.js";
 import { FooterDataProvider, type ReadonlyFooterDataProvider } from "../../core/footer-data-provider.js";
+import { GatewayHealthMonitor } from "../../core/gateway-health.js";
 import { type AppAction, KeybindingsManager } from "../../core/keybindings.js";
 import { createCompactionSummaryMessage } from "../../core/messages.js";
 import { resolveModelScope } from "../../core/model-resolver.js";
@@ -331,6 +332,7 @@ export class InteractiveMode {
 	private editorContainer: Container;
 	private footer: FooterComponent;
 	private footerDataProvider: FooterDataProvider;
+	private gatewayHealthMonitor: GatewayHealthMonitor | undefined;
 	private keybindings: KeybindingsManager;
 	private version: string;
 	private isInitialized = false;
@@ -466,6 +468,16 @@ export class InteractiveMode {
 		this.editorContainer.addChild(this.editor as Component);
 		this.footerDataProvider = new FooterDataProvider();
 		this.footer = new FooterComponent(session, this.footerDataProvider);
+		this.gatewayHealthMonitor = new GatewayHealthMonitor({
+			getActiveProviderReady: () => {
+				const model = this.session.state.model;
+				return model ? this.session.modelRegistry.isProviderRequestReady(model.provider) : false;
+			},
+			onStateChange: (state) => {
+				this.footerDataProvider.setGatewayStatus(state);
+				this.ui.requestRender();
+			},
+		});
 		this.footer.setAutoCompactEnabled(session.autoCompactionEnabled);
 
 		// Load hide thinking block setting
@@ -702,6 +714,7 @@ export class InteractiveMode {
 
 		// Start the UI
 		this.ui.start();
+		this.gatewayHealthMonitor?.start();
 		this.installStdinErrorRecovery();
 		this.isInitialized = true;
 
@@ -2964,7 +2977,7 @@ export class InteractiveMode {
 			let msg = "No editor configured. Set $VISUAL or $EDITOR environment variable.";
 			if (process.env.TERM_PROGRAM === "iTerm.app") {
 				msg +=
-					"\n\nTip: If you meant to open the GSD dashboard (Ctrl+Alt+G), set Left Option Key to" +
+					"\n\nTip: If you meant to open the OTTO dashboard (Ctrl+Alt+G), set Left Option Key to" +
 					" \"Esc+\" in iTerm2 → Profiles → Keys. With the default \"Normal\" setting," +
 					" Ctrl+Alt+G sends Ctrl+G instead.";
 			}
@@ -4410,6 +4423,8 @@ export class InteractiveMode {
 		this.autocompleteProvider = undefined;
 
 		this.footer.dispose();
+		this.gatewayHealthMonitor?.stop();
+		this.gatewayHealthMonitor = undefined;
 		this.footerDataProvider.dispose();
 		if (this.unsubscribe) {
 			this.unsubscribe();

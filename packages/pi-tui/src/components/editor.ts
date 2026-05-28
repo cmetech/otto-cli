@@ -114,6 +114,7 @@ interface VisualLine {
 
 export interface EditorTheme {
 	borderColor: (str: string) => string;
+	background?: (str: string) => string;
 	selectList: SelectListTheme;
 }
 
@@ -351,6 +352,7 @@ export class Editor implements Component, Focusable {
 		this.lastWidth = layoutWidth;
 
 		const horizontal = this.borderColor("─");
+		const background = this.theme.background ?? ((text: string) => text);
 
 		// Layout the text
 		const layoutLines = this.getLayoutLines(layoutWidth);
@@ -414,12 +416,12 @@ export class Editor implements Component, Focusable {
 					const afterGraphemes = [...segmenter.segment(after)];
 					const firstGrapheme = afterGraphemes[0]?.segment || "";
 					const restAfter = after.slice(firstGrapheme.length);
-					const cursor = `\x1b[7m${firstGrapheme}\x1b[0m`;
+					const cursor = `\x1b[7m${firstGrapheme}\x1b[27m`;
 					displayText = before + marker + cursor + restAfter;
 					// lineVisibleWidth stays the same - we're replacing, not adding
 				} else {
 					// Cursor is at the end - add highlighted space
-					const cursor = "\x1b[7m \x1b[0m";
+					const cursor = "\x1b[7m \x1b[27m";
 					displayText = before + marker + cursor;
 					lineVisibleWidth = lineVisibleWidth + 1;
 					// If cursor overflows content width into the padding, flag it
@@ -433,8 +435,9 @@ export class Editor implements Component, Focusable {
 			const padding = " ".repeat(Math.max(0, contentWidth - lineVisibleWidth));
 			const lineRightPadding = cursorInPadding ? rightPadding.slice(1) : rightPadding;
 
-			// Render the line (no side borders, just horizontal lines above and below)
-			result.push(`${leftPadding}${displayText}${padding}${lineRightPadding}`);
+			// Render the editable line as a subtle surface. The top/bottom rules
+			// frame it; the background makes the actual input area legible.
+			result.push(background(`${leftPadding}${displayText}${padding}${lineRightPadding}`));
 		}
 
 		// Render bottom border (with scroll indicator if more content below)
@@ -2031,8 +2034,7 @@ export class Editor implements Component, Focusable {
 		const currentLine = this.state.lines[this.state.cursorLine] || "";
 		const beforeCursor = currentLine.slice(0, this.state.cursorCol);
 
-		// Check if we're in a slash command context
-		if (this.isInSlashCommandContext(beforeCursor) && !beforeCursor.trimStart().includes(" ")) {
+		if (this.isInSlashCommandContext(beforeCursor)) {
 			this.handleSlashCommandCompletion();
 		} else {
 			this.forceFileAutocomplete(true);
@@ -2040,7 +2042,7 @@ export class Editor implements Component, Focusable {
 	}
 
 	private handleSlashCommandCompletion(): void {
-		this.tryTriggerAutocomplete(true);
+		this.tryTriggerAutocomplete();
 	}
 
 	/*

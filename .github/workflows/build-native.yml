@@ -1,5 +1,11 @@
 name: Build Native Binaries
 
+# Builds and publishes the 5 @cmetech/otto-engine-* native packages.
+# After publishing succeeds, chains to npm-publish.yml to publish the
+# main @cmetech/otto package. The split exists because npm trusted
+# publishing matches publishes against the originating workflow filename,
+# and the main package's trusted publisher record points at npm-publish.yml.
+
 on:
   push:
     tags:
@@ -26,6 +32,7 @@ on:
 permissions:
   contents: read
   id-token: write
+  actions: write
 
 jobs:
   build:
@@ -159,16 +166,20 @@ jobs:
             (cd "native/npm/${platform}" && npm pack --dry-run)
           done
 
-      - name: Detect prerelease version
-        id: version-check
+      - name: Detect channel from version
+        id: channel-check
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          if echo "$VERSION" | grep -q '-next\.'; then
-            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          if echo "$VERSION" | grep -q '\-next\.'; then
+            echo "channel=next" >> "$GITHUB_OUTPUT"
             echo "tag_flag=--tag next" >> "$GITHUB_OUTPUT"
             echo "Prerelease detected: ${VERSION} → publishing with --tag next"
+          elif echo "$VERSION" | grep -q '\-dev\.'; then
+            echo "channel=dev" >> "$GITHUB_OUTPUT"
+            echo "tag_flag=--tag dev" >> "$GITHUB_OUTPUT"
+            echo "Dev build detected: ${VERSION} → publishing with --tag dev"
           else
-            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "channel=latest" >> "$GITHUB_OUTPUT"
             echo "tag_flag=--tag latest" >> "$GITHUB_OUTPUT"
             echo "Stable release: ${VERSION} → publishing with --tag latest"
           fi
@@ -180,7 +191,7 @@ jobs:
           for platform in darwin-arm64 darwin-x64 linux-x64-gnu linux-arm64-gnu win32-x64-msvc; do
             echo "Publishing @cmetech/otto-engine-${platform}..."
             cd "native/npm/${platform}"
-            if OUTPUT=$(npm publish --access public ${{ steps.version-check.outputs.tag_flag }} 2>&1); then
+            if OUTPUT=$(npm publish --access public ${{ steps.channel-check.outputs.tag_flag }} 2>&1); then
               echo "$OUTPUT"
             else
               if echo "$OUTPUT" | grep -q "cannot publish over the previously published"; then
@@ -233,104 +244,18 @@ jobs:
             if [ "$DELAY" -gt 60 ]; then DELAY=60; fi
           done
 
-      - name: Install dependencies
-        run: npm ci --omit=optional
-
-      - name: Build
-        run: npm run build
-
-      - name: Verify dist exists
-        run: test -s dist/loader.js || { echo "::error::dist/loader.js missing or empty after build"; exit 1; }
-
-      - name: Validate package is installable
-        run: npm run validate-pack
-
-      - name: Publish main package
+      - name: Trigger main package publish
+        # Trigger npm-publish.yml as a separate workflow so its OIDC token's
+        # job_workflow_ref matches the trusted publisher record for
+        # @cmetech/otto (which is configured for npm-publish.yml, not this file).
         env:
-          NODE_AUTH_TOKEN: ${{ github.event.inputs.publish_auth == 'token' && secrets.NPM_TOKEN || '' }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # --ignore-scripts: skip prepublishOnly since we built explicitly above
-          if OUTPUT=$(npm publish --ignore-scripts --access public ${{ steps.version-check.outputs.tag_flag }} 2>&1); then
-            echo "$OUTPUT"
-          else
-            if echo "$OUTPUT" | grep -q "cannot publish over the previously published\|You cannot publish over"; then
-              echo "Already published, skipping"
-            else
-              echo "$OUTPUT"
-              exit 1
-            fi
-          fi
-
-      - name: Post-publish smoke test
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          TMPDIR=$(mktemp -d)
-          cd "$TMPDIR"
-          npm init -y > /dev/null 2>&1
-
-          # First-publish registry propagation can take 10-15 min. Budget: 20 attempts, max 60s delay (~18 min worst case).
-          echo "Waiting for @cmetech/otto@${VERSION} to appear on npm..."
-          DELAY=5
-          MAX_ATTEMPTS=20
-          for attempt in $(seq 1 $MAX_ATTEMPTS); do
-            PUBLISHED=$(npm view "@cmetech/otto@${VERSION}" version 2>/dev/null || echo "")
-            if [ "${PUBLISHED}" = "${VERSION}" ]; then
-              echo "  ✓ Version ${VERSION} visible on npm (attempt ${attempt})"
-              break
-            fi
-            if [ "$attempt" = "$MAX_ATTEMPTS" ]; then
-              echo "::warning::@cmetech/otto@${VERSION} not visible on npm after ${MAX_ATTEMPTS} attempts — skipping smoke test"
-              exit 0
-            fi
-            echo "  Attempt ${attempt}/${MAX_ATTEMPTS}: not yet visible, retrying in ${DELAY}s..."
-            sleep "$DELAY"
-            DELAY=$((DELAY * 2))
-            if [ "$DELAY" -gt 60 ]; then DELAY=60; fi
-          done
-
-          # Install and verify with backoff (5s, 10s, 20s)
-          echo "Installing @cmetech/otto@${VERSION}..."
-          DELAY=5
-          for attempt in 1 2 3; do
-            if npm install "@cmetech/otto@${VERSION}" 2>&1 | tee /tmp/install-output.txt; then
-              echo "  ✓ Install succeeded"
-              RAW=$(node node_modules/@cmetech/otto/dist/loader.js --version 2>&1 || echo "FAILED")
-              ACTUAL=$(echo "$RAW" | sed 's/\x1b\[[0-9;]*m//g' | grep -oE "^${VERSION}$" | head -1)
-              if [ "$ACTUAL" = "$VERSION" ]; then
-                echo "  ✓ otto --version = ${VERSION}"
-                echo "Published package is functional"
-                exit 0
-              else
-                echo "::error::Version mismatch: expected ${VERSION} in output:"
-                echo "$RAW"
-                exit 1
-              fi
-            fi
-            echo "Install attempt ${attempt}/3 failed, retrying in ${DELAY}s..."
-            cat /tmp/install-output.txt
-            sleep "$DELAY"
-            DELAY=$((DELAY * 2))
-          done
-          echo "::error::Smoke test failed — @cmetech/otto@${VERSION} not installable"
-          exit 1
-
-      - name: Verify dist-tag after publish
-        if: steps.version-check.outputs.is_prerelease == 'false'
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "Verifying npm dist-tag 'latest' points to ${VERSION}..."
-          DELAY=5
-          MAX_ATTEMPTS=20
-          for attempt in $(seq 1 $MAX_ATTEMPTS); do
-            LATEST=$(npm view @cmetech/otto dist-tags.latest 2>/dev/null || echo "")
-            if [ "${LATEST}" = "${VERSION}" ]; then
-              echo "  ✓ npm dist-tags.latest = ${VERSION}"
-              exit 0
-            fi
-            echo "  Attempt ${attempt}/${MAX_ATTEMPTS}: latest=${LATEST}, expected=${VERSION}, retrying in ${DELAY}s..."
-            sleep "$DELAY"
-            DELAY=$((DELAY * 2))
-            if [ "$DELAY" -gt 60 ]; then DELAY=60; fi
-          done
-          echo "::error::dist-tags.latest is '${LATEST}' but expected '${VERSION}' — run: npm dist-tag add @cmetech/otto@${VERSION} latest"
-          exit 1
+          REF="${GITHUB_REF#refs/heads/}"
+          REF="${REF#refs/tags/}"
+          echo "Triggering npm-publish.yml: channel=${{ steps.channel-check.outputs.channel }} ref=${REF}"
+          gh workflow run npm-publish.yml \
+            --repo "${GITHUB_REPOSITORY}" \
+            --ref "${REF}" \
+            -f channel=${{ steps.channel-check.outputs.channel }} \
+            -f publish_auth=${{ github.event.inputs.publish_auth || 'trusted' }}

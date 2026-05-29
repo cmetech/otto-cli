@@ -1,6 +1,6 @@
 {
   "name": "@otto/pi-coding-agent",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Coding agent CLI (vendored from pi-mono)",
   "type": "module",
   "otto": {
@@ -28,7 +28,7 @@
     "copy-assets": "node scripts/copy-assets.cjs"
   },
   "dependencies": {
-    "@otto-build/contracts": "^1.0.9",
+    "@otto-build/contracts": "^1.1.0",
     "@mariozechner/jiti": "^2.6.2",
     "@silvia-odwyer/photon-node": "^0.3.4",
     "chalk": "^5.5.0",

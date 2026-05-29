@@ -16,6 +16,22 @@ export interface ReleaseNote {
 
 export const RELEASE_NOTES: ReleaseNote[] = [
 	{
+		version: '1.1.0',
+		date: '2026-05-29',
+		headline: 'Harness compatibility (Claude / Codex / Kiro skills + agents), [claude] origin chips, and a `/theme` slash command.',
+		added: [
+			'Harness skill paths (`~/.claude/skills`, `~/.codex/skills`, `~/.kiro/skills`) are now auto-seeded into `settings.skills` on launch — but only if the directory actually exists on disk. Skills loaded from those paths follow pi.dev\'s documented convention. A new `settings.seededSkillPaths` zombie-guard records every path attempted, so removing an entry from `settings.skills` keeps it removed across launches.',
+			'Skill origin is now visible in the slash-command autocomplete. Skills loaded from a known harness folder (`~/.claude/skills`, `~/.codex/skills`, `~/.kiro/skills`) carry `source: "harness:<id>"`. The dropdown shows a colored chip — e.g. `[claude] skill:review-pr  Review a pull request (claude)` — so the origin is glanceable. Implementation: new `HARNESS_SOURCE_PATHS` in `skills.ts`, new optional `tag` field on `AutocompleteItem` + `SelectItem`, new `SelectListTheme.tag` color hook.',
+			'Harness agent discovery. OTTO\'s `subagent` tool now also resolves agent names against `~/.claude/agents/`, `~/.codex/agents/`, `~/.kiro/agents/` (user scope) and the nearest `.claude/agents/`, `.codex/agents/`, `.kiro/agents/` (project scope). A Claude skill that delegates to a companion agent now finds it without manual setup. Collision rule: OTTO\'s own agents win at each scope; project always wins over user.',
+			'Tool-name normalization for harness-imported agents. Capitalized Claude/Codex/Kiro tool names in an agent\'s `tools:` frontmatter are rewritten to OTTO\'s lowercase registry names at load time — `Bash` → `bash`, `Read` → `read`, `AskUserQuestion` → `ask_user_questions`, `Task`/`Agent` → `subagent`, `WebSearch` → `web_search`, `WebFetch` → `fetch_page`, `Skill` → the stub below. Unknown names flow through as lowercase and the runtime allowlist silently drops them, so a single unknown entry no longer blocks the rest of the agent\'s toolset. MCP names (`mcp__server__*`) are preserved verbatim.',
+			'Stub `skill` tool for imported Claude skills that call `Skill(name=...)`. OTTO doesn\'t support model-invoked skill execution; the stub returns a friendly message redirecting the model to either ask the user to run `/skill:<name>` from chat input or to act on the skill content inline.',
+			'`/subagent` listing now renders each row with embedded ANSI styling: white agent name, dim source/model metadata, dim description, and an accent `[claude]/[codex]/[kiro]` chip when the agent was discovered under a harness path. Matches the `/skills` autocomplete chip style. `AgentConfig` gains an optional `harnessSource` field.',
+			'New `/theme` slash command — `/theme` opens an interactive picker over built-in themes (`otto`, `dark`, `light`, `tui-classic`, `vivid`) plus any `*.json` you drop in `~/.otto/agent/themes/`. `/theme <name>` switches directly. `/theme list` prints a non-interactive index. Switch is session-only; set `"theme": "<name>"` in `~/.otto/agent/settings.json` to persist.',
+			'New `docs/HARNESS-COMPAT.md` — user-facing matrix of what\'s automatically translated when importing skills/agents from Claude/Codex/Kiro, what doesn\'t translate, and how to test.',
+			'New `docs/UPSTREAM-SYNC.md` living ledger — fork baseline (gsd-pi @ 1.0.1, import commit `bb6da93`), per-package divergence status, file-level patch log, and the cherry-pick workflow for evaluating future upstream changes. Update this file in the same commit as any new vendored-package edit.',
+		],
+	},
+	{
 		version: '1.0.9',
 		date: '2026-05-29',
 		headline: 'Recommended packages, /release-notes, and quieter startup.',

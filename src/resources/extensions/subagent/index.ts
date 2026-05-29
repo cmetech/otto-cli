@@ -26,6 +26,7 @@ import { Type } from "@sinclair/typebox";
 import { formatTokenCount } from "../shared/mod.js";
 import { getCurrentPhase } from "../shared/phase-state.js";
 import { type AgentConfig, type AgentScope, discoverAgents } from "./agents.js";
+import { buildSkillToolStubResponse } from "./skill-tool-stub.js";
 import {
 	type IsolationEnvironment,
 	type IsolationMode,
@@ -1933,6 +1934,31 @@ export default function (pi: ExtensionAPI) {
 
 			const text = result.content[0];
 			return new Text(text?.type === "text" ? text.text : "(no output)", 0, 0);
+		},
+	});
+
+	pi.registerTool({
+		name: "skill",
+		label: "Skill (stub)",
+		description: [
+			"Stub for the Claude-style `Skill` tool used by some imported skills.",
+			"OTTO does not support invoking skills as a tool — users invoke skills via /skill:<name> from the chat input.",
+			"Returns a clear message redirecting the model to use the skill content inline.",
+		].join(" "),
+		parameters: Type.Object({
+			name: Type.Optional(Type.String({ description: "Name of the skill the model wanted to invoke." })),
+		}),
+		async execute(_toolCallId, params) {
+			return {
+				content: [
+					{
+						type: "text" as const,
+						text: buildSkillToolStubResponse({
+							name: typeof params.name === "string" ? params.name : undefined,
+						}),
+					},
+				],
+			};
 		},
 	});
 }

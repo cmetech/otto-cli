@@ -404,14 +404,18 @@ export {
 } from "./modes/interactive/components/index.js";
 // Theme utilities for custom tools and extensions
 export {
+	getAvailableThemes,
+	getAvailableThemesWithPaths,
 	getLanguageFromPath,
 	getMarkdownTheme,
 	getSelectListTheme,
 	getSettingsListTheme,
 	highlightCode,
 	initTheme,
+	setTheme,
 	Theme,
 	type ThemeColor,
+	type ThemeInfo,
 } from "./modes/interactive/theme/theme.js";
 // Clipboard utilities
 export { copyToClipboard } from "./utils/clipboard.js";

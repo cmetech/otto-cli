@@ -23,6 +23,7 @@ import { executeLangFlowTool } from "./tools/langflow.js";
 import { registerBuildFlowCommand } from "./commands/build-flow/command.js";
 import { registerPromptEngineerCommand } from "./commands/prompt-engineer/command.js";
 import { registerReleaseNotesCommand } from "./commands/release-notes/command.js";
+import { registerThemeCommand } from "./commands/theme/command.js";
 import { parseLangFlowNaturalLanguage } from "./commands/langflow/natural-language.js";
 
 const _here = dirname(fileURLToPath(import.meta.url));
@@ -189,6 +190,9 @@ export default function Otto(pi: ExtensionAPI): void {
 
   // ── Register /release-notes slash command ──
   registerReleaseNotesCommand(pi);
+
+  // ── Register /theme slash command ──
+  registerThemeCommand(pi);
 
   // ── Load and register flow-trigger slash commands ──
   // Fire-and-forget. Pi's command registry is dynamic; late registrations work.

@@ -156,6 +156,65 @@ jobs:
             ls -la "native/npm/${platform}/"
           done
 
+      - name: Bundle ripgrep + fd into platform packages
+        # Per-platform: download the matching ripgrep/fd release from their upstream
+        # GitHub repos, extract the binary, place it next to otto_engine.node so the
+        # postinstall script can copy it into ~/.otto/bin/. Solves the "ripgrep not
+        # found, downloading..." failure for users behind firewalls — see issue
+        # tracked in 1.0.7 release notes.
+        run: |
+          set -euo pipefail
+          RIPGREP_VERSION="14.1.1"
+          FD_VERSION="10.2.0"
+
+          for platform in darwin-arm64 darwin-x64 linux-x64-gnu linux-arm64-gnu win32-x64-msvc; do
+            case "$platform" in
+              darwin-arm64)    rg_target="aarch64-apple-darwin";       fd_target="aarch64-apple-darwin";      ext="tar.gz"; bin_ext="" ;;
+              darwin-x64)      rg_target="x86_64-apple-darwin";        fd_target="x86_64-apple-darwin";       ext="tar.gz"; bin_ext="" ;;
+              linux-x64-gnu)   rg_target="x86_64-unknown-linux-musl";  fd_target="x86_64-unknown-linux-gnu";  ext="tar.gz"; bin_ext="" ;;
+              linux-arm64-gnu) rg_target="aarch64-unknown-linux-gnu";  fd_target="aarch64-unknown-linux-gnu"; ext="tar.gz"; bin_ext="" ;;
+              win32-x64-msvc)  rg_target="x86_64-pc-windows-msvc";     fd_target="x86_64-pc-windows-msvc";    ext="zip";    bin_ext=".exe" ;;
+              *)               echo "::error::Unknown platform $platform"; exit 1 ;;
+            esac
+
+            echo "--- ${platform}: downloading ripgrep ${RIPGREP_VERSION} and fd ${FD_VERSION} ---"
+
+            # ripgrep
+            rg_archive="ripgrep-${RIPGREP_VERSION}-${rg_target}.${ext}"
+            curl -fsSL -o "/tmp/${rg_archive}" \
+              "https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_VERSION}/${rg_archive}"
+            mkdir -p "/tmp/rg-${platform}"
+            if [ "$ext" = "zip" ]; then
+              unzip -q -o "/tmp/${rg_archive}" -d "/tmp/rg-${platform}"
+            else
+              tar -xzf "/tmp/${rg_archive}" -C "/tmp/rg-${platform}"
+            fi
+            rg_bin=$(find "/tmp/rg-${platform}" -name "rg${bin_ext}" -type f | head -1)
+            cp "${rg_bin}" "native/npm/${platform}/rg${bin_ext}"
+            [ "$ext" = "zip" ] || chmod +x "native/npm/${platform}/rg${bin_ext}"
+            rg_license=$(find "/tmp/rg-${platform}" -iname "UNLICENSE" -o -iname "LICENSE-MIT" | head -1)
+            [ -n "$rg_license" ] && cp "${rg_license}" "native/npm/${platform}/RIPGREP-LICENSE" || true
+
+            # fd
+            fd_archive="fd-v${FD_VERSION}-${fd_target}.${ext}"
+            curl -fsSL -o "/tmp/${fd_archive}" \
+              "https://github.com/sharkdp/fd/releases/download/v${FD_VERSION}/${fd_archive}"
+            mkdir -p "/tmp/fd-${platform}"
+            if [ "$ext" = "zip" ]; then
+              unzip -q -o "/tmp/${fd_archive}" -d "/tmp/fd-${platform}"
+            else
+              tar -xzf "/tmp/${fd_archive}" -C "/tmp/fd-${platform}"
+            fi
+            fd_bin=$(find "/tmp/fd-${platform}" -name "fd${bin_ext}" -type f | head -1)
+            cp "${fd_bin}" "native/npm/${platform}/fd${bin_ext}"
+            [ "$ext" = "zip" ] || chmod +x "native/npm/${platform}/fd${bin_ext}"
+            fd_license=$(find "/tmp/fd-${platform}" -iname "LICENSE-MIT" | head -1)
+            [ -n "$fd_license" ] && cp "${fd_license}" "native/npm/${platform}/FD-LICENSE" || true
+
+            echo "${platform} contents after bundling:"
+            ls -la "native/npm/${platform}/"
+          done
+
       - name: Sync platform package versions
         run: node native/scripts/sync-platform-versions.cjs
 

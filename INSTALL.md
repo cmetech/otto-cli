@@ -9,11 +9,12 @@ visual flow service OTTO talks to over HTTP) on Windows, macOS, and Linux.
 |---|---|---|
 | Node.js 22+ | Required runtime for OTTO. Includes `npm`. | nodejs.org / package manager |
 | npm 11.5.1+ | Package manager. Newer is required for OTTO's publish workflows; any 11.x installs OTTO fine. | bundled with Node.js |
+| git | Required at OTTO startup. Used for branch detection, diff inspection, atomic commits, and worktree isolation. | git-scm.com / package manager |
 | Python 3.10–3.12 | Required only if you install LangFlow via pip. Skip if using LangFlow's Docker image. | python.org / package manager |
 | OTTO | The CLI. | npm: `@cmetech/otto` |
 | LangFlow | Optional companion flow runtime. | pip: `langflow` or Docker: `langflowai/langflow` |
 
-OTTO itself works with no LangFlow. The footer will just show `LF offline`.
+OTTO itself works with no LangFlow. The footer will just show `LF offline`. **git, on the other hand, is a hard requirement** — OTTO refuses to start without it on PATH.
 
 ## Quick start
 
@@ -61,7 +62,17 @@ If npm is older than 11.5.1:
 npm install -g npm@latest
 ```
 
-### 2. Install Python (only if you'll run LangFlow via pip)
+### 2. Install git
+
+```powershell
+winget install Git.Git
+# Close and reopen PowerShell
+git --version
+```
+
+OTTO refuses to start without git on PATH and prints a clear error message; install git before running `otto` for the first time.
+
+### 3. Install Python (only if you'll run LangFlow via pip)
 
 ```powershell
 winget install Python.Python.3.12
@@ -69,7 +80,7 @@ winget install Python.Python.3.12
 python --version    # 3.10–3.12
 ```
 
-### 3. Install OTTO
+### 4. Install OTTO
 
 ```powershell
 npm install -g @cmetech/otto
@@ -78,7 +89,7 @@ otto --version
 
 If Windows Defender / SmartScreen flags the first launch, click **More info → Run anyway**. This is normal for an unsigned npm-installed CLI; you only see it once.
 
-### 4. Install LangFlow
+### 5. Install LangFlow
 
 Pick one:
 
@@ -98,7 +109,7 @@ docker run -it --rm -p 7860:7860 langflowai/langflow:latest
 
 Either way LangFlow lives at <http://localhost:7860>.
 
-### 5. Configure OTTO to talk to LangFlow
+### 6. Configure OTTO to talk to LangFlow
 
 ```powershell
 # Per-session
@@ -146,14 +157,23 @@ If npm is older than 11.5.1:
 npm install -g npm@latest
 ```
 
-### 2. Install Python (only if you'll run LangFlow via pip)
+### 2. Install git
+
+```bash
+brew install git
+git --version
+```
+
+macOS ships with an Apple-bundled git that's often outdated; Homebrew's version is current. OTTO refuses to start without git on PATH.
+
+### 3. Install Python (only if you'll run LangFlow via pip)
 
 ```bash
 brew install python@3.12
 python3 --version    # 3.10–3.12
 ```
 
-### 3. Install OTTO
+### 4. Install OTTO
 
 ```bash
 npm install -g @cmetech/otto
@@ -170,7 +190,7 @@ source ~/.zshrc
 npm install -g @cmetech/otto
 ```
 
-### 4. Install LangFlow
+### 5. Install LangFlow
 
 **Path A — pip:**
 
@@ -198,7 +218,7 @@ docker run -it --rm -p 7860:7860 langflowai/langflow:latest
 
 Either way LangFlow lives at <http://localhost:7860>.
 
-### 5. Configure OTTO to talk to LangFlow
+### 6. Configure OTTO to talk to LangFlow
 
 ```bash
 # Per-session
@@ -248,7 +268,16 @@ If npm is older than 11.5.1:
 npm install -g npm@latest
 ```
 
-### 2. Install Python (only if you'll run LangFlow via pip)
+### 2. Install git
+
+```bash
+sudo apt-get install -y git
+git --version
+```
+
+OTTO refuses to start without git on PATH.
+
+### 3. Install Python (only if you'll run LangFlow via pip)
 
 Most modern Ubuntu/Debian releases include Python 3.10+. If not:
 
@@ -258,7 +287,7 @@ sudo apt-get install -y python3.12 python3.12-venv python3-pip
 python3 --version    # 3.10–3.12
 ```
 
-### 3. Install OTTO
+### 4. Install OTTO
 
 ```bash
 npm install -g @cmetech/otto
@@ -275,7 +304,7 @@ source ~/.bashrc
 npm install -g @cmetech/otto
 ```
 
-### 4. Install LangFlow
+### 5. Install LangFlow
 
 **Path A — pip via virtual env** (recommended on modern Debian/Ubuntu because of PEP 668):
 
@@ -295,7 +324,7 @@ docker run -it --rm -p 7860:7860 langflowai/langflow:latest
 
 Either way LangFlow lives at <http://localhost:7860>.
 
-### 5. Configure OTTO to talk to LangFlow
+### 6. Configure OTTO to talk to LangFlow
 
 ```bash
 # Per-session
@@ -323,6 +352,10 @@ npm install -g @cmetech/otto@1.0.5         # pin to a specific version
 After upgrade, run `otto --version` to confirm.
 
 ## Troubleshooting
+
+### `Error: OTTO requires git but it was not found on PATH`
+
+OTTO checks for git at startup because it relies on git for branch detection, diff inspection, atomic commits, and worktree-based agent isolation. Install git for your platform (see the step-2 sections above) and restart your shell.
 
 ### `npm warn deprecated …` during install
 

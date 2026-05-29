@@ -15,6 +15,7 @@
 import { execSync, spawnSync, exec as execCb } from 'child_process'
 import { createHash, randomUUID } from 'crypto'
 import { chmodSync, copyFileSync, createWriteStream, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'fs'
+import { createRequire } from 'module'
 import { arch, homedir, platform } from 'os'
 import { dirname, resolve, join } from 'path'
 import { Readable } from 'stream'
@@ -486,6 +487,57 @@ function linkWorkspacePackages() {
   } catch { /* non-fatal */ }
 }
 
+// ── Step: Copy bundled tools (ripgrep, fd) into ~/.otto/bin/ ───────────────
+
+function copyBundledTools() {
+  // The @cmetech/otto-engine-* package matching this platform contains rg/fd
+  // alongside otto_engine.node. Copy them into ~/.otto/bin/ so the runtime
+  // tools-manager finds them at the expected location with no GitHub download.
+  const platMap = {
+    'darwin-arm64': 'darwin-arm64',
+    'darwin-x64': 'darwin-x64',
+    'linux-x64': 'linux-x64-gnu',
+    'linux-arm64': 'linux-arm64-gnu',
+    'win32-x64': 'win32-x64-msvc',
+  }
+  const key = `${platform()}-${arch()}`
+  const suffix = platMap[key]
+  if (!suffix) return // unsupported platform — nothing to bundle
+
+  const nativePkgName = `@cmetech/otto-engine-${suffix}`
+  let nativePkgDir
+  try {
+    const req = createRequire(import.meta.url)
+    const pkgJsonPath = req.resolve(`${nativePkgName}/package.json`, { paths: [packageRoot] })
+    nativePkgDir = dirname(pkgJsonPath)
+  } catch {
+    // Native package not installed — optionalDep didn't match (unsupported platform)
+    return
+  }
+
+  const binExt = platform() === 'win32' ? '.exe' : ''
+  const dest = join(homedir(), '.otto', 'bin')
+  mkdirSync(dest, { recursive: true })
+
+  const tools = ['rg', 'fd']
+  const copied = []
+  for (const tool of tools) {
+    const src = join(nativePkgDir, `${tool}${binExt}`)
+    const dst = join(dest, `${tool}${binExt}`)
+    if (existsSync(src)) {
+      copyFileSync(src, dst)
+      if (platform() !== 'win32') {
+        chmodSync(dst, 0o755)
+      }
+      copied.push(tool)
+    }
+  }
+
+  if (copied.length > 0) {
+    printStep('Bundled tools', `${copied.join(' + ')} copied to ~/.otto/bin/`)
+  }
+}
+
 // ── Step: Verify installation ──────────────────────────────────────────────
 
 function verifyInstall(local) {
@@ -536,6 +588,7 @@ const isLocal = args.includes('--local') || args.includes('-l')
 if (IS_POSTINSTALL) {
   // Running as npm postinstall hook — just do workspace linking + deps
   linkWorkspacePackages()
+  copyBundledTools()
   await installChromium()
   await installRtk()
 } else {
@@ -550,6 +603,7 @@ if (IS_POSTINSTALL) {
 
   // Run postinstall steps that npm skipped
   linkWorkspacePackages()
+  copyBundledTools()
   await installChromium()
   await installRtk()
 

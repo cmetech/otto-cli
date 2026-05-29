@@ -1,6 +1,6 @@
 {
   "name": "@otto/pi-tui",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Terminal User Interface library (vendored from pi-mono)",
   "type": "module",
   "otto": {

@@ -21,6 +21,7 @@ import { shouldBypassManagedResourceMismatchGate } from './cli-policy.js'
 import { shouldRedirectAutoToHeadless } from './cli-auto-routing.js'
 import { printHelp, printSubcommandHelp } from './help-text.js'
 import { applySecurityOverrides } from './security-overrides.js'
+import { maybeSeedDefaultPackages } from './seed-defaults.js'
 import { validateConfiguredModel } from './startup-model-validation.js'
 import { migrateAnthropicDefaultToClaudeCode } from './provider-migrations.js'
 import {
@@ -324,6 +325,16 @@ if (cliFlags.messages[0] === 'graph') {
 
 exitIfManagedResourcesAreNewer(agentDir)
 
+// Seed OTTO's "out of the box" packages into settings.json so the package
+// resolver picks them up on this same launch. Precedence:
+//   --no-seed-defaults > --with-defaults > OTTO_NO_SEED_DEFAULTS env >
+//   OTTO_SEED_DEFAULTS env > settings.seedDefaultsOnLaunch > off.
+// Idempotent; tracks attempts in settings.seededDefaults so `otto remove` sticks.
+await maybeSeedDefaultPackages(
+  { withDefaults: cliFlags.withDefaults, noSeedDefaults: cliFlags.noSeedDefaults },
+  agentDir,
+)
+
 // Early TTY check — must come before heavy initialization to avoid dangling
 // handles that prevent process.exit() from completing promptly.
 // Subcommands exempt from the early non-TTY guard.
@@ -338,6 +349,7 @@ const subcommandsExemptFromEarlyTtyCheck = new Set([
   'headless',
   'install',
   'list',
+  'onboarding',
   'package',
   'remove',
   'sessions',
@@ -443,6 +455,26 @@ if (cliFlags.messages[0] === 'config') {
       }
     }
   }
+  process.exit(0)
+}
+
+// `otto onboarding` — explicitly (re)run the first-run wizard. Bypasses the
+// shouldRunOnboarding gate so users can revisit choices (LLM provider, web
+// search, remote questions, tool keys, recommended packages) any time.
+// Exits after the wizard finishes — does NOT fall through into the TUI,
+// because messages[0] is the subcommand string and would be consumed as a
+// user message. Run `otto` to start a session.
+if (cliFlags.messages[0] === 'onboarding') {
+  if (!process.stdin.isTTY) {
+    process.stderr.write(`[${COMMAND_NAMESPACE}] \`${COMMAND_NAMESPACE} onboarding\` requires an interactive terminal.\n`)
+    process.exit(1)
+  }
+  const { AuthStorage } = await loadPiCodingAgentModule()
+  const authStorage = AuthStorage.create(authFilePath)
+  loadStoredEnvKeys(authStorage)
+  await runOnboarding(authStorage, {
+    outroMessage: `Setup updated — run \`${COMMAND_NAMESPACE}\` to start.`,
+  })
   process.exit(0)
 }
 

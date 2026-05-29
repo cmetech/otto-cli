@@ -1,6 +1,6 @@
 {
   "name": "@loop24/client",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "piConfig": {
     "_comment": "AUTO-SYNCED from root package.json by scripts/sync-piconfig.mjs (runs on prebuild). Do not edit this block directly — edit root package.json and re-run `npm run build` or `npm run sync-piconfig`.",
     "name": "otto",

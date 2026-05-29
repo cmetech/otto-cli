@@ -24,6 +24,21 @@ const SUBCOMMAND_HELP: Record<string, string> = {
     'and other OpenAI-compatible endpoints), see docs/providers.md.',
   ].join('\n'),
 
+  onboarding: [
+    `Usage: ${CMD} onboarding`,
+    '',
+    `Explicitly (re)run the first-run wizard. Useful when you want to revisit any`,
+    'of these without waiting for the auto-trigger:',
+    '  - LLM provider selection',
+    '  - Web search provider',
+    '  - Remote questions (Discord, Slack, Telegram)',
+    '  - Tool API keys',
+    '  - Recommended packages (categorical picker — Developer, Productivity, etc.)',
+    '',
+    'Existing choices are surfaced as "keep current" so you only change what you want.',
+    'Requires an interactive terminal.',
+  ].join('\n'),
+
   update: [
     `Usage: ${CMD} update`,
     '',
@@ -216,6 +231,7 @@ export function printHelp(version: string): void {
   process.stdout.write('  --help, -h               Print this help and exit\n')
   process.stdout.write('\nSubcommands:\n')
   process.stdout.write('  config [subject]         Configure services: gateway, langflow, llm, all (or interactive menu)\n')
+  process.stdout.write('  onboarding               Re-run the first-run wizard (LLM, search, recommended packages, etc.)\n')
   process.stdout.write('  install <source>         Install a package/extension source\n')
   process.stdout.write('  remove <source>          Remove an installed package source\n')
   process.stdout.write('  list                     List installed package sources\n')

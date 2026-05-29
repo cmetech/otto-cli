@@ -1,6 +1,6 @@
 {
   "name": "@otto/pi-ai",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Unified LLM API (vendored from pi-mono)",
   "type": "module",
   "otto": {

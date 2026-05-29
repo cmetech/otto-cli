@@ -2,6 +2,7 @@
  * Extension runner - executes extensions and manages their lifecycle.
  */
 
+import { AsyncLocalStorage } from "node:async_hooks";
 import type { AgentMessage } from "@otto/pi-agent-core";
 import type { ImageContent, Model } from "@otto/pi-ai";
 import type { KeyId } from "@otto/pi-tui";
@@ -222,6 +223,49 @@ const noOpUIContext: ExtensionUIContext = {
 	setToolsExpanded: () => {},
 };
 
+// Async context flag: true when the current async stack originates inside a
+// quiet extension's handler invocation. Read by the patched console methods to
+// decide whether to suppress output. Empty store = normal logging behaviour.
+const quietExtensionContext = new AsyncLocalStorage<boolean>();
+
+let quietConsolePatchInstalled = false;
+
+/**
+ * Patch `console.log/warn/error/info` to no-op when the current async context
+ * is flagged as "quiet". Installed once on first `setQuietExtensions(non-empty)`
+ * call so users who never configure quietExtensions pay zero overhead.
+ *
+ * The check is `quietExtensionContext.getStore() === true` — for any code path
+ * that wasn't dispatched inside `quietExtensionContext.run(true, …)` the store
+ * is undefined and console behaves exactly as before. This isolates the
+ * suppression to the quiet handler's own async work without affecting
+ * concurrent non-quiet handlers.
+ */
+function installQuietConsolePatch(): void {
+	if (quietConsolePatchInstalled) return;
+	quietConsolePatchInstalled = true;
+	const realLog = console.log.bind(console);
+	const realWarn = console.warn.bind(console);
+	const realError = console.error.bind(console);
+	const realInfo = console.info.bind(console);
+	console.log = (...args: unknown[]): void => {
+		if (quietExtensionContext.getStore() === true) return;
+		realLog(...args);
+	};
+	console.warn = (...args: unknown[]): void => {
+		if (quietExtensionContext.getStore() === true) return;
+		realWarn(...args);
+	};
+	console.error = (...args: unknown[]): void => {
+		if (quietExtensionContext.getStore() === true) return;
+		realError(...args);
+	};
+	console.info = (...args: unknown[]): void => {
+		if (quietExtensionContext.getStore() === true) return;
+		realInfo(...args);
+	};
+}
+
 export class ExtensionRunner {
 	private extensions: Extension[];
 	private runtime: ExtensionRuntime;
@@ -257,6 +301,8 @@ export class ExtensionRunner {
 	private shutdownHandler: ShutdownHandler = () => {};
 	private shortcutDiagnostics: ResourceDiagnostic[] = [];
 	private commandDiagnostics: ResourceDiagnostic[] = [];
+	/** Case-insensitive substring patterns matched against ext.path. ui.notify is dropped for matches. */
+	private quietExtensionPatterns: string[] = [];
 
 	constructor(
 		extensions: Extension[],
@@ -734,6 +780,41 @@ export class ExtensionRunner {
 		return eventType === "agent_end" || eventType === "stop" || eventType === "session_end";
 	}
 
+	/**
+	 * Replace the quiet-extensions allowlist. Each entry is a case-insensitive
+	 * substring matched against the extension's filesystem path. Matching
+	 * extensions have their `ui.notify` calls silently dropped AND their
+	 * `console.log/warn/error/info` calls silently dropped while the handler
+	 * is on the stack — useful for muting noisy session_start banners
+	 * (piolium uses ui.notify; pi-notion uses console.log).
+	 *
+	 * Console filtering uses AsyncLocalStorage so other extensions running
+	 * concurrently are unaffected — output is only suppressed when the call
+	 * originates inside a quiet extension's handler async context.
+	 */
+	setQuietExtensions(patterns: readonly string[]): void {
+		this.quietExtensionPatterns = patterns.map((p) => p.toLowerCase()).filter((p) => p.length > 0);
+		if (this.quietExtensionPatterns.length > 0) {
+			installQuietConsolePatch();
+		}
+	}
+
+	private isQuietExtension(ext: Extension): boolean {
+		if (this.quietExtensionPatterns.length === 0) return false;
+		const path = ext.path.toLowerCase();
+		return this.quietExtensionPatterns.some((p) => path.includes(p));
+	}
+
+	private withSilencedNotify(base: ExtensionContext): ExtensionContext {
+		// Wraps the shared ui context so notify() is a no-op while every other
+		// method (select/confirm/input/setStatus/setWidget/…) keeps working.
+		const silencedUi: ExtensionUIContext = {
+			...base.ui,
+			notify: () => undefined,
+		};
+		return { ...base, ui: silencedUi };
+	}
+
 	createCommandContext(): ExtensionCommandContext {
 		return {
 			...this.createContext(),
@@ -782,10 +863,18 @@ export class ExtensionRunner {
 			const handlers = ext.handlers.get(eventType);
 			if (!handlers || handlers.length === 0) continue;
 
+			const isQuiet = this.isQuietExtension(ext);
+			const extCtx = isQuiet ? this.withSilencedNotify(ctx) : ctx;
+
 			for (const handler of handlers) {
 				try {
 					const event = getEvent();
-					const handlerResult = await handler(event, ctx);
+					// Run quiet extensions inside an AsyncLocalStorage scope so
+					// the patched console methods can suppress their output
+					// without affecting non-quiet extensions running concurrently.
+					const handlerResult = isQuiet
+						? await quietExtensionContext.run(true, () => handler(event, extCtx))
+						: await handler(event, extCtx);
 					const action = processResult(handlerResult, ext.path);
 					if (action.done) return;
 				} catch (err) {

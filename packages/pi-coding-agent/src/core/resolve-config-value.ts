@@ -25,6 +25,20 @@ export const SAFE_COMMAND_PREFIXES = [
 ];
 
 /**
+ * Whether to emit the per-blocked-command stderr warning. Off by default —
+ * extensions (e.g. piolium's anthropic-vertex registration) intentionally
+ * register !sh-style apiKey expressions that will never resolve on most user
+ * machines; the warning is noise. Opt back in by setting OTTO_LOG_BLOCKED_COMMANDS=1
+ * (or any truthy value) when actively debugging credential resolution.
+ */
+function shouldLogBlockedCommands(): boolean {
+	const v = process.env.OTTO_LOG_BLOCKED_COMMANDS;
+	if (!v) return false;
+	const lv = v.toLowerCase();
+	return lv === "1" || lv === "true" || lv === "yes";
+}
+
+/**
  * Active command prefix allowlist. Defaults to SAFE_COMMAND_PREFIXES but can be
  * overridden via setAllowedCommandPrefixes() (called from settings or env var).
  */
@@ -70,13 +84,17 @@ function executeCommand(commandConfig: string): string | undefined {
 	const tokens = command.split(/\s+/).filter(Boolean);
 	const firstToken = tokens[0];
 	if (!activeCommandPrefixes.includes(firstToken)) {
-		process.stderr.write(`[resolve-config-value] Blocked disallowed command: "${firstToken}". Allowed: ${activeCommandPrefixes.join(", ")}\n`);
+		if (shouldLogBlockedCommands()) {
+			process.stderr.write(`[resolve-config-value] Blocked disallowed command: "${firstToken}". Allowed: ${activeCommandPrefixes.join(", ")}\n`);
+		}
 		commandResultCache.set(commandConfig, undefined);
 		return undefined;
 	}
 
 	if (SHELL_OPERATORS.test(command)) {
-		process.stderr.write(`[resolve-config-value] Blocked shell operators in command: "${command}"\n`);
+		if (shouldLogBlockedCommands()) {
+			process.stderr.write(`[resolve-config-value] Blocked shell operators in command: "${command}"\n`);
+		}
 		commandResultCache.set(commandConfig, undefined);
 		return undefined;
 	}

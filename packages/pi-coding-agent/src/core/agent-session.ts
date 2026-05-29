@@ -2407,6 +2407,9 @@ export class AgentSession {
 			this._extensionRunnerRef.current = this._extensionRunner;
 		}
 		if (this._extensionRunner) {
+			// User-configured silence list — see settings.json:quietExtensions.
+			// Substring-matched against each extension's filesystem path.
+			this._extensionRunner.setQuietExtensions(this.settingsManager.getQuietExtensions());
 			this._bindExtensionCore(this._extensionRunner);
 			this._applyExtensionBindings(this._extensionRunner);
 		}

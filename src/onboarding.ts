@@ -62,6 +62,12 @@ type PicoModule = {
 interface RunOnboardingOptions {
   /** Show logo + intro banner. Disable when onboarding is launched inside an active TUI session. */
   showIntro?: boolean
+  /**
+   * Final clack outro line. Defaults to "Launching OTTO..." for the first-run
+   * path which continues into the main agent loop. Callers that exit after the
+   * wizard (e.g. `otto onboarding`) should pass an honest message.
+   */
+  outroMessage?: string
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -184,6 +190,40 @@ function persistDefaultProvider(providerId: string): void {
     writeFileSync(settingsPath, JSON.stringify(raw, null, 2), 'utf-8')
   } catch {
     // Non-fatal: startup fallback logic will still run.
+  }
+}
+
+/**
+ * Persist seedDefaultsOnLaunch flag to settings.json.
+ *
+ * When true, ship-with-OTTO default packages are added to settings.packages on
+ * launch (layer 5 of the seed-defaults precedence resolver). See seed-defaults.ts.
+ */
+function persistSeedDefaultsOnLaunch(enabled: boolean): void {
+  const settingsPath = join(agentDir, 'settings.json')
+  try {
+    const raw = existsSync(settingsPath) ? JSON.parse(readFileSync(settingsPath, 'utf-8')) : {}
+    raw.seedDefaultsOnLaunch = enabled
+    mkdirSync(dirname(settingsPath), { recursive: true })
+    writeFileSync(settingsPath, JSON.stringify(raw, null, 2), 'utf-8')
+  } catch {
+    // Non-fatal: startup fallback logic will still run.
+  }
+}
+
+/**
+ * Persist enabledDefaultPackages to settings.json. Filter applied by the
+ * seed-defaults resolver: undefined = all (back-compat), [] = none, [...] = subset.
+ */
+function persistEnabledDefaultPackages(sources: string[]): void {
+  const settingsPath = join(agentDir, 'settings.json')
+  try {
+    const raw = existsSync(settingsPath) ? JSON.parse(readFileSync(settingsPath, 'utf-8')) : {}
+    raw.enabledDefaultPackages = sources
+    mkdirSync(dirname(settingsPath), { recursive: true })
+    writeFileSync(settingsPath, JSON.stringify(raw, null, 2), 'utf-8')
+  } catch {
+    // Non-fatal.
   }
 }
 
@@ -339,6 +379,13 @@ export async function runOnboarding(
   const toolKeyCount = toolResult ?? 0
   if (toolKeyCount > 0) { markStepCompleted('tool-keys'); completedSteps.push('tool-keys') } else { markStepSkipped('tool-keys') }
 
+  // ── Recommended Packages ──────────────────────────────────────────────────
+  const seedResult = await runStep(p, 'Recommended packages setup failed',
+    () => runSeedDefaultsStep(p, pc))
+  if (seedResult === STEP_CANCELLED) return
+  const seedSelectedCount = seedResult ?? 0
+  if (seedSelectedCount > 0) { markStepCompleted('seed-defaults'); completedSteps.push('seed-defaults') } else { markStepSkipped('seed-defaults') }
+
   // ── Summary ───────────────────────────────────────────────────────────────
   const summaryLines: string[] = []
   if (llmConfigured) {
@@ -372,6 +419,12 @@ export async function runOnboarding(
     summaryLines.push(`${pc.dim('↷')} Tool keys: none configured`)
   }
 
+  if (seedSelectedCount > 0) {
+    summaryLines.push(`${pc.green('✓')} Recommended packages: ${seedSelectedCount} selected — install on launch`)
+  } else {
+    summaryLines.push(`${pc.dim('↷')} Recommended packages: skipped — re-run onboarding or set --with-defaults to enable`)
+  }
+
   // Persist completion record so re-entry, web boot probe, and shouldRunOnboarding
   // all agree the wizard finished. Required steps drive the "complete" semantics
   // in onboarding-state.ts; here we mark wizard-level completion regardless.
@@ -381,7 +434,7 @@ export async function runOnboarding(
   summaryLines.push(`${pc.dim('Tip:')} re-run anytime with ${pc.cyan(`/${COMMAND_NAMESPACE} onboarding`)}`)
 
   p.note(summaryLines.join('\n'), 'Setup complete')
-  p.outro(pc.dim(`Launching ${BRAND_NAME}...`))
+  p.outro(pc.dim(opts.outroMessage ?? `Launching ${BRAND_NAME}...`))
 }
 
 // ─── LLM Authentication Step ──────────────────────────────────────────────────
@@ -875,6 +928,97 @@ export async function runToolKeysStep(
   }
 
   return savedCount
+}
+
+// ─── Seed Defaults Step ───────────────────────────────────────────────────────
+
+/**
+ * Categorical "recommended packages" step.
+ *
+ * Flow:
+ *   1. If multiple personas exist, multiselect which categories apply (pre-checked = all).
+ *   2. For each chosen category, multiselect which packages to install
+ *      (pre-checked = all; each shown with its description as a hint).
+ *   3. Persist the resulting union to settings.enabledDefaultPackages and
+ *      settings.seedDefaultsOnLaunch.
+ *
+ * Returns the count of selected packages (0 if declined/skipped).
+ */
+export async function runSeedDefaultsStep(
+  p: ClackModule,
+  pc: PicoModule,
+): Promise<number> {
+  const { getOnboardableCategories } = await import('./seed-defaults.js')
+  const categories = getOnboardableCategories()
+
+  if (categories.length === 0) {
+    p.log.info(pc.dim('No recommended packages curated yet — skipping.'))
+    persistSeedDefaultsOnLaunch(false)
+    return 0
+  }
+
+  // ── Step 1: pick categories ────────────────────────────────────────────────
+  let chosenCategories = categories
+  if (categories.length > 1) {
+    const selection = await p.multiselect({
+      message: 'Which personas describe how you use OTTO? (space to toggle, enter to confirm)',
+      options: categories.map(c => ({ value: c.id, label: c.label, hint: c.description })),
+      initialValues: categories.map(c => c.id),
+      required: false,
+    })
+    if (p.isCancel(selection)) {
+      persistEnabledDefaultPackages([])
+      persistSeedDefaultsOnLaunch(false)
+      p.log.info(pc.dim('Cancelled — recommended packages disabled. Enable later with --with-defaults or settings.seedDefaultsOnLaunch.'))
+      return 0
+    }
+    const chosenIds = new Set(selection as string[])
+    chosenCategories = categories.filter(c => chosenIds.has(c.id))
+  } else {
+    const only = categories[0]
+    p.log.info(`Recommended persona: ${pc.cyan(only.label)} — ${pc.dim(only.description)}`)
+  }
+
+  if (chosenCategories.length === 0) {
+    persistEnabledDefaultPackages([])
+    persistSeedDefaultsOnLaunch(false)
+    p.log.info(pc.dim('No personas selected — recommended packages disabled.'))
+    return 0
+  }
+
+  // ── Step 2: pick packages per category ────────────────────────────────────
+  const enabledSources: string[] = []
+  for (const cat of chosenCategories) {
+    const selection = await p.multiselect({
+      message: `${cat.label} packages — untick anything you don't want:`,
+      options: cat.packages.map(pkg => ({
+        value: pkg.source,
+        label: pkg.name,
+        hint: pkg.description,
+      })),
+      initialValues: cat.packages.map(pkg => pkg.source),
+      required: false,
+    })
+    if (p.isCancel(selection)) {
+      // Cancelling on a per-category list means "skip this one," not "abort the wizard."
+      p.log.info(pc.dim(`Skipped ${cat.label} packages.`))
+      continue
+    }
+    enabledSources.push(...(selection as string[]))
+  }
+
+  const unique = Array.from(new Set(enabledSources))
+  persistEnabledDefaultPackages(unique)
+
+  if (unique.length === 0) {
+    persistSeedDefaultsOnLaunch(false)
+    p.log.info(pc.dim('No packages selected — recommended packages disabled.'))
+    return 0
+  }
+
+  persistSeedDefaultsOnLaunch(true)
+  p.log.success(`Recommended packages: ${pc.green(`${unique.length} selected`)} — will install on next launch`)
+  return unique.length
 }
 
 // ─── Remote Questions Step ────────────────────────────────────────────────────

@@ -220,6 +220,11 @@ export interface Settings {
 	allowedCommandPrefixes?: string[]; // Override built-in SAFE_COMMAND_PREFIXES for !command resolution (global-only — ignored in project settings)
 	fetchAllowedUrls?: string[]; // Hostnames exempted from SSRF blocklist in fetch_page (global-only — ignored in project settings)
 	hooks?: HooksSettings; // Layer 0 shell-command hooks. Project-scoped hooks require explicit trust (.pi/hooks.trusted).
+	seedDefaultsOnLaunch?: boolean; // When true, ship-with-OTTO default packages are added to `packages` on launch
+	seededDefaults?: string[]; // Sources already attempted to seed — prevents re-adding after the user removes one
+	enabledDefaultPackages?: string[]; // Subset of default sources the user opted into during onboarding. undefined = "all" (back-compat)
+	quietExtensions?: string[]; // Substring patterns matched against extension.path — ui.notify calls from matching extensions are silently dropped
+	seededQuietPatterns?: string[]; // Quiet patterns already attempted to seed — zombie-resurrection guard, mirrors seededDefaults
 }
 
 /** Settings keys that are only respected from global config — project settings cannot override these. */
@@ -936,6 +941,57 @@ export class SettingsManager {
 
 	setProjectPackages(packages: PackageSource[]): void {
 		this.setProjectSetting("packages", packages);
+	}
+
+	getSeedDefaultsOnLaunch(): boolean | undefined {
+		return this.settings.seedDefaultsOnLaunch;
+	}
+
+	setSeedDefaultsOnLaunch(enabled: boolean): void {
+		this.setGlobalSetting("seedDefaultsOnLaunch", enabled);
+	}
+
+	getSeededDefaults(): string[] {
+		return [...(this.settings.seededDefaults ?? [])];
+	}
+
+	setSeededDefaults(sources: string[]): void {
+		this.setGlobalSetting("seededDefaults", sources);
+	}
+
+	/**
+	 * Returns undefined when the user has expressed no preference (back-compat:
+	 * the seeder treats this as "install every default"). Returns a (possibly
+	 * empty) array when the user has explicitly chosen a subset.
+	 */
+	getEnabledDefaultPackages(): string[] | undefined {
+		const value = this.settings.enabledDefaultPackages;
+		return value === undefined ? undefined : [...value];
+	}
+
+	setEnabledDefaultPackages(sources: string[]): void {
+		this.setGlobalSetting("enabledDefaultPackages", sources);
+	}
+
+	/**
+	 * Returns substring patterns matched (case-insensitive) against an extension's
+	 * filesystem path. ui.notify calls from matching extensions are silently
+	 * dropped at runtime — useful for muting noisy session_start banners.
+	 */
+	getQuietExtensions(): string[] {
+		return [...(this.settings.quietExtensions ?? [])];
+	}
+
+	setQuietExtensions(patterns: string[]): void {
+		this.setGlobalSetting("quietExtensions", patterns);
+	}
+
+	getSeededQuietPatterns(): string[] {
+		return [...(this.settings.seededQuietPatterns ?? [])];
+	}
+
+	setSeededQuietPatterns(patterns: string[]): void {
+		this.setGlobalSetting("seededQuietPatterns", patterns);
 	}
 
 	getExtensionPaths(): string[] {

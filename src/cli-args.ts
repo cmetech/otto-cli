@@ -15,6 +15,8 @@ export interface CliFlags {
   appendSystemPrompt?: string
   tools?: string[]
   messages: string[]
+  withDefaults?: boolean
+  noSeedDefaults?: boolean
 
   /** Set by `otto sessions` when the user picks a specific session to resume */
   _selectedSessionPath?: string
@@ -52,6 +54,10 @@ export function parseCliArgs(argv: string[]): CliFlags {
       flags.listModels = (i + 1 < args.length && !args[i + 1].startsWith('-')) ? args[++i] : true
     } else if (arg === '--discover') {
       flags.discover = true
+    } else if (arg === '--with-defaults') {
+      flags.withDefaults = true
+    } else if (arg === '--no-seed-defaults') {
+      flags.noSeedDefaults = true
     } else if (!arg.startsWith('--') && !arg.startsWith('-')) {
       flags.messages.push(arg)
     }

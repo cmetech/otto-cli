@@ -807,12 +807,13 @@ export class DefaultPackageManager implements PackageManager {
 		const parsed = this.parseSource(source);
 		const scope: SourceScope = options?.local ? "project" : "user";
 		await this.withProgress("install", source, `Installing ${source}...`, async () => {
+			// Explicit user-initiated install — stream npm/git progress to the terminal.
 			if (parsed.type === "npm") {
-				await this.installNpm(parsed, scope, false);
+				await this.installNpm(parsed, scope, false, true);
 				return;
 			}
 			if (parsed.type === "git") {
-				await this.installGit(parsed, scope);
+				await this.installGit(parsed, scope, true);
 				return;
 			}
 			if (parsed.type === "local") {
@@ -831,7 +832,7 @@ export class DefaultPackageManager implements PackageManager {
 		const scope: SourceScope = options?.local ? "project" : "user";
 		await this.withProgress("remove", source, `Removing ${source}...`, async () => {
 			if (parsed.type === "npm") {
-				await this.uninstallNpm(parsed, scope);
+				await this.uninstallNpm(parsed, scope, true);
 				return;
 			}
 			if (parsed.type === "git") {
@@ -869,15 +870,16 @@ export class DefaultPackageManager implements PackageManager {
 		const parsed = this.parseSource(source);
 		if (parsed.type === "npm") {
 			if (parsed.pinned) return;
+			// Explicit `pi package update` — stream npm progress to terminal.
 			await this.withProgress("update", source, `Updating ${source}...`, async () => {
-				await this.installNpm(parsed, scope, false);
+				await this.installNpm(parsed, scope, false, true);
 			});
 			return;
 		}
 		if (parsed.type === "git") {
 			if (parsed.pinned) return;
 			await this.withProgress("update", source, `Updating ${source}...`, async () => {
-				await this.updateGit(parsed, scope);
+				await this.updateGit(parsed, scope, true);
 			});
 			return;
 		}
@@ -890,54 +892,75 @@ export class DefaultPackageManager implements PackageManager {
 	): Promise<void> {
 		for (const { pkg, scope } of sources) {
 			const sourceStr = typeof pkg === "string" ? pkg : pkg.source;
-			const filter = typeof pkg === "object" ? pkg : undefined;
-			const parsed = this.parseSource(sourceStr);
-			const metadata: PathMetadata = { source: sourceStr, scope, origin: "package" };
-
-			if (parsed.type === "local") {
-				const baseDir = this.getBaseDirForScope(scope);
-				this.resolveLocalExtensionSource(parsed, accumulator, filter, metadata, baseDir);
-				continue;
+			try {
+				await this.resolveOnePackageSource(pkg, scope, accumulator, onMissing);
+			} catch (error) {
+				// One bad source (typo, 404, network glitch, unreachable git host)
+				// must not abort startup or block resolution of the remaining
+				// packages. Warn loudly so the user knows, then continue.
+				const message = error instanceof Error ? error.message : String(error);
+				process.stderr.write(
+					`[pi] Skipping package "${sourceStr}" — ${message}. ` +
+						`Run \`pi remove ${sourceStr}\` if you want to drop it permanently.\n`,
+				);
 			}
+		}
+	}
 
-			const installMissing = async (): Promise<boolean> => {
-				if (isOfflineModeEnabled()) {
-					return false;
-				}
-				if (!onMissing) {
-					await this.installParsedSource(parsed, scope);
-					return true;
-				}
-				const action = await onMissing(sourceStr);
-				if (action === "skip") return false;
-				if (action === "error") throw new Error(`Missing source: ${sourceStr}`);
+	private async resolveOnePackageSource(
+		pkg: PackageSource,
+		scope: SourceScope,
+		accumulator: ResourceAccumulator,
+		onMissing?: (source: string) => Promise<MissingSourceAction>,
+	): Promise<void> {
+		const sourceStr = typeof pkg === "string" ? pkg : pkg.source;
+		const filter = typeof pkg === "object" ? pkg : undefined;
+		const parsed = this.parseSource(sourceStr);
+		const metadata: PathMetadata = { source: sourceStr, scope, origin: "package" };
+
+		if (parsed.type === "local") {
+			const baseDir = this.getBaseDirForScope(scope);
+			this.resolveLocalExtensionSource(parsed, accumulator, filter, metadata, baseDir);
+			return;
+		}
+
+		const installMissing = async (): Promise<boolean> => {
+			if (isOfflineModeEnabled()) {
+				return false;
+			}
+			if (!onMissing) {
 				await this.installParsedSource(parsed, scope);
 				return true;
-			};
-
-			if (parsed.type === "npm") {
-				const installedPath = this.getNpmInstallPath(parsed, scope);
-				const needsInstall = !existsSync(installedPath) || (await this.npmNeedsUpdate(parsed, installedPath));
-				if (needsInstall) {
-					const installed = await installMissing();
-					if (!installed) continue;
-				}
-				metadata.baseDir = installedPath;
-				this.collectPackageResources(installedPath, accumulator, filter, metadata);
-				continue;
 			}
+			const action = await onMissing(sourceStr);
+			if (action === "skip") return false;
+			if (action === "error") throw new Error(`Missing source: ${sourceStr}`);
+			await this.installParsedSource(parsed, scope);
+			return true;
+		};
 
-			if (parsed.type === "git") {
-				const installedPath = this.getGitInstallPath(parsed, scope);
-				if (!existsSync(installedPath)) {
-					const installed = await installMissing();
-					if (!installed) continue;
-				} else if (scope === "temporary" && !parsed.pinned && !isOfflineModeEnabled()) {
-					await this.refreshTemporaryGitSource(parsed, sourceStr);
-				}
-				metadata.baseDir = installedPath;
-				this.collectPackageResources(installedPath, accumulator, filter, metadata);
+		if (parsed.type === "npm") {
+			const installedPath = this.getNpmInstallPath(parsed, scope);
+			const needsInstall = !existsSync(installedPath) || (await this.npmNeedsUpdate(parsed, installedPath));
+			if (needsInstall) {
+				const installed = await installMissing();
+				if (!installed) return;
 			}
+			metadata.baseDir = installedPath;
+			this.collectPackageResources(installedPath, accumulator, filter, metadata);
+			return;
+		}
+
+		if (parsed.type === "git") {
+			const installedPath = this.getGitInstallPath(parsed, scope);
+			if (!existsSync(installedPath)) {
+				const installed = await installMissing();
+				if (!installed) return;
+			} else if (scope === "temporary" && !parsed.pinned && !isOfflineModeEnabled()) {
+				await this.refreshTemporaryGitSource(parsed, sourceStr);
+			}
+			metadata.baseDir = installedPath;
+			this.collectPackageResources(installedPath, accumulator, filter, metadata);
 		}
 	}
 
@@ -1169,21 +1192,34 @@ export class DefaultPackageManager implements PackageManager {
 		return { name, version };
 	}
 
-	private async installNpm(source: NpmSource, scope: SourceScope, temporary: boolean): Promise<void> {
+	private async installNpm(
+		source: NpmSource,
+		scope: SourceScope,
+		temporary: boolean,
+		interactive: boolean = false,
+	): Promise<void> {
 		const installRoot = this.getNpmInstallRoot(scope, temporary);
 		this.ensureNpmProject(installRoot);
-		await this.runCommand("npm", ["install", source.spec, "--prefix", installRoot]);
+		await this.runCommand("npm", ["install", source.spec, "--prefix", installRoot], { interactive });
 	}
 
-	private async uninstallNpm(source: NpmSource, scope: SourceScope): Promise<void> {
+	private async uninstallNpm(
+		source: NpmSource,
+		scope: SourceScope,
+		interactive: boolean = false,
+	): Promise<void> {
 		const installRoot = this.getNpmInstallRoot(scope, false);
 		if (!existsSync(installRoot)) {
 			return;
 		}
-		await this.runCommand("npm", ["uninstall", source.name, "--prefix", installRoot]);
+		await this.runCommand("npm", ["uninstall", source.name, "--prefix", installRoot], { interactive });
 	}
 
-	private async installGit(source: GitSource, scope: SourceScope): Promise<void> {
+	private async installGit(
+		source: GitSource,
+		scope: SourceScope,
+		interactive: boolean = false,
+	): Promise<void> {
 		const targetDir = this.getGitInstallPath(source, scope);
 		if (existsSync(targetDir)) {
 			return;
@@ -1194,40 +1230,44 @@ export class DefaultPackageManager implements PackageManager {
 		}
 		mkdirSync(dirname(targetDir), { recursive: true });
 
-		await this.runCommand("git", ["clone", source.repo, targetDir]);
+		await this.runCommand("git", ["clone", source.repo, targetDir], { interactive });
 		if (source.ref) {
-			await this.runCommand("git", ["checkout", source.ref], { cwd: targetDir });
+			await this.runCommand("git", ["checkout", source.ref], { cwd: targetDir, interactive });
 		}
 		const packageJsonPath = join(targetDir, "package.json");
 		if (existsSync(packageJsonPath)) {
-			await this.runCommand("npm", ["install"], { cwd: targetDir });
+			await this.runCommand("npm", ["install"], { cwd: targetDir, interactive });
 		}
 	}
 
-	private async updateGit(source: GitSource, scope: SourceScope): Promise<void> {
+	private async updateGit(
+		source: GitSource,
+		scope: SourceScope,
+		interactive: boolean = false,
+	): Promise<void> {
 		const targetDir = this.getGitInstallPath(source, scope);
 		if (!existsSync(targetDir)) {
-			await this.installGit(source, scope);
+			await this.installGit(source, scope, interactive);
 			return;
 		}
 
 		// Fetch latest from remote (handles force-push by getting new history)
-		await this.runCommand("git", ["fetch", "--prune", "origin"], { cwd: targetDir });
+		await this.runCommand("git", ["fetch", "--prune", "origin"], { cwd: targetDir, interactive });
 
 		// Reset to tracking branch. Fall back to origin/HEAD when no upstream is configured.
 		try {
-			await this.runCommand("git", ["reset", "--hard", "@{upstream}"], { cwd: targetDir });
+			await this.runCommand("git", ["reset", "--hard", "@{upstream}"], { cwd: targetDir, interactive });
 		} catch {
-			await this.runCommand("git", ["remote", "set-head", "origin", "-a"], { cwd: targetDir }).catch(() => {});
-			await this.runCommand("git", ["reset", "--hard", "origin/HEAD"], { cwd: targetDir });
+			await this.runCommand("git", ["remote", "set-head", "origin", "-a"], { cwd: targetDir, interactive }).catch(() => {});
+			await this.runCommand("git", ["reset", "--hard", "origin/HEAD"], { cwd: targetDir, interactive });
 		}
 
 		// Clean untracked files (extensions should be pristine)
-		await this.runCommand("git", ["clean", "-fdx"], { cwd: targetDir });
+		await this.runCommand("git", ["clean", "-fdx"], { cwd: targetDir, interactive });
 
 		const packageJsonPath = join(targetDir, "package.json");
 		if (existsSync(packageJsonPath)) {
-			await this.runCommand("npm", ["install"], { cwd: targetDir });
+			await this.runCommand("npm", ["install"], { cwd: targetDir, interactive });
 		}
 	}
 
@@ -1819,19 +1859,46 @@ export class DefaultPackageManager implements PackageManager {
 		};
 	}
 
-	private runCommand(command: string, args: string[], options?: { cwd?: string }): Promise<void> {
+	/**
+	 * Run a child process. When `interactive` is true (the explicit user-facing
+	 * install/update path), stdio is inherited so npm/git progress shows in the
+	 * terminal. When false (the default — auto-resolve during launch), stdout
+	 * and stderr are captured. The captured stderr is appended to the failure
+	 * error so callers can surface the underlying cause without polluting the
+	 * TUI during startup.
+	 */
+	private runCommand(
+		command: string,
+		args: string[],
+		options?: { cwd?: string; interactive?: boolean },
+	): Promise<void> {
+		const interactive = options?.interactive === true;
 		return new Promise((resolvePromise, reject) => {
 			const child = spawn(command, args, {
 				cwd: options?.cwd,
-				stdio: "inherit",
+				stdio: interactive ? "inherit" : ["ignore", "pipe", "pipe"],
 				shell: process.platform === "win32",
 			});
+
+			let stderr = "";
+			if (!interactive) {
+				child.stdout?.on("data", () => { /* drop — progress goes through withProgress */ });
+				child.stderr?.on("data", (chunk: Buffer | string) => {
+					stderr += typeof chunk === "string" ? chunk : chunk.toString("utf-8");
+					// Cap to avoid unbounded growth on chatty failures.
+					if (stderr.length > 4_000) stderr = stderr.slice(-4_000);
+				});
+			}
+
 			child.on("error", reject);
 			child.on("exit", (code) => {
 				if (code === 0) {
 					resolvePromise();
 				} else {
-					reject(new Error(`${command} ${args.join(" ")} failed with code ${code}`));
+					const detail = !interactive && stderr.trim().length > 0
+						? `: ${stderr.trim().split("\n").slice(-3).join(" ").slice(0, 500)}`
+						: "";
+					reject(new Error(`${command} ${args.join(" ")} failed with code ${code}${detail}`));
 				}
 			});
 		});

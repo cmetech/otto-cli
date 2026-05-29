@@ -16,6 +16,6 @@
       "otto__import_flow",
       "otto__smoke_test_flow"
     ],
-    "commands": ["langflow", "build-flow", "prompt-engineer"]
+    "commands": ["langflow", "build-flow", "prompt-engineer", "release-notes"]
   }
 }

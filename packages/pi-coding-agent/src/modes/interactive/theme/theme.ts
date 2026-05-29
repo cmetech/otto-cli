@@ -1106,6 +1106,10 @@ export function getSelectListTheme(): SelectListTheme {
 		description: (text: string) => theme.fg("muted", text),
 		scrollInfo: (text: string) => theme.fg("muted", text),
 		noMatch: (text: string) => theme.fg("muted", text),
+		// Origin chip color (e.g. "[claude] " before a skill name). Uses the
+		// accent palette so the chip is glanceable but doesn't compete with
+		// selectedText (the chip is rendered uncolored when its row is selected).
+		tag: (text: string) => theme.fg("accent", text),
 	};
 }
 

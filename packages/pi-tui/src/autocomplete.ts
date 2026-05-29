@@ -89,11 +89,20 @@ export interface AutocompleteItem {
 	value: string;
 	label: string;
 	description?: string;
+	/**
+	 * Optional short origin tag rendered before the value as a colored chip
+	 * (e.g. "claude", "codex", "kiro"). The color comes from `SelectListTheme.tag`.
+	 * Kept short (< 12 chars) — long tags eat the visible width budget.
+	 *
+	 * Fork-specific addition. See docs/UPSTREAM-SYNC.md.
+	 */
+	tag?: string;
 }
 
 export interface SlashCommand {
 	name: string;
 	description?: string;
+	tag?: string;
 	// Function to get argument completions for this command
 	// Returns null if no argument completion is available
 	getArgumentCompletions?(argumentPrefix: string): AutocompleteItem[] | null;
@@ -185,12 +194,14 @@ export class CombinedAutocompleteProvider implements AutocompleteProvider {
 					name: "name" in cmd ? cmd.name : cmd.value,
 					label: "name" in cmd ? cmd.name : cmd.label,
 					description: cmd.description,
+					tag: cmd.tag,
 				}));
 
 				const filtered = fuzzyFilter(commandItems, prefix, (item) => item.name).map((item) => ({
 					value: item.name,
 					label: item.label,
 					...(item.description && { description: item.description }),
+					...(item.tag && { tag: item.tag }),
 				}));
 
 				if (filtered.length === 0) return null;

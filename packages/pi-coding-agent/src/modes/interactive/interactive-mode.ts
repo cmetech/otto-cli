@@ -565,14 +565,25 @@ export class InteractiveMode {
 			getArgumentCompletions: cmd.getArgumentCompletions,
 		}));
 
-		// Build skill commands from session.skills (if enabled)
+		// Build skill commands from session.skills (if enabled).
+		// When a skill's source starts with "harness:" (set by skills.ts:getSource
+		// for skills loaded from ~/.claude/skills, ~/.codex/skills, ~/.kiro/skills
+		// and similar), surface the origin in the autocomplete dropdown — as a
+		// suffix on the description AND as a `tag` for the colored chip
+		// rendered by SelectList (see pi-tui/src/components/select-list.ts).
 		this.skillCommands.clear();
 		const skillCommandList: SlashCommand[] = [];
 		if (this.settingsManager.getEnableSkillCommands()) {
 			for (const skill of this.session.resourceLoader.getSkills().skills) {
 				const commandName = `skill:${skill.name}`;
 				this.skillCommands.set(commandName, skill.filePath);
-				skillCommandList.push({ name: commandName, description: skill.description });
+				const harnessId = skill.source.startsWith("harness:")
+					? skill.source.slice("harness:".length)
+					: undefined;
+				const description = harnessId
+					? `${skill.description} (${harnessId})`
+					: skill.description;
+				skillCommandList.push({ name: commandName, description, tag: harnessId });
 			}
 		}
 

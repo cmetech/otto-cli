@@ -25,6 +25,22 @@ export const ECOSYSTEM_PROJECT_SKILLS_DIR = ".agents";
  */
 const LEGACY_SKILLS_DIR = join(homedir(), CONFIG_DIR_NAME, "agent", "skills");
 
+/**
+ * Conventional user-scope skill folders of other AI coding harnesses. Used by
+ * `getSource` to label skills with `harness:<id>` so the TUI can render an
+ * origin tag in the slash-command autocomplete. Adding an entry here makes a
+ * harness's skills self-identify; it does NOT control whether the directory is
+ * scanned (that's still driven by the user's `settings.skills` array — auto-
+ * seeded by `seed-defaults.ts` when the directory exists).
+ *
+ * Fork-specific edit. See docs/UPSTREAM-SYNC.md.
+ */
+export const HARNESS_SOURCE_PATHS: Record<string, string> = {
+	claude: join(homedir(), ".claude", "skills"),
+	codex: join(homedir(), ".codex", "skills"),
+	kiro: join(homedir(), ".kiro", "skills"),
+};
+
 /** Max name length per spec */
 const MAX_NAME_LENGTH = 64;
 
@@ -445,10 +461,16 @@ export function loadSkills(options: LoadSkillsOptions = {}): LoadSkillsResult {
 		return target.startsWith(prefix);
 	};
 
-	const getSource = (resolvedPath: string): "user" | "project" | "path" => {
+	const getSource = (resolvedPath: string): string => {
 		if (!includeDefaults) {
 			if (isUnderPath(resolvedPath, userSkillsDir)) return "user";
 			if (isUnderPath(resolvedPath, projectSkillsDir)) return "project";
+		}
+		// Tag skills that live under a known external-harness folder so the
+		// TUI can render their origin. Checked even when includeDefaults=true
+		// because harness paths are an opt-in third category, not a default.
+		for (const [harnessId, harnessPath] of Object.entries(HARNESS_SOURCE_PATHS)) {
+			if (isUnderPath(resolvedPath, harnessPath)) return `harness:${harnessId}`;
 		}
 		return "path";
 	};

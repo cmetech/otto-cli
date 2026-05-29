@@ -8,6 +8,14 @@ export interface SelectItem {
 	value: string;
 	label: string;
 	description?: string;
+	/**
+	 * Optional short origin tag rendered as a colored chip before the value
+	 * (e.g. "claude"). Color is `SelectListTheme.tag`. Adds `[<tag>] ` to the
+	 * displayed line — counts against the visible-width budget.
+	 *
+	 * Fork-specific addition. See docs/UPSTREAM-SYNC.md.
+	 */
+	tag?: string;
 }
 
 export interface SelectListTheme {
@@ -16,6 +24,8 @@ export interface SelectListTheme {
 	description: (text: string) => string;
 	scrollInfo: (text: string) => string;
 	noMatch: (text: string) => string;
+	/** Optional. Color for the leading `[tag] ` chip when SelectItem.tag is set. */
+	tag?: (text: string) => string;
 }
 
 export class SelectList implements Component {
@@ -74,6 +84,17 @@ export class SelectList implements Component {
 			const isSelected = i === this.selectedIndex;
 			const descriptionSingleLine = item.description ? normalizeToSingleLine(item.description) : undefined;
 
+			// Optional origin chip rendered before the value. The plain text is
+			// ASCII-only (no ANSI), so .length equals visible width and feeds
+			// directly into layout math. The colored variant is only used when
+			// the row is NOT selected — selectedText wraps the whole row and
+			// would clobber any inner colors.
+			const tagChipText = item.tag ? `[${item.tag}] ` : "";
+			const tagChipWidth = tagChipText.length;
+			const tagChipColored = item.tag && this.theme.tag
+				? this.theme.tag(tagChipText)
+				: tagChipText;
+
 			let line = "";
 			if (isSelected) {
 				// Use arrow indicator for selection - entire line uses selectedText color
@@ -82,27 +103,30 @@ export class SelectList implements Component {
 
 				if (descriptionSingleLine && width > 40) {
 					// Calculate how much space we have for value + description
-					const maxValueWidth = Math.min(30, width - prefixWidth - 4);
+					// (chip width is subtracted so descriptions stay aligned with
+					// non-chipped rows)
+					const maxValueWidth = Math.min(30, width - prefixWidth - 4 - tagChipWidth);
 					const truncatedValue = truncateToWidth(displayValue, maxValueWidth, "");
-					const spacing = " ".repeat(Math.max(1, 32 - truncatedValue.length));
+					const spacing = " ".repeat(Math.max(1, 32 - truncatedValue.length - tagChipWidth));
 
 					// Calculate remaining space for description using visible widths
-					const descriptionStart = prefixWidth + truncatedValue.length + spacing.length;
+					const descriptionStart = prefixWidth + tagChipWidth + truncatedValue.length + spacing.length;
 					const remainingWidth = width - descriptionStart - 2; // -2 for safety
 
 					if (remainingWidth > 10) {
 						const truncatedDesc = truncateToWidth(descriptionSingleLine, remainingWidth, "");
-						// Apply selectedText to entire line content
-						line = this.theme.selectedText(`→ ${truncatedValue}${spacing}${truncatedDesc}`);
+						// Apply selectedText to entire line content (chip uncolored
+						// here — the highlight already conveys selection state)
+						line = this.theme.selectedText(`→ ${tagChipText}${truncatedValue}${spacing}${truncatedDesc}`);
 					} else {
 						// Not enough space for description
-						const maxWidth = width - prefixWidth - 2;
-						line = this.theme.selectedText(`→ ${truncateToWidth(displayValue, maxWidth, "")}`);
+						const maxWidth = width - prefixWidth - 2 - tagChipWidth;
+						line = this.theme.selectedText(`→ ${tagChipText}${truncateToWidth(displayValue, maxWidth, "")}`);
 					}
 				} else {
 					// No description or not enough width
-					const maxWidth = width - prefixWidth - 2;
-					line = this.theme.selectedText(`→ ${truncateToWidth(displayValue, maxWidth, "")}`);
+					const maxWidth = width - prefixWidth - 2 - tagChipWidth;
+					line = this.theme.selectedText(`→ ${tagChipText}${truncateToWidth(displayValue, maxWidth, "")}`);
 				}
 			} else {
 				const displayValue = item.label || item.value;
@@ -110,27 +134,27 @@ export class SelectList implements Component {
 
 				if (descriptionSingleLine && width > 40) {
 					// Calculate how much space we have for value + description
-					const maxValueWidth = Math.min(30, width - prefix.length - 4);
+					const maxValueWidth = Math.min(30, width - prefix.length - 4 - tagChipWidth);
 					const truncatedValue = truncateToWidth(displayValue, maxValueWidth, "");
-					const spacing = " ".repeat(Math.max(1, 32 - truncatedValue.length));
+					const spacing = " ".repeat(Math.max(1, 32 - truncatedValue.length - tagChipWidth));
 
 					// Calculate remaining space for description
-					const descriptionStart = prefix.length + truncatedValue.length + spacing.length;
+					const descriptionStart = prefix.length + tagChipWidth + truncatedValue.length + spacing.length;
 					const remainingWidth = width - descriptionStart - 2; // -2 for safety
 
 					if (remainingWidth > 10) {
 						const truncatedDesc = truncateToWidth(descriptionSingleLine, remainingWidth, "");
 						const descText = this.theme.description(spacing + truncatedDesc);
-						line = prefix + truncatedValue + descText;
+						line = prefix + tagChipColored + truncatedValue + descText;
 					} else {
 						// Not enough space for description
-						const maxWidth = width - prefix.length - 2;
-						line = prefix + truncateToWidth(displayValue, maxWidth, "");
+						const maxWidth = width - prefix.length - 2 - tagChipWidth;
+						line = prefix + tagChipColored + truncateToWidth(displayValue, maxWidth, "");
 					}
 				} else {
 					// No description or not enough width
-					const maxWidth = width - prefix.length - 2;
-					line = prefix + truncateToWidth(displayValue, maxWidth, "");
+					const maxWidth = width - prefix.length - 2 - tagChipWidth;
+					line = prefix + tagChipColored + truncateToWidth(displayValue, maxWidth, "");
 				}
 			}
 

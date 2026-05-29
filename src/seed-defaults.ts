@@ -22,8 +22,28 @@
 // from settings.packages but leaves the seededDefaults marker, so we will NOT
 // re-add it on the next launch.
 
-import { mkdirSync } from 'node:fs'
-import type { PackageSource } from '@otto/pi-coding-agent'
+import { existsSync, mkdirSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
+import type { PackageSource, SettingsManager } from '@otto/pi-coding-agent'
+
+/**
+ * Conventional skill folders used by other AI coding harnesses. When the
+ * recommended-packages seeding runs and the directory exists on disk, the
+ * path string (with literal `~/` so it stays portable in settings.json) is
+ * appended to `settings.skills` and recorded in `settings.seededSkillPaths`
+ * as a zombie-resurrection guard. Users who remove an entry from
+ * settings.skills will not see it re-added on the next launch.
+ *
+ * Pi.dev's documented convention is for users to add these paths manually to
+ * settings.skills; OTTO seeds them automatically as a quality-of-life default
+ * for users who have these harnesses installed.
+ */
+export const HARNESS_SKILL_PATHS: readonly { setting: string; resolved: string }[] = [
+  { setting: '~/.claude/skills', resolved: join(homedir(), '.claude', 'skills') },
+  { setting: '~/.codex/skills', resolved: join(homedir(), '.codex', 'skills') },
+  { setting: '~/.kiro/skills', resolved: join(homedir(), '.kiro', 'skills') },
+]
 
 // ─── Categorical package catalog ──────────────────────────────────────────────
 
@@ -234,6 +254,13 @@ export async function maybeSeedDefaultPackages(
     settingsManager.setSeededDefaults(newSeeded)
   }
 
+  // ── Auto-seed harness skill paths ──────────────────────────────────────────
+  // For each conventional harness skill folder that exists on disk, append the
+  // literal `~/` path to settings.skills. Skipped for paths already present in
+  // settings.skills, and for paths recorded in settings.seededSkillPaths (so a
+  // user who removed an entry is not overridden on subsequent launches).
+  reconcileHarnessSkillPaths(settingsManager)
+
   // ── Reconcile quietExtensions ──────────────────────────────────────────────
   // Packages can declare a `quietPattern` (e.g. pi-notion). When we seed such a
   // package for the first time, also append its pattern to settings.quietExtensions.
@@ -277,4 +304,47 @@ function collectQuietPatternsForSources(targetSources: readonly string[]): strin
     }
   }
   return Array.from(patterns)
+}
+
+/**
+ * Append harness skill paths (~/.claude/skills, ~/.codex/skills, ~/.kiro/skills)
+ * to settings.skills when:
+ *   1. The resolved directory actually exists on disk (no point seeding a
+ *      phantom path for a harness the user doesn't have installed), AND
+ *   2. The path isn't already in settings.skills (idempotent), AND
+ *   3. The path isn't in settings.seededSkillPaths (zombie guard — respect
+ *      a user who removed an entry from settings.skills).
+ *
+ * Records every attempted path in settings.seededSkillPaths regardless of
+ * whether it was added, so the zombie guard converges to the union of
+ * everything we've ever tried.
+ */
+function reconcileHarnessSkillPaths(settingsManager: SettingsManager): void {
+  const seededBefore = new Set(settingsManager.getSeededSkillPaths())
+  const existing = new Set(settingsManager.getSkillPaths())
+  const newPaths = [...settingsManager.getSkillPaths()]
+  let pathsChanged = false
+
+  for (const { setting, resolved } of HARNESS_SKILL_PATHS) {
+    if (!existsSync(resolved)) continue
+    if (seededBefore.has(setting)) continue
+    if (!existing.has(setting)) {
+      newPaths.push(setting)
+      existing.add(setting)
+      pathsChanged = true
+    }
+  }
+
+  // seededSkillPaths tracks every path we've attempted in this run, even when
+  // the directory wasn't present — so a user who installs Claude later won't
+  // get the path auto-added (consistent with our other zombie-guard semantics).
+  // If you want the inverse behaviour, remove the entry from seededSkillPaths.
+  const attemptedPaths = HARNESS_SKILL_PATHS
+    .filter(({ resolved }) => existsSync(resolved))
+    .map(({ setting }) => setting)
+  const newSeeded = Array.from(new Set([...seededBefore, ...attemptedPaths]))
+  const seededChanged = newSeeded.length !== seededBefore.size
+
+  if (pathsChanged) settingsManager.setSkillPaths(newPaths)
+  if (seededChanged) settingsManager.setSeededSkillPaths(newSeeded)
 }

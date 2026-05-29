@@ -225,6 +225,7 @@ export interface Settings {
 	enabledDefaultPackages?: string[]; // Subset of default sources the user opted into during onboarding. undefined = "all" (back-compat)
 	quietExtensions?: string[]; // Substring patterns matched against extension.path — ui.notify calls from matching extensions are silently dropped
 	seededQuietPatterns?: string[]; // Quiet patterns already attempted to seed — zombie-resurrection guard, mirrors seededDefaults
+	seededSkillPaths?: string[]; // Skill paths already attempted to seed (e.g. ~/.claude/skills) — zombie guard for harness skill auto-seeding
 }
 
 /** Settings keys that are only respected from global config — project settings cannot override these. */
@@ -992,6 +993,14 @@ export class SettingsManager {
 
 	setSeededQuietPatterns(patterns: string[]): void {
 		this.setGlobalSetting("seededQuietPatterns", patterns);
+	}
+
+	getSeededSkillPaths(): string[] {
+		return [...(this.settings.seededSkillPaths ?? [])];
+	}
+
+	setSeededSkillPaths(paths: string[]): void {
+		this.setGlobalSetting("seededSkillPaths", paths);
 	}
 
 	getExtensionPaths(): string[] {

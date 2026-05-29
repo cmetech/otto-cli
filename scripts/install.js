@@ -516,7 +516,10 @@ function copyBundledTools() {
   }
 
   const binExt = platform() === 'win32' ? '.exe' : ''
-  const dest = join(homedir(), '.otto', 'bin')
+  // Must match getBinDir() in packages/pi-coding-agent/src/config.ts:
+  // join(getAgentDir(), 'bin') where getAgentDir() is ~/.otto/agent/.
+  // If config.ts ever moves the agent dir, update both spots together.
+  const dest = join(homedir(), '.otto', 'agent', 'bin')
   mkdirSync(dest, { recursive: true })
 
   const tools = ['rg', 'fd']
@@ -534,7 +537,7 @@ function copyBundledTools() {
   }
 
   if (copied.length > 0) {
-    printStep('Bundled tools', `${copied.join(' + ')} copied to ~/.otto/bin/`)
+    printStep('Bundled tools', `${copied.join(' + ')} copied to ~/.otto/agent/bin/`)
   }
 }
 

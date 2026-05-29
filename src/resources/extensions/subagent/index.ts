@@ -20,7 +20,7 @@ import * as path from "node:path";
 import type { AgentToolResult } from "@otto/pi-agent-core";
 import type { Message } from "@otto/pi-ai";
 import { StringEnum } from "@otto/pi-ai";
-import { type ExtensionAPI, getMarkdownTheme } from "@otto/pi-coding-agent";
+import { type ExtensionAPI, getMarkdownTheme, getSelectListTheme } from "@otto/pi-coding-agent";
 import { Container, Markdown, Spacer, Text } from "@otto/pi-tui";
 import { Type } from "@sinclair/typebox";
 import { formatTokenCount } from "../shared/mod.js";
@@ -799,7 +799,13 @@ export default function (pi: ExtensionAPI) {
 		await stopLiveSubagents();
 	});
 
-	// /subagent command - list available agents
+	// /subagent command - list available agents.
+	// Renders each row with embedded ANSI styling so the message bypasses the
+	// notify renderer's "dim everything" fallback (see hasAnsiStyling check in
+	// pi-coding-agent's renderExtensionNotifyInChat). Agent name renders in the
+	// terminal's default foreground (white-ish), source/model in the muted
+	// description tint, and the harness origin — when detected — as an accent
+	// chip matching the /skills autocomplete style.
 	pi.registerCommand("subagent", {
 		description: "List available subagents",
 		handler: async (_args, ctx) => {
@@ -808,10 +814,17 @@ export default function (pi: ExtensionAPI) {
 				ctx.ui.notify("No agents found. Add .md files to ~/.otto/agent/agents/ or .otto/workflow/agents/", "warning");
 				return;
 			}
-			const lines = discovery.agents.map(
-				(a) => `  ${a.name} [${a.source}]${a.model ? ` (${a.model})` : ""}: ${a.description}`,
-			);
-			ctx.ui.notify(`Available agents (${discovery.agents.length}):\n${lines.join("\n")}`, "info");
+			const slt = getSelectListTheme();
+			const tag = slt.tag ?? slt.selectedText;
+			const dim = slt.description;
+			const lines = discovery.agents.map((a) => {
+				const chip = a.harnessSource ? `${tag(`[${a.harnessSource}]`)} ` : "";
+				const meta = dim(`[${a.source}]${a.model ? ` (${a.model})` : ""}`);
+				const desc = dim(`: ${a.description}`);
+				return `  ${chip}${a.name} ${meta}${desc}`;
+			});
+			const header = dim(`Available agents (${discovery.agents.length}):`);
+			ctx.ui.notify(`${header}\n${lines.join("\n")}`, "info");
 		},
 	});
 

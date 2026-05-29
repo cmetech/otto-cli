@@ -61,6 +61,9 @@ export interface AgentConfig {
 	systemPrompt: string;
 	source: "user" | "project";
 	filePath: string;
+	/** Harness id (e.g. "claude", "codex", "kiro") when discovered under a known
+	 * harness agent folder. Surfaced as a glanceable chip in `/subagent`. */
+	harnessSource?: string;
 }
 
 export interface AgentDiscoveryResult {
@@ -143,7 +146,11 @@ export function parseAgentTools(value: string | string[] | undefined): string[] 
 	return undefined;
 }
 
-function loadAgentsFromDir(dir: string, source: "user" | "project"): AgentConfig[] {
+function loadAgentsFromDir(
+	dir: string,
+	source: "user" | "project",
+	harnessSource?: string,
+): AgentConfig[] {
 	const agents: AgentConfig[] = [];
 
 	if (!fs.existsSync(dir)) {
@@ -187,6 +194,7 @@ function loadAgentsFromDir(dir: string, source: "user" | "project"): AgentConfig
 			systemPrompt: body,
 			source,
 			filePath,
+			harnessSource,
 		});
 	}
 
@@ -254,14 +262,24 @@ export function discoverAgents(cwd: string, scope: AgentScope): AgentDiscoveryRe
 	// resolved by the existing Map-write-wins order below (project wins user).
 	const harnessUserAgents: AgentConfig[] = [];
 	if (scope !== "project") {
-		for (const { userDir: harnessUserDir } of Object.values(HARNESS_AGENT_PATHS)) {
-			harnessUserAgents.push(...loadAgentsFromDir(harnessUserDir, "user"));
+		for (const [harnessId, { userDir: harnessUserDir }] of Object.entries(HARNESS_AGENT_PATHS)) {
+			harnessUserAgents.push(...loadAgentsFromDir(harnessUserDir, "user", harnessId));
 		}
 	}
 	const harnessProjectAgents: AgentConfig[] = [];
 	if (scope !== "user") {
+		// Map each discovered project dir back to its harness id by suffix match
+		// (e.g. ".../.claude/agents" → "claude"). The id surfaces in /subagent as
+		// a glanceable chip.
 		for (const dir of harnessProjectAgentsDirs) {
-			harnessProjectAgents.push(...loadAgentsFromDir(dir, "project"));
+			let harnessId: string | undefined;
+			for (const [id, { projectSubdir }] of Object.entries(HARNESS_AGENT_PATHS)) {
+				if (dir.endsWith(projectSubdir)) {
+					harnessId = id;
+					break;
+				}
+			}
+			harnessProjectAgents.push(...loadAgentsFromDir(dir, "project", harnessId));
 		}
 	}
 

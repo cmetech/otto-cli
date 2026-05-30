@@ -16,6 +16,40 @@ import { invalidateAllCaches } from "../cache.ts";
 import { deriveState, invalidateStateCache } from "../state.ts";
 import { writeIntegrationBranch } from "../git-service.ts";
 
+// Hermetic git environment for the whole test process.
+//
+// These tests create throwaway repos and run tight add/commit loops (some 200+
+// commits). Git's background auto-maintenance (detached `gc --auto`) would fire
+// mid-loop and repack/prune loose objects while the next `git add`/`commit` is
+// still referencing them, producing intermittent, load-dependent failures like
+// "error: invalid object … / Error building trees" or "unable to create
+// temporary file … / failed to write commit object" under a busy `npm test`.
+// Disabling gc/maintenance is the actual fix; isolating global/system config and
+// pinning identity/signing is defense-in-depth so the suite never depends on (or
+// is perturbed by) the developer's git setup.
+{
+  const gitConfig: Array<[string, string]> = [
+    ["user.name", "OTTO Test"],
+    ["user.email", "test@otto.invalid"],
+    ["commit.gpgsign", "false"],
+    ["tag.gpgsign", "false"],
+    ["gc.auto", "0"],
+    ["gc.autoDetach", "false"],
+    ["maintenance.auto", "false"],
+    ["core.hooksPath", "/dev/null"],
+    ["core.fsmonitor", "false"],
+  ];
+  process.env.GIT_CONFIG_GLOBAL = "/dev/null";
+  process.env.GIT_CONFIG_SYSTEM = "/dev/null";
+  process.env.GIT_CONFIG_NOSYSTEM = "1";
+  process.env.GIT_TERMINAL_PROMPT = "0";
+  process.env.GIT_CONFIG_COUNT = String(gitConfig.length);
+  gitConfig.forEach(([key, value], i) => {
+    process.env[`GIT_CONFIG_KEY_${i}`] = key;
+    process.env[`GIT_CONFIG_VALUE_${i}`] = value;
+  });
+}
+
 const tmpDirs: string[] = [];
 
 function makeTmpBase(): string {

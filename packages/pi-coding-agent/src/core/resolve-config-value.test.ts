@@ -8,8 +8,19 @@ import {
 	getAllowedCommandPrefixes,
 } from "./resolve-config-value.js";
 
+// The per-blocked-command stderr warning is opt-in (OTTO_LOG_BLOCKED_COMMANDS),
+// added in v1.0.9 for a quieter startup. This suite asserts on those warnings to
+// verify which commands get blocked vs allowed, so enable logging for the suite.
+const originalLogBlocked = process.env.OTTO_LOG_BLOCKED_COMMANDS;
+
 beforeEach(() => {
+	process.env.OTTO_LOG_BLOCKED_COMMANDS = "1";
 	clearConfigValueCache();
+});
+
+afterEach(() => {
+	if (originalLogBlocked === undefined) delete process.env.OTTO_LOG_BLOCKED_COMMANDS;
+	else process.env.OTTO_LOG_BLOCKED_COMMANDS = originalLogBlocked;
 });
 
 describe("SAFE_COMMAND_PREFIXES", () => {

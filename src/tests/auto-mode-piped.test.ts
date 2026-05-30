@@ -51,6 +51,10 @@ const modules = new Map([
     export function parseFrontmatter() { return {} }
     export function setAllowedCommandPrefixes() {}
     export function truncateHead(value) { return value }
+    export class SettingsManager {
+      static create() { return new SettingsManager() }
+      getSeedDefaultsOnLaunch() { return undefined }
+    }
   \`],
   ['stub:pi-ai', \`
     export async function completeSimple() { return {} }

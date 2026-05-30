@@ -430,7 +430,7 @@ test("files touched section shows count", () => {
     upstream,
     ccUser: "@claude",
   });
-  assert.ok(body.includes("## Files touched (3)"), "File count must match touchedFiles array length");
+  assert.ok(body.includes("## Upstream files touched (3)"), "File count must match touchedFiles array length");
 });
 
 test("no heavyFiles arg → no ⚠️ markers in file list", () => {
@@ -445,5 +445,46 @@ test("no heavyFiles arg → no ⚠️ markers in file list", () => {
     ccUser: "@claude",
     // no heavyFiles provided
   });
-  assert.ok(!body.includes("⚠️"), "Without heavyFiles param, no ⚠️ markers should appear");
+  assert.ok(!body.includes("⚠️ HeavyFile"), "Without heavyFiles param, no HeavyFile markers should appear in the file list");
+});
+
+test("implementationGuidance renders and marks the issue analyzed", () => {
+  const { body } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("CRITICAL_STABILITY"),
+    conflictRisk: makeRisk("NONE", "isolated"),
+    upstream,
+    ccUser: "@claude",
+    implementationGuidance: "**Target:** `packages/pi-ai/src/foo.ts` — apply the same guard.",
+  });
+  assert.ok(body.includes("## otto-cli implementation guidance"), "guidance heading present");
+  assert.ok(body.includes("**Target:** `packages/pi-ai/src/foo.ts`"), "guidance prose rendered");
+  assert.ok(body.includes("| Analyzed | yes"), "Analyzed row reflects supplied guidance");
+  assert.ok(!body.includes("Not yet analyzed"), "no placeholder when guidance supplied");
+});
+
+test("absent implementationGuidance renders the not-yet-analyzed banner", () => {
+  const { body } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("NICE_TO_HAVE_FIX"),
+    conflictRisk: makeRisk(),
+    upstream,
+    ccUser: "@claude",
+  });
+  assert.ok(body.includes("## otto-cli implementation guidance"), "guidance heading always present");
+  assert.ok(body.includes("Not yet analyzed"), "placeholder banner shown when no guidance");
+  assert.ok(body.includes("| Analyzed | no"), "Analyzed row reflects missing guidance");
+});
+
+test("diff is embedded in a collapsible details block when provided", () => {
+  const { body } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("CRITICAL_STABILITY"),
+    conflictRisk: makeRisk(),
+    upstream,
+    ccUser: "@claude",
+    diff: "diff --git a/x b/x\n+added line",
+  });
+  assert.ok(body.includes("<summary>Upstream diff"), "diff details summary present");
+  assert.ok(body.includes("+added line"), "diff content rendered");
 });

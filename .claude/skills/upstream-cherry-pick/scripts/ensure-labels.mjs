@@ -20,6 +20,7 @@ const LABEL_TAXONOMY = [
   // Type
   { name: "type:cherry-pick-candidate", color: "0e8a16", description: "Mechanical cherry-pick from upstream" },
   { name: "type:port-required", color: "d93f0b", description: "Manual port required (high conflict-risk)" },
+  { name: "type:do-not-port", color: "e11d21", description: "Superseded/reverted upstream — do not port" },
   // Severity
   { name: "severity:critical-security", color: "b60205", description: "Critical security fix" },
   { name: "severity:critical-stability", color: "d93f0b", description: "Critical stability fix (crash, data-loss, regression)" },
@@ -41,9 +42,9 @@ const LABEL_TAXONOMY = [
 ];
 
 // Sanity check at module load time — catches taxonomy drift
-if (LABEL_TAXONOMY.length !== 18) {
+if (LABEL_TAXONOMY.length !== 19) {
   throw new Error(
-    `LABEL_TAXONOMY must have exactly 18 entries, found ${LABEL_TAXONOMY.length}`,
+    `LABEL_TAXONOMY must have exactly 19 entries, found ${LABEL_TAXONOMY.length}`,
   );
 }
 

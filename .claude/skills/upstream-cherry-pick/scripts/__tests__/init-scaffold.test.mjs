@@ -34,9 +34,9 @@ test("nonInteractive writes config + state + creates labels", async () => {
     const state = JSON.parse(readFileSync(statePath, "utf-8"));
     assert.equal(state.upstreams["pi-dev"].lastAnalyzedCommit, "v0.75.4");
     assert.equal(state.upstreams["gsd-pi"].lastAnalyzedCommit, "v1.0.1");
-    // Labels: 18 create calls
+    // Labels: 19 create calls
     const createCalls = ghCalls.filter((a) => a[0] === "label" && a[1] === "create");
-    assert.equal(createCalls.length, 18);
+    assert.equal(createCalls.length, 19);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

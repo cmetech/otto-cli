@@ -16,6 +16,10 @@
  * Flags:
  *   --dry-run           classify + score + write report, but file NO issues,
  *                       do NOT advance state, do NOT commit.
+ *   --manifest          print a compact JSON list of file-worthy candidates to
+ *                       stdout (sha7, severity, conflictRisk, hasGuidance,
+ *                       subject) and exit — no diff read, no payload, no dedup,
+ *                       no report, no state, no commit. For cheap dispatch.
  *   --no-issue-context  skip the linked PR/issue fetch (faster, less accurate).
  *   --refresh-cache     bypass _cache/ and re-fetch PR/issue context.
  *   --from <commit>     override the starting commit for this run.
@@ -26,6 +30,7 @@
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
 
 import { parseConfig } from "./parse-config.mjs";
 import { parseLedger } from "./parse-ledger.mjs";
@@ -44,6 +49,8 @@ import { writeReport } from "./write-report.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const AUDIT_OUTPUT_DIR = ".planning/upstream-audits";
+const DEFAULT_GUIDANCE_DIR = ".planning/upstream-audits/guidance";
+const MAX_DIFF_LINES = 400;
 
 const SECTION_BY_SEV = {
   CRITICAL_SECURITY: "criticalSecurity",
@@ -57,19 +64,25 @@ const SECTION_BY_SEV = {
 function parseArgs(argv) {
   const flags = {
     dryRun: false,
+    manifest: false,
     noIssueContext: false,
     refreshCache: false,
     noCommit: false,
     from: null,
+    guidanceDir: DEFAULT_GUIDANCE_DIR,
+    embedDiff: true,
   };
   let upstream = null;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--dry-run") flags.dryRun = true;
+    else if (a === "--manifest") flags.manifest = true;
     else if (a === "--no-issue-context") flags.noIssueContext = true;
     else if (a === "--refresh-cache") flags.refreshCache = true;
     else if (a === "--no-commit") flags.noCommit = true;
     else if (a === "--from") flags.from = argv[++i];
+    else if (a === "--guidance-dir") flags.guidanceDir = argv[++i];
+    else if (a === "--no-diff") flags.embedDiff = false;
     else if (a.startsWith("--")) throw new Error(`Unknown flag: ${a}`);
     else upstream = a;
   }
@@ -111,6 +124,48 @@ function resolveSha(repoPath, rev) {
   } catch {
     return rev; // leave unresolved (e.g. an absent tag) — report still renders
   }
+}
+
+// ─── per-commit enrichment (guidance + diff) ─────────────────────────────────
+
+/** Read agent-authored otto-cli analysis for a sha, if present. */
+function readGuidance(guidanceDir, sha) {
+  if (!guidanceDir) return null;
+  const sha7 = sha.slice(0, 7);
+  const path = join(guidanceDir, `${sha7}.md`);
+  if (!existsSync(path)) return null;
+  const text = readFileSync(path, "utf-8").trim();
+  return text || null;
+}
+
+/**
+ * Extract the machine-readable verdict from a guidance file. Matches a
+ * `verdict: <value>` line (optionally inside a heading / backticks), value ∈
+ * {cherry-pick, manual-port, do-not-port}. Returns null when absent.
+ */
+function parseVerdict(guidanceText) {
+  if (!guidanceText) return null;
+  const m = guidanceText.match(/verdict:\s*`?(cherry-pick|manual-port|do-not-port)`?/i);
+  return m ? m[1].toLowerCase() : null;
+}
+
+/** Capture the upstream patch, bounded to MAX_DIFF_LINES for body sanity. */
+function readDiff(repoPath, sha) {
+  let raw;
+  try {
+    raw = execFileSync("git", ["-C", repoPath, "show", "--patch", "--no-color", sha], {
+      encoding: "utf-8",
+      maxBuffer: 32 * 1024 * 1024,
+    });
+  } catch {
+    return null;
+  }
+  const lines = raw.split("\n");
+  if (lines.length <= MAX_DIFF_LINES) return raw.trimEnd();
+  return (
+    lines.slice(0, MAX_DIFF_LINES).join("\n") +
+    `\n… (${lines.length - MAX_DIFF_LINES} more lines truncated — run \`git -C ${repoPath} show ${sha.slice(0, 7)}\`)`
+  );
 }
 
 // ─── preflight ───────────────────────────────────────────────────────────────
@@ -178,6 +233,7 @@ async function scanUpstream(name, upstream, cfg, ledger, compiledRubric, compile
   };
 
   let fetchFailures = 0;
+  const manifest = [];
 
   for (const commit of commits) {
     // i. applicability
@@ -229,17 +285,39 @@ async function scanUpstream(name, upstream, cfg, ledger, compiledRubric, compile
     // v. conflict risk
     const conflictRisk = scoreConflictRisk(commit, { heavyFiles, heavyPackages });
 
-    // vi. payload
+    // --manifest: emit the compact candidate row and skip the expensive
+    // enrichment (diff read, payload build, dedup, filing). This is the cheap
+    // "what needs guidance?" query a dispatcher reads instead of the report.
+    if (flags.manifest) {
+      const sha7 = commit.sha.slice(0, 7);
+      manifest.push({
+        sha: sha7,
+        severity: classification.severity,
+        conflictRisk: conflictRisk.risk,
+        hasGuidance: existsSync(join(flags.guidanceDir, `${sha7}.md`)),
+        subject: commit.subject,
+      });
+      continue;
+    }
+
+    // vi. payload (enriched with agent-authored otto-cli guidance + upstream diff)
+    const implementationGuidance = readGuidance(flags.guidanceDir, commit.sha);
+    const verdict = parseVerdict(implementationGuidance);
+    const diff = flags.embedDiff ? readDiff(upstream.path, commit.sha) : null;
     const payload = buildIssuePayload({
       commit,
       classification,
       conflictRisk,
-      upstream: { name, ghRepo: upstream.ghRepo },
+      upstream: { name, ghRepo: upstream.ghRepo, path: upstream.path },
       prContext,
       issueContexts,
       ccUser: cfg.issueFiling.ccUser,
       heavyFiles,
+      implementationGuidance,
+      diff,
+      verdict,
     });
+    if (!implementationGuidance) runData.unanalyzed = (runData.unanalyzed ?? 0) + 1;
 
     // vii. dedup
     let dedup = { existing: null, state: null };
@@ -278,6 +356,11 @@ async function scanUpstream(name, upstream, cfg, ledger, compiledRubric, compile
     runData.filed[section].push(item);
   }
 
+  // --manifest short-circuits before any report/state/commit side effects.
+  if (flags.manifest) {
+    return { manifest };
+  }
+
   runData.totals.notApplicable = runData.notApplicable.length;
   runData.totals.skipped = runData.skipped.length;
   runData.totals.unclassified = runData.unclassified.length;
@@ -296,7 +379,7 @@ async function scanUpstream(name, upstream, cfg, ledger, compiledRubric, compile
     }
   }
 
-  return { reportPath, totals: runData.totals, fetchFailures };
+  return { reportPath, totals: runData.totals, fetchFailures, unanalyzed: runData.unanalyzed ?? 0 };
 }
 
 // ─── closing commit (best-effort; never forces gitignored artifacts) ──────────
@@ -338,17 +421,35 @@ async function main() {
   const preflight = runPreflight();
 
   const names = only ? [only] : Object.keys(cfg.upstreams);
+  const manifests = {};
   for (const name of names) {
     const upstream = cfg.upstreams[name];
     if (!upstream) throw new Error(`Unknown upstream "${name}". Known: ${Object.keys(cfg.upstreams).join(", ")}`);
 
-    console.error(`\n=== ${name}${flags.dryRun ? " (dry-run)" : ""} ===`);
+    console.error(`\n=== ${name}${flags.manifest ? " (manifest)" : flags.dryRun ? " (dry-run)" : ""} ===`);
     const summary = await scanUpstream(name, upstream, cfg, ledger, compiledRubric, compiledRules, preflight, flags);
+
+    if (flags.manifest) {
+      manifests[name] = summary.manifest;
+      console.error(`  candidates: ${summary.manifest.length} (${summary.manifest.filter((c) => !c.hasGuidance).length} without guidance)`);
+      continue;
+    }
+
     console.error(`  report: ${summary.reportPath}`);
     console.error(`  totals: ${JSON.stringify(summary.totals)}`);
     if (summary.fetchFailures > 0) {
       console.error(`  ⚠️  ${summary.fetchFailures} PR/issue context fetch(es) failed — classification ran on reduced signal.`);
     }
+    if (summary.unanalyzed > 0) {
+      console.error(`  ⚠️  ${summary.unanalyzed} candidate(s) had NO otto-cli guidance file in ${flags.guidanceDir}/ — those issues carry the not-yet-analyzed banner. Author guidance/<sha7>.md to make them implementation-ready.`);
+    }
+  }
+
+  // Manifest mode prints machine-readable JSON to stdout (banners go to stderr,
+  // so a dispatcher can capture clean JSON). Single upstream → flat array.
+  if (flags.manifest) {
+    const out = only ? manifests[only] ?? [] : manifests;
+    process.stdout.write(`${JSON.stringify(out, null, 2)}\n`);
   }
 }
 

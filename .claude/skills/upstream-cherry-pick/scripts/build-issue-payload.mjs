@@ -72,12 +72,29 @@ function buildTitle({ commit, classification, upstream }) {
 // Labels builder  §11.1
 // ---------------------------------------------------------------------------
 
-function buildLabels({ classification, conflictRisk, upstream }) {
+/** Map a machine-readable verdict to its type:* label, or null if absent/unknown. */
+function verdictToTypeLabel(verdict) {
+  switch ((verdict ?? "").toLowerCase().trim()) {
+    case "cherry-pick":
+      return "type:cherry-pick-candidate";
+    case "manual-port":
+      return "type:port-required";
+    case "do-not-port":
+      return "type:do-not-port";
+    default:
+      return null;
+  }
+}
+
+function buildLabels({ classification, conflictRisk, upstream, verdict }) {
   const severityKebab = toKebab(classification.severity);
   const riskKebab = toKebab(conflictRisk.risk);
 
+  // The analyzed verdict, when present, is authoritative over the deterministic
+  // risk-based fallback (HIGH → port-required, else cherry-pick-candidate).
   const typeLabel =
-    conflictRisk.risk === "HIGH" ? "type:port-required" : "type:cherry-pick-candidate";
+    verdictToTypeLabel(verdict) ??
+    (conflictRisk.risk === "HIGH" ? "type:port-required" : "type:cherry-pick-candidate");
 
   return [
     `upstream:${upstream.name}`,
@@ -168,16 +185,57 @@ function renderFilesTouched({ commit, heavyFiles }) {
 }
 
 // ---------------------------------------------------------------------------
+// otto-cli implementation guidance section builder
+// ---------------------------------------------------------------------------
+//
+// otto-cli is NOT a 1:1 mirror of upstream — packages have been renamed
+// (`packages/ai` → `packages/pi-ai`, `packages/coding-agent` →
+// `packages/pi-coding-agent`, `packages/tui` → `packages/pi-tui`, etc.) and
+// restructured. So the upstream "Files touched" list above is a starting
+// pointer, not a target map. The agent driving the skill is expected to
+// analyze the upstream change against the actual otto-cli tree and supply
+// `implementationGuidance` prose (see SKILL.md → "Judgment calls"). When it is
+// absent we render an explicit not-yet-analyzed banner so a thin issue is
+// never mistaken for a ready-to-implement one.
+
+function renderImplementationGuidance({ implementationGuidance }) {
+  const text = (implementationGuidance ?? "").trim();
+  if (!text) {
+    return (
+      "> ⚠️ **Not yet analyzed.** This issue carries upstream metadata only. " +
+      "Before implementation, perform the per-commit otto-cli analysis " +
+      "(see `.claude/skills/upstream-cherry-pick/SKILL.md` → *Judgment calls*) " +
+      "and edit this section with: mapped otto-cli target file(s), whether the " +
+      "code path still exists / has diverged, the concrete edits required, and " +
+      "a cherry-pick-vs-manual-port call."
+    );
+  }
+  return text;
+}
+
+function renderUpstreamDiff({ diff }) {
+  const text = (diff ?? "").trim();
+  if (!text) return "";
+  return (
+    "\n<details>\n<summary>Upstream diff (<code>git show</code>)</summary>\n\n" +
+    "```diff\n" +
+    text +
+    "\n```\n</details>\n"
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Body builder  §11.3
 // ---------------------------------------------------------------------------
 
-function buildBody({ commit, classification, conflictRisk, upstream, prContext, issueContexts, ccUser, heavyFiles }) {
+function buildBody({ commit, classification, conflictRisk, upstream, prContext, issueContexts, ccUser, heavyFiles, implementationGuidance, diff, verdict }) {
   const today = new Date().toISOString().slice(0, 10);
   const sha7 = shortSha(commit.sha);
   const severityKebab = toKebab(classification.severity);
   const riskKebab = toKebab(conflictRisk.risk);
   const typeLabel =
-    conflictRisk.risk === "HIGH" ? "type:port-required" : "type:cherry-pick-candidate";
+    verdictToTypeLabel(verdict) ??
+    (conflictRisk.risk === "HIGH" ? "type:port-required" : "type:cherry-pick-candidate");
 
   const subjectDisplay = truncateSubject(commit.subject ?? "");
   const commitBody = (commit.body ?? "").trim() || "(none)";
@@ -185,6 +243,9 @@ function buildBody({ commit, classification, conflictRisk, upstream, prContext, 
   const upstreamContextSection = renderUpstreamContext({ prContext, issueContexts, upstream });
   const filesTouchedSection = renderFilesTouched({ commit, heavyFiles });
   const fileCount = (commit.touchedFiles ?? []).length;
+  const guidanceSection = renderImplementationGuidance({ implementationGuidance });
+  const diffSection = renderUpstreamDiff({ diff });
+  const analyzed = Boolean((implementationGuidance ?? "").trim());
 
   const upgradeSection =
     classification.upgradeReason
@@ -192,10 +253,14 @@ function buildBody({ commit, classification, conflictRisk, upstream, prContext, 
       : "";
 
   return `> /cc ${ccUser} — auto-filed by \`/upstream-cherry-pick\`. Severity, labels,
-> and conflict-risk are populated below. Pick this up via
-> \`/upstream-port-from-issue {{N}}\` when ready to start the spec → plan →
-> execute cycle.
+> conflict-risk, and the otto-cli implementation guidance below are populated
+> so the implementation phase can **confirm and apply** rather than start from
+> scratch. Pick this up via \`/upstream-port-from-issue {{N}}\` when ready.
 
+## otto-cli implementation guidance
+
+${guidanceSection}
+${diffSection}
 ## Classification
 
 | Field | Value |
@@ -203,6 +268,7 @@ function buildBody({ commit, classification, conflictRisk, upstream, prContext, 
 | Severity | \`severity:${severityKebab}\` |
 | Conflict risk | \`conflict-risk:${riskKebab}\` — ${conflictRisk.reason} |
 | Action | \`${typeLabel}\` |
+| Analyzed | ${analyzed ? "yes — guidance above is implementation-ready" : "no — guidance above is a placeholder"} |
 | Upstream | ${upstream.ghRepo} |
 
 ## Upstream commit
@@ -221,7 +287,11 @@ ${commitBody}
 
 ${upstreamContextSection}
 ${upgradeSection}
-## Files touched (${fileCount})
+## Upstream files touched (${fileCount})
+
+> ⚠️ These are **upstream** paths. otto-cli has renamed/restructured packages
+> (e.g. \`packages/ai\` → \`packages/pi-ai\`). The otto-cli targets are in the
+> implementation guidance section above, not here.
 
 ${filesTouchedSection}
 
@@ -229,10 +299,10 @@ ${filesTouchedSection}
 
 \`\`\`sh
 # Inspect upstream change
-git -C ../${upstream.name} show ${sha7}
+git -C ${upstream.path ?? `../${upstream.name}`} show ${sha7}
 
-# Attempt cherry-pick
-git -C ../${upstream.name} show ${sha7} | git -C . am -3
+# Attempt cherry-pick (only if guidance says paths align)
+git -C ${upstream.path ?? `../${upstream.name}`} show ${sha7} | git -C . am -3
 
 # Or hand off to the port workflow
 /upstream-port-from-issue {{N}}
@@ -257,9 +327,12 @@ export function buildIssuePayload({
   issueContexts = [],
   ccUser = "@claude",
   heavyFiles = null,
+  implementationGuidance = null,
+  diff = null,
+  verdict = null,
 }) {
   const title = buildTitle({ commit, classification, upstream });
-  const labels = buildLabels({ classification, conflictRisk, upstream });
+  const labels = buildLabels({ classification, conflictRisk, upstream, verdict });
   const body = buildBody({
     commit,
     classification,
@@ -269,6 +342,9 @@ export function buildIssuePayload({
     issueContexts,
     ccUser,
     heavyFiles,
+    implementationGuidance,
+    diff,
+    verdict,
   });
 
   return { title, body, labels };

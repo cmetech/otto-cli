@@ -178,6 +178,11 @@ export async function run({
     ? resolvePath(config.divergenceLedger)
     : resolvePath("docs/UPSTREAM-SYNC.md");
   const ledger = parseLedger(ledgerPath);
+  if (ledger.degraded) {
+    process.stderr.write(
+      `⚠️  UPSTREAM-SYNC.md not found at ${ledgerPath}. Conflict-risk scoring will return NONE for every commit.\n`,
+    );
+  }
 
   // ── Step 5: Determine upstreams to scan ───────────────────────────────────
   const allUpstreams = config.upstreams ?? {};
@@ -502,7 +507,7 @@ export async function run({
       try {
         writeState(statePath, upstreamName, {
           lastAnalyzedCommit: runData.stateAdvanceTo,
-          lastRunDate: date,
+          lastAnalyzedAt: date,
         });
       } catch (err) {
         process.stderr.write(

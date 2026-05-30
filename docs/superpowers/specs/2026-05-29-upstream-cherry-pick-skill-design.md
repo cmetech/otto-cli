@@ -264,11 +264,104 @@ Scanning upstreams: pi-dev (../pi @ origin/main), gsd-pi (../gsd-pi @ origin/mai
 4. Creates the full label taxonomy on the target repo.
 5. Commits the scaffold ("feat(skill): scaffold upstream-cherry-pick config").
 
-## 8. Classifier — severity rubric
+## 8. Classifier
 
-Per candidate commit, classifier runs three passes:
+Per candidate commit, classifier runs an **applicability pre-pass** followed by three severity passes. Applicability and severity are independent dimensions; both are reported and only the applicable + non-SKIP results become issues.
 
-### 8.1 First pass — commit message keywords
+### 8.0 Applicability pre-pass (NEW)
+
+Before severity classification, the skill decides whether the commit is relevant to OTTO's product surface at all. This is the difference between "we saw it and don't want it" (NOT_APPLICABLE — captured in report) and "we missed it" (which the skill should never do).
+
+The applicability filter is **config-driven** so the OTTO team can tune what we ignore over time without editing the skill body. Patterns live in `.planning/upstream-sync-config.json`:
+
+```json
+{
+  "applicability": {
+    "notApplicable": [
+      {
+        "id": "bun-distribution",
+        "reason": "OTTO decided 2026-05-29 to stay npm-only (CHANGELOG v1.1.0 era discussion). Bun support already exists for install-via-bun users; we don't build or distribute bun binaries.",
+        "matchAny": {
+          "subjectRegex": "(?i)\\b(bun build|bun --compile|bun upgrade|bun install)\\b",
+          "filePathRegex": "(bun\\.config|\\.bunfig|bun-build|/bun/)",
+          "labels": ["bun", "distribution:bun"]
+        }
+      },
+      {
+        "id": "upstream-ci-only",
+        "reason": "Changes to upstream's GitHub Actions workflows that don't mirror OTTO's CI. OTTO's CI lives in cmetech/otto-cli/.github/workflows; upstream changes there are noise.",
+        "matchAll": {
+          "filePathRegex": "^\\.github/workflows/",
+          "subjectRegex": "(?i)\\b(ci|workflow|gha|github\\s*action)\\b"
+        }
+      },
+      {
+        "id": "upstream-docs-site",
+        "reason": "Changes to upstream's docs site (Astro/Starlight setup, deployment hooks). OTTO doesn't host a docs site; user-facing docs live in CHANGELOG.md and HARNESS-COMPAT.md.",
+        "matchAll": {
+          "filePathRegex": "^(docs-site|website|astro\\.config|starlight\\.config)/"
+        }
+      },
+      {
+        "id": "upstream-release-tooling",
+        "reason": "Changes to upstream's release/publish/changelog-generator tooling. OTTO has its own scripts/bump-version.mjs, scripts/sync-release-notes.mjs, etc.",
+        "matchAll": {
+          "filePathRegex": "^scripts/(release|publish|changelog|bump-)",
+          "subjectRegex": "(?i)\\b(release|publish|changelog|version\\s*bump)\\b"
+        }
+      },
+      {
+        "id": "upstream-rebrand",
+        "reason": "Changes to pi-dev's branding (logo, package names, etc.) that OTTO has already overridden with its own brand pipeline (scripts/sync-brand-colors.mjs).",
+        "matchAny": {
+          "subjectRegex": "(?i)\\b(rebrand|logo|brand color|package name)\\b",
+          "filePathRegex": "(brand-colors|brand\\.config|assets/logo)"
+        }
+      }
+    ]
+  }
+}
+```
+
+**Matching semantics:**
+
+- `matchAny` = at least one of the listed conditions matches → NOT_APPLICABLE
+- `matchAll` = every listed condition must match → NOT_APPLICABLE (used for narrower rules)
+- `subjectRegex` applies to commit subject + body
+- `filePathRegex` applies to every touched file path; rule matches if **every** touched path matches the regex (defensive — if a bun-related commit also touches a real OTTO file, we still see it)
+- `labels` applies to PR/issue labels (requires the context fetch from §8.2)
+
+**Decision tree per commit:**
+
+```
+git show <sha>
+  ↓
+Does it match a SKIP prefix (chore/docs/...) or is it a merge commit?
+  → YES: severity = SKIP, applicability = N/A
+  → NO: continue
+  ↓
+For each rule in applicability.notApplicable[]:
+  → matches according to its matchAll/matchAny semantics?
+    → YES: applicability = NOT_APPLICABLE, reason = rule.id + rule.reason
+       severity check is skipped; commit goes to report's "Not applicable" appendix
+    → NO: try next rule
+  ↓
+If no rule matched: applicability = APPLICABLE
+  → proceed to severity rubric (§8.1–§8.3)
+```
+
+**The report appendix** records every NOT_APPLICABLE commit with its matched rule ID and reasoning. This serves two purposes:
+
+1. **Audit trail** — future-you can see "yes, we did consider commit X, and we decided not to track it because of rule Y."
+2. **Rule tuning** — if a NOT_APPLICABLE rule starts matching things you actually wanted to track, you'll see them in the appendix and can refine the rule.
+
+**No issue is filed for NOT_APPLICABLE commits.** State file still advances past them so the next run doesn't re-process.
+
+### 8.1 First pass — severity from commit message keywords
+
+### 8.1 First pass — severity from commit message keywords
+
+(Only runs for commits classified APPLICABLE in §8.0.)
 
 Priority order; first match wins:
 
@@ -356,6 +449,8 @@ Risk maps to label and to suggested action:
 | `HIGH` | `conflict-risk:high` | `type:port-required`; report says "manual port required, diff: `git -C ../<upstream> show <sha>`" |
 
 ## 11. Issue lifecycle & filing
+
+**Applicability is not a label**: per §8.0, NOT_APPLICABLE commits never reach the issue-filing stage. They live in the report appendix only. This keeps the issue backlog clean — every open issue is something we plausibly want to act on.
 
 ### 11.1 Label taxonomy
 
@@ -484,7 +579,8 @@ This skill creates issues; future companion skills evolve them.
 **Scope**: <lastAnalyzedCommit-shortname> → HEAD (<full sha>)
 **Commits scanned**: 187
 **Issues filed**: 24
-**Skipped**: 152 (merge / chore / docs / already filed)
+**Not applicable to OTTO**: 18 (matched applicability rules)
+**Skipped (mechanical)**: 134 (merge / chore / docs / already filed)
 **Unclassified (manual triage)**: 11
 
 ## Critical — security (0)
@@ -512,7 +608,26 @@ This skill creates issues; future companion skills evolve them.
 - `1f3a92c` — fix: repair descriptor roadmap renders (no PR reference, no clear severity signal)
 - (etc.)
 
+## Not applicable to OTTO (18)
+
+These commits were reviewed against the applicability rules in `.planning/upstream-sync-config.json` and intentionally not filed as issues. The rule ID and reasoning are recorded so we can audit (and refine the rules) over time.
+
+| Commit | Subject | Rule | Reason |
+|---|---|---|---|
+| `a3f9c12` | feat: bun --compile single-binary publish path | `bun-distribution` | OTTO decided 2026-05-29 to stay npm-only. |
+| `5e7d234` | ci: parallelize matrix on upstream Actions | `upstream-ci-only` | OTTO's CI lives in cmetech/otto-cli/.github/workflows. |
+| `…` | … | … | … |
+
+<details>
+<summary>Expand full list</summary>
+
+(all 18 with full subjects)
+
+</details>
+
 ## Skipped (152)
+
+Mechanical filter — `chore:` / `docs:` / `test:` / `ci:` / `style:` / `refactor:` / `build:` prefixes plus merge commits and PatchDeck syncs. No applicability or severity judgment made; not filed.
 
 <details>
 <summary>Expand</summary>
@@ -582,6 +697,7 @@ The `--init` flow still asks the user to confirm; the default value is pre-fille
 
 ### 15.1 Unit-testable functions
 
+- **Applicability filter** — given fixture commits + a fixture applicability rule set, assert correct APPLICABLE / NOT_APPLICABLE outcome with correct rule ID. Cover: each shipped rule (`bun-distribution`, `upstream-ci-only`, `upstream-docs-site`, `upstream-release-tooling`, `upstream-rebrand`); `matchAny` vs `matchAll` semantics; mixed-file commits where some files match the rule and some don't (must be APPLICABLE).
 - **Classifier rubric** — given fixture commits (subject + body + files), assert correct severity. Cover: each securityRegex match, each stabilityRegex match, each conventional-commit prefix, merge commits, ambiguous cases.
 - **Conflict-risk scorer** — given fixture UPSTREAM-SYNC.md + fixture commit (files + LOC), assert correct risk level for each of NONE / LOW / MEDIUM / HIGH cases.
 - **UPSTREAM-SYNC.md parser** — given fixture markdown, assert correct HeavyFiles / HeavyPackages sets.

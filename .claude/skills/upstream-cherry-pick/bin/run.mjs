@@ -18,8 +18,28 @@
  *   const { exitCode, results } = await run({ args, cwd, ghRunner, cmdRunner, todayIso })
  */
 
-import { resolve, join } from "node:path";
+import { resolve, join, dirname } from "node:path";
+import { existsSync } from "node:fs";
 import { parseConfig } from "../scripts/parse-config.mjs";
+
+/**
+ * Walk up from `startDir` looking for `.planning/upstream-sync-config.json`.
+ * Returns the absolute config path if found, or null. Stops at the filesystem
+ * root or after 20 levels (defensive). Lets operators run the skill from any
+ * subdirectory of the repo.
+ */
+function findConfigUpward(startDir) {
+  let dir = resolve(startDir);
+  for (let i = 0; i < 20; i++) {
+    const candidate = join(dir, ".planning", "upstream-sync-config.json");
+    if (existsSync(candidate)) return candidate;
+    const parent = dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+  return null;
+}
+
 import { parseLedger } from "../scripts/parse-ledger.mjs";
 import { readState } from "../scripts/state-read.mjs";
 import { writeState } from "../scripts/state-write.mjs";
@@ -142,9 +162,24 @@ export async function run({
   }
 
   // ── Step 2: Load config ────────────────────────────────────────────────────
-  const configPath = flags.config
-    ? resolvePath(flags.config)
-    : resolvePath(".planning/upstream-sync-config.json");
+  // Resolution order:
+  //   1. --config <path> if provided (absolute or cwd-relative)
+  //   2. .planning/upstream-sync-config.json in cwd
+  //   3. Walk upward from cwd until we find a .planning/ directory
+  let configPath;
+  if (flags.config) {
+    configPath = resolvePath(flags.config);
+  } else {
+    const cwdCandidate = resolvePath(".planning/upstream-sync-config.json");
+    configPath = existsSync(cwdCandidate) ? cwdCandidate : findConfigUpward(cwd);
+    if (!configPath) {
+      process.stderr.write(
+        `upstream-cherry-pick: no .planning/upstream-sync-config.json found in ${cwd} or any parent.\n` +
+        `  Run \`/upstream-cherry-pick --init\` from the repo root to scaffold one.\n`,
+      );
+      return { exitCode: 1, error: "config not found" };
+    }
+  }
 
   let config;
   try {
@@ -154,10 +189,18 @@ export async function run({
     return { exitCode: 1, error: err.message };
   }
 
+  // Anchor in-config paths to the directory containing .planning/ (the repo
+  // root), NOT cwd. This makes the skill work regardless of the directory the
+  // operator invokes from — once a config file is found, the repo it lives in
+  // is the anchor for upstream paths, state, audits, and the ledger. Explicit
+  // CLI overrides (--config, --output-dir) still resolve against cwd.
+  const repoRoot = dirname(dirname(configPath));
+  const resolveFromRepo = (p) => resolve(repoRoot, p);
+
   // ── Step 3: Preflight ──────────────────────────────────────────────────────
   let preflight;
   try {
-    preflight = await runPreflight({ config, ghRunner, cmdRunner, cwd });
+    preflight = await runPreflight({ config, ghRunner, cmdRunner, cwd: repoRoot });
   } catch (err) {
     process.stderr.write(`upstream-cherry-pick: preflight threw: ${err.message}\n`);
     return { exitCode: 1, error: err.message };
@@ -175,8 +218,8 @@ export async function run({
 
   // ── Step 4: Load ledger ────────────────────────────────────────────────────
   const ledgerPath = config.divergenceLedger
-    ? resolvePath(config.divergenceLedger)
-    : resolvePath("docs/UPSTREAM-SYNC.md");
+    ? resolveFromRepo(config.divergenceLedger)
+    : resolveFromRepo("docs/UPSTREAM-SYNC.md");
   const ledger = parseLedger(ledgerPath);
   if (ledger.degraded) {
     process.stderr.write(
@@ -196,16 +239,16 @@ export async function run({
     return { exitCode: 0, results: {} };
   }
 
-  // ── Step 6: State file path ────────────────────────────────────────────────
-  const statePath = resolvePath(".planning/upstream-sync-state.json");
+  // ── Step 6: State file path (anchored to repo) ────────────────────────────
+  const statePath = resolveFromRepo(".planning/upstream-sync-state.json");
 
-  // ── Step 7: Output dir ─────────────────────────────────────────────────────
+  // ── Step 7: Output dir (CLI override uses cwd; default anchors to repo) ──
   const outputDir = flags.outputDir
     ? resolvePath(flags.outputDir)
-    : resolvePath(".planning/upstream-audits");
+    : resolveFromRepo(".planning/upstream-audits");
 
   // ── Step 8: Cache dir for PR context ──────────────────────────────────────
-  const cacheDir = resolvePath(".planning/upstream-audits/_cache");
+  const cacheDir = resolveFromRepo(".planning/upstream-audits/_cache");
 
   // ── Step 9: Scan each upstream ────────────────────────────────────────────
   const results = {};
@@ -235,7 +278,7 @@ export async function run({
     let commits;
     try {
       commits = harvestCommits({
-        path: resolvePath(upstreamConfig.path),
+        path: resolveFromRepo(upstreamConfig.path),
         branch: upstreamConfig.branch ?? "main",
         lastAnalyzedCommit: state.lastAnalyzedCommit,
         cmdRunner,

@@ -204,6 +204,115 @@ description: Audit OTTO's two upstream forks (pi-dev, gsd-pi) for fixes and
 
 The implementation detail (regex patterns, label colors, edge cases) lives in this design spec and in the skill body — both the spec and the SKILL.md travel with the code.
 
+## 6.1 Scripted core, agent orchestration (NEW)
+
+Two design principles, applied throughout:
+
+1. **Deterministic mechanical operations live in scripts** under `.claude/skills/upstream-cherry-pick/scripts/`. Each script has a single responsibility, well-defined inputs/outputs (JSON in, JSON out), and is unit-testable in isolation. Behavior is guaranteed identical across runs because the code is the source of truth — no interpretation drift.
+
+2. **Agent prose in SKILL.md is the orchestration layer**: it tells the agent *when* to run which script, *how* to interpret the outputs, and *which decisions require judgment* (e.g., summarizing a PR review thread into a 3-line excerpt, deciding whether an UNCLASSIFIED commit warrants a manual-triage flag with elevated visibility, or recommending a specific cherry-pick approach for a HIGH-conflict-risk port).
+
+### 6.1.1 Script inventory
+
+| Script | Input | Output | Purpose |
+|---|---|---|---|
+| `preflight.mjs` | (none) | exit code + JSON of pass/fail per check | All §7 preflight checks |
+| `parse-config.mjs` | (none, reads config file) | JSON | Parses + validates `.planning/upstream-sync-config.json` (schema, regex compilability, path existence) |
+| `parse-ledger.mjs` | (none, reads UPSTREAM-SYNC.md) | JSON `{ heavyFiles: [...], heavyPackages: [...] }` | Single canonical parse of the divergence ledger |
+| `state-read.mjs` | `<upstream-name>` | JSON `{ lastAnalyzedCommit, lastAnalyzedAt, lastReportPath }` | Reads state for one upstream |
+| `state-write.mjs` | JSON `{ upstream, lastAnalyzedCommit }` | (writes to state file) | Atomic state update |
+| `harvest-commits.mjs` | `<upstream-name>` | JSON array of commit objects (sha, subject, body, author, date, touchedFiles, locDelta, refs[]) | Runs `git log` + `git show --numstat`; returns enriched commit records |
+| `classify-applicability.mjs` | commit JSON + applicability rules | JSON `{ applicable: bool, ruleId?, reason? }` | Applies §8.0 rules deterministically |
+| `classify-severity.mjs` | commit JSON | JSON `{ severity: CRITICAL_SECURITY \| CRITICAL_STABILITY \| FEATURE \| NICE_TO_HAVE_FIX \| SKIP \| UNCLASSIFIED }` | Applies §8.1 first-pass rubric (regex matching) |
+| `fetch-pr-context.mjs` | `<upstream-ghRepo> <pr-or-issue-num>` | JSON (cached at `_cache/<slug>/(pr\|issue)-N.json`) | Wraps `gh pr view` / `gh issue view`; idempotent and cache-aware |
+| `apply-context-upgrades.mjs` | commit JSON + first-pass severity + PR/issue JSON | JSON `{ severity, upgradeReason? }` | Applies §8.3 third-pass upgrades deterministically (label match, keyword match, state-reason check) |
+| `score-conflict-risk.mjs` | commit JSON + ledger JSON | JSON `{ risk: NONE \| LOW \| MEDIUM \| HIGH, reason }` | Applies §10 conflict-risk model |
+| `build-issue-payload.mjs` | classification JSON + context JSON | JSON `{ title, body, labels }` | Renders the issue template from §11 |
+| `dedup-check.mjs` | `<targetRepo> <sha-short>` | JSON `{ existing: number? \| null, state? }` | Queries `gh issue list --search "sha=<7> in:body"` |
+| `file-issue.mjs` | issue payload JSON | JSON `{ number, url }` | `gh issue create` + returns reference |
+| `ensure-labels.mjs` | `<targetRepo>` | JSON `{ created: [...], existing: [...] }` | Creates any missing labels from §11.1 taxonomy |
+| `write-report.mjs` | run-results JSON | (writes markdown to disk) | Renders §12 report from structured data |
+
+All scripts:
+- Are Node ESM (`.mjs`), match the existing OTTO `scripts/` convention.
+- Read inputs from argv or stdin, write outputs to stdout, log diagnostics to stderr.
+- Exit non-zero on error with a JSON `{ error: "...", details: "..." }` on stderr.
+- Are individually unit-testable; fixtures live at `.claude/skills/upstream-cherry-pick/scripts/__fixtures__/`.
+
+### 6.1.2 SKILL.md orchestration layer
+
+The SKILL.md body tells the agent the *flow*, not the *mechanics*:
+
+```markdown
+## Process
+
+1. Run `scripts/preflight.mjs`. If it exits non-zero, print the diagnostics
+   and stop — do not attempt remediation autonomously beyond auto-fix
+   actions (label creation, dir mkdir) which the script handles internally.
+
+2. Parse config (`scripts/parse-config.mjs`) and the divergence ledger
+   (`scripts/parse-ledger.mjs`). Hold both as in-memory references for the
+   rest of the run.
+
+3. For each upstream in config.upstreams:
+   a. Read state (`scripts/state-read.mjs <name>`).
+   b. Harvest commits (`scripts/harvest-commits.mjs <name>`).
+   c. For each commit (newest-first):
+      i.   Classify applicability (`scripts/classify-applicability.mjs`).
+           If NOT_APPLICABLE → append to report appendix; continue.
+      ii.  Classify first-pass severity (`scripts/classify-severity.mjs`).
+           If SKIP → append to skipped appendix; continue.
+      iii. For non-SKIP: fetch PR/issue context per fetch policy (§8.2)
+           via `scripts/fetch-pr-context.mjs`.
+      iv.  Apply context upgrades (`scripts/apply-context-upgrades.mjs`).
+      v.   Score conflict risk (`scripts/score-conflict-risk.mjs`).
+      vi.  Build issue payload (`scripts/build-issue-payload.mjs`).
+      vii. Dedup check (`scripts/dedup-check.mjs`). If existing issue found,
+           record as "already filed as #N" and continue.
+      viii.File the issue (`scripts/file-issue.mjs`).
+
+4. Write the report (`scripts/write-report.mjs`).
+5. Update state (`scripts/state-write.mjs`).
+6. Commit state + report with a message of the form
+   "audit(upstream): <name> scan YYYY-MM-DD (<N> issues filed)".
+
+## Judgment calls (NOT scripted — agent decides)
+
+- **PR review-thread summarization**: agent reads the fetched JSON and writes
+  the 3-5 line "review highlights" block of the issue body. The script
+  provides the raw JSON; the agent provides the prose. This is the only
+  significant prose-generation point in the flow.
+
+- **UNCLASSIFIED recommendation in the report**: for commits the classifier
+  cannot resolve, the agent suggests next steps (e.g., "this looks
+  feature-adjacent but is in a touched area — may be worth manual review").
+
+- **Edge cases**: cache corruption, unexpected gh API errors, partial
+  context fetches. Agent decides whether to abort, retry, or proceed with
+  reduced signal — using the principles documented in §14.
+
+That's it. Everything else is scripts.
+```
+
+### 6.1.3 Why this split matters
+
+| Without scripted core | With scripted core |
+|---|---|
+| Severity regex applied differently each run (agent re-interprets the spec) | Identical regex evaluation; behavior tested |
+| Dedup logic re-derived each run | Single dedup query; no false-duplicates |
+| Ledger parsing might miss a `### \`<path>\`` heading variant | Parser handles all known forms; new ones caught by fixture tests |
+| gh command flags drift over CLI versions | Wrapped in scripts; version pinned and tested |
+| Agent context bloated with mechanical detail | Agent context focused on judgment + flow |
+
+### 6.1.4 Test surface implications
+
+§15 (testing strategy) gets two test layers:
+
+1. **Per-script unit tests** in `.claude/skills/upstream-cherry-pick/scripts/__tests__/` — each script has its own test file using fixtures.
+2. **Integration test** that runs the full skill flow against a fixture pair of upstream repos (cloned to a tmp dir as part of the test setup), asserts the resulting report markdown matches an expected snapshot, and asserts gh calls were stubbed correctly.
+
+Both run via `npm run test:packages` (existing OTTO test runner) when the skill ships.
+
 ## 7. Preflight checks
 
 Skill runs all checks before any commit harvesting. Each failed required check is collected and reported together (not aborted on first failure), so the user fixes everything in one pass.

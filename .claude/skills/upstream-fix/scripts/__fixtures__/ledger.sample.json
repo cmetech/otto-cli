@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-05-30",
+  "filter": "--issues 63",
+  "integrationBranch": "integration/upstream-fix-2026-05-30",
+  "prUrl": null,
+  "finalSuite": null,
+  "lanes": {
+    "1": { "issues": ["63"], "files": ["packages/pi-coding-agent/src/modes/rpc/rpc-mode.ts"], "branch": "fix/upstream-lane-1", "worktree": ".worktrees/upstream-fix-lane-1", "status": "pending" }
+  },
+  "issues": {
+    "63": { "lane": 1, "sha": "ce0e801", "guidancePath": ".planning/upstream-audits/guidance/ce0e801.md", "targetFiles": ["packages/pi-coding-agent/src/modes/rpc/rpc-mode.ts"], "status": "pending", "commitSha": null, "touchedFiles": [], "gates": { "regression": null, "build": null, "targeted": null }, "reviewer": null, "reviewerReason": null, "reason": null }
+  }
+}

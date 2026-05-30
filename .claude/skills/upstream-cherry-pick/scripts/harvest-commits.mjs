@@ -18,13 +18,14 @@ const REF_RE = /#(\d+)/g;
  *
  * @param {string} repoPath  - path to the git repo
  * @param {string} sha       - commit SHA
+ * @param {Function} [cmdRunner] - optional injectable runner (cmd, args) → string
  * @returns {{ touchedFiles: string[], locByFile: Object<string, number> }}
  */
-function getNumstat(repoPath, sha) {
-  const raw = execFileSync(
+function getNumstat(repoPath, sha, cmdRunner) {
+  const runner = cmdRunner ?? ((cmd, args) => execFileSync(cmd, args, { encoding: "utf-8" }));
+  const raw = runner(
     "git",
     ["-C", repoPath, "show", sha, "--numstat", "--format="],
-    { encoding: "utf-8" },
   );
 
   const touchedFiles = [];
@@ -73,15 +74,14 @@ function extractRefs(text) {
  *
  * @param {string} repoPath
  * @param {string} branch
+ * @param {Function} [cmdRunner] - optional injectable runner (cmd, args) → string
  * @returns {string}
  */
-function resolveRef(repoPath, branch) {
+function resolveRef(repoPath, branch, cmdRunner) {
+  const runner = cmdRunner ?? ((cmd, args) => execFileSync(cmd, args, { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] }));
   const originRef = `origin/${branch}`;
   try {
-    execFileSync("git", ["-C", repoPath, "rev-parse", "--verify", originRef], {
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"],
-    });
+    runner("git", ["-C", repoPath, "rev-parse", "--verify", originRef]);
     return originRef;
   } catch {
     // Fall back to local branch name
@@ -104,8 +104,9 @@ function resolveRef(repoPath, branch) {
  *   refs: string[]
  * }>}
  */
-export function harvestCommits({ path, branch, lastAnalyzedCommit }) {
-  const ref = resolveRef(path, branch);
+export function harvestCommits({ path, branch, lastAnalyzedCommit, cmdRunner }) {
+  const runner = cmdRunner ?? ((cmd, args) => execFileSync(cmd, args, { encoding: "utf-8" }));
+  const ref = resolveRef(path, branch, cmdRunner);
   const range = `${lastAnalyzedCommit}..${ref}`;
 
   // Use RS (record separator, \x1e) as record terminator so multi-line bodies
@@ -113,7 +114,7 @@ export function harvestCommits({ path, branch, lastAnalyzedCommit }) {
   // Format: %H \t %an \t %aI \t %s \t %b \x1e
   let raw;
   try {
-    raw = execFileSync(
+    raw = runner(
       "git",
       [
         "-C", path,
@@ -121,7 +122,6 @@ export function harvestCommits({ path, branch, lastAnalyzedCommit }) {
         "--no-merges",
         "--format=%H%x09%an%x09%aI%x09%s%x09%b%x1e",
       ],
-      { encoding: "utf-8" },
     );
   } catch (err) {
     throw new Error(`git log failed: ${err.message}`);
@@ -148,7 +148,7 @@ export function harvestCommits({ path, branch, lastAnalyzedCommit }) {
 
     if (!sha || sha.length < 7) continue;
 
-    const { touchedFiles, locByFile } = getNumstat(path, sha);
+    const { touchedFiles, locByFile } = getNumstat(path, sha, cmdRunner);
     const refs = extractRefs(subject + "\n" + body);
 
     commits.push({ sha, author, date, subject, body, touchedFiles, locByFile, refs });

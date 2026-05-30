@@ -113,9 +113,12 @@ const REQUIRED_CHECKS = [
 
   {
     name: "git-repo",
-    run: ({ cmdRunner }) => {
+    run: ({ cmdRunner, cwd }) => {
       try {
-        cmdRunner("git", ["rev-parse", "--git-dir"]);
+        const args = cwd
+          ? ["-C", cwd, "rev-parse", "--git-dir"]
+          : ["rev-parse", "--git-dir"];
+        cmdRunner("git", args);
         return { passed: true };
       } catch {
         return {
@@ -129,8 +132,9 @@ const REQUIRED_CHECKS = [
 
   {
     name: "upstream-sync-md",
-    run: ({ config }) => {
-      const ledgerPath = resolve(config.divergenceLedger ?? "docs/UPSTREAM-SYNC.md");
+    run: ({ config, cwd }) => {
+      const base = cwd ?? process.cwd();
+      const ledgerPath = resolve(base, config.divergenceLedger ?? "docs/UPSTREAM-SYNC.md");
       if (existsSync(ledgerPath)) {
         return { passed: true };
       }
@@ -144,8 +148,9 @@ const REQUIRED_CHECKS = [
 
   {
     name: "config-file-exists",
-    run: () => {
-      const configPath = resolve(".planning/upstream-sync-config.json");
+    run: ({ cwd }) => {
+      const base = cwd ?? process.cwd();
+      const configPath = resolve(base, ".planning/upstream-sync-config.json");
       if (existsSync(configPath)) {
         return { passed: true };
       }
@@ -159,10 +164,11 @@ const REQUIRED_CHECKS = [
 
   {
     name: "upstream-paths-valid",
-    run: ({ config, cmdRunner }) => {
+    run: ({ config, cmdRunner, cwd }) => {
       if (!config.upstreams) return { passed: true };
+      const base = cwd ?? process.cwd();
       for (const [name, upstream] of Object.entries(config.upstreams)) {
-        const upstreamPath = resolve(upstream.path);
+        const upstreamPath = resolve(base, upstream.path);
         if (!existsSync(upstreamPath)) {
           return {
             passed: false,
@@ -247,8 +253,9 @@ const SOFT_CHECKS = [
 
   {
     name: "ensure-audits-dir",
-    run: () => {
-      const dir = resolve(".planning/upstream-audits");
+    run: ({ cwd }) => {
+      const base = cwd ?? process.cwd();
+      const dir = resolve(base, ".planning/upstream-audits");
       if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true });
         return { fixed: true, message: `Created directory ${dir}` };
@@ -259,8 +266,9 @@ const SOFT_CHECKS = [
 
   {
     name: "ensure-audits-cache-dir",
-    run: () => {
-      const dir = resolve(".planning/upstream-audits/_cache");
+    run: ({ cwd }) => {
+      const base = cwd ?? process.cwd();
+      const dir = resolve(base, ".planning/upstream-audits/_cache");
       if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true });
         return { fixed: true, message: `Created directory ${dir}` };
@@ -271,8 +279,9 @@ const SOFT_CHECKS = [
 
   {
     name: "ensure-state-file",
-    run: () => {
-      const statePath = resolve(".planning/upstream-sync-state.json");
+    run: ({ cwd }) => {
+      const base = cwd ?? process.cwd();
+      const statePath = resolve(base, ".planning/upstream-sync-state.json");
       if (!existsSync(statePath)) {
         writeFileSync(statePath, JSON.stringify({ version: 1, upstreams: {} }, null, 2) + "\n");
         return { fixed: true, message: `Created state file at ${statePath}` };
@@ -291,13 +300,15 @@ const SOFT_CHECKS = [
  * @param {object} options.config    - parsed config object (output of parse-config.mjs)
  * @param {Function} [options.ghRunner]  - injectable gh runner
  * @param {Function} [options.cmdRunner] - injectable cmd runner
+ * @param {string}   [options.cwd]       - working directory for path resolution (defaults to process.cwd())
  * @returns {Promise<{ passed: Array, failed: Array, autoFixed: Array }>}
  */
-export async function runPreflight({ config, ghRunner, cmdRunner }) {
+export async function runPreflight({ config, ghRunner, cmdRunner, cwd }) {
   const ctx = {
     config,
     ghRunner: ghRunner ?? defaultGhRunner,
     cmdRunner: cmdRunner ?? defaultCmdRunner,
+    cwd,
   };
 
   const passed = [];

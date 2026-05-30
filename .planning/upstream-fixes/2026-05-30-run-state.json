@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "date": "2026-05-30",
+  "filter": "--issues 63",
+  "integrationBranch": "integration/upstream-fix-2026-05-30",
+  "prUrl": "https://github.com/cmetech/otto-cli/pull/64",
+  "finalSuite": "RED — held. 2 stable pre-existing failures on clean main (src/cli.ts gsd-auto headless / seed-defaults SettingsManager.create; ci-builder-image container) + flaky git-based auto-recovery tests. Verified reproduced on clean main HEAD. The #63 fix introduces ZERO new failures (regression+build green, all 66 RPC tests pass). Nothing pushed to main per invariant.",
+  "lanes": {
+    "1": {
+      "issues": [
+        "63"
+      ],
+      "files": [
+        "packages/pi-coding-agent/src/modes/rpc/rpc-mode.ts"
+      ],
+      "branch": "fix/upstream-lane-1",
+      "worktree": ".worktrees/upstream-fix-lane-1",
+      "status": "merged"
+    }
+  },
+  "issues": {
+    "63": {
+      "lane": 1,
+      "sha": "ce0e801",
+      "guidancePath": ".planning/upstream-audits/guidance/ce0e801.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/rpc/rpc-mode.ts"
+      ],
+      "status": "applied",
+      "commitSha": "e644d59",
+      "touchedFiles": [
+        "packages/pi-coding-agent/src/modes/rpc/raw-stdout.regression.test.ts",
+        "packages/pi-coding-agent/src/modes/rpc/raw-stdout.ts",
+        "packages/pi-coding-agent/src/modes/rpc/rpc-mode.ts"
+      ],
+      "gates": {
+        "regression": true,
+        "build": true,
+        "targeted": false
+      },
+      "reviewer": "approve",
+      "reviewerReason": "faithful otto-cli reconstruction of ce0e801: serialized retrying raw-stdout writer (ENOBUFS/EAGAIN/EWOULDBLOCK), backpressure awaited after command/parse-error outputs and throttled via session.agent.subscribe, flush on graceful shutdown path; 5 regression tests pass, scope limited to 3 RPC files, no new regressions.",
+      "reason": "targeted gate red ONLY from 7 pre-existing failures in core/resolve-config-value.test.ts (credential allowlisting), reproduced on clean main HEAD; all 66 RPC tests + new regression pass."
+    }
+  }
+}

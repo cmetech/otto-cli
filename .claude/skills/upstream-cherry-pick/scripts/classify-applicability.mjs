@@ -51,7 +51,9 @@ export function classifyApplicability(commit, rules) {
 
 function compileGroup(g) {
   return {
-    subjectRegex: g.subjectRegex ? new RegExp(g.subjectRegex) : undefined,
+    // Subjects are prose — match case-insensitively ("Bun build" == "bun build").
+    subjectRegex: g.subjectRegex ? new RegExp(g.subjectRegex, "i") : undefined,
+    // File paths are case-sensitive on Linux; keep them exact.
     filePathRegex: g.filePathRegex ? new RegExp(g.filePathRegex) : undefined,
   };
 }

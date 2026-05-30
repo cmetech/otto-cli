@@ -39,26 +39,39 @@ const SECTION_HEADING = {
 };
 
 /**
- * Render a single filed issue line.
- * Format: "- #{issueNumber} — {emoji} [sha={shortSha}] {subject} — `conflict-risk:{risk-lower}`"
+ * Render the leading marker for a filed item.
+ *   - real filed issue:        "#1234"
+ *   - dedup hit (already open): "#1234 (exists, OPEN)"
+ *   - dry-run, would file new:  "[would file]"
  */
-function renderFiledLine(item, emoji) {
+function renderItemMarker(item, dryRun) {
+  if (item.issueNumber != null) {
+    return item.existingState ? `#${item.issueNumber} (exists, ${item.existingState})` : `#${item.issueNumber}`;
+  }
+  return dryRun ? "[would file]" : "(unfiled)";
+}
+
+/**
+ * Render a single filed issue line.
+ * Format: "- {marker} — {emoji} [sha={shortSha}] {subject} — `conflict-risk:{risk-lower}`"
+ */
+function renderFiledLine(item, emoji, dryRun) {
   const sha7 = shortSha(item.sha);
   const risk = (item.conflictRisk ?? "unknown").toLowerCase();
-  return `- #${item.issueNumber} — ${emoji} [sha=${sha7}] ${item.subject} — \`conflict-risk:${risk}\``;
+  return `- ${renderItemMarker(item, dryRun)} — ${emoji} [sha=${sha7}] ${item.subject} — \`conflict-risk:${risk}\``;
 }
 
 /**
  * Render a filed section (criticalSecurity, criticalStability, etc.).
  */
-function renderFiledSection(key, items) {
+function renderFiledSection(key, items, dryRun) {
   const heading = SECTION_HEADING[key];
   const emoji = SECTION_EMOJI[key];
   const count = items.length;
   const lines =
     count === 0
       ? ["(none)"]
-      : items.map((item) => renderFiledLine(item, emoji));
+      : items.map((item) => renderFiledLine(item, emoji, dryRun));
   return [`## ${heading} (${count})`, "", ...lines].join("\n");
 }
 
@@ -143,6 +156,7 @@ export function writeReport({ outputDir, runData }) {
     skipped,
     preflight,
     stateAdvanceTo,
+    dryRun = false,
   } = runData;
 
   const fromSha7 = shortSha(scope.fromSha);
@@ -151,19 +165,23 @@ export function writeReport({ outputDir, runData }) {
 
   // Build each section
   const filedSections = [
-    renderFiledSection("criticalSecurity", filed.criticalSecurity ?? []),
-    renderFiledSection("criticalStability", filed.criticalStability ?? []),
-    renderFiledSection("niceToHaveFix", filed.niceToHaveFix ?? []),
-    renderFiledSection("feature", filed.feature ?? []),
+    renderFiledSection("criticalSecurity", filed.criticalSecurity ?? [], dryRun),
+    renderFiledSection("criticalStability", filed.criticalStability ?? [], dryRun),
+    renderFiledSection("niceToHaveFix", filed.niceToHaveFix ?? [], dryRun),
+    renderFiledSection("feature", filed.feature ?? [], dryRun),
   ];
+
+  const filedCountLine = dryRun
+    ? `**Issues that would be filed**: ${totals.filed}`
+    : `**Issues filed**: ${totals.filed}`;
 
   const sections = [
     // Header
-    `# Upstream audit — ${upstream.name} — ${date}`,
+    `# Upstream audit — ${upstream.name} — ${date}${dryRun ? " — DRY RUN (no issues filed)" : ""}`,
     "",
     `**Scope**: ${scope.fromCommit} (${fromSha7}) → HEAD (${toSha7})`,
     `**Commits scanned**: ${totals.scanned}`,
-    `**Issues filed**: ${totals.filed}`,
+    filedCountLine,
     `**Not applicable to OTTO**: ${totals.notApplicable} (matched applicability rules)`,
     `**Skipped (mechanical)**: ${totals.skipped} (merge / chore / docs / already filed)`,
     `**Unclassified (manual triage)**: ${totals.unclassified}`,
@@ -188,7 +206,9 @@ export function writeReport({ outputDir, runData }) {
     "",
     "---",
     "",
-    `State advanced: \`lastAnalyzedCommit\` → \`${stateSha7}\` (${upstream.name} HEAD as of ${date}).`,
+    dryRun
+      ? `Dry run — state NOT advanced. A real run would set \`lastAnalyzedCommit\` → \`${stateSha7}\` (${upstream.name} HEAD as of ${date}).`
+      : `State advanced: \`lastAnalyzedCommit\` → \`${stateSha7}\` (${upstream.name} HEAD as of ${date}).`,
     "",
   ];
 

@@ -100,6 +100,38 @@ test("skipped section uses <details>", () => {
   }
 });
 
+test("dry-run report relabels header and filed lines", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ucp-report-"));
+  try {
+    const dryData = {
+      ...baseRunData,
+      dryRun: true,
+      filed: {
+        criticalSecurity: [],
+        criticalStability: [
+          { issueNumber: null, sha: "03e229dabc1234", subject: "fix: render bug", conflictRisk: "MEDIUM" },
+        ],
+        niceToHaveFix: [
+          { issueNumber: 1235, existingState: "OPEN", sha: "5754851abc1234", subject: "fix: nicety", conflictRisk: "LOW" },
+        ],
+        feature: [],
+      },
+    };
+    const path = writeReport({ outputDir: dir, runData: dryData });
+    const md = readFileSync(path, "utf-8");
+    // Header reflects dry-run, not "Issues filed"
+    assert.match(md, /DRY RUN|would be filed/i);
+    assert.doesNotMatch(md, /^\*\*Issues filed\*\*/m);
+    // New candidate rendered as "would file", not a fake number
+    assert.match(md, /\[would file\].*fix: render bug/);
+    assert.doesNotMatch(md, /#DRY-RUN/);
+    // Already-existing issue still shows its number + state
+    assert.match(md, /#1235.*exists.*OPEN/i);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("empty filed sections show (none)", () => {
   const dir = mkdtempSync(join(tmpdir(), "ucp-report-"));
   try {

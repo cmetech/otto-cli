@@ -33,6 +33,24 @@ test("SKIP for chore: prefix", () => {
   assert.equal(r.severity, "SKIP");
 });
 
+test("SKIP for scoped skip prefixes (docs/test/refactor with scope)", () => {
+  for (const subject of [
+    "docs(vision): rewrite history",
+    "test(gsd): stabilize fixture",
+    "refactor(ci): extract composite actions",
+    "chore(deps): bump cache action",
+  ]) {
+    const r = classifySeverity({ subject, body: "" }, rubric);
+    assert.equal(r.severity, "SKIP", `expected SKIP for "${subject}"`);
+  }
+});
+
+test("scoped skip prefix does not false-match a longer word", () => {
+  // "docstring:" must not be skipped by the "docs:" rule
+  const r = classifySeverity({ subject: "docstring: tidy up", body: "" }, rubric);
+  assert.notEqual(r.severity, "SKIP");
+});
+
 test("SKIP for merge commit", () => {
   const r = classifySeverity({ subject: "Merge pull request #138 from foo/bar", body: "" }, rubric);
   assert.equal(r.severity, "SKIP");

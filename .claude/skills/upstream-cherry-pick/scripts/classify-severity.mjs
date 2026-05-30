@@ -24,6 +24,20 @@ const MERGE_PATTERNS = [
 const FEAT_RE = /^feat(\([^)]*\))?:/i;
 const FIX_RE = /^fix(\([^)]*\))?:/i;
 
+/** Escape regex metacharacters in a literal string. */
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Build a scope-aware matcher for a conventional-commit skip prefix.
+ * "docs:" → matches "docs:" and "docs(vision):" but not "docstring:".
+ */
+function skipPrefixRegex(prefix) {
+  const base = prefix.replace(/:\s*$/, "");
+  return new RegExp(`^${escapeRegex(base)}(\\([^)]*\\))?:`, "i");
+}
+
 export function classifySeverity(commit, rubric) {
   const subject = commit.subject ?? "";
   const body = commit.body ?? "";
@@ -33,9 +47,9 @@ export function classifySeverity(commit, rubric) {
   if (MERGE_PATTERNS.some((re) => re.test(subject))) {
     return { severity: "SKIP", matchedBy: "merge-commit" };
   }
-  // 1b. SKIP — configured prefixes
+  // 1b. SKIP — configured prefixes (scope-aware: docs: and docs(scope): both match)
   for (const prefix of rubric.skipPrefixes ?? []) {
-    if (subject.toLowerCase().startsWith(prefix.toLowerCase())) {
+    if (skipPrefixRegex(prefix).test(subject)) {
       return { severity: "SKIP", matchedBy: `prefix:${prefix}` };
     }
   }
@@ -71,8 +85,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     try {
       const { commit, rubric } = JSON.parse(stdin);
       const compiled = {
-        securityRegex: rubric.securityRegex ? new RegExp(rubric.securityRegex) : undefined,
-        stabilityRegex: rubric.stabilityRegex ? new RegExp(rubric.stabilityRegex) : undefined,
+        securityRegex: rubric.securityRegex ? new RegExp(rubric.securityRegex, "i") : undefined,
+        stabilityRegex: rubric.stabilityRegex ? new RegExp(rubric.stabilityRegex, "i") : undefined,
         skipPrefixes: rubric.skipPrefixes ?? [],
       };
       process.stdout.write(JSON.stringify(classifySeverity(commit, compiled)) + "\n");

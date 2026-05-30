@@ -31,7 +31,7 @@ bun.lock
 .bg_shell
 .bg-shell/
 .artifacts/
-.planning/
+.planning/upstream-audits/_cache/
 .audits/
 .plans/
 docs/coherence-audit/

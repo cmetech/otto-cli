@@ -21,6 +21,28 @@ description: >
 
 Safe to run as a background subagent — produces durable artifacts (gh issues + report file). No interactive prompts after `--init`.
 
+## Quickest path — the orchestrator
+
+For a normal scan, run the bundled orchestrator instead of hand-driving each
+step. It executes the entire deterministic pipeline below in one process:
+
+```sh
+# Preview without filing (recommended first run)
+node .claude/skills/upstream-cherry-pick/scripts/run-audit.mjs <upstream> --dry-run
+
+# Real run — files issues, advances state, commits
+node .claude/skills/upstream-cherry-pick/scripts/run-audit.mjs <upstream>
+```
+
+Run it from the repo root. Omit `<upstream>` to scan every upstream in config.
+Flags: `--dry-run`, `--no-issue-context`, `--refresh-cache`, `--from <commit>`,
+`--no-commit`. The orchestrator handles the per-commit loop, dedup, dry-run
+report labeling, state advance, and the closing commit; the agent only supplies
+the judgment-call prose described under "Judgment calls" below.
+
+The step-by-step process below documents what the orchestrator does internally
+(and is the fallback if you need to drive a single commit by hand).
+
 ## Process
 
 For each invocation, follow these steps in order. Each step invokes a specific script under `.claude/skills/upstream-cherry-pick/scripts/`.
@@ -84,6 +106,8 @@ These are the only places the LLM contributes prose. Everything else is determin
 - `--dry-run` — classify and score everything, write the report, but skip the actual `gh issue create` calls. Useful for previewing what would be filed.
 - `--no-issue-context` — skip the linked-PR/issue fetching step. Faster but reduces classifier accuracy.
 - `--refresh-cache` — force re-fetch of all PR/issue contexts (bypasses `_cache/`).
+- `--from <commit>` — override the starting commit/tag for this run (ignores stored state).
+- `--no-commit` — file issues and advance state, but skip the closing git commit.
 
 ## Background execution
 

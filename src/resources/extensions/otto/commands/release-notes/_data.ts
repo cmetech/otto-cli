@@ -3,6 +3,10 @@
 //
 // To add or correct release notes, edit CHANGELOG.md and rebuild. Editing this
 // file directly will be clobbered on the next build.
+//
+// Bundled releases are capped (default 20, override via OTTO_RELEASE_NOTES_CAP
+// at build time). Older releases stay in CHANGELOG.md and on GitHub; the
+// runtime command surfaces a link when a requested version isn't bundled.
 
 export interface ReleaseNote {
 	version: string;
@@ -14,6 +18,27 @@ export interface ReleaseNote {
 	notes?: string[];
 }
 
+export interface ReleaseNotesManifest {
+	/** True when older releases exist in CHANGELOG.md but weren't bundled. */
+	truncated: boolean;
+	/** Total releases in CHANGELOG.md at build time (incl. truncated ones). */
+	total: number;
+	/** Oldest version included in the bundle. */
+	oldestBundled: string;
+	/** Newest version included in the bundle. */
+	newestBundled: string;
+	/** Where to read full history when the bundle has been truncated. */
+	historyUrl: string;
+}
+
+export const RELEASE_NOTES_MANIFEST: ReleaseNotesManifest = {
+	truncated: false,
+	total: 11,
+	oldestBundled: '1.0.0',
+	newestBundled: '1.1.1',
+	historyUrl: 'https://github.com/cmetech/otto-cli/blob/main/CHANGELOG.md',
+};
+
 export const RELEASE_NOTES: ReleaseNote[] = [
 	{
 		version: '1.1.1',
@@ -24,6 +49,9 @@ export const RELEASE_NOTES: ReleaseNote[] = [
 		],
 		fixed: [
 			'`otto update` on Windows would log `EPERM: operation not permitted, unlink` warnings against `duckdb.dll`, `sharp.dll`, and `otto_engine.win32-x64.node` because the running otto.exe still held DLL handles. The install still succeeded but left orphan `.otto-RouGtD54`-style staging directories under `%APPDATA%\\npm\\node_modules\\@cmetech\\`. `otto update` now spawns a detached PowerShell bootstrap in a visible "OTTO Updater" console window that waits for the parent otto.exe to exit (max 30s), runs the install with locks released, sweeps the orphan staging dirs, and writes a completion status to `~/.otto/agent/update-status.json` that the next `otto update` surfaces. macOS / Linux behavior unchanged — POSIX inode semantics handle live-process replacement without the lock issue.',
+		],
+		changed: [
+			'`/release-notes` data is now capped at the last 20 releases per npm tarball (override at build time via `OTTO_RELEASE_NOTES_CAP=<n>`; set `0` for unlimited). `CHANGELOG.md` stays the canonical full history; the runtime command shows a footer like "Bundled here: v1.0.5 → v1.2.0 (20 of 35 total). Older releases: github.com/cmetech/otto-cli/blob/main/CHANGELOG.md" when truncation is active. Keeps the shipped data file from growing unbounded as the project ages.',
 		],
 	},
 	{

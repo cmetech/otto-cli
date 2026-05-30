@@ -15,6 +15,7 @@
 import type { ExtensionAPI, ExtensionCommandContext } from "@otto/pi-coding-agent";
 import {
 	RELEASE_NOTES,
+	RELEASE_NOTES_MANIFEST,
 	countItems,
 	findReleaseByVersion,
 	getLatestRelease,
@@ -40,6 +41,14 @@ function renderSection(title: string, items: string[] | undefined): string {
 	return `\n### ${title}\n${bulleted}\n`;
 }
 
+function renderCapFooter(): string {
+	const m = RELEASE_NOTES_MANIFEST;
+	if (!m.truncated) {
+		return `${RELEASE_NOTES.length} releases tracked.`;
+	}
+	return `Bundled here: v${m.oldestBundled} → v${m.newestBundled} (${RELEASE_NOTES.length} of ${m.total} total).\nOlder releases: ${m.historyUrl}`;
+}
+
 function renderRelease(release: ReleaseNote): string {
 	const header = `# OTTO v${release.version} — ${release.date}`;
 	const headline = release.headline ? `\n_${release.headline}_\n` : "";
@@ -49,7 +58,7 @@ function renderRelease(release: ReleaseNote): string {
 		renderSection("Changed", release.changed),
 		renderSection("Notes", release.notes),
 	].join("");
-	const tail = `\n---\n${RELEASE_NOTES.length} releases tracked. Use \`/release-notes\` to browse, \`/release-notes <version>\` for any other release.`;
+	const tail = `\n---\n${renderCapFooter()}\nUse \`/release-notes\` to browse, \`/release-notes <version>\` for any other release.`;
 	return `${header}${headline}${body}${tail}\n`;
 }
 
@@ -60,7 +69,7 @@ function renderIndex(): string {
 		const headline = r.headline ? ` — ${r.headline}` : "";
 		return `- v${r.version}  (${r.date}, ${badge})${headline}`;
 	}).join("\n");
-	return `# OTTO release index\n\n${rows}\n\nView any release with \`/release-notes <version>\`.\n`;
+	return `# OTTO release index\n\n${rows}\n\n${renderCapFooter()}\nView any release with \`/release-notes <version>\`.\n`;
 }
 
 function findByVersionToken(token: string): ReleaseNote | undefined {
@@ -87,9 +96,13 @@ export function registerReleaseNotesCommand(pi: ExtensionAPI): void {
 			if (trimmed && trimmed !== "list") {
 				const match = findByVersionToken(trimmed);
 				if (!match) {
+					const m = RELEASE_NOTES_MANIFEST;
+					const truncationHint = m.truncated
+						? `\n\nThis OTTO build bundles ${RELEASE_NOTES.length} of ${m.total} total releases (v${m.oldestBundled} → v${m.newestBundled}). For older releases, see ${m.historyUrl}`
+						: "";
 					postToChat(
 						pi,
-						`**No release found for \`${trimmed}\`**\n\nKnown versions: ${RELEASE_NOTES.map((r) => `v${r.version}`).join(", ")}`,
+						`**No release found for \`${trimmed}\`**\n\nKnown versions: ${RELEASE_NOTES.map((r) => `v${r.version}`).join(", ")}${truncationHint}`,
 					);
 					return;
 				}

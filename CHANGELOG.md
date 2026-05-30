@@ -36,6 +36,10 @@ _Windows `otto update` no longer emits EPERM cleanup warnings or leaves orphan `
 
 - `update-status.json` written to `~/.otto/agent/` on every `otto update` — tracks `startedAt`, `completedAt`, `fromVersion`, `toVersion`, and `exitCode`. The next `otto update` prints "Last update: vX.Y.Z → vA.B.C at … (✓ success / ✗ exit N)" before checking the registry, so you can see whether a previous background update finished.
 
+### Changed
+
+- `/release-notes` data is now capped at the last 20 releases per npm tarball (override at build time via `OTTO_RELEASE_NOTES_CAP=<n>`; set `0` for unlimited). `CHANGELOG.md` stays the canonical full history; the runtime command shows a footer like "Bundled here: v1.0.5 → v1.2.0 (20 of 35 total). Older releases: github.com/cmetech/otto-cli/blob/main/CHANGELOG.md" when truncation is active. Keeps the shipped data file from growing unbounded as the project ages.
+
 ## [1.1.0] - 2026-05-29
 
 _Harness compatibility (Claude / Codex / Kiro skills + agents), [claude] origin chips, and a `/theme` slash command._

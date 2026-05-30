@@ -543,14 +543,28 @@ State file's `lastAnalyzedCommit` advances only after a successful run end-to-en
 | Upstream | First-run starting point | Source |
 |---|---|---|
 | `gsd-pi` | `v1.0.1` (commit `dec23dd…`) | `UPSTREAM-SYNC.md` documents this as the fork point |
-| `pi-dev` | User-prompted on first run | We never explicitly tracked a pi-dev base; gsd-pi's `v1.0.1` README claims a "new development baseline" without naming the pi-dev commit |
+| `pi-dev` | `v0.75.4` (commit `3533843d`, 2026-05-20) | Researched fork-time alignment — see derivation below |
 
-For pi-dev, the `--init` flow asks the user to choose:
-- "Start from a specific pi-dev tag (e.g., `v0.50.0`)?"
-- "Start from a specific pi-dev commit SHA?"
-- "Skip pi-dev for now — only track gsd-pi?"
+**Derivation of the pi-dev default**:
 
-A reasonable default the user can accept: `v0.50.0` or whichever pi-dev tag is closest in time to gsd-pi's v1.0.0 baseline (~mid-2026). The user picks consciously; the skill commits the choice into config and state.
+- gsd-pi's `Initial Commit` is `4c87bb3` (2026-05-22 11:58:16 -0500 = 2026-05-22 18:58 +0200). This is the rebrand cutover from pi-dev → gsd-pi.
+- pi-dev tags around that moment:
+
+  | Date (UTC+2) | Tag | Note |
+  |---|---|---|
+  | 2026-05-17 | v0.74.1, v0.75.0 | |
+  | 2026-05-18 | v0.75.1, v0.75.2, v0.75.3 | |
+  | **2026-05-20 16:11** | **v0.75.4** | **Last release before fork** |
+  | 2026-05-22 00:18 | v0.74.2 | Back-port patch on 0.74 line, not on 0.75 trunk |
+  | 2026-05-22 18:40 | (main HEAD `9b62f1f8`) | Part of unreleased v0.75.5 work |
+  | **2026-05-22 18:58** | **gsd-pi `Initial Commit` `4c87bb3`** | **Fork happens here** |
+  | 2026-05-23 12:07 | v0.75.5 | Chronologically post-fork |
+
+- **`v0.75.4` is the safe default**: it's the last tagged pi-dev release before gsd-pi was created. Using v0.75.5 risks missing v0.75.5 changes that gsd-pi had already pulled in at fork time.
+- The initial scan from v0.75.4 → v0.78.0 covers ~3 minor versions of pi-dev development (estimate: a few hundred commits, ~40-60 after SKIP filtering). Manageable for one audit run.
+- **Trade-off**: slight over-counting is preferable to under-counting. The skill's dedup against already-filed issues will handle any "already-applied" upstream commits gracefully (we'd just see them once, classify, file, and the user closes the issue noting "already in tree").
+
+The `--init` flow still asks the user to confirm; the default value is pre-filled as `v0.75.4` so the user just hits enter unless they have a reason to override.
 
 ## 14. Error handling
 
@@ -588,8 +602,7 @@ A reasonable default the user can accept: `v0.50.0` or whichever pi-dev tag is c
 
 1. **gh-cli scope handling on first run**: `gh auth status` reports scopes for the current token. If the token lacks `repo`, we tell the user to refresh. But OAuth-app auth shows scopes differently than PAT auth — need to verify the parse handles both.
 2. **Which target repo for OTTO-team-shared backlog?** The default `cmetech/otto-cli` is the obvious answer but the design assumes a single target. If multiple OTTO downstreams emerge, the config would need `target` per-team.
-3. **What's the "right" pi-dev starting commit?** Open question for the user on first `--init` run; the skill should not silently default.
-4. **gh API rate limit headroom on first run**: ~187 gsd-pi commits + maybe 50 PR/issue fetches = within the 5000/hr authenticated limit, but worth tracking. Future enhancement: parallelize fetches with a small concurrency cap.
+3. **gh API rate limit headroom on first run**: ~187 gsd-pi commits + ~hundreds of pi-dev commits + maybe 100 PR/issue fetches = within the 5000/hr authenticated limit, but worth tracking. Future enhancement: parallelize fetches with a small concurrency cap.
 
 ## 17. Future work (post-v1)
 

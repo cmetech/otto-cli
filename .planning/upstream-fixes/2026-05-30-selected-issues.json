@@ -1,0 +1,12 @@
+[
+  {
+    "number": 63,
+    "severity": "critical-stability",
+    "type": "port-required",
+    "sha": "ce0e801",
+    "guidancePath": ".planning/upstream-audits/guidance/ce0e801.md",
+    "targetFiles": [
+      "packages/pi-coding-agent/src/modes/rpc/rpc-mode.ts"
+    ]
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "targetRepo": "cmetech/otto-cli",
+  "divergenceLedger": "docs/UPSTREAM-SYNC.md",
+  "upstreams": {
+    "pi-dev": {
+      "path": "../pi",
+      "remoteUrl": "https://github.com/earendil-works/pi.git",
+      "ghRepo": "earendil-works/pi",
+      "branch": "main",
+      "label": "earendil-works/pi (pi-dev)"
+    }
+  },
+  "issueFiling": {
+    "ccUser": "@claude",
+    "defaultStatusLabel": "status:triaged",
+    "filePolicy": {
+      "CRITICAL_SECURITY": "always",
+      "CRITICAL_STABILITY": "always",
+      "NICE_TO_HAVE_FIX": "always",
+      "FEATURE": "always",
+      "SKIP": "never"
+    }
+  },
+  "classifier": {
+    "securityRegex": "(?i)\\b(cve|vulnerab|auth\\s*bypass)\\b",
+    "stabilityRegex": "(?i)\\b(crash|hang|oom|data\\s*loss)\\b",
+    "skipPrefixes": ["chore:", "docs:", "test:", "ci:", "style:", "refactor:", "build:"]
+  },
+  "applicability": {
+    "notApplicable": [
+      {
+        "id": "bun-distribution",
+        "reason": "OTTO is npm-only.",
+        "matchAny": {
+          "subjectRegex": "(?i)\\b(bun build|bun --compile)\\b",
+          "filePathRegex": "(bun\\.config|\\.bunfig)"
+        }
+      }
+    ]
+  }
+}

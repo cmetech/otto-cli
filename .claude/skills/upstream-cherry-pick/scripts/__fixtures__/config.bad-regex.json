@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "targetRepo": "cmetech/otto-cli",
+  "classifier": {
+    "securityRegex": "[unclosed",
+    "stabilityRegex": "(?i)crash",
+    "skipPrefixes": []
+  }
+}

@@ -33,9 +33,11 @@ function createNpmSandbox(prefix: string): NpmSandbox {
   const rootDir = mkdtempSync(join(tmpdir(), prefix));
   const cacheDir = join(rootDir, "npm-cache");
   const installPrefix = join(rootDir, "install-prefix");
+  const ottoHome = join(rootDir, "otto-home");
 
   mkdirSync(cacheDir, { recursive: true });
   mkdirSync(installPrefix, { recursive: true });
+  mkdirSync(ottoHome, { recursive: true });
 
   return {
     rootDir,
@@ -45,6 +47,13 @@ function createNpmSandbox(prefix: string): NpmSandbox {
       NPM_CONFIG_CACHE: cacheDir,
       npm_config_cache: cacheDir,
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1",
+      // Keep the package postinstall (scripts/install.js copyBundledTools) from
+      // writing bundled rg/fd into the developer's real ~/.otto/agent/bin.
+      // OTTO_HOME is the targeted redirect; HOME/USERPROFILE are defense-in-depth
+      // for any path that resolves via homedir() directly.
+      OTTO_HOME: ottoHome,
+      HOME: rootDir,
+      USERPROFILE: rootDir,
     },
   };
 }

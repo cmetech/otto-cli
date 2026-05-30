@@ -829,14 +829,64 @@ The `--init` flow still asks the user to confirm; the default value is pre-fille
 2. **Which target repo for OTTO-team-shared backlog?** The default `cmetech/otto-cli` is the obvious answer but the design assumes a single target. If multiple OTTO downstreams emerge, the config would need `target` per-team.
 3. **gh API rate limit headroom on first run**: ~187 gsd-pi commits + ~hundreds of pi-dev commits + maybe 100 PR/issue fetches = within the 5000/hr authenticated limit, but worth tracking. Future enhancement: parallelize fetches with a small concurrency cap.
 
-## 17. Future work (post-v1)
+## 17. Workflow architecture — how the backlog gets worked
 
-- **`/upstream-port-from-issue <N>`**: companion skill that takes one issue, builds a spec, builds a plan, applies the cherry-pick or port, and progresses the status label.
-- **Scheduled CI**: weekly GitHub Action that runs `/upstream-cherry-pick` and pushes any new issues. Becomes attractive once running it manually feels old.
-- **Tier-aware dedup**: if an issue is closed `wontfix`, don't keep re-filing it on every scan; if closed `applied`, don't re-file even if upstream cherry-picks the same commit twice.
-- **pi-dev → gsd-pi → OTTO triple-hop**: detect when pi-dev has a fix that gsd-pi has already pulled, and report the gsd-pi version (lower conflict risk) instead.
+This skill emits issues. **Working** the issues — applying the cherry-pick, resolving conflicts, running tests, opening a PR — is a separate scope addressed by other skills and/or external integrations. This section documents the three viable consumption paths and what each requires.
 
-## 18. First-run plan against OTTO's actual upstreams
+### 17.1 Consumption paths
+
+| Path | How it works | External setup required |
+|---|---|---|
+| **A. Manual operator** | OTTO team member runs `/upstream-port-from-issue <N>` (future companion skill — §17.3) in a local session. Skill walks them through spec → plan → cherry-pick → verify → status label updates → close. | None beyond this skill. |
+| **B. Claude autonomous via GitHub Action** | The `@claude` cc in the issue body triggers Claude Code's GitHub Action when installed on `cmetech/otto-cli`. Claude works the issue inside the CI runner, opens a PR with the cherry-pick, and posts back to the issue. | [Claude Code GitHub Action](https://code.claude.com/docs/en/github-actions) installed on `cmetech/otto-cli` with appropriate Anthropic API credentials in repo secrets. |
+| **C. Hybrid** | GH Action handles low-stakes work (`severity:nice-to-have-fix` + `conflict-risk:none/low`). Manual operator handles `severity:critical-*` and `conflict-risk:high`. The `claude-pickup` label is a per-issue opt-in to the autonomous path. | Same as B, plus a label-based workflow filter so the GH Action only acts on opt-in issues. |
+
+### 17.2 Why this skill is unchanged by the choice
+
+The issues this skill files are well-formed for any of the three paths:
+
+- The `@claude` cc is **harmless text** when no GH Action is installed; it just looks like a note in the body.
+- All metadata needed by a downstream executor (commit SHA, upstream repo, touched files, conflict risk, PR/issue links) is in the issue body.
+- `status:triaged` is the universal entry point; any executor (human or Claude) advances from there.
+
+The OTTO team can defer the path choice until after the first backlog is built. You'll have data to decide.
+
+### 17.3 Companion skill: `/upstream-port-from-issue <N>` (separate spec)
+
+This is a separate design effort and a separate spec. Scope outline (for orientation, not commitment):
+
+- **Inputs**: an issue number filed by this skill.
+- **Output**: a PR against `cmetech/otto-cli` with the cherry-pick applied (or a hand-written port for high-conflict cases), test results, and a status-label transition to `status:applied`.
+- **Design questions**:
+  1. Isolation model — git worktree per port, or in-place branch?
+  2. Conflict-resolution flow — when to ask the operator vs attempt automatic 3-way merge.
+  3. Test execution — which tests to run (full `test:packages`, or a targeted subset based on touched packages)?
+  4. Status label state machine — clear transitions, with safety rails (e.g., can't go `in-progress` → `applied` without test pass).
+  5. PR template — how the cherry-pick PR references the source issue and upstream commit.
+  6. Multi-commit ports — when one issue corresponds to multiple upstream commits that should be applied together.
+
+When that skill is built, it gets its own spec at `docs/superpowers/specs/YYYY-MM-DD-upstream-port-from-issue-design.md`.
+
+### 17.4 Claude Code GitHub Action — what it would buy us
+
+Briefly, for context:
+
+- **What it is**: Anthropic's official GitHub Action that runs Claude Code inside a CI workflow, responding to events on the repo (issue opened, `@claude` mentioned in a comment, PR opened).
+- **What we'd get**: autonomous work on any issue tagged `claude-pickup` (a label this skill already emits). Claude would read the issue body, fetch the upstream commit, attempt the cherry-pick, run tests, open a PR.
+- **What it'd cost**: API usage per autonomous run; some configuration overhead; a workflow file in `.github/workflows/`.
+- **Setup not in this spec**: installing it on the repo, choosing the right trigger filters, deciding which severity/conflict-risk combinations are safe for autonomous handling.
+
+If/when the team installs the GH Action, this skill needs **no changes** — the `@claude` cc already in the body becomes the trigger.
+
+## 18. Other future enhancements (post-v1)
+
+- **Scheduled CI run of this skill**: weekly GitHub Action that runs `/upstream-cherry-pick` autonomously and pushes any new issues. Becomes attractive once running it manually feels old. Distinct from the Claude Code GH Action (which works *individual issues*); this one *generates the backlog*.
+- **Tier-aware dedup**: if an issue is closed `wontfix`, don't keep re-filing it on every scan; if closed `applied`, don't re-file even if upstream cherry-picks the same commit twice (extends §11.4 dedup with state-aware skip rules).
+- **pi-dev → gsd-pi → OTTO triple-hop**: detect when pi-dev has a fix that gsd-pi has already pulled, and report the gsd-pi version (lower conflict risk) instead. Avoids filing two issues for the same logical change.
+- **Per-package routing**: a `routing` block in config that automatically applies sub-labels based on which OTTO package the touched files belong to (e.g., `area:subagent`, `area:tui`, `area:theme`).
+- **Issue-to-spec auto-link**: if an upstream PR links to a design doc/RFC, surface that link in our issue so the operator/Claude has the full context one click away.
+
+## 19. First-run plan against OTTO's actual upstreams
 
 This is documented in the implementation plan (a separate doc following this spec); the highlights:
 

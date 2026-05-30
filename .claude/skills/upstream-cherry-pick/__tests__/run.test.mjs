@@ -129,17 +129,24 @@ test("preflight failure exits 1 without scanning", async () => {
   }
 });
 
-test("--init flag delegates with not-implemented stub for now", async () => {
-  // Until Task 19 lands, --init returns a placeholder exit code or message.
-  // Just verify the flag is recognized.
-  const result = await run({
-    args: ["--init"],
-    cwd: "/tmp",
-    ghRunner: () => "",
-    cmdRunner: () => "",
-  });
-  // Either exit 0 (placeholder) or exit 1 (not implemented). Either is acceptable for now.
-  assert.ok(result.exitCode === 0 || result.exitCode === 1);
+test("--init --non-interactive scaffolds config + state + labels and exits 0", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "ucp-run-init-"));
+  try {
+    const ghRunner = (args) => {
+      if (args[0] === "label" && args[1] === "list") return "";
+      if (args[0] === "label" && args[1] === "create") return "";
+      return "";
+    };
+    const result = await run({
+      args: ["--init", "--non-interactive"],
+      cwd: dir,
+      ghRunner,
+      cmdRunner: () => "",
+    });
+    assert.equal(result.exitCode, 0, `expected exit 0, got: ${JSON.stringify(result)}`);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test("unknown upstream in args logs warning and returns exit 0 with empty results", async () => {

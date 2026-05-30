@@ -60,6 +60,8 @@ function parseArgs(args) {
     refreshCache: false,
     outputDir: null,
     config: null,
+    nonInteractive: false,
+    overwrite: false,
   };
   const positional = [];
 
@@ -72,6 +74,10 @@ function parseArgs(args) {
       flags.noIssueContext = true;
     } else if (arg === "--refresh-cache") {
       flags.refreshCache = true;
+    } else if (arg === "--non-interactive") {
+      flags.nonInteractive = true;
+    } else if (arg === "--overwrite") {
+      flags.overwrite = true;
     } else if (arg.startsWith("--output-dir=")) {
       flags.outputDir = arg.slice("--output-dir=".length);
     } else if (arg.startsWith("--config=")) {
@@ -115,11 +121,24 @@ export async function run({
 
   // ── Step 1: --init delegation ──────────────────────────────────────────────
   if (flags.init) {
-    // Task 19 will implement init-scaffold.mjs; stub for now
-    process.stderr.write(
-      "upstream-cherry-pick --init: not yet implemented (Task 19 pending)\n",
-    );
-    return { exitCode: 1, error: "init not implemented" };
+    const { initScaffold } = await import("../scripts/init-scaffold.mjs");
+    try {
+      const result = await initScaffold({
+        cwd,
+        nonInteractive: flags.nonInteractive ?? false,
+        overwrite: flags.overwrite ?? false,
+        ghRunner,
+      });
+      process.stdout.write(`✓ Config written: ${result.configPath}\n`);
+      process.stdout.write(`✓ State written: ${result.statePath}\n`);
+      process.stdout.write(
+        `✓ Labels: ${result.labelsResult.created.length} created, ${result.labelsResult.existing.length} existing\n`,
+      );
+      return { exitCode: 0 };
+    } catch (err) {
+      process.stderr.write(`Init failed: ${err.message}\n`);
+      return { exitCode: 1, error: err.message };
+    }
   }
 
   // ── Step 2: Load config ────────────────────────────────────────────────────

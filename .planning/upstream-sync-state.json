@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "upstreams": {
+    "pi-dev": {
+      "lastAnalyzedCommit": "v0.75.4"
+    },
+    "gsd-pi": {
+      "lastAnalyzedCommit": "v1.0.1"
+    }
+  }
+}

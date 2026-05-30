@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "targetRepo": "cmetech/otto-cli",
+  "divergenceLedger": "docs/UPSTREAM-SYNC.md",
+  "upstreams": {
+    "pi-dev": {
+      "path": "../pi",
+      "ghRepo": "earendil-works/pi",
+      "branch": "main",
+      "label": "earendil-works/pi (pi-dev)"
+    },
+    "gsd-pi": {
+      "path": "../gsd-pi",
+      "ghRepo": "open-gsd/gsd-pi",
+      "branch": "main",
+      "label": "open-gsd/gsd-pi"
+    }
+  },
+  "issueFiling": {
+    "ccUser": "@claude",
+    "defaultStatusLabel": "status:triaged",
+    "filePolicy": {
+      "CRITICAL_SECURITY": "always",
+      "CRITICAL_STABILITY": "always",
+      "NICE_TO_HAVE_FIX": "always",
+      "FEATURE": "always",
+      "SKIP": "never"
+    }
+  },
+  "classifier": {
+    "securityRegex": "(?i)\\b(cve|vulnerab|auth\\s*bypass|sandbox\\s*escape|secret\\s*leak|exfiltr|rce|injection|xss|csrf)\\b",
+    "stabilityRegex": "(?i)\\b(crash|hang|oom|infinite\\s*loop|data\\s*loss|corrupt|lockup|deadlock|panic|unrecover)\\b",
+    "skipPrefixes": [
+      "chore:",
+      "docs:",
+      "test:",
+      "ci:",
+      "style:",
+      "refactor:",
+      "build:"
+    ]
+  },
+  "applicability": {
+    "notApplicable": [
+      {
+        "id": "bun-distribution",
+        "reason": "OTTO decided 2026-05-29 to stay npm-only (CHANGELOG v1.1.0 era discussion). Bun support already exists for install-via-bun users; we don't build or distribute bun binaries.",
+        "matchAny": {
+          "subjectRegex": "(?i)\\b(bun build|bun --compile|bun upgrade|bun install)\\b",
+          "filePathRegex": "(bun\\.config|\\.bunfig|bun-build|/bun/)",
+          "labels": [
+            "bun",
+            "distribution:bun"
+          ]
+        }
+      },
+      {
+        "id": "upstream-ci-only",
+        "reason": "Changes to upstream's GitHub Actions workflows that don't mirror OTTO's CI. OTTO's CI lives in cmetech/otto-cli/.github/workflows; upstream changes there are noise.",
+        "matchAll": {
+          "filePathRegex": "^\\.github/workflows/",
+          "subjectRegex": "(?i)\\b(ci|workflow|gha|github\\s*action)\\b"
+        }
+      },
+      {
+        "id": "upstream-docs-site",
+        "reason": "Changes to upstream's docs site (Astro/Starlight setup, deployment hooks). OTTO doesn't host a docs site; user-facing docs live in CHANGELOG.md and HARNESS-COMPAT.md.",
+        "matchAll": {
+          "filePathRegex": "^(docs-site|website|astro\\.config|starlight\\.config)/"
+        }
+      },
+      {
+        "id": "upstream-release-tooling",
+        "reason": "Changes to upstream's release/publish/changelog-generator tooling. OTTO has its own scripts/bump-version.mjs, scripts/sync-release-notes.mjs, etc.",
+        "matchAll": {
+          "filePathRegex": "^scripts/(release|publish|changelog|bump-)",
+          "subjectRegex": "(?i)\\b(release|publish|changelog|version\\s*bump)\\b"
+        }
+      },
+      {
+        "id": "upstream-rebrand",
+        "reason": "Changes to pi-dev's branding (logo, package names, etc.) that OTTO has already overridden with its own brand pipeline (scripts/sync-brand-colors.mjs).",
+        "matchAny": {
+          "subjectRegex": "(?i)\\b(rebrand|logo|brand color|package name)\\b",
+          "filePathRegex": "(brand-colors|brand\\.config|assets/logo)"
+        }
+      }
+    ]
+  }
+}

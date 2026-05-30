@@ -867,7 +867,28 @@ This is a separate design effort and a separate spec. Scope outline (for orienta
 
 When that skill is built, it gets its own spec at `docs/superpowers/specs/YYYY-MM-DD-upstream-port-from-issue-design.md`.
 
-### 17.4 Claude Code GitHub Action — what it would buy us
+### 17.4 Background execution modes
+
+The skill is well-suited to background execution because it's deterministic, non-interactive after `--init`, I/O-bound on the gh API, and produces durable artifacts (issues + report file). Three flavors of background, each answering a different problem:
+
+| Mode | Mechanism | Skill changes needed | Use when |
+|---|---|---|---|
+| **Same-session background agent** | Claude Code's `Agent` tool with `run_in_background: true` invokes the skill in a subagent context. Main session keeps going; user is notified on completion. | None — `--no-prompts` flag added for non-interactive runs after first setup (already implied by non-interactive design). | "Run it now, I'll keep working on something else." |
+| **Scheduled remote agent** | Claude Code's `/schedule` skill creates a cron-driven remote agent that invokes `/upstream-cherry-pick` autonomously on a cadence. Output lands as issues + report; user reviews when convenient. | Same `--no-prompts` flag; needs a way to default-confirm the pi-dev starting commit during `--init` (since no user is present). | "I want this to keep happening weekly without me thinking about it." |
+| **GitHub Actions scheduled workflow** | `.github/workflows/upstream-audit.yml` with a cron trigger runs the skill in CI. Doesn't require Claude Code in the loop at all — the scripted core (§6.1) is just Node, runnable anywhere with `gh` + `git`. | A thin CLI entrypoint at `.claude/skills/upstream-cherry-pick/bin/run.mjs` that invokes the scripts in order without an agent. | "I want this in our team's existing CI infrastructure, not tied to anyone's session." |
+
+**Key design implication**: the skill's scripted core (§6.1) means **none of these modes need an LLM agent**. The agent's only judgment calls (PR review-thread summarization, UNCLASSIFIED recommendations) are nice-to-haves; in agent-free runs, the issue body just omits the prose summary and includes the raw `gh` JSON instead. The team can decide per-mode whether they want the agent prose or not.
+
+**Recommended adoption sequence**:
+
+1. **v1 of skill**: ships with `--init` + interactive run. Operator runs locally; full agent participation.
+2. **First convenience win**: same-session background agent. Operator types `/upstream-cherry-pick`, agent runs in background, operator keeps working. No code changes.
+3. **First automation win**: scheduled remote agent via `/schedule`. Weekly cadence; produces issues and a report; no operator intervention.
+4. **Team-scale win**: GH Actions scheduled workflow. Lives in the repo; team-visible cron schedule; runs without anyone's local session.
+
+Each step is additive. Adopt as the pain of the previous step exceeds the cost of the next.
+
+### 17.5 Claude Code GitHub Action — what it would buy us
 
 Briefly, for context:
 

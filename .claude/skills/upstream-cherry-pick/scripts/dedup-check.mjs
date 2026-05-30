@@ -36,7 +36,7 @@ export async function dedupCheck({ targetRepo, shaShort, ghRunner = defaultGhRun
       "--repo", targetRepo,
       "--search", `sha=${shaShort} in:body`,
       "--state", "all",
-      "--json", "number,state",
+      "--json", "number,state,body",
     ]);
   } catch (err) {
     throw new Error(
@@ -57,7 +57,16 @@ export async function dedupCheck({ targetRepo, shaShort, ghRunner = defaultGhRun
     return { existing: null, state: null };
   }
 
-  const first = issues[0];
+  // GitHub's full-text search tokenizes, so `sha=<short> in:body` also matches
+  // issues that merely *mention* the sha in prose (e.g. "superseded by ce0e801").
+  // Post-filter to the literal trailer substring so only the issue that actually
+  // tracks this sha counts as a dup.
+  const tracking = issues.filter((i) => (i.body ?? "").includes(`sha=${shaShort}`));
+  if (tracking.length === 0) {
+    return { existing: null, state: null };
+  }
+
+  const first = tracking[0];
   return {
     existing: first.number,
     state: first.state.toUpperCase(),

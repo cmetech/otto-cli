@@ -24,6 +24,18 @@ This changelog starts from the `open-gsd/gsd-pi` ownership baseline. Earlier pro
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-05-29
+
+_Windows `otto update` no longer emits EPERM cleanup warnings or leaves orphan `.otto-*` staging dirs._
+
+### Fixed
+
+- `otto update` on Windows would log `EPERM: operation not permitted, unlink` warnings against `duckdb.dll`, `sharp.dll`, and `otto_engine.win32-x64.node` because the running otto.exe still held DLL handles. The install still succeeded but left orphan `.otto-RouGtD54`-style staging directories under `%APPDATA%\npm\node_modules\@cmetech\`. `otto update` now spawns a detached PowerShell bootstrap in a visible "OTTO Updater" console window that waits for the parent otto.exe to exit (max 30s), runs the install with locks released, sweeps the orphan staging dirs, and writes a completion status to `~/.otto/agent/update-status.json` that the next `otto update` surfaces. macOS / Linux behavior unchanged — POSIX inode semantics handle live-process replacement without the lock issue.
+
+### Added
+
+- `update-status.json` written to `~/.otto/agent/` on every `otto update` — tracks `startedAt`, `completedAt`, `fromVersion`, `toVersion`, and `exitCode`. The next `otto update` prints "Last update: vX.Y.Z → vA.B.C at … (✓ success / ✗ exit N)" before checking the registry, so you can see whether a previous background update finished.
+
 ## [1.1.0] - 2026-05-29
 
 _Harness compatibility (Claude / Codex / Kiro skills + agents), [claude] origin chips, and a `/theme` slash command._

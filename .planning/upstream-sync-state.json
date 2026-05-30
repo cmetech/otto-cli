@@ -3,7 +3,7 @@
   "upstreams": {
     "pi-dev": {
       "lastAnalyzedCommit": "dbb9911a547f697229e4e90c9a071794db315e5e",
-      "lastAnalyzedAt": "2026-05-30T15:42:38.515Z",
+      "lastAnalyzedAt": "2026-05-30T15:51:55.775Z",
       "lastReportPath": "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/.planning/upstream-audits/2026-05-30-pi-dev-audit.md"
     },
     "gsd-pi": {

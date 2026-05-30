@@ -2,7 +2,7 @@
 
 **Scope**: v0.75.4 (3533843) → HEAD (dbb9911)
 **Commits scanned**: 129
-**Issues filed**: 59
+**Issues filed**: 2
 **Not applicable to OTTO**: 2 (matched applicability rules)
 **Skipped (mechanical)**: 18 (merge / chore / docs / already filed)
 **Unclassified (manual triage)**: 46
@@ -14,74 +14,74 @@
 ## Critical — stability (4)
 
 - #1 (exists, OPEN) — 🐛 [sha=fa1180b] fix(ai): detect Poolside context overflow — `conflict-risk:none`
-- #2 (exists, OPEN) — 🐛 [sha=ce0e801] fix(coding-agent): retry RPC stdout backpressure — `conflict-risk:none`
+- #63 — 🐛 [sha=ce0e801] fix(coding-agent): retry RPC stdout backpressure — `conflict-risk:none`
 - #2 (exists, OPEN) — 🐛 [sha=d0d1d8e] fix(rpc): respect stdout backpressure — `conflict-risk:none`
-- #45 — 🐛 [sha=15f1dea] fix(coding-agent): disable managed extension peer resolution — `conflict-risk:none`
+- #45 (exists, OPEN) — 🐛 [sha=15f1dea] fix(coding-agent): disable managed extension peer resolution — `conflict-risk:none`
 
 ## Nice-to-have fixes (48)
 
-- #3 — 🩹 [sha=31b961f] fix(coding-agent): sync clipboard binary archive deps — `conflict-risk:none`
-- #4 — 🩹 [sha=ba2d313] fix(ai): handle OpenCode Kimi reasoning params — `conflict-risk:none`
-- #5 — 🩹 [sha=a36a132] fix(ai): abort Codex SSE body reads — `conflict-risk:none`
-- #7 — 🩹 [sha=edd1212] fix(coding-agent): buffer early input before prompt loop — `conflict-risk:none`
-- #8 — 🩹 [sha=9d2bceb] fix(tui): forward OSC 8 hyperlinks under tmux when the client supports them — `conflict-risk:none`
-- #10 — 🩹 [sha=4faac05] fix(ai): handle OpenCode reasoning params — `conflict-risk:none`
-- #13 — 🩹 [sha=93600d8] fix(release): align package repository metadata — `conflict-risk:none`
-- #14 — 🩹 [sha=f3b4e12] fix(release): upgrade npm for trusted publishing — `conflict-risk:none`
-- #11 (exists, OPEN) — 🩹 [sha=4b4641c] fix(coding-agent): scope custom session dir lookups — `conflict-risk:none`
-- #16 — 🩹 [sha=b64f3f5] fix(coding-agent): run extension cleanup and restore terminal on signal exits — `conflict-risk:none`
-- #17 — 🩹 [sha=d1fb34b] fix(ai): use valid synthetic Responses message ids closes #5148 — `conflict-risk:none`
-- #18 — 🩹 [sha=3f1ce9b] fix(ai): avoid duplicate Codex replay message ids closes #5148 — `conflict-risk:none`
-- #19 — 🩹 [sha=3e9f717] fix(coding-agent): make config env references explicit — `conflict-risk:none`
-- #21 — 🩹 [sha=a29a790] fix(coding-agent): drain follow-ups queued during agent_end — `conflict-risk:none`
-- #23 — 🩹 [sha=b85bf65] fix(coding-agent): restore diff code block highlighting — `conflict-risk:none`
-- #24 — 🩹 [sha=6ab62a0] fix(tui): harden keyboard protocol negotiation — `conflict-risk:none`
-- #25 — 🩹 [sha=16dc525] fix(build): resolve internal packages from workspace dist — `conflict-risk:none`
-- #27 — 🩹 [sha=7c02a55] fix(ai): timeout Codex SSE header stalls — `conflict-risk:none`
-- #28 — 🩹 [sha=91b46c2] fix(ai): avoid stale Cerebras test model — `conflict-risk:none`
-- #29 — 🩹 [sha=701801d] fix(tui): align input word segmentation with editor (#5068) — `conflict-risk:none`
-- #31 — 🩹 [sha=4bbe295] fix(tui): provide the JetBrains terminal capabilities (#5037) — `conflict-risk:none`
-- #32 — 🩹 [sha=b62776e] fix(tui): preserve ASCII punctuation word boundaries with Intl.Segmenter (#5067) — `conflict-risk:none`
-- #33 — 🩹 [sha=493efd4] fix(codex): timeouts for websockets (#4979) — `conflict-risk:none`
-- #34 — 🩹 [sha=26f1e00] fix(ai): use hyphenated Codex session header — `conflict-risk:none`
-- #35 — 🩹 [sha=2531fc1] fix(ui): preserve user ordered-list markers (closes #5013) — `conflict-risk:none`
-- #36 — 🩹 [sha=59ec800] fix(coding-agent): bypass age gates for self-update — `conflict-risk:none`
-- #37 — 🩹 [sha=4402100] fix(tui): leverage Intl.Segmenter for proper Unicode word boundaries (#5022) — `conflict-risk:none`
-- #38 — 🩹 [sha=8fb1e87] fix(ai): disable hidden provider 429 retries (#4991) — `conflict-risk:none`
-- #39 — 🩹 [sha=71446c6] fix(ai): correct Codex Spark context window — `conflict-risk:none`
-- #40 — 🩹 [sha=fc8a155] fix(ai): honor Codex Responses maxRetries — `conflict-risk:none`
-- #41 — 🩹 [sha=3eb0027] fix(tui): enable OSC 8 for Windows Terminal (closes #4923) — `conflict-risk:none`
-- #42 — 🩹 [sha=e007fcd] fix(rpc): reject pending requests on child process exit — `conflict-risk:none`
-- #43 — 🩹 [sha=30b3ab3] fix(tui): remove native modifier escape hatch — `conflict-risk:none`
-- #44 — 🩹 [sha=c5181a2] fix(tui): detect Apple Terminal Shift+Enter — `conflict-risk:none`
-- #46 — 🩹 [sha=3f89350] fix(coding-agent): ship clipboard sidecar in bun binaries — `conflict-risk:none`
-- #47 — 🩹 [sha=2e1f07b] fix(coding-agent): avoid invalid footer home abbreviation — `conflict-risk:none`
-- #48 — 🩹 [sha=e9146a5] fix(coding-agent): use async operations in tools — `conflict-risk:none`
-- #49 — 🩹 [sha=c85dbb1] fix(coding-agent): reconcile pinned git update refs — `conflict-risk:none`
-- #50 — 🩹 [sha=42379a3] fix(coding-agent): add OpenCode session headers — `conflict-risk:none`
-- #51 — 🩹 [sha=7002c68] fix(ai): declare Bedrock Smithy HTTP handler dependency — `conflict-risk:none`
-- #52 — 🩹 [sha=b3ed545] fix(export-html): escape quotes in exported attributes — `conflict-risk:none`
-- #53 — 🩹 [sha=baf4028] fix(coding-agent): use the right basedir for patterns — `conflict-risk:none`
-- #54 — 🩹 [sha=c100620] fix(coding-agent): Clean up Path Handling (#4873) — `conflict-risk:none`
-- #55 — 🩹 [sha=bf56a86] fix(coding-agent): reconcile git package refs — `conflict-risk:none`
-- #57 — 🩹 [sha=11c3da4] fix(ai): set bedrock claude default max tokens — `conflict-risk:none`
-- #58 — 🩹 [sha=f953067] fix(coding-agent): correct bash truncation line count — `conflict-risk:none`
-- #60 — 🩹 [sha=7dad27e] fix(coding-agent): avoid duplicate bash truncation path — `conflict-risk:none`
-- #61 — 🩹 [sha=088987b] fix(coding-agent): list themes by content name — `conflict-risk:none`
+- #3 (exists, OPEN) — 🩹 [sha=31b961f] fix(coding-agent): sync clipboard binary archive deps — `conflict-risk:none`
+- #4 (exists, OPEN) — 🩹 [sha=ba2d313] fix(ai): handle OpenCode Kimi reasoning params — `conflict-risk:none`
+- #5 (exists, OPEN) — 🩹 [sha=a36a132] fix(ai): abort Codex SSE body reads — `conflict-risk:none`
+- #7 (exists, OPEN) — 🩹 [sha=edd1212] fix(coding-agent): buffer early input before prompt loop — `conflict-risk:none`
+- #8 (exists, OPEN) — 🩹 [sha=9d2bceb] fix(tui): forward OSC 8 hyperlinks under tmux when the client supports them — `conflict-risk:none`
+- #10 (exists, OPEN) — 🩹 [sha=4faac05] fix(ai): handle OpenCode reasoning params — `conflict-risk:none`
+- #13 (exists, OPEN) — 🩹 [sha=93600d8] fix(release): align package repository metadata — `conflict-risk:none`
+- #14 (exists, OPEN) — 🩹 [sha=f3b4e12] fix(release): upgrade npm for trusted publishing — `conflict-risk:none`
+- #62 — 🩹 [sha=4b4641c] fix(coding-agent): scope custom session dir lookups — `conflict-risk:none`
+- #16 (exists, OPEN) — 🩹 [sha=b64f3f5] fix(coding-agent): run extension cleanup and restore terminal on signal exits — `conflict-risk:none`
+- #17 (exists, OPEN) — 🩹 [sha=d1fb34b] fix(ai): use valid synthetic Responses message ids closes #5148 — `conflict-risk:none`
+- #18 (exists, OPEN) — 🩹 [sha=3f1ce9b] fix(ai): avoid duplicate Codex replay message ids closes #5148 — `conflict-risk:none`
+- #19 (exists, OPEN) — 🩹 [sha=3e9f717] fix(coding-agent): make config env references explicit — `conflict-risk:none`
+- #21 (exists, OPEN) — 🩹 [sha=a29a790] fix(coding-agent): drain follow-ups queued during agent_end — `conflict-risk:none`
+- #23 (exists, OPEN) — 🩹 [sha=b85bf65] fix(coding-agent): restore diff code block highlighting — `conflict-risk:none`
+- #24 (exists, OPEN) — 🩹 [sha=6ab62a0] fix(tui): harden keyboard protocol negotiation — `conflict-risk:none`
+- #25 (exists, OPEN) — 🩹 [sha=16dc525] fix(build): resolve internal packages from workspace dist — `conflict-risk:none`
+- #27 (exists, OPEN) — 🩹 [sha=7c02a55] fix(ai): timeout Codex SSE header stalls — `conflict-risk:none`
+- #28 (exists, OPEN) — 🩹 [sha=91b46c2] fix(ai): avoid stale Cerebras test model — `conflict-risk:none`
+- #29 (exists, OPEN) — 🩹 [sha=701801d] fix(tui): align input word segmentation with editor (#5068) — `conflict-risk:none`
+- #31 (exists, OPEN) — 🩹 [sha=4bbe295] fix(tui): provide the JetBrains terminal capabilities (#5037) — `conflict-risk:none`
+- #32 (exists, OPEN) — 🩹 [sha=b62776e] fix(tui): preserve ASCII punctuation word boundaries with Intl.Segmenter (#5067) — `conflict-risk:none`
+- #33 (exists, OPEN) — 🩹 [sha=493efd4] fix(codex): timeouts for websockets (#4979) — `conflict-risk:none`
+- #34 (exists, OPEN) — 🩹 [sha=26f1e00] fix(ai): use hyphenated Codex session header — `conflict-risk:none`
+- #35 (exists, OPEN) — 🩹 [sha=2531fc1] fix(ui): preserve user ordered-list markers (closes #5013) — `conflict-risk:none`
+- #36 (exists, OPEN) — 🩹 [sha=59ec800] fix(coding-agent): bypass age gates for self-update — `conflict-risk:none`
+- #37 (exists, OPEN) — 🩹 [sha=4402100] fix(tui): leverage Intl.Segmenter for proper Unicode word boundaries (#5022) — `conflict-risk:none`
+- #38 (exists, OPEN) — 🩹 [sha=8fb1e87] fix(ai): disable hidden provider 429 retries (#4991) — `conflict-risk:none`
+- #39 (exists, OPEN) — 🩹 [sha=71446c6] fix(ai): correct Codex Spark context window — `conflict-risk:none`
+- #40 (exists, OPEN) — 🩹 [sha=fc8a155] fix(ai): honor Codex Responses maxRetries — `conflict-risk:none`
+- #41 (exists, OPEN) — 🩹 [sha=3eb0027] fix(tui): enable OSC 8 for Windows Terminal (closes #4923) — `conflict-risk:none`
+- #42 (exists, OPEN) — 🩹 [sha=e007fcd] fix(rpc): reject pending requests on child process exit — `conflict-risk:none`
+- #43 (exists, OPEN) — 🩹 [sha=30b3ab3] fix(tui): remove native modifier escape hatch — `conflict-risk:none`
+- #44 (exists, OPEN) — 🩹 [sha=c5181a2] fix(tui): detect Apple Terminal Shift+Enter — `conflict-risk:none`
+- #46 (exists, OPEN) — 🩹 [sha=3f89350] fix(coding-agent): ship clipboard sidecar in bun binaries — `conflict-risk:none`
+- #47 (exists, OPEN) — 🩹 [sha=2e1f07b] fix(coding-agent): avoid invalid footer home abbreviation — `conflict-risk:none`
+- #48 (exists, OPEN) — 🩹 [sha=e9146a5] fix(coding-agent): use async operations in tools — `conflict-risk:none`
+- #49 (exists, OPEN) — 🩹 [sha=c85dbb1] fix(coding-agent): reconcile pinned git update refs — `conflict-risk:none`
+- #50 (exists, OPEN) — 🩹 [sha=42379a3] fix(coding-agent): add OpenCode session headers — `conflict-risk:none`
+- #51 (exists, OPEN) — 🩹 [sha=7002c68] fix(ai): declare Bedrock Smithy HTTP handler dependency — `conflict-risk:none`
+- #52 (exists, OPEN) — 🩹 [sha=b3ed545] fix(export-html): escape quotes in exported attributes — `conflict-risk:none`
+- #53 (exists, OPEN) — 🩹 [sha=baf4028] fix(coding-agent): use the right basedir for patterns — `conflict-risk:none`
+- #54 (exists, OPEN) — 🩹 [sha=c100620] fix(coding-agent): Clean up Path Handling (#4873) — `conflict-risk:none`
+- #55 (exists, OPEN) — 🩹 [sha=bf56a86] fix(coding-agent): reconcile git package refs — `conflict-risk:none`
+- #57 (exists, OPEN) — 🩹 [sha=11c3da4] fix(ai): set bedrock claude default max tokens — `conflict-risk:none`
+- #58 (exists, OPEN) — 🩹 [sha=f953067] fix(coding-agent): correct bash truncation line count — `conflict-risk:none`
+- #60 (exists, OPEN) — 🩹 [sha=7dad27e] fix(coding-agent): avoid duplicate bash truncation path — `conflict-risk:none`
+- #61 (exists, OPEN) — 🩹 [sha=088987b] fix(coding-agent): list themes by content name — `conflict-risk:none`
 
 ## Features (11)
 
-- #6 — ✨ [sha=dbcfc16] feat(coding-agent): Export CLI argument parser — `conflict-risk:none`
-- #9 — ✨ [sha=42ce989] feat(coding-agent): hyperlink file paths in tool titles — `conflict-risk:none`
-- #11 — ✨ [sha=17e9e87] feat(coding-agent): print resume hint on interactive exit — `conflict-risk:none`
-- #12 — ✨ [sha=7a5dc0d] feat(coding-agent): Export convertToPng for extensions — `conflict-risk:none`
-- #15 — ✨ [sha=9380d5f] feat(coding-agent): add exclude tools option closes #5109 — `conflict-risk:none`
-- #20 — ✨ [sha=9d5fb70] feat(ai): add Codex device code login (#4911) — `conflict-risk:none`
-- #22 — ✨ [sha=bcea4b2] feat(coding-agent): expose streamingBehavior on InputEvent — `conflict-risk:none`
-- #26 — ✨ [sha=52dc08c] feat(session): Explicit session id naming (#5076) — `conflict-risk:none`
-- #30 — ✨ [sha=61babc2] feat(rpc): add excludeFromContext flag to bash command (closes #5039) — `conflict-risk:none`
-- #56 — ✨ [sha=c554364] feat(ai): refactor device code login for copilot — `conflict-risk:none`
-- #59 — ✨ [sha=60a55a2] feat(coding-agent): expose edit tool unified patch — `conflict-risk:none`
+- #6 (exists, OPEN) — ✨ [sha=dbcfc16] feat(coding-agent): Export CLI argument parser — `conflict-risk:none`
+- #9 (exists, OPEN) — ✨ [sha=42ce989] feat(coding-agent): hyperlink file paths in tool titles — `conflict-risk:none`
+- #11 (exists, OPEN) — ✨ [sha=17e9e87] feat(coding-agent): print resume hint on interactive exit — `conflict-risk:none`
+- #12 (exists, OPEN) — ✨ [sha=7a5dc0d] feat(coding-agent): Export convertToPng for extensions — `conflict-risk:none`
+- #15 (exists, OPEN) — ✨ [sha=9380d5f] feat(coding-agent): add exclude tools option closes #5109 — `conflict-risk:none`
+- #20 (exists, OPEN) — ✨ [sha=9d5fb70] feat(ai): add Codex device code login (#4911) — `conflict-risk:none`
+- #22 (exists, OPEN) — ✨ [sha=bcea4b2] feat(coding-agent): expose streamingBehavior on InputEvent — `conflict-risk:none`
+- #26 (exists, OPEN) — ✨ [sha=52dc08c] feat(session): Explicit session id naming (#5076) — `conflict-risk:none`
+- #30 (exists, OPEN) — ✨ [sha=61babc2] feat(rpc): add excludeFromContext flag to bash command (closes #5039) — `conflict-risk:none`
+- #56 (exists, OPEN) — ✨ [sha=c554364] feat(ai): refactor device code login for copilot — `conflict-risk:none`
+- #59 (exists, OPEN) — ✨ [sha=60a55a2] feat(coding-agent): expose edit tool unified patch — `conflict-risk:none`
 
 ## Unclassified — needs manual triage (46)
 

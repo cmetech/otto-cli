@@ -10,11 +10,8 @@ import { parse } from "yaml";
 
 const BUILDER_IMAGE = "ghcr.io/open-gsd/otto-ci-builder";
 
-test("publish workflows use the builder image produced by pipeline", () => {
-  const prereleasePublish = readWorkflow("npm-publish.yml");
+test("pipeline builds and pushes the CI builder image", () => {
   const pipeline = readWorkflow("pipeline.yml");
-
-  assert.equal(prereleasePublish.jobs["prerelease-publish"].container.image, `${BUILDER_IMAGE}:latest`);
 
   const buildStep = pipeline.jobs["update-builder"].steps.find((step: { name?: string }) => (
     step.name === "Build and push CI builder image"

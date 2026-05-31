@@ -19,7 +19,7 @@ function startKernel(ws: string): ChildProcessWithoutNullStreams {
     process.execPath,
     [...kernelExecArgv(), resolveKernelEntry(), ws],
     { stdio: ['pipe', 'pipe', 'inherit'], cwd: process.cwd(), env: filterEnv(process.env) },
-  ) as ChildProcessWithoutNullStreams;
+  ) as unknown as ChildProcessWithoutNullStreams;
 }
 
 // Drain frames until `count` result frames have arrived; ignore events.

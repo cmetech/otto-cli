@@ -47,7 +47,7 @@ export class ChildProcessRuntime {
       process.execPath,
       [...kernelExecArgv(), entry, this.options.workspace],
       { stdio: ['pipe', 'pipe', 'inherit'], cwd: process.cwd(), env: filterEnv(process.env) },
-    ) as ChildProcessWithoutNullStreams;
+    ) as unknown as ChildProcessWithoutNullStreams;
     this.child = child;
     child.on('exit', (code, signal) => {
       const err = new Error(`kernel exited (code=${code ?? 'null'}, signal=${signal ?? 'null'})`);

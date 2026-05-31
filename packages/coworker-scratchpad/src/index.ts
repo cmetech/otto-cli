@@ -3,6 +3,7 @@ export { FileCollector, type FileCollectorOptions } from './file-collector.js';
 export { DefaultCollectorRegistry, uriMatchesPattern } from './collector-registry.js';
 export {
   isDataLoadEvent,
+  isProgressEvent,
   type RunRequest,
   type KernelRequest,
   type ResultOk,
@@ -11,6 +12,7 @@ export {
   type DataLoadDrawer,
   type ReadyEvent,
   type DataLoadEvent,
+  type ProgressEvent,
   type KernelEvent,
   type KernelFrame,
 } from './kernel-protocol.js';

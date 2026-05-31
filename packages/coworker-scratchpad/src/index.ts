@@ -37,3 +37,10 @@ export {
   type LockInfo,
   type AcquireOptions,
 } from './scratchpad-lock.js';
+export {
+  CellArchive,
+  CELLS_SCHEMA_VERSION,
+  type CellEntry,
+  type AppendInput,
+} from './cell-archive.js';
+export { buildDataLibBindings } from './kernel-bindings.js';

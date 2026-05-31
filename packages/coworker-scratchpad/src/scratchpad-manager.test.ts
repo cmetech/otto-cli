@@ -1,7 +1,7 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir, hostname } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
@@ -60,9 +60,12 @@ describe('ScratchpadManager (core + LRU)', () => {
     await assert.rejects(() => mgr2.getOrAttach('a'), /scratchpad a is busy in another session/);
   });
 
-  it('force-takeover steals a busy lock', async () => {
-    mgr = new ScratchpadManager({ workspace, root });
+  it('force-takeover steals a busy lock (after the prior runtime is cold)', async () => {
+    // Evict 'a' to cold (snapshotThenDispose releases DuckDB file, keeps lock.json).
+    mgr = new ScratchpadManager({ workspace, root, maxLiveKernels: 1 });
     await mgr.getOrAttach('a');
+    await mgr.getOrAttach('b'); // LRU-evicts 'a' → runtime cold, lock retained
+    assert.equal(liveOf(mgr, 'a'), false);
     mgr2 = new ScratchpadManager({ workspace, root });
     const rt = await mgr2.getOrAttach('a', { forceTakeover: true, takeoverReason: 'test' });
     assert.equal((await rt.runCell('return 1;')).value, 1);
@@ -93,17 +96,17 @@ describe('ScratchpadManager (core + LRU)', () => {
     assert.equal(liveOf(mgr, 'c'), true);
   });
 
-  it('re-warms a cold kernel with an empty globalThis (no snapshot — 1d gap)', async () => {
+  it('re-warms a cold kernel and restores globalThis from the snapshot', async () => {
     let t = 1000;
     mgr = new ScratchpadManager({ workspace, root, maxLiveKernels: 1, now: () => t });
     const a1 = await mgr.getOrAttach('a');
     await a1.runCell('globalThis.x = 99;');
     t += 10;
-    await mgr.getOrAttach('b');           // evicts 'a' -> cold
+    await mgr.getOrAttach('b');           // evicts 'a' -> cold (snapshot written)
     assert.equal(liveOf(mgr, 'a'), false);
     t += 10;
-    const a2 = await mgr.getOrAttach('a'); // cold -> re-warm (fresh child)
-    assert.equal((await a2.runCell('return globalThis.x ?? null;')).value, null);
+    const a2 = await mgr.getOrAttach('a'); // cold -> re-warm (namespace restored)
+    assert.equal((await a2.runCell('return globalThis.x ?? null;')).value, 99);
   });
 
   it('keeps the lock when a kernel is LRU-evicted (cold but still owned)', async () => {
@@ -256,7 +259,7 @@ describe('ScratchpadManager (cells + meta)', () => {
     assert.equal(meta.last_used, new Date(5000).toISOString());
     assert.deepEqual(meta.attached_sessions, ['sess-1']);
     assert.ok(meta.size_bytes > 0);
-    assert.equal(meta.schema_version, 1);
+    assert.equal(meta.schema_version, 2);
   });
 
   it('continues cell ids across a fresh manager on the same root', async () => {
@@ -269,5 +272,128 @@ describe('ScratchpadManager (cells + meta)', () => {
     assert.equal(recs.length, 2);
     assert.equal(recs[1].id, 2);
     assert.equal(recs[1].parentId, 1);
+  });
+});
+
+describe('ScratchpadManager (kernel persistence — 1d2)', () => {
+  let ws: string;
+  let rt: string;
+  let m: ScratchpadManager;
+
+  const readMeta = (root: string, name: string): any =>
+    JSON.parse(readFileSync(join(root, name, 'meta.json'), 'utf8'));
+  const writeMeta = (root: string, name: string, patch: Record<string, unknown>): void => {
+    const path = join(root, name, 'meta.json');
+    const cur = JSON.parse(readFileSync(path, 'utf8'));
+    writeFileSync(path, JSON.stringify({ ...cur, ...patch }, null, 2));
+  };
+
+  beforeEach(async () => {
+    ws = await mkdtemp(join(tmpdir(), 'spm4-ws-'));
+    await mkdir(join(ws, '.otto', 'inputs'), { recursive: true });
+    rt = await mkdtemp(join(tmpdir(), 'spm4-root-'));
+  });
+  afterEach(async () => {
+    await m?.disposeAll();
+    await rm(ws, { recursive: true, force: true });
+    await rm(rt, { recursive: true, force: true });
+  });
+
+  it('cold→warm restores globalThis after disposeAll on the same root', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'globalThis.x = 1; globalThis.y = { nested: true };');
+    await m.disposeAll();
+
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    const res = await m.runCell('a', 'return [globalThis.x, globalThis.y?.nested];');
+    assert.deepEqual(res.value, [1, true]);
+  });
+
+  it('cold→warm restores a DuckDB table after disposeAll', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'const c = await otto.duckdb.connect(); await c.run("CREATE TABLE t(x INT)"); await c.run("INSERT INTO t VALUES (1),(2),(3)");');
+    await m.disposeAll();
+
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    const res = await m.runCell('a', 'const c = await otto.duckdb.connect(); const r = await c.runAndReadAll("SELECT COUNT(*) AS n FROM t"); return Number(r.getRows()[0][0]);');
+    assert.equal(res.value, 3);
+  });
+
+  it('stamps last_snapshot_cell_id == archive.lastId after eviction', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'globalThis.x = 1;'); // id 1
+    await m.runCell('a', 'globalThis.x = 2;'); // id 2
+    await m.disposeAll(); // triggers snapshotThenDispose
+    const meta = readMeta(rt, 'a');
+    assert.equal(meta.schema_version, 2);
+    assert.equal(meta.last_snapshot_cell_id, 2);
+    assert.ok(typeof meta.last_snapshot_at === 'string');
+    assert.equal(meta.kernel_db.present, true);
+    assert.equal(meta.namespace.present, true);
+  });
+
+  it('records namespace-absent when re-attaching to a dir whose namespace.json was deleted', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'globalThis.x = 1;');
+    await m.disposeAll();
+    // Simulate corruption / loss between sessions.
+    rmSync(join(rt, 'a', 'namespace.json'));
+
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    const res = await m.runCell('a', 'return typeof globalThis.x;');
+    assert.equal(res.value, 'undefined');
+    const meta = readMeta(rt, 'a');
+    assert.ok(Array.isArray(meta.recovery_notes));
+    assert.equal(meta.recovery_notes.some((n: { kind: string }) => n.kind === 'namespace-absent'), true);
+  });
+
+  it('records cells-since-snapshot when the on-disk archive is ahead of last_snapshot_cell_id', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'return 1;'); // id 1
+    await m.runCell('a', 'return 2;'); // id 2
+    await m.disposeAll(); // snapshot stamps last_snapshot_cell_id = 2
+    // Simulate two crash-survivor cells appended after the last snapshot.
+    writeMeta(rt, 'a', { last_snapshot_cell_id: 0 });
+
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'return 99;'); // forces attach → recovery_notes computed
+    const meta = readMeta(rt, 'a');
+    const note = meta.recovery_notes.find((n: { kind: string; n?: number }) => n.kind === 'cells-since-snapshot');
+    assert.ok(note);
+    assert.equal(note.n, 2);
+  });
+
+  it('FIFO-caps recovery_notes at 20', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'return 1;');
+    // Seed 25 prior notes.
+    const seeded = Array.from({ length: 25 }, (_, i) => ({ at: new Date(i).toISOString(), kind: 'namespace-absent' }));
+    writeMeta(rt, 'a', { recovery_notes: seeded });
+    await m.disposeAll();
+
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'return 1;'); // attach adds at least one new note (cells-since-snapshot may not fire)
+    const meta = readMeta(rt, 'a');
+    assert.ok(meta.recovery_notes.length <= 20, `expected <= 20, got ${meta.recovery_notes.length}`);
+    // Oldest dropped: the first seed (epoch 0) should be gone.
+    assert.equal(meta.recovery_notes.some((n: { at?: string }) => n.at === new Date(0).toISOString()), false);
+  });
+
+  it('records snapshot-failed when the runtime snapshot returns ok:false', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'return 1;');
+    // Kill the kernel out from under the manager before disposeAll calls snapshot().
+    // The runtime's child process is disposed externally, so snapshot() resolves ok:false.
+    const entries = (m as unknown as { entries: Map<string, { runtime: import('./child-process-runtime.js').ChildProcessRuntime | null }> }).entries;
+    const entry = entries.get('a')!;
+    // Directly dispose the child process (simulating an unexpected crash) WITHOUT
+    // setting entry.runtime = null — so snapshotThenDispose still attempts the snapshot.
+    const liveRuntime = entry.runtime!;
+    await liveRuntime.dispose(); // kills the child; snapshot() will resolve ok:false
+    // disposeAll will call snapshotThenDispose('a', entry) → snapshot() → ok:false → appendRecoveryNotes
+    await m.disposeAll(); // must not throw
+    const meta = readMeta(rt, 'a');
+    const note = meta.recovery_notes.find((n: { kind: string }) => n.kind === 'snapshot-failed');
+    assert.ok(note, 'expected a snapshot-failed recovery note');
   });
 });

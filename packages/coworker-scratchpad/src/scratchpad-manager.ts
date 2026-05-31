@@ -102,36 +102,25 @@ export class ScratchpadManager {
     const nowIso = new Date(this.now()).toISOString();
     let created_at = nowIso;
     let attached_sessions: string[] = [];
+    const prevExtras: Record<string, unknown> = {};
     if (existsSync(path)) {
       try {
-        const prev = JSON.parse(readFileSync(path, 'utf8')) as {
-          created_at?: string;
-          attached_sessions?: string[];
-        };
+        const prev = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
         if (typeof prev.created_at === 'string') created_at = prev.created_at;
-        if (Array.isArray(prev.attached_sessions)) attached_sessions = prev.attached_sessions;
+        if (Array.isArray(prev.attached_sessions)) attached_sessions = prev.attached_sessions as string[];
+        for (const k of ['last_snapshot_cell_id', 'last_snapshot_at', 'namespace_skipped', 'recovery_notes']) {
+          if (k in prev) prevExtras[k] = prev[k];
+        }
+        if (Array.isArray(prevExtras.recovery_notes)) {
+          const rn = prevExtras.recovery_notes as unknown[];
+          prevExtras.recovery_notes = rn.slice(Math.max(0, rn.length - MAX_RECOVERY_NOTES));
+        }
       } catch {
-        // corrupt meta -> rewrite fresh
+        // corrupt meta -> drop extras + rewrite fresh
       }
     }
     if (this.sessionId && !attached_sessions.includes(this.sessionId)) {
       attached_sessions.push(this.sessionId);
-    }
-    let prevExtras: Record<string, unknown> = {};
-    if (existsSync(path)) {
-      try {
-        const prev = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
-        for (const k of ['last_snapshot_cell_id', 'last_snapshot_at', 'namespace_skipped']) {
-          if (k in prev) prevExtras[k] = prev[k];
-        }
-        // Preserve recovery_notes but enforce the FIFO cap.
-        if (Array.isArray(prev.recovery_notes)) {
-          const rn = prev.recovery_notes as unknown[];
-          prevExtras.recovery_notes = rn.slice(Math.max(0, rn.length - MAX_RECOVERY_NOTES));
-        }
-      } catch {
-        // corrupt meta -> drop extras
-      }
     }
     const meta = {
       name,
@@ -155,7 +144,9 @@ export class ScratchpadManager {
     try {
       cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
     } catch {
-      // corrupt meta -> we'll rewrite below
+      // corrupt meta -> do NOT rewrite as a fragment that destroys other fields.
+      // The next successful writeMeta call will re-establish a coherent shape.
+      return;
     }
     const prior = Array.isArray(cur.recovery_notes) ? (cur.recovery_notes as RecoveryNoteEntry[]) : [];
     const stamped: RecoveryNoteEntry[] = notes.map((n) => ({ at: new Date(this.now()).toISOString(), ...n }));
@@ -182,15 +173,26 @@ export class ScratchpadManager {
   }
 
   private async snapshotThenDispose(name: string, entry: Entry): Promise<void> {
-    if (!entry.runtime) return;
-    const res = await entry.runtime.snapshot();
+    const rt = entry.runtime;
+    if (!rt) return;
+    if (rt.hasActiveCell) {
+      // An active cell would block the snapshot indefinitely until cellTimeoutMs fires
+      // (kernel processes one NDJSON frame at a time). Skip the snapshot and dispose
+      // straight away; the next attach will see cells-since-snapshot divergence.
+      this.appendRecoveryNotes(name, [{ kind: 'snapshot-failed', message: 'skipped: active cell would block snapshot' }]);
+      await rt.dispose();
+      if (entry.runtime === rt) entry.runtime = null;
+      return;
+    }
+    const res = await rt.snapshot();
     if (res.ok) {
       this.applySnapshotToMeta(name, entry, res);
     } else {
       this.appendRecoveryNotes(name, [{ kind: 'snapshot-failed', message: res.error.message }]);
     }
-    await entry.runtime.dispose();
-    entry.runtime = null; // cold; lock RETAINED (Model A)
+    await rt.dispose();
+    // Only null the field if no concurrent caller has already replaced or cleared it.
+    if (entry.runtime === rt) entry.runtime = null;
   }
 
   private ingestRecoveryNotesOnAttach(name: string, entry: Entry): void {

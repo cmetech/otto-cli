@@ -7,10 +7,9 @@ import { writeNdjson, readNdjson } from '@otto/coworker-utils';
 import type { DataSource, DataSourceRef } from '@otto/coworker-types';
 import { DefaultCollectorRegistry } from './collector-registry.js';
 import { FileCollector } from './file-collector.js';
-import type { KernelEvent, KernelRequest, ResultResponse } from './kernel-protocol.js';
+import type { KernelEvent, KernelRequest, ResultResponse, SnapshotResult, RecoveryNote, SkippedKey } from './kernel-protocol.js';
 import { buildDataLibBindings } from './kernel-bindings.js';
 import { encodeNamespace, decodeNamespace } from './namespace-codec.js';
-import type { RecoveryNote, SkippedKey } from './kernel-protocol.js';
 
 const workspace = argv[2] ?? process.cwd();
 const scratchpadDir: string | undefined = argv[3];
@@ -42,8 +41,7 @@ process.on('SIGINT', () => {
   // kernel; the parent escalates to SIGTERM/SIGKILL to actually stop a hung kernel.
 });
 
-type SnapshotResultFrame = { id: number; type: 'snapshot_result'; ok: true; skipped: SkippedKey[]; snapshotted_at: string } | { id: number; type: 'snapshot_result'; ok: false; error: { name: string; message: string } };
-function send(frame: KernelEvent | ResultResponse | SnapshotResultFrame): void {
+function send(frame: KernelEvent | ResultResponse | SnapshotResult): void {
   if (trace) process.stderr.write(`[kernel→] ${JSON.stringify(frame)}\n`);
   void writeNdjson(stdout, frame);
 }

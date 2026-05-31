@@ -52,7 +52,19 @@ export function encodeNamespace(
       });
     }
   }
-  const snapshot_b64 = serialize(survivors).toString('base64');
+  let snapshot_b64: string;
+  try {
+    snapshot_b64 = serialize(survivors).toString('base64');
+  } catch (err) {
+    // A value passed the per-key probe but threw on bulk serialize (e.g. a getter
+    // that throws on its second invocation). Demote every survivor to skipped so
+    // the caller still gets a usable envelope; the snapshot for this round is empty.
+    const reason = `bulk-serialize-failed: ${(err as Error).message}`;
+    for (const key of Object.keys(survivors)) {
+      skipped.push({ key, ctor: ctorName(survivors[key]), reason });
+    }
+    snapshot_b64 = serialize({}).toString('base64');
+  }
   const envelope: NamespaceEnvelope = {
     schema_version: NAMESPACE_SCHEMA_VERSION,
     snapshot_b64,

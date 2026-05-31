@@ -43,7 +43,9 @@ describe('namespace-codec', () => {
     assert.equal(skipped[0].key, 'badFn');
     assert.equal(skipped[0].ctor, 'Function');
     assert.match(skipped[0].reason, /./); // non-empty reason
-    assert.deepEqual(envelope.skipped, skipped);
+    assert.equal(envelope.skipped.length, 1);
+    assert.equal(envelope.skipped[0].key, 'badFn');
+    assert.equal(envelope.skipped[0].ctor, 'Function');
     const { values } = decodeNamespace(JSON.stringify(envelope));
     assert.equal(values.ok, 1);
     assert.equal('badFn' in values, false);
@@ -71,5 +73,30 @@ describe('namespace-codec', () => {
       ts: '2026-05-31T00:00:00.000Z',
     });
     assert.throws(() => decodeNamespace(bad), /./);
+  });
+
+  it('demotes survivors to skipped[] when bulk serialize throws (defensive — never throws)', () => {
+    // A getter that throws only on its second invocation: passes the per-key probe,
+    // explodes on the final bulk serialize. The codec must demote all survivors and
+    // return cleanly rather than letting the exception propagate.
+    const evilObj: Record<string, unknown> = {};
+    let calls = 0;
+    Object.defineProperty(evilObj, 'x', {
+      enumerable: true,
+      configurable: true,
+      get() {
+        calls++;
+        if (calls > 1) throw new Error('second-call boom');
+        return 1;
+      },
+    });
+    const result = encodeNamespace({ evil: evilObj, plain: 42 }, () => 0);
+    assert.ok(result.skipped.length >= 1);
+    assert.ok(result.skipped.some((s) => s.reason.startsWith('bulk-serialize-failed')));
+    // The envelope is still well-formed — empty snapshot, well-typed.
+    assert.equal(typeof result.envelope.snapshot_b64, 'string');
+    const { values } = decodeNamespace(JSON.stringify(result.envelope));
+    assert.equal('evil' in values, false);
+    assert.equal('plain' in values, false); // demoted alongside in the bulk fallback
   });
 });

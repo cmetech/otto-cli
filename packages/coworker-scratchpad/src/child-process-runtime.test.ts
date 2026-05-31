@@ -131,4 +131,14 @@ describe('ChildProcessRuntime', () => {
 
     await assert.rejects(() => runtime.runCell('return 1;'), /repeatedly crashed/);
   });
+
+  it('hasActiveCell is true while a cell runs, false otherwise', async () => {
+    runtime = new ChildProcessRuntime({ workspace, inactivityTimeoutMs: 10_000, cellTimeoutMs: 10_000 });
+    await runtime.start();
+    assert.equal(runtime.hasActiveCell, false);
+    const p = runtime.runCell('await new Promise((r) => setTimeout(r, 150)); return 5;');
+    assert.equal(runtime.hasActiveCell, true);
+    assert.equal((await p).value, 5);
+    assert.equal(runtime.hasActiveCell, false);
+  });
 });

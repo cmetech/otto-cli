@@ -238,6 +238,10 @@ export class ChildProcessRuntime {
     // ignore the dead child once a restart reassigns this.child.
   }
 
+  get hasActiveCell(): boolean {
+    return this.activeId !== null;
+  }
+
   async dispose(): Promise<void> {
     if (this.disposed) return;
     this.disposed = true;

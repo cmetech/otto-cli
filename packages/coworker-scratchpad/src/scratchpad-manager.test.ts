@@ -135,3 +135,62 @@ describe('ScratchpadManager (core + LRU)', () => {
     await assert.rejects(() => mgr.getOrAttach('c'), /disposed/);
   });
 });
+
+describe('ScratchpadManager (idle eviction)', () => {
+  let workspace2: string;
+  let root2: string;
+  let m: ScratchpadManager;
+  let m2: ScratchpadManager | undefined;
+
+  const liveIn = (mm: ScratchpadManager, name: string): boolean =>
+    mm.list().find((s) => s.name === name)!.live;
+
+  beforeEach(async () => {
+    workspace2 = await mkdtemp(join(tmpdir(), 'spm2-ws-'));
+    await mkdir(join(workspace2, '.otto', 'inputs'), { recursive: true });
+    root2 = await mkdtemp(join(tmpdir(), 'spm2-root-'));
+    m2 = undefined;
+  });
+
+  afterEach(async () => {
+    await m?.disposeAll();
+    await m2?.disposeAll();
+    await rm(workspace2, { recursive: true, force: true });
+    await rm(root2, { recursive: true, force: true });
+  });
+
+  it('evicts a kernel idle past idleMs on sweep', async () => {
+    let t = 1000;
+    m = new ScratchpadManager({ workspace: workspace2, root: root2, idleMs: 1000, sweepIntervalMs: 1_000_000, now: () => t });
+    await m.getOrAttach('a'); // lastUsedAt = 1000
+    t = 2001;                 // 1001ms later, > idleMs
+    await m.evictIdle();
+    assert.equal(liveIn(m, 'a'), false);
+  });
+
+  it('does not evict a kernel with an in-flight cell', async () => {
+    let t = 1000;
+    m = new ScratchpadManager({
+      workspace: workspace2, root: root2, idleMs: 1000, sweepIntervalMs: 1_000_000, now: () => t,
+      runtimeOptions: { inactivityTimeoutMs: 10_000, cellTimeoutMs: 10_000 },
+    });
+    const a = await m.getOrAttach('a');
+    const p = a.runCell('await new Promise((r) => setTimeout(r, 300)); return 1;');
+    assert.equal(a.hasActiveCell, true);
+    t = 5000; // way past idle
+    await m.evictIdle();
+    assert.equal(liveIn(m, 'a'), true); // busy -> not evicted
+    assert.equal((await p).value, 1);
+  });
+
+  it('retains the lock across idle eviction (a second manager stays blocked)', async () => {
+    let t = 1000;
+    m = new ScratchpadManager({ workspace: workspace2, root: root2, idleMs: 1000, sweepIntervalMs: 1_000_000, now: () => t });
+    await m.getOrAttach('a');
+    t = 2001;
+    await m.evictIdle();
+    assert.equal(liveIn(m, 'a'), false);
+    m2 = new ScratchpadManager({ workspace: workspace2, root: root2, now: () => t });
+    await assert.rejects(() => m2.getOrAttach('a'), /busy/);
+  });
+});

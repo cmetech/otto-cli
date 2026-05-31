@@ -8,6 +8,8 @@ export interface ScratchpadManagerOptions {
   workspace: string;
   root?: string;
   maxLiveKernels?: number;
+  idleMs?: number;
+  sweepIntervalMs?: number;
   now?: () => number;
   runtimeOptions?: Omit<ChildProcessRuntimeOptions, 'workspace'>;
 }
@@ -30,22 +32,29 @@ interface Entry {
 }
 
 const DEFAULT_MAX_LIVE = 8;
+const DEFAULT_IDLE_MS = 600_000;
+const DEFAULT_SWEEP_MS = 30_000;
 
 export class ScratchpadManager {
   protected readonly entries = new Map<string, Entry>();
   protected readonly workspace: string;
   protected readonly root: string;
   protected readonly maxLive: number;
+  protected readonly idleMs: number;
   protected readonly now: () => number;
   protected readonly runtimeOptions: Omit<ChildProcessRuntimeOptions, 'workspace'>;
   protected disposed = false;
+  private sweepTimer: NodeJS.Timeout | null = null;
 
   constructor(options: ScratchpadManagerOptions) {
     this.workspace = options.workspace;
     this.root = options.root ?? join(homedir(), '.otto', 'scratchpads');
     this.maxLive = options.maxLiveKernels ?? DEFAULT_MAX_LIVE;
+    this.idleMs = options.idleMs ?? DEFAULT_IDLE_MS;
     this.now = options.now ?? Date.now;
     this.runtimeOptions = options.runtimeOptions ?? {};
+    this.sweepTimer = setInterval(() => { void this.evictIdle(); }, options.sweepIntervalMs ?? DEFAULT_SWEEP_MS);
+    this.sweepTimer.unref();
   }
 
   protected dirFor(name: string): string {
@@ -151,9 +160,23 @@ export class ScratchpadManager {
     rmSync(this.dirFor(name), { recursive: true, force: true }); // deletes lock.json + meta.json
   }
 
+  async evictIdle(): Promise<void> {
+    if (this.disposed) return;
+    const cutoff = this.now() - this.idleMs;
+    for (const e of this.entries.values()) {
+      if (e.runtime === null) continue;
+      if (e.runtime.hasActiveCell) continue; // never evict a busy kernel
+      if (e.lastUsedAt <= cutoff) {
+        await e.runtime.dispose();
+        e.runtime = null; // cold; lock RETAINED (Model A)
+      }
+    }
+  }
+
   async disposeAll(): Promise<void> {
     if (this.disposed) return;
     this.disposed = true;
+    if (this.sweepTimer) { clearInterval(this.sweepTimer); this.sweepTimer = null; }
     for (const [name, e] of this.entries) {
       await e.runtime?.dispose();
       releaseLock(this.dirFor(name)); // release lock; leave meta.json (durable)

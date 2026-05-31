@@ -4,8 +4,10 @@ import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { existsSync, writeFileSync } from 'node:fs';
 import { ChildProcessRuntime } from './child-process-runtime.js';
 import type { DataLoadDrawer } from './kernel-protocol.js';
+import { encodeNamespace } from './namespace-codec.js';
 
 let workspace: string;
 let inputs: string;
@@ -166,5 +168,87 @@ describe('data-lib bindings inside a live kernel', () => {
     assert.equal((await rt.runCell('const wb = new ExcelJS.Workbook(); wb.addWorksheet("s"); const buf = await wb.xlsx.writeBuffer(); return buf.byteLength > 0;')).value, true);
     assert.equal((await rt.runCell('return typeof axios.get;')).value, 'function');
     assert.equal((await rt.runCell('return typeof DuckDB.DuckDBInstance;')).value, 'function');
+  });
+});
+
+describe('ChildProcessRuntime — persistence (1d2)', () => {
+  let ws: string;
+  let sp: string;
+  let rt: ChildProcessRuntime;
+
+  beforeEach(async () => {
+    ws = await mkdtemp(join(tmpdir(), 'cpr-pers-ws-'));
+    await mkdir(join(ws, '.otto', 'inputs'), { recursive: true });
+    sp = await mkdtemp(join(tmpdir(), 'cpr-pers-sp-'));
+  });
+  afterEach(async () => {
+    await rt?.dispose();
+    await rm(ws, { recursive: true, force: true });
+    await rm(sp, { recursive: true, force: true });
+  });
+
+  it('binds otto.duckdb as a DuckDBInstance when scratchpadDir is set', async () => {
+    rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: sp, cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 });
+    await rt.start();
+    const { value } = await rt.runCell(
+      'const c = await otto.duckdb.connect(); await c.run("CREATE TABLE t(x INT)"); await c.run("INSERT INTO t VALUES (42)"); const r = await c.runAndReadAll("SELECT x FROM t"); return r.getRows().length;',
+    );
+    assert.equal(value, 1);
+    assert.equal(existsSync(join(sp, 'kernel.db')), true);
+  });
+
+  it('DuckDB table survives dispose + fresh runtime on the same scratchpadDir', async () => {
+    rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: sp, cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 });
+    await rt.start();
+    await rt.runCell(
+      'const c = await otto.duckdb.connect(); await c.run("CREATE TABLE t(x INT)"); await c.run("INSERT INTO t VALUES (1),(2),(3)");',
+    );
+    await rt.dispose();
+
+    rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: sp, cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 });
+    await rt.start();
+    const { value } = await rt.runCell(
+      'const c = await otto.duckdb.connect(); const r = await c.runAndReadAll("SELECT COUNT(*) AS n FROM t"); return Number(r.getRows()[0][0]);',
+    );
+    assert.equal(value, 3);
+  });
+
+  it('restores globalThis from a pre-written namespace.json (Date + Map roundtrip)', async () => {
+    const m = new Map<string, number>([['a', 1], ['b', 2]]);
+    const d = new Date(1717180800000);
+    const { envelope } = encodeNamespace({ m, d, n: 42 }, () => 0);
+    writeFileSync(join(sp, 'namespace.json'), JSON.stringify(envelope));
+
+    rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: sp, cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 });
+    await rt.start();
+    const a = (await rt.runCell('return globalThis.n;')).value;
+    const b = (await rt.runCell('return globalThis.m.get("b");')).value;
+    const c = (await rt.runCell('return globalThis.d instanceof Date && globalThis.d.getTime();')).value;
+    assert.equal(a, 42);
+    assert.equal(b, 2);
+    assert.equal(c, 1717180800000);
+    assert.deepEqual(rt.recoveryNotes, []);
+  });
+
+  it('records namespace-absent in recoveryNotes when namespace.json is missing', async () => {
+    rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: sp, cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 });
+    await rt.start();
+    assert.deepEqual(rt.recoveryNotes, [{ kind: 'namespace-absent' }]);
+  });
+
+  it('records namespace-corrupt in recoveryNotes when namespace.json is malformed', async () => {
+    writeFileSync(join(sp, 'namespace.json'), '{not json');
+    rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: sp, cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 });
+    await rt.start();
+    assert.equal(rt.recoveryNotes.length, 1);
+    assert.equal(rt.recoveryNotes[0].kind, 'namespace-corrupt');
+  });
+
+  it('legacy mode (no scratchpadDir) leaves otto.duckdb undefined and emits no recovery notes', async () => {
+    rt = new ChildProcessRuntime({ workspace: ws });
+    await rt.start();
+    const v = (await rt.runCell('return typeof otto.duckdb;')).value;
+    assert.equal(v, 'undefined');
+    assert.deepEqual(rt.recoveryNotes, []);
   });
 });

@@ -2,8 +2,8 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import process from 'node:process';
 import { writeNdjson, readNdjson } from '@otto/coworker-utils';
 import { filterEnv, kernelExecArgv, resolveKernelEntry } from './kernel-spawn.js';
-import { isDataLoadEvent, isProgressEvent } from './kernel-protocol.js';
-import type { DataLoadDrawer, KernelFrame } from './kernel-protocol.js';
+import { isDataLoadEvent, isProgressEvent, isStartupErrorEvent } from './kernel-protocol.js';
+import type { DataLoadDrawer, KernelFrame, RecoveryNote } from './kernel-protocol.js';
 
 export interface CellResult {
   value: unknown;
@@ -18,6 +18,7 @@ export interface ChildProcessRuntimeOptions {
   inactivityAfterProgressMs?: number; // silence cap after a progress() heartbeat
   cancelGraceMs?: number; // SIGINT -> SIGTERM/SIGKILL escalation window
   entryPath?: string;
+  scratchpadDir?: string;
 }
 
 interface Pending {
@@ -43,6 +44,7 @@ export class ChildProcessRuntime {
   private childReady = false;
   private disposed = false;
   private restartsSinceSuccess = 0;
+  private recoveryNotes_: RecoveryNote[] = [];
   private resolveReady: () => void = () => {};
   private rejectReady: (err: Error) => void = () => {};
   private ready: Promise<void> = Promise.resolve();
@@ -60,9 +62,11 @@ export class ChildProcessRuntime {
       this.rejectReady = reject;
     });
     const entry = this.options.entryPath ?? resolveKernelEntry();
+    const args = [...kernelExecArgv(), entry, this.options.workspace];
+    if (this.options.scratchpadDir !== undefined) args.push(this.options.scratchpadDir);
     const child = spawn(
       process.execPath,
-      [...kernelExecArgv(), entry, this.options.workspace],
+      args,
       { stdio: ['pipe', 'pipe', 'inherit'], cwd: process.cwd(), env: filterEnv(process.env) },
     ) as unknown as ChildProcessWithoutNullStreams;
     this.child = child;
@@ -88,8 +92,14 @@ export class ChildProcessRuntime {
         const frame = raw as KernelFrame;
         if (frame.type === 'event') {
           if (frame.event === 'ready') {
+            if (frame.recovery_notes) this.recoveryNotes_ = [...frame.recovery_notes];
             this.childReady = true;
             this.resolveReady();
+          }
+          else if (isStartupErrorEvent(frame)) {
+            const err = new Error(frame.error.message);
+            err.name = `startup_error/${frame.kind}`;
+            this.rejectReady(err);
           }
           else if (isDataLoadEvent(frame)) this.options.onDataLoad?.(frame.drawer);
           else if (isProgressEvent(frame)) this.resetInactivity();
@@ -241,6 +251,10 @@ export class ChildProcessRuntime {
 
   get hasActiveCell(): boolean {
     return this.activeId !== null;
+  }
+
+  get recoveryNotes(): readonly RecoveryNote[] {
+    return this.recoveryNotes_;
   }
 
   async dispose(): Promise<void> {

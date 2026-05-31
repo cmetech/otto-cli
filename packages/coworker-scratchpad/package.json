@@ -8,6 +8,11 @@
     "scope": "@otto",
     "name": "coworker-scratchpad"
   },
+  "dependencies": {
+    "@otto/coworker-types": "*",
+    "@otto/coworker-utils": "*",
+    "chokidar": "^5.0.0"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

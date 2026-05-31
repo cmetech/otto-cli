@@ -4,11 +4,20 @@ export { DefaultCollectorRegistry, uriMatchesPattern } from './collector-registr
 export {
   isDataLoadEvent,
   isProgressEvent,
+  isStartupErrorEvent,
+  isSnapshotResult,
   type RunRequest,
+  type SnapshotRequest,
   type KernelRequest,
   type ResultOk,
   type ResultErr,
   type ResultResponse,
+  type SnapshotResultOk,
+  type SnapshotResultErr,
+  type SnapshotResult,
+  type SkippedKey,
+  type RecoveryNote,
+  type StartupErrorEvent,
   type DataLoadDrawer,
   type ReadyEvent,
   type DataLoadEvent,
@@ -44,3 +53,11 @@ export {
   type AppendInput,
 } from './cell-archive.js';
 export { buildDataLibBindings } from './kernel-bindings.js';
+export {
+  NAMESPACE_SCHEMA_VERSION,
+  encodeNamespace,
+  decodeNamespace,
+  type NamespaceEnvelope,
+  type EncodeResult,
+  type DecodeResult,
+} from './namespace-codec.js';

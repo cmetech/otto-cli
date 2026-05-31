@@ -242,6 +242,11 @@ describe('ChildProcessRuntime — persistence (1d2)', () => {
     await rt.start();
     assert.equal(rt.recoveryNotes.length, 1);
     assert.equal(rt.recoveryNotes[0].kind, 'namespace-corrupt');
+    assert.ok(
+      rt.recoveryNotes[0].kind === 'namespace-corrupt' &&
+        rt.recoveryNotes[0].message.length > 0,
+      'corrupt note should carry a non-empty parse error message',
+    );
   });
 
   it('legacy mode (no scratchpadDir) leaves otto.duckdb undefined and emits no recovery notes', async () => {

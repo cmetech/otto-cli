@@ -129,7 +129,7 @@ async function openKernelDb(dir: string): Promise<void> {
     otto.duckdb = instance;
   } catch (err) {
     const e = err as Error;
-    send({
+    await writeNdjson(stdout, {
       type: 'event',
       event: 'startup_error',
       kind: 'duckdb_open',
@@ -150,7 +150,10 @@ function restoreNamespace(dir: string): RecoveryNote[] {
   }
   try {
     const { values } = decodeNamespace(raw);
-    for (const key of Object.keys(values)) sandbox[key] = values[key];
+    for (const key of Object.keys(values)) {
+      if (KNOWN_BOUND_KEYS.has(key)) continue; // never let a tampered namespace.json overwrite host bindings
+      sandbox[key] = values[key];
+    }
     return [];
   } catch (err) {
     return [{ kind: 'namespace-corrupt', message: (err as Error).message }];

@@ -22,3 +22,18 @@ export {
   type CellResult,
   type ChildProcessRuntimeOptions,
 } from './child-process-runtime.js';
+export {
+  ScratchpadManager,
+  type ScratchpadManagerOptions,
+  type AttachOptions,
+  type ScratchpadInfo,
+} from './scratchpad-manager.js';
+export {
+  acquireLock,
+  releaseLock,
+  readLock,
+  isStaleLock,
+  ScratchpadBusyError,
+  type LockInfo,
+  type AcquireOptions,
+} from './scratchpad-lock.js';

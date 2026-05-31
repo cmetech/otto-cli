@@ -23,7 +23,7 @@ import { logWarning } from "../workflow-logger.js";
 // session hook calling startAuto) would be silently dropped because Node's
 // EventEmitter does not buffer events for late subscribers.
 import { initCmuxEventListeners } from "../../cmux/index.js";
-import { registerPersonaCommands } from "../../../../coworker/persona-extension.js";
+import { registerPersonaCommands } from "../persona-status.js";
 import { BRAND } from "../strings.js";
 
 export { writeCrashLog } from "./crash-log.js";

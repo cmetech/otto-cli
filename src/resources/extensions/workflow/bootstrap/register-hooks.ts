@@ -359,7 +359,7 @@ async function resetAskUserQuestionsTurnCache(): Promise<void> {
 
 async function initPersonaStatusChip(ctx: ExtensionContext): Promise<void> {
   try {
-    const { initPersonaWidget } = await import("../../../../coworker/persona-extension.js");
+    const { initPersonaWidget } = await import("../persona-status.js");
     await initPersonaWidget(ctx);
   } catch {
     // Non-fatal: persona chip simply won't render if the registry is unavailable.

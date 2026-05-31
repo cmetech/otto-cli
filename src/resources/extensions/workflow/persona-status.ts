@@ -1,21 +1,23 @@
 // Wires /persona slash commands + the persona status-bar chip into Otto.
-// Spec §2.5 + §5.2. Pure handlers live in ./persona-commands.ts; this module
-// adapts them to Otto's ExtensionAPI (command registry + footer status).
+// Spec §2.5 + §5.2. Lives inside the src/resources extension boundary, so it
+// imports only the @otto/coworker-persona package (never src/ modules).
+import { homedir } from "node:os";
+import { join } from "node:path";
 import type {
   ExtensionAPI,
   ExtensionCommandContext,
   ExtensionContext,
 } from "@otto/pi-coding-agent";
-import { PersonaRegistry, type PersonaManifest } from "@otto/coworker-persona";
-import { appRoot } from "../app-paths.js";
 import {
+  PersonaRegistry,
+  type PersonaManifest,
   handleList,
   handleCurrent,
   handleSwitch,
   handleReset,
   handleInstall,
   handleUninstall,
-} from "./persona-commands.js";
+} from "@otto/coworker-persona";
 
 // Sorts ahead of alphabetic extension status keys so the chip lands leftmost
 // in the footer's extension-status block.
@@ -23,8 +25,12 @@ const STATUS_KEY = "00-persona";
 
 const SUBCOMMANDS = ["list", "current", "switch", "install", "uninstall", "reset"] as const;
 
+function ottoHome(): string {
+  return process.env.OTTO_HOME || join(homedir(), ".otto");
+}
+
 function getRegistry(): PersonaRegistry {
-  return new PersonaRegistry({ ottoHome: appRoot });
+  return new PersonaRegistry({ ottoHome: ottoHome() });
 }
 
 function formatPersonaChip(persona: PersonaManifest): string {

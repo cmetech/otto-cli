@@ -1,7 +1,7 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { tmpdir, hostname } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
@@ -192,5 +192,82 @@ describe('ScratchpadManager (idle eviction)', () => {
     assert.equal(liveIn(m, 'a'), false);
     m2 = new ScratchpadManager({ workspace: workspace2, root: root2, now: () => t });
     await assert.rejects(() => m2.getOrAttach('a'), /busy/);
+  });
+});
+
+describe('ScratchpadManager (cells + meta)', () => {
+  let ws: string;
+  let rt: string;
+  let m: ScratchpadManager;
+
+  const cellsLines = (root: string, name: string): string[] =>
+    readFileSync(join(root, name, 'cells.jsonl'), 'utf8').split('\n').filter((l) => l.trim());
+  const readMeta = (root: string, name: string): any =>
+    JSON.parse(readFileSync(join(root, name, 'meta.json'), 'utf8'));
+
+  beforeEach(async () => {
+    ws = await mkdtemp(join(tmpdir(), 'spm3-ws-'));
+    await mkdir(join(ws, '.otto', 'inputs'), { recursive: true });
+    rt = await mkdtemp(join(tmpdir(), 'spm3-root-'));
+  });
+  afterEach(async () => {
+    await m?.disposeAll();
+    await rm(ws, { recursive: true, force: true });
+    await rm(rt, { recursive: true, force: true });
+  });
+
+  it('runCell runs the cell and records it to cells.jsonl', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt });
+    const res = await m.runCell('a', 'return 6 * 7;');
+    assert.equal(res.value, 42);
+    const ls = cellsLines(rt, 'a');
+    assert.deepEqual(JSON.parse(ls[0]), { type: 'header', version: 1 });
+    const rec = JSON.parse(ls[1]);
+    assert.equal(rec.id, 1);
+    assert.equal(rec.parentId, null);
+    assert.equal(rec.ok, true);
+    assert.equal(rec.value, 42);
+  });
+
+  it('chains a second cell as id 2 / parentId 1', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt });
+    await m.runCell('a', 'return 1;');
+    await m.runCell('a', 'return 2;');
+    const recs = cellsLines(rt, 'a').filter((l) => l.includes('"id"')).map((l) => JSON.parse(l));
+    assert.equal(recs[1].id, 2);
+    assert.equal(recs[1].parentId, 1);
+  });
+
+  it('records a failed cell (ok:false + error) and still rethrows', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt });
+    await assert.rejects(() => m.runCell('a', 'throw new Error("boom");'), /boom/);
+    const rec = JSON.parse(cellsLines(rt, 'a').filter((l) => l.includes('"id"'))[0]);
+    assert.equal(rec.ok, false);
+    assert.match(rec.error.message, /boom/);
+  });
+
+  it('writes a full meta.json with attached_sessions, last_used, size_bytes', async () => {
+    let t = 5000;
+    m = new ScratchpadManager({ workspace: ws, root: rt, sessionId: 'sess-1', now: () => t });
+    await m.runCell('a', 'return 1;');
+    const meta = readMeta(rt, 'a');
+    assert.equal(meta.name, 'a');
+    assert.ok(meta.created_at);
+    assert.equal(meta.last_used, new Date(5000).toISOString());
+    assert.deepEqual(meta.attached_sessions, ['sess-1']);
+    assert.ok(meta.size_bytes > 0);
+    assert.equal(meta.schema_version, 1);
+  });
+
+  it('continues cell ids across a fresh manager on the same root', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt });
+    await m.runCell('a', 'return 1;'); // id 1
+    await m.disposeAll();
+    m = new ScratchpadManager({ workspace: ws, root: rt });
+    await m.runCell('a', 'return 2;'); // id 2 (archive scanned the existing file)
+    const recs = cellsLines(rt, 'a').filter((l) => l.includes('"id"')).map((l) => JSON.parse(l));
+    assert.equal(recs.length, 2);
+    assert.equal(recs[1].id, 2);
+    assert.equal(recs[1].parentId, 1);
   });
 });

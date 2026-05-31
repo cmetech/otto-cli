@@ -183,8 +183,12 @@ export class ScratchpadManager {
       return result;
     } catch (err) {
       const e = err as Error;
-      entry.archive.append({ code, ok: false, error: { name: e.name, message: e.message }, stdout: '' });
-      this.writeMeta(name);
+      try {
+        entry.archive.append({ code, ok: false, error: { name: e.name, message: e.message }, stdout: '' });
+        this.writeMeta(name);
+      } catch {
+        // recording the failure must never mask the original cell error
+      }
       throw err;
     }
   }

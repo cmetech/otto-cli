@@ -95,6 +95,7 @@ export class ChildProcessRuntime {
           else if (isProgressEvent(frame)) this.resetInactivity();
           continue;
         }
+        if (frame.type !== 'result') continue; // snapshot_result handled in Task 4
         const p = this.pending.get(frame.id);
         if (!p) continue;
         clearTimeout(p.totalTimer);

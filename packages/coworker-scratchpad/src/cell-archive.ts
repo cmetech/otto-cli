@@ -25,13 +25,13 @@ export interface AppendInput {
 export class CellArchive {
   private readonly path: string;
   private nextId: number;
-  private lastId_: number | null;
+  #lastId: number | null;
 
   constructor(private readonly dir: string, private readonly now: () => number = Date.now) {
     this.path = join(dir, 'cells.jsonl');
     const { nextId, lastId } = this.scan();
     this.nextId = nextId;
-    this.lastId_ = lastId;
+    this.#lastId = lastId;
   }
 
   private scan(): { nextId: number; lastId: number | null } {
@@ -60,7 +60,7 @@ export class CellArchive {
     const id = this.nextId++;
     const entry: CellEntry = {
       id,
-      parentId: this.lastId_,
+      parentId: this.#lastId,
       code: input.code,
       ok: input.ok,
       ...(input.ok ? { value: input.value } : { error: input.error }),
@@ -68,11 +68,11 @@ export class CellArchive {
       ts: new Date(this.now()).toISOString(),
     };
     appendFileSync(this.path, JSON.stringify(entry) + '\n');
-    this.lastId_ = id;
+    this.#lastId = id;
     return entry;
   }
 
   get lastId(): number | null {
-    return this.lastId_;
+    return this.#lastId;
   }
 }

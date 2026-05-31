@@ -90,14 +90,16 @@ describe('kernel-protocol type guards (1d2 additions)', () => {
   });
 
   it('a ready event may carry recovery_notes', () => {
-    const f: KernelFrame = {
+    const f: ReadyEvent = {
       type: 'event',
       event: 'ready',
       recovery_notes: [{ kind: 'namespace-absent' }],
     };
-    assert.equal(f.type, 'event');
-    if (f.type === 'event' && f.event === 'ready') {
-      assert.equal(f.recovery_notes?.[0]?.kind, 'namespace-absent');
-    }
+    assert.equal(f.recovery_notes?.[0]?.kind, 'namespace-absent');
+  });
+
+  it('isStartupErrorEvent returns false for a ready event', () => {
+    const f: KernelFrame = { type: 'event', event: 'ready' };
+    assert.equal(isStartupErrorEvent(f), false);
   });
 });

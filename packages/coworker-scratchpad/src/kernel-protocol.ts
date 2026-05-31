@@ -44,7 +44,7 @@ export interface SnapshotResultErr {
   id: number;
   type: 'snapshot_result';
   ok: false;
-  error: { name: string; message: string };
+  error: { name: string; message: string; stack?: string };
 }
 export type SnapshotResult = SnapshotResultOk | SnapshotResultErr;
 
@@ -86,7 +86,7 @@ export interface StartupErrorEvent {
   type: 'event';
   event: 'startup_error';
   kind: string;
-  error: { name: string; message: string };
+  error: { name: string; message: string; stack?: string };
 }
 export type KernelEvent = ReadyEvent | DataLoadEvent | ProgressEvent | StartupErrorEvent;
 
@@ -101,7 +101,7 @@ export function isProgressEvent(frame: KernelFrame): frame is ProgressEvent {
 }
 
 export function isStartupErrorEvent(frame: KernelFrame): frame is StartupErrorEvent {
-  return frame.type === 'event' && (frame as KernelEvent).event === 'startup_error';
+  return frame.type === 'event' && frame.event === 'startup_error';
 }
 
 export function isSnapshotResult(frame: KernelFrame): frame is SnapshotResult {

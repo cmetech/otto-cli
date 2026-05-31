@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { existsSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { ChildProcessRuntime } from './child-process-runtime.js';
 import type { DataLoadDrawer } from './kernel-protocol.js';
 import { encodeNamespace } from './namespace-codec.js';
@@ -255,5 +255,81 @@ describe('ChildProcessRuntime — persistence (1d2)', () => {
     const v = (await rt.runCell('return typeof otto.duckdb;')).value;
     assert.equal(v, 'undefined');
     assert.deepEqual(rt.recoveryNotes, []);
+  });
+});
+
+describe('ChildProcessRuntime — snapshot() (1d2)', () => {
+  let ws: string;
+  let sp: string;
+  let rt: ChildProcessRuntime;
+
+  beforeEach(async () => {
+    ws = await mkdtemp(join(tmpdir(), 'cpr-snap-ws-'));
+    await mkdir(join(ws, '.otto', 'inputs'), { recursive: true });
+    sp = await mkdtemp(join(tmpdir(), 'cpr-snap-sp-'));
+  });
+  afterEach(async () => {
+    await rt?.dispose();
+    await rm(ws, { recursive: true, force: true });
+    await rm(sp, { recursive: true, force: true });
+  });
+
+  it('snapshot() writes namespace.json from live globalThis state and returns ok', async () => {
+    rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: sp, cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 });
+    await rt.start();
+    await rt.runCell('globalThis.cnt = 7; globalThis.who = "noc"; globalThis.when = new Date(0);');
+    const res = await rt.snapshot();
+    assert.equal(res.ok, true);
+    if (res.ok) {
+      assert.deepEqual(res.skipped, []);
+      assert.ok(typeof res.snapshotted_at === 'string');
+    }
+    const envelope = JSON.parse(readFileSync(join(sp, 'namespace.json'), 'utf8'));
+    assert.equal(envelope.schema_version, 1);
+    assert.equal(typeof envelope.snapshot_b64, 'string');
+    // Round-trip in a fresh runtime: globalThis.cnt comes back as 7.
+    await rt.dispose();
+    rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: sp, cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 });
+    await rt.start();
+    const back = (await rt.runCell('return [globalThis.cnt, globalThis.who, globalThis.when.getTime()];')).value;
+    assert.deepEqual(back, [7, 'noc', 0]);
+  });
+
+  it('snapshot() records non-serializable values in skipped[]', async () => {
+    rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: sp, cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 });
+    await rt.start();
+    // A function on globalThis is not v8-serializable.
+    await rt.runCell('globalThis.fn = function bad() { return 1; }; globalThis.ok = 1;');
+    const res = await rt.snapshot();
+    assert.equal(res.ok, true);
+    if (res.ok) {
+      assert.equal(res.skipped.length, 1);
+      assert.equal(res.skipped[0].key, 'fn');
+      assert.equal(res.skipped[0].ctor, 'Function');
+    }
+  });
+
+  it('snapshot() on a legacy runtime (no scratchpadDir) is a no-op and resolves ok', async () => {
+    rt = new ChildProcessRuntime({ workspace: ws });
+    await rt.start();
+    const res = await rt.snapshot();
+    assert.equal(res.ok, true);
+    if (res.ok) assert.deepEqual(res.skipped, []);
+  });
+
+  it('snapshot() on a disposed runtime resolves with ok:false (does NOT throw)', async () => {
+    rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: sp, cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 });
+    await rt.start();
+    await rt.dispose();
+    const res = await rt.snapshot();
+    assert.equal(res.ok, false);
+  });
+
+  it('start() rejects with a startup_error/duckdb_open tagged error when kernel.db cannot be opened', async () => {
+    // Point scratchpadDir at a file (not a dir) so DuckDBInstance.create(join(file,"kernel.db")) fails.
+    const blocker = join(sp, 'blocker');
+    writeFileSync(blocker, 'x');
+    rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: blocker, cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 });
+    await assert.rejects(rt.start(), (e: Error) => /startup_error\/duckdb_open/.test(e.name) || /duckdb/i.test(e.message));
   });
 });

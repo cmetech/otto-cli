@@ -2,8 +2,8 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import process from 'node:process';
 import { writeNdjson, readNdjson } from '@otto/coworker-utils';
 import { filterEnv, kernelExecArgv, resolveKernelEntry } from './kernel-spawn.js';
-import { isDataLoadEvent, isProgressEvent, isStartupErrorEvent } from './kernel-protocol.js';
-import type { DataLoadDrawer, KernelFrame, RecoveryNote } from './kernel-protocol.js';
+import { isDataLoadEvent, isProgressEvent, isStartupErrorEvent, isSnapshotResult } from './kernel-protocol.js';
+import type { DataLoadDrawer, KernelFrame, RecoveryNote, SnapshotResult } from './kernel-protocol.js';
 
 export interface CellResult {
   value: unknown;
@@ -38,6 +38,7 @@ const MAX_RESTARTS_BEFORE_SUCCESS = 1;
 export class ChildProcessRuntime {
   private child: ChildProcessWithoutNullStreams | null = null;
   private readonly pending = new Map<number, Pending>();
+  private readonly pendingSnapshots = new Map<number, (res: SnapshotResult) => void>();
   private activeId: number | null = null;
   private nextId = 1;
   private alive = false;
@@ -105,7 +106,14 @@ export class ChildProcessRuntime {
           else if (isProgressEvent(frame)) this.resetInactivity();
           continue;
         }
-        if (frame.type !== 'result') continue; // snapshot_result handled in Task 4
+        if (isSnapshotResult(frame)) {
+          const resolver = this.pendingSnapshots.get(frame.id);
+          if (resolver) {
+            this.pendingSnapshots.delete(frame.id);
+            resolver(frame);
+          }
+          continue;
+        }
         const p = this.pending.get(frame.id);
         if (!p) continue;
         clearTimeout(p.totalTimer);
@@ -217,6 +225,33 @@ export class ChildProcessRuntime {
     p.reject(new Error(`cell ${id} cancelled`));
   }
 
+  async snapshot(): Promise<SnapshotResult> {
+    if (this.disposed) {
+      return { id: 0, type: 'snapshot_result', ok: false, error: { name: 'RuntimeDisposed', message: 'runtime disposed' } };
+    }
+    if (!this.alive || !this.child) {
+      return { id: 0, type: 'snapshot_result', ok: false, error: { name: 'RuntimeDead', message: 'kernel is not alive' } };
+    }
+    const id = this.nextId++;
+    const result = new Promise<SnapshotResult>((resolve) => {
+      this.pendingSnapshots.set(id, resolve);
+    });
+    try {
+      await this.ready;
+      const child = this.child;
+      if (!child) {
+        this.pendingSnapshots.delete(id);
+        return { id, type: 'snapshot_result', ok: false, error: { name: 'RuntimeDead', message: 'kernel died before snapshot' } };
+      }
+      await writeNdjson(child.stdin, { id, type: 'snapshot' });
+    } catch (err) {
+      this.pendingSnapshots.delete(id);
+      const e = err as Error;
+      return { id, type: 'snapshot_result', ok: false, error: { name: e.name, message: e.message } };
+    }
+    return result;
+  }
+
   private rejectActive(id: number | null, message: string): void {
     if (id === null) return;
     const p = this.pending.get(id);
@@ -236,6 +271,10 @@ export class ChildProcessRuntime {
     }
     this.pending.clear();
     this.activeId = null;
+    for (const resolve of this.pendingSnapshots.values()) {
+      resolve({ id: 0, type: 'snapshot_result', ok: false, error: { name: err.name, message: err.message } });
+    }
+    this.pendingSnapshots.clear();
   }
 
   private markDead(): void {

@@ -58,4 +58,16 @@ describe('CellArchive', () => {
     assert.equal(next.parentId, 2);
     assert.equal(lines(cellsPath()).filter((l) => l.includes('"id"')).length, 3);
   });
+
+  it('exposes lastId — null before any append, the most recent id after', () => {
+    const a = new CellArchive(dir, () => 0);
+    assert.equal(a.lastId, null);
+    a.append({ code: 'a', ok: true, value: null, stdout: '' });
+    assert.equal(a.lastId, 1);
+    a.append({ code: 'b', ok: true, value: null, stdout: '' });
+    assert.equal(a.lastId, 2);
+    // re-attach preserves it
+    const a2 = new CellArchive(dir, () => 0);
+    assert.equal(a2.lastId, 2);
+  });
 });

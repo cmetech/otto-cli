@@ -57,7 +57,15 @@ const ottoCollectors = {
   },
 };
 
-const sandbox: Record<string, unknown> = { otto: { collectors: ottoCollectors } };
+const sandbox: Record<string, unknown> = {
+  otto: { collectors: ottoCollectors },
+  // Timers are not part of a fresh vm context; bind the host ones so async cells
+  // (await new Promise((r) => setTimeout(r, ...))) and progress() heartbeats work.
+  setTimeout,
+  clearTimeout,
+  setInterval,
+  clearInterval,
+};
 const context = vm.createContext(sandbox);
 
 async function runCell(code: string): Promise<{ value: unknown; stdout: string }> {

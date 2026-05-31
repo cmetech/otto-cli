@@ -11,6 +11,8 @@ let workspace: string;
 let inputs: string;
 let runtime: ChildProcessRuntime;
 
+const delay = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
 describe('ChildProcessRuntime', () => {
   beforeEach(async () => {
     workspace = await mkdtemp(join(tmpdir(), 'cpr-ws-'));
@@ -49,8 +51,7 @@ describe('ChildProcessRuntime', () => {
     );
     assert.equal(value, 'a,b\n1,2\n');
 
-    // The data_load event may arrive moments before the result; allow a tick.
-    await new Promise((r) => setTimeout(r, 50));
+    await delay(50);
     assert.equal(drawers.length, 1);
     assert.equal(drawers[0].kind, 'data_load');
     assert.equal(drawers[0].collector, 'file');
@@ -59,9 +60,75 @@ describe('ChildProcessRuntime', () => {
     assert.equal(drawers[0].schema, null);
   });
 
-  it('times out a hung cell and rejects', async () => {
+  it('times out a hung cell on the total wall-clock cap and rejects', async () => {
     runtime = new ChildProcessRuntime({ workspace, cellTimeoutMs: 200 });
     await runtime.start();
     await assert.rejects(() => runtime.runCell('return new Promise(() => {});'), /timed out/);
+  });
+
+  it('times out a silent-but-alive cell on the inactivity cap', async () => {
+    runtime = new ChildProcessRuntime({ workspace, inactivityTimeoutMs: 150, cellTimeoutMs: 10_000 });
+    await runtime.start();
+    await assert.rejects(() => runtime.runCell('return new Promise(() => {});'), /inactivity/);
+  });
+
+  it('progress() resets the inactivity timer so a long heartbeating cell completes', async () => {
+    runtime = new ChildProcessRuntime({ workspace, inactivityTimeoutMs: 150, cellTimeoutMs: 10_000 });
+    await runtime.start();
+    const { value } = await runtime.runCell(
+      "for (let i = 0; i < 4; i++) { progress('tick' + i); await new Promise((r) => setTimeout(r, 80)); } return 'done';",
+    );
+    assert.equal(value, 'done');
+  });
+
+  it('still enforces the total wall-clock cap even while progress() heartbeats', async () => {
+    runtime = new ChildProcessRuntime({
+      workspace, cellTimeoutMs: 250, inactivityTimeoutMs: 60_000, inactivityAfterProgressMs: 60_000,
+    });
+    await runtime.start();
+    await assert.rejects(
+      () => runtime.runCell("while (true) { progress('busy'); await new Promise((r) => setTimeout(r, 40)); }"),
+      /total wall-clock/,
+    );
+  });
+
+  it('cancel() rejects the active cell and the kernel restarts on the next call', async () => {
+    runtime = new ChildProcessRuntime({
+      workspace, cancelGraceMs: 100, inactivityTimeoutMs: 10_000, cellTimeoutMs: 10_000,
+    });
+    await runtime.start();
+    const p = runtime.runCell('return new Promise(() => {});');
+    await delay(50);
+    await runtime.cancel();
+    await assert.rejects(() => p, /cancelled/);
+    const { value } = await runtime.runCell('return 7;');
+    assert.equal(value, 7);
+  });
+
+  it('a stray SIGINT between cells is ignored (kernel state survives)', async () => {
+    runtime = new ChildProcessRuntime({ workspace });
+    await runtime.start();
+    await runtime.runCell('globalThis.x = 99;');
+    await runtime.cancel(); // nothing running: sends SIGINT, which the child ignores
+    const { value } = await runtime.runCell('return globalThis.x;');
+    assert.equal(value, 99); // 99 (not null) proves the kernel was NOT restarted
+  });
+
+  it('hard-fails after a second death without an intervening successful cell', async () => {
+    runtime = new ChildProcessRuntime({
+      workspace, cancelGraceMs: 80, inactivityTimeoutMs: 10_000, cellTimeoutMs: 10_000,
+    });
+    await runtime.start();
+    const p1 = runtime.runCell('return new Promise(() => {});');
+    await delay(30);
+    await runtime.cancel();
+    await assert.rejects(() => p1, /cancelled/);
+
+    const p2 = runtime.runCell('return new Promise(() => {});'); // triggers restart #1
+    await delay(30);
+    await runtime.cancel();
+    await assert.rejects(() => p2, /cancelled/);
+
+    await assert.rejects(() => runtime.runCell('return 1;'), /repeatedly crashed/);
   });
 });

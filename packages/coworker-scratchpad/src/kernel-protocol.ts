@@ -45,10 +45,19 @@ export interface DataLoadEvent {
   event: 'data_load';
   drawer: DataLoadDrawer;
 }
-export type KernelEvent = ReadyEvent | DataLoadEvent;
+export interface ProgressEvent {
+  type: 'event';
+  event: 'progress';
+  message?: string;
+}
+export type KernelEvent = ReadyEvent | DataLoadEvent | ProgressEvent;
 
 export type KernelFrame = ResultResponse | KernelEvent;
 
 export function isDataLoadEvent(frame: KernelFrame): frame is DataLoadEvent {
   return frame.type === 'event' && frame.event === 'data_load';
+}
+
+export function isProgressEvent(frame: KernelFrame): frame is ProgressEvent {
+  return frame.type === 'event' && frame.event === 'progress';
 }

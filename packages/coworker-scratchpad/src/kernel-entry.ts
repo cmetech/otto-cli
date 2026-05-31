@@ -12,6 +12,11 @@ const trace = process.env.OTTO_SCRATCHPAD_IPC_TRACE === '1';
 const registry = new DefaultCollectorRegistry();
 registry.register(new FileCollector({ workspace }));
 
+process.on('SIGINT', () => {
+  // Ignored on purpose. A stray cancel between cells must not tear down a healthy
+  // kernel; the parent escalates to SIGTERM/SIGKILL to actually stop a hung kernel.
+});
+
 function send(frame: KernelEvent | ResultResponse): void {
   if (trace) process.stderr.write(`[kernel→] ${JSON.stringify(frame)}\n`);
   void writeNdjson(stdout, frame);
@@ -60,6 +65,13 @@ async function runCell(code: string): Promise<{ value: unknown; stdout: string }
   sandbox.console = {
     log: (...args: unknown[]) => logs.push(args.map((a) => String(a)).join(' ')),
     error: (...args: unknown[]) => logs.push(args.map((a) => String(a)).join(' ')),
+  };
+  sandbox.progress = (message?: unknown): void => {
+    send({
+      type: 'event',
+      event: 'progress',
+      message: message === undefined ? undefined : String(message),
+    });
   };
   const wrapped = `(async () => {\n${code}\n})()`;
   const value: unknown = await vm.runInContext(wrapped, context, { filename: 'cell.js' });

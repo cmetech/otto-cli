@@ -8,7 +8,7 @@ import { pathToFileURL } from 'node:url';
 import process from 'node:process';
 import { writeNdjson, readNdjson } from '@otto/coworker-utils';
 import { resolveKernelEntry, kernelExecArgv, filterEnv } from './kernel-spawn.js';
-import type { KernelFrame, ResultResponse } from './kernel-protocol.js';
+import type { KernelFrame, ProgressEvent, ResultResponse } from './kernel-protocol.js';
 
 let workspace: string;
 let inputs: string;
@@ -81,5 +81,19 @@ describe('kernel-entry (child process)', () => {
     const [res] = await collectResults(child, 1);
     assert.equal(res.ok, false);
     assert.match((res as { error: { message: string } }).error.message, /boom/);
+  });
+
+  it('emits a progress event when a cell calls progress()', async () => {
+    child = startKernel(workspace);
+    await writeNdjson(child.stdin, { id: 1, type: 'run', code: "progress('halfway'); return 1;" });
+    const frames: KernelFrame[] = [];
+    for await (const raw of readNdjson(child.stdout)) {
+      const f = raw as KernelFrame;
+      frames.push(f);
+      if (f.type === 'result') break;
+    }
+    const prog = frames.find((f) => f.type === 'event' && f.event === 'progress');
+    assert.ok(prog, 'expected a progress event before the result');
+    assert.equal((prog as ProgressEvent).message, 'halfway');
   });
 });

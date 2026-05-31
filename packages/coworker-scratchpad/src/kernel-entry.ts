@@ -5,6 +5,7 @@ import type { DataSource, DataSourceRef } from '@otto/coworker-types';
 import { DefaultCollectorRegistry } from './collector-registry.js';
 import { FileCollector } from './file-collector.js';
 import type { KernelEvent, KernelRequest, ResultResponse } from './kernel-protocol.js';
+import { buildDataLibBindings } from './kernel-bindings.js';
 
 const workspace = argv[2] ?? process.cwd();
 const trace = process.env.OTTO_SCRATCHPAD_IPC_TRACE === '1';
@@ -59,6 +60,7 @@ const ottoCollectors = {
 
 const sandbox: Record<string, unknown> = {
   otto: { collectors: ottoCollectors },
+  ...buildDataLibBindings(),
   // Timers are not part of a fresh vm context; bind the host ones so async cells
   // (await new Promise((r) => setTimeout(r, ...))) and progress() heartbeats work.
   setTimeout,

@@ -142,3 +142,29 @@ describe('ChildProcessRuntime', () => {
     assert.equal(runtime.hasActiveCell, false);
   });
 });
+
+describe('data-lib bindings inside a live kernel', () => {
+  let ws: string;
+  let rt: ChildProcessRuntime;
+
+  beforeEach(async () => {
+    ws = await mkdtemp(join(tmpdir(), 'cpr-libs-'));
+    await mkdir(join(ws, '.otto', 'inputs'), { recursive: true });
+  });
+  afterEach(async () => {
+    await rt?.dispose();
+    await rm(ws, { recursive: true, force: true });
+  });
+
+  it('polars / lodash / zod / date-fns / exceljs / axios / DuckDB are bound', async () => {
+    rt = new ChildProcessRuntime({ workspace: ws, inactivityTimeoutMs: 20_000, cellTimeoutMs: 20_000 });
+    await rt.start();
+    assert.equal((await rt.runCell('return polars.DataFrame({ a: [1, 2, 3] }).height;')).value, 3);
+    assert.equal((await rt.runCell('return lodash.chunk([1, 2, 3, 4], 2).length;')).value, 2);
+    assert.equal((await rt.runCell('return zod.string().parse("hi");')).value, 'hi');
+    assert.equal((await rt.runCell('return dateFns.format(new Date(1970, 0, 1), "yyyy");')).value, '1970');
+    assert.equal((await rt.runCell('const wb = new ExcelJS.Workbook(); wb.addWorksheet("s"); const buf = await wb.xlsx.writeBuffer(); return buf.byteLength > 0;')).value, true);
+    assert.equal((await rt.runCell('return typeof axios.get;')).value, 'function');
+    assert.equal((await rt.runCell('return typeof DuckDB.DuckDBInstance;')).value, 'function');
+  });
+});

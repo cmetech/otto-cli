@@ -259,7 +259,7 @@ describe('ScratchpadManager (cells + meta)', () => {
     assert.equal(meta.last_used, new Date(5000).toISOString());
     assert.deepEqual(meta.attached_sessions, ['sess-1']);
     assert.ok(meta.size_bytes > 0);
-    assert.equal(meta.schema_version, 2);
+    assert.equal(meta.schema_version, 3);
   });
 
   it('continues cell ids across a fresh manager on the same root', async () => {
@@ -325,7 +325,7 @@ describe('ScratchpadManager (kernel persistence — 1d2)', () => {
     await m.runCell('a', 'globalThis.x = 2;'); // id 2
     await m.disposeAll(); // triggers snapshotThenDispose
     const meta = readMeta(rt, 'a');
-    assert.equal(meta.schema_version, 2);
+    assert.equal(meta.schema_version, 3);
     assert.equal(meta.last_snapshot_cell_id, 2);
     assert.ok(typeof meta.last_snapshot_at === 'string');
     assert.equal(meta.kernel_db.present, true);
@@ -395,5 +395,121 @@ describe('ScratchpadManager (kernel persistence — 1d2)', () => {
     const meta = readMeta(rt, 'a');
     const note = meta.recovery_notes.find((n: { kind: string }) => n.kind === 'snapshot-failed');
     assert.ok(note, 'expected a snapshot-failed recovery note');
+  });
+});
+
+describe('ScratchpadManager (tree + fork — 1f)', () => {
+  let ws: string;
+  let rt: string;
+  let m: ScratchpadManager;
+
+  const readMeta = (root: string, name: string): any =>
+    JSON.parse(readFileSync(join(root, name, 'meta.json'), 'utf8'));
+
+  beforeEach(async () => {
+    ws = await mkdtemp(join(tmpdir(), 'spm5-ws-'));
+    await mkdir(join(ws, '.otto', 'inputs'), { recursive: true });
+    rt = await mkdtemp(join(tmpdir(), 'spm5-root-'));
+  });
+  afterEach(async () => {
+    await m?.disposeAll();
+    await rm(ws, { recursive: true, force: true });
+    await rm(rt, { recursive: true, force: true });
+  });
+
+  it('writeMeta now persists cell_leaf_id and schema_version is 3', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'return 1;');
+    const meta = readMeta(rt, 'a');
+    assert.equal(meta.schema_version, 3);
+    assert.equal(meta.cell_leaf_id, 1);
+  });
+
+  it('setLeaf rejects an id not present in cells.jsonl', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'return 1;');
+    await assert.rejects(() => m.setLeaf('a', 99), /cell id 99 not found/);
+  });
+
+  it('setLeaf on a warm scratchpad updates archive.leafId AND meta.cell_leaf_id', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'return 1;'); // id 1
+    await m.runCell('a', 'return 2;'); // id 2
+    await m.setLeaf('a', 1);
+    // The next runCell should chain from 1, not 2.
+    const res = await m.runCell('a', 'return 3;');
+    assert.equal(res.value, 3);
+    const meta = readMeta(rt, 'a');
+    assert.equal(meta.cell_leaf_id, 3); // the new cell becomes the leaf again
+    // Read cells.jsonl and confirm the third cell's parentId is 1 (not 2).
+    const lines = readFileSync(join(rt, 'a', 'cells.jsonl'), 'utf8').split('\n').filter((l) => l.includes('"id"'));
+    const recs = lines.map((l) => JSON.parse(l));
+    assert.equal(recs[2].id, 3);
+    assert.equal(recs[2].parentId, 1);
+  });
+
+  it('setLeaf on a cold scratchpad updates meta directly (next attach restores)', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'return 1;');
+    await m.runCell('a', 'return 2;');
+    await m.disposeAll();
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    // Cold: 'a' is not in entries; setLeaf updates meta only.
+    await m.setLeaf('a', 1);
+    assert.equal(readMeta(rt, 'a').cell_leaf_id, 1);
+    // Attach + new cell branches from 1.
+    const res = await m.runCell('a', 'return 99;');
+    assert.equal(res.value, 99);
+    const lines = readFileSync(join(rt, 'a', 'cells.jsonl'), 'utf8').split('\n').filter((l) => l.includes('"id"'));
+    const last = JSON.parse(lines[lines.length - 1]);
+    assert.equal(last.parentId, 1);
+  });
+
+  it('fork copies kernel.db + namespace.json + cells.jsonl and writes fresh meta', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('src', 'const c = await otto.duckdb.connect(); await c.run("CREATE TABLE t(x INT)"); await c.run("INSERT INTO t VALUES (1),(2)");');
+    await m.runCell('src', 'globalThis.x = 42;');
+    await m.fork('src', 'dst');
+    // Both dirs exist.
+    assert.equal(existsSync(join(rt, 'dst', 'kernel.db')), true);
+    assert.equal(existsSync(join(rt, 'dst', 'cells.jsonl')), true);
+    assert.equal(existsSync(join(rt, 'dst', 'meta.json')), true);
+    // Dst meta inherits cell_leaf_id from src (currently last cell id = 2).
+    const dstMeta = readMeta(rt, 'dst');
+    assert.equal(dstMeta.cell_leaf_id, 2);
+    assert.equal(dstMeta.name, 'dst');
+    assert.deepEqual(dstMeta.recovery_notes, []);
+    assert.deepEqual(dstMeta.namespace_skipped, []);
+    // Dst is functional: attach and continue.
+    const res = await m.runCell('dst', 'const c = await otto.duckdb.connect(); const r = await c.runAndReadAll("SELECT COUNT(*) AS n FROM t"); return Number(r.getRows()[0][0]);');
+    assert.equal(res.value, 2);
+  });
+
+  it('fork rejects when dst already exists (entries or on disk)', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('src', 'return 1;');
+    await m.runCell('dst', 'return 1;'); // creates dst on disk
+    await assert.rejects(() => m.fork('src', 'dst'), /scratchpad dst already exists/);
+  });
+
+  it('fork rejects when src has no meta on disk', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await assert.rejects(() => m.fork('nope', 'dst'), /scratchpad not found: nope/);
+  });
+
+  it('re-attach restores leaf from meta when persisted leaf differs from file-max', async () => {
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    await m.runCell('a', 'return 1;');
+    await m.runCell('a', 'return 2;');
+    await m.runCell('a', 'return 3;');
+    await m.setLeaf('a', 1); // leaf=1, file-max=3
+    await m.disposeAll();
+    m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
+    const res = await m.runCell('a', 'return 99;'); // should branch from 1
+    assert.equal(res.value, 99);
+    const lines = readFileSync(join(rt, 'a', 'cells.jsonl'), 'utf8').split('\n').filter((l) => l.includes('"id"'));
+    const last = JSON.parse(lines[lines.length - 1]);
+    assert.equal(last.id, 4);
+    assert.equal(last.parentId, 1);
   });
 });

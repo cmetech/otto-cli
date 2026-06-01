@@ -1,9 +1,10 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { ChildProcessRuntime, type ChildProcessRuntimeOptions } from './child-process-runtime.js';
 import { acquireLock, releaseLock, type LockInfo } from './scratchpad-lock.js';
-import { CellArchive } from './cell-archive.js';
+import { CellArchive, type CellEntry } from './cell-archive.js';
+import { projectTree, validateLeafId } from './cell-tree.js';
 import type { RecoveryNote, SnapshotResult } from './kernel-protocol.js';
 
 type RecoveryNoteEntry = RecoveryNote & { at: string };
@@ -40,7 +41,7 @@ interface Entry {
 const DEFAULT_MAX_LIVE = 8;
 const DEFAULT_IDLE_MS = 600_000;
 const DEFAULT_SWEEP_MS = 30_000;
-const META_SCHEMA_VERSION = 2;
+const META_SCHEMA_VERSION = 3;
 const MAX_RECOVERY_NOTES = 20;
 
 export class ScratchpadManager {
@@ -108,7 +109,7 @@ export class ScratchpadManager {
         const prev = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
         if (typeof prev.created_at === 'string') created_at = prev.created_at;
         if (Array.isArray(prev.attached_sessions)) attached_sessions = prev.attached_sessions as string[];
-        for (const k of ['last_snapshot_cell_id', 'last_snapshot_at', 'namespace_skipped', 'recovery_notes']) {
+        for (const k of ['last_snapshot_cell_id', 'last_snapshot_at', 'namespace_skipped', 'recovery_notes', 'cell_leaf_id']) {
           if (k in prev) prevExtras[k] = prev[k];
         }
         if (Array.isArray(prevExtras.recovery_notes)) {
@@ -121,6 +122,10 @@ export class ScratchpadManager {
     }
     if (this.sessionId && !attached_sessions.includes(this.sessionId)) {
       attached_sessions.push(this.sessionId);
+    }
+    const archive = this.entries.get(name)?.archive;
+    if (archive && archive.leafId !== null) {
+      prevExtras.cell_leaf_id = archive.leafId;
     }
     const meta = {
       name,
@@ -214,6 +219,20 @@ export class ScratchpadManager {
     this.appendRecoveryNotes(name, notes);
   }
 
+  private restoreLeafOnAttach(name: string, entry: Entry): void {
+    const path = this.metaPath(name);
+    if (!existsSync(path)) return;
+    try {
+      const cur = JSON.parse(readFileSync(path, 'utf8')) as { cell_leaf_id?: unknown };
+      const persisted = cur.cell_leaf_id;
+      if (typeof persisted === 'number' && entry.archive.leafId !== persisted) {
+        entry.archive.setLeaf(persisted);
+      }
+    } catch {
+      // ignore; leaf falls back to file-max (the constructor's default).
+    }
+  }
+
   private warmCount(): number {
     let n = 0;
     for (const e of this.entries.values()) if (e.runtime !== null) n++;
@@ -264,6 +283,7 @@ export class ScratchpadManager {
       await this.evictLruIfNeeded();
       existing.runtime = await this.spawnRuntime(name); // cold -> warm; namespace restored from disk (1d2)
       this.ingestRecoveryNotesOnAttach(name, existing);
+      this.restoreLeafOnAttach(name, existing);
       return existing.runtime;
     }
     return this.attachUnmanaged(name, opts);
@@ -291,6 +311,92 @@ export class ScratchpadManager {
     }
   }
 
+  async setLeaf(name: string, id: number): Promise<void> {
+    this.assertNotDisposed();
+    // Verify the scratchpad exists on disk (works for both warm and cold).
+    if (!this.existsOnDisk(name)) throw new Error(`scratchpad not found: ${name}`);
+    // Build a tree from the on-disk cells.jsonl so validation works even when cold.
+    const cells: CellEntry[] = [];
+    const cellsPath = join(this.dirFor(name), 'cells.jsonl');
+    if (existsSync(cellsPath)) {
+      for (const line of readFileSync(cellsPath, 'utf8').split('\n')) {
+        if (!line.trim()) continue;
+        try {
+          const obj = JSON.parse(line) as { id?: unknown };
+          if (typeof obj.id === 'number') cells.push(obj as CellEntry);
+        } catch {
+          // header or trailing-corrupt line -> skip
+        }
+      }
+    }
+    const tree = projectTree(cells);
+    validateLeafId(tree, id);
+    // Warm path: update the live archive too.
+    const entry = this.entries.get(name);
+    if (entry) entry.archive.setLeaf(id);
+    // Direct meta update so cold scratchpads persist the leaf.
+    const path = this.metaPath(name);
+    let cur: Record<string, unknown> = {};
+    try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { /* fall through */ }
+    cur.cell_leaf_id = id;
+    cur.schema_version = META_SCHEMA_VERSION;
+    writeFileSync(path, JSON.stringify(cur, null, 2));
+  }
+
+  async fork(srcName: string, dstName: string): Promise<void> {
+    this.assertNotDisposed();
+    if (this.entries.has(dstName) || this.existsOnDisk(dstName)) {
+      throw new Error(`scratchpad ${dstName} already exists`);
+    }
+    if (!this.existsOnDisk(srcName)) {
+      throw new Error(`scratchpad not found: ${srcName}`);
+    }
+    // Auto-evict src to release the DuckDB kernel.db handle before we copy.
+    // Capture the raw child process reference before disposal so we can await its
+    // full exit — ensuring DuckDB flushes and closes kernel.db before copyFileSync.
+    const srcEntry = this.entries.get(srcName);
+    if (srcEntry && srcEntry.runtime) {
+      const rawChild = (srcEntry.runtime as unknown as { child: import('node:child_process').ChildProcess | null }).child;
+      await this.snapshotThenDispose(srcName, srcEntry);
+      if (rawChild && rawChild.exitCode === null) {
+        await new Promise<void>((resolve) => rawChild.once('exit', resolve));
+      }
+    }
+    const srcDir = this.dirFor(srcName);
+    const dstDir = this.dirFor(dstName);
+    mkdirSync(dstDir, { recursive: true });
+    for (const file of ['kernel.db', 'kernel.db.wal', 'namespace.json', 'cells.jsonl']) {
+      if (existsSync(join(srcDir, file))) {
+        copyFileSync(join(srcDir, file), join(dstDir, file));
+      }
+    }
+    // Build dst meta inheriting selected fields from src.
+    let srcMeta: Record<string, unknown> = {};
+    try { srcMeta = JSON.parse(readFileSync(join(srcDir, 'meta.json'), 'utf8')) as Record<string, unknown>; } catch { /* leave empty */ }
+    const nowIso = new Date(this.now()).toISOString();
+    const dstMeta = {
+      name: dstName,
+      created_at: nowIso,
+      last_used: nowIso,
+      attached_sessions: this.sessionId ? [this.sessionId] : [],
+      size_bytes: this.dirSize(dstDir),
+      schema_version: META_SCHEMA_VERSION,
+      cell_leaf_id: typeof srcMeta.cell_leaf_id === 'number' ? srcMeta.cell_leaf_id : null,
+      last_snapshot_cell_id: typeof srcMeta.last_snapshot_cell_id === 'number' ? srcMeta.last_snapshot_cell_id : null,
+      last_snapshot_at: typeof srcMeta.last_snapshot_at === 'string' ? srcMeta.last_snapshot_at : null,
+      namespace_skipped: [],
+      recovery_notes: [],
+      kernel_db: { present: existsSync(join(dstDir, 'kernel.db')), path: 'kernel.db' },
+      namespace: { present: existsSync(join(dstDir, 'namespace.json')), schema_version: 1 },
+    };
+    writeFileSync(join(dstDir, 'meta.json'), JSON.stringify(dstMeta, null, 2));
+    // Claim the new scratchpad for this session by acquiring its lock and registering
+    // a cold entry so getOrAttach can re-warm without re-acquiring the lock.
+    const dstLock = acquireLock(dstDir, { now: this.now });
+    const dstEntry: Entry = { runtime: null, lock: dstLock, lastUsedAt: this.now(), archive: new CellArchive(dstDir, this.now) };
+    this.entries.set(dstName, dstEntry);
+  }
+
   private async attachUnmanaged(name: string, opts: AttachOptions): Promise<ChildProcessRuntime> {
     const dir = this.dirFor(name);
     const lock = acquireLock(dir, {
@@ -310,6 +416,7 @@ export class ScratchpadManager {
     const entry: Entry = { runtime, lock, lastUsedAt: this.now(), archive: new CellArchive(dir, this.now) };
     this.entries.set(name, entry);
     this.ingestRecoveryNotesOnAttach(name, entry);
+    this.restoreLeafOnAttach(name, entry);
     return runtime;
   }
 

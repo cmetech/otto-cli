@@ -498,6 +498,16 @@ export class ScratchpadManager {
     // Runtime explicitly NOT disposed. Pool LRU/idle eviction owns cleanup.
   }
 
+  async markRecoveryNotesSeen(name: string): Promise<void> {
+    this.assertNotDisposed();
+    const path = this.metaPath(name);
+    if (!existsSync(path)) return;
+    let cur: Record<string, unknown> = {};
+    try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { return; }
+    cur.recovery_notes_seen_at = new Date(this.now()).toISOString();
+    writeFileSync(path, JSON.stringify(cur, null, 2));
+  }
+
   private async attachUnmanaged(name: string, opts: AttachOptions): Promise<ChildProcessRuntime> {
     const dir = this.dirFor(name);
     const lock = acquireLock(dir, {

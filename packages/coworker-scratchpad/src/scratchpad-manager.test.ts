@@ -679,3 +679,36 @@ describe('ScratchpadManager (kernel_at_cell_id — 1g2)', () => {
     assert.equal(meta.kernel_at_cell_id, 1);
   });
 });
+
+describe('ScratchpadManager (markRecoveryNotesSeen — 1g2)', () => {
+  let workspace: string;
+  let root: string;
+  let mgr: ScratchpadManager;
+
+  beforeEach(async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'sp-ws-'));
+    root = await mkdtemp(join(tmpdir(), 'sp-root-'));
+    mgr = new ScratchpadManager({
+      workspace, root, sessionId: 'sess-1', sweepIntervalMs: 1_000_000,
+      now: () => Date.parse('2026-06-01T12:00:00.000Z'),
+    });
+  });
+  afterEach(async () => {
+    await mgr.disposeAll();
+    await rm(workspace, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('markRecoveryNotesSeen stamps meta.recovery_notes_seen_at = nowIso', async () => {
+    await mgr.runCell('p1', 'globalThis.x = 1;');
+    await mgr.markRecoveryNotesSeen('p1');
+    const meta = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as { recovery_notes_seen_at?: unknown };
+    assert.equal(meta.recovery_notes_seen_at, '2026-06-01T12:00:00.000Z');
+  });
+
+  it('markRecoveryNotesSeen is silent when meta is missing', async () => {
+    // No scratchpad created; method should not throw.
+    await mgr.markRecoveryNotesSeen('absent');
+    assert.ok(true);
+  });
+});

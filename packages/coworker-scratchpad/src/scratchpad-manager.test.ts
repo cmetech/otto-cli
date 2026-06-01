@@ -6,7 +6,7 @@ import { tmpdir, hostname } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
 import { spawn } from 'node:child_process';
-import { ScratchpadManager } from './scratchpad-manager.js';
+import { ScratchpadManager, ForkKernelHangError } from './scratchpad-manager.js';
 
 let workspace: string;
 let root: string;
@@ -710,5 +710,82 @@ describe('ScratchpadManager (markRecoveryNotesSeen — 1g2)', () => {
     // No scratchpad created; method should not throw.
     await mgr.markRecoveryNotesSeen('absent');
     assert.ok(true);
+  });
+});
+
+describe('ScratchpadManager (fork exit escalation — 1g3)', () => {
+  let workspace: string;
+  let root: string;
+  let mgr: ScratchpadManager;
+
+  beforeEach(async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'sp-ws-'));
+    root = await mkdtemp(join(tmpdir(), 'sp-root-'));
+    // Inject a TINY timeout so SIGKILL escalation + hang tests don't block CI.
+    mgr = new ScratchpadManager({
+      workspace, root, sessionId: 'sess-1', sweepIntervalMs: 1_000_000,
+      forkExitTimeoutMs: 50,
+    });
+  });
+  afterEach(async () => {
+    await mgr.disposeAll();
+    await rm(workspace, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('fork succeeds when the source kernel exits cleanly within the timeout', async () => {
+    await mgr.runCell('src', 'globalThis.x = 1;');
+    // Default kernel obeys SIGTERM; happy path completes without escalation.
+    await mgr.fork('src', 'dst');
+    const dstMeta = JSON.parse(readFileSync(join(root, 'dst', 'meta.json'), 'utf8')) as { name: string };
+    assert.equal(dstMeta.name, 'dst');
+  });
+
+  it('fork escalates to SIGKILL when SIGTERM is ignored, then proceeds', async () => {
+    await mgr.runCell('src', 'globalThis.x = 1;');
+    // Monkey-patch the rawChild so SIGTERM is swallowed but SIGKILL passes through.
+    const entry = (mgr as unknown as { entries: Map<string, { runtime: unknown }> }).entries.get('src')!;
+    const realChild = (entry.runtime as unknown as { child: import('node:child_process').ChildProcess | null }).child!;
+    // Also stub stdin.end() so dispose() can't cause natural exit via closed stdin;
+    // we want SIGTERM to be the ONLY exit signal, so we can verify escalation.
+    (realChild.stdin as unknown as { end: () => void }).end = () => { /* no-op */ };
+    const origKill = realChild.kill.bind(realChild);
+    const signalsSeen: NodeJS.Signals[] = [];
+    realChild.kill = ((sig?: NodeJS.Signals) => {
+      const s = sig ?? 'SIGTERM';
+      signalsSeen.push(s);
+      if (s === 'SIGKILL') return origKill('SIGKILL');
+      return true; // swallow SIGTERM
+    }) as typeof realChild.kill;
+
+    await mgr.fork('src', 'dst');
+    assert.ok(signalsSeen.includes('SIGTERM'), 'SIGTERM attempted first');
+    assert.ok(signalsSeen.includes('SIGKILL'), 'SIGKILL fired after timeout');
+    const dstMeta = JSON.parse(readFileSync(join(root, 'dst', 'meta.json'), 'utf8')) as { name: string };
+    assert.equal(dstMeta.name, 'dst');
+  });
+
+  it('fork throws ForkKernelHangError when both SIGTERM and SIGKILL are ignored', async () => {
+    await mgr.runCell('src', 'globalThis.x = 1;');
+    const entry = (mgr as unknown as { entries: Map<string, { runtime: unknown }> }).entries.get('src')!;
+    const realChild = (entry.runtime as unknown as { child: import('node:child_process').ChildProcess | null }).child!;
+    // Stub stdin.end() so dispose() can't trigger natural exit via closed stdin.
+    (realChild.stdin as unknown as { end: () => void }).end = () => { /* no-op */ };
+    realChild.kill = (() => true) as typeof realChild.kill; // swallow EVERY signal
+
+    let caught: unknown = null;
+    try {
+      await mgr.fork('src', 'dst');
+    } catch (err) {
+      caught = err;
+    }
+    assert.ok(caught instanceof ForkKernelHangError, 'ForkKernelHangError thrown');
+    const e = caught as ForkKernelHangError;
+    assert.equal(e.srcName, 'src');
+    assert.ok(typeof e.pid === 'number' && e.pid > 0, 'pid attached');
+
+    // After-the-fact: forcibly kill the lingering kernel so afterEach can clean up.
+    const reallyKill = Object.getPrototypeOf(realChild).kill as (sig?: NodeJS.Signals) => boolean;
+    reallyKill.call(realChild, 'SIGKILL');
   });
 });

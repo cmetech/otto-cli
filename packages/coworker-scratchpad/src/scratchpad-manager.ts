@@ -9,6 +9,13 @@ import type { RecoveryNote, SnapshotResult } from './kernel-protocol.js';
 
 type RecoveryNoteEntry = RecoveryNote & { at: string };
 
+export class ForkKernelHangError extends Error {
+  constructor(public readonly srcName: string, public readonly pid: number) {
+    super(`fork: source kernel for '${srcName}' (pid ${pid}) did not exit after SIGTERM + SIGKILL. Destination may be partially populated; clean up with /sp remove <dst>.`);
+    this.name = 'ForkKernelHangError';
+  }
+}
+
 export interface ScratchpadManagerOptions {
   workspace: string;
   root?: string;
@@ -18,6 +25,7 @@ export interface ScratchpadManagerOptions {
   now?: () => number;
   runtimeOptions?: Omit<ChildProcessRuntimeOptions, 'workspace'>;
   sessionId?: string;
+  forkExitTimeoutMs?: number;
 }
 
 export interface AttachOptions {
@@ -44,6 +52,23 @@ const DEFAULT_IDLE_MS = 600_000;
 const DEFAULT_SWEEP_MS = 30_000;
 const META_SCHEMA_VERSION = 3;
 const MAX_RECOVERY_NOTES = 20;
+const FORK_EXIT_TIMEOUT_MS = 5000;
+
+function raceWithTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      reject(new Error(`timeout: ${label}`));
+    }, ms);
+    timer.unref();
+    p.then(
+      (v) => { if (settled) return; settled = true; clearTimeout(timer); resolve(v); },
+      (e) => { if (settled) return; settled = true; clearTimeout(timer); reject(e); },
+    );
+  });
+}
 
 export class ScratchpadManager {
   protected readonly entries = new Map<string, Entry>();
@@ -54,6 +79,7 @@ export class ScratchpadManager {
   protected readonly sessionId: string | undefined;
   protected readonly now: () => number;
   protected readonly runtimeOptions: Omit<ChildProcessRuntimeOptions, 'workspace'>;
+  protected readonly forkExitTimeoutMs: number;
   protected disposed = false;
   private sweepTimer: NodeJS.Timeout | null = null;
 
@@ -65,6 +91,7 @@ export class ScratchpadManager {
     this.now = options.now ?? Date.now;
     this.runtimeOptions = options.runtimeOptions ?? {};
     this.sessionId = options.sessionId;
+    this.forkExitTimeoutMs = options.forkExitTimeoutMs ?? FORK_EXIT_TIMEOUT_MS;
     this.sweepTimer = setInterval(() => { void this.evictIdle(); }, options.sweepIntervalMs ?? DEFAULT_SWEEP_MS);
     this.sweepTimer.unref();
   }
@@ -387,7 +414,18 @@ export class ScratchpadManager {
       const rawChild = (srcEntry.runtime as unknown as { child: import('node:child_process').ChildProcess | null }).child;
       await this.snapshotThenDispose(srcName, srcEntry);
       if (rawChild && rawChild.exitCode === null) {
-        await new Promise<void>((resolve) => rawChild.once('exit', resolve));
+        const exitPromise = new Promise<void>((resolve) => rawChild.once('exit', () => resolve()));
+        try {
+          await raceWithTimeout(exitPromise, this.forkExitTimeoutMs, 'exit-after-SIGTERM');
+        } catch {
+          rawChild.kill('SIGKILL');
+          const exitPromise2 = new Promise<void>((resolve) => rawChild.once('exit', () => resolve()));
+          try {
+            await raceWithTimeout(exitPromise2, this.forkExitTimeoutMs, 'exit-after-SIGKILL');
+          } catch {
+            throw new ForkKernelHangError(srcName, rawChild.pid ?? -1);
+          }
+        }
       }
     }
     const srcDir = this.dirFor(srcName);

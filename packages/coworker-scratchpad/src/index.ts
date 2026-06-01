@@ -33,6 +33,7 @@ export {
 } from './child-process-runtime.js';
 export {
   ScratchpadManager,
+  ForkKernelHangError,
   type ScratchpadManagerOptions,
   type AttachOptions,
   type ScratchpadInfo,

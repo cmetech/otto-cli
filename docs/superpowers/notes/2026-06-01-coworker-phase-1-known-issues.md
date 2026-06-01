@@ -182,6 +182,101 @@ Not a Phase 2 fix. Either accept as-is or revisit in Phase 6 (persona polish) wh
 
 ---
 
+## Issue 4 — Pool eviction is invisible; no explicit eviction control
+
+**Status:** open
+**Severity:** medium (UX clarity; functional behavior is correct)
+**Date observed:** 2026-06-01 (scenario 5 of human tests)
+**Reporter:** Phase 1g3 testing
+
+### Reproduction
+
+```
+/sp new t04-tree
+# ... run a cell ...
+/sp new t05-fork-copy   (or /sp attach t05-fork-copy)
+/sp list
+```
+
+### Symptoms
+
+`/sp list` shows TWO scratchpads as `● live`:
+```
+○ cold  t01-triggers
+● live  t04-tree
+● live  t05-fork-copy (current)
+```
+
+Only `t05-fork-copy` has `(current)`, but t04-tree's `● live` marker is visually surprising — users expect `/sp attach <new>` to release the previous kernel.
+
+### Root cause
+
+The 1c2 design has a kernel pool with two dimensions:
+- **`currentName`** (slash-command pointer) — moves on every `/sp attach`.
+- **Pool warmth** — kernels stay live until LRU eviction (`maxLiveKernels = 8`) or idle eviction (`idleMs = 600_000` = 10min, swept every `sweepIntervalMs = 30_000` = 30s).
+
+`/sp attach <new>` only moves the pointer; the previous kernel sits warm in the pool. `/sp detach` is also affinity-only — does not dispose the runtime (1g locked decision 4).
+
+**This is by design** (see spec § 3 — "switch-back speed", "multi-session safety", "memory bounded"). But two gaps:
+
+1. **No visibility into eviction timing.** Users can't tell if a `● live` kernel is about to evict (idle 9m59s) or just attached (idle 0s). Looks the same in `/sp list`.
+2. **No explicit-eviction control.** Users who WANT to dispose a warm kernel immediately (free RAM, release lock for another session) have no command. Only options are: wait 10 minutes, kill all 8 by attaching to a 9th (LRU pressure), or `/sp remove` (destructive — deletes the dir).
+
+### Workaround (today)
+
+- Wait. After 10 minutes of idleness, the kernel auto-evicts; `/sp list` shows it as `○ cold`.
+- If you want to "free" t04-tree NOW: nothing user-facing works without losing data. The kernel will eventually evict on its own.
+
+### Proposed fixes
+
+**Both fixes together** — they're the same conceptual feature (make pool state visible + controllable):
+
+1. **Show idle age in `/sp list`** for live entries:
+   ```
+   ○ cold  t01-triggers
+   ● live  t04-tree            idle 4m22s
+   ● live  t05-fork-copy       active  (current)
+   ```
+   - `active` = entry has been used in the last 30s (or has an active cell).
+   - `idle 4m22s` = time since `lastUsedAt`; previews how close to the 10min eviction threshold.
+
+   Implementation: extend the slash-command's `case 'list':` formatter in `src/resources/extensions/coworker-scratchpad/sp-command.ts` to format `(now - entry.lastUsedAt)` relatively. Manager already exposes `lastUsedAt` via the `ScratchpadInfo` return from `manager.list()`.
+
+2. **Add `/sp evict <name>`** slash command + matching `manager.evict(name)` method:
+   - Refuses to evict if entry has an active cell (error: "cannot evict while a cell is running").
+   - Otherwise reuses the existing `snapshotThenDispose` path — snapshots namespace.json, disposes the runtime, but **keeps the lock + meta + cells.jsonl intact** (so re-attach works).
+   - Does NOT remove the dir (that's `/sp remove`'s job).
+   - Output: `evicted t04-tree (still on disk; /sp attach t04-tree to re-warm)`.
+
+   Implementation: ~30 lines in `scratchpad-manager.ts` (new `evict()` method wrapping `snapshotThenDispose`), one new verb in sp-command.ts, ~3 tests in `scratchpad-manager.test.ts` + sp-command tests.
+
+### Test that would lock the fix
+
+After the fix:
+1. Run scenario 5 as-is. Verify `/sp list` shows `idle 0s` (or `active`) on t05-fork-copy, and a small idle time (depending on test pacing) on t04-tree.
+2. Run `/sp evict t04-tree`. Verify `/sp list` flips t04-tree to `○ cold` immediately. Verify `~/.otto/scratchpads/t04-tree/kernel.db` still exists.
+3. `/sp attach t04-tree` should warm-restart from namespace.json + cells.jsonl with full state intact (already covered by 1d2 cold→warm tests).
+
+### Phase placement
+
+**Recommended: a dedicated "Phase 1.5 — polish" wave** bundling all currently-open Phase 1 known issues into one focused PR before Phase 2 starts.
+
+Rationale:
+- None of these issues fit naturally into Phases 2–6 (which add new pillars: vault / memory / artifacts / persona). Forcing them into a pillar phase would create thematic drift.
+- Phase 1 is the foundation everything else builds on; rough edges compound — if Phase 2 builds vault and a NOC user hits Issue 4 alongside a vault prompt, they'll attribute the friction to vault.
+- Bundling these together is ~3-5 days of work for a single engineer:
+  - **Issue 1** (polars→DuckDB ergonomics — registerDf helper): ~1-2 days
+  - **Issue 2** (meta.json write-order fix): ~half day
+  - **Issue 4** (idle-age display + /sp evict): ~1-2 days
+  - Plus tests + docs update: ~half day
+- Phase 1.5 keeps Phase 2's scope clean.
+
+**Alternative:** if a Phase 1.5 isn't formed, defer Issue 4 specifically to Phase 6 (NOC persona bundle) where UX clarity for analysts is the focus — the visible idle-age in `/sp list` is exactly the kind of thing a NOC analyst cares about during a long incident.
+
+**NOT recommended:** spreading these across Phases 2-5. The engineer doing vault shouldn't have to context-switch into scratchpad internals; it's coherent work but not coherent ownership.
+
+---
+
 ## Template for new issues
 
 When you hit something during testing, append a new section with this shape:

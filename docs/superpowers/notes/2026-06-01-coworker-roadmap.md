@@ -81,6 +81,28 @@ After Phase 6, a fresh `npm install otto` should drop a user into this scenario 
 
 ---
 
+### Phase 1.5 — Phase 1 polish wave (proposed; ~1 week, between Phase 1 and Phase 2)
+
+**Pillar:** scratchpad ergonomics + UX clarity. NO new pillar; tightens what Phase 1 shipped.
+
+**Why this phase exists:** Phase 1 human testing surfaced three ergonomic gaps that don't fit naturally into Phase 2+ (which adds new pillars). Bundling them into a dedicated polish wave keeps Phase 2's scope clean and prevents users from attributing scratchpad friction to vault/memory/artifacts work that's actually downstream.
+
+**What it ships** (per `docs/superpowers/notes/2026-06-01-coworker-phase-1-known-issues.md`):
+
+- **Issue 1 — polars → DuckDB registerDf helper.** Adds `otto.duckdb.registerDf(name, df)` in `packages/coworker-scratchpad/src/kernel-bindings.ts`. Detects input type (polars DataFrame / Arrow Table / plain array of records) and routes to the appropriate DuckDB load path. Cuts the scenario-3 cell count from 8 → 2.
+- **Issue 2 — meta.json write-order fix in `attachUnmanaged`.** Either reorder spawnRuntime BEFORE writeMeta, or add a second writeMeta after spawn. Stops the `kernel_db.present: false` + `size_bytes: 0` staleness on fresh attach.
+- **Issue 4 — pool visibility + explicit eviction.** Adds idle-age column to `/sp list` (`● live  t04-tree  idle 4m22s`) plus a new `/sp evict <name>` slash command + `manager.evict(name)` method that snapshots-then-disposes without removing the on-disk artifacts. Lets users see why a kernel is still live and dispose it immediately when desired.
+
+**Milestone:** scenario 3 from the human test plan completes in ≤ 3 cells; `/sp list` shows idle ages; `/sp evict <name>` works and is reversible via `/sp attach <name>`.
+
+**Dependencies:** Phase 1 complete (✅).
+
+**Not in scope:** Issue 3 (LLM "ask if unsure" reliability) — accepted as inherent LLM behavior, not a code fix.
+
+**Status:** proposed. If Phase 2 is starting urgently, defer to Phase 6 (NOC persona bundle) where UX polish for analysts gets natural priority. If there's a 1-week gap before Phase 2 begins, this is the highest-leverage way to spend it.
+
+---
+
 ### Phase 3 — otto-memory A+B + backend interface (weeks 5–6)
 
 **Pillar:** read-path memory (verbatim recall).

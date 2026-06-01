@@ -6,6 +6,8 @@ import type { ScratchpadManager, RecoveryNote } from '@otto/coworker-scratchpad'
 import { validateName, readCellsJsonl, readPersistedLeaf } from './helpers.js';
 import { projectTree, formatTreeText } from '@otto/coworker-scratchpad';
 import { sessionSidecarPath, writeSessionSidecar, deleteSessionSidecar } from './session-sidecar.js';
+import { detectWorkspaceRoot } from './workspace-root.js';
+import { workspaceHash, workspacePointerPath, writeWorkspacePointer, type WorkspacePointer } from './workspace-pointer.js';
 import { showRecoveryNotesBanner, showDivergenceBanner, formatNoteLine } from './attach-banners.js';
 
 export interface SpDeps {
@@ -55,6 +57,21 @@ interface UiCtx {
     confirm: (title: string, msg: string) => Promise<boolean>;
     input: (title: string, placeholder?: string) => Promise<string | undefined>;
   };
+}
+
+function persistWorkspacePointer(deps: SpDeps, name: string): void {
+  const wsRoot = detectWorkspaceRoot(process.cwd());
+  const wsHash = workspaceHash(wsRoot);
+  const wsPath = workspacePointerPath(deps.rootDir(), wsHash);
+  const wsPayload: WorkspacePointer = {
+    schema_version: 1,
+    workspace_hash: wsHash,
+    workspace_root: wsRoot,
+    last_session_id: deps.getSessionId(),
+    last_current_name: name,
+    last_attached_at: new Date().toISOString(),
+  };
+  writeWorkspacePointer(wsPath, wsPayload);
 }
 
 function joinQuotedArg(parts: string[], startIdx: number): string | null {
@@ -139,6 +156,7 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               current_name: name,
               attached_at: new Date().toISOString(),
             });
+            persistWorkspacePointer(deps, name);
             ctx.ui.notify(`created scratchpad: ${name} (now current)`, 'info');
             return;
           }
@@ -191,6 +209,7 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               current_name: name,
               attached_at: new Date().toISOString(),
             });
+            persistWorkspacePointer(deps, name);
             ctx.ui.notify(`attached to scratchpad: ${name}`, 'info');
 
             // §2 + §4 banners (1g2):

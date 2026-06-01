@@ -6,6 +6,9 @@ import { ScratchpadManager } from '@otto/coworker-scratchpad';
 import { registerSpCommand } from './sp-command.js';
 import { registerScratchpadTool } from './scratchpad-tool.js';
 import { sessionSidecarPath, readSessionSidecar, deleteSessionSidecar } from './session-sidecar.js';
+import { detectWorkspaceRoot } from './workspace-root.js';
+import { workspaceHash, workspacePointerPath, readWorkspacePointer, isPointerFresh } from './workspace-pointer.js';
+import { formatRelativeAge } from './format-age.js';
 
 function deriveScratchpadRoot(): string {
   return process.env.OTTO_SCRATCHPAD_ROOT ?? join(homedir(), '.otto', 'scratchpads');
@@ -16,6 +19,51 @@ function deriveSessionId(ctx: ExtensionContext): string {
   if (!file) return 'default';
   const base = basename(file);
   return base.endsWith('.jsonl') ? base.slice(0, -6) : base;
+}
+
+/**
+ * Pure restore-precedence helper. Returns the scratchpad to restore (if any) and the
+ * notice string to surface to the user. Does NOT call ctx.ui.notify — the caller does.
+ *
+ * Precedence:
+ *   (a) per-session sidecar — wins when its scratchpad still exists on disk.
+ *   (b) broken sidecar — silently deleted, falls through to (c).
+ *   (c) workspace pointer — fresh (≤ 7d) AND its scratchpad still exists on disk.
+ *   (d) no restore.
+ */
+export function tryRestoreCurrentName(
+  root: string,
+  sessionId: string,
+  cwd: string,
+  now: number,
+): { name: string | null; notice: string | null } {
+  // (a) Sidecar restore
+  const sidecarPath = sessionSidecarPath(root, sessionId);
+  const sidecar = readSessionSidecar(sidecarPath);
+  if (sidecar) {
+    const meta = join(root, sidecar.current_name, 'meta.json');
+    if (existsSync(meta)) {
+      return { name: sidecar.current_name, notice: `attached to ${sidecar.current_name} (restored)` };
+    }
+    deleteSessionSidecar(sidecarPath); // broken sidecar — clean up silently and fall through
+  }
+
+  // (b) Workspace-pointer fallback
+  const wsRoot = detectWorkspaceRoot(cwd);
+  const ptr = readWorkspacePointer(workspacePointerPath(root, workspaceHash(wsRoot)));
+  if (ptr && isPointerFresh(ptr, now)) {
+    const meta = join(root, ptr.last_current_name, 'meta.json');
+    if (existsSync(meta)) {
+      const rel = formatRelativeAge(now - Date.parse(ptr.last_attached_at));
+      return {
+        name: ptr.last_current_name,
+        notice: `attached to ${ptr.last_current_name} (from workspace, last used ${rel})`,
+      };
+    }
+  }
+
+  // (c) No restore
+  return { name: null, notice: null };
 }
 
 export default function coworkerScratchpadExtension(pi: ExtensionAPI): void {
@@ -48,18 +96,13 @@ export default function coworkerScratchpadExtension(pi: ExtensionAPI): void {
     workspaceCwd = ctx.cwd;
     sessionId = deriveSessionId(ctx);
 
-    const sidecarPath = sessionSidecarPath(root, sessionId);
-    const sidecar = readSessionSidecar(sidecarPath);
-    if (!sidecar) return;
-
-    const targetMeta = join(root, sidecar.current_name, 'meta.json');
-    if (!existsSync(targetMeta)) {
-      deleteSessionSidecar(sidecarPath);
-      ctx.ui.notify(`previous scratchpad '${sidecar.current_name}' is gone; not restored`, 'info');
-      return;
+    const restore = tryRestoreCurrentName(root, sessionId, ctx.cwd ?? process.cwd(), Date.now());
+    if (restore.name) {
+      currentName = restore.name;
+      ctx.ui.notify(restore.notice!, 'info');
     }
-    currentName = sidecar.current_name;
-    ctx.ui.notify(`attached to ${sidecar.current_name} (restored)`, 'info');
+    // When neither sidecar nor fresh pointer resolves to an existing scratchpad,
+    // we stay silent — the user gets a clean session_start with no noise.
   });
 
   pi.on('session_shutdown', async () => {

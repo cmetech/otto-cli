@@ -1,10 +1,14 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import coworkerScratchpadExtension from './index.js';
+import coworkerScratchpadExtension, { tryRestoreCurrentName } from './index.js';
+import { sessionSidecarPath, writeSessionSidecar } from './session-sidecar.js';
+import { workspaceHash, workspacePointerPath, writeWorkspacePointer } from './workspace-pointer.js';
+import { detectWorkspaceRoot } from './workspace-root.js';
 
 // Minimal pi.ExtensionAPI stub — captures registrations and lets us fire session_start/session_shutdown.
 interface StubPi {
@@ -143,7 +147,7 @@ describe('coworker-scratchpad extension (session affinity — 1g)', () => {
     assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /restored/.test(m)));
   });
 
-  it('session_start clears the sidecar + notifies when the target scratchpad is gone', async () => {
+  it('session_start clears a broken sidecar silently when no workspace pointer applies', async () => {
     const { mkdir, writeFile } = await import('node:fs/promises');
     await mkdir(join(scratchpadRoot, '_sessions'), { recursive: true });
     const sidecarPath = join(scratchpadRoot, '_sessions', 'sess-B.json');
@@ -157,8 +161,9 @@ describe('coworker-scratchpad extension (session affinity — 1g)', () => {
     const ctx = makeSessionCtx('/tmp/sess-B.jsonl');
     await pi.fire('session_start', {}, ctx);
 
-    assert.ok(!existsSync(sidecarPath), 'stale sidecar deleted');
-    assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /not restored/.test(m)));
+    assert.ok(!existsSync(sidecarPath), 'broken sidecar deleted');
+    // With Task A: no "not restored" noise — silent clean start when no fallback applies.
+    assert.equal(ctx.notifications.length, 0, 'no notifications when neither restore source applies');
   });
 
   it('session_start with no sidecar is a silent no-op', async () => {
@@ -167,5 +172,97 @@ describe('coworker-scratchpad extension (session affinity — 1g)', () => {
     const ctx = makeSessionCtx('/tmp/sess-C.jsonl');
     await pi.fire('session_start', {}, ctx);
     assert.equal(ctx.notifications.length, 0);
+  });
+});
+
+describe('coworker-scratchpad restore precedence (Task A)', () => {
+  let root: string;
+  let ws: string;
+  beforeEach(() => {
+    root = mkdtempSync(join(tmpdir(), 'cws-root-'));
+    ws = mkdtempSync(join(tmpdir(), 'cws-ws-'));
+    execSync('git init -q', { cwd: ws });
+  });
+  afterEach(() => {
+    rmSync(root, { recursive: true, force: true });
+    rmSync(ws, { recursive: true, force: true });
+  });
+
+  function makeScratchpad(name: string): void {
+    mkdirSync(join(root, name), { recursive: true });
+    writeFileSync(join(root, name, 'meta.json'), JSON.stringify({ name, schema_version: 3 }));
+  }
+
+  it('(a) sidecar wins when its scratchpad exists', () => {
+    makeScratchpad('alpha');
+    makeScratchpad('beta');
+    const sessionId = 'sess-A';
+    writeSessionSidecar(sessionSidecarPath(root, sessionId), {
+      schema_version: 1,
+      session_id: sessionId,
+      current_name: 'alpha',
+      attached_at: new Date().toISOString(),
+    });
+    const wsRoot = detectWorkspaceRoot(ws);
+    writeWorkspacePointer(workspacePointerPath(root, workspaceHash(wsRoot)), {
+      schema_version: 1,
+      workspace_hash: workspaceHash(wsRoot),
+      workspace_root: wsRoot,
+      last_session_id: 'sess-OTHER',
+      last_current_name: 'beta',
+      last_attached_at: new Date().toISOString(),
+    });
+
+    const result = tryRestoreCurrentName(root, sessionId, ws, Date.now());
+    assert.equal(result.name, 'alpha');
+    assert.match(result.notice!, /alpha.*restored/);
+  });
+
+  it('(b) sidecar falls through to workspace pointer when its scratchpad is gone', () => {
+    makeScratchpad('beta'); // alpha intentionally absent
+    const sessionId = 'sess-A';
+    const sidecarPath = sessionSidecarPath(root, sessionId);
+    writeSessionSidecar(sidecarPath, {
+      schema_version: 1,
+      session_id: sessionId,
+      current_name: 'alpha-gone',
+      attached_at: new Date().toISOString(),
+    });
+    const wsRoot = detectWorkspaceRoot(ws);
+    writeWorkspacePointer(workspacePointerPath(root, workspaceHash(wsRoot)), {
+      schema_version: 1,
+      workspace_hash: workspaceHash(wsRoot),
+      workspace_root: wsRoot,
+      last_session_id: 'sess-OTHER',
+      last_current_name: 'beta',
+      last_attached_at: new Date().toISOString(),
+    });
+
+    const result = tryRestoreCurrentName(root, sessionId, ws, Date.now());
+    assert.equal(result.name, 'beta');
+    assert.match(result.notice!, /beta.*from workspace/);
+    assert.equal(existsSync(sidecarPath), false, 'broken sidecar should be deleted');
+  });
+
+  it('(c) pointer-only path (no sidecar)', () => {
+    makeScratchpad('beta');
+    const wsRoot = detectWorkspaceRoot(ws);
+    writeWorkspacePointer(workspacePointerPath(root, workspaceHash(wsRoot)), {
+      schema_version: 1,
+      workspace_hash: workspaceHash(wsRoot),
+      workspace_root: wsRoot,
+      last_session_id: 'sess-OTHER',
+      last_current_name: 'beta',
+      last_attached_at: new Date().toISOString(),
+    });
+    const result = tryRestoreCurrentName(root, 'sess-FRESH', ws, Date.now());
+    assert.equal(result.name, 'beta');
+    assert.match(result.notice!, /beta.*from workspace/);
+  });
+
+  it('(d) no restore when neither sidecar nor fresh pointer exist', () => {
+    const result = tryRestoreCurrentName(root, 'sess-FRESH', ws, Date.now());
+    assert.equal(result.name, null);
+    assert.equal(result.notice, null);
   });
 });

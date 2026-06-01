@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { ChildProcessRuntime, type ChildProcessRuntimeOptions } from './child-process-runtime.js';
@@ -120,6 +120,12 @@ export class ScratchpadManager {
     return total;
   }
 
+  private writeMetaAtomic(path: string, payload: unknown): void {
+    const tmp = `${path}.tmp`;
+    writeFileSync(tmp, JSON.stringify(payload, null, 2));
+    renameSync(tmp, path);
+  }
+
   private writeMeta(name: string): void {
     const dir = this.dirFor(name);
     const path = this.metaPath(name);
@@ -169,7 +175,7 @@ export class ScratchpadManager {
       kernel_db: { present: existsSync(join(dir, 'kernel.db')), path: 'kernel.db' },
       namespace: { present: existsSync(join(dir, 'namespace.json')), schema_version: 1 },
     };
-    writeFileSync(path, JSON.stringify(meta, null, 2));
+    this.writeMetaAtomic(path, meta);
   }
 
   private appendRecoveryNotes(name: string, notes: RecoveryNote[]): void {
@@ -188,7 +194,7 @@ export class ScratchpadManager {
     const stamped: RecoveryNoteEntry[] = notes.map((n) => ({ at: new Date(this.now()).toISOString(), ...n }));
     const merged = [...prior, ...stamped];
     cur.recovery_notes = merged.slice(Math.max(0, merged.length - MAX_RECOVERY_NOTES));
-    writeFileSync(path, JSON.stringify(cur, null, 2));
+    this.writeMetaAtomic(path, cur);
   }
 
   private applySnapshotToMeta(name: string, entry: Entry, res: Extract<SnapshotResult, { ok: true }>): void {
@@ -205,7 +211,7 @@ export class ScratchpadManager {
     cur.namespace_skipped = res.skipped;
     cur.namespace = { present: true, schema_version: 1 };
     cur.kernel_db = { present: existsSync(join(this.dirFor(name), 'kernel.db')), path: 'kernel.db' };
-    writeFileSync(path, JSON.stringify(cur, null, 2));
+    this.writeMetaAtomic(path, cur);
   }
 
   private async snapshotThenDispose(name: string, entry: Entry): Promise<void> {
@@ -391,7 +397,7 @@ export class ScratchpadManager {
     try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { /* fall through */ }
     cur.cell_leaf_id = id;
     cur.schema_version = META_SCHEMA_VERSION;
-    writeFileSync(path, JSON.stringify(cur, null, 2));
+    this.writeMetaAtomic(path, cur);
   }
 
   async fork(srcName: string, dstName: string): Promise<void> {
@@ -454,7 +460,7 @@ export class ScratchpadManager {
       kernel_db: { present: existsSync(join(dstDir, 'kernel.db')), path: 'kernel.db' },
       namespace: { present: existsSync(join(dstDir, 'namespace.json')), schema_version: 1 },
     };
-    writeFileSync(join(dstDir, 'meta.json'), JSON.stringify(dstMeta, null, 2));
+    this.writeMetaAtomic(join(dstDir, 'meta.json'), dstMeta);
     // Claim the new scratchpad for this session by acquiring its lock and registering
     // a cold entry so getOrAttach can re-warm without re-acquiring the lock.
     const dstLock = acquireLock(dstDir, { now: this.now });
@@ -494,7 +500,7 @@ export class ScratchpadManager {
       cur.last_snapshot_cell_id = null;
       cur.last_snapshot_at = null;
       cur.kernel_at_cell_id = null;
-      writeFileSync(path, JSON.stringify(cur, null, 2));
+      this.writeMetaAtomic(path, cur);
     }
   }
 
@@ -527,7 +533,7 @@ export class ScratchpadManager {
     const idx = arr.indexOf(sessionId);
     if (idx >= 0) {
       cur.attached_sessions = [...arr.slice(0, idx), ...arr.slice(idx + 1)];
-      writeFileSync(path, JSON.stringify(cur, null, 2));
+      this.writeMetaAtomic(path, cur);
     }
     // Runtime explicitly NOT disposed. Pool LRU/idle eviction owns cleanup.
   }
@@ -539,7 +545,7 @@ export class ScratchpadManager {
     let cur: Record<string, unknown> = {};
     try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { return; }
     cur.recovery_notes_seen_at = new Date(this.now()).toISOString();
-    writeFileSync(path, JSON.stringify(cur, null, 2));
+    this.writeMetaAtomic(path, cur);
   }
 
   private async attachUnmanaged(name: string, opts: AttachOptions): Promise<ChildProcessRuntime> {

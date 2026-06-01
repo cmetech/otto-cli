@@ -1,12 +1,14 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import process from 'node:process';
 import { writeNdjson, readNdjson } from '@otto/coworker-utils';
+import { ChildProcessRuntime } from './child-process-runtime.js';
 import { resolveKernelEntry, kernelExecArgv, filterEnv } from './kernel-spawn.js';
 import type { KernelFrame, ProgressEvent, ResultResponse } from './kernel-protocol.js';
 
@@ -95,5 +97,27 @@ describe('kernel-entry (child process)', () => {
     const prog = frames.find((f) => f.type === 'event' && f.event === 'progress');
     assert.ok(prog, 'expected a progress event before the result');
     assert.equal((prog as ProgressEvent).message, 'halfway');
+  });
+
+  it('snapshot writes namespace.json via tmp + rename (no .tmp leak — 1g3)', async () => {
+    // Strategy: drive the kernel via ChildProcessRuntime, run a cell, snapshot,
+    // confirm namespace.json exists and namespace.json.tmp does NOT.
+    // (kernel-entry's snapshot handler is exercised through a real subprocess
+    // in the existing tests; this just adds the .tmp absence assertion.)
+    const ws = await mkdtemp(join(tmpdir(), 'ke-ws-'));
+    const dir = await mkdtemp(join(tmpdir(), 'ke-dir-'));
+    try {
+      const rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: dir });
+      await rt.start();
+      await rt.runCell('globalThis.x = 1;');
+      const res = await rt.snapshot();
+      assert.equal(res.ok, true, 'snapshot acked');
+      assert.ok(existsSync(join(dir, 'namespace.json')), 'namespace.json present');
+      assert.equal(existsSync(join(dir, 'namespace.json.tmp')), false, 'no .tmp leak');
+      await rt.dispose();
+    } finally {
+      await rm(ws, { recursive: true, force: true });
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 });

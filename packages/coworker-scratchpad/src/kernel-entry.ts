@@ -1,6 +1,6 @@
 import process, { argv, stdin, stdout } from 'node:process';
 import vm from 'node:vm';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DuckDBInstance } from '@duckdb/node-api';
 import { writeNdjson, readNdjson } from '@otto/coworker-utils';
@@ -168,7 +168,10 @@ function writeNamespaceSnapshot(dir: string): { skipped: SkippedKey[]; snapshott
     live[key] = sandbox[key];
   }
   const { envelope, skipped } = encodeNamespace(live, () => Date.now());
-  writeFileSync(join(dir, 'namespace.json'), JSON.stringify(envelope));
+  const nsPath = join(dir, 'namespace.json');
+  const tmp = `${nsPath}.tmp`;
+  writeFileSync(tmp, JSON.stringify(envelope));
+  renameSync(tmp, nsPath);
   return { skipped, snapshotted_at: envelope.ts };
 }
 

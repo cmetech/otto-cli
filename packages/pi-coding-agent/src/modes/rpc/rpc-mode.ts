@@ -22,6 +22,7 @@ import { InteractiveMode } from "../interactive/interactive-mode.js";
 import { type Theme, theme } from "../interactive/theme/theme.js";
 import { createDefaultCommandContextActions } from "../shared/command-context-actions.js";
 import { attachJsonlLineReader, serializeJsonLine } from "./jsonl.js";
+import { flushRawStdout, waitForRawStdoutBackpressure, writeRawStdout } from "./raw-stdout.js";
 import { RemoteTerminal } from "./remote-terminal.js";
 import type {
 	RpcCommand,
@@ -51,7 +52,10 @@ export type {
  */
 export async function runRpcMode(session: AgentSession): Promise<never> {
 	const output = (obj: RpcResponse | RpcExtensionUIRequest | object) => {
-		process.stdout.write(serializeJsonLine(obj));
+		// Queue through the backpressure-safe writer instead of writing directly:
+		// under high-volume streaming a direct process.stdout.write can fail with
+		// a transient ENOBUFS/EAGAIN/EWOULDBLOCK and crash the process (ce0e801).
+		writeRawStdout(serializeJsonLine(obj));
 	};
 
 	const success = <T extends RpcCommand["type"]>(
@@ -490,6 +494,13 @@ export async function runRpcMode(session: AgentSession): Promise<never> {
 		}
 	});
 
+	// Apply stdout backpressure to the agent loop: after each agent event we
+	// wait for queued protocol output to drain, so a slow reader throttles the
+	// agent rather than letting the raw-stdout queue grow without bound (ce0e801).
+	const unsubscribeBackpressure = session.agent.subscribe(async () => {
+		await waitForRawStdoutBackpressure();
+	});
+
 	// Handle a single command
 	const handleCommand = async (command: RpcCommand): Promise<RpcResponse> => {
 		const id = command.id;
@@ -824,9 +835,13 @@ export async function runRpcMode(session: AgentSession): Promise<never> {
 		}
 
 		unsubscribe();
+		unsubscribeBackpressure();
 		embeddedInteractiveMode?.stop();
 		detachInput();
 		process.stdin.pause();
+		// Drain queued protocol output before exiting so the shutdown
+		// acknowledgement and any trailing events are not lost (ce0e801).
+		await flushRawStdout();
 		process.exit(0);
 	}
 
@@ -874,11 +889,13 @@ export async function runRpcMode(session: AgentSession): Promise<never> {
 			// Handle regular commands
 			const response = await handleCommand(command);
 			output(response);
+			await waitForRawStdoutBackpressure();
 
 			// Check for deferred shutdown request (idle between commands)
 			await checkShutdownRequested();
 		} catch (e: any) {
 			output(error(undefined, "parse", `Failed to parse command: ${e.message}`));
+			await waitForRawStdoutBackpressure();
 		}
 	};
 

@@ -29,16 +29,23 @@ const manifestModulePath = join(projectRoot, "scripts", "lib", "workspace-manife
 const verifyScriptPath = join(projectRoot, "scripts", "verify-workspace-coverage.cjs");
 
 describe("workspace manifest (live project)", () => {
-	test("returns all eight linkable packages with consistent scope/name", () => {
+	test("returns all fifteen linkable packages with consistent scope/name", () => {
 		const manifest = require(manifestModulePath);
 		const packages = manifest.getLinkablePackages();
-		assert.equal(packages.length, 8, "expected exactly 8 linkable packages");
+		assert.equal(packages.length, 15, "expected exactly 15 linkable packages");
 
 		const names = packages.map((p: { packageName: string }) => p.packageName).sort();
 		assert.deepEqual(names, [
 			"@otto-build/contracts",
 			"@otto-build/mcp-server",
 			"@otto-build/rpc-client",
+			"@otto/coworker-artifacts",
+			"@otto/coworker-memory",
+			"@otto/coworker-persona",
+			"@otto/coworker-scratchpad",
+			"@otto/coworker-types",
+			"@otto/coworker-utils",
+			"@otto/coworker-vault",
 			"@otto/native",
 			"@otto/pi-agent-core",
 			"@otto/pi-ai",

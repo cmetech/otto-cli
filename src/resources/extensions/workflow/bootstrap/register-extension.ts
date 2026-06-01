@@ -23,6 +23,7 @@ import { logWarning } from "../workflow-logger.js";
 // session hook calling startAuto) would be silently dropped because Node's
 // EventEmitter does not buffer events for late subscribers.
 import { initCmuxEventListeners } from "../../cmux/index.js";
+import { registerPersonaCommands } from "../persona-status.js";
 import { BRAND } from "../strings.js";
 
 export { writeCrashLog } from "./crash-log.js";
@@ -126,6 +127,7 @@ export function registerWorkflowExtension(pi: ExtensionAPI): void {
     ["memory-tools", () => registerMemoryTools(pi)],
     ["exec-tools", () => registerExecTools(pi)],
     ["schedule-wakeup-tool", () => registerScheduleWakeupTool(pi)],
+    ["persona-commands", () => registerPersonaCommands(pi)],
     ["shortcuts", () => registerShortcuts(pi)],
     // cmux is a library (no pi), so gsd sets up the event listeners on its
     // behalf using the shared event channel contract. Registration is

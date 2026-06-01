@@ -1,0 +1,28 @@
+{
+  "name": "@otto/coworker-persona",
+  "version": "0.0.1",
+  "description": "Persona registry, manifest parser, and built-in default persona for Otto co-worker",
+  "type": "module",
+  "otto": {
+    "linkable": true,
+    "scope": "@otto",
+    "name": "coworker-persona"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-defaults.cjs",
+    "build:publish": "tsc -p tsconfig.publish.json && node scripts/copy-defaults.cjs"
+  },
+  "files": ["dist"],
+  "dependencies": {
+    "@otto/coworker-utils": "*",
+    "yaml": "^2.4.0"
+  }
+}

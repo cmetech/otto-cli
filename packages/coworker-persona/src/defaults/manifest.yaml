@@ -1,0 +1,12 @@
+name: default
+display_name: "Default Co-Worker"
+version: 1.0.0
+description: "Generic co-worker with no domain specialization. Auto-activates when no persona is set."
+author: "@cmetech"
+otto_version_required: ">=2.0.0"
+steering:
+  - steering/identity.md
+status_line:
+  label: "default"
+  color: "#6B6B7C"
+  icon: "⚙"

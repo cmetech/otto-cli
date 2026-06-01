@@ -357,6 +357,15 @@ async function resetAskUserQuestionsTurnCache(): Promise<void> {
   resetAskUserQuestionsCache();
 }
 
+async function initPersonaStatusChip(ctx: ExtensionContext): Promise<void> {
+  try {
+    const { initPersonaWidget } = await import("../persona-status.js");
+    await initPersonaWidget(ctx);
+  } catch {
+    // Non-fatal: persona chip simply won't render if the registry is unavailable.
+  }
+}
+
 async function syncServiceTierStatus(ctx: ExtensionContext): Promise<void> {
   const { getEffectiveServiceTier, formatServiceTierFooterStatus } = await import("../service-tier.js");
   ctx.ui.setStatus("gsd-fast", formatServiceTierFooterStatus(getEffectiveServiceTier(), ctx.model?.id));
@@ -498,6 +507,7 @@ export function registerHooks(
     approvalQuestionAbortInFlight = false;
     clearDeferredApprovalGate();
     await resetAskUserQuestionsTurnCache();
+    await initPersonaStatusChip(ctx);
     await syncServiceTierStatus(ctx);
     await applyDisabledModelProviderPolicy(ctx);
     await applyCompactionThresholdOverride(ctx);

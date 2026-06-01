@@ -90,11 +90,21 @@ export function registerScratchpadTool(pi: ExtensionAPI, deps: ScratchpadToolDep
     name: 'cw_scratchpad',
     label: 'Co-worker scratchpad',
     description:
-      'Run TypeScript cells in a persistent JS kernel scoped to a named scratchpad. State persists across cells via globalThis.* and across Otto sessions via on-disk kernel.db + namespace.json. ' +
+      'USE FOR: loading or analyzing files (CSV, Excel, JSON, Parquet), tabular data manipulation with polars or DuckDB, multi-step data exploration where state should persist across turns, or anything that calls otto.collectors. ' +
+      'DO NOT USE FOR: simple arithmetic, lookups answerable from reasoning alone, pure prose, code review, or one-off calculations with no file or data source involved. ' +
+      'IF the user explicitly names this tool ("use cw_scratchpad", "run this in the scratchpad", "exec a cell"), use it regardless of the rules above. ' +
+      'IF UNSURE whether a request belongs here, ASK the user once: "Do you want me to run this in cw_scratchpad so you can inspect the cells via /sp view, or answer inline?" Wait for their reply before deciding. ' +
+      'Runs TypeScript cells in a persistent JS kernel scoped to a named scratchpad. State persists across cells via globalThis.* and across Otto sessions via on-disk kernel.db + namespace.json. ' +
       'Pre-bound libs in every cell: polars, DuckDB, ExcelJS, dateFns, lodash, zod, axios. otto.collectors.{list,open} enumerates and loads data sources. ' +
       'Actions: exec (run a TypeScript cell), view (return the last N cells). ' +
       'Distinct from the analyst extension\'s SQL-only `scratchpad` tool — this one runs arbitrary TypeScript.',
+    promptSnippet:
+      'cw_scratchpad — run TypeScript cells in a persistent JS kernel. USE for files (CSV/Excel/JSON/Parquet), polars/DuckDB analysis, otto.collectors, or multi-step data work. NOT for arithmetic or pure prose. If unsure, ASK the user first.',
     promptGuidelines: [
+      'Trigger criteria: the request involves loading a file (CSV/Excel/JSON/Parquet/etc.), querying tabular data via polars or DuckDB, calling otto.collectors, or building state that must survive across turns.',
+      'Skip the tool for: trivial arithmetic, lookups you can answer from reasoning, prose generation, code review, and pure-explanation tasks.',
+      'If the user names the tool explicitly (e.g. "use cw_scratchpad", "in the scratchpad", "exec a cell"), always honor that request and skip the unsure-prompt.',
+      'IF UNSURE whether a request fits the trigger criteria, ask the user once before deciding: "Do you want me to run this in cw_scratchpad (you can inspect the cells via /sp view) or answer inline?" Wait for the user\'s reply before either calling the tool or answering inline.',
       'Use action="exec" to run TypeScript code in the current scratchpad. State persists across calls.',
       'The cell body is wrapped in (async () => { ... })(). let/const/var are local to the cell. To persist, assign to globalThis.foo = ...',
       'For DuckDB tables that survive across Otto sessions, use `await otto.duckdb.connect()`. For ephemeral in-memory, use `DuckDB.DuckDBInstance.create(":memory:")`.',

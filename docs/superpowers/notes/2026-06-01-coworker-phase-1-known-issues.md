@@ -377,6 +377,105 @@ Estimated effort: ~0.5 days including tests.
 
 ---
 
+## Issue 6 — Fresh Otto launch doesn't auto-restore workspace's last-attached scratchpad
+
+**Status:** open (design question — not a bug)
+**Severity:** medium (real UX gap for the canonical 3-day RCA scenario)
+**Date observed:** 2026-06-01 (scenario 9 of human tests)
+**Reporter:** Phase 1g testing
+
+### Reproduction
+
+```
+# Terminal A
+otto                              # fresh launch
+/sp attach t03-datalibs
+# do some work, persist state
+/quit
+
+# Terminal B (same workspace, some time later)
+otto                              # fresh launch — NOT --resume
+# Expected (per spec's day-2 scenario):
+#   "attached to t03-datalibs (restored)"
+# Actual:
+#   no restore notification
+/sp list
+#   ○ cold  t03-datalibs           ← exists but not current
+#   ○ cold  ...                    ← nothing marked (current)
+```
+
+### Symptoms
+
+Each `otto` launch creates a new session file (e.g. `2026-06-01T19-27-55-414Z_<uuid>.jsonl`), which becomes the sessionId. The 1g sidecar at `~/.otto/scratchpads/_sessions/<sessionId>.json` is keyed by that sessionId. A fresh launch produces a fresh sessionId → no sidecar matches → no restore.
+
+To trigger restore today, the user must:
+- Launch with `otto --resume` (TUI picker) and select the prior session, OR
+- Run `/resume` inside a running Otto and pick.
+
+### Why it matters
+
+The canonical 3-day RCA scenario in the spec (§ 4) describes the user as:
+
+> "Day 2 (Tuesday 2pm, different terminal): User `otto` → attaches to `default` → `/sp attach p1-1234`. Kernel state restored from `kernel.db` + `namespace.json`."
+
+The spec's UX expectation is: typing `otto` in the morning brings you back to yesterday's work. The current implementation requires the user to know about `--resume` and use the picker. NOC analysts who type `otto` from muscle memory don't get continuity unless they remember to type `otto --resume` instead — and the canonical scenario doesn't tell them to.
+
+This is a foot-gun specifically for the headline use case the entire roadmap is designed around.
+
+### Root cause
+
+Two design decisions compound:
+1. **Otto's session model** generates a fresh session file on every launch unless `--resume` is passed. (Outside the coworker spec; pre-existing behavior.)
+2. **The 1g sidecar** is keyed by sessionId, not by workspace. Each session gets its own affinity record.
+
+Neither is wrong on its own. The gap is between them: the user's mental model is "the scratchpad is for this workspace, I should pick up where I left off" but the implementation says "each session is independent, attach is per-session."
+
+### Workaround (today)
+
+- Always launch with `otto --resume` if you want continuity.
+- Or after fresh launch, type `/resume` and pick.
+
+### Proposed fixes (for design discussion)
+
+**Option A — Add a workspace-level sidecar.** Alongside the per-sessionId sidecar, write a workspace-keyed pointer: `~/.otto/scratchpads/_workspaces/<workspace-hash>.json` with `{ last_session_id, last_current_name, last_attached_at }`. On `session_start` for any new session, check the workspace pointer FIRST; if recent (e.g. within 24h) and the named scratchpad still exists, restore it with a notification like `attached to t03-datalibs (from workspace, last used 14h ago)`.
+
+Tradeoffs:
+- ✅ Matches the spec's UX expectation (typing `otto` resumes you).
+- ✅ Decouples coworker affinity from Otto's session model (no Otto-core changes needed).
+- ✅ Stale-cleanup is easy: a workspace pointer older than N days just doesn't fire.
+- ❌ Adds another file format. Per-session sidecars still exist for the explicit `/resume` path.
+- ❌ Disambiguation: which workspace? Hashing workspace CWD is straightforward but cross-machine workspaces (e.g. via cloud sync) could collide.
+
+**Option B — Otto-core change: persist the "last session" in a workspace-anchored pointer that fresh launches consult.** Same idea as A but at the Otto framework level, generalizing beyond just coworker affinity. Bigger blast radius, but resumes more than just scratchpad state.
+
+**Option C — Document the gap, don't fix.** Educate users to type `otto --resume` (or `otto -r`) routinely. Eventually update the canonical scenario in the spec to reflect this. Cheapest but the spec's UX expectation goes unmet for the headline workflow.
+
+**Option D — Add a `--continue` / `-c` shortcut.** Same as `--resume` but auto-picks the most recent session in the workspace, no picker. Compromise between "fresh launch" and "explicit resume." Doesn't help users who type just `otto`.
+
+### Recommendation
+
+**Option A — workspace-level sidecar.** Cleanest fit:
+- Scoped to coworker (no Otto-core changes).
+- Honors the spec's day-2 UX expectation.
+- Per-session sidecars still cover the explicit `/resume` flow (multi-session, explicit history).
+- ~1 day of work: write helper + read-at-session_start logic + 2-3 tests.
+
+The new pointer at `~/.otto/scratchpads/_workspaces/<hash>.json` (where `<hash>` = first 16 chars of `sha256(absolute-workspace-path)`) records `{ last_session_id, last_current_name, last_attached_at }` on every `/sp attach` / `/sp new` (alongside the existing per-session sidecar write). On session_start, the new restore order is:
+
+1. Per-session sidecar match (existing behavior, for `--resume` path).
+2. **NEW:** workspace pointer match (if no per-session match and pointer is within e.g. 7 days).
+3. No restore (fresh start).
+
+### Phase placement
+
+**Phase 1.5 polish wave.** Higher priority than the other Phase 1.5 issues because it directly affects the headline use case. Estimated effort: ~1 day including tests + docs.
+
+Updated Phase 1.5 bundle (with Issue 6): ~6 days single-engineer total (Issues 1, 2, 4, 5, 6).
+
+If Phase 1.5 isn't formed, this should be the FIRST polish item picked up at the earliest opportunity — every day this is open is a day the canonical scenario doesn't actually work as the spec describes.
+
+---
+
 ## Template for new issues
 
 When you hit something during testing, append a new section with this shape:

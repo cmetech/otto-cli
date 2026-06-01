@@ -310,13 +310,35 @@ ls ~/.otto/scratchpads/_sessions/
 
 **Phase coverage:** 1g (sidecar + session_start restore), 1d2 (cold→warm namespace restore).
 
+**IMPORTANT — how Otto's session model works:** the per-session sidecar at `~/.otto/scratchpads/_sessions/<sessionId>.json` is keyed by **sessionId**, NOT by workspace. A fresh `otto` launch creates a new session file → new sessionId → no match against any existing sidecar → no restore. To actually trigger restore you must REUSE the prior session via `/resume` or `--resume`.
+
+### Step 1: Establish attachment and quit
+
 ```
 /sp attach t03-datalibs
 ```
 
 Confirm: ask **"Use cw_scratchpad to return `globalThis` keys"** (or similar) — should return whatever's persisted.
 
-Exit Otto (Ctrl+D or `/exit`). In a new shell, launch Otto from the same workspace. On startup, you should see:
+Verify sidecar was written:
+```bash
+ls -la ~/.otto/scratchpads/_sessions/
+# Look for a file with mtime ≈ now; its contents should reference t03-datalibs
+cat ~/.otto/scratchpads/_sessions/*.json | grep -B 1 -A 1 t03-datalibs
+```
+
+Exit Otto: `Ctrl+D`, `/quit`, or `/exit`.
+
+### Step 2: Launch with `--resume` and pick the prior session
+
+In a new shell (same workspace):
+```bash
+otto --resume
+```
+
+(Or short form: `otto -r`.)
+
+A session picker opens. Select the session you just left (most recent, the one you attached t03-datalibs in). On session_start you should see:
 
 ```
 attached to t03-datalibs (restored)
@@ -327,12 +349,32 @@ If there were unseen recovery notes, you'll also see:
 ⚠ N unread recovery notes: ...
 ```
 
-Then ask: **"Use cw_scratchpad to return the polars DataFrame column names from before"** — should work without re-loading because namespace.json + kernel.db were restored.
+### Step 3: Verify state is intact
 
-**Disk check:**
+Ask: **"Use cw_scratchpad to return the polars DataFrame column names from before"** — should work without re-loading because namespace.json + kernel.db were restored.
+
+### Alternative: `/resume` from inside a running Otto
+
+If you've already launched fresh Otto without `--resume`, you can switch to a prior session via the same picker:
+```
+/resume
+```
+Pick the prior session from the TUI. Otto reloads it in place; the session_start handler fires the restore.
+
+### What does NOT trigger restore (and why)
+
+- **Fresh `otto` launch with no flags** → new session file → new sessionId → sidecar miss → no restore. By design: a fresh launch is supposed to be fresh.
+- **`/sp attach <name>` in a fresh session, where `<name>` matches a previous session's sidecar** → won't auto-restore because the new session doesn't know about the previous session's sidecar (different sessionId).
+
+If you want fresh launches to auto-restore the last-used scratchpad for the workspace, that's a separate design question — filed as Issue 6 in `2026-06-01-coworker-phase-1-known-issues.md`.
+
+### Disk check
+
 ```bash
-cat ~/.otto/scratchpads/_sessions/<your-new-session-id>.json
-# Should contain { schema_version: 1, session_id: ..., current_name: "t03-datalibs", attached_at: ... }
+# After --resume completed:
+cat ~/.otto/scratchpads/_sessions/<the-session-id-you-resumed>.json
+# Should reflect: { schema_version: 1, session_id: ..., current_name: "t03-datalibs", attached_at: ... }
+# The session_id field should match the file basename (same session reused = same id).
 ```
 
 ---

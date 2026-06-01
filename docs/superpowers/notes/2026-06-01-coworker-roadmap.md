@@ -93,14 +93,15 @@ After Phase 6, a fresh `npm install otto` should drop a user into this scenario 
 - **Issue 2 — meta.json write-order fix in `attachUnmanaged`.** Either reorder spawnRuntime BEFORE writeMeta, or add a second writeMeta after spawn. Stops the `kernel_db.present: false` + `size_bytes: 0` staleness on fresh attach.
 - **Issue 4 — pool visibility + explicit eviction.** Adds idle-age column to `/sp list` (`● live  t04-tree  idle 4m22s`) plus a new `/sp evict <name>` slash command + `manager.evict(name)` method that snapshots-then-disposes without removing the on-disk artifacts. Lets users see why a kernel is still live and dispose it immediately when desired.
 - **Issue 5 — `/sp attach` strict-existence check.** Currently `/sp attach <typo>` silently auto-creates a phantom scratchpad. Add a `existsSync(metaPath)` guard in `case 'attach':` that errors `scratchpad not found: <name>. Use /sp new <name> to create it.` LLM tool path (`cw_scratchpad action=exec`) is unaffected — only the slash command tightens.
+- **Issue 6 — workspace-level auto-restore on fresh launch.** Currently `otto` (no `--resume`) doesn't pick up the last-attached scratchpad — the canonical 3-day RCA scenario's day-2 UX ("type `otto`, you're back where you were") doesn't actually work. Add a workspace-keyed sidecar at `~/.otto/scratchpads/_workspaces/<hash>.json` consulted on `session_start` after the per-sessionId sidecar miss. Honors the spec's headline UX without touching Otto's session model. **Highest priority within Phase 1.5** because it directly affects the headline use case.
 
-**Milestone:** scenario 3 completes in ≤ 3 cells; `/sp list` shows idle ages; `/sp evict <name>` works and is reversible; `/sp attach <typo>` errors rather than silently creating.
+**Milestone:** scenario 3 completes in ≤ 3 cells; `/sp list` shows idle ages; `/sp evict <name>` works and is reversible; `/sp attach <typo>` errors rather than silently creating; **fresh `otto` launch in a workspace with recent scratchpad activity auto-restores the last-attached scratchpad**.
 
 **Dependencies:** Phase 1 complete (✅).
 
 **Not in scope:** Issue 3 (LLM "ask if unsure" reliability) — accepted as inherent LLM behavior, not a code fix.
 
-**Estimated effort:** ~1 week single-engineer (Issue 1: 1-2d, Issue 2: 0.5d, Issue 4: 1-2d, Issue 5: 0.5d, plus tests + docs + manual smoke).
+**Estimated effort:** ~6 days single-engineer (Issue 1: 1-2d, Issue 2: 0.5d, Issue 4: 1-2d, Issue 5: 0.5d, Issue 6: 1d, plus tests + docs + manual smoke).
 
 **Status:** proposed. If Phase 2 is starting urgently, defer to Phase 6 (NOC persona bundle) where UX polish for analysts gets natural priority. If there's a 1-week gap before Phase 2 begins, this is the highest-leverage way to spend it.
 

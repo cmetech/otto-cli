@@ -86,3 +86,86 @@ describe('coworker-scratchpad extension (live kernel)', () => {
     // After shutdown a re-exec would re-spawn; we don't assert that here (covered by manager tests).
   });
 });
+
+describe('coworker-scratchpad extension (session affinity — 1g)', () => {
+  let workspace: string;
+  let scratchpadRoot: string;
+
+  beforeEach(async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'spext-ws-'));
+    await mkdir(join(workspace, '.otto', 'inputs'), { recursive: true });
+    scratchpadRoot = await mkdtemp(join(tmpdir(), 'spext-root-'));
+    process.env.OTTO_SCRATCHPAD_ROOT = scratchpadRoot;
+  });
+  afterEach(async () => {
+    delete process.env.OTTO_SCRATCHPAD_ROOT;
+    await rm(workspace, { recursive: true, force: true });
+    await rm(scratchpadRoot, { recursive: true, force: true });
+  });
+
+  function makeSessionCtx(sessionFile: string | undefined): {
+    cwd: string;
+    sessionManager: { getSessionFile: () => string | undefined };
+    hasUI: boolean;
+    ui: { notify: (m: string, l: string) => void; confirm: (a: string, b: string) => Promise<boolean> };
+    notifications: Array<[string, string]>;
+  } {
+    const notifications: Array<[string, string]> = [];
+    return {
+      cwd: workspace,
+      sessionManager: { getSessionFile: () => sessionFile },
+      hasUI: false,
+      ui: {
+        notify: (m, l) => notifications.push([l, m]),
+        confirm: async () => true,
+      },
+      notifications,
+    };
+  }
+
+  it('session_start restores currentName from a valid sidecar', async () => {
+    // Pre-create the scratchpad on disk so the meta.json existence check passes.
+    const { mkdir, writeFile } = await import('node:fs/promises');
+    await mkdir(join(scratchpadRoot, 'p1'), { recursive: true });
+    await writeFile(join(scratchpadRoot, 'p1', 'meta.json'), '{}');
+    // Pre-write a sidecar for sessionId=sess-A.
+    await mkdir(join(scratchpadRoot, '_sessions'), { recursive: true });
+    await writeFile(
+      join(scratchpadRoot, '_sessions', 'sess-A.json'),
+      JSON.stringify({ schema_version: 1, session_id: 'sess-A', current_name: 'p1', attached_at: 't' }),
+    );
+
+    const pi = makePi();
+    coworkerScratchpadExtension(pi as any);
+    const ctx = makeSessionCtx('/tmp/sess-A.jsonl');
+    await pi.fire('session_start', {}, ctx);
+
+    assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /restored/.test(m)));
+  });
+
+  it('session_start clears the sidecar + notifies when the target scratchpad is gone', async () => {
+    const { mkdir, writeFile } = await import('node:fs/promises');
+    await mkdir(join(scratchpadRoot, '_sessions'), { recursive: true });
+    const sidecarPath = join(scratchpadRoot, '_sessions', 'sess-B.json');
+    await writeFile(
+      sidecarPath,
+      JSON.stringify({ schema_version: 1, session_id: 'sess-B', current_name: 'p-missing', attached_at: 't' }),
+    );
+
+    const pi = makePi();
+    coworkerScratchpadExtension(pi as any);
+    const ctx = makeSessionCtx('/tmp/sess-B.jsonl');
+    await pi.fire('session_start', {}, ctx);
+
+    assert.ok(!existsSync(sidecarPath), 'stale sidecar deleted');
+    assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /not restored/.test(m)));
+  });
+
+  it('session_start with no sidecar is a silent no-op', async () => {
+    const pi = makePi();
+    coworkerScratchpadExtension(pi as any);
+    const ctx = makeSessionCtx('/tmp/sess-C.jsonl');
+    await pi.fire('session_start', {}, ctx);
+    assert.equal(ctx.notifications.length, 0);
+  });
+});

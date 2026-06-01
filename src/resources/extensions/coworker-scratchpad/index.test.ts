@@ -9,7 +9,7 @@ import coworkerScratchpadExtension from './index.js';
 // Minimal pi.ExtensionAPI stub — captures registrations and lets us fire session_start/session_shutdown.
 interface StubPi {
   commands: Map<string, { description: string; handler: (args: string, ctx: any) => Promise<void> }>;
-  tools: Map<string, { name: string; handler: (params: any, ctx: any) => Promise<any> }>;
+  tools: Map<string, { name: string; execute: (id: string, params: any, signal: any, onUpdate: any, ctx: any) => Promise<{ details: any }> }>;
   hooks: Map<string, Array<(event: any, ctx: any) => Promise<void>>>;
   registerCommand(name: string, opts: any): void;
   registerTool(opts: any): void;
@@ -63,10 +63,10 @@ describe('coworker-scratchpad extension (live kernel)', () => {
     assert.ok(pi.tools.has('scratchpad'), 'scratchpad tool registered');
 
     // Run a cell via the scratchpad tool.
-    const exec = await pi.tools.get('scratchpad')!.handler(
-      { action: 'exec', code: 'globalThis.x = 42; return globalThis.x;' },
-      {},
+    const execResult = await pi.tools.get('scratchpad')!.execute(
+      '', { action: 'exec', code: 'globalThis.x = 42; return globalThis.x;' }, undefined, undefined, {},
     );
+    const exec = execResult.details as { ok: boolean; cell_id: number; mime: Record<string, unknown> };
     assert.equal(exec.ok, true);
     assert.equal(exec.cell_id, 1);
     assert.deepEqual(exec.mime, { 'application/json': 42 });
@@ -74,7 +74,8 @@ describe('coworker-scratchpad extension (live kernel)', () => {
     assert.ok(existsSync(join(scratchpadRoot, 'default', 'cells.jsonl')), 'cells.jsonl created');
 
     // View shows the cell.
-    const view = await pi.tools.get('scratchpad')!.handler({ action: 'view' }, {});
+    const viewResult = await pi.tools.get('scratchpad')!.execute('', { action: 'view' }, undefined, undefined, {});
+    const view = viewResult.details as { total_cells: number; cells: Array<{ id: number; ok: boolean; value: unknown }> };
     assert.equal(view.total_cells, 1);
     assert.equal(view.cells[0].id, 1);
     assert.equal(view.cells[0].ok, true);

@@ -112,8 +112,10 @@ export function registerScratchpadTool(pi: ExtensionAPI, deps: ScratchpadToolDep
       tail: Type.Optional(Type.Number({ description: `How many trailing cells to return (action='view' only). Default ${VIEW_DEFAULT_TAIL}, max ${VIEW_MAX_TAIL}.` })),
       from_id: Type.Optional(Type.Number({ description: "If set, view returns cells with id >= from_id (overrides tail)." })),
     }),
-    handler: async (params: { action: 'exec' | 'view'; name?: string; code?: string; tail?: number; from_id?: number }): Promise<ExecResult | ViewResult> => {
+    async execute(_toolCallId: string, params: { action: 'exec' | 'view'; name?: string; code?: string; tail?: number; from_id?: number }, _signal: AbortSignal | undefined, _onUpdate: unknown, _ctx: unknown): Promise<{ content: { type: 'text'; text: string }[]; details: ExecResult | ViewResult }> {
       const name = resolveName(deps, params.name);
+
+      let result: ExecResult | ViewResult;
 
       if (params.action === 'exec') {
         if (!params.code) {
@@ -123,24 +125,29 @@ export function registerScratchpadTool(pi: ExtensionAPI, deps: ScratchpadToolDep
         try {
           const { value, stdout } = await mgr.runCell(name, params.code);
           const { total_cells } = readCellsJsonl(join(deps.rootDir(), name));
-          return { ok: true, cell_id: total_cells, total_cells, mime: deriveMimeBundle(value, stdout) };
+          result = { ok: true, cell_id: total_cells, total_cells, mime: deriveMimeBundle(value, stdout) };
         } catch (err) {
           const e = err as Error;
           const { total_cells } = readCellsJsonl(join(deps.rootDir(), name));
-          return { ok: false, cell_id: total_cells, total_cells, error: { name: e.name, message: e.message } };
+          result = { ok: false, cell_id: total_cells, total_cells, error: { name: e.name, message: e.message } };
         }
+      } else {
+        // view
+        const { cells, total_cells } = readCellsJsonl(join(deps.rootDir(), name));
+        let selected: CellEntry[];
+        if (typeof params.from_id === 'number') {
+          selected = cells.filter((c) => c.id >= params.from_id!);
+        } else {
+          const tail = Math.min(params.tail ?? VIEW_DEFAULT_TAIL, VIEW_MAX_TAIL);
+          selected = cells.slice(-tail);
+        }
+        result = { name, cells: selected.map(projectViewCell), total_cells };
       }
 
-      // view
-      const { cells, total_cells } = readCellsJsonl(join(deps.rootDir(), name));
-      let selected: CellEntry[];
-      if (typeof params.from_id === 'number') {
-        selected = cells.filter((c) => c.id >= params.from_id!);
-      } else {
-        const tail = Math.min(params.tail ?? VIEW_DEFAULT_TAIL, VIEW_MAX_TAIL);
-        selected = cells.slice(-tail);
-      }
-      return { name, cells: selected.map(projectViewCell), total_cells };
+      return {
+        content: [{ type: 'text' as const, text: JSON.stringify(result) }],
+        details: result,
+      };
     },
   });
 }

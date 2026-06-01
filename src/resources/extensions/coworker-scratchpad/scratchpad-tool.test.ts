@@ -24,8 +24,8 @@ function makeStub(): StubMgr {
 }
 
 interface FakePi {
-  tools: Map<string, { name: string; handler: (params: unknown, ctx: unknown) => Promise<unknown> }>;
-  registerTool(opts: { name: string; handler: (params: unknown, ctx: unknown) => Promise<unknown>; [k: string]: unknown }): void;
+  tools: Map<string, { name: string; execute: (id: string, params: unknown, signal: unknown, onUpdate: unknown, ctx: unknown) => Promise<{ details: unknown }> }>;
+  registerTool(opts: { name: string; execute: (id: string, params: unknown, signal: unknown, onUpdate: unknown, ctx: unknown) => Promise<{ details: unknown }>; [k: string]: unknown }): void;
 }
 function makePi(): FakePi {
   const tools = new Map();
@@ -58,7 +58,7 @@ describe('scratchpad-tool dispatch (stubbed manager)', () => {
   it('exec without name uses currentName (or auto-default)', async () => {
     const { pi, mgr, current } = wire(null);
     mgr.nextResult = { value: 42, stdout: '' };
-    const res = await pi.tools.get('scratchpad')!.handler({ action: 'exec', code: 'return 42;' }, {}) as { ok: boolean; mime: Record<string, unknown> };
+    const res = (await pi.tools.get('scratchpad')!.execute('', { action: 'exec', code: 'return 42;' }, undefined, undefined, {})).details as { ok: boolean; mime: Record<string, unknown> };
     assert.equal(current.name, 'default');
     assert.deepEqual(mgr.calls, [['runCell', 'default', 'return 42;']]);
     assert.equal(res.ok, true);
@@ -68,7 +68,7 @@ describe('scratchpad-tool dispatch (stubbed manager)', () => {
   it('exec with explicit name does NOT change currentName', async () => {
     const { pi, mgr, current } = wire('p1');
     mgr.nextResult = { value: 'ok', stdout: '' };
-    await pi.tools.get('scratchpad')!.handler({ action: 'exec', name: 'side', code: 'return "ok";' }, {});
+    await pi.tools.get('scratchpad')!.execute('', { action: 'exec', name: 'side', code: 'return "ok";' }, undefined, undefined, {}).then(r => r.details);
     assert.deepEqual(mgr.calls, [['runCell', 'side', 'return "ok";']]);
     assert.equal(current.name, 'p1');
   });
@@ -76,7 +76,7 @@ describe('scratchpad-tool dispatch (stubbed manager)', () => {
   it('exec returns ok:false when manager throws', async () => {
     const { pi, mgr } = wire('p1');
     mgr.nextResult = { throw: Object.assign(new Error('boom'), { name: 'BoomError' }) } as any;
-    const res = await pi.tools.get('scratchpad')!.handler({ action: 'exec', code: 'throw new Error("boom");' }, {}) as { ok: boolean; error: { name: string; message: string } };
+    const res = (await pi.tools.get('scratchpad')!.execute('', { action: 'exec', code: 'throw new Error("boom");' }, undefined, undefined, {})).details as { ok: boolean; error: { name: string; message: string } };
     assert.equal(res.ok, false);
     assert.equal(res.error.name, 'BoomError');
     assert.match(res.error.message, /boom/);
@@ -90,7 +90,7 @@ describe('scratchpad-tool dispatch (stubbed manager)', () => {
       lines.push(JSON.stringify({ id: i, parentId: i === 1 ? null : i - 1, code: `return ${i};`, ok: true, value: i, stdout: '', ts: `t${i}` }));
     }
     await writeFile(join(root, 'p1', 'cells.jsonl'), lines.join('\n') + '\n');
-    const res = await pi.tools.get('scratchpad')!.handler({ action: 'view' }, {}) as { cells: Array<{ id: number }>; total_cells: number };
+    const res = (await pi.tools.get('scratchpad')!.execute('', { action: 'view' }, undefined, undefined, {})).details as { cells: Array<{ id: number }>; total_cells: number };
     assert.equal(res.total_cells, 8);
     assert.equal(res.cells.length, 5);
     assert.deepEqual(res.cells.map((c) => c.id), [4, 5, 6, 7, 8]);
@@ -104,7 +104,7 @@ describe('scratchpad-tool dispatch (stubbed manager)', () => {
       lines.push(JSON.stringify({ id: i, parentId: i === 1 ? null : i - 1, code: 'x', ok: true, value: i, stdout: '', ts: 't' }));
     }
     await writeFile(join(root, 'p1', 'cells.jsonl'), lines.join('\n') + '\n');
-    const res = await pi.tools.get('scratchpad')!.handler({ action: 'view', tail: 100 }, {}) as { cells: unknown[] };
+    const res = (await pi.tools.get('scratchpad')!.execute('', { action: 'view', tail: 100 }, undefined, undefined, {})).details as { cells: unknown[] };
     assert.equal(res.cells.length, 20);
   });
 
@@ -116,7 +116,7 @@ describe('scratchpad-tool dispatch (stubbed manager)', () => {
       lines.push(JSON.stringify({ id: i, parentId: i === 1 ? null : i - 1, code: 'x', ok: true, value: i, stdout: '', ts: 't' }));
     }
     await writeFile(join(root, 'p1', 'cells.jsonl'), lines.join('\n') + '\n');
-    const res = await pi.tools.get('scratchpad')!.handler({ action: 'view', from_id: 7 }, {}) as { cells: Array<{ id: number }> };
+    const res = (await pi.tools.get('scratchpad')!.execute('', { action: 'view', from_id: 7 }, undefined, undefined, {})).details as { cells: Array<{ id: number }> };
     assert.deepEqual(res.cells.map((c) => c.id), [7, 8, 9, 10]);
   });
 
@@ -130,7 +130,7 @@ describe('scratchpad-tool dispatch (stubbed manager)', () => {
       JSON.stringify({ id: 1, parentId: null, code: 'long', ok: true, value: longValue, stdout: longStdout, ts: 't' }),
     ];
     await writeFile(join(root, 'p1', 'cells.jsonl'), lines.join('\n') + '\n');
-    const res = await pi.tools.get('scratchpad')!.handler({ action: 'view' }, {}) as { cells: Array<{ value: string; stdout: string }> };
+    const res = (await pi.tools.get('scratchpad')!.execute('', { action: 'view' }, undefined, undefined, {})).details as { cells: Array<{ value: string; stdout: string }> };
     assert.equal(res.cells[0].value.length, 200);
     assert.equal(res.cells[0].stdout.length, 500);
   });

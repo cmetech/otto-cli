@@ -5,18 +5,14 @@ import { ScratchpadManager } from '@otto/coworker-scratchpad';
 import { registerSpCommand } from './sp-command.js';
 import { registerScratchpadTool } from './scratchpad-tool.js';
 
-interface SessionCtx extends ExtensionContext {
-  cwd: string;
-  sessionManager?: { getSessionFile?: () => string | undefined };
-}
-
 function deriveScratchpadRoot(): string {
   // Test override; production uses the standard user-global location per spec §3.3.
   return process.env.OTTO_SCRATCHPAD_ROOT ?? join(homedir(), '.otto', 'scratchpads');
 }
 
-function deriveSessionId(ctx: SessionCtx): string {
-  const file = ctx.sessionManager?.getSessionFile?.();
+function deriveSessionId(ctx: ExtensionContext): string {
+  // getSessionFile() returns string in production; in test stubs it may return undefined.
+  const file = ctx.sessionManager.getSessionFile() as string | undefined;
   if (!file) return 'default';
   // The session file is something like /.../session-<id>.jsonl. Strip the extension; if none, use the basename as-is.
   const base = basename(file);
@@ -50,9 +46,8 @@ export default function coworkerScratchpadExtension(pi: ExtensionAPI): void {
   registerScratchpadTool(pi, { getManager, getCurrentName, setCurrentName, rootDir });
 
   pi.on('session_start', async (_event, ctx) => {
-    const sessionCtx = ctx as SessionCtx;
-    workspaceCwd = sessionCtx.cwd;
-    sessionId = deriveSessionId(sessionCtx);
+    workspaceCwd = ctx.cwd;
+    sessionId = deriveSessionId(ctx);
   });
 
   pi.on('session_shutdown', async () => {

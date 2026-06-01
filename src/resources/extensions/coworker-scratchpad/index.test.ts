@@ -60,10 +60,10 @@ describe('coworker-scratchpad extension (live kernel)', () => {
     });
 
     assert.ok(pi.commands.has('sp'), 'sp slash command registered');
-    assert.ok(pi.tools.has('scratchpad'), 'scratchpad tool registered');
+    assert.ok(pi.tools.has('cw_scratchpad'), 'cw_scratchpad tool registered');
 
     // Run a cell via the scratchpad tool.
-    const execResult = await pi.tools.get('scratchpad')!.execute(
+    const execResult = await pi.tools.get('cw_scratchpad')!.execute(
       '', { action: 'exec', code: 'globalThis.x = 42; return globalThis.x;' }, undefined, undefined, {},
     );
     const exec = execResult.details as { ok: boolean; cell_id: number; mime: Record<string, unknown> };
@@ -74,7 +74,7 @@ describe('coworker-scratchpad extension (live kernel)', () => {
     assert.ok(existsSync(join(scratchpadRoot, 'default', 'cells.jsonl')), 'cells.jsonl created');
 
     // View shows the cell.
-    const viewResult = await pi.tools.get('scratchpad')!.execute('', { action: 'view' }, undefined, undefined, {});
+    const viewResult = await pi.tools.get('cw_scratchpad')!.execute('', { action: 'view' }, undefined, undefined, {});
     const view = viewResult.details as { total_cells: number; cells: Array<{ id: number; ok: boolean; value: unknown }> };
     assert.equal(view.total_cells, 1);
     assert.equal(view.cells[0].id, 1);

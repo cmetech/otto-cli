@@ -274,6 +274,8 @@ export class ExtensionRunner {
 	private sessionManager: SessionManager;
 	private modelRegistry: ModelRegistry;
 	private errorListeners: Set<ExtensionErrorListener> = new Set();
+	/** Tool-name collisions already warned about, deduped per process lifetime. */
+	private readonly warnedToolCollisions = new Set<string>();
 	private getModel: () => Model<any> | undefined = () => undefined;
 	private isIdleFn: () => boolean = () => true;
 	private waitForIdleFn: () => Promise<void> = async () => {};
@@ -525,15 +527,32 @@ export class ExtensionRunner {
 		return this.extensions.map((e) => e.path);
 	}
 
-	/** Get all registered tools from all extensions (first registration per name wins). */
+	/** Get all registered tools from all extensions (first registration per name wins).
+	 * Logs a one-time-per-process stderr warning when two extensions register the same
+	 * tool name; the second loses silently otherwise (which has bitten us with collisions
+	 * like analyst:scratchpad vs coworker-scratchpad:scratchpad). */
 	getAllRegisteredTools(): RegisteredTool[] {
 		const toolsByName = new Map<string, RegisteredTool>();
+		const collisions = new Map<string, string[]>(); // name -> [winnerPath, loserPath, ...]
 		for (const ext of this.extensions) {
 			for (const tool of ext.tools.values()) {
-				if (!toolsByName.has(tool.definition.name)) {
-					toolsByName.set(tool.definition.name, tool);
+				const name = tool.definition.name;
+				const existing = toolsByName.get(name);
+				if (!existing) {
+					toolsByName.set(name, tool);
+				} else {
+					const paths = collisions.get(name) ?? [existing.extensionPath];
+					paths.push(tool.extensionPath);
+					collisions.set(name, paths);
 				}
 			}
+		}
+		for (const [name, paths] of collisions) {
+			if (this.warnedToolCollisions.has(name)) continue;
+			this.warnedToolCollisions.add(name);
+			process.stderr.write(
+				`[otto] tool name collision: '${name}' registered by ${paths.length} extensions: ${paths.join(", ")}. First wins; the rest are shadowed and the LLM will not see them. Rename to avoid conflict (suggest <namespace>_${name}).\n`,
+			);
 		}
 		return Array.from(toolsByName.values());
 	}

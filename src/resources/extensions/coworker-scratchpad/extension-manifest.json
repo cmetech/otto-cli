@@ -2,11 +2,11 @@
   "id": "coworker-scratchpad",
   "name": "Co-worker Scratchpad",
   "version": "1.0.0",
-  "description": "Persistent TypeScript scratchpad kernel: /sp slash commands and scratchpad tool with MIME bundle responses",
+  "description": "Persistent TypeScript scratchpad kernel: /sp slash commands and cw_scratchpad tool with MIME bundle responses",
   "tier": "bundled",
   "requires": { "platform": ">=2.29.0" },
   "provides": {
-    "tools": ["scratchpad"],
+    "tools": ["cw_scratchpad"],
     "commands": ["sp"],
     "hooks": ["session_start", "session_shutdown"]
   }

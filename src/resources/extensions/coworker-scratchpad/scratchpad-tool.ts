@@ -87,12 +87,13 @@ function projectViewCell(c: CellEntry): ViewCell {
 
 export function registerScratchpadTool(pi: ExtensionAPI, deps: ScratchpadToolDeps): void {
   pi.registerTool({
-    name: 'scratchpad',
-    label: 'Scratchpad',
+    name: 'cw_scratchpad',
+    label: 'Co-worker scratchpad',
     description:
-      'Run TypeScript cells in a persistent kernel scoped to a named scratchpad. State persists across cells via globalThis.* and across Otto sessions via on-disk kernel.db + namespace.json. ' +
+      'Run TypeScript cells in a persistent JS kernel scoped to a named scratchpad. State persists across cells via globalThis.* and across Otto sessions via on-disk kernel.db + namespace.json. ' +
       'Pre-bound libs in every cell: polars, DuckDB, ExcelJS, dateFns, lodash, zod, axios. otto.collectors.{list,open} enumerates and loads data sources. ' +
-      'Actions: exec (run a cell), view (return the last N cells).',
+      'Actions: exec (run a TypeScript cell), view (return the last N cells). ' +
+      'Distinct from the analyst extension\'s SQL-only `scratchpad` tool — this one runs arbitrary TypeScript.',
     promptGuidelines: [
       'Use action="exec" to run TypeScript code in the current scratchpad. State persists across calls.',
       'The cell body is wrapped in (async () => { ... })(). let/const/var are local to the cell. To persist, assign to globalThis.foo = ...',

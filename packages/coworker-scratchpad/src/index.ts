@@ -61,3 +61,11 @@ export {
   type EncodeResult,
   type DecodeResult,
 } from './namespace-codec.js';
+export {
+  projectTree,
+  findLeaves,
+  validateLeafId,
+  formatTreeText,
+  type TreeNode,
+  type CellTree,
+} from './cell-tree.js';

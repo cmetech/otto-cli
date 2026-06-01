@@ -2,7 +2,8 @@ import { existsSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ExtensionAPI } from '@otto/pi-coding-agent';
 import type { ScratchpadManager } from '@otto/coworker-scratchpad';
-import { validateName, readCellsJsonl } from './helpers.js';
+import { validateName, readCellsJsonl, readPersistedLeaf } from './helpers.js';
+import { projectTree, formatTreeText } from '@otto/coworker-scratchpad';
 
 export interface SpDeps {
   getManager: () => ScratchpadManager;
@@ -11,8 +12,8 @@ export interface SpDeps {
   rootDir: () => string;
 }
 
-type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove';
-const VERBS: SpVerb[] = ['list', 'new', 'attach', 'reset', 'view', 'remove'];
+type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove' | 'tree' | 'fork';
+const VERBS: SpVerb[] = ['list', 'new', 'attach', 'reset', 'view', 'remove', 'tree', 'fork'];
 
 function ensureCurrent(deps: SpDeps): string {
   let current = deps.getCurrentName();
@@ -143,6 +144,46 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
             await deps.getManager().remove(name);
             if (deps.getCurrentName() === name) deps.setCurrentName(null);
             ctx.ui.notify(`removed scratchpad: ${name}`, 'info');
+            return;
+          }
+          case 'tree': {
+            // Usage: /sp tree [<name>] [--to <id>]
+            const flagIdx = parts.indexOf('--to');
+            let target: string;
+            if (flagIdx === -1) {
+              target = name ?? ensureCurrent(deps);
+            } else {
+              target = flagIdx === 1 ? ensureCurrent(deps) : (parts[1] as string);
+              const toId = Number(parts[flagIdx + 1]);
+              if (!Number.isInteger(toId) || toId <= 0) {
+                ctx.ui.notify('Usage: /sp tree [<name>] --to <id>', 'error');
+                return;
+              }
+              validateName(target);
+              await deps.getManager().setLeaf(target, toId);
+              ctx.ui.notify(`set leaf of ${target} to cell ${toId}`, 'info');
+              return;
+            }
+            validateName(target);
+            const { cells } = readCellsJsonl(join(deps.rootDir(), target));
+            if (cells.length === 0) {
+              ctx.ui.notify(`${target}: no cells yet`, 'info');
+              return;
+            }
+            const tree = projectTree(cells);
+            const leaf = readPersistedLeaf(join(deps.rootDir(), target, 'meta.json'));
+            ctx.ui.notify(`${target} cell tree:\n${formatTreeText(tree, leaf)}`, 'info');
+            return;
+          }
+          case 'fork': {
+            // Usage: /sp fork <src> <dst>
+            if (parts.length < 3) { ctx.ui.notify('Usage: /sp fork <src> <dst>', 'error'); return; }
+            const src = parts[1]!;
+            const dst = parts[2]!;
+            validateName(src);
+            validateName(dst);
+            await deps.getManager().fork(src, dst);
+            ctx.ui.notify(`forked ${src} → ${dst}`, 'info');
             return;
           }
           default: {

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { SCRATCHPAD_NAME_REGEX, validateName, readCellsJsonl } from './helpers.js';
+import { SCRATCHPAD_NAME_REGEX, validateName, readCellsJsonl, readPersistedLeaf } from './helpers.js';
 
 describe('SCRATCHPAD_NAME_REGEX + validateName', () => {
   it('accepts simple letter-led names', () => {
@@ -62,5 +62,32 @@ describe('readCellsJsonl', () => {
     assert.equal(r.cells.length, 3);
     assert.equal(r.cells[2].ok, false);
     assert.equal(r.cells[2].error?.message, 'm');
+  });
+});
+
+describe('readPersistedLeaf', () => {
+  let dir: string;
+  beforeEach(async () => { dir = await mkdtemp(join(tmpdir(), 'rpl-')); });
+  afterEach(async () => { await rm(dir, { recursive: true, force: true }); });
+
+  it('returns null when meta.json is missing', () => {
+    assert.equal(readPersistedLeaf(join(dir, 'meta.json')), null);
+  });
+
+  it('returns null when cell_leaf_id is absent or null', async () => {
+    await writeFile(join(dir, 'meta.json'), JSON.stringify({ name: 'x' }));
+    assert.equal(readPersistedLeaf(join(dir, 'meta.json')), null);
+    await writeFile(join(dir, 'meta.json'), JSON.stringify({ name: 'x', cell_leaf_id: null }));
+    assert.equal(readPersistedLeaf(join(dir, 'meta.json')), null);
+  });
+
+  it('returns the cell_leaf_id when present as a number', async () => {
+    await writeFile(join(dir, 'meta.json'), JSON.stringify({ name: 'x', cell_leaf_id: 7 }));
+    assert.equal(readPersistedLeaf(join(dir, 'meta.json')), 7);
+  });
+
+  it('returns null on corrupt meta', async () => {
+    await writeFile(join(dir, 'meta.json'), '{not json');
+    assert.equal(readPersistedLeaf(join(dir, 'meta.json')), null);
   });
 });

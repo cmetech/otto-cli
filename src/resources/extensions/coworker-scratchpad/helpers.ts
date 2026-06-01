@@ -30,3 +30,13 @@ export function readCellsJsonl(dir: string): CellsJsonlRead {
   }
   return { cells, total_cells: cells.length };
 }
+
+export function readPersistedLeaf(metaPath: string): number | null {
+  if (!existsSync(metaPath)) return null;
+  try {
+    const meta = JSON.parse(readFileSync(metaPath, 'utf8')) as { cell_leaf_id?: unknown };
+    return typeof meta.cell_leaf_id === 'number' ? meta.cell_leaf_id : null;
+  } catch {
+    return null;
+  }
+}

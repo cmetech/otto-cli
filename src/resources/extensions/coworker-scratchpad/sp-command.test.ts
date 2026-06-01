@@ -145,4 +145,57 @@ describe('sp-command dispatch (stubbed manager)', () => {
     const values = completions.map((c) => c.value).sort();
     assert.deepEqual(values, ['attach investigation-1', 'attach p1-1234']);
   });
+
+  it('/sp tree prints the formatted tree of the current scratchpad', async () => {
+    const { pi, ctx } = wire(['p1']);
+    await mkdir(join(root, 'p1'), { recursive: true });
+    await writeFile(join(root, 'p1', 'cells.jsonl'), [
+      JSON.stringify({ type: 'header', version: 1 }),
+      JSON.stringify({ id: 1, parentId: null, code: 'return 1;', ok: true, value: 1, stdout: '', ts: 't1' }),
+      JSON.stringify({ id: 2, parentId: 1, code: 'return 2;', ok: true, value: 2, stdout: '', ts: 't2' }),
+    ].join('\n') + '\n');
+    await writeFile(join(root, 'p1', 'meta.json'), JSON.stringify({ name: 'p1', cell_leaf_id: 2 }));
+    await pi.commands.get('sp')!.handler('tree p1', ctx);
+    const text = ctx.notifications.map(([_, m]) => m).join('\n');
+    assert.match(text, /#1/);
+    assert.match(text, /#2/);
+    assert.match(text, /\*/); // current-leaf marker
+  });
+
+  it('/sp tree --to <id> calls manager.setLeaf', async () => {
+    const setLeafCalls: Array<[string, number]> = [];
+    const { pi, ctx, mgr } = wire(['p1']);
+    (mgr as unknown as { setLeaf: (n: string, i: number) => Promise<void> }).setLeaf = async (n, i) => { setLeafCalls.push([n, i]); };
+    await pi.commands.get('sp')!.handler('tree p1 --to 1', ctx);
+    assert.deepEqual(setLeafCalls, [['p1', 1]]);
+    assert.ok(ctx.notifications.some(([_, m]) => /set leaf of p1 to cell 1/.test(m)));
+  });
+
+  it('/sp tree --to with non-numeric id reports a usage error', async () => {
+    const { pi, ctx } = wire(['p1']);
+    await pi.commands.get('sp')!.handler('tree p1 --to bogus', ctx);
+    assert.ok(ctx.notifications.some(([l, m]) => l === 'error' && /Usage: \/sp tree/.test(m)));
+  });
+
+  it('/sp tree on a scratchpad with no cells notifies "no cells yet"', async () => {
+    const { pi, ctx } = wire(['p1']);
+    await mkdir(join(root, 'p1'), { recursive: true });
+    await pi.commands.get('sp')!.handler('tree p1', ctx);
+    assert.ok(ctx.notifications.some(([_, m]) => /no cells yet/.test(m)));
+  });
+
+  it('/sp fork <src> <dst> calls manager.fork', async () => {
+    const forkCalls: Array<[string, string]> = [];
+    const { pi, ctx, mgr } = wire(['p1']);
+    (mgr as unknown as { fork: (s: string, d: string) => Promise<void> }).fork = async (s, d) => { forkCalls.push([s, d]); };
+    await pi.commands.get('sp')!.handler('fork p1 p2', ctx);
+    assert.deepEqual(forkCalls, [['p1', 'p2']]);
+    assert.ok(ctx.notifications.some(([_, m]) => /forked p1 → p2/.test(m)));
+  });
+
+  it('/sp fork without two args reports a usage error', async () => {
+    const { pi, ctx } = wire();
+    await pi.commands.get('sp')!.handler('fork onlyone', ctx);
+    assert.ok(ctx.notifications.some(([l, m]) => l === 'error' && /Usage: \/sp fork/.test(m)));
+  });
 });

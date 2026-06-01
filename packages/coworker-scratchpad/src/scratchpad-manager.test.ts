@@ -789,3 +789,67 @@ describe('ScratchpadManager (fork exit escalation — 1g3)', () => {
     reallyKill.call(realChild, 'SIGKILL');
   });
 });
+
+describe('ScratchpadManager (payloadSize whitelist — 1g3)', () => {
+  let workspace: string;
+  let root: string;
+  let mgr: ScratchpadManager;
+
+  beforeEach(async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'sp-ws-'));
+    root = await mkdtemp(join(tmpdir(), 'sp-root-'));
+    mgr = new ScratchpadManager({ workspace, root, sessionId: 'sess-1', sweepIntervalMs: 1_000_000 });
+  });
+  afterEach(async () => {
+    await mgr.disposeAll();
+    await rm(workspace, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('size_bytes counts only payload files; excludes lock.json + meta.json', async () => {
+    await mgr.runCell('p1', 'globalThis.x = 1;');
+    const dir = join(root, 'p1');
+
+    // Sanity: lock.json + meta.json + cells.jsonl + kernel.db (+ maybe kernel.db.wal) + namespace.json all on disk
+    // after a single runCell + auto-snapshot? Actually only cells.jsonl + kernel.db + lock.json + meta.json
+    // exist after runCell — snapshot only fires on dispose/idle. namespace.json may not be present.
+    // Either way the math holds: size_bytes only counts whatever's in the whitelist.
+    const { statSync } = await import('node:fs');
+    const lockSize = statSync(join(dir, 'lock.json')).size;
+    const metaSize = statSync(join(dir, 'meta.json')).size;
+
+    const meta = JSON.parse(readFileSync(join(dir, 'meta.json'), 'utf8')) as { size_bytes?: unknown };
+    const payloadOnly =
+      (existsSync(join(dir, 'kernel.db')) ? statSync(join(dir, 'kernel.db')).size : 0) +
+      (existsSync(join(dir, 'kernel.db.wal')) ? statSync(join(dir, 'kernel.db.wal')).size : 0) +
+      (existsSync(join(dir, 'namespace.json')) ? statSync(join(dir, 'namespace.json')).size : 0) +
+      (existsSync(join(dir, 'cells.jsonl')) ? statSync(join(dir, 'cells.jsonl')).size : 0);
+
+    assert.equal(meta.size_bytes, payloadOnly, 'size_bytes equals payload sum');
+    // Negative-form: it does NOT include lock.json or meta.json
+    assert.notEqual(meta.size_bytes, payloadOnly + lockSize, 'size_bytes excludes lock.json');
+    assert.notEqual(meta.size_bytes, payloadOnly + metaSize, 'size_bytes excludes meta.json');
+  });
+
+  it('size_bytes is 0 when no payload files are present (lock + meta only)', async () => {
+    // attachUnmanaged writes meta + acquires lock BEFORE spawning the runtime.
+    // We need to inspect meta written by attachUnmanaged before any runCell.
+    // The simplest exercise: write meta directly via the public surface that triggers writeMeta with no payload.
+    // Use `manager.create()` (which calls attachUnmanaged) and check the meta written.
+    // But create spawns the kernel which writes kernel.db. Hmm.
+    // Workaround: read meta AFTER create but check it counted only existing payload files at that point.
+    // Since kernel.db is created during spawnRuntime which is called from attachUnmanaged, kernel.db
+    // will exist by the time writeMeta returns. So this test can't easily exercise the "0 payload files" case.
+    // Skip this test as a unit assertion; the whitelist-only-counts behavior is already verified above.
+    // Instead, verify payloadSize directly via the internal helper exposure (cast through unknown).
+    const dir = join(root, 'p-empty');
+    const { mkdirSync } = await import('node:fs');
+    mkdirSync(dir, { recursive: true });
+    // Drop a lock.json and meta.json but no payload.
+    const { writeFileSync } = await import('node:fs');
+    writeFileSync(join(dir, 'lock.json'), '{}');
+    writeFileSync(join(dir, 'meta.json'), '{}');
+    const size = (mgr as unknown as { payloadSize(d: string): number }).payloadSize(dir);
+    assert.equal(size, 0, 'payloadSize ignores lock.json + meta.json');
+  });
+});

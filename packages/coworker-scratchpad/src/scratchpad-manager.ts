@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { ChildProcessRuntime, type ChildProcessRuntimeOptions } from './child-process-runtime.js';
@@ -108,18 +108,14 @@ export class ScratchpadManager {
     return existsSync(this.metaPath(name));
   }
 
-  private dirSize(dir: string): number {
+  private payloadSize(dir: string): number {
     let total = 0;
-    try {
-      for (const f of readdirSync(dir)) {
-        try {
-          total += statSync(join(dir, f)).size;
-        } catch {
-          // file vanished between readdir and stat -> skip
-        }
+    for (const f of ['kernel.db', 'kernel.db.wal', 'namespace.json', 'cells.jsonl']) {
+      try {
+        total += statSync(join(dir, f)).size;
+      } catch {
+        // not present -> skip (no-op contribution)
       }
-    } catch {
-      // dir does not exist yet -> 0
     }
     return total;
   }
@@ -167,7 +163,7 @@ export class ScratchpadManager {
       created_at,
       last_used: nowIso,
       attached_sessions,
-      size_bytes: this.dirSize(dir),
+      size_bytes: this.payloadSize(dir),
       schema_version: META_SCHEMA_VERSION,
       ...prevExtras,
       kernel_db: { present: existsSync(join(dir, 'kernel.db')), path: 'kernel.db' },
@@ -445,7 +441,7 @@ export class ScratchpadManager {
       created_at: nowIso,
       last_used: nowIso,
       attached_sessions: this.sessionId ? [this.sessionId] : [],
-      size_bytes: this.dirSize(dstDir),
+      size_bytes: this.payloadSize(dstDir),
       schema_version: META_SCHEMA_VERSION,
       cell_leaf_id: typeof srcMeta.cell_leaf_id === 'number' ? srcMeta.cell_leaf_id : null,
       last_snapshot_cell_id: typeof srcMeta.last_snapshot_cell_id === 'number' ? srcMeta.last_snapshot_cell_id : null,

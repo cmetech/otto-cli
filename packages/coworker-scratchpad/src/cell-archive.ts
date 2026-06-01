@@ -26,12 +26,14 @@ export class CellArchive {
   private readonly path: string;
   private nextId: number;
   #lastId: number | null;
+  #leafId: number | null;
 
   constructor(private readonly dir: string, private readonly now: () => number = Date.now) {
     this.path = join(dir, 'cells.jsonl');
     const { nextId, lastId } = this.scan();
     this.nextId = nextId;
     this.#lastId = lastId;
+    this.#leafId = lastId;
   }
 
   private scan(): { nextId: number; lastId: number | null } {
@@ -60,7 +62,7 @@ export class CellArchive {
     const id = this.nextId++;
     const entry: CellEntry = {
       id,
-      parentId: this.#lastId,
+      parentId: this.#leafId,
       code: input.code,
       ok: input.ok,
       ...(input.ok ? { value: input.value } : { error: input.error }),
@@ -69,10 +71,19 @@ export class CellArchive {
     };
     appendFileSync(this.path, JSON.stringify(entry) + '\n');
     this.#lastId = id;
+    this.#leafId = id;
     return entry;
   }
 
   get lastId(): number | null {
     return this.#lastId;
+  }
+
+  get leafId(): number | null {
+    return this.#leafId;
+  }
+
+  setLeaf(id: number | null): void {
+    this.#leafId = id;
   }
 }

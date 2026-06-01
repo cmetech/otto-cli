@@ -70,4 +70,55 @@ describe('CellArchive', () => {
     const a2 = new CellArchive(dir, () => 0);
     assert.equal(a2.lastId, 2);
   });
+
+  it('leafId equals lastId after construct on a linear chain (backward-compat)', () => {
+    const a = new CellArchive(dir, () => 0);
+    a.append({ code: 'a', ok: true, value: null, stdout: '' });
+    a.append({ code: 'b', ok: true, value: null, stdout: '' });
+    assert.equal(a.lastId, 2);
+    assert.equal(a.leafId, 2);
+    // Re-construct over the same file: both seed to file-max.
+    const a2 = new CellArchive(dir, () => 0);
+    assert.equal(a2.lastId, 2);
+    assert.equal(a2.leafId, 2);
+  });
+
+  it('setLeaf moves leafId without affecting lastId', () => {
+    const a = new CellArchive(dir, () => 0);
+    a.append({ code: 'a', ok: true, value: null, stdout: '' }); // id 1
+    a.append({ code: 'b', ok: true, value: null, stdout: '' }); // id 2
+    a.append({ code: 'c', ok: true, value: null, stdout: '' }); // id 3
+    a.setLeaf(1);
+    assert.equal(a.lastId, 3);
+    assert.equal(a.leafId, 1);
+  });
+
+  it('append after setLeaf chains parentId from leaf, not from lastId', () => {
+    const a = new CellArchive(dir, () => 0);
+    a.append({ code: 'a', ok: true, value: null, stdout: '' }); // id 1, parent null
+    a.append({ code: 'b', ok: true, value: null, stdout: '' }); // id 2, parent 1
+    a.append({ code: 'c', ok: true, value: null, stdout: '' }); // id 3, parent 2
+    a.setLeaf(1);
+    const branched = a.append({ code: 'd', ok: true, value: null, stdout: '' }); // id 4, parent 1
+    assert.equal(branched.id, 4);
+    assert.equal(branched.parentId, 1);
+  });
+
+  it('append after setLeaf updates BOTH lastId and leafId to the new id', () => {
+    const a = new CellArchive(dir, () => 0);
+    a.append({ code: 'a', ok: true, value: null, stdout: '' }); // id 1
+    a.append({ code: 'b', ok: true, value: null, stdout: '' }); // id 2
+    a.setLeaf(1);
+    a.append({ code: 'c', ok: true, value: null, stdout: '' }); // id 3, parent 1
+    assert.equal(a.lastId, 3);
+    assert.equal(a.leafId, 3);
+  });
+
+  it('setLeaf(null) makes the next append a root cell (parentId null)', () => {
+    const a = new CellArchive(dir, () => 0);
+    a.append({ code: 'a', ok: true, value: null, stdout: '' });
+    a.setLeaf(null);
+    const next = a.append({ code: 'b', ok: true, value: null, stdout: '' });
+    assert.equal(next.parentId, null);
+  });
 });

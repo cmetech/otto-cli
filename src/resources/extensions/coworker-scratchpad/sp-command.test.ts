@@ -4,31 +4,43 @@ import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { registerSpCommand, type SpDeps } from './sp-command.js';
+import { ScratchpadBusyError } from '@otto/coworker-scratchpad';
 
 interface StubMgr {
   list(): Array<{ name: string; live: boolean; lastUsedAt: number }>;
   create(name: string): Promise<unknown>;
-  getOrAttach(name: string): Promise<unknown>;
+  getOrAttach(name: string, opts?: { forceTakeover?: boolean; takeoverReason?: string }): Promise<unknown>;
   remove(name: string): Promise<void>;
   save(name: string): Promise<void>;
   detach(name: string, sessionId: string): Promise<void>;
   clearHistory(name: string): Promise<void>;
+  markRecoveryNotesSeen(name: string): Promise<void>;
   rootDir(): string;
   calls: Array<[string, ...unknown[]]>;
 }
 
-function makeStub(root: string, existing: string[] = []): StubMgr {
+function makeStub(root: string, existing: string[] = [], busyOnAttach: boolean = false): StubMgr {
   const calls: StubMgr['calls'] = [];
+  let busy = busyOnAttach;
   return {
     calls,
     rootDir: () => root,
     list() { calls.push(['list']); return existing.map((n) => ({ name: n, live: false, lastUsedAt: 0 })); },
     async create(name) { calls.push(['create', name]); if (existing.includes(name)) throw new Error(`scratchpad ${name} already exists`); existing.push(name); return null; },
-    async getOrAttach(name) { calls.push(['getOrAttach', name]); if (!existing.includes(name)) existing.push(name); return null; },
+    async getOrAttach(name, opts) {
+      calls.push(['getOrAttach', name, opts ?? {}]);
+      if (busy && !opts?.forceTakeover) {
+        throw new ScratchpadBusyError(name, { pid: 9999, host: 'host-x', acquired_at: '2026-05-31T10:00:00.000Z' });
+      }
+      busy = false; // takeover succeeded; subsequent attaches are normal
+      if (!existing.includes(name)) existing.push(name);
+      return null;
+    },
     async remove(name) { calls.push(['remove', name]); const i = existing.indexOf(name); if (i >= 0) existing.splice(i, 1); },
     async save(name) { calls.push(['save', name]); if (!existing.includes(name)) throw new Error(`scratchpad ${name} is not warm — nothing to save`); },
     async detach(name, sid) { calls.push(['detach', name, sid]); },
     async clearHistory(name) { calls.push(['clearHistory', name]); },
+    async markRecoveryNotesSeen(name) { calls.push(['markRecoveryNotesSeen', name]); },
   };
 }
 
@@ -39,9 +51,11 @@ interface FakeCtx {
   ui: {
     notify: (msg: string, level: string) => void;
     confirm: (title: string, msg: string) => Promise<boolean>;
+    input: (title: string, placeholder?: string) => Promise<string | undefined>;
   };
 }
-function makeCtx(confirmAnswer: boolean = true): FakeCtx {
+function makeCtx(confirmAnswer: boolean = true, ...rest: Array<string | undefined>): FakeCtx {
+  const inputAnswer: string | undefined = rest.length === 0 ? 'because reason' : rest[0];
   const notifications: FakeCtx['notifications'] = [];
   return {
     notifications,
@@ -50,6 +64,7 @@ function makeCtx(confirmAnswer: boolean = true): FakeCtx {
     ui: {
       notify: (m, l) => notifications.push([l, m]),
       confirm: async (_title: string, _msg: string) => confirmAnswer,
+      input: async (_title: string, _placeholder?: string) => inputAnswer,
     },
   };
 }
@@ -105,6 +120,22 @@ describe('sp-command dispatch (stubbed manager)', () => {
     return { pi, ctx, mgr, current };
   }
 
+  function wireWithBusy(confirm: boolean, inputAnswer: string | undefined, existing: string[] = []): { pi: FakePi; ctx: FakeCtx; mgr: StubMgr; current: { name: string | null } } {
+    const pi = makePi();
+    const ctx = makeCtx(confirm, inputAnswer);
+    const mgr = makeStub(root, existing, /* busyOnAttach */ true);
+    const current = { name: null as string | null };
+    const deps: SpDeps = {
+      getManager: () => mgr as unknown as SpDeps['getManager'] extends () => infer T ? T : never,
+      getCurrentName: () => current.name,
+      setCurrentName: (n) => { current.name = n; },
+      rootDir: () => root,
+      getSessionId: () => 'sess-1',
+    } as SpDeps;
+    registerSpCommand(pi as unknown as Parameters<typeof registerSpCommand>[0], deps);
+    return { pi, ctx, mgr, current };
+  }
+
   it('/sp with no verb dispatches to list', async () => {
     const { pi, ctx, mgr } = wire(['default']);
     await pi.commands.get('sp')!.handler('', ctx);
@@ -130,7 +161,7 @@ describe('sp-command dispatch (stubbed manager)', () => {
   it('/sp attach <name> warms and sets currentName', async () => {
     const { pi, ctx, mgr, current } = wire(['p1']);
     await pi.commands.get('sp')!.handler('attach p1', ctx);
-    assert.deepEqual(mgr.calls, [['getOrAttach', 'p1']]);
+    assert.deepEqual(mgr.calls, [['getOrAttach', 'p1', {}]]);
     assert.equal(current.name, 'p1');
   });
 
@@ -302,5 +333,88 @@ describe('sp-command dispatch (stubbed manager)', () => {
     // confirm=false should not block because p2 != current; remove proceeds.
     assert.deepEqual(mgr.calls, [['remove', 'p2']]);
     assert.equal(current.name, 'p1', 'currentName preserved');
+  });
+
+  it('/sp attach happy path attaches normally (no busy)', async () => {
+    const { pi, ctx, mgr, current } = wire(['p1']);
+    await pi.commands.get('sp')!.handler('attach p1', ctx);
+    assert.deepEqual(mgr.calls[0], ['getOrAttach', 'p1', {}]);
+    assert.equal(current.name, 'p1');
+  });
+
+  it('/sp attach on busy without flag: confirm accepted, reason from input → retry with forceTakeover', async () => {
+    const { pi, ctx, mgr, current } = wireWithBusy(true, 'debugging stuck cell');
+    await pi.commands.get('sp')!.handler('attach p1', ctx);
+    // First call throws busy; second call has forceTakeover.
+    assert.equal(mgr.calls[0][0], 'getOrAttach');
+    assert.equal(mgr.calls[1][0], 'getOrAttach');
+    const secondOpts = mgr.calls[1][2] as { forceTakeover?: boolean; takeoverReason?: string };
+    assert.equal(secondOpts.forceTakeover, true);
+    assert.equal(secondOpts.takeoverReason, 'debugging stuck cell');
+    assert.equal(current.name, 'p1');
+  });
+
+  it('/sp attach on busy with confirm declined: cancelled; no retry', async () => {
+    const { pi, ctx, mgr, current } = wireWithBusy(false, 'unused');
+    await pi.commands.get('sp')!.handler('attach p1', ctx);
+    // Only the initial busy call; no retry.
+    assert.equal(mgr.calls.filter((c) => c[0] === 'getOrAttach').length, 1);
+    assert.equal(current.name, null);
+    assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /cancelled/.test(m)));
+  });
+
+  it('/sp attach on busy with input undefined (user escaped): cancelled; no retry', async () => {
+    const { pi, ctx, mgr, current } = wireWithBusy(true, undefined);
+    await pi.commands.get('sp')!.handler('attach p1', ctx);
+    assert.equal(mgr.calls.filter((c) => c[0] === 'getOrAttach').length, 1);
+    assert.equal(current.name, null);
+    assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /cancelled/.test(m)));
+  });
+
+  it('/sp attach --force-takeover skips confirm but still prompts for reason via input', async () => {
+    const { pi, ctx, mgr, current } = wireWithBusy(/* confirm */ false, 'because flag');
+    await pi.commands.get('sp')!.handler('attach p1 --force-takeover', ctx);
+    // confirm=false but the flag bypasses it
+    assert.equal(mgr.calls.length, 2);
+    const secondOpts = mgr.calls[1][2] as { forceTakeover?: boolean; takeoverReason?: string };
+    assert.equal(secondOpts.forceTakeover, true);
+    assert.equal(secondOpts.takeoverReason, 'because flag');
+    assert.equal(current.name, 'p1');
+  });
+
+  it('/sp attach --force-takeover --reason "..." is fully non-interactive', async () => {
+    // Both confirm and input stubs would return non-cancel values, but neither should be invoked.
+    const { pi, ctx, mgr, current } = wireWithBusy(false, undefined);
+    await pi.commands.get('sp')!.handler('attach p1 --force-takeover --reason "explicit reason"', ctx);
+    assert.equal(mgr.calls.length, 2);
+    const secondOpts = mgr.calls[1][2] as { forceTakeover?: boolean; takeoverReason?: string };
+    assert.equal(secondOpts.forceTakeover, true);
+    assert.equal(secondOpts.takeoverReason, 'explicit reason');
+    assert.equal(current.name, 'p1');
+  });
+
+  it('/sp notes [<name>] reads meta.recovery_notes and prints all', async () => {
+    const { pi, ctx } = wire(['p1']);
+    await mkdir(join(root, 'p1'), { recursive: true });
+    await writeFile(join(root, 'p1', 'meta.json'), JSON.stringify({
+      recovery_notes: [
+        { kind: 'snapshot-failed', message: 'boom', at: '2026-05-31T10:00:00.000Z' },
+        { kind: 'cells-since-snapshot', n: 2, at: '2026-05-31T11:00:00.000Z' },
+      ],
+    }));
+    await pi.commands.get('sp')!.handler('notes p1', ctx);
+    const banner = ctx.notifications.find(([l]) => l === 'info');
+    assert.ok(banner, 'info notify present');
+    assert.match(banner![1], /p1 recovery notes \(2\)/);
+    assert.match(banner![1], /snapshot-failed: boom/);
+    assert.match(banner![1], /2 cells since last snapshot/);
+  });
+
+  it('/sp notes on empty notes emits "no recovery notes"', async () => {
+    const { pi, ctx } = wire(['p1']);
+    await mkdir(join(root, 'p1'), { recursive: true });
+    await writeFile(join(root, 'p1', 'meta.json'), JSON.stringify({}));
+    await pi.commands.get('sp')!.handler('notes p1', ctx);
+    assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /no recovery notes for p1/.test(m)));
   });
 });

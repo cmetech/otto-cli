@@ -1,10 +1,12 @@
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ExtensionAPI } from '@otto/pi-coding-agent';
-import type { ScratchpadManager } from '@otto/coworker-scratchpad';
+import { ScratchpadBusyError } from '@otto/coworker-scratchpad';
+import type { ScratchpadManager, RecoveryNote } from '@otto/coworker-scratchpad';
 import { validateName, readCellsJsonl, readPersistedLeaf } from './helpers.js';
 import { projectTree, formatTreeText } from '@otto/coworker-scratchpad';
 import { sessionSidecarPath, writeSessionSidecar, deleteSessionSidecar } from './session-sidecar.js';
+import { showRecoveryNotesBanner, showDivergenceBanner, formatNoteLine } from './attach-banners.js';
 
 export interface SpDeps {
   getManager: () => ScratchpadManager;
@@ -14,8 +16,8 @@ export interface SpDeps {
   getSessionId: () => string;
 }
 
-type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove' | 'tree' | 'fork' | 'save' | 'detach' | 'clear-history';
-const VERBS: SpVerb[] = ['list', 'new', 'attach', 'reset', 'view', 'remove', 'tree', 'fork', 'save', 'detach', 'clear-history'];
+type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove' | 'tree' | 'fork' | 'save' | 'detach' | 'clear-history' | 'notes';
+const VERBS: SpVerb[] = ['list', 'new', 'attach', 'reset', 'view', 'remove', 'tree', 'fork', 'save', 'detach', 'clear-history', 'notes'];
 
 function ensureCurrent(deps: SpDeps): string {
   let current = deps.getCurrentName();
@@ -49,14 +51,36 @@ function formatCellSummary(rec: { id: number; ok: boolean; code: string; value?:
 interface UiCtx {
   hasUI: boolean;
   ui: {
-    notify: (msg: string, level: 'info' | 'error' | 'warning') => void;
+    notify: (msg: string, level: 'info' | 'warning' | 'error') => void;
     confirm: (title: string, msg: string) => Promise<boolean>;
+    input: (title: string, placeholder?: string) => Promise<string | undefined>;
   };
+}
+
+function joinQuotedArg(parts: string[], startIdx: number): string | null {
+  if (startIdx >= parts.length) return null;
+  const first = parts[startIdx];
+  if (!first) return null;
+  if (!first.startsWith('"')) return first;
+  // Quoted: walk forward until we find a part ending with "
+  if (first.length > 1 && first.endsWith('"')) {
+    return first.slice(1, -1); // single-token quoted reason
+  }
+  const collected: string[] = [first.slice(1)]; // strip opening quote
+  for (let i = startIdx + 1; i < parts.length; i++) {
+    const p = parts[i] ?? '';
+    if (p.endsWith('"')) {
+      collected.push(p.slice(0, -1));
+      return collected.join(' ');
+    }
+    collected.push(p);
+  }
+  return collected.join(' '); // no closing quote — take rest
 }
 
 export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
   pi.registerCommand('sp', {
-    description: 'Manage scratchpads: /sp [list|new|attach|reset|view|remove|tree|fork|save|detach|clear-history] [name]',
+    description: 'Manage scratchpads: /sp [list|new|attach|reset|view|remove|tree|fork|save|detach|clear-history|notes] [name]',
     getArgumentCompletions: (prefix: string) => {
       // Split on whitespace but preserve whether the prefix ends with a space
       // (trailing space = user typed the verb and hit space, ready for name completion).
@@ -119,9 +143,47 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
             return;
           }
           case 'attach': {
-            if (!name) { ctx.ui.notify('Usage: /sp attach <name>', 'error'); return; }
+            if (!name) {
+              ctx.ui.notify('Usage: /sp attach <name> [--force-takeover] [--reason "<text>"]', 'error');
+              return;
+            }
             validateName(name);
-            await deps.getManager().getOrAttach(name);
+            const forceFlag = parts.includes('--force-takeover');
+            const reasonIdx = parts.indexOf('--reason');
+            const reasonArg = reasonIdx >= 0 ? joinQuotedArg(parts, reasonIdx + 1) : null;
+
+            let attached = false;
+            try {
+              await deps.getManager().getOrAttach(name);
+              attached = true;
+            } catch (err) {
+              if (!(err instanceof ScratchpadBusyError)) {
+                ctx.ui.notify((err as Error).message, 'error');
+                return;
+              }
+              const holder = err.holder;
+              const proceed = forceFlag || await ctx.ui.confirm(
+                'Force takeover?',
+                `${name}: lock held by pid ${holder.pid} on host ${holder.host} (acquired ${holder.acquired_at}). Take it?`,
+              );
+              if (!proceed) { ctx.ui.notify('cancelled', 'info'); return; }
+
+              let reason: string | null = reasonArg;
+              if (reason === null) {
+                const input = await ctx.ui.input('Takeover reason', 'why are you taking over?');
+                if (input === undefined) { ctx.ui.notify('cancelled', 'info'); return; }
+                reason = input.trim() || '(no reason given)';
+              }
+              try {
+                await deps.getManager().getOrAttach(name, { forceTakeover: true, takeoverReason: reason });
+                attached = true;
+              } catch (retryErr) {
+                ctx.ui.notify((retryErr as Error).message, 'error');
+                return;
+              }
+            }
+            if (!attached) return;
+
             deps.setCurrentName(name);
             writeSessionSidecar(sessionSidecarPath(deps.rootDir(), deps.getSessionId()), {
               schema_version: 1,
@@ -130,6 +192,13 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               attached_at: new Date().toISOString(),
             });
             ctx.ui.notify(`attached to scratchpad: ${name}`, 'info');
+
+            // §2 + §4 banners (1g2):
+            const { markSeen } = showRecoveryNotesBanner(name, deps.rootDir(), ctx.ui);
+            if (markSeen) {
+              await deps.getManager().markRecoveryNotesSeen(name);
+            }
+            showDivergenceBanner(name, deps.rootDir(), ctx.ui);
             return;
           }
           case 'reset': {
@@ -243,6 +312,36 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
             if (!confirmed) { ctx.ui.notify('cancelled', 'info'); return; }
             await deps.getManager().clearHistory(target);
             ctx.ui.notify(`cleared cell history for ${target}`, 'info');
+            return;
+          }
+          case 'notes': {
+            const target = name ?? deps.getCurrentName();
+            if (!target) {
+              ctx.ui.notify('Usage: /sp notes [<name>] (no current scratchpad)', 'error');
+              return;
+            }
+            validateName(target);
+            const metaPath = join(deps.rootDir(), target, 'meta.json');
+            if (!existsSync(metaPath)) {
+              ctx.ui.notify(`scratchpad not found: ${target}`, 'error');
+              return;
+            }
+            let meta: Record<string, unknown>;
+            try {
+              meta = JSON.parse(readFileSync(metaPath, 'utf8')) as Record<string, unknown>;
+            } catch {
+              ctx.ui.notify(`${target}: meta.json unreadable`, 'error');
+              return;
+            }
+            type RecoveryNoteEntry = RecoveryNote & { at: string };
+            const notes = Array.isArray(meta.recovery_notes) ? (meta.recovery_notes as RecoveryNoteEntry[]) : [];
+            if (notes.length === 0) {
+              ctx.ui.notify(`no recovery notes for ${target}`, 'info');
+              return;
+            }
+            const lines = notes.map(formatNoteLine);
+            ctx.ui.notify(`${target} recovery notes (${notes.length}):\n${lines.join('\n')}`, 'info');
+            // Deliberately does NOT update recovery_notes_seen_at — re-view path is read-only.
             return;
           }
           default: {

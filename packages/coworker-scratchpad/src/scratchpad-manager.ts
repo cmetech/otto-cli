@@ -425,6 +425,40 @@ export class ScratchpadManager {
     }
   }
 
+  async save(name: string): Promise<void> {
+    this.assertNotDisposed();
+    const entry = this.entries.get(name);
+    if (!entry || !entry.runtime) {
+      throw new Error(`scratchpad ${name} is not warm — nothing to save`);
+    }
+    if (entry.runtime.hasActiveCell) {
+      this.appendRecoveryNotes(name, [{ kind: 'snapshot-failed', message: 'active cell' }]);
+      throw new Error('cannot save while a cell is running');
+    }
+    const res = await entry.runtime.snapshot();
+    if (res.ok) {
+      this.applySnapshotToMeta(name, entry, res);
+    } else {
+      this.appendRecoveryNotes(name, [{ kind: 'snapshot-failed', message: res.error.message }]);
+      throw new Error(`save failed: ${res.error.message}`);
+    }
+  }
+
+  async detach(name: string, sessionId: string): Promise<void> {
+    this.assertNotDisposed();
+    const path = this.metaPath(name);
+    if (!existsSync(path)) return;
+    let cur: Record<string, unknown> = {};
+    try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { return; }
+    const arr = Array.isArray(cur.attached_sessions) ? (cur.attached_sessions as string[]) : [];
+    const idx = arr.indexOf(sessionId);
+    if (idx >= 0) {
+      cur.attached_sessions = [...arr.slice(0, idx), ...arr.slice(idx + 1)];
+      writeFileSync(path, JSON.stringify(cur, null, 2));
+    }
+    // Runtime explicitly NOT disposed. Pool LRU/idle eviction owns cleanup.
+  }
+
   private async attachUnmanaged(name: string, opts: AttachOptions): Promise<ChildProcessRuntime> {
     const dir = this.dirFor(name);
     const lock = acquireLock(dir, {

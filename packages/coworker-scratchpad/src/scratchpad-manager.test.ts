@@ -557,3 +557,57 @@ describe('ScratchpadManager (clearHistory — 1g)', () => {
     await assert.rejects(() => mgr.clearHistory('p1'), /cell is running/);
   });
 });
+
+describe('ScratchpadManager (save + detach — 1g)', () => {
+  let workspace: string;
+  let root: string;
+  let mgr: ScratchpadManager;
+
+  beforeEach(async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'sp-ws-'));
+    root = await mkdtemp(join(tmpdir(), 'sp-root-'));
+    mgr = new ScratchpadManager({ workspace, root, sessionId: 'sess-1', sweepIntervalMs: 1_000_000 });
+  });
+  afterEach(async () => {
+    await mgr.disposeAll();
+    await rm(workspace, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('save snapshots namespace.json and writes last_snapshot_cell_id + last_snapshot_at without disposing', async () => {
+    await mgr.runCell('p1', 'globalThis.x = 1;');
+    await mgr.runCell('p1', 'globalThis.x = 2;');
+    await mgr.save('p1');
+    const meta = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as Record<string, unknown>;
+    assert.equal(meta.last_snapshot_cell_id, 2);
+    assert.equal(typeof meta.last_snapshot_at, 'string');
+    // Still warm: another cell can be run without re-attach.
+    const r = await mgr.runCell('p1', 'return globalThis.x;');
+    assert.equal(r.value, 2);
+  });
+
+  it('save throws when the scratchpad is cold or unknown', async () => {
+    await assert.rejects(() => mgr.save('never-existed'), /not warm/);
+  });
+
+  it('detach removes this sessionId from attached_sessions; runtime untouched', async () => {
+    await mgr.runCell('p1', 'globalThis.x = 1;');
+    let meta = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as { attached_sessions: string[] };
+    assert.deepEqual(meta.attached_sessions, ['sess-1']);
+
+    await mgr.detach('p1', 'sess-1');
+
+    meta = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as { attached_sessions: string[] };
+    assert.deepEqual(meta.attached_sessions, []);
+    // Runtime intentionally still alive — pool LRU/idle eviction handles cleanup.
+    const entry = (mgr as unknown as { entries: Map<string, { runtime: unknown }> }).entries.get('p1')!;
+    assert.ok(entry.runtime, 'detach does not dispose the runtime');
+  });
+
+  it('detach is a no-op on attached_sessions when sessionId is not in the list', async () => {
+    await mgr.runCell('p1', 'globalThis.x = 1;');
+    await mgr.detach('p1', 'some-other-session');
+    const meta = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as { attached_sessions: string[] };
+    assert.deepEqual(meta.attached_sessions, ['sess-1']);
+  });
+});

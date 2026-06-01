@@ -16,6 +16,13 @@ export interface SpDeps {
   setCurrentName: (name: string | null) => void;
   rootDir: () => string;
   getSessionId: () => string;
+  /**
+   * Returns the workspace cwd captured at session_start. Using this instead of
+   * process.cwd() ensures the workspace pointer is anchored to the same root that
+   * session_start used, even if the process chdirs between session_start and a
+   * /sp command.
+   */
+  getWorkspaceCwd: () => string;
 }
 
 type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove' | 'tree' | 'fork' | 'save' | 'detach' | 'clear-history' | 'notes';
@@ -60,7 +67,7 @@ interface UiCtx {
 }
 
 function persistWorkspacePointer(deps: SpDeps, name: string): void {
-  const wsRoot = detectWorkspaceRoot(process.cwd());
+  const wsRoot = detectWorkspaceRoot(deps.getWorkspaceCwd());
   const wsHash = workspaceHash(wsRoot);
   const wsPath = workspacePointerPath(deps.rootDir(), wsHash);
   const wsPayload: WorkspacePointer = {

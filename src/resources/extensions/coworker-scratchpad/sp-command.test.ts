@@ -99,6 +99,7 @@ describe('sp-command dispatch (stubbed manager)', () => {
       setCurrentName: (n) => { current.name = n; },
       rootDir: () => root,
       getSessionId: () => 'sess-1',
+      getWorkspaceCwd: () => '/tmp/test-cwd',
     } as SpDeps;
     registerSpCommand(pi as unknown as Parameters<typeof registerSpCommand>[0], deps);
     return { pi, ctx, mgr, current };
@@ -115,6 +116,7 @@ describe('sp-command dispatch (stubbed manager)', () => {
       setCurrentName: (n) => { current.name = n; },
       rootDir: () => root,
       getSessionId: () => 'sess-1',
+      getWorkspaceCwd: () => '/tmp/test-cwd',
     } as SpDeps;
     registerSpCommand(pi as unknown as Parameters<typeof registerSpCommand>[0], deps);
     return { pi, ctx, mgr, current };
@@ -131,6 +133,7 @@ describe('sp-command dispatch (stubbed manager)', () => {
       setCurrentName: (n) => { current.name = n; },
       rootDir: () => root,
       getSessionId: () => 'sess-1',
+      getWorkspaceCwd: () => '/tmp/test-cwd',
     } as SpDeps;
     registerSpCommand(pi as unknown as Parameters<typeof registerSpCommand>[0], deps);
     return { pi, ctx, mgr, current };

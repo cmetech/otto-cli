@@ -265,4 +265,18 @@ describe('coworker-scratchpad restore precedence (Task A)', () => {
     assert.equal(result.name, null);
     assert.equal(result.notice, null);
   });
+
+  it('(e) stale workspace pointer (> 7d old) does not restore', () => {
+    makeScratchpad('beta');
+    const wsRoot = detectWorkspaceRoot(ws);
+    const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
+    writeWorkspacePointer(workspacePointerPath(root, workspaceHash(wsRoot)), {
+      schema_version: 1, workspace_hash: workspaceHash(wsRoot), workspace_root: wsRoot,
+      last_session_id: 'sess-OTHER', last_current_name: 'beta',
+      last_attached_at: eightDaysAgo,
+    });
+    const result = tryRestoreCurrentName(root, 'sess-FRESH', ws, Date.now());
+    assert.equal(result.name, null);
+    assert.equal(result.notice, null);
+  });
 });

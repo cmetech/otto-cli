@@ -22,8 +22,14 @@ function deriveSessionId(ctx: ExtensionContext): string {
 }
 
 /**
- * Pure restore-precedence helper. Returns the scratchpad to restore (if any) and the
- * notice string to surface to the user. Does NOT call ctx.ui.notify — the caller does.
+ * Computes restore precedence with sidecar-fallback. Returns the scratchpad to restore
+ * (if any) and the notice string to surface to the user. Does NOT call ctx.ui.notify —
+ * the caller does.
+ *
+ * Side-effect: deletes a broken sidecar (one whose referenced scratchpad no longer
+ * exists) so subsequent fresh sessions don't repeatedly re-check it. Not a pure
+ * function — a cleanup-closure refactor was considered and rejected as over-engineering
+ * for a single in-process call site.
  *
  * Precedence:
  *   (a) per-session sidecar — wins when its scratchpad still exists on disk.
@@ -88,8 +94,9 @@ export default function coworkerScratchpadExtension(pi: ExtensionAPI): void {
   const setCurrentName = (n: string | null): void => { currentName = n; };
   const rootDir = (): string => root;
   const getSessionId = (): string => sessionId ?? 'default';
+  const getWorkspaceCwd = (): string => workspaceCwd ?? process.cwd();
 
-  registerSpCommand(pi, { getManager, getCurrentName, setCurrentName, rootDir, getSessionId });
+  registerSpCommand(pi, { getManager, getCurrentName, setCurrentName, rootDir, getSessionId, getWorkspaceCwd });
   registerScratchpadTool(pi, { getManager, getCurrentName, setCurrentName, rootDir });
 
   pi.on('session_start', async (_event, ctx) => {

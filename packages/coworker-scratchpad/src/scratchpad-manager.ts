@@ -36,6 +36,7 @@ interface Entry {
   lock: LockInfo;
   lastUsedAt: number;
   archive: CellArchive;
+  kernelAtCellId: number | null; // 1g2: cell id at which the in-VM kernel state was last mutated
 }
 
 const DEFAULT_MAX_LIVE = 8;
@@ -109,7 +110,10 @@ export class ScratchpadManager {
         const prev = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
         if (typeof prev.created_at === 'string') created_at = prev.created_at;
         if (Array.isArray(prev.attached_sessions)) attached_sessions = prev.attached_sessions as string[];
-        for (const k of ['last_snapshot_cell_id', 'last_snapshot_at', 'namespace_skipped', 'recovery_notes', 'cell_leaf_id']) {
+        for (const k of [
+          'last_snapshot_cell_id', 'last_snapshot_at', 'namespace_skipped', 'recovery_notes',
+          'cell_leaf_id', 'kernel_at_cell_id', 'recovery_notes_seen_at',
+        ]) {
           if (k in prev) prevExtras[k] = prev[k];
         }
         if (Array.isArray(prevExtras.recovery_notes)) {
@@ -126,6 +130,10 @@ export class ScratchpadManager {
     const archive = this.entries.get(name)?.archive;
     if (archive && archive.leafId !== null) {
       prevExtras.cell_leaf_id = archive.leafId;
+    }
+    const liveEntry = this.entries.get(name);
+    if (liveEntry && liveEntry.kernelAtCellId !== null) {
+      prevExtras.kernel_at_cell_id = liveEntry.kernelAtCellId;
     }
     const meta = {
       name,
@@ -233,6 +241,23 @@ export class ScratchpadManager {
     }
   }
 
+  private restoreKernelAtCellIdOnAttach(name: string, entry: Entry): void {
+    // Cold restore: kernel was hydrated from namespace.json, which was written at
+    // last_snapshot_cell_id. That's where the in-VM state lives.
+    const path = this.metaPath(name);
+    if (!existsSync(path)) {
+      entry.kernelAtCellId = null;
+      return;
+    }
+    try {
+      const cur = JSON.parse(readFileSync(path, 'utf8')) as { last_snapshot_cell_id?: unknown };
+      const last = cur.last_snapshot_cell_id;
+      entry.kernelAtCellId = typeof last === 'number' ? last : null;
+    } catch {
+      entry.kernelAtCellId = null;
+    }
+  }
+
   private warmCount(): number {
     let n = 0;
     for (const e of this.entries.values()) if (e.runtime !== null) n++;
@@ -284,6 +309,7 @@ export class ScratchpadManager {
       existing.runtime = await this.spawnRuntime(name); // cold -> warm; namespace restored from disk (1d2)
       this.ingestRecoveryNotesOnAttach(name, existing);
       this.restoreLeafOnAttach(name, existing);
+      this.restoreKernelAtCellIdOnAttach(name, existing);
       return existing.runtime;
     }
     return this.attachUnmanaged(name, opts);
@@ -297,12 +323,14 @@ export class ScratchpadManager {
     try {
       const result = await runtime.runCell(code);
       entry.archive.append({ code, ok: true, value: result.value, stdout: result.stdout });
+      entry.kernelAtCellId = entry.archive.lastId;
       this.writeMeta(name);
       return result;
     } catch (err) {
       const e = err as Error;
       try {
         entry.archive.append({ code, ok: false, error: { name: e.name, message: e.message }, stdout: '' });
+        entry.kernelAtCellId = entry.archive.lastId;
         this.writeMeta(name);
       } catch {
         // recording the failure must never mask the original cell error
@@ -384,6 +412,9 @@ export class ScratchpadManager {
       cell_leaf_id: typeof srcMeta.cell_leaf_id === 'number' ? srcMeta.cell_leaf_id : null,
       last_snapshot_cell_id: typeof srcMeta.last_snapshot_cell_id === 'number' ? srcMeta.last_snapshot_cell_id : null,
       last_snapshot_at: typeof srcMeta.last_snapshot_at === 'string' ? srcMeta.last_snapshot_at : null,
+      kernel_at_cell_id: typeof srcMeta.kernel_at_cell_id === 'number'
+        ? srcMeta.kernel_at_cell_id
+        : (typeof srcMeta.last_snapshot_cell_id === 'number' ? srcMeta.last_snapshot_cell_id : null),
       namespace_skipped: [],
       recovery_notes: [],
       kernel_db: { present: existsSync(join(dstDir, 'kernel.db')), path: 'kernel.db' },
@@ -393,7 +424,13 @@ export class ScratchpadManager {
     // Claim the new scratchpad for this session by acquiring its lock and registering
     // a cold entry so getOrAttach can re-warm without re-acquiring the lock.
     const dstLock = acquireLock(dstDir, { now: this.now });
-    const dstEntry: Entry = { runtime: null, lock: dstLock, lastUsedAt: this.now(), archive: new CellArchive(dstDir, this.now) };
+    const dstEntry: Entry = {
+      runtime: null,
+      lock: dstLock,
+      lastUsedAt: this.now(),
+      archive: new CellArchive(dstDir, this.now),
+      kernelAtCellId: dstMeta.kernel_at_cell_id,
+    };
     this.entries.set(dstName, dstEntry);
   }
 
@@ -405,6 +442,7 @@ export class ScratchpadManager {
     }
     if (entry?.archive) {
       entry.archive.reset();
+      entry.kernelAtCellId = null;
     } else {
       // Cold path: construct a temp archive solely to reuse its truncation logic.
       const tmpArchive = new CellArchive(this.dirFor(name), this.now);
@@ -421,6 +459,7 @@ export class ScratchpadManager {
       cur.cell_leaf_id = null;
       cur.last_snapshot_cell_id = null;
       cur.last_snapshot_at = null;
+      cur.kernel_at_cell_id = null;
       writeFileSync(path, JSON.stringify(cur, null, 2));
     }
   }
@@ -475,10 +514,11 @@ export class ScratchpadManager {
       releaseLock(dir); // don't leak the lock if spawn fails
       throw err;
     }
-    const entry: Entry = { runtime, lock, lastUsedAt: this.now(), archive: new CellArchive(dir, this.now) };
+    const entry: Entry = { runtime, lock, lastUsedAt: this.now(), archive: new CellArchive(dir, this.now), kernelAtCellId: null };
     this.entries.set(name, entry);
     this.ingestRecoveryNotesOnAttach(name, entry);
     this.restoreLeafOnAttach(name, entry);
+    this.restoreKernelAtCellIdOnAttach(name, entry);
     return runtime;
   }
 

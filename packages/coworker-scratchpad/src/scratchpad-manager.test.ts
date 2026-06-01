@@ -611,3 +611,71 @@ describe('ScratchpadManager (save + detach — 1g)', () => {
     assert.deepEqual(meta.attached_sessions, ['sess-1']);
   });
 });
+
+describe('ScratchpadManager (kernel_at_cell_id — 1g2)', () => {
+  let workspace: string;
+  let root: string;
+  let mgr: ScratchpadManager;
+
+  beforeEach(async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'sp-ws-'));
+    root = await mkdtemp(join(tmpdir(), 'sp-root-'));
+    mgr = new ScratchpadManager({ workspace, root, sessionId: 'sess-1', sweepIntervalMs: 1_000_000 });
+  });
+  afterEach(async () => {
+    await mgr.disposeAll();
+    await rm(workspace, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('runCell updates meta.kernel_at_cell_id to archive.lastId', async () => {
+    await mgr.runCell('p1', 'globalThis.x = 1;');
+    const meta1 = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as { kernel_at_cell_id?: unknown };
+    assert.equal(meta1.kernel_at_cell_id, 1);
+    await mgr.runCell('p1', 'globalThis.x = 2;');
+    const meta2 = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as { kernel_at_cell_id?: unknown };
+    assert.equal(meta2.kernel_at_cell_id, 2);
+  });
+
+  it('clearHistory nulls meta.kernel_at_cell_id alongside the other pointers', async () => {
+    await mgr.runCell('p1', 'globalThis.x = 1;');
+    await mgr.clearHistory('p1');
+    const meta = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as { kernel_at_cell_id?: unknown };
+    assert.equal(meta.kernel_at_cell_id, null);
+  });
+
+  it('fork inherits kernel_at_cell_id from source meta', async () => {
+    await mgr.runCell('src', 'globalThis.x = 1;');
+    await mgr.runCell('src', 'globalThis.x = 2;');
+    await mgr.fork('src', 'dst');
+    const dstMeta = JSON.parse(readFileSync(join(root, 'dst', 'meta.json'), 'utf8')) as { kernel_at_cell_id?: unknown };
+    assert.equal(dstMeta.kernel_at_cell_id, 2);
+  });
+
+  it('cold->warm attach restores kernelAtCellId from last_snapshot_cell_id', async () => {
+    await mgr.runCell('p1', 'globalThis.x = 1;');
+    await mgr.runCell('p1', 'globalThis.x = 2;');
+    // Force a snapshot by disposing then re-attaching.
+    await mgr.disposeAll();
+    mgr = new ScratchpadManager({ workspace, root, sessionId: 'sess-1', sweepIntervalMs: 1_000_000 });
+    await mgr.getOrAttach('p1'); // cold -> warm
+    const meta = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as {
+      kernel_at_cell_id?: unknown;
+      last_snapshot_cell_id?: unknown;
+    };
+    // After dispose-then-attach: kernel restored from namespace.json which was at last_snapshot_cell_id.
+    assert.equal(meta.kernel_at_cell_id, meta.last_snapshot_cell_id);
+    assert.equal(meta.kernel_at_cell_id, 2);
+  });
+
+  it('writeMeta preserves kernel_at_cell_id across cold meta writes (prevExtras)', async () => {
+    await mgr.runCell('p1', 'globalThis.x = 1;');
+    await mgr.disposeAll();
+    // Re-create manager. Cold writes via setLeaf would otherwise drop the field if not preserved.
+    mgr = new ScratchpadManager({ workspace, root, sessionId: 'sess-1', sweepIntervalMs: 1_000_000 });
+    // Don't attach. Trigger a cold meta write via setLeaf (which writes meta directly).
+    await mgr.setLeaf('p1', 1);
+    const meta = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as { kernel_at_cell_id?: unknown };
+    assert.equal(meta.kernel_at_cell_id, 1);
+  });
+});

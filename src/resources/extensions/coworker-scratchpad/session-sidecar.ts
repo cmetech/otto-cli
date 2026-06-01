@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 export interface SessionSidecar {
@@ -9,7 +9,7 @@ export interface SessionSidecar {
 }
 
 export function sessionSidecarPath(rootDir: string, sessionId: string): string {
-  return join(rootDir, '_sessions', `${sessionId}.json`);
+  return join(rootDir, '_sessions', `sidecar_${sessionId}.json`);
 }
 
 export function readSessionSidecar(path: string): SessionSidecar | null {
@@ -39,4 +39,30 @@ export function writeSessionSidecar(path: string, payload: SessionSidecar): void
 
 export function deleteSessionSidecar(path: string): void {
   rmSync(path, { force: true });
+}
+
+export const SIDECAR_GC_STALE_DAYS = 7;
+
+export function sweepStaleSidecars(rootDir: string, currentSessionId: string, now: number): number {
+  const dir = join(rootDir, '_sessions');
+  if (!existsSync(dir)) return 0;
+  let deleted = 0;
+  const staleMs = SIDECAR_GC_STALE_DAYS * 24 * 60 * 60 * 1000;
+  for (const f of readdirSync(dir)) {
+    if (!f.startsWith('sidecar_')) continue; // safety: only touch known-format files
+    const path = join(dir, f);
+    try {
+      const sc = readSessionSidecar(path);
+      if (!sc) continue;
+      if (sc.session_id === currentSessionId) continue;
+      const scratchpadMeta = join(rootDir, sc.current_name, 'meta.json');
+      const scratchpadGone = !existsSync(scratchpadMeta);
+      const tooOld = (now - statSync(path).mtimeMs) > staleMs;
+      if (scratchpadGone || tooOld) {
+        rmSync(path, { force: true });
+        deleted++;
+      }
+    } catch { /* per-file isolation */ }
+  }
+  return deleted;
 }

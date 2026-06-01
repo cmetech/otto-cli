@@ -135,7 +135,7 @@ describe('coworker-scratchpad extension (session affinity — 1g)', () => {
     // Pre-write a sidecar for sessionId=sess-A.
     await mkdir(join(scratchpadRoot, '_sessions'), { recursive: true });
     await writeFile(
-      join(scratchpadRoot, '_sessions', 'sess-A.json'),
+      join(scratchpadRoot, '_sessions', 'sidecar_sess-A.json'),
       JSON.stringify({ schema_version: 1, session_id: 'sess-A', current_name: 'p1', attached_at: 't' }),
     );
 
@@ -150,7 +150,7 @@ describe('coworker-scratchpad extension (session affinity — 1g)', () => {
   it('session_start clears a broken sidecar silently when no workspace pointer applies', async () => {
     const { mkdir, writeFile } = await import('node:fs/promises');
     await mkdir(join(scratchpadRoot, '_sessions'), { recursive: true });
-    const sidecarPath = join(scratchpadRoot, '_sessions', 'sess-B.json');
+    const sidecarPath = join(scratchpadRoot, '_sessions', 'sidecar_sess-B.json');
     await writeFile(
       sidecarPath,
       JSON.stringify({ schema_version: 1, session_id: 'sess-B', current_name: 'p-missing', attached_at: 't' }),

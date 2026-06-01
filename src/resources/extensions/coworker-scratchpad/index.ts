@@ -5,7 +5,7 @@ import type { ExtensionAPI, ExtensionContext } from '@otto/pi-coding-agent';
 import { ScratchpadManager } from '@otto/coworker-scratchpad';
 import { registerSpCommand } from './sp-command.js';
 import { registerScratchpadTool } from './scratchpad-tool.js';
-import { sessionSidecarPath, readSessionSidecar, deleteSessionSidecar } from './session-sidecar.js';
+import { sessionSidecarPath, readSessionSidecar, deleteSessionSidecar, sweepStaleSidecars } from './session-sidecar.js';
 import { detectWorkspaceRoot } from './workspace-root.js';
 import { workspaceHash, workspacePointerPath, readWorkspacePointer, isPointerFresh } from './workspace-pointer.js';
 import { formatRelativeAge } from './format-age.js';
@@ -110,6 +110,7 @@ export default function coworkerScratchpadExtension(pi: ExtensionAPI): void {
     }
     // When neither sidecar nor fresh pointer resolves to an existing scratchpad,
     // we stay silent — the user gets a clean session_start with no noise.
+    try { sweepStaleSidecars(root, sessionId, Date.now()); } catch { /* sweep failures are silent */ }
   });
 
   pi.on('session_shutdown', async () => {

@@ -121,4 +121,30 @@ describe('CellArchive', () => {
     const next = a.append({ code: 'b', ok: true, value: null, stdout: '' });
     assert.equal(next.parentId, null);
   });
+
+  it('reset truncates the file back to the schema header and clears lastId + leafId', () => {
+    const a = new CellArchive(dir, () => 1000);
+    a.append({ code: 'a', ok: true, value: 1, stdout: '' });
+    a.append({ code: 'b', ok: true, value: 2, stdout: '' });
+    assert.equal(a.lastId, 2);
+    assert.equal(a.leafId, 2);
+    a.reset();
+    assert.equal(a.lastId, null);
+    assert.equal(a.leafId, null);
+    const ls = lines(cellsPath());
+    assert.equal(ls.length, 1);
+    assert.deepEqual(JSON.parse(ls[0]), { type: 'header', version: CELLS_SCHEMA_VERSION });
+  });
+
+  it('append after reset starts a fresh chain at id 1, parentId null', () => {
+    const a = new CellArchive(dir, () => 1000);
+    a.append({ code: 'a', ok: true, value: 1, stdout: '' });
+    a.append({ code: 'b', ok: true, value: 2, stdout: '' });
+    a.reset();
+    const next = a.append({ code: 'c', ok: true, value: 3, stdout: '' });
+    assert.equal(next.id, 1);
+    assert.equal(next.parentId, null);
+    assert.equal(a.lastId, 1);
+    assert.equal(a.leafId, 1);
+  });
 });

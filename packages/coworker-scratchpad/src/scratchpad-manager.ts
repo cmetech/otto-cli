@@ -397,6 +397,34 @@ export class ScratchpadManager {
     this.entries.set(dstName, dstEntry);
   }
 
+  async clearHistory(name: string): Promise<void> {
+    this.assertNotDisposed();
+    const entry = this.entries.get(name);
+    if (entry?.runtime?.hasActiveCell) {
+      throw new Error('cannot clear history while a cell is running');
+    }
+    if (entry?.archive) {
+      entry.archive.reset();
+    } else {
+      // Cold path: construct a temp archive solely to reuse its truncation logic.
+      const tmpArchive = new CellArchive(this.dirFor(name), this.now);
+      tmpArchive.reset();
+    }
+    // Direct meta read-modify-write; we explicitly do NOT route through writeMeta
+    // because writeMeta pulls cell_leaf_id from the live archive — which is exactly
+    // what we just nulled, but writeMeta would also re-add this.sessionId, which
+    // we want preserved untouched here. Safer to read+merge+write directly.
+    const path = this.metaPath(name);
+    if (existsSync(path)) {
+      let cur: Record<string, unknown> = {};
+      try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { /* drop */ }
+      cur.cell_leaf_id = null;
+      cur.last_snapshot_cell_id = null;
+      cur.last_snapshot_at = null;
+      writeFileSync(path, JSON.stringify(cur, null, 2));
+    }
+  }
+
   private async attachUnmanaged(name: string, opts: AttachOptions): Promise<ChildProcessRuntime> {
     const dir = this.dirFor(name);
     const lock = acquireLock(dir, {

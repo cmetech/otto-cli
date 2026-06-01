@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export const CELLS_SCHEMA_VERSION = 1;
@@ -85,5 +85,13 @@ export class CellArchive {
 
   setLeaf(id: number | null): void {
     this.#leafId = id;
+  }
+
+  reset(): void {
+    mkdirSync(this.dir, { recursive: true });
+    writeFileSync(this.path, JSON.stringify({ type: 'header', version: CELLS_SCHEMA_VERSION }) + '\n');
+    this.nextId = 1;
+    this.#lastId = null;
+    this.#leafId = null;
   }
 }

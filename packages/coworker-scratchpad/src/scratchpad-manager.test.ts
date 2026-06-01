@@ -513,3 +513,47 @@ describe('ScratchpadManager (tree + fork — 1f)', () => {
     assert.equal(last.parentId, 1);
   });
 });
+
+describe('ScratchpadManager (clearHistory — 1g)', () => {
+  let workspace: string;
+  let root: string;
+  let mgr: ScratchpadManager;
+
+  beforeEach(async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'sp-ws-'));
+    root = await mkdtemp(join(tmpdir(), 'sp-root-'));
+    mgr = new ScratchpadManager({ workspace, root, sessionId: 'sess-1', sweepIntervalMs: 1_000_000 });
+  });
+  afterEach(async () => {
+    await mgr.disposeAll();
+    await rm(workspace, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('clearHistory truncates cells.jsonl + resets archive + nulls meta pointers on a warm scratchpad', async () => {
+    await mgr.runCell('p1', 'globalThis.x = 1;');
+    await mgr.runCell('p1', 'globalThis.x = 2;');
+    const cellsPathP1 = join(root, 'p1', 'cells.jsonl');
+    const metaPathP1 = join(root, 'p1', 'meta.json');
+    // sanity: 2 data lines + 1 header
+    assert.equal(readFileSync(cellsPathP1, 'utf8').split('\n').filter((l) => l.includes('"id"')).length, 2);
+
+    await mgr.clearHistory('p1');
+
+    const remaining = readFileSync(cellsPathP1, 'utf8').split('\n').filter((l) => l.trim());
+    assert.equal(remaining.length, 1, 'only schema header remains');
+    assert.equal(JSON.parse(remaining[0]).type, 'header');
+    const meta = JSON.parse(readFileSync(metaPathP1, 'utf8')) as Record<string, unknown>;
+    assert.equal(meta.cell_leaf_id, null);
+    assert.equal(meta.last_snapshot_cell_id, null);
+    assert.equal(meta.last_snapshot_at, null);
+  });
+
+  it('clearHistory throws when a cell is currently running', async () => {
+    await mgr.runCell('p1', 'globalThis.x = 1;');
+    const entry = (mgr as unknown as { entries: Map<string, { runtime: { hasActiveCell: boolean } | null }> }).entries.get('p1')!;
+    // Simulate an active cell by stubbing the getter.
+    Object.defineProperty(entry.runtime!, 'hasActiveCell', { get: () => true, configurable: true });
+    await assert.rejects(() => mgr.clearHistory('p1'), /cell is running/);
+  });
+});

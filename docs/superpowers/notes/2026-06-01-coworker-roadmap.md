@@ -92,12 +92,15 @@ After Phase 6, a fresh `npm install otto` should drop a user into this scenario 
 - **Issue 1 — polars → DuckDB registerDf helper.** Adds `otto.duckdb.registerDf(name, df)` in `packages/coworker-scratchpad/src/kernel-bindings.ts`. Detects input type (polars DataFrame / Arrow Table / plain array of records) and routes to the appropriate DuckDB load path. Cuts the scenario-3 cell count from 8 → 2.
 - **Issue 2 — meta.json write-order fix in `attachUnmanaged`.** Either reorder spawnRuntime BEFORE writeMeta, or add a second writeMeta after spawn. Stops the `kernel_db.present: false` + `size_bytes: 0` staleness on fresh attach.
 - **Issue 4 — pool visibility + explicit eviction.** Adds idle-age column to `/sp list` (`● live  t04-tree  idle 4m22s`) plus a new `/sp evict <name>` slash command + `manager.evict(name)` method that snapshots-then-disposes without removing the on-disk artifacts. Lets users see why a kernel is still live and dispose it immediately when desired.
+- **Issue 5 — `/sp attach` strict-existence check.** Currently `/sp attach <typo>` silently auto-creates a phantom scratchpad. Add a `existsSync(metaPath)` guard in `case 'attach':` that errors `scratchpad not found: <name>. Use /sp new <name> to create it.` LLM tool path (`cw_scratchpad action=exec`) is unaffected — only the slash command tightens.
 
-**Milestone:** scenario 3 from the human test plan completes in ≤ 3 cells; `/sp list` shows idle ages; `/sp evict <name>` works and is reversible via `/sp attach <name>`.
+**Milestone:** scenario 3 completes in ≤ 3 cells; `/sp list` shows idle ages; `/sp evict <name>` works and is reversible; `/sp attach <typo>` errors rather than silently creating.
 
 **Dependencies:** Phase 1 complete (✅).
 
 **Not in scope:** Issue 3 (LLM "ask if unsure" reliability) — accepted as inherent LLM behavior, not a code fix.
+
+**Estimated effort:** ~1 week single-engineer (Issue 1: 1-2d, Issue 2: 0.5d, Issue 4: 1-2d, Issue 5: 0.5d, plus tests + docs + manual smoke).
 
 **Status:** proposed. If Phase 2 is starting urgently, defer to Phase 6 (NOC persona bundle) where UX polish for analysts gets natural priority. If there's a 1-week gap before Phase 2 begins, this is the highest-leverage way to spend it.
 

@@ -277,6 +277,106 @@ Rationale:
 
 ---
 
+## Issue 5 — `/sp attach <name>` silently auto-creates non-existent scratchpads
+
+**Status:** open
+**Severity:** medium (silent foot-gun on typos)
+**Date observed:** 2026-06-01
+**Reporter:** Phase 1 user testing
+
+### Reproduction
+
+```
+/sp list
+  ● live  t02-basics (current)
+  ○ cold  t04-tree
+
+/sp attach t02-basix       # typo — meant "basics"
+attached to scratchpad: t02-basix
+
+/sp list
+  ○ cold  t02-basics
+  ○ cold  t04-tree
+  ● live  t02-basix (current)   ← phantom scratchpad created silently
+```
+
+### Symptoms
+
+`/sp attach <name>` where `<name>` doesn't exist on disk does NOT error. Instead it silently:
+1. Creates the scratchpad directory `~/.otto/scratchpads/<name>/`.
+2. Acquires the lock.
+3. Writes meta.json.
+4. Spawns a fresh kernel.
+5. Marks the new scratchpad as `(current)`.
+
+The user gets a green "attached" notification with no signal that they just created a new empty scratchpad instead of attaching to the one they intended.
+
+### Root cause
+
+`case 'attach':` in `src/resources/extensions/coworker-scratchpad/sp-command.ts` calls `manager.getOrAttach(name)` directly. The library method is intentionally permissive — when the name is unknown, it falls through to `attachUnmanaged` which creates the dir + lock + meta + kernel from scratch.
+
+The library's permissive behavior is **correct** for the LLM tool path (`cw_scratchpad action=exec`) — when the LLM passes `name: 'p1'` referring to a scratchpad it expects to exist, we want it to "just work" rather than error.
+
+But the slash command was wired to the same library method without adding a stricter mode. The result: `/sp attach` and `/sp new` are functionally equivalent when the name doesn't exist; they only differ when it does (`/sp new` errors, `/sp attach` succeeds).
+
+### Why it matters
+
+This is exactly the kind of bug a tired NOC analyst hits at 2am during an incident: they type the wrong scratchpad name (`t02-basix` instead of `t02-basics`), silently land in a fresh empty kernel, and can't figure out why yesterday's polars DataFrames aren't there. The fix is to discover their typo via `/sp list` — but by then they've spawned a phantom scratchpad they have to clean up.
+
+The spec is silent on this (§5 just says "switch the user-current attachment to <name>"). The canonical 3-day RCA scenario always shows a scratchpad being `/sp new`'d on day 1 before being `/sp attach`'d on later days — the spec assumes attach-existing semantics.
+
+### Workaround (today)
+
+- Always run `/sp list` before `/sp attach` to confirm the name is what you think.
+- If you do typo-attach a phantom scratchpad, clean up with `/sp remove <name> --yes`.
+
+### Proposed fix
+
+Tighten `case 'attach':` in `sp-command.ts` to verify on-disk existence first, error with a helpful suggestion if missing:
+
+```ts
+case 'attach': {
+  if (!name) {
+    ctx.ui.notify('Usage: /sp attach <name> [--force-takeover] [--reason "<text>"]', 'error');
+    return;
+  }
+  validateName(name);
+  const metaPath = join(deps.rootDir(), name, 'meta.json');
+  if (!existsSync(metaPath)) {
+    ctx.ui.notify(
+      `scratchpad not found: ${name}. Use /sp new ${name} to create it.`,
+      'error',
+    );
+    return;
+  }
+  // ... existing force-takeover + getOrAttach + sidecar flow (unchanged)
+}
+```
+
+Semantics after the fix:
+
+| Verb | Behavior |
+|---|---|
+| `/sp new <name>` | Error if exists; create otherwise. ← unchanged |
+| `/sp attach <name>` | **Error if NOT exists** with helpful suggestion; attach otherwise. ← NEW |
+| LLM tool `cw_scratchpad` exec | Auto-create — `getOrAttach` permissive. ← unchanged |
+
+The LLM tool path is unaffected because it bypasses the slash command and calls `manager.getOrAttach` directly via `scratchpad-tool.ts`.
+
+### Test that would lock the fix
+
+1. `/sp attach not-a-real-name` → notifies error "scratchpad not found: not-a-real-name. Use /sp new not-a-real-name to create it." No dir created on disk; no kernel spawned.
+2. `/sp new foo` then `/sp attach foo` → still works (foo exists on disk).
+3. `cw_scratchpad action=exec name=phantom code='return 1'` (via LLM tool path) → still auto-creates `phantom` because the library is unchanged.
+
+### Phase placement
+
+**Phase 1.5 polish wave.** Tiny fix (~4 lines + 2 tests). Bundles naturally with Issues 1, 2, 4 — all are scratchpad UX/ergonomics fixes that share an engineer's focus.
+
+Estimated effort: ~0.5 days including tests.
+
+---
+
 ## Template for new issues
 
 When you hit something during testing, append a new section with this shape:

@@ -377,10 +377,10 @@ Estimated effort: ~0.5 days including tests.
 
 ---
 
-## Issue 6 — Fresh Otto launch doesn't auto-restore workspace's last-attached scratchpad
+## Issue 6 — Fresh Otto launch doesn't auto-restore workspace's last-attached scratchpad (per-session restore is effectively unreachable)
 
-**Status:** open (design question — not a bug)
-**Severity:** medium (real UX gap for the canonical 3-day RCA scenario)
+**Status:** open (CRITICAL — discovered 2026-06-01 that the issue is worse than originally filed; see "Update" below)
+**Severity:** HIGH (per-session sidecar restore is effectively unreachable in practice — the only working restore path requires workspace-level pointer)
 **Date observed:** 2026-06-01 (scenario 9 of human tests)
 **Reporter:** Phase 1g testing
 
@@ -430,10 +430,19 @@ Two design decisions compound:
 
 Neither is wrong on its own. The gap is between them: the user's mental model is "the scratchpad is for this workspace, I should pick up where I left off" but the implementation says "each session is independent, attach is per-session."
 
+### Update (2026-06-01, post-testing): `--resume` does NOT preserve sessionId
+
+Empirical testing shows that `otto --resume <prior-session>` creates a NEW session file with a NEW sessionId, NOT a continuation of the prior file's sessionId. Evidence: after `--resume`, a new sidecar `<new-sessionId>.json` appears in `~/.otto/scratchpads/_sessions/` rather than the prior sidecar being read.
+
+`SessionManager.open(selectedPath)` stores the path internally but somewhere downstream Otto branches/copies into a new file (would need deeper investigation into the session-manager internals to find the exact site).
+
+**Consequence:** the per-session sidecar restore path that 1g shipped is **effectively unreachable in production**. There is no user-visible Otto workflow that produces a matching sessionId after a session ends. The "flicker" users see on `--resume` is just Otto's TUI startup repaint, not a wiped restore notification — the restore handler runs, finds no sidecar for the new sessionId, and silently no-ops.
+
+This elevates Issue 6 from "design question" to "the only viable restore path." Without a workspace-level pointer, NO restore happens for any real user.
+
 ### Workaround (today)
 
-- Always launch with `otto --resume` if you want continuity.
-- Or after fresh launch, type `/resume` and pick.
+- **No working workaround.** Users must manually `/sp attach <name>` every fresh session. The 1g "session continuity" feature is unreachable in practice.
 
 ### Proposed fixes (for design discussion)
 
@@ -468,7 +477,9 @@ The new pointer at `~/.otto/scratchpads/_workspaces/<hash>.json` (where `<hash>`
 
 ### Phase placement
 
-**Phase 1.5 polish wave.** Higher priority than the other Phase 1.5 issues because it directly affects the headline use case. Estimated effort: ~1 day including tests + docs.
+**TOP PRIORITY in Phase 1.5 polish wave.** Originally filed as "highest priority within Phase 1.5"; the post-testing update elevates this further — it's now the SHIP-BLOCKER for the spec's canonical use case. Without it, Phase 1's session-continuity feature is unreachable.
+
+Estimated effort: ~1 day for the workspace pointer (Option A in proposed fixes). May also warrant a deeper investigation into Otto's `SessionManager.open()` to see if there's a less-invasive fix at the session-manager level — but that's optional; the workspace pointer works regardless and stays within coworker-scratchpad's package boundary.
 
 Updated Phase 1.5 bundle (with Issue 6): ~6 days single-engineer total (Issues 1, 2, 4, 5, 6).
 

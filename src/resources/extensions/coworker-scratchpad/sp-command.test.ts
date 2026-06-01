@@ -10,6 +10,9 @@ interface StubMgr {
   create(name: string): Promise<unknown>;
   getOrAttach(name: string): Promise<unknown>;
   remove(name: string): Promise<void>;
+  save(name: string): Promise<void>;
+  detach(name: string, sessionId: string): Promise<void>;
+  clearHistory(name: string): Promise<void>;
   rootDir(): string;
   calls: Array<[string, ...unknown[]]>;
 }
@@ -23,6 +26,9 @@ function makeStub(root: string, existing: string[] = []): StubMgr {
     async create(name) { calls.push(['create', name]); if (existing.includes(name)) throw new Error(`scratchpad ${name} already exists`); existing.push(name); return null; },
     async getOrAttach(name) { calls.push(['getOrAttach', name]); if (!existing.includes(name)) existing.push(name); return null; },
     async remove(name) { calls.push(['remove', name]); const i = existing.indexOf(name); if (i >= 0) existing.splice(i, 1); },
+    async save(name) { calls.push(['save', name]); if (!existing.includes(name)) throw new Error(`scratchpad ${name} is not warm — nothing to save`); },
+    async detach(name, sid) { calls.push(['detach', name, sid]); },
+    async clearHistory(name) { calls.push(['clearHistory', name]); },
   };
 }
 
@@ -30,11 +36,22 @@ interface FakeCtx {
   notifications: Array<[string, string]>;
   hasUI: boolean;
   cwd: string;
-  ui: { notify: (msg: string, level: string) => void };
+  ui: {
+    notify: (msg: string, level: string) => void;
+    confirm: (title: string, msg: string) => Promise<boolean>;
+  };
 }
-function makeCtx(): FakeCtx {
+function makeCtx(confirmAnswer: boolean = true): FakeCtx {
   const notifications: FakeCtx['notifications'] = [];
-  return { notifications, hasUI: false, cwd: process.cwd(), ui: { notify: (m, l) => notifications.push([l, m]) } };
+  return {
+    notifications,
+    hasUI: false,
+    cwd: process.cwd(),
+    ui: {
+      notify: (m, l) => notifications.push([l, m]),
+      confirm: async (_title: string, _msg: string) => confirmAnswer,
+    },
+  };
 }
 
 interface FakePi {
@@ -66,6 +83,23 @@ describe('sp-command dispatch (stubbed manager)', () => {
       getCurrentName: () => current.name,
       setCurrentName: (n) => { current.name = n; },
       rootDir: () => root,
+      getSessionId: () => 'sess-1',
+    } as SpDeps;
+    registerSpCommand(pi as unknown as Parameters<typeof registerSpCommand>[0], deps);
+    return { pi, ctx, mgr, current };
+  }
+
+  function wireWithConfirm(confirm: boolean, existing: string[] = []): { pi: FakePi; ctx: FakeCtx; mgr: StubMgr; current: { name: string | null } } {
+    const pi = makePi();
+    const ctx = makeCtx(confirm);
+    const mgr = makeStub(root, existing);
+    const current = { name: null as string | null };
+    const deps: SpDeps = {
+      getManager: () => mgr as unknown as SpDeps['getManager'] extends () => infer T ? T : never,
+      getCurrentName: () => current.name,
+      setCurrentName: (n) => { current.name = n; },
+      rootDir: () => root,
+      getSessionId: () => 'sess-1',
     } as SpDeps;
     registerSpCommand(pi as unknown as Parameters<typeof registerSpCommand>[0], deps);
     return { pi, ctx, mgr, current };
@@ -197,5 +231,76 @@ describe('sp-command dispatch (stubbed manager)', () => {
     const { pi, ctx } = wire();
     await pi.commands.get('sp')!.handler('fork onlyone', ctx);
     assert.ok(ctx.notifications.some(([l, m]) => l === 'error' && /Usage: \/sp fork/.test(m)));
+  });
+
+  it('/sp save calls manager.save on current scratchpad', async () => {
+    const { pi, ctx, mgr, current } = wire(['p1']);
+    current.name = 'p1';
+    await pi.commands.get('sp')!.handler('save', ctx);
+    assert.deepEqual(mgr.calls, [['save', 'p1']]);
+    assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /saved p1/.test(m)));
+  });
+
+  it('/sp save errors when no current and no arg', async () => {
+    const { pi, ctx, mgr } = wire();
+    await pi.commands.get('sp')!.handler('save', ctx);
+    assert.deepEqual(mgr.calls, []);
+    assert.ok(ctx.notifications.some(([l, m]) => l === 'error' && /no current scratchpad/.test(m)));
+  });
+
+  it('/sp detach removes current and clears currentName', async () => {
+    const { pi, ctx, mgr, current } = wire(['p1']);
+    current.name = 'p1';
+    await pi.commands.get('sp')!.handler('detach', ctx);
+    assert.deepEqual(mgr.calls, [['detach', 'p1', 'sess-1']]);
+    assert.equal(current.name, null);
+    assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /detached from p1/.test(m)));
+  });
+
+  it('/sp detach errors when not attached', async () => {
+    const { pi, ctx, mgr } = wire();
+    await pi.commands.get('sp')!.handler('detach', ctx);
+    assert.deepEqual(mgr.calls, []);
+    assert.ok(ctx.notifications.some(([l, m]) => l === 'error' && /not attached/.test(m)));
+  });
+
+  it('/sp clear-history confirms then calls manager.clearHistory', async () => {
+    const { pi, ctx, mgr, current } = wireWithConfirm(true, ['p1']);
+    current.name = 'p1';
+    await pi.commands.get('sp')!.handler('clear-history', ctx);
+    assert.deepEqual(mgr.calls, [['clearHistory', 'p1']]);
+  });
+
+  it('/sp clear-history cancels when confirm returns false', async () => {
+    const { pi, ctx, mgr, current } = wireWithConfirm(false, ['p1']);
+    current.name = 'p1';
+    await pi.commands.get('sp')!.handler('clear-history', ctx);
+    assert.deepEqual(mgr.calls, []);
+    assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /cancelled/.test(m)));
+  });
+
+  it('/sp remove on current scratchpad confirms; --yes skips confirm', async () => {
+    // confirm=false => without --yes, remove is blocked
+    const { pi: pi1, ctx: ctx1, mgr: mgr1, current: cur1 } = wireWithConfirm(false, ['p1']);
+    cur1.name = 'p1';
+    await pi1.commands.get('sp')!.handler('remove p1', ctx1);
+    assert.deepEqual(mgr1.calls, []);
+    assert.ok(ctx1.notifications.some(([l, m]) => l === 'info' && /cancelled/.test(m)));
+
+    // --yes flag bypasses the prompt even with confirm=false
+    const { pi: pi2, ctx: ctx2, mgr: mgr2, current: cur2 } = wireWithConfirm(false, ['p1']);
+    cur2.name = 'p1';
+    await pi2.commands.get('sp')!.handler('remove p1 --yes', ctx2);
+    assert.deepEqual(mgr2.calls, [['remove', 'p1']]);
+    assert.equal(cur2.name, null);
+  });
+
+  it('/sp remove of non-current scratchpad does NOT confirm', async () => {
+    const { pi, ctx, mgr, current } = wireWithConfirm(false, ['p1', 'p2']);
+    current.name = 'p1';
+    await pi.commands.get('sp')!.handler('remove p2', ctx);
+    // confirm=false should not block because p2 != current; remove proceeds.
+    assert.deepEqual(mgr.calls, [['remove', 'p2']]);
+    assert.equal(current.name, 'p1', 'currentName preserved');
   });
 });

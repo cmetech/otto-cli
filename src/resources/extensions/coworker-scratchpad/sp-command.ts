@@ -4,16 +4,18 @@ import type { ExtensionAPI } from '@otto/pi-coding-agent';
 import type { ScratchpadManager } from '@otto/coworker-scratchpad';
 import { validateName, readCellsJsonl, readPersistedLeaf } from './helpers.js';
 import { projectTree, formatTreeText } from '@otto/coworker-scratchpad';
+import { sessionSidecarPath, writeSessionSidecar, deleteSessionSidecar } from './session-sidecar.js';
 
 export interface SpDeps {
   getManager: () => ScratchpadManager;
   getCurrentName: () => string | null;
   setCurrentName: (name: string | null) => void;
   rootDir: () => string;
+  getSessionId: () => string;
 }
 
-type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove' | 'tree' | 'fork';
-const VERBS: SpVerb[] = ['list', 'new', 'attach', 'reset', 'view', 'remove', 'tree', 'fork'];
+type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove' | 'tree' | 'fork' | 'save' | 'detach' | 'clear-history';
+const VERBS: SpVerb[] = ['list', 'new', 'attach', 'reset', 'view', 'remove', 'tree', 'fork', 'save', 'detach', 'clear-history'];
 
 function ensureCurrent(deps: SpDeps): string {
   let current = deps.getCurrentName();
@@ -46,12 +48,15 @@ function formatCellSummary(rec: { id: number; ok: boolean; code: string; value?:
 
 interface UiCtx {
   hasUI: boolean;
-  ui: { notify: (msg: string, level: 'info' | 'error' | 'warning') => void };
+  ui: {
+    notify: (msg: string, level: 'info' | 'error' | 'warning') => void;
+    confirm: (title: string, msg: string) => Promise<boolean>;
+  };
 }
 
 export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
   pi.registerCommand('sp', {
-    description: 'Manage scratchpads: /sp [list|new|attach|reset|view|remove] [name]',
+    description: 'Manage scratchpads: /sp [list|new|attach|reset|view|remove|tree|fork|save|detach|clear-history] [name]',
     getArgumentCompletions: (prefix: string) => {
       // Split on whitespace but preserve whether the prefix ends with a space
       // (trailing space = user typed the verb and hit space, ready for name completion).
@@ -104,6 +109,12 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
             validateName(name);
             await deps.getManager().create(name);
             deps.setCurrentName(name);
+            writeSessionSidecar(sessionSidecarPath(deps.rootDir(), deps.getSessionId()), {
+              schema_version: 1,
+              session_id: deps.getSessionId(),
+              current_name: name,
+              attached_at: new Date().toISOString(),
+            });
             ctx.ui.notify(`created scratchpad: ${name} (now current)`, 'info');
             return;
           }
@@ -112,6 +123,12 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
             validateName(name);
             await deps.getManager().getOrAttach(name);
             deps.setCurrentName(name);
+            writeSessionSidecar(sessionSidecarPath(deps.rootDir(), deps.getSessionId()), {
+              schema_version: 1,
+              session_id: deps.getSessionId(),
+              current_name: name,
+              attached_at: new Date().toISOString(),
+            });
             ctx.ui.notify(`attached to scratchpad: ${name}`, 'info');
             return;
           }
@@ -139,10 +156,22 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
             return;
           }
           case 'remove': {
-            if (!name) { ctx.ui.notify('Usage: /sp remove <name>', 'error'); return; }
+            if (!name) { ctx.ui.notify('Usage: /sp remove <name> [--yes]', 'error'); return; }
+            const force = parts.includes('--yes');
             validateName(name);
+            if (name === deps.getCurrentName() && !force) {
+              const confirmed = await ctx.ui.confirm(
+                'Remove current scratchpad?',
+                `${name} is your current scratchpad. Remove it? This deletes kernel.db, namespace.json, and the cell journal.`,
+              );
+              if (!confirmed) { ctx.ui.notify('cancelled', 'info'); return; }
+            }
+            const wasCurrent = name === deps.getCurrentName();
             await deps.getManager().remove(name);
-            if (deps.getCurrentName() === name) deps.setCurrentName(null);
+            if (wasCurrent) {
+              deleteSessionSidecar(sessionSidecarPath(deps.rootDir(), deps.getSessionId()));
+              deps.setCurrentName(null);
+            }
             ctx.ui.notify(`removed scratchpad: ${name}`, 'info');
             return;
           }
@@ -184,6 +213,36 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
             validateName(dst);
             await deps.getManager().fork(src, dst);
             ctx.ui.notify(`forked ${src} → ${dst}`, 'info');
+            return;
+          }
+          case 'save': {
+            const target = name ?? deps.getCurrentName();
+            if (!target) { ctx.ui.notify('Usage: /sp save [<name>] — no current scratchpad', 'error'); return; }
+            validateName(target);
+            await deps.getManager().save(target);
+            ctx.ui.notify(`saved ${target}`, 'info');
+            return;
+          }
+          case 'detach': {
+            const target = deps.getCurrentName();
+            if (!target) { ctx.ui.notify('not attached to any scratchpad', 'error'); return; }
+            await deps.getManager().detach(target, deps.getSessionId());
+            deleteSessionSidecar(sessionSidecarPath(deps.rootDir(), deps.getSessionId()));
+            deps.setCurrentName(null);
+            ctx.ui.notify(`detached from ${target}`, 'info');
+            return;
+          }
+          case 'clear-history': {
+            const target = name ?? deps.getCurrentName();
+            if (!target) { ctx.ui.notify('Usage: /sp clear-history [<name>] — no current scratchpad', 'error'); return; }
+            validateName(target);
+            const confirmed = await ctx.ui.confirm(
+              'Clear cell history?',
+              `Clear cell history for ${target}? kernel.db + namespace.json are preserved.`,
+            );
+            if (!confirmed) { ctx.ui.notify('cancelled', 'info'); return; }
+            await deps.getManager().clearHistory(target);
+            ctx.ui.notify(`cleared cell history for ${target}`, 'info');
             return;
           }
           default: {

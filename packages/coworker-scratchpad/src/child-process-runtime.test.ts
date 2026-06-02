@@ -4,7 +4,9 @@ import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { AuditLog } from '@otto/coworker-utils';
+import { CredentialInjector, LocalDataVault } from '@otto/coworker-vault';
 import { ChildProcessRuntime } from './child-process-runtime.js';
 import type { DataLoadDrawer } from './kernel-protocol.js';
 import { encodeNamespace } from './namespace-codec.js';
@@ -331,5 +333,81 @@ describe('ChildProcessRuntime — snapshot() (1d2)', () => {
     writeFileSync(blocker, 'x');
     rt = new ChildProcessRuntime({ workspace: ws, scratchpadDir: blocker, cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 });
     await assert.rejects(rt.start(), (e: Error) => /startup_error\/duckdb_open/.test(e.name) || /duckdb/i.test(e.message));
+  });
+});
+
+describe('ChildProcessRuntime — vault env injection (Phase 2)', () => {
+  let ws: string;
+  let rt: ChildProcessRuntime;
+
+  beforeEach(async () => {
+    ws = await mkdtemp(join(tmpdir(), 'cpr-env-ws-'));
+    await mkdir(join(ws, '.otto', 'inputs'), { recursive: true });
+  });
+  afterEach(async () => {
+    await rt?.dispose();
+    await rm(ws, { recursive: true, force: true });
+  });
+
+  it('injects OTTO_DS_* env vars from bound vault entries into the spawned child only', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cpr-env-vault-'));
+    const audit = new AuditLog({ path: join(root, 'audit.jsonl') });
+    const vault = new LocalDataVault({ globalDir: join(root, 'global'), workspaceDir: undefined, audit });
+    await vault.set({ engine: 'jira', name: 'prod' }, { url: 'https://x', token: 't' });
+    const injector = new CredentialInjector({ vault, audit });
+
+    // Sanity: parent process must NOT have these env vars before spawn.
+    assert.equal(process.env.OTTO_DS_JIRA_PROD__URL, undefined);
+    assert.equal(process.env.OTTO_DS_JIRA_PROD__TOKEN, undefined);
+
+    rt = new ChildProcessRuntime({
+      workspace: ws,
+      cellTimeoutMs: 10_000,
+      inactivityTimeoutMs: 10_000,
+      injector,
+      bindings: ['jira:prod'],
+      scratchpadName: 'sp-env-test',
+      sessionId: 'sess-env-test',
+    });
+    await rt.start();
+    const { value } = await rt.runCell(
+      'return [process.env.OTTO_DS_JIRA_PROD__URL, process.env.OTTO_DS_JIRA_PROD__TOKEN];',
+    );
+    assert.deepEqual(value, ['https://x', 't']);
+
+    // Parent process must still be clean post-spawn.
+    assert.equal(process.env.OTTO_DS_JIRA_PROD__URL, undefined);
+    assert.equal(process.env.OTTO_DS_JIRA_PROD__TOKEN, undefined);
+
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('records spawnTime for staleness checks', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'cpr-env-time-'));
+    const audit = new AuditLog({ path: join(root, 'audit.jsonl') });
+    const vault = new LocalDataVault({ globalDir: join(root, 'global'), workspaceDir: undefined, audit });
+    const injector = new CredentialInjector({ vault, audit });
+
+    rt = new ChildProcessRuntime({
+      workspace: ws,
+      cellTimeoutMs: 10_000,
+      inactivityTimeoutMs: 10_000,
+      injector,
+      bindings: [], // empty bindings: still tracks spawnTime, but skips injection
+      scratchpadName: 'sp-time-test',
+      sessionId: 'sess-time-test',
+    });
+
+    // Pre-start: spawnTime is the epoch placeholder.
+    assert.equal(rt.spawnTime.getTime(), 0);
+
+    const before = Date.now();
+    await rt.start();
+    const after = Date.now();
+
+    assert.ok(rt.spawnTime.getTime() >= before, 'spawnTime should be >= before start()');
+    assert.ok(rt.spawnTime.getTime() <= after, 'spawnTime should be <= after start()');
+
+    await rm(root, { recursive: true, force: true });
   });
 });

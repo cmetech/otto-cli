@@ -6,6 +6,7 @@ import { z } from 'zod';
 import * as dateFns from 'date-fns';
 import * as DuckDB from '@duckdb/node-api';
 import type { DuckDBInstance, DuckDBConnection } from '@duckdb/node-api';
+import { SecretScanner, type AuditLog, type AuditRecord } from '@otto/coworker-utils';
 
 /**
  * The data libraries pre-bound into every scratchpad cell's vm sandbox.
@@ -216,4 +217,63 @@ export function attachRegisterDf(instance: DuckDBInstance): void {
       conn.closeSync();
     }
   };
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2 Task 14: SecretScanner gate on cell-output journal writes.
+// Live TUI output is UPSTREAM of the journal write (the runtime returns the
+// raw stdout, then the manager forks: the same string is returned to the tool
+// for live display AND passed through redactForJournal before archive.append).
+// Only the journal copy is redacted; the TUI copy is untouched.
+// ---------------------------------------------------------------------------
+
+/**
+ * Context passed to `redactForJournal`. The audit instance is the same one
+ * held by the CredentialInjector — supplied by the manager so secret-redaction
+ * audit records land alongside vault inject/inject-skipped records.
+ */
+export interface RedactionContext {
+  audit: AuditLog;
+  sessionId: string;
+  scratchpadName: string;
+  pid: number;
+  cellId: string;
+}
+
+const journalScanner = new SecretScanner();
+
+/**
+ * Scans `raw` for known secret patterns; for each hit, appends a
+ * `producer: 'secret-scanner', action: 'redact'` audit record (severity warn)
+ * with `detail = { cell_id, kind, offset, length }` — NEVER the secret value
+ * or `SecretHit.preview`. Returns the redacted text (`[REDACTED:<kind>]` per
+ * hit). If no hits, returns the input verbatim with no audit emission.
+ *
+ * Backward compatibility: callers that don't have an AuditLog should skip this
+ * helper entirely (pass-through). Audit is required here because the redaction
+ * MUST be observable.
+ */
+export function redactForJournal(raw: string, ctx: RedactionContext): string {
+  const hits = journalScanner.scan(raw);
+  if (hits.length === 0) return raw;
+  const ts = new Date().toISOString();
+  for (const h of hits) {
+    ctx.audit.append({
+      _schema: 1,
+      ts,
+      producer: 'secret-scanner',
+      action: 'redact',
+      severity: 'warn',
+      sessionId: ctx.sessionId,
+      scratchpadName: ctx.scratchpadName,
+      pid: ctx.pid,
+      detail: {
+        cell_id: ctx.cellId,
+        kind: h.kind,
+        offset: h.start,
+        length: h.end - h.start,
+      },
+    } satisfies AuditRecord);
+  }
+  return journalScanner.redact(raw);
 }

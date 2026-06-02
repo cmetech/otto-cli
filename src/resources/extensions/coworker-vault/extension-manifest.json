@@ -1,0 +1,12 @@
+{
+  "id": "coworker-vault",
+  "name": "Co-worker Vault",
+  "version": "1.0.0",
+  "description": "Credential vault: /connect wizard, /datasource manager, /audit reader",
+  "tier": "bundled",
+  "requires": { "platform": ">=2.29.0" },
+  "provides": {
+    "commands": ["connect", "datasource", "audit"],
+    "hooks": ["session_shutdown"]
+  }
+}

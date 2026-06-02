@@ -1,10 +1,13 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import type { CredentialInjector } from '@otto/coworker-vault';
+import type { AuditLog } from '@otto/coworker-utils';
 import { ChildProcessRuntime, type ChildProcessRuntimeOptions } from './child-process-runtime.js';
 import { acquireLock, releaseLock, type LockInfo } from './scratchpad-lock.js';
 import { CellArchive, type CellEntry } from './cell-archive.js';
 import { projectTree, validateLeafId } from './cell-tree.js';
+import { redactForJournal } from './kernel-bindings.js';
 import type { RecoveryNote, SnapshotResult } from './kernel-protocol.js';
 
 type RecoveryNoteEntry = RecoveryNote & { at: string };
@@ -26,11 +29,35 @@ export interface ScratchpadManagerOptions {
   runtimeOptions?: Omit<ChildProcessRuntimeOptions, 'workspace'>;
   sessionId?: string;
   forkExitTimeoutMs?: number;
+  /**
+   * Phase 2 Task 13: optional vault credential injector. When provided, each
+   * spawned ChildProcessRuntime receives the injector + the scratchpad's
+   * meta.bindings list. Absent => runtime spawns with no OTTO_DS_* env vars.
+   */
+  injector?: CredentialInjector;
+  /**
+   * Phase 2 Task 14: optional audit sink for SecretScanner redactions on
+   * cell-output journal writes. When provided, every cell run's stdout is
+   * scanned BEFORE archive.append and emits one `producer: 'secret-scanner'`
+   * record per hit. Absent => redaction is a no-op (backward compat).
+   *
+   * Wiring contract: the caller is expected to pass the SAME AuditLog instance
+   * held by the CredentialInjector so secret-scanner records appear alongside
+   * vault inject/inject-skipped records in a single audit stream.
+   */
+  audit?: AuditLog;
 }
 
 export interface AttachOptions {
   forceTakeover?: boolean;
   takeoverReason?: string;
+  /**
+   * Phase 2 Task 12: optional list of binding ids (e.g. ['jira:prod']) to record
+   * in meta.json on first create. Subsequent meta writes preserve whatever's on
+   * disk via prevExtras — once persisted, bindings survive every other meta-write
+   * path. Ignored on re-attach if meta.json already has a bindings field.
+   */
+  bindings?: string[];
 }
 
 export interface ScratchpadInfo {
@@ -51,7 +78,7 @@ interface Entry {
 const DEFAULT_MAX_LIVE = 8;
 const DEFAULT_IDLE_MS = 600_000;
 const DEFAULT_SWEEP_MS = 30_000;
-const META_SCHEMA_VERSION = 3;
+const META_SCHEMA_VERSION = 4;
 const MAX_RECOVERY_NOTES = 20;
 const FORK_EXIT_TIMEOUT_MS = 5000;
 
@@ -81,6 +108,8 @@ export class ScratchpadManager {
   protected readonly now: () => number;
   protected readonly runtimeOptions: Omit<ChildProcessRuntimeOptions, 'workspace'>;
   protected readonly forkExitTimeoutMs: number;
+  protected readonly injector: CredentialInjector | undefined;
+  protected readonly audit: AuditLog | undefined;
   protected disposed = false;
   private sweepTimer: NodeJS.Timeout | null = null;
 
@@ -93,6 +122,8 @@ export class ScratchpadManager {
     this.runtimeOptions = options.runtimeOptions ?? {};
     this.sessionId = options.sessionId;
     this.forkExitTimeoutMs = options.forkExitTimeoutMs ?? FORK_EXIT_TIMEOUT_MS;
+    this.injector = options.injector;
+    this.audit = options.audit;
     this.sweepTimer = setInterval(() => { void this.evictIdle(); }, options.sweepIntervalMs ?? DEFAULT_SWEEP_MS);
     this.sweepTimer.unref();
   }
@@ -127,19 +158,25 @@ export class ScratchpadManager {
     renameSync(tmp, path);
   }
 
-  private writeMeta(name: string): void {
+  private writeMeta(name: string, initialBindings?: string[]): void {
     const dir = this.dirFor(name);
     const path = this.metaPath(name);
     mkdirSync(dir, { recursive: true });
     const nowIso = new Date(this.now()).toISOString();
     let created_at = nowIso;
     let attached_sessions: string[] = [];
+    // Phase 2 Task 12: bindings persistence + v3→v4 migration.
+    // - On first write (no prev), use the passed-in initialBindings (default []).
+    // - On subsequent writes, preserve whatever's on disk (migrating v3 → []).
+    let bindings: string[] = Array.isArray(initialBindings) ? [...initialBindings] : [];
     const prevExtras: Record<string, unknown> = {};
     if (existsSync(path)) {
       try {
         const prev = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
         if (typeof prev.created_at === 'string') created_at = prev.created_at;
         if (Array.isArray(prev.attached_sessions)) attached_sessions = prev.attached_sessions as string[];
+        // v3 → v4 migration: bindings field is missing on v3; default to [].
+        bindings = Array.isArray(prev.bindings) ? (prev.bindings as string[]) : [];
         for (const k of [
           'last_snapshot_cell_id', 'last_snapshot_at', 'namespace_skipped', 'recovery_notes',
           'cell_leaf_id', 'kernel_at_cell_id', 'recovery_notes_seen_at',
@@ -170,6 +207,7 @@ export class ScratchpadManager {
       created_at,
       last_used: nowIso,
       attached_sessions,
+      bindings,
       size_bytes: this.payloadSize(dir),
       schema_version: META_SCHEMA_VERSION,
       ...prevExtras,
@@ -294,11 +332,86 @@ export class ScratchpadManager {
     return n;
   }
 
+  /**
+   * Phase 2 Task 13: read meta.bindings from disk so each fresh spawn picks up
+   * the current binding set (bindings can change between attaches via /sp use).
+   * Returns [] if meta.json doesn't exist or doesn't have a v4 bindings array.
+   *
+   * Phase 2 Task 16: also surfaced as a public read for /sp list rendering and
+   * staleness-banner emission. Stays a thin read; callers that need to mutate
+   * use addBinding / removeBinding (which atomically RMW meta.json).
+   */
+  readBindings(name: string): string[] {
+    const path = this.metaPath(name);
+    if (!existsSync(path)) return [];
+    try {
+      const cur = JSON.parse(readFileSync(path, 'utf8')) as { bindings?: unknown };
+      return Array.isArray(cur.bindings) ? (cur.bindings as string[]) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Phase 2 Task 16: append a binding ref (e.g. 'jira:prod') to meta.bindings.
+   * Idempotent — adding a ref already in the list is a no-op (the meta.json
+   * write still happens so callers can detect "added" vs "noop" only via the
+   * returned tuple). Atomically rewrites meta.json via writeMetaAtomic, so
+   * concurrent writers cannot interleave. Caller is responsible for validating
+   * `ref` (sp-command uses LocalDataVault.parseRef before invoking).
+   */
+  async addBinding(name: string, ref: string): Promise<{ added: boolean }> {
+    this.assertNotDisposed();
+    if (!this.existsOnDisk(name)) throw new Error(`scratchpad not found: ${name}`);
+    const path = this.metaPath(name);
+    let cur: Record<string, unknown> = {};
+    try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { /* corrupt -> overwrite */ }
+    const bindings = Array.isArray(cur.bindings) ? [...(cur.bindings as string[])] : [];
+    if (bindings.includes(ref)) {
+      return { added: false };
+    }
+    bindings.push(ref);
+    cur.bindings = bindings;
+    if (typeof cur.schema_version !== 'number') cur.schema_version = META_SCHEMA_VERSION;
+    this.writeMetaAtomic(path, cur);
+    return { added: true };
+  }
+
+  /**
+   * Phase 2 Task 16: remove a binding ref from meta.bindings. Returns whether
+   * a removal happened so callers can emit "no such binding" if needed.
+   */
+  async removeBinding(name: string, ref: string): Promise<{ removed: boolean }> {
+    this.assertNotDisposed();
+    if (!this.existsOnDisk(name)) throw new Error(`scratchpad not found: ${name}`);
+    const path = this.metaPath(name);
+    let cur: Record<string, unknown> = {};
+    try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { /* corrupt -> overwrite */ }
+    const bindings = Array.isArray(cur.bindings) ? [...(cur.bindings as string[])] : [];
+    const idx = bindings.indexOf(ref);
+    if (idx < 0) {
+      return { removed: false };
+    }
+    bindings.splice(idx, 1);
+    cur.bindings = bindings;
+    if (typeof cur.schema_version !== 'number') cur.schema_version = META_SCHEMA_VERSION;
+    this.writeMetaAtomic(path, cur);
+    return { removed: true };
+  }
+
   private async spawnRuntime(name: string): Promise<ChildProcessRuntime> {
     const rt = new ChildProcessRuntime({
       workspace: this.workspace,
       scratchpadDir: this.dirFor(name),
       ...this.runtimeOptions,
+      // Phase 2 Task 13: env-injection wiring. Injector + bindings are read
+      // fresh on every spawn so cold-restarts and re-attaches see the latest
+      // bindings list. scratchpadName + sessionId stamp the injector's audit
+      // records so /audit can attribute each inject to a scratchpad+session.
+      injector: this.injector,
+      bindings: this.readBindings(name),
+      scratchpadName: name,
+      sessionId: this.sessionId ?? '',
     });
     await rt.start();
     return rt;
@@ -350,16 +463,28 @@ export class ScratchpadManager {
     const runtime = await this.getOrAttach(name, opts);
     const entry = this.entries.get(name)!;
     entry.lastUsedAt = this.now();
+    // Phase 2 Task 14: forecast the id the archive will assign to this cell so
+    // any secret-scanner audit records carry the same cell_id the journal entry
+    // will get. archive.lastId may be null for an empty archive (id 1 is next).
+    const nextCellId = (entry.archive.lastId ?? 0) + 1;
     try {
       const result = await runtime.runCell(code);
-      entry.archive.append({ code, ok: true, value: result.value, stdout: result.stdout });
+      // Phase 2 Task 14: live TUI output is UPSTREAM — `result` flows back to
+      // the tool unchanged for display. Only the journal copy of stdout is
+      // passed through redactForJournal. When no audit is plumbed, redaction
+      // is a pass-through (backward compat).
+      const journalStdout = this.redactStdout(result.stdout, name, nextCellId);
+      entry.archive.append({ code, ok: true, value: result.value, stdout: journalStdout });
       entry.kernelAtCellId = entry.archive.lastId;
       this.writeMeta(name);
       return result;
     } catch (err) {
       const e = err as Error;
       try {
-        entry.archive.append({ code, ok: false, error: { name: e.name, message: e.message }, stdout: '' });
+        // Phase 2 Task 14: redact the error message too — cell exceptions can
+        // embed user data in `e.message`. stdout is empty in this branch.
+        const journalErrMsg = this.redactStdout(e.message, name, nextCellId);
+        entry.archive.append({ code, ok: false, error: { name: e.name, message: journalErrMsg }, stdout: '' });
         entry.kernelAtCellId = entry.archive.lastId;
         this.writeMeta(name);
       } catch {
@@ -367,6 +492,22 @@ export class ScratchpadManager {
       }
       throw err;
     }
+  }
+
+  /**
+   * Phase 2 Task 14: redact known-secret patterns from a cell-output string
+   * before journaling. No-op (pass-through) when no AuditLog is configured —
+   * the manager was constructed in test/legacy mode without vault wiring.
+   */
+  private redactStdout(raw: string, scratchpadName: string, cellId: number): string {
+    if (!this.audit) return raw;
+    return redactForJournal(raw, {
+      audit: this.audit,
+      sessionId: this.sessionId ?? '',
+      scratchpadName,
+      pid: process.pid,
+      cellId: String(cellId),
+    });
   }
 
   /**
@@ -433,6 +574,9 @@ export class ScratchpadManager {
     let cur: Record<string, unknown> = {};
     try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { /* fall through */ }
     cur.cell_leaf_id = id;
+    // Phase 2 Task 12: bumping schema_version here doubles as a migration step
+    // for cold-only flows; ensure bindings exists so the v4 invariant holds.
+    if (!Array.isArray(cur.bindings)) cur.bindings = [];
     cur.schema_version = META_SCHEMA_VERSION;
     this.writeMetaAtomic(path, cur);
   }
@@ -484,6 +628,10 @@ export class ScratchpadManager {
       created_at: nowIso,
       last_used: nowIso,
       attached_sessions: this.sessionId ? [this.sessionId] : [],
+      // Phase 2 Task 16: fork inherits src's bindings so the forked scratchpad
+      // spawns its kernel with the same OTTO_DS_* env block. Users can
+      // /sp unuse on dst afterwards if they want a different binding shape.
+      bindings: Array.isArray(srcMeta.bindings) ? [...(srcMeta.bindings as string[])] : [],
       size_bytes: this.payloadSize(dstDir),
       schema_version: META_SCHEMA_VERSION,
       cell_leaf_id: typeof srcMeta.cell_leaf_id === 'number' ? srcMeta.cell_leaf_id : null,
@@ -592,7 +740,9 @@ export class ScratchpadManager {
       takeoverReason: opts.takeoverReason,
       now: this.now,
     });
-    this.writeMeta(name);
+    // Phase 2 Task 12: opts.bindings is only honored on first create; on re-attach
+    // the on-disk bindings field wins via prevExtras in writeMeta.
+    this.writeMeta(name, opts.bindings);
     await this.evictLruIfNeeded();
     let runtime: ChildProcessRuntime;
     try {

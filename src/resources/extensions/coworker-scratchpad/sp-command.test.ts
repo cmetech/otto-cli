@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -15,7 +15,7 @@ interface StubEntry {
 
 interface StubMgr {
   list(): Array<{ name: string; live: boolean; lastUsedAt: number; hasActiveCell: boolean }>;
-  create(name: string): Promise<unknown>;
+  create(name: string, opts?: { bindings?: string[] }): Promise<unknown>;
   getOrAttach(name: string, opts?: { forceTakeover?: boolean; takeoverReason?: string }): Promise<unknown>;
   remove(name: string): Promise<void>;
   save(name: string): Promise<void>;
@@ -23,10 +23,35 @@ interface StubMgr {
   clearHistory(name: string): Promise<void>;
   markRecoveryNotesSeen(name: string): Promise<void>;
   evict(name: string, opts?: { force?: boolean }): Promise<{ interrupted: boolean }>;
+  // Phase 2 Task 16: bindings operations. Backed by actual meta.json writes
+  // in the test root so /sp list and post-create assertions can verify state.
+  addBinding(name: string, ref: string): Promise<{ added: boolean }>;
+  removeBinding(name: string, ref: string): Promise<{ removed: boolean }>;
+  readBindings(name: string): string[];
   rootDir(): string;
   calls: Array<[string, ...unknown[]]>;
   /** Test-only: override per-entry state for /sp list rendering tests. */
   setEntry(name: string, partial: Partial<StubEntry>): void;
+}
+
+// Phase 2 Task 16 test helper: read/write meta.json on disk in the test root.
+// The stub manager persists meta.json so sp-command's readBindingsFromMeta()
+// (which inspects disk directly) observes the same state the manager set.
+function writeMetaToDisk(root: string, name: string, patch: Record<string, unknown>): void {
+  const dir = join(root, name);
+  mkdirSync(dir, { recursive: true });
+  const path = join(dir, 'meta.json');
+  let cur: Record<string, unknown> = {};
+  if (existsSync(path)) {
+    try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { /* drop */ }
+  }
+  writeFileSync(path, JSON.stringify({ ...cur, ...patch }, null, 2));
+}
+
+function readMetaFromDisk(root: string, name: string): Record<string, unknown> {
+  const path = join(root, name, 'meta.json');
+  if (!existsSync(path)) return {};
+  try { return JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { return {}; }
 }
 
 function makeStub(root: string, existing: string[] = [], busyOnAttach: boolean = false): StubMgr {
@@ -44,12 +69,20 @@ function makeStub(root: string, existing: string[] = [], busyOnAttach: boolean =
         return { name: n, live: e.live, lastUsedAt: e.lastUsedAt, hasActiveCell: e.hasActiveCell };
       });
     },
-    async create(name) {
-      calls.push(['create', name]);
+    async create(name, opts) {
+      calls.push(opts && Object.keys(opts).length > 0 ? ['create', name, opts] : ['create', name]);
       if (existing.includes(name)) throw new Error(`scratchpad ${name} already exists`);
       existing.push(name);
       // Newly created scratchpad behaves like a fresh warm entry.
       entries.set(name, { live: true, lastUsedAt: Date.now(), hasActiveCell: false });
+      // Phase 2 Task 16: persist meta.json so the stub mirrors the real
+      // manager's writeMeta(name, opts.bindings) call. bindings default to []
+      // matching the v4 schema invariant.
+      writeMetaToDisk(root, name, {
+        name,
+        bindings: Array.isArray(opts?.bindings) ? opts!.bindings : [],
+        schema_version: 4,
+      });
       return null;
     },
     async getOrAttach(name, opts) {
@@ -67,6 +100,9 @@ function makeStub(root: string, existing: string[] = [], busyOnAttach: boolean =
       const i = existing.indexOf(name);
       if (i >= 0) existing.splice(i, 1);
       entries.delete(name);
+      // Phase 2 Task 16: also clean up the on-disk meta.json the stub created
+      // so subsequent /sp list calls don't see the dead scratchpad.
+      try { rmSync(join(root, name), { recursive: true, force: true }); } catch { /* drop */ }
     },
     async save(name) { calls.push(['save', name]); if (!existing.includes(name)) throw new Error(`scratchpad ${name} is not warm — nothing to save`); },
     async detach(name, sid) { calls.push(['detach', name, sid]); },
@@ -86,6 +122,31 @@ function makeStub(root: string, existing: string[] = [], busyOnAttach: boolean =
     setEntry(name, partial) {
       const cur = entries.get(name) ?? { live: false, lastUsedAt: 0, hasActiveCell: false };
       entries.set(name, { ...cur, ...partial });
+    },
+    async addBinding(name, ref) {
+      calls.push(['addBinding', name, ref]);
+      if (!existing.includes(name)) throw new Error(`scratchpad not found: ${name}`);
+      const meta = readMetaFromDisk(root, name);
+      const bindings = Array.isArray(meta.bindings) ? [...(meta.bindings as string[])] : [];
+      if (bindings.includes(ref)) return { added: false };
+      bindings.push(ref);
+      writeMetaToDisk(root, name, { bindings });
+      return { added: true };
+    },
+    async removeBinding(name, ref) {
+      calls.push(['removeBinding', name, ref]);
+      if (!existing.includes(name)) throw new Error(`scratchpad not found: ${name}`);
+      const meta = readMetaFromDisk(root, name);
+      const bindings = Array.isArray(meta.bindings) ? [...(meta.bindings as string[])] : [];
+      const idx = bindings.indexOf(ref);
+      if (idx < 0) return { removed: false };
+      bindings.splice(idx, 1);
+      writeMetaToDisk(root, name, { bindings });
+      return { removed: true };
+    },
+    readBindings(name) {
+      const meta = readMetaFromDisk(root, name);
+      return Array.isArray(meta.bindings) ? (meta.bindings as string[]) : [];
     },
   };
 }
@@ -542,6 +603,209 @@ describe('sp-command dispatch (stubbed manager)', () => {
       assert.ok(ctx.notifications.some(([_l, m]) => /attached to scratchpad: real/.test(m)));
       assert.deepEqual(mgr.calls[0], ['getOrAttach', 'real', {}]);
       assert.equal(current.name, 'real');
+    });
+  });
+
+  describe('/sp — vault bindings (Phase 2 Task 16)', () => {
+    it('/sp new <name> --use jira:prod records bindings in meta.json', async () => {
+      const { pi, ctx, mgr, current } = wire();
+      await pi.commands.get('sp')!.handler('new p1 --use jira:prod', ctx);
+      // Manager.create was invoked with bindings option.
+      assert.deepEqual(mgr.calls, [['create', 'p1', { bindings: ['jira:prod'] }]]);
+      const meta = readMetaFromDisk(root, 'p1');
+      assert.deepEqual(meta.bindings, ['jira:prod']);
+      assert.equal(current.name, 'p1');
+      // Notification mentions the binding.
+      assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /bindings: jira:prod/.test(m)));
+    });
+
+    it('/sp new with multiple --use flags records all bindings', async () => {
+      const { pi, ctx, mgr } = wire();
+      await pi.commands.get('sp')!.handler('new p1 --use jira:prod --use foo:bar', ctx);
+      assert.deepEqual(mgr.calls, [['create', 'p1', { bindings: ['jira:prod', 'foo:bar'] }]]);
+      const meta = readMetaFromDisk(root, 'p1');
+      assert.deepEqual(meta.bindings, ['jira:prod', 'foo:bar']);
+    });
+
+    it('/sp new --use with malformed ref errors before touching manager', async () => {
+      const { pi, ctx, mgr, current } = wire();
+      await pi.commands.get('sp')!.handler('new p1 --use not-a-valid-ref', ctx);
+      // create() must NOT have been called.
+      assert.deepEqual(mgr.calls, []);
+      assert.equal(current.name, null);
+      assert.ok(ctx.notifications.some(([l, m]) => l === 'error' && /BindingRef|not-a-valid-ref/.test(m)));
+    });
+
+    it('/sp use <name> <ref> appends to bindings (idempotent)', async () => {
+      const { pi, ctx, mgr } = wire();
+      await pi.commands.get('sp')!.handler('new p1', ctx);
+      await pi.commands.get('sp')!.handler('use p1 jira:prod', ctx);
+      assert.deepEqual(readMetaFromDisk(root, 'p1').bindings, ['jira:prod']);
+      assert.ok(mgr.calls.some((c) => c[0] === 'addBinding' && c[1] === 'p1' && c[2] === 'jira:prod'));
+      // Second call is idempotent — same ref produces info, not error.
+      ctx.notifications.length = 0;
+      await pi.commands.get('sp')!.handler('use p1 jira:prod', ctx);
+      assert.deepEqual(readMetaFromDisk(root, 'p1').bindings, ['jira:prod']);
+      assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /already present/.test(m)));
+    });
+
+    it('/sp use emits hint about /sp reset', async () => {
+      const { pi, ctx } = wire();
+      await pi.commands.get('sp')!.handler('new p1', ctx);
+      await pi.commands.get('sp')!.handler('use p1 jira:prod', ctx);
+      assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /\/sp reset to inject into the live kernel/.test(m)));
+    });
+
+    it('/sp use with malformed ref errors', async () => {
+      const { pi, ctx } = wire();
+      await pi.commands.get('sp')!.handler('new p1', ctx);
+      await pi.commands.get('sp')!.handler('use p1 not-a-valid-ref', ctx);
+      assert.ok(ctx.notifications.some(([l, m]) => l === 'error' && /BindingRef|not-a-valid-ref/.test(m)));
+      assert.deepEqual(readMetaFromDisk(root, 'p1').bindings, []);
+    });
+
+    it('/sp use with missing args reports usage error', async () => {
+      const { pi, ctx } = wire();
+      await pi.commands.get('sp')!.handler('use p1', ctx);
+      assert.ok(ctx.notifications.some(([l, m]) => l === 'error' && /Usage: \/sp use/.test(m)));
+    });
+
+    it('/sp unuse <name> <ref> removes from bindings', async () => {
+      const { pi, ctx, mgr } = wire();
+      await pi.commands.get('sp')!.handler('new p1 --use jira:prod', ctx);
+      await pi.commands.get('sp')!.handler('unuse p1 jira:prod', ctx);
+      assert.deepEqual(readMetaFromDisk(root, 'p1').bindings, []);
+      assert.ok(mgr.calls.some((c) => c[0] === 'removeBinding' && c[1] === 'p1' && c[2] === 'jira:prod'));
+      assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /binding removed: jira:prod from p1/.test(m)));
+    });
+
+    it('/sp unuse of absent binding emits "not present" info', async () => {
+      const { pi, ctx } = wire();
+      await pi.commands.get('sp')!.handler('new p1', ctx);
+      await pi.commands.get('sp')!.handler('unuse p1 jira:prod', ctx);
+      assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /not present/.test(m)));
+    });
+
+    it('/sp unuse with missing args reports usage error', async () => {
+      const { pi, ctx } = wire();
+      await pi.commands.get('sp')!.handler('unuse p1', ctx);
+      assert.ok(ctx.notifications.some(([l, m]) => l === 'error' && /Usage: \/sp unuse/.test(m)));
+    });
+
+    it('/sp list output includes binding count column for bound scratchpads', async () => {
+      const { pi, ctx } = wire();
+      await pi.commands.get('sp')!.handler('new p1 --use jira:prod', ctx);
+      ctx.notifications.length = 0;
+      await pi.commands.get('sp')!.handler('list', ctx);
+      const listMsg = ctx.notifications.filter(([l]) => l === 'info').map(([, m]) => m).join('\n');
+      assert.match(listMsg, /uses:1/, 'list should show "uses:1" for scratchpad with one binding');
+    });
+
+    it('/sp list omits binding column for unbound scratchpads', async () => {
+      const { pi, ctx } = wire();
+      await pi.commands.get('sp')!.handler('new p1', ctx);
+      ctx.notifications.length = 0;
+      await pi.commands.get('sp')!.handler('list', ctx);
+      const listMsg = ctx.notifications.filter(([l]) => l === 'info').map(([, m]) => m).join('\n');
+      assert.doesNotMatch(listMsg, /uses:/, 'list should not show "uses:" for unbound scratchpad');
+    });
+
+    it('/sp list shows correct binding count after /sp use', async () => {
+      const { pi, ctx } = wire();
+      await pi.commands.get('sp')!.handler('new p1', ctx);
+      await pi.commands.get('sp')!.handler('use p1 jira:prod', ctx);
+      await pi.commands.get('sp')!.handler('use p1 foo:bar', ctx);
+      ctx.notifications.length = 0;
+      await pi.commands.get('sp')!.handler('list', ctx);
+      const listMsg = ctx.notifications.filter(([l]) => l === 'info').map(([, m]) => m).join('\n');
+      assert.match(listMsg, /uses:2/);
+    });
+
+    it('/sp reset preserves bindings across the respawn', async () => {
+      const { pi, ctx } = wire();
+      await pi.commands.get('sp')!.handler('new p1 --use jira:prod', ctx);
+      assert.deepEqual(readMetaFromDisk(root, 'p1').bindings, ['jira:prod']);
+      await pi.commands.get('sp')!.handler('reset p1', ctx);
+      // remove() then create() — bindings should survive via the preserved list.
+      assert.deepEqual(readMetaFromDisk(root, 'p1').bindings, ['jira:prod']);
+    });
+  });
+
+  describe('/sp attach staleness banner (Phase 2 Task 16)', () => {
+    function wireWithStaleness(lookup: (ref: string) => Promise<string | null>): { pi: FakePi; ctx: FakeCtx; mgr: StubMgr; current: { name: string | null } } {
+      const pi = makePi();
+      const ctx = makeCtx();
+      const mgr = makeStub(root, ['p1']);
+      const current = { name: null as string | null };
+      const deps: SpDeps = {
+        getManager: () => mgr as unknown as SpDeps['getManager'] extends () => infer T ? T : never,
+        getCurrentName: () => current.name,
+        setCurrentName: (n) => { current.name = n; },
+        rootDir: () => root,
+        getSessionId: () => 'sess-1',
+        getWorkspaceCwd: () => '/tmp/test-cwd',
+        getStalenessVault: () => ({ lookupLastModified: lookup }),
+      } as SpDeps;
+      registerSpCommand(pi as unknown as Parameters<typeof registerSpCommand>[0], deps);
+      return { pi, ctx, mgr, current };
+    }
+
+    it('emits a warning banner when a binding was modified after attach mtime', async () => {
+      // Seed p1 with a binding then bump meta.json mtime to a known past time.
+      await mkdir(join(root, 'p1'), { recursive: true });
+      const metaPath = join(root, 'p1', 'meta.json');
+      writeFileSync(metaPath, JSON.stringify({ name: 'p1', bindings: ['jira:prod'], schema_version: 4 }));
+      // Backdate the meta mtime by 10 seconds so any "now" lookup is fresher.
+      const past = new Date(Date.now() - 10_000);
+      const { utimesSync } = await import('node:fs');
+      utimesSync(metaPath, past, past);
+      // Vault reports the ref was modified just now (after spawn).
+      const lookup = async (_ref: string): Promise<string | null> => new Date().toISOString();
+      const { pi, ctx } = wireWithStaleness(lookup);
+      await pi.commands.get('sp')!.handler('attach p1', ctx);
+      const warnings = ctx.notifications.filter(([l]) => l === 'warning');
+      assert.equal(warnings.length, 1, 'expected one staleness warning');
+      assert.match(warnings[0]![1], /jira:prod was modified after this kernel was spawned/);
+    });
+
+    it('does NOT emit a banner when bindings are empty', async () => {
+      await mkdir(join(root, 'p1'), { recursive: true });
+      writeFileSync(join(root, 'p1', 'meta.json'), JSON.stringify({ name: 'p1', bindings: [], schema_version: 4 }));
+      const lookup = async (_ref: string): Promise<string | null> => new Date().toISOString();
+      const { pi, ctx } = wireWithStaleness(lookup);
+      await pi.commands.get('sp')!.handler('attach p1', ctx);
+      assert.equal(ctx.notifications.filter(([l]) => l === 'warning').length, 0);
+    });
+
+    it('does NOT emit a banner when getStalenessVault is unset', async () => {
+      // wire() does not set getStalenessVault.
+      await mkdir(join(root, 'p1'), { recursive: true });
+      writeFileSync(join(root, 'p1', 'meta.json'), JSON.stringify({ name: 'p1', bindings: ['jira:prod'], schema_version: 4 }));
+      const { pi, ctx } = wire(['p1']);
+      await pi.commands.get('sp')!.handler('attach p1', ctx);
+      assert.equal(ctx.notifications.filter(([l]) => l === 'warning').length, 0);
+    });
+  });
+
+  describe('/sp fork bindings copy (Phase 2 Task 16)', () => {
+    // The fork-copies-bindings behavior is owned by ScratchpadManager.fork —
+    // the sp-command layer just dispatches to manager.fork. The relevant
+    // assertion is that manager.fork is invoked (existing test covers that)
+    // AND the manager's fork implementation copies meta.bindings (covered by
+    // scratchpad-manager.test.ts). Here we add a thin end-to-end check by
+    // using a stub fork that mimics the real copy semantics.
+    it('/sp fork copies src bindings to dst via manager.fork', async () => {
+      const { pi, ctx, mgr } = wire(['p1']);
+      // Seed src meta.json with bindings.
+      writeMetaToDisk(root, 'p1', { name: 'p1', bindings: ['jira:prod'], schema_version: 4 });
+      // Override fork to mimic the real manager: copy src meta.bindings to dst.
+      (mgr as unknown as { fork: (s: string, d: string) => Promise<void> }).fork = async (s, d) => {
+        const srcMeta = readMetaFromDisk(root, s);
+        const srcBindings = Array.isArray(srcMeta.bindings) ? (srcMeta.bindings as string[]) : [];
+        writeMetaToDisk(root, d, { name: d, bindings: srcBindings, schema_version: 4 });
+      };
+      await pi.commands.get('sp')!.handler('fork p1 p2', ctx);
+      assert.deepEqual(readMetaFromDisk(root, 'p2').bindings, ['jira:prod']);
     });
   });
 });

@@ -1,6 +1,7 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import process from 'node:process';
 import { writeNdjson, readNdjson } from '@otto/coworker-utils';
+import type { CredentialInjector } from '@otto/coworker-vault';
 import { filterEnv, kernelExecArgv, resolveKernelEntry } from './kernel-spawn.js';
 import { isDataLoadEvent, isProgressEvent, isStartupErrorEvent, isSnapshotResult } from './kernel-protocol.js';
 import type { DataLoadDrawer, KernelFrame, RecoveryNote, SnapshotResult } from './kernel-protocol.js';
@@ -19,6 +20,24 @@ export interface ChildProcessRuntimeOptions {
   cancelGraceMs?: number; // SIGINT -> SIGTERM/SIGKILL escalation window
   entryPath?: string;
   scratchpadDir?: string;
+  /**
+   * Phase 2 Task 13: optional vault credential injector. When provided alongside
+   * a non-empty `bindings`, the runtime adds OTTO_DS_* env vars to the spawned
+   * kernel's environment (after the existing env filter). Absent => no-op; the
+   * runtime behaves exactly as it did pre-Phase-2.
+   */
+  injector?: CredentialInjector;
+  bindings?: string[];
+  /**
+   * Phase 2 Task 13: identifies this runtime's scratchpad for audit records the
+   * injector emits. The runtime itself doesn't otherwise use this field.
+   */
+  scratchpadName?: string;
+  /**
+   * Phase 2 Task 13: session id stamped on audit records the injector emits.
+   * Empty string is a valid no-session value.
+   */
+  sessionId?: string;
 }
 
 interface Pending {
@@ -49,6 +68,13 @@ export class ChildProcessRuntime {
   private resolveReady: () => void = () => {};
   private rejectReady: (err: Error) => void = () => {};
   private ready: Promise<void> = Promise.resolve();
+  /**
+   * Phase 2 Task 13: timestamp of the most recent successful spawn(). Used by
+   * higher-level staleness checks (Task 15) to decide whether a warm kernel's
+   * env-injected credentials need to be refreshed. Pre-start() value is epoch
+   * so callers can distinguish "never spawned" without nullable juggling.
+   */
+  public spawnTime: Date = new Date(0);
 
   constructor(private readonly options: ChildProcessRuntimeOptions) {}
 
@@ -57,7 +83,25 @@ export class ChildProcessRuntime {
     await this.spawnChild();
   }
 
-  private spawnChild(): Promise<void> {
+  /**
+   * Phase 2 Task 13: env construction split out so the injector hop has a clean
+   * seam to extend. Existing semantics unchanged: filterEnv applies the kernel's
+   * allowlist/denylist, then (when configured) the injector overlays OTTO_DS_*
+   * vars from vault entries. Only the spawned child sees the result; the parent
+   * process.env is never mutated.
+   */
+  private async buildBaseEnv(): Promise<NodeJS.ProcessEnv> {
+    const base = filterEnv(process.env);
+    const { injector, bindings } = this.options;
+    if (!injector || !bindings || bindings.length === 0) return base;
+    return injector.injectEnv(base, bindings, {
+      scratchpadName: this.options.scratchpadName ?? '',
+      sessionId: this.options.sessionId ?? '',
+      pid: process.pid,
+    });
+  }
+
+  private async spawnChild(): Promise<void> {
     this.ready = new Promise<void>((resolve, reject) => {
       this.resolveReady = resolve;
       this.rejectReady = reject;
@@ -65,14 +109,19 @@ export class ChildProcessRuntime {
     const entry = this.options.entryPath ?? resolveKernelEntry();
     const args = [...kernelExecArgv(), entry, this.options.workspace];
     if (this.options.scratchpadDir !== undefined) args.push(this.options.scratchpadDir);
+    const env = await this.buildBaseEnv();
     const child = spawn(
       process.execPath,
       args,
-      { stdio: ['pipe', 'pipe', 'inherit'], cwd: process.cwd(), env: filterEnv(process.env) },
+      { stdio: ['pipe', 'pipe', 'inherit'], cwd: process.cwd(), env },
     ) as unknown as ChildProcessWithoutNullStreams;
     this.child = child;
     this.alive = true;
     this.childReady = false;
+    // Phase 2 Task 13: stamp spawnTime immediately after a successful spawn.
+    // Done synchronously so the ready promise (which the caller awaits) reflects
+    // a non-epoch spawnTime by the time start() returns.
+    this.spawnTime = new Date();
     child.on('exit', (code, signal) => {
       if (this.child !== child) return; // superseded by a restart
       this.alive = false;

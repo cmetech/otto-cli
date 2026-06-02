@@ -1,8 +1,9 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ExtensionAPI } from '@otto/pi-coding-agent';
-import { ScratchpadBusyError } from '@otto/coworker-scratchpad';
+import { ScratchpadBusyError, StalenessBanner } from '@otto/coworker-scratchpad';
 import type { ScratchpadManager, RecoveryNote } from '@otto/coworker-scratchpad';
+import { LocalDataVault } from '@otto/coworker-vault';
 import { validateName, readCellsJsonl, readPersistedLeaf } from './helpers.js';
 import { projectTree, formatTreeText } from '@otto/coworker-scratchpad';
 import { sessionSidecarPath, writeSessionSidecar, deleteSessionSidecar } from './session-sidecar.js';
@@ -24,10 +25,45 @@ export interface SpDeps {
    * /sp command.
    */
   getWorkspaceCwd: () => string;
+  /**
+   * Phase 2 Task 16: optional vault hook for staleness-banner emission on
+   * attach. When provided, /sp attach reads meta.bindings and asks the vault
+   * for each binding's last-modified timestamp; refs that were modified after
+   * the spawned kernel's start time produce a one-shot banner (per scratchpad,
+   * per (session, ref)). Absent => /sp attach skips the staleness check
+   * silently, which is the right behavior for sessions running without vault.
+   *
+   * Wiring contract: the extension activator (or the vault-extension counterpart)
+   * is responsible for plumbing a closure that returns the live VaultBundle's
+   * `lookupLastModified` reference. Decoupled here so the scratchpad extension
+   * does not have to know about VaultBundle construction order.
+   */
+  getStalenessVault?: () => { lookupLastModified: (ref: string) => Promise<string | null> } | null;
 }
 
-type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove' | 'tree' | 'fork' | 'save' | 'detach' | 'clear-history' | 'notes' | 'evict';
-const VERBS: SpVerb[] = ['list', 'new', 'attach', 'reset', 'view', 'remove', 'tree', 'fork', 'save', 'detach', 'clear-history', 'notes', 'evict'];
+type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove' | 'tree' | 'fork' | 'save' | 'detach' | 'clear-history' | 'notes' | 'evict' | 'use' | 'unuse';
+const VERBS: SpVerb[] = ['list', 'new', 'attach', 'reset', 'view', 'remove', 'tree', 'fork', 'save', 'detach', 'clear-history', 'notes', 'evict', 'use', 'unuse'];
+
+/**
+ * Phase 2 Task 16: module-level singleton so banner one-shot state survives
+ * across multiple /sp invocations within one process. Reset on /sp reset for
+ * the affected scratchpad (the kernel respawns ⇒ stale tracking restarts).
+ *
+ * Per-test isolation: tests create distinct scratchpad names (or new tmp
+ * roots) so the per-(scratchpad, session, ref) key set never collides across
+ * tests. No reset-all escape hatch is exposed.
+ */
+const stalenessBanner = new StalenessBanner();
+
+function readBindingsFromMeta(metaPath: string): string[] {
+  if (!existsSync(metaPath)) return [];
+  try {
+    const meta = JSON.parse(readFileSync(metaPath, 'utf8')) as { bindings?: unknown };
+    return Array.isArray(meta.bindings) ? (meta.bindings as string[]) : [];
+  } catch {
+    return [];
+  }
+}
 
 function ensureCurrent(deps: SpDeps): string {
   let current = deps.getCurrentName();
@@ -105,7 +141,7 @@ function joinQuotedArg(parts: string[], startIdx: number): string | null {
 
 export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
   pi.registerCommand('sp', {
-    description: 'Manage scratchpads: /sp [list|new|attach|reset|view|remove|tree|fork|save|detach|clear-history|notes|evict] [name]',
+    description: 'Manage scratchpads: /sp [list|new|attach|reset|view|remove|tree|fork|save|detach|clear-history|notes|evict|use|unuse] [name]',
     getArgumentCompletions: (prefix: string) => {
       // Split on whitespace but preserve whether the prefix ends with a space
       // (trailing space = user typed the verb and hit space, ready for name completion).
@@ -159,15 +195,40 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               }
               const namePadded = age ? n.padEnd(maxNameLen) : n;
               const ageCol = age ? `  ${age}` : '';
-              return `  ${state}  ${namePadded}${ageCol}${marker}`;
+              // Phase 2 Task 16: binding count read from meta.json. Renders as
+              // `uses:N` after the age column so the existing live/cold and
+              // active/idle assertions stay intact. Hidden when 0 to avoid
+              // visual noise for scratchpads that aren't bound.
+              const bindingCount = readBindingsFromMeta(join(deps.rootDir(), n, 'meta.json')).length;
+              const bindingsCol = bindingCount > 0 ? `  uses:${bindingCount}` : '';
+              return `  ${state}  ${namePadded}${ageCol}${bindingsCol}${marker}`;
             });
             ctx.ui.notify(['scratchpads:', ...lines].join('\n'), 'info');
             return;
           }
           case 'new': {
-            if (!name) { ctx.ui.notify('Usage: /sp new <name>', 'error'); return; }
+            if (!name) { ctx.ui.notify('Usage: /sp new <name> [--use <engine:name>] ...', 'error'); return; }
             validateName(name);
-            await deps.getManager().create(name);
+            // Phase 2 Task 16: parse --use flag. Repeatable: `--use jira:prod --use foo:bar`.
+            // Each ref is validated via LocalDataVault.parseRef before persisting; a single
+            // malformed ref aborts the whole create so we don't end up with a half-bound
+            // scratchpad on disk.
+            const bindings: string[] = [];
+            for (let i = 2; i < parts.length; i++) {
+              if (parts[i] === '--use') {
+                const ref = parts[i + 1];
+                if (!ref) { ctx.ui.notify('Usage: /sp new <name> --use <engine:name>', 'error'); return; }
+                try {
+                  LocalDataVault.parseRef(ref);
+                } catch (err) {
+                  ctx.ui.notify((err as Error).message, 'error');
+                  return;
+                }
+                bindings.push(ref);
+                i++; // skip ref token
+              }
+            }
+            await deps.getManager().create(name, bindings.length > 0 ? { bindings } : {});
             deps.setCurrentName(name);
             writeSessionSidecar(sessionSidecarPath(deps.rootDir(), deps.getSessionId()), {
               schema_version: 1,
@@ -176,7 +237,50 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               attached_at: new Date().toISOString(),
             });
             persistWorkspacePointer(deps, name);
-            ctx.ui.notify(`created scratchpad: ${name} (now current)`, 'info');
+            const suffix = bindings.length > 0 ? ` (bindings: ${bindings.join(', ')})` : '';
+            ctx.ui.notify(`created scratchpad: ${name} (now current)${suffix}`, 'info');
+            return;
+          }
+          case 'use': {
+            const target = name;
+            const ref = parts[2];
+            if (!target || !ref) { ctx.ui.notify('Usage: /sp use <name> <engine:name>', 'error'); return; }
+            validateName(target);
+            try {
+              LocalDataVault.parseRef(ref);
+            } catch (err) {
+              ctx.ui.notify((err as Error).message, 'error');
+              return;
+            }
+            try {
+              const { added } = await deps.getManager().addBinding(target, ref);
+              if (!added) {
+                ctx.ui.notify(`binding already present: ${ref} → ${target}`, 'info');
+              } else {
+                // Hint /sp reset because the live kernel was spawned without this
+                // env block; the binding only takes effect on the next respawn.
+                ctx.ui.notify(`binding added: ${ref} → ${target}. /sp reset to inject into the live kernel.`, 'info');
+              }
+            } catch (err) {
+              ctx.ui.notify((err as Error).message, 'error');
+            }
+            return;
+          }
+          case 'unuse': {
+            const target = name;
+            const ref = parts[2];
+            if (!target || !ref) { ctx.ui.notify('Usage: /sp unuse <name> <engine:name>', 'error'); return; }
+            validateName(target);
+            try {
+              const { removed } = await deps.getManager().removeBinding(target, ref);
+              if (!removed) {
+                ctx.ui.notify(`binding not present: ${ref} → ${target}`, 'info');
+              } else {
+                ctx.ui.notify(`binding removed: ${ref} from ${target}. /sp reset to drop the env block from the live kernel.`, 'info');
+              }
+            } catch (err) {
+              ctx.ui.notify((err as Error).message, 'error');
+            }
             return;
           }
           case 'attach': {
@@ -200,8 +304,12 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
             const reasonArg = reasonIdx >= 0 ? joinQuotedArg(parts, reasonIdx + 1) : null;
 
             let attached = false;
+            // Phase 2 Task 16: capture the runtime returned by getOrAttach so we
+            // can use its spawnTime as the staleness banner's clock. Defensive
+            // typing because some tests return null from a stubbed manager.
+            let runtime: { spawnTime?: Date } | null = null;
             try {
-              await deps.getManager().getOrAttach(name);
+              runtime = (await deps.getManager().getOrAttach(name)) as { spawnTime?: Date } | null;
               attached = true;
             } catch (err) {
               if (!(err instanceof ScratchpadBusyError)) {
@@ -222,7 +330,7 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
                 reason = input.trim() || '(no reason given)';
               }
               try {
-                await deps.getManager().getOrAttach(name, { forceTakeover: true, takeoverReason: reason });
+                runtime = (await deps.getManager().getOrAttach(name, { forceTakeover: true, takeoverReason: reason })) as { spawnTime?: Date } | null;
                 attached = true;
               } catch (retryErr) {
                 ctx.ui.notify((retryErr as Error).message, 'error');
@@ -247,14 +355,58 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               await deps.getManager().markRecoveryNotesSeen(name);
             }
             showDivergenceBanner(name, deps.rootDir(), ctx.ui);
+
+            // Phase 2 Task 16: staleness banner. If a vault is wired AND this
+            // scratchpad has bindings, check each ref's last-modified vs the
+            // kernel's spawnTime; emit one-shot warning if any are stale.
+            // Skipped silently when no vault is configured — the scratchpad
+            // extension still works without coworker-vault present.
+            //
+            // spawnTime source: prefer the runtime's stamped Date from
+            // ChildProcessRuntime.start() (Task 13). Fallback to meta.json's
+            // mtime — also rewritten on every attach by writeMeta — when the
+            // runtime is null (stubbed manager paths in tests) or missing the
+            // spawnTime field. Both anchors converge on the same user-visible
+            // semantic: "your creds changed since you started this kernel."
+            if (deps.getStalenessVault) {
+              const vault = deps.getStalenessVault();
+              const bindings = readBindingsFromMeta(join(deps.rootDir(), name, 'meta.json'));
+              if (vault && bindings.length > 0) {
+                try {
+                  const spawnTime = runtime?.spawnTime instanceof Date && runtime.spawnTime.getTime() > 0
+                    ? runtime.spawnTime
+                    : new Date(statSync(join(deps.rootDir(), name, 'meta.json')).mtime);
+                  const banner = await stalenessBanner.check({
+                    scratchpadName: name,
+                    sessionId: deps.getSessionId(),
+                    bindings,
+                    spawnTime,
+                    lookupLastModified: (ref) => vault.lookupLastModified(ref),
+                  });
+                  if (banner) ctx.ui.notify(banner, 'warning');
+                } catch {
+                  // Banner emission must never block /sp attach — swallow errors.
+                }
+              }
+            }
             return;
           }
           case 'reset': {
             const target = name ?? ensureCurrent(deps);
             validateName(target);
             const mgr = deps.getManager();
+            // Phase 2 Task 16: preserve bindings across reset. remove() wipes
+            // the dir, then create() rewrites a fresh meta.json — without this
+            // pre-read the new meta.bindings would be []. Resetting is "respawn
+            // the kernel with current config", so the binding list is part of
+            // config that must survive.
+            const preservedBindings = mgr.readBindings(target);
             await mgr.remove(target);
-            await mgr.create(target);
+            await mgr.create(target, preservedBindings.length > 0 ? { bindings: preservedBindings } : {});
+            // Phase 2 Task 16: clear the staleness-banner one-shot state for
+            // this scratchpad — the new kernel has a fresh spawnTime, so old
+            // "stale" status is no longer relevant.
+            stalenessBanner.resetForRespawn(target);
             // currentName preserved if it was the reset target; otherwise unchanged
             ctx.ui.notify(`reset scratchpad: ${target}`, 'info');
             return;

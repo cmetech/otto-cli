@@ -63,7 +63,7 @@ After Phase 6, a fresh `npm install otto` should drop a user into this scenario 
 
 ---
 
-### Phase 2 — otto-vault (week 4)
+### Phase 2 — otto-vault (week 4) — COMPLETE
 
 **Pillar:** credential storage with safe kernel handoff.
 
@@ -75,7 +75,9 @@ After Phase 6, a fresh `npm install otto` should drop a user into this scenario 
 - Kernel spawn injects vault-resolved values as env vars (so cell code reads `process.env.SERVICENOW_TOKEN` and never sees the secret in chat).
 - SecretScanner gate active on cell input/output (prevents secrets from leaking back into the cell journal).
 
-**Milestone:** `/connect servicenow` stores creds; next `/sp` cell spawns with `SERVICENOW_URL` + `SERVICENOW_TOKEN` env vars; cell can hit the ServiceNow API.
+**Milestone:** `/connect jira <name>` stores creds; next `/sp new --use jira:<name>` cell spawns with `OTTO_DS_JIRA_<NAME>__URL` + `OTTO_DS_JIRA_<NAME>__EMAIL` + `OTTO_DS_JIRA_<NAME>__TOKEN` env vars; cell can hit the Jira REST API.
+
+**Note (2026-06-02):** Phase 2 ships JIRA as the only seeded engine. ServiceNow / IMAP / Datadog / SolarWinds / generic-REST seeds deferred to Phase 2.5 / Phase 6 — `EngineRegistry` is structurally ready; only the YAML content awaits.
 
 **Dependencies:** Phase 0 (vault package shell + SecretScanner stub).
 

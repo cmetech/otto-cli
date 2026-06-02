@@ -130,11 +130,18 @@ async function registerViaAppender(
     .map(([c, t]) => `${quoteIdent(c)} ${t}`)
     .join(', ')})`;
   await conn.run(ddl);
+  // All-or-nothing semantic: on any failure we drop the table so the caller
+  // can retry the same name without hitting "Table already exists." On the
+  // success path we flip this flag and the finally becomes a no-op.
+  let createdTable = true;
   const app = await conn.createAppender(name);
   try {
     for (let i = 0; i < records.length; i++) {
+      let failingColIdx = -1;
       try {
-        for (const [col] of schema) {
+        for (let colIdx = 0; colIdx < schema.length; colIdx++) {
+          failingColIdx = colIdx;
+          const col = schema[colIdx]![0];
           const v = records[i]![col];
           if (v === null || v === undefined) {
             app.appendNull();
@@ -144,20 +151,33 @@ async function registerViaAppender(
             app.appendValue(v as never);
           }
         }
+        // endRow() may itself reject the row on a type mismatch detected at
+        // end-of-row; in that case we can't attribute to a single column so
+        // we fall back to '<column>' literally rather than blame col 0.
+        failingColIdx = -1;
         app.endRow();
       } catch (e) {
-        const firstCol = schema[0]?.[0] ?? 'col';
+        const failingCol =
+          failingColIdx >= 0 ? schema[failingColIdx]![0] : '<column>';
         const hint =
           sourceHint === 'inferred'
-            ? ` Pass an explicit schema via the third argument: registerDf(name, df, { schema: { ${firstCol}: 'VARCHAR' } })`
+            ? ` Pass an explicit schema via the third argument: registerDf(name, df, { schema: { ${failingCol}: 'VARCHAR' } })`
             : '';
         throw new Error(
-          `registerDf row ${i}: append failed (${(e as Error).message}).${hint}`,
+          `registerDf row ${i}: append failed for column '${failingCol}' (${(e as Error).message}).${hint}`,
         );
       }
     }
-  } finally {
+    // Success path: close the appender to commit the rows, then disarm cleanup.
     app.closeSync();
+    createdTable = false;
+  } finally {
+    if (createdTable) {
+      // Failure path: close the appender (may already be closed; best-effort)
+      // then drop the partially-populated table.
+      try { app.closeSync(); } catch { /* already closed or errored */ }
+      try { await conn.run(`DROP TABLE IF EXISTS ${quoteIdent(name)}`); } catch { /* best-effort */ }
+    }
   }
 }
 
@@ -183,10 +203,17 @@ export function attachRegisterDf(instance: DuckDBInstance): void {
     opts: RegisterDfOptions = {},
   ): Promise<void> {
     const conn = await instance.connect();
-    const records = coerceToRecords(input);
-    const sourceHint: 'inferred' | 'explicit' = opts.schema ? 'explicit' : 'inferred';
-    const schemaObj = opts.schema ?? inferSchema(records);
-    const schema = normalizeSchema(schemaObj);
-    await registerViaAppender(conn, name, records, schema, sourceHint);
+    try {
+      const records = coerceToRecords(input);
+      const sourceHint: 'inferred' | 'explicit' = opts.schema ? 'explicit' : 'inferred';
+      const schemaObj = opts.schema ?? inferSchema(records);
+      const schema = normalizeSchema(schemaObj);
+      await registerViaAppender(conn, name, records, schema, sourceHint);
+    } finally {
+      // Release the connection — DuckDBConnection exposes closeSync(): void.
+      // Without this, every registerDf call leaks one connection over the
+      // lifetime of the scratchpad session.
+      conn.closeSync();
+    }
   };
 }

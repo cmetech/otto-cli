@@ -108,4 +108,29 @@ describe('otto.duckdb.registerDf (Task F)', () => {
     assert.equal(result[0]![0], 'rev');
     assert.equal(String(result[0]![1]).toUpperCase(), 'DOUBLE');
   });
+
+  it('partial-failure leaves no table behind (all-or-nothing) and names failing column', async () => {
+    // First call: BIGINT schema with a non-coercible string value in row 11 → append fails mid-batch.
+    // The all-or-nothing semantic should DROP the partially-populated table so the
+    // retry below with the same name + clean data succeeds without "Table already exists."
+    await assert.rejects(
+      runCell(`
+        const rows = [];
+        for (let i = 0; i < 11; i++) rows.push({ n: i });
+        rows.push({ n: 'not-a-number' });
+        await otto.duckdb.registerDf('aon', rows, { schema: { n: 'BIGINT' } });
+      `),
+      /registerDf row 11: append failed for column 'n'/,
+    );
+    const result = (await runCell(`
+      await otto.duckdb.registerDf('aon', [{n: 7}, {n: 8}], { schema: { n: 'BIGINT' } });
+      const c = await otto.duckdb.connect();
+      // Cast to DOUBLE so the value survives JSON serialization across the
+      // child-process boundary (BIGINT sums become BigInt and JSON-stringify-throw).
+      return (await c.runAndReadAll('SELECT CAST(SUM(n) AS DOUBLE) FROM aon')).getRows();
+    `)) as unknown[][];
+    // Sum of clean retry batch — proves both that the first-call table was DROPped
+    // (otherwise CREATE TABLE here would fail) and that the retry persisted rows.
+    assert.equal(Number(result[0]![0]), 15);
+  });
 });

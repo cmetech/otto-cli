@@ -101,6 +101,12 @@ describe('ArtifactStore.update', () => {
     ]);
     assert.deepEqual(out.files_touched.sort(), ['appendix.md', 'report.md']);
   });
+  it('rejects empty FileWrite path', async () => {
+    const ws = tmpWs();
+    const store = new ArtifactStore({ workspaceDir: ws, now: fixedNow() });
+    const h = await store.create('report', 'r');
+    await assert.rejects(() => store.update(h, [{ path: '', content: 'x' }]));
+  });
   it('bumps last_updated_at + turn_count when paired with recordTurn', async () => {
     const ws = tmpWs();
     const store = new ArtifactStore({ workspaceDir: ws, now: fixedNow() });
@@ -163,5 +169,20 @@ describe('ArtifactStore.list + get + remove', () => {
   it('remove rejects when confirm is not true', async () => {
     const store = new ArtifactStore({ workspaceDir: tmpWs() });
     await assert.rejects(() => store.remove('x', false as never));
+  });
+  it('remove rejects empty slug', async () => {
+    const ws = tmpWs();
+    const store = new ArtifactStore({ workspaceDir: ws, now: fixedNow() });
+    await assert.rejects(() => store.remove('', true), ArtifactNotFound);
+  });
+  it('remove rejects slug with path separator', async () => {
+    const ws = tmpWs();
+    const store = new ArtifactStore({ workspaceDir: ws, now: fixedNow() });
+    await assert.rejects(() => store.remove('foo/bar', true), ArtifactNotFound);
+  });
+  it('remove rejects slug containing ..', async () => {
+    const ws = tmpWs();
+    const store = new ArtifactStore({ workspaceDir: ws, now: fixedNow() });
+    await assert.rejects(() => store.remove('..', true), ArtifactNotFound);
   });
 });

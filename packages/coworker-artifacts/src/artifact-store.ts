@@ -118,7 +118,9 @@ export class ArtifactStore {
     if (!existsSync(handle.dir)) throw new ArtifactNotFound(handle.slug);
     for (const f of files) {
       const normalized = normalize(f.path);
-      if (normalized.startsWith('..') || normalized.startsWith('/') || normalized.includes('\0')) {
+      if (!f.path || !normalized || normalized === '.' ||
+          normalized.startsWith('..') || normalized.startsWith('/') ||
+          normalized.includes('\0')) {
         throw new Error(`Bad FileWrite path: ${f.path}`);
       }
     }
@@ -194,6 +196,9 @@ export class ArtifactStore {
 
   async remove(slug: string, confirm: true): Promise<void> {
     if (confirm !== true) throw new Error(`/artifacts remove requires --confirm`);
+    if (!slug || slug.includes('/') || slug.includes('..') || slug === '.') {
+      throw new ArtifactNotFound(slug);
+    }
     const dir = join(this.rootDir(), slug);
     if (!existsSync(dir)) throw new ArtifactNotFound(slug);
     rmSync(dir, { recursive: true, force: true });

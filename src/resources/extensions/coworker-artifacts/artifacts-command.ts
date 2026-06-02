@@ -30,7 +30,7 @@ export async function runArtifactsCommand(
       return { message: out.markdown };
     }
     case 'remove': {
-      const slug = rest[0];
+      const slug = rest.find((a) => !a.startsWith('--'));
       const confirm = rest.includes('--confirm');
       if (!slug) throw new Error('Usage: /artifacts remove <slug> --confirm');
       if (!confirm) throw new Error('Usage: /artifacts remove <slug> --confirm');

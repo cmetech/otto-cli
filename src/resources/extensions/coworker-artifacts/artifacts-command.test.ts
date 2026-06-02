@@ -43,4 +43,12 @@ describe('/artifacts command', () => {
     const store = new ArtifactStore({ workspaceDir: mkdtempSync(join(tmpdir(), 'ac6-')) });
     await assert.rejects(() => runArtifactsCommand(store, ['banana']));
   });
+  it('remove --confirm <slug> (flag-first) also deletes', async () => {
+    const ws = mkdtempSync(join(tmpdir(), 'ac-flag-'));
+    const store = new ArtifactStore({ workspaceDir: ws });
+    const h = await store.create('report', 'r');
+    const out = await runArtifactsCommand(store, ['remove', '--confirm', 'r']);
+    assert.match(out.message, /removed: r/);
+    assert.equal(existsSync(h.dir), false);
+  });
 });

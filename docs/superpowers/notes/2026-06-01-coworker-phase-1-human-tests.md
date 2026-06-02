@@ -659,6 +659,468 @@ These are documented for completeness but are NOT yet implemented:
 - **vegalite + PNG MIME renderers** — only text/markdown, text/plain, and application/json are surfaced today.
 - **`artifact://` output spill** — large outputs are inline today; spilling to the artifact store requires `@otto/coworker-artifacts` which is a stub package.
 - **sql.js fallback** for DuckDB — only `@duckdb/node-api` works today.
-- **`_sessions/` GC sweep** — sidecars accumulate; not auto-cleaned.
+- ~~**`_sessions/` GC sweep** — sidecars accumulate; not auto-cleaned.~~ **Added in Phase 1.5** — see scenario 24 below.
+
+---
+
+# Phase 1.5 — Re-verification & New Scenarios
+
+**Status:** Phase 1.5 (the polish wave bundling Issues #1/#2/#4/#5/#6 + GH #66/#67) merges to main as Otto v1.2.0. Re-run the scenarios below on the v1.2.0 build to confirm the visible behavior changes ship intact.
+
+The 16 original Phase 1 scenarios remain valid as a regression baseline. Three of them (3, 9, 16) have **changed expected outcomes**; the rest are unchanged.
+
+## Re-verify (changed expected outcomes)
+
+### Scenario 3 (re-verify) — polars→DuckDB drops from 8 cells to 2
+
+**What changed:** `otto.duckdb.registerDf(name, input, opts?)` shipped (Task F / Issue #1). Duck-typed input detection for polars DataFrames, Arrow Tables, and arrays of records; first-10-rows null-walk schema inference; optional `opts.schema` override. The `cw_scratchpad` promptGuidelines were updated so the LLM reaches for the helper.
+
+**Re-run the original scenario 3 prompts.** Expected outcome:
+
+| Phase 1 | Phase 1.5 |
+|---|---|
+| LLM burns ~8 cells: 1 load + 1 failed `conn.register` + ~5 API discovery + 1 actual SQL | LLM should burn ~2 cells: 1 load + 1 `registerDf + runAndReadAll` |
+
+**Pass criterion:** `wc -l ~/.otto/scratchpads/tNN/cells.jsonl` returns ≤ 4 lines (1 schema header + ≤ 3 cells) for the polars→DuckDB→SUM(revenue) workflow.
+
+**If the LLM still does API discovery:** the promptGuideline bullet may not be surfacing — verify by asking Otto: *"What does `otto.duckdb.registerDf` do?"* — if it answers with the bullet text, the bullet is reaching the LLM and the discovery loop is a model-behavior misfire (acceptable on rare runs).
+
+**Direct API test (bypasses the LLM):**
+```
+/sp new tNN
+```
+Then:
+> *"Use cw_scratchpad to run: `await otto.duckdb.registerDf('s', [{a:1,b:'x'},{a:2,b:'y'}]); const c=await otto.duckdb.connect(); return (await c.runAndReadAll('SELECT SUM(a) FROM s')).getRows();`"*
+
+Expected: `[[3]]` (or `[["3"]]` depending on serialization) in 1 cell.
+
+---
+
+### Scenario 9 (re-verify) — fresh `otto` (NO `--resume`) restores yesterday's scratchpad
+
+**What changed:** Workspace-pointer restore shipped (Task A / Issue #6). The spec's canonical day-2 RCA scenario now works without `--resume` — typing `otto` in the same workspace where you last attached a scratchpad auto-restores it.
+
+**Re-run with this twist:**
+
+```
+# Day 1
+cd /some/git/repo                   # workspace = git toplevel
+otto
+/sp new t09-workspace
+# (run a cell or two)
+/quit
+```
+
+```
+# Day 2 (or any subsequent fresh launch in the same workspace)
+cd /some/git/repo
+otto                                # NO --resume flag
+```
+
+**Expected notification on attach:**
+```
+attached to t09-workspace (from workspace, last used <relative>)
+```
+
+(Compared to Phase 1's expected `attached to t09-workspace (restored)` which fired ONLY via `--resume` + matching sessionId.)
+
+**Disk check:**
+```bash
+ls ~/.otto/scratchpads/_workspaces/
+# Expect one file: <sha256-16>.json
+cat ~/.otto/scratchpads/_workspaces/<hash>.json
+# Expect: { schema_version: 1, workspace_hash: ..., workspace_root: "/some/git/repo",
+#          last_session_id: "<day-1 session>", last_current_name: "t09-workspace",
+#          last_attached_at: "<day-1 ISO time>" }
+```
+
+**Subdirectory test:** Launch `otto` from a subdir of the same git repo:
+```
+cd /some/git/repo/src/foo
+otto
+```
+Expected: same restore notification (workspace hash uses git toplevel, not cwd).
+
+**Cross-repo isolation test:** Launch `otto` from a DIFFERENT git repo:
+```
+cd /some/other/repo
+otto
+```
+Expected: NO restore (different workspace hash).
+
+**Stale pointer test:** If you set the system clock forward by 8 days (or run after a real 8-day gap), the pointer should be ignored and no restore happens.
+
+**The `--resume` path STILL works** — Phase 1's sidecar restore is preserved as the primary precedence; the workspace pointer is the fallback. To re-verify that: launch `otto --resume <prior-session>` and confirm `attached to <name> (restored)` (the legacy phrasing, not the workspace-pointer phrasing).
+
+---
+
+### Scenario 16 (re-verify) — Cleanup; stale sidecars auto-swept on init
+
+**What changed:** `sweepStaleSidecars` shipped (Task B / Issue #67). Filename format changed to `sidecar_<sessionId>.json` (Issue #66). On every `session_start`, foreign-session sidecars are deleted if (a) their referenced scratchpad's `meta.json` is missing, OR (b) the sidecar's mtime is > 7 days old.
+
+**Re-run the original cleanup:**
+
+```
+/sp list
+/sp remove t01-triggers --yes
+/sp remove t02-basics --yes
+/sp remove t03-datalibs --yes
+/sp remove t04-tree --yes
+/quit
+otto                                 # fresh launch triggers the sweep
+ls ~/.otto/scratchpads/              # _sessions/ + _workspaces/ should remain
+ls ~/.otto/scratchpads/_sessions/    # should contain ONLY sidecar_<current-sessionId>.json
+```
+
+**Phase 1 vs Phase 1.5:**
+
+| | Phase 1 | Phase 1.5 |
+|---|---|---|
+| Filename format | `<sessionId>.json` | `sidecar_<sessionId>.json` |
+| Old sessions' sidecars after current launch | Accumulate forever (5+ leftovers per user report) | Swept on init (only current session's file remains) |
+| Cleanup gesture | `rm -rf ~/.otto/scratchpads/_sessions/` manually | Automatic — no user action needed |
+
+**Pre-rename orphans:** Users upgrading from Phase 1 will have old `<sessionId>.json` files. These become inert orphans (sweep's `startsWith('sidecar_')` guard ignores them). They won't get GC'd and won't break anything, but if you want a clean slate: `rm ~/.otto/scratchpads/_sessions/*.json` ONCE post-upgrade.
+
+**Pass criterion:** `ls ~/.otto/scratchpads/_sessions/ | grep -c '^sidecar_'` returns 1 (your current session); no other `sidecar_` files present (assuming you ran a few days of sessions before the upgrade).
+
+---
+
+## New Phase 1.5 scenarios
+
+### Scenario 17 — `/sp attach <typo>` errors with helpful suggestion
+
+**Goal:** Verify the slash-command typo guard from Task C / Issue #5.
+
+**Phase coverage:** 1.5 Task C.
+
+```
+/sp list
+  ● live  t02-basics (current)
+  ○ cold  t04-tree
+
+/sp attach t02-basix              # typo — meant "t02-basics"
+```
+
+**Expected:** Error notification:
+```
+scratchpad not found: t02-basix. Use /sp new t02-basix to create it.
+```
+
+`/sp list` should still show only the original two scratchpads — NO phantom `t02-basix` directory.
+
+**Disk check:**
+```bash
+ls ~/.otto/scratchpads/t02-basix 2>&1
+# Expect: ls: ... No such file or directory
+```
+
+**LLM tool path unchanged:** Ask Otto: *"Use cw_scratchpad to exec `return 1` in a scratchpad named `llm-test-phantom`"*. The LLM tool path is permissive and SHOULD auto-create — verify by `/sp list` showing the new `llm-test-phantom` scratchpad. (This distinguishes the slash-command strictness from the LLM-tool permissiveness, both intentional.)
+
+---
+
+### Scenario 18 — `/sp list` idle-age column
+
+**Goal:** Verify the new idle-age display from Task D / Issue #4.
+
+**Phase coverage:** 1.5 Task D.
+
+```
+/sp new t18-active
+# Ask Otto: "use cw_scratchpad to run while(true) {} in t18-active"
+# (DON'T await — let it run, then immediately:)
+/sp list
+```
+
+**Expected output:**
+```
+● live  t18-active            active  (current)
+```
+
+Now interrupt the runaway cell:
+```
+/sp evict t18-active --force
+/sp new t18-idle
+/sp list
+```
+
+**Expected:**
+```
+○ cold  t18-active
+● live  t18-idle              active  (current)
+```
+
+Wait a few minutes (or backdate the entry — only possible via the test harness), then `/sp list` again:
+```
+● live  t18-idle              idle Xm  (current)
+```
+
+Where `X` is the floored-minutes elapsed. The format bands:
+- `active` — cell running OR < 30s since last use
+- `idle Xm` — 30s ≤ age < 1h
+- `idle Xh` — 1h ≤ age < 24h
+- `idle Xd` — 24h+
+
+**Pass criterion:** All three labels (`active`, `idle Xm`, `idle Xh`) render correctly across timing checks.
+
+---
+
+### Scenario 19 — `/sp evict <name>` releases warm kernel; on-disk state preserved
+
+**Goal:** Verify the normal eviction path (no active cell) from Task D / Issue #4.
+
+**Phase coverage:** 1.5 Task D.
+
+```
+/sp new t19-evict
+# Run a couple of cells to populate state:
+# Ask Otto: "use cw_scratchpad to run globalThis.x = 42 in t19-evict"
+# Ask Otto: "use cw_scratchpad to run return globalThis.x in t19-evict"
+# (should return 42 — state persists)
+
+/sp list
+#   ● live  t19-evict   active|idle Xs  (current)
+
+/sp evict t19-evict
+```
+
+**Expected notification:**
+```
+evicted t19-evict (still on disk; /sp attach t19-evict to re-warm)
+```
+
+```
+/sp list
+#   ○ cold  t19-evict          ← flipped to cold
+```
+
+**Disk check (state preserved):**
+```bash
+ls ~/.otto/scratchpads/t19-evict/
+# Expect: kernel.db, kernel.db.wal (maybe), namespace.json, cells.jsonl, meta.json
+# NOT removed — eviction only releases the kernel, not the data.
+```
+
+**Re-warm test:**
+```
+/sp attach t19-evict
+# Ask Otto: "use cw_scratchpad to run return globalThis.x in t19-evict"
+# Expected: 42 — state restored from snapshot.
+```
+
+**Pass criterion:** state survives evict→attach cycle; `/sp list` reflects warm→cold transition.
+
+---
+
+### Scenario 20 — `/sp evict <name> --force` interrupts active cell
+
+**Goal:** Verify the `--force` escalation path from Task D.
+
+**Phase coverage:** 1.5 Task D (reuses `runtime.cancel()` SIGINT→SIGTERM→SIGKILL escalation).
+
+```
+/sp new t20-force
+# Ask Otto: "use cw_scratchpad to run while(true) {} in t20-force"
+# Wait until the cell is clearly hung (a few seconds).
+
+/sp evict t20-force          # no --force
+```
+
+**Expected error:**
+```
+cannot evict t20-force: cell is running (use --force to interrupt)
+```
+
+Now with `--force`:
+```
+/sp evict t20-force --force
+```
+
+**Expected notification:**
+```
+interrupted active cell and evicted t20-force
+```
+
+```
+/sp list
+#   ○ cold  t20-force          ← flipped to cold
+```
+
+**Disk check:** scratchpad dir + meta.json still exist (next attach is a cold-restart from cells.jsonl; no snapshot was taken because the kernel was killed mid-run).
+
+**Pass criterion:** Active cell terminates within a few seconds; entry flips cold; no kernel-still-running zombies (check with `ps aux | grep kernel-entry` — should be no Otto kernel children).
+
+---
+
+### Scenario 21 — `meta.json` on fresh `/sp new` reflects post-spawn disk state
+
+**Goal:** Verify the meta-write-ordering fix from Task E / Issue #2.
+
+**Phase coverage:** 1.5 Task E.
+
+```
+/sp new t21-meta
+```
+
+Immediately (without running any cell):
+```bash
+cat ~/.otto/scratchpads/t21-meta/meta.json | jq '.kernel_db, .size_bytes'
+```
+
+**Expected:**
+```json
+{ "present": true, "path": "kernel.db" }
+<some number > 0>
+```
+
+Phase 1's broken state would have shown `present: false, size_bytes: 0` because the first `writeMeta` fired before `kernel.db` existed on disk.
+
+**Pass criterion:** `kernel_db.present === true` AND `size_bytes > 0` immediately after `/sp new`, before any cell runs.
+
+---
+
+### Scenario 22 — `otto.duckdb.registerDf` direct test (one-liner verification)
+
+**Goal:** Direct exercise of the new helper from Task F / Issue #1, bypassing the LLM-driven path in Scenario 3.
+
+**Phase coverage:** 1.5 Task F.
+
+```
+/sp new t22-registerdf
+```
+
+> *"Use cw_scratchpad to run: `await otto.duckdb.registerDf('a', [{a:1,b:'x'},{a:2,b:'y'},{a:3,b:'z'}]); const c=await otto.duckdb.connect(); return (await c.runAndReadAll('SELECT SUM(a) FROM a')).getRows();`"*
+
+**Expected:** `[[6]]` or equivalent representation.
+
+**Schema-override test:**
+> *"Use cw_scratchpad to run: `await otto.duckdb.registerDf('b', [{n:1},{n:2}], { schema: { n: 'BIGINT' } }); const c=await otto.duckdb.connect(); return (await c.runAndReadAll('DESCRIBE b')).getRows();`"*
+
+**Expected:** A row showing `n` column with `BIGINT` type (instead of the default `DOUBLE` that inference would have picked for JS numbers).
+
+**Null-walk inference test:**
+> *"Use cw_scratchpad to run: `const rows = Array(8).fill({rev: null}).concat([{rev: 1200},{rev: 980}]); await otto.duckdb.registerDf('c', rows); const c = await otto.duckdb.connect(); return (await c.runAndReadAll('DESCRIBE c')).getRows();`"*
+
+**Expected:** A row showing `rev` column with `DOUBLE` type (the inference walked past the 8 leading nulls and picked up the number type from row 9).
+
+**Bad-input test:**
+> *"Use cw_scratchpad to run: `await otto.duckdb.registerDf('d', 42);`"*
+
+**Expected:** `TypeError: registerDf: input must be a polars DataFrame, Arrow Table, or array of records`
+
+**All-or-nothing on partial-failure test (Task F fixup):**
+> *"Use cw_scratchpad to run: `const rows = Array(10).fill({n:1}).concat([{n:'not-a-number'}]); await otto.duckdb.registerDf('e', rows);`"*
+
+**Expected:** Error message naming the failing column (`n`) and the failing row index (10 or 11 depending on 0/1-index), with the `opts.schema` hint. Then re-run with a clean batch using the SAME name:
+> *"Use cw_scratchpad to run: `await otto.duckdb.registerDf('e', [{n:1},{n:2},{n:3}]); const c=await otto.duckdb.connect(); return (await c.runAndReadAll('SELECT SUM(n) FROM e')).getRows();`"*
+
+**Expected:** `[[6]]` — proves the failed first attempt's partial table was rolled back (otherwise this would fail with `Table already exists`).
+
+---
+
+### Scenario 23 — Day-2 fresh `otto` restores via workspace pointer (full canonical RCA)
+
+**Goal:** End-to-end exercise of the spec's canonical 3-day RCA scenario, post-1.5.
+
+**Phase coverage:** 1.5 Task A, integration with Phase 1 cold-restart.
+
+**Day 1:**
+```
+cd /some/git/repo
+otto
+/sp new p1-1234
+# Ask Otto: "use cw_scratchpad to run globalThis.findings = ['issue A','issue B'] in p1-1234"
+# Ask Otto: "use cw_scratchpad to run return globalThis.findings in p1-1234"
+# (returns the array — state in memory)
+/quit
+```
+
+**Day 2 (different terminal, same workspace, fresh shell — NO `--resume`):**
+```
+cd /some/git/repo
+otto
+```
+
+**Expected restore notification on launch:**
+```
+attached to p1-1234 (from workspace, last used <relative>)
+```
+
+Then verify state survived cold-restart:
+> *"Use cw_scratchpad to run `return globalThis.findings` in p1-1234"*
+
+**Expected:** `['issue A', 'issue B']` — state restored from kernel.db + namespace.json on attach (no human re-attach needed; the workspace pointer drove the auto-attach, and Phase 1's cold-restart restored the in-VM state).
+
+**Pass criterion:** Zero manual `/sp attach` between Day 1's `/quit` and Day 2's first cell exec.
+
+---
+
+### Scenario 24 — Stale workspace-pointer behavior (8-day boundary)
+
+**Goal:** Confirm pointers older than 7 days are ignored (workspace-pointer staleness threshold).
+
+**Phase coverage:** 1.5 Task A.
+
+This is hard to test in real time. Two options:
+
+**Option A — touch the file mtime backwards:**
+```bash
+# After Day 1's session creates the pointer:
+HASH=$(ls ~/.otto/scratchpads/_workspaces/ | head -1)
+PATH=~/.otto/scratchpads/_workspaces/$HASH
+# Edit last_attached_at to 8 days ago:
+python -c "
+import json, datetime
+p = '$PATH'
+d = json.load(open(p))
+d['last_attached_at'] = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=8)).isoformat().replace('+00:00','Z')
+json.dump(d, open(p,'w'))
+"
+otto                              # fresh launch
+```
+
+**Expected:** No restore notification. `/sp list` shows the scratchpad as `○ cold` but does NOT show it as `(current)`.
+
+**Option B — wait 8 real days.** (Not practical for testing but worth noting for production behavior.)
+
+**Pass criterion:** stale pointers (> 7d) are silently ignored; no restore notification fires.
+
+---
+
+## Updated Phase coverage matrix (Phase 1.5)
+
+| Scenario | Issue / Task | Pillar covered |
+|---|---|---|
+| 3 (re-verify) | #1 / Task F | otto.duckdb.registerDf cell-count drop |
+| 9 (re-verify) | #6 / Task A | Workspace-pointer fallback restore |
+| 16 (re-verify) | #66/#67 / Task B | Sidecar filename + GC |
+| 17 (new) | #5 / Task C | /sp attach existence guard |
+| 18 (new) | #4 / Task D | /sp list idle-age column |
+| 19 (new) | #4 / Task D | /sp evict normal path |
+| 20 (new) | #4 / Task D | /sp evict --force interrupt |
+| 21 (new) | #2 / Task E | meta.json freshness |
+| 22 (new) | #1 / Task F | registerDf direct API + opts.schema + all-or-nothing |
+| 23 (new) | #6 / Task A | End-to-end canonical day-2 RCA |
+| 24 (new) | #6 / Task A | Workspace-pointer staleness |
+
+---
+
+## Phase 1.5 sign-off checklist
+
+Re-test these before tagging the v1.2.0 release:
+
+- [ ] Scenario 3 (re-verify): polars→DuckDB completes in ≤ 2 cells
+- [ ] Scenario 9 (re-verify): fresh `otto` restores via workspace pointer; cross-workspace isolation works
+- [ ] Scenario 16 (re-verify): `_sessions/` swept clean on init
+- [ ] Scenario 17 (new): typo errors helpfully; LLM tool path still auto-creates
+- [ ] Scenario 18 (new): idle-age column renders `active` / `idle Xm` / `idle Xh` correctly
+- [ ] Scenario 19 (new): normal evict cycle preserves on-disk state
+- [ ] Scenario 20 (new): `--force` terminates active cells within seconds; no zombies
+- [ ] Scenario 21 (new): meta.json reflects post-spawn state immediately
+- [ ] Scenario 22 (new): registerDf direct test passes all five sub-tests (roundtrip, override, null-walk, bad input, all-or-nothing)
+- [ ] Scenario 23 (new): end-to-end day-2 restore + state survives cold-restart
+- [ ] Scenario 24 (new): stale (> 7d) pointers ignored
+
+When all 11 boxes are checked, Phase 1.5 is verified end-to-end.
 
 If you find a scenario that needs one of the above, log it for Phase 2 planning.

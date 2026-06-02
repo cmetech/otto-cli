@@ -4,8 +4,6 @@
 
 Run these end-to-end before merging.
 
-> **Activator gap (READ FIRST).** Until Phase 3.1 wires the production activator, steps that require live LLM interaction with the memory tools must be tested via the integration test (`node --test dist-test/packages/coworker-memory/src/memory-integration.test.js`) rather than through the live Otto chat. Mark those steps `[BLOCKED on 3.1]` in this file. The recorder, Layer A store, Layer B backend, recall pipeline, SecretScanner split policy, and slash-command handlers are all complete at the API level and unit-tested; only the production hop into `pi-coding-agent`'s `before_agent_start` + `agent_start` events is missing. The substitute verification path is the Task 21 integration test.
-
 ## Prereq
 
 - Clean Otto checkout; no existing `~/.otto/memory/`, no `<workspace>/.otto/memory/`.
@@ -23,33 +21,26 @@ Run these end-to-end before merging.
 3. Type a multi-line paste (≥ 500 chars or with triple-backticks) into the chat.
    - Verify: `<workspace>/.otto/memory/layer-b.db` exists; query inspector: `sqlite3 <path> "SELECT kind, room, length(content) FROM drawers"` shows a `paste` row.
    - Verify: `/audit --producer memory --action write-drawer` shows the record with `redacted: false`.
-   - **[BLOCKED on 3.1]** — depends on Task 20 user-turn wiring through the production activator. Substitute: the `auto-retain on long paste → kind=paste` case in `memory-integration.test.js`.
 
 4. Ask Otto: "recall {one of the words from your paste}".
    - Verify: Otto's response includes a memory recall block citing the drawer URI.
-   - **[BLOCKED on 3.1]** — requires the LLM tool registration to be live through the extension activator. Substitute: the `recall happy path` case in `memory-integration.test.js`.
 
 5. `/memory note "MTTR is 30m for P1"`.
    - Verify: `<workspace>/.otto/memory/lessons.md` exists with frontmatter and a bullet.
-   - **[BLOCKED on 3.1]** — slash-command bus registration is part of the activator hop. Substitute: invoke `runMemoryCommand({ subcommand: 'note', args: ['MTTR is 30m for P1'] }, bundle)` from a script, or rely on the Layer A write paths exercised by `layer-a-store.test.ts` and `memory-integration.test.js`.
 
 6. Restart Otto (close, reopen) in the same workspace.
    - Verify: system prompt now includes "Memory (Layer A)" section with the MTTR lesson.
-   - **[BLOCKED on 3.1]** — context-injection on `session_start` is wired in the activator hop. Substitute: `onSessionStart` is unit-tested directly (`session-start.test.ts`); the `Layer A memorize + read-back + session_start injection` case in `memory-integration.test.js` confirms the full path at the API level.
 
 7. Type a string containing `AKIAABCDEFGHIJKLMNOP` into the chat.
    - Verify: drawer is written with `redacted=1` (check sqlite); the journal value contains `[REDACTED:aws_access_key_id]`.
    - Verify: `/audit --producer memory --action redact` shows the record (no value, no preview).
-   - **[BLOCKED on 3.1]** — auto-retain user-turn wiring required to exercise the chat-path scanner. Substitute: the `SecretScanner redact on paste` case in `memory-integration.test.js`.
 
 8. Try `/memory note "token AKIAABCDEFGHIJKLMNOP"`.
    - Verify: command errors with `Refused to store ... aws_access_key_id`.
    - Verify: `lessons.md` was NOT modified.
-   - **[BLOCKED on 3.1]** — slash-command bus registration. Substitute: `runMemoryCommand` is unit-tested directly (`memory-command.test.ts`) and exercised through `memory-integration.test.js`.
 
 9. `/memory clear --wing <workspace_wing> --confirm`.
    - Verify: response shows `deleted: N`; subsequent recall returns 0 results.
-   - **[BLOCKED on 3.1]** — slash-command bus registration. Substitute: `runMemoryCommand` clear path is unit-tested directly.
 
 ## Expected misses (NOT failures)
 
@@ -63,17 +54,15 @@ Run these end-to-end before merging.
 
 If `/memory wing <name>` or `/memory room <name>` overrides don't persist across messages (session-state holder not yet wired), capture as a Phase 3.1 follow-up.
 
-## Steps blocked on Phase 3.1
+---
 
-Steps 3, 4, 5, 6, 7, 8, 9 (7 of 9). The integration test is the substitute verification.
+## Activator wiring landed in Phase 3.1
 
-```bash
-npm run test:compile
-node --test dist-test/packages/coworker-memory/src/memory-integration.test.js
-```
+Branch `feat/coworker-phase-3.1-activators` shipped the memory production activator (default-export `coworkerMemoryExtension`), wiring auto-retain user turns (Phase 3 Task 20 closure) and the scratchpad `onDataLoad → recordFileLoad` production hop (Phase 3 Task 19 closure).
 
-Expected: all integration cases pass.
+**Automated verification (passing as of this commit):**
+- `src/resources/extensions/coworker-memory/index.test.ts` — 7 tests covering bundle lifecycle, `before_agent_start` + `agent_start` round-trip recording a turn drawer, Layer A inject, init failure.
+- `src/resources/extensions/coworker-scratchpad/index.test.ts` — 4 closure-shape tests covering `onDataLoad` with null recorder, with recorder, and silent rejection swallow.
+- `packages/coworker-memory/src/activator-integration.test.ts` — 3 cross-extension tests covering the full Day-3 milestone (turn drawer + file_load drawer + isolation).
 
-## Steps runnable today (no activator required)
-
-Steps 1, 2 — these only require the workspace bundle initialization and the read-only `/memory status` path, both of which can be invoked from scripts using `createMemoryBundle` directly.
+**Live TUI walkthrough:** PENDING. Run steps 1–9 above in the built Otto binary against a fresh workspace and replace this line with: `Verified live on YYYY-MM-DD by <name> at commit <short-sha>.`

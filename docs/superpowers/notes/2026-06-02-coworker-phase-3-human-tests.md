@@ -4,6 +4,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-06-02-coworker-phase-3-memory-design.md`. **Plan:** `docs/superpowers/plans/2026-06-02-coworker-phase-3-memory.md`.
 
+> **Phase 3.1 activator wiring landed.** Scenarios previously tagged `[BLOCKED on Phase 3.1]` are now unblocked at the wiring level (verified by automated integration tests — see `2026-06-02-phase-3-memory-smoke.md` "Activator wiring landed in Phase 3.1" section). Full live TUI walkthrough remains the final manual gate.
+
 **Not covered (Phase 3.1+ deferrals):**
 - Live `/memory` slash commands, `cw_memorize` / `cw_recall` LLM tool registration, and auto-retain on user turns through Otto's session controller (Task 20). The recorder, slash-command handlers, and LLM tool implementations are complete and unit-tested at the API level (Tasks 8, 14, 15, 16); scenarios that require typing the slash form or invoking the tool in the TUI assume the production extension activator hop has shipped. Where it hasn't, scenarios call out the script-based equivalent. **Same gap as Phase 2 vault — the `coworker-memory` extension lacks a production activator.** The seam exists at `pi-coding-agent`'s `before_agent_start` + `agent_start` events.
 - scratchpad `file_load` drawer wiring (Task 19) — the API path is complete and unit-tested at the scratchpad level (`scratchpad-manager.ts`), but the cross-extension call from scratchpad to memory hops through the same activator. Scenarios exercising the file_load path call out the script-based equivalent.
@@ -223,8 +225,6 @@ console.assert(r.results.some(x => x.drawer.kind === 'paste'));
 
 **Phase coverage:** Task 18 (`currentScratchpadName` accessor), Task 19 (scratchpad FileCollector → `recordFileLoad` bridge).
 
-**[BLOCKED on Phase 3.1]** — the cross-extension call from `coworker-scratchpad` into `MemoryRecorder.recordFileLoad` requires the memory extension to be live in `pi-coding-agent`'s activator. The bridge code is in place at the scratchpad layer; the consumer hop is what's missing.
-
 **Substitute verification:** Invoke `recordFileLoad` directly. Confirms the recorder, drawer shape, and room derivation are correct:
 
 ```typescript
@@ -421,8 +421,6 @@ await runMemorize(gl, { layer: 'lessons', content: 'global lesson visible everyw
 
 **Phase coverage:** Task 16 (`runMemoryCommand` `note` subcommand), Task 6 (Layer A append).
 
-**[BLOCKED on Phase 3.1]** — slash-command bus registration is part of the activator hop.
-
 **Substitute verification:** Invoke `runMemoryCommand` from a script. This is equivalent to what the slash bus would dispatch:
 
 ```typescript
@@ -453,8 +451,6 @@ console.assert(/aws_access_key_id/i.test(String(blocked.message ?? blocked)));
 
 **Phase coverage:** Task 16 (`runMemoryCommand` `status` subcommand).
 
-**[BLOCKED on Phase 3.1]** — slash-command bus registration.
-
 **Substitute verification:**
 
 ```typescript
@@ -481,8 +477,6 @@ console.log(status);
 **Goal:** Clearing the wing deletes Layer B drawers and Layer A markdown for that wing; subsequent recall returns 0; requires explicit `--confirm`.
 
 **Phase coverage:** Task 16 (`runMemoryCommand` `clear` subcommand), Task 7 (`LocalSqliteBackend.clear`).
-
-**[BLOCKED on Phase 3.1]** — slash-command bus registration.
 
 **Substitute verification:**
 
@@ -556,7 +550,7 @@ All green.
 | 2 | 6, 10, 14, 17 | §3.3, §4.2, §10 | Layer A write + Layer A → system-prompt injection |
 | 3 | 5, 8 | §6 auto-retain | short-turn → `kind=turn` |
 | 4 | 5, 8 | §6 auto-retain | long-paste → `kind=paste` |
-| 5 | 18, 19 | §5 currentScratchpadName | file_load drawer wiring (BLOCKED on 3.1) |
+| 5 | 18, 19 | §5 currentScratchpadName | file_load drawer wiring |
 | 6 | 7, 9, 15 | §3.2, §8 | recall + kind/room/wing filters |
 | 7 | 7, 15 | §14 edge cases | FTS5 special-char query safety |
 | 8 | 6, 14 | §7 split policy | Layer A SecretScanner block |
@@ -564,9 +558,9 @@ All green.
 | 10 | 11, 17 | §11 persona seed | first-activation copy |
 | 11 | 11, 17 | §11 persona seed | idempotent re-application |
 | 12 | 4, 10, 17 | §5 scope modes | mode switch + injection matrix |
-| 13 | 16, 6 | §9 slash commands | /memory note (BLOCKED on 3.1) |
-| 14 | 16 | §9 slash commands | /memory status (BLOCKED on 3.1) |
-| 15 | 16, 7 | §9 slash commands | /memory clear --wing --confirm (BLOCKED on 3.1) |
+| 13 | 16, 6 | §9 slash commands | /memory note |
+| 14 | 16 | §9 slash commands | /memory status |
+| 15 | 16, 7 | §9 slash commands | /memory clear --wing --confirm |
 | 16 | regression | — | Phase 1 + Phase 2 surfaces intact |
 
 **Spec section → task delivery map (full spec §2–§16):**
@@ -605,7 +599,7 @@ Run before merging `feat/coworker-phase-3-memory`:
 - [ ] **Scenario 2:** `runMemorize` writes lessons.md; `onSessionStart` injects "Memory (Layer A)" block
 - [ ] **Scenario 3:** short turn lands as `kind=turn`
 - [ ] **Scenario 4:** long paste lands as `kind=paste`
-- [ ] **Scenario 5:** [BLOCKED on 3.1] file_load drawer — substitute via `recordFileLoad` script + integration test
+- [ ] **Scenario 5:** file_load drawer — substitute via `recordFileLoad` script + integration test
 - [ ] **Scenario 6:** recall returns BM25-ranked snippets; kind/room/wing filters narrow correctly
 - [ ] **Scenario 7:** FTS5 special-char queries do not crash backend
 - [ ] **Scenario 8:** memorize blocks AWS-key-shaped content; lessons.md unchanged
@@ -613,9 +607,9 @@ Run before merging `feat/coworker-phase-3-memory`:
 - [ ] **Scenario 10:** persona seed copies on first session_start; `memory_seed_applied:true`
 - [ ] **Scenario 11:** flipping flag re-applies seed idempotently (no duplicate bullets)
 - [ ] **Scenario 12:** scope mode switch changes write target + read wings per matrix
-- [ ] **Scenario 13:** [BLOCKED on 3.1] /memory note — substitute via `runMemoryCommand`
-- [ ] **Scenario 14:** [BLOCKED on 3.1] /memory status — substitute via `runMemoryCommand`
-- [ ] **Scenario 15:** [BLOCKED on 3.1] /memory clear --wing --confirm — substitute via `runMemoryCommand`
+- [ ] **Scenario 13:** /memory note — substitute via `runMemoryCommand`
+- [ ] **Scenario 14:** /memory status — substitute via `runMemoryCommand`
+- [ ] **Scenario 15:** /memory clear --wing --confirm — substitute via `runMemoryCommand`
 - [ ] **Scenario 16:** Phase 1 + Phase 2 surfaces unaffected; full test suite green
 
 When all 16 boxes are checked, Phase 3 is verified end-to-end and ready for merge.

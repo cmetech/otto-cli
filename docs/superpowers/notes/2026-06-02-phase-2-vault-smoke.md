@@ -58,5 +58,16 @@ Run these end-to-end before merging.
 - `/audit --tail` (follow mode) — deferred to Phase 3.
 - Engine YAML `test:` block / smoke runner — deferred.
 - ServiceNow / Datadog / IMAP / SolarWinds / generic-REST seeds — deferred to Phase 2.5 / Phase 6.
-- `/connect`, `/datasource`, `/audit` command-level wiring (the extension activator) — Task 16 noted the cross-extension wiring is deferred to a follow-up; programmatic APIs (`runConnect`, `runDatasourceList`, etc.) are complete and tested; only the slash-command surface registration on Otto's command bus may need a small wiring task before users can type these in the TUI. Smoke steps that depend on slash commands assume that wiring has been completed; if it hasn't, exercise the programmatic API via tests instead.
 - Staleness banner emission inside `/sp`'s cell-exec path requires the vault dep wired into the scratchpad extension activator. Step 5's verification covers the seam; the integration test (Task 17) verifies the helper directly.
+
+---
+
+## Activator wiring landed in Phase 3.1
+
+Branch `feat/coworker-phase-3.1-activators` shipped the `/connect`, `/datasource`, `/audit` slash-command registration that Phase 2 deferred ("Phase 2.1+ deferrals" in `2026-06-02-coworker-phase-2-human-tests.md`).
+
+**Automated verification (passing as of this commit):**
+- `src/resources/extensions/coworker-vault/index.test.ts` — 4 tests covering registration, init failure, happy `/connect`, lifecycle.
+- `packages/coworker-memory/src/activator-integration.test.ts` Test 1 — vault co-activates with memory + scratchpad in an end-to-end fake-API session.
+
+**Live TUI walkthrough:** PENDING. Run steps 1–10 above in the built Otto binary against a fresh workspace and replace this line with: `Verified live on YYYY-MM-DD by <name> at commit <short-sha>.`

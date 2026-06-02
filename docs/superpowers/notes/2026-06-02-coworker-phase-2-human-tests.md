@@ -5,7 +5,7 @@
 **Spec:** `docs/superpowers/specs/2026-06-01-coworker-phase-2-vault-design.md`. **Plan:** `docs/superpowers/plans/2026-06-01-coworker-phase-2-vault.md`.
 
 **Not covered (Phase 2.1+ deferrals):**
-- `/connect`, `/datasource`, `/audit` registration on Otto's slash-command bus through the new `coworker-vault` extension activator. The programmatic APIs (`runConnect`, `runDatasourceList`, `runAudit`, `runDatasourceRemove`, `runDatasourceTest`) are complete and unit-tested; scenarios that require typing the slash form in the TUI assume that small activator wiring task has shipped. Where it hasn't, scenarios call out the script-based equivalent.
+- ~~`/connect`, `/datasource`, `/audit` registration on Otto's slash-command bus through the new `coworker-vault` extension activator. The programmatic APIs (`runConnect`, `runDatasourceList`, `runAudit`, `runDatasourceRemove`, `runDatasourceTest`) are complete and unit-tested; scenarios that require typing the slash form in the TUI assume that small activator wiring task has shipped. Where it hasn't, scenarios call out the script-based equivalent.~~ **[Closed in Phase 3.1 — see 2026-06-02-phase-2-vault-smoke.md activator-landed footnote.]**
 - Cross-extension wiring of the staleness banner emission inside `/sp`'s cell-exec path. The `StalenessBanner` helper is built and unit-tested; the integration test (Task 17) verifies the seam. Scenarios 11–12 exercise it via test scripts rather than the TUI.
 - Engine YAML `test:` block / smoke-test runner (the YAML parser accepts the field forward-compat; no runner ships in Phase 2).
 - ServiceNow, IMAP/Outlook, Datadog, SolarWinds, generic-REST engine seeds — deferred to Phase 2.5 / Phase 6.

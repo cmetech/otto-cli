@@ -130,7 +130,12 @@ export default function coworkerMemoryExtension(api: ExtensionAPI): void {
     }
   });
 
-  api.registerTool({
+  // Union TDetails so TS accepts both error and success branches of execute().
+  type MemorizeDetails =
+    | { error: string; stored?: false }
+    | { error?: undefined; stored: true; layer_a_file: string };
+
+  api.registerTool<typeof MEMORIZE_PARAMS, MemorizeDetails>({
     name: 'memorize',
     label: 'Memorize',
     description: 'Save a profile note, rule, or lesson into Layer A memory.',
@@ -161,7 +166,11 @@ export default function coworkerMemoryExtension(api: ExtensionAPI): void {
     },
   });
 
-  api.registerTool({
+  type RecallDetails =
+    | { error: string; result_count?: undefined }
+    | { error?: undefined; result_count: number };
+
+  api.registerTool<typeof RECALL_PARAMS, RecallDetails>({
     name: 'recall',
     label: 'Recall',
     description: 'Search verbatim drawers in memory (Layer B). Returns markdown with drawer URIs.',

@@ -31,6 +31,13 @@ export interface ScratchpadManagerOptions {
 export interface AttachOptions {
   forceTakeover?: boolean;
   takeoverReason?: string;
+  /**
+   * Phase 2 Task 12: optional list of binding ids (e.g. ['jira:prod']) to record
+   * in meta.json on first create. Subsequent meta writes preserve whatever's on
+   * disk via prevExtras — once persisted, bindings survive every other meta-write
+   * path. Ignored on re-attach if meta.json already has a bindings field.
+   */
+  bindings?: string[];
 }
 
 export interface ScratchpadInfo {
@@ -51,7 +58,7 @@ interface Entry {
 const DEFAULT_MAX_LIVE = 8;
 const DEFAULT_IDLE_MS = 600_000;
 const DEFAULT_SWEEP_MS = 30_000;
-const META_SCHEMA_VERSION = 3;
+const META_SCHEMA_VERSION = 4;
 const MAX_RECOVERY_NOTES = 20;
 const FORK_EXIT_TIMEOUT_MS = 5000;
 
@@ -127,19 +134,25 @@ export class ScratchpadManager {
     renameSync(tmp, path);
   }
 
-  private writeMeta(name: string): void {
+  private writeMeta(name: string, initialBindings?: string[]): void {
     const dir = this.dirFor(name);
     const path = this.metaPath(name);
     mkdirSync(dir, { recursive: true });
     const nowIso = new Date(this.now()).toISOString();
     let created_at = nowIso;
     let attached_sessions: string[] = [];
+    // Phase 2 Task 12: bindings persistence + v3→v4 migration.
+    // - On first write (no prev), use the passed-in initialBindings (default []).
+    // - On subsequent writes, preserve whatever's on disk (migrating v3 → []).
+    let bindings: string[] = Array.isArray(initialBindings) ? [...initialBindings] : [];
     const prevExtras: Record<string, unknown> = {};
     if (existsSync(path)) {
       try {
         const prev = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
         if (typeof prev.created_at === 'string') created_at = prev.created_at;
         if (Array.isArray(prev.attached_sessions)) attached_sessions = prev.attached_sessions as string[];
+        // v3 → v4 migration: bindings field is missing on v3; default to [].
+        bindings = Array.isArray(prev.bindings) ? (prev.bindings as string[]) : [];
         for (const k of [
           'last_snapshot_cell_id', 'last_snapshot_at', 'namespace_skipped', 'recovery_notes',
           'cell_leaf_id', 'kernel_at_cell_id', 'recovery_notes_seen_at',
@@ -170,6 +183,7 @@ export class ScratchpadManager {
       created_at,
       last_used: nowIso,
       attached_sessions,
+      bindings,
       size_bytes: this.payloadSize(dir),
       schema_version: META_SCHEMA_VERSION,
       ...prevExtras,
@@ -433,6 +447,9 @@ export class ScratchpadManager {
     let cur: Record<string, unknown> = {};
     try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { /* fall through */ }
     cur.cell_leaf_id = id;
+    // Phase 2 Task 12: bumping schema_version here doubles as a migration step
+    // for cold-only flows; ensure bindings exists so the v4 invariant holds.
+    if (!Array.isArray(cur.bindings)) cur.bindings = [];
     cur.schema_version = META_SCHEMA_VERSION;
     this.writeMetaAtomic(path, cur);
   }
@@ -484,6 +501,9 @@ export class ScratchpadManager {
       created_at: nowIso,
       last_used: nowIso,
       attached_sessions: this.sessionId ? [this.sessionId] : [],
+      // Phase 2 Task 12: fork starts with empty bindings; user must re-/sp use to
+      // attach engines to the forked scratchpad. Future Task 16 may change this.
+      bindings: [] as string[],
       size_bytes: this.payloadSize(dstDir),
       schema_version: META_SCHEMA_VERSION,
       cell_leaf_id: typeof srcMeta.cell_leaf_id === 'number' ? srcMeta.cell_leaf_id : null,
@@ -592,7 +612,9 @@ export class ScratchpadManager {
       takeoverReason: opts.takeoverReason,
       now: this.now,
     });
-    this.writeMeta(name);
+    // Phase 2 Task 12: opts.bindings is only honored on first create; on re-attach
+    // the on-disk bindings field wins via prevExtras in writeMeta.
+    this.writeMeta(name, opts.bindings);
     await this.evictLruIfNeeded();
     let runtime: ChildProcessRuntime;
     try {

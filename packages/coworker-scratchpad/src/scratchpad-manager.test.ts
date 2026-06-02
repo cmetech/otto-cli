@@ -259,7 +259,7 @@ describe('ScratchpadManager (cells + meta)', () => {
     assert.equal(meta.last_used, new Date(5000).toISOString());
     assert.deepEqual(meta.attached_sessions, ['sess-1']);
     assert.ok(meta.size_bytes > 0);
-    assert.equal(meta.schema_version, 3);
+    assert.equal(meta.schema_version, 4);
   });
 
   it('continues cell ids across a fresh manager on the same root', async () => {
@@ -325,7 +325,7 @@ describe('ScratchpadManager (kernel persistence — 1d2)', () => {
     await m.runCell('a', 'globalThis.x = 2;'); // id 2
     await m.disposeAll(); // triggers snapshotThenDispose
     const meta = readMeta(rt, 'a');
-    assert.equal(meta.schema_version, 3);
+    assert.equal(meta.schema_version, 4);
     assert.equal(meta.last_snapshot_cell_id, 2);
     assert.ok(typeof meta.last_snapshot_at === 'string');
     assert.equal(meta.kernel_db.present, true);
@@ -417,11 +417,11 @@ describe('ScratchpadManager (tree + fork — 1f)', () => {
     await rm(rt, { recursive: true, force: true });
   });
 
-  it('writeMeta now persists cell_leaf_id and schema_version is 3', async () => {
+  it('writeMeta now persists cell_leaf_id and schema_version is 4', async () => {
     m = new ScratchpadManager({ workspace: ws, root: rt, runtimeOptions: { cellTimeoutMs: 30_000, inactivityTimeoutMs: 30_000 } });
     await m.runCell('a', 'return 1;');
     const meta = readMeta(rt, 'a');
-    assert.equal(meta.schema_version, 3);
+    assert.equal(meta.schema_version, 4);
     assert.equal(meta.cell_leaf_id, 1);
   });
 
@@ -983,5 +983,56 @@ describe('ScratchpadManager attach meta freshness (Task E)', () => {
       await rm(workspace, { recursive: true, force: true });
       await rm(root, { recursive: true, force: true });
     }
+  });
+});
+
+describe('ScratchpadManager — bindings (Phase 2)', () => {
+  let workspace: string;
+  let root: string;
+  let mgr: ScratchpadManager;
+
+  beforeEach(async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'sp-bind-ws-'));
+    await mkdir(join(workspace, '.otto', 'inputs'), { recursive: true });
+    root = await mkdtemp(join(tmpdir(), 'sp-bind-root-'));
+    mgr = new ScratchpadManager({ workspace, root, sessionId: 'sess-1', sweepIntervalMs: 1_000_000 });
+  });
+  afterEach(async () => {
+    await mgr?.disposeAll();
+    await rm(workspace, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('create() persists bindings to meta.json', async () => {
+    await mgr.create('p1', { bindings: ['jira:prod'] });
+    const meta = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as {
+      schema_version?: unknown;
+      bindings?: unknown;
+    };
+    assert.equal(meta.schema_version, 4);
+    assert.deepEqual(meta.bindings, ['jira:prod']);
+  });
+
+  it('migrates v3 meta.json to v4 by adding empty bindings', async () => {
+    // Create via the normal path, then forcibly rewrite meta.json to look like v3.
+    await mgr.create('legacy');
+    const metaPath = join(root, 'legacy', 'meta.json');
+    const cur = JSON.parse(readFileSync(metaPath, 'utf8')) as Record<string, unknown>;
+    cur.schema_version = 3;
+    delete cur.bindings;
+    writeFileSync(metaPath, JSON.stringify(cur, null, 2));
+
+    // Tear down + re-create on the same root so getOrAttach hits the cold path
+    // (attachUnmanaged → writeMeta), which performs the migration.
+    await mgr.disposeAll();
+    mgr = new ScratchpadManager({ workspace, root, sessionId: 'sess-1', sweepIntervalMs: 1_000_000 });
+    await mgr.getOrAttach('legacy');
+
+    const migrated = JSON.parse(readFileSync(metaPath, 'utf8')) as {
+      schema_version?: unknown;
+      bindings?: unknown;
+    };
+    assert.equal(migrated.schema_version, 4);
+    assert.deepEqual(migrated.bindings, []);
   });
 });

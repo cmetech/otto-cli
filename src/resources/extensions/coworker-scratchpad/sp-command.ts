@@ -9,6 +9,7 @@ import { sessionSidecarPath, writeSessionSidecar, deleteSessionSidecar } from '.
 import { detectWorkspaceRoot } from './workspace-root.js';
 import { workspaceHash, workspacePointerPath, writeWorkspacePointer, type WorkspacePointer } from './workspace-pointer.js';
 import { showRecoveryNotesBanner, showDivergenceBanner, formatNoteLine } from './attach-banners.js';
+import { formatRelativeAge } from './format-age.js';
 
 export interface SpDeps {
   getManager: () => ScratchpadManager;
@@ -25,8 +26,8 @@ export interface SpDeps {
   getWorkspaceCwd: () => string;
 }
 
-type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove' | 'tree' | 'fork' | 'save' | 'detach' | 'clear-history' | 'notes';
-const VERBS: SpVerb[] = ['list', 'new', 'attach', 'reset', 'view', 'remove', 'tree', 'fork', 'save', 'detach', 'clear-history', 'notes'];
+type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove' | 'tree' | 'fork' | 'save' | 'detach' | 'clear-history' | 'notes' | 'evict';
+const VERBS: SpVerb[] = ['list', 'new', 'attach', 'reset', 'view', 'remove', 'tree', 'fork', 'save', 'detach', 'clear-history', 'notes', 'evict'];
 
 function ensureCurrent(deps: SpDeps): string {
   let current = deps.getCurrentName();
@@ -104,7 +105,7 @@ function joinQuotedArg(parts: string[], startIdx: number): string | null {
 
 export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
   pi.registerCommand('sp', {
-    description: 'Manage scratchpads: /sp [list|new|attach|reset|view|remove|tree|fork|save|detach|clear-history|notes] [name]',
+    description: 'Manage scratchpads: /sp [list|new|attach|reset|view|remove|tree|fork|save|detach|clear-history|notes|evict] [name]',
     getArgumentCompletions: (prefix: string) => {
       // Split on whitespace but preserve whether the prefix ends with a space
       // (trailing space = user typed the verb and hit space, ready for name completion).
@@ -143,11 +144,22 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               ctx.ui.notify('No scratchpads yet. Use /sp new <name> to create one.', 'info');
               return;
             }
+            // Task D: render idle-age column for warm entries. Compute `now` once so
+            // every row shares the same baseline.
+            const now = Date.now();
+            // Pad name column so the age column lines up. Cold entries have no age.
+            const maxNameLen = all.reduce((m, n) => Math.max(m, n.length), 0);
             const lines = all.map((n) => {
               const l = liveByName.get(n);
               const state = l?.live ? '● live' : '○ cold';
               const marker = n === cur ? ' (current)' : '';
-              return `  ${state}  ${n}${marker}`;
+              let age = '';
+              if (l?.live) {
+                age = l.hasActiveCell ? 'active' : formatRelativeAge(now - l.lastUsedAt);
+              }
+              const namePadded = age ? n.padEnd(maxNameLen) : n;
+              const ageCol = age ? `  ${age}` : '';
+              return `  ${state}  ${namePadded}${ageCol}${marker}`;
             });
             ctx.ui.notify(['scratchpads:', ...lines].join('\n'), 'info');
             return;
@@ -278,6 +290,21 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               deps.setCurrentName(null);
             }
             ctx.ui.notify(`removed scratchpad: ${name}`, 'info');
+            return;
+          }
+          case 'evict': {
+            if (!name) { ctx.ui.notify('Usage: /sp evict <name> [--force]', 'error'); return; }
+            const force = parts.includes('--force');
+            validateName(name);
+            try {
+              const { interrupted } = await deps.getManager().evict(name, { force });
+              const msg = interrupted
+                ? `interrupted active cell and evicted ${name}`
+                : `evicted ${name} (still on disk; /sp attach ${name} to re-warm)`;
+              ctx.ui.notify(msg, 'info');
+            } catch (e) {
+              ctx.ui.notify((e as Error).message, 'error');
+            }
             return;
           }
           case 'tree': {

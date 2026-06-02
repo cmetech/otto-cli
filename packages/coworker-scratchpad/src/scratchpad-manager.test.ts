@@ -900,6 +900,74 @@ describe('ScratchpadManager (atomic meta writes — 1g3)', () => {
   });
 });
 
+describe('ScratchpadManager.evict (Task D)', () => {
+  let workspace: string;
+  let root: string;
+  let mgr: ScratchpadManager;
+
+  beforeEach(async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'sp-ws-'));
+    root = await mkdtemp(join(tmpdir(), 'sp-root-'));
+    mgr = new ScratchpadManager({ workspace, root, sessionId: 's', sweepIntervalMs: 1_000_000 });
+  });
+  afterEach(async () => {
+    await mgr.disposeAll();
+    await rm(workspace, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('evict snapshots + disposes warm entry; dir/meta/cells.jsonl remain', async () => {
+    await mgr.runCell('t', 'globalThis.x = 1;');
+    const { interrupted } = await mgr.evict('t');
+    assert.equal(interrupted, false);
+    assert.equal(mgr.list().find((i) => i.name === 't')?.live, false, 'should flip to cold');
+    assert.ok(existsSync(join(root, 't', 'kernel.db')), 'kernel.db remains on disk');
+    assert.ok(existsSync(join(root, 't', 'meta.json')), 'meta.json remains on disk');
+  });
+
+  it('evict refuses without --force when a cell is active', async () => {
+    await mgr.getOrAttach('t');
+    // Start a long-running cell but don't await it.
+    const pending = mgr.runCell('t', 'while (true) {}');
+    // Give the kernel a moment to start executing.
+    await new Promise((r) => setTimeout(r, 50));
+    await assert.rejects(mgr.evict('t'), /cell is running.*--force to interrupt/);
+    // Clean up: cancel via --force so afterEach doesn't hang.
+    await mgr.evict('t', { force: true });
+    await assert.rejects(pending); // cell rejected via cancel
+  });
+
+  it('evict --force interrupts an active cell and skips snapshot', async () => {
+    await mgr.getOrAttach('t');
+    const pending = mgr.runCell('t', 'while (true) {}');
+    await new Promise((r) => setTimeout(r, 50));
+    const { interrupted } = await mgr.evict('t', { force: true });
+    assert.equal(interrupted, true);
+    await assert.rejects(pending, /cancelled/);
+    // Entry should be cold; dir remains for cold-restart.
+    assert.equal(mgr.list().find((i) => i.name === 't')?.live, false);
+    assert.ok(existsSync(join(root, 't', 'meta.json')), 'on-disk state preserved');
+  });
+
+  it('evict on cold entry throws "not warm"', async () => {
+    await mgr.getOrAttach('t');
+    await mgr.evict('t'); // first evict makes it cold
+    await assert.rejects(mgr.evict('t'), /not warm \(already cold\)/);
+  });
+
+  it('list() ScratchpadInfo exposes hasActiveCell', async () => {
+    await mgr.runCell('t', 'globalThis.x = 1;');
+    const info = mgr.list().find((i) => i.name === 't')!;
+    assert.equal(info.hasActiveCell, false, 'idle warm entry');
+    const pending = mgr.runCell('t', 'while (true) {}');
+    await new Promise((r) => setTimeout(r, 50));
+    const infoBusy = mgr.list().find((i) => i.name === 't')!;
+    assert.equal(infoBusy.hasActiveCell, true, 'mid-cell warm entry');
+    await mgr.evict('t', { force: true });
+    await assert.rejects(pending);
+  });
+});
+
 describe('ScratchpadManager attach meta freshness (Task E)', () => {
   it('meta.json after /sp new reflects post-spawn disk state (kernel_db.present + size_bytes)', async () => {
     const workspace = await mkdtemp(join(tmpdir(), 'sp-ws-'));

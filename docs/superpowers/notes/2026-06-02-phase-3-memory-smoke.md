@@ -27,6 +27,7 @@ Run these end-to-end before merging.
 
 5. `/memory note "MTTR is 30m for P1"`.
    - Verify: `<workspace>/.otto/memory/lessons.md` exists with frontmatter and a bullet.
+   - Verify: `/memory show lessons` prints the lesson body inline (issue #73 follow-up).
 
 6. Restart Otto (close, reopen) in the same workspace.
    - Verify: system prompt now includes "Memory (Layer A)" section with the MTTR lesson.

@@ -9,6 +9,7 @@
     "name": "coworker-scratchpad"
   },
   "dependencies": {
+    "@otto/coworker-artifacts": "*",
     "@otto/coworker-types": "*",
     "@otto/coworker-utils": "*",
     "@otto/coworker-vault": "*",

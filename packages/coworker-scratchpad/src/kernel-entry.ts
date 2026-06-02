@@ -353,20 +353,28 @@ async function main(): Promise<void> {
         continue;
       }
       if (req.type !== 'run') continue;
-      let res: ResultResponse;
-      try {
-        const { value, stdout: out } = await runCell(req.code);
-        res = { id: req.id, type: 'result', ok: true, value: toSerializable(value), stdout: out };
-      } catch (err) {
-        const e = err as Error;
-        res = {
-          id: req.id,
-          type: 'result',
-          ok: false,
-          error: { name: e.name, message: e.message, stack: e.stack },
-        };
-      }
-      send(res);
+      // Phase 4 Task 10 fix — `runCell` may issue an artifact RPC and await its
+      // response. The response arrives over stdin, which means the main loop
+      // MUST keep iterating to route it via tryRouteRpcResponse. Awaiting
+      // runCell inline would deadlock the kernel against its own RPC. Fire it
+      // off; runCell sends its own result frame. The manager already serializes
+      // cell submissions, so there's no concurrency to worry about.
+      void (async (): Promise<void> => {
+        let res: ResultResponse;
+        try {
+          const { value, stdout: out } = await runCell(req.code);
+          res = { id: req.id, type: 'result', ok: true, value: toSerializable(value), stdout: out };
+        } catch (err) {
+          const e = err as Error;
+          res = {
+            id: req.id,
+            type: 'result',
+            ok: false,
+            error: { name: e.name, message: e.message, stack: e.stack },
+          };
+        }
+        send(res);
+      })();
     }
   } finally {
     // Phase 4 Task 9 review fix — if stdin closes (manager died / EOF) while

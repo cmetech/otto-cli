@@ -170,14 +170,13 @@ export type KernelEvent =
   | StartupErrorEvent
   | ArtifactCreateEvent;
 
-// Note: KernelFrame intentionally does NOT include KernelRpcRequest /
-// KernelRpcResponse. Task 10 will widen the manager-side dispatch (in
-// child-process-runtime.ts) to handle RPC frames; until then, keeping the
-// union narrow preserves the existing narrowing on `frame.id` / `frame.ok` /
-// `frame.value`. RPC frames are routed via explicit type-guard checks
-// (isArtifactCreateRequest, isArtifactUpdateRequest, isKernelRpcResponse)
-// against `unknown` at the boundary.
-export type KernelFrame = ResultResponse | KernelEvent | SnapshotResult;
+// Phase 4 Task 10: widened to include KernelRpcRequest so the manager-side
+// dispatch (child-process-runtime.ts readLoop) can narrow inbound artifact
+// RPC requests alongside results/events/snapshot_results. The dispatcher must
+// guard the ResultResponse branch with a discriminant check on `type === 'result'`
+// before touching `frame.id` (which is `string` on RPC frames and `number`
+// elsewhere).
+export type KernelFrame = ResultResponse | KernelEvent | SnapshotResult | KernelRpcRequest;
 
 export function isDataLoadEvent(frame: KernelFrame): frame is DataLoadEvent {
   return frame.type === 'event' && frame.event === 'data_load';

@@ -125,6 +125,9 @@ export class LocalDataVault {
         fields_set: Object.keys(fields),
       },
     } satisfies AuditRecord);
+    this.writeSidecar(target.scope, (m) => {
+      m[LocalDataVault.formatRef(ref)] = ts;
+    });
   }
 
   async get(ref: EntryRef): Promise<VaultEntry> {
@@ -158,6 +161,41 @@ export class LocalDataVault {
       action: 'remove',
       detail: { engine: ref.engine, name: ref.name, scope: r.scope },
     });
+    this.writeSidecar(r.scope, (m) => {
+      delete m[LocalDataVault.formatRef(ref)];
+    });
+  }
+
+  async lookupLastModified(refStr: string): Promise<string | null> {
+    const ref = LocalDataVault.parseRef(refStr);
+    const r = this.resolveScope(ref);
+    if (!r) return null;
+    const sidecar = this.readSidecar(this.sidecarPathFor(r.scope));
+    return sidecar[refStr] ?? null;
+  }
+
+  private sidecarPathFor(scope: VaultScope): string {
+    const dir = scope === 'workspace' ? this.workspaceVaultDir()! : this.globalVaultDir();
+    return join(dir, '_last_modified.json');
+  }
+
+  private readSidecar(path: string): Record<string, string> {
+    if (!existsSync(path)) return {};
+    try {
+      return JSON.parse(readFileSync(path, 'utf8')) as Record<string, string>;
+    } catch {
+      return {};
+    }
+  }
+
+  private writeSidecar(scope: VaultScope, mutate: (m: Record<string, string>) => void): void {
+    const path = this.sidecarPathFor(scope);
+    const data = this.readSidecar(path);
+    mutate(data);
+    const tmp = `${path}.tmp`;
+    writeFileSync(tmp, JSON.stringify(data, null, 2), { mode: 0o600 });
+    chmodSync(tmp, 0o600);
+    renameSync(tmp, path);
   }
 
   async list(): Promise<ListedEntry[]> {

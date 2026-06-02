@@ -118,3 +118,82 @@ describe('LocalDataVault', () => {
     );
   });
 });
+
+describe('LocalDataVault — workspace + sidecar', () => {
+  it('resolves workspace entry over global', async () => {
+    const c = ctx();
+    mkdirSync(join(c.wsDir, 'data_vault'), { recursive: true });
+    const v = new LocalDataVault({ globalDir: c.globalDir, workspaceDir: c.wsDir, audit: c.audit });
+    await v.set({ engine: 'jira', name: 'prod' }, { url: 'global' });
+    mkdirSync(join(c.globalDir, 'data_vault'), { recursive: true });
+    writeFileSync(
+      join(c.globalDir, 'data_vault', 'jira-prod.json'),
+      JSON.stringify(
+        {
+          _schema: 1,
+          engine: 'jira',
+          name: 'prod',
+          fields: { url: 'g' },
+          created_at: '2026-06-01T00:00:00.000Z',
+          last_modified_at: '2026-06-01T00:00:00.000Z',
+        },
+        null,
+        2,
+      ),
+      { mode: 0o600 },
+    );
+    const got = await v.get({ engine: 'jira', name: 'prod' });
+    assert.equal(got.fields.url, 'global');
+  });
+
+  it('falls back to global when workspace entry absent', async () => {
+    const c = ctx();
+    mkdirSync(c.wsDir, { recursive: true });
+    const v = new LocalDataVault({ globalDir: c.globalDir, workspaceDir: c.wsDir, audit: c.audit });
+    mkdirSync(join(c.globalDir, 'data_vault'), { recursive: true });
+    writeFileSync(
+      join(c.globalDir, 'data_vault', 'jira-prod.json'),
+      JSON.stringify(
+        {
+          _schema: 1,
+          engine: 'jira',
+          name: 'prod',
+          fields: { url: 'g' },
+          created_at: '2026-06-01T00:00:00.000Z',
+          last_modified_at: '2026-06-01T00:00:00.000Z',
+        },
+        null,
+        2,
+      ),
+      { mode: 0o600 },
+    );
+    const got = await v.get({ engine: 'jira', name: 'prod' });
+    assert.equal(got.fields.url, 'g');
+  });
+
+  it('updates _last_modified.json on set; lookupLastModified reads it', async () => {
+    const c = ctx();
+    const v = new LocalDataVault({ globalDir: c.globalDir, workspaceDir: undefined, audit: c.audit });
+    await v.set({ engine: 'jira', name: 'prod' }, { url: 'u' });
+    const sidecarPath = join(c.globalDir, 'data_vault', '_last_modified.json');
+    assert.ok(existsSync(sidecarPath));
+    const data = JSON.parse(readFileSync(sidecarPath, 'utf8'));
+    assert.ok(data['jira:prod']);
+    const ts = await v.lookupLastModified('jira:prod');
+    assert.equal(ts, data['jira:prod']);
+  });
+
+  it('lookupLastModified returns null for missing entries', async () => {
+    const c = ctx();
+    const v = new LocalDataVault({ globalDir: c.globalDir, workspaceDir: undefined, audit: c.audit });
+    assert.equal(await v.lookupLastModified('jira:missing'), null);
+  });
+
+  it('remove updates sidecar (key dropped)', async () => {
+    const c = ctx();
+    const v = new LocalDataVault({ globalDir: c.globalDir, workspaceDir: undefined, audit: c.audit });
+    await v.set({ engine: 'jira', name: 'prod' }, { url: 'u' });
+    await v.remove({ engine: 'jira', name: 'prod' });
+    assert.equal(await v.lookupLastModified('jira:prod'), null);
+  });
+});

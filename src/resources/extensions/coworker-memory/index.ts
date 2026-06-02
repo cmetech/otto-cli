@@ -206,7 +206,22 @@ export default function coworkerMemoryExtension(api: ExtensionAPI): void {
   });
 
   api.registerCommand('memory', {
-    description: '/memory note <text> | status | clear --wing <w> --confirm | wing <name> | room <name> | seed',
+    description: 'Inspect and manage co-worker memory (Layer A rules/lessons + Layer B drawers).',
+    getArgumentCompletions: (prefix) => {
+      const subcommands = [
+        { label: 'note', description: 'Append a lesson: /memory note <text>' },
+        { label: 'show', description: 'Show Layer A: /memory show [profile|rules|lessons] [--scope workspace|global]' },
+        { label: 'recall', description: 'Search Layer B drawers: /memory recall <query> [--kind|--room|--wing|--limit|--days_back]' },
+        { label: 'status', description: 'Show workspace_wing, drawer_count, db path' },
+        { label: 'clear', description: 'Clear drawers: /memory clear --wing <wing> --confirm' },
+        { label: 'wing', description: 'Set session wing override: /memory wing <name>' },
+        { label: 'room', description: 'Set session room override: /memory room <name>' },
+        { label: 'seed', description: 'Re-apply persona seed on next session_start' },
+      ];
+      return subcommands
+        .filter((s) => s.label.startsWith(prefix))
+        .map((s) => ({ value: s.label, label: s.label, description: s.description }));
+    },
     handler: async (args, ctx) => {
       if (!bundle) {
         ctx.ui.notify(

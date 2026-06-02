@@ -336,8 +336,12 @@ export class ScratchpadManager {
    * Phase 2 Task 13: read meta.bindings from disk so each fresh spawn picks up
    * the current binding set (bindings can change between attaches via /sp use).
    * Returns [] if meta.json doesn't exist or doesn't have a v4 bindings array.
+   *
+   * Phase 2 Task 16: also surfaced as a public read for /sp list rendering and
+   * staleness-banner emission. Stays a thin read; callers that need to mutate
+   * use addBinding / removeBinding (which atomically RMW meta.json).
    */
-  private readBindings(name: string): string[] {
+  readBindings(name: string): string[] {
     const path = this.metaPath(name);
     if (!existsSync(path)) return [];
     try {
@@ -346,6 +350,53 @@ export class ScratchpadManager {
     } catch {
       return [];
     }
+  }
+
+  /**
+   * Phase 2 Task 16: append a binding ref (e.g. 'jira:prod') to meta.bindings.
+   * Idempotent — adding a ref already in the list is a no-op (the meta.json
+   * write still happens so callers can detect "added" vs "noop" only via the
+   * returned tuple). Atomically rewrites meta.json via writeMetaAtomic, so
+   * concurrent writers cannot interleave. Caller is responsible for validating
+   * `ref` (sp-command uses LocalDataVault.parseRef before invoking).
+   */
+  async addBinding(name: string, ref: string): Promise<{ added: boolean }> {
+    this.assertNotDisposed();
+    if (!this.existsOnDisk(name)) throw new Error(`scratchpad not found: ${name}`);
+    const path = this.metaPath(name);
+    let cur: Record<string, unknown> = {};
+    try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { /* corrupt -> overwrite */ }
+    const bindings = Array.isArray(cur.bindings) ? [...(cur.bindings as string[])] : [];
+    if (bindings.includes(ref)) {
+      return { added: false };
+    }
+    bindings.push(ref);
+    cur.bindings = bindings;
+    if (typeof cur.schema_version !== 'number') cur.schema_version = META_SCHEMA_VERSION;
+    this.writeMetaAtomic(path, cur);
+    return { added: true };
+  }
+
+  /**
+   * Phase 2 Task 16: remove a binding ref from meta.bindings. Returns whether
+   * a removal happened so callers can emit "no such binding" if needed.
+   */
+  async removeBinding(name: string, ref: string): Promise<{ removed: boolean }> {
+    this.assertNotDisposed();
+    if (!this.existsOnDisk(name)) throw new Error(`scratchpad not found: ${name}`);
+    const path = this.metaPath(name);
+    let cur: Record<string, unknown> = {};
+    try { cur = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>; } catch { /* corrupt -> overwrite */ }
+    const bindings = Array.isArray(cur.bindings) ? [...(cur.bindings as string[])] : [];
+    const idx = bindings.indexOf(ref);
+    if (idx < 0) {
+      return { removed: false };
+    }
+    bindings.splice(idx, 1);
+    cur.bindings = bindings;
+    if (typeof cur.schema_version !== 'number') cur.schema_version = META_SCHEMA_VERSION;
+    this.writeMetaAtomic(path, cur);
+    return { removed: true };
   }
 
   private async spawnRuntime(name: string): Promise<ChildProcessRuntime> {
@@ -577,9 +628,10 @@ export class ScratchpadManager {
       created_at: nowIso,
       last_used: nowIso,
       attached_sessions: this.sessionId ? [this.sessionId] : [],
-      // Phase 2 Task 12: fork starts with empty bindings; user must re-/sp use to
-      // attach engines to the forked scratchpad. Future Task 16 may change this.
-      bindings: [] as string[],
+      // Phase 2 Task 16: fork inherits src's bindings so the forked scratchpad
+      // spawns its kernel with the same OTTO_DS_* env block. Users can
+      // /sp unuse on dst afterwards if they want a different binding shape.
+      bindings: Array.isArray(srcMeta.bindings) ? [...(srcMeta.bindings as string[])] : [],
       size_bytes: this.payloadSize(dstDir),
       schema_version: META_SCHEMA_VERSION,
       cell_leaf_id: typeof srcMeta.cell_leaf_id === 'number' ? srcMeta.cell_leaf_id : null,

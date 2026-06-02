@@ -70,3 +70,4 @@ export {
   type TreeNode,
   type CellTree,
 } from './cell-tree.js';
+export { StalenessBanner, type StalenessCheck } from './staleness-banner.js';

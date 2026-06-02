@@ -1013,6 +1013,42 @@ describe('ScratchpadManager — bindings (Phase 2)', () => {
     assert.deepEqual(meta.bindings, ['jira:prod']);
   });
 
+  it('addBinding() appends a ref and is idempotent', async () => {
+    await mgr.create('p1');
+    const res1 = await mgr.addBinding('p1', 'jira:prod');
+    assert.equal(res1.added, true);
+    const meta1 = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as { bindings?: unknown };
+    assert.deepEqual(meta1.bindings, ['jira:prod']);
+    // Same ref again is a no-op.
+    const res2 = await mgr.addBinding('p1', 'jira:prod');
+    assert.equal(res2.added, false);
+    const meta2 = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as { bindings?: unknown };
+    assert.deepEqual(meta2.bindings, ['jira:prod']);
+  });
+
+  it('removeBinding() drops a ref and returns false when absent', async () => {
+    await mgr.create('p1', { bindings: ['jira:prod', 'foo:bar'] });
+    const r1 = await mgr.removeBinding('p1', 'jira:prod');
+    assert.equal(r1.removed, true);
+    const meta = JSON.parse(readFileSync(join(root, 'p1', 'meta.json'), 'utf8')) as { bindings?: unknown };
+    assert.deepEqual(meta.bindings, ['foo:bar']);
+    const r2 = await mgr.removeBinding('p1', 'jira:prod');
+    assert.equal(r2.removed, false);
+  });
+
+  it('readBindings() returns the on-disk binding list', async () => {
+    await mgr.create('p1', { bindings: ['jira:prod'] });
+    assert.deepEqual(mgr.readBindings('p1'), ['jira:prod']);
+    assert.deepEqual(mgr.readBindings('does-not-exist'), []);
+  });
+
+  it('fork copies bindings from src to dst', async () => {
+    await mgr.create('src-bind', { bindings: ['jira:prod'] });
+    await mgr.fork('src-bind', 'dst-bind');
+    const dstMeta = JSON.parse(readFileSync(join(root, 'dst-bind', 'meta.json'), 'utf8')) as { bindings?: unknown };
+    assert.deepEqual(dstMeta.bindings, ['jira:prod']);
+  });
+
   it('migrates v3 meta.json to v4 by adding empty bindings', async () => {
     // Create via the normal path, then forcibly rewrite meta.json to look like v3.
     await mgr.create('legacy');

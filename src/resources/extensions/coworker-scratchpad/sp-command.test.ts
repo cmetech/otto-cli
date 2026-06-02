@@ -1,5 +1,6 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -88,6 +89,13 @@ describe('sp-command dispatch (stubbed manager)', () => {
     await rm(root, { recursive: true, force: true });
   });
 
+  async function seedExistingOnDisk(names: string[]): Promise<void> {
+    for (const n of names) {
+      await mkdir(join(root, n), { recursive: true });
+      await writeFile(join(root, n, 'meta.json'), JSON.stringify({ name: n }));
+    }
+  }
+
   function wire(existing: string[] = []): { pi: FakePi; ctx: FakeCtx; mgr: StubMgr; current: { name: string | null } } {
     const pi = makePi();
     const ctx = makeCtx();
@@ -163,6 +171,7 @@ describe('sp-command dispatch (stubbed manager)', () => {
 
   it('/sp attach <name> warms and sets currentName', async () => {
     const { pi, ctx, mgr, current } = wire(['p1']);
+    await seedExistingOnDisk(['p1']);
     await pi.commands.get('sp')!.handler('attach p1', ctx);
     assert.deepEqual(mgr.calls, [['getOrAttach', 'p1', {}]]);
     assert.equal(current.name, 'p1');
@@ -340,6 +349,7 @@ describe('sp-command dispatch (stubbed manager)', () => {
 
   it('/sp attach happy path attaches normally (no busy)', async () => {
     const { pi, ctx, mgr, current } = wire(['p1']);
+    await seedExistingOnDisk(['p1']);
     await pi.commands.get('sp')!.handler('attach p1', ctx);
     assert.deepEqual(mgr.calls[0], ['getOrAttach', 'p1', {}]);
     assert.equal(current.name, 'p1');
@@ -347,6 +357,7 @@ describe('sp-command dispatch (stubbed manager)', () => {
 
   it('/sp attach on busy without flag: confirm accepted, reason from input → retry with forceTakeover', async () => {
     const { pi, ctx, mgr, current } = wireWithBusy(true, 'debugging stuck cell');
+    await seedExistingOnDisk(['p1']);
     await pi.commands.get('sp')!.handler('attach p1', ctx);
     // First call throws busy; second call has forceTakeover.
     assert.equal(mgr.calls[0][0], 'getOrAttach');
@@ -359,6 +370,7 @@ describe('sp-command dispatch (stubbed manager)', () => {
 
   it('/sp attach on busy with confirm declined: cancelled; no retry', async () => {
     const { pi, ctx, mgr, current } = wireWithBusy(false, 'unused');
+    await seedExistingOnDisk(['p1']);
     await pi.commands.get('sp')!.handler('attach p1', ctx);
     // Only the initial busy call; no retry.
     assert.equal(mgr.calls.filter((c) => c[0] === 'getOrAttach').length, 1);
@@ -368,6 +380,7 @@ describe('sp-command dispatch (stubbed manager)', () => {
 
   it('/sp attach on busy with input undefined (user escaped): cancelled; no retry', async () => {
     const { pi, ctx, mgr, current } = wireWithBusy(true, undefined);
+    await seedExistingOnDisk(['p1']);
     await pi.commands.get('sp')!.handler('attach p1', ctx);
     assert.equal(mgr.calls.filter((c) => c[0] === 'getOrAttach').length, 1);
     assert.equal(current.name, null);
@@ -376,6 +389,7 @@ describe('sp-command dispatch (stubbed manager)', () => {
 
   it('/sp attach --force-takeover skips confirm but still prompts for reason via input', async () => {
     const { pi, ctx, mgr, current } = wireWithBusy(/* confirm */ false, 'because flag');
+    await seedExistingOnDisk(['p1']);
     await pi.commands.get('sp')!.handler('attach p1 --force-takeover', ctx);
     // confirm=false but the flag bypasses it
     assert.equal(mgr.calls.length, 2);
@@ -388,6 +402,7 @@ describe('sp-command dispatch (stubbed manager)', () => {
   it('/sp attach --force-takeover --reason "..." is fully non-interactive', async () => {
     // Both confirm and input stubs would return non-cancel values, but neither should be invoked.
     const { pi, ctx, mgr, current } = wireWithBusy(false, undefined);
+    await seedExistingOnDisk(['p1']);
     await pi.commands.get('sp')!.handler('attach p1 --force-takeover --reason "explicit reason"', ctx);
     assert.equal(mgr.calls.length, 2);
     const secondOpts = mgr.calls[1][2] as { forceTakeover?: boolean; takeoverReason?: string };
@@ -419,5 +434,32 @@ describe('sp-command dispatch (stubbed manager)', () => {
     await writeFile(join(root, 'p1', 'meta.json'), JSON.stringify({}));
     await pi.commands.get('sp')!.handler('notes p1', ctx);
     assert.ok(ctx.notifications.some(([l, m]) => l === 'info' && /no recovery notes for p1/.test(m)));
+  });
+
+  describe('/sp attach existence guard (Task C)', () => {
+    it('errors with a helpful suggestion when scratchpad does not exist on disk', async () => {
+      const { pi, ctx, mgr, current } = wire();
+      await pi.commands.get('sp')!.handler('attach not-a-real-name', ctx);
+
+      const errors = ctx.notifications.filter(([l]) => l === 'error');
+      assert.equal(errors.length, 1);
+      assert.match(errors[0]![1], /scratchpad not found: not-a-real-name/);
+      assert.match(errors[0]![1], /Use \/sp new not-a-real-name to create it/);
+      // No phantom scratchpad created on disk and manager never invoked.
+      assert.equal(existsSync(join(root, 'not-a-real-name')), false, 'no phantom dir created');
+      assert.equal(mgr.calls.filter((c) => c[0] === 'getOrAttach').length, 0, 'getOrAttach not called');
+      assert.equal(current.name, null);
+    });
+
+    it('still attaches normally when scratchpad exists', async () => {
+      const { pi, ctx, mgr, current } = wire(['real']);
+      await seedExistingOnDisk(['real']);
+      await pi.commands.get('sp')!.handler('attach real', ctx);
+
+      assert.equal(ctx.notifications.filter(([l]) => l === 'error').length, 0);
+      assert.ok(ctx.notifications.some(([_l, m]) => /attached to scratchpad: real/.test(m)));
+      assert.deepEqual(mgr.calls[0], ['getOrAttach', 'real', {}]);
+      assert.equal(current.name, 'real');
+    });
   });
 });

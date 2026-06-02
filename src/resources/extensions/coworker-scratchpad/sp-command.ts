@@ -173,6 +173,16 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               return;
             }
             validateName(name);
+            // Slash-command path is strict: error on typo instead of silently auto-creating
+            // (the LLM-tool path via cw_scratchpad action=exec stays permissive).
+            const metaPath = join(deps.rootDir(), name, 'meta.json');
+            if (!existsSync(metaPath)) {
+              ctx.ui.notify(
+                `scratchpad not found: ${name}. Use /sp new ${name} to create it.`,
+                'error',
+              );
+              return;
+            }
             const forceFlag = parts.includes('--force-takeover');
             const reasonIdx = parts.indexOf('--reason');
             const reasonArg = reasonIdx >= 0 ? joinQuotedArg(parts, reasonIdx + 1) : null;

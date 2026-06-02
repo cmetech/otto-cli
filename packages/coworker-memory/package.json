@@ -3,11 +3,18 @@
   "version": "0.0.1",
   "description": "Otto co-worker package: coworker-memory",
   "type": "module",
-  "otto": { "linkable": true, "scope": "@otto", "name": "coworker-memory" },
+  "otto": {
+    "linkable": true,
+    "scope": "@otto",
+    "name": "coworker-memory"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
   "dependencies": {
     "@otto/coworker-utils": "*",
@@ -16,8 +23,13 @@
     "yaml": "^2.8.2"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "build:publish": "tsc -p tsconfig.publish.json"
+    "build": "tsc -p tsconfig.json && node -e \"const fs=require('fs');const path=require('path');const src='src/migrations';const dst='dist/migrations';fs.mkdirSync(dst,{recursive:true});for(const f of fs.readdirSync(src))if(f.endsWith('.sql'))fs.copyFileSync(path.join(src,f),path.join(dst,f));\"",
+    "build:publish": "tsc -p tsconfig.publish.json && node -e \"const fs=require('fs');const path=require('path');const src='src/migrations';const dst='dist/migrations';fs.mkdirSync(dst,{recursive:true});for(const f of fs.readdirSync(src))if(f.endsWith('.sql'))fs.copyFileSync(path.join(src,f),path.join(dst,f));\""
   },
-  "files": ["dist"]
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13"
+  }
 }

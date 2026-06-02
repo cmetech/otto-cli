@@ -6,7 +6,10 @@ import type { ScratchpadManager, RecoveryNote } from '@otto/coworker-scratchpad'
 import { validateName, readCellsJsonl, readPersistedLeaf } from './helpers.js';
 import { projectTree, formatTreeText } from '@otto/coworker-scratchpad';
 import { sessionSidecarPath, writeSessionSidecar, deleteSessionSidecar } from './session-sidecar.js';
+import { detectWorkspaceRoot } from './workspace-root.js';
+import { workspaceHash, workspacePointerPath, writeWorkspacePointer, type WorkspacePointer } from './workspace-pointer.js';
 import { showRecoveryNotesBanner, showDivergenceBanner, formatNoteLine } from './attach-banners.js';
+import { formatRelativeAge } from './format-age.js';
 
 export interface SpDeps {
   getManager: () => ScratchpadManager;
@@ -14,10 +17,17 @@ export interface SpDeps {
   setCurrentName: (name: string | null) => void;
   rootDir: () => string;
   getSessionId: () => string;
+  /**
+   * Returns the workspace cwd captured at session_start. Using this instead of
+   * process.cwd() ensures the workspace pointer is anchored to the same root that
+   * session_start used, even if the process chdirs between session_start and a
+   * /sp command.
+   */
+  getWorkspaceCwd: () => string;
 }
 
-type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove' | 'tree' | 'fork' | 'save' | 'detach' | 'clear-history' | 'notes';
-const VERBS: SpVerb[] = ['list', 'new', 'attach', 'reset', 'view', 'remove', 'tree', 'fork', 'save', 'detach', 'clear-history', 'notes'];
+type SpVerb = 'list' | 'new' | 'attach' | 'reset' | 'view' | 'remove' | 'tree' | 'fork' | 'save' | 'detach' | 'clear-history' | 'notes' | 'evict';
+const VERBS: SpVerb[] = ['list', 'new', 'attach', 'reset', 'view', 'remove', 'tree', 'fork', 'save', 'detach', 'clear-history', 'notes', 'evict'];
 
 function ensureCurrent(deps: SpDeps): string {
   let current = deps.getCurrentName();
@@ -57,6 +67,21 @@ interface UiCtx {
   };
 }
 
+function persistWorkspacePointer(deps: SpDeps, name: string): void {
+  const wsRoot = detectWorkspaceRoot(deps.getWorkspaceCwd());
+  const wsHash = workspaceHash(wsRoot);
+  const wsPath = workspacePointerPath(deps.rootDir(), wsHash);
+  const wsPayload: WorkspacePointer = {
+    schema_version: 1,
+    workspace_hash: wsHash,
+    workspace_root: wsRoot,
+    last_session_id: deps.getSessionId(),
+    last_current_name: name,
+    last_attached_at: new Date().toISOString(),
+  };
+  writeWorkspacePointer(wsPath, wsPayload);
+}
+
 function joinQuotedArg(parts: string[], startIdx: number): string | null {
   if (startIdx >= parts.length) return null;
   const first = parts[startIdx];
@@ -80,7 +105,7 @@ function joinQuotedArg(parts: string[], startIdx: number): string | null {
 
 export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
   pi.registerCommand('sp', {
-    description: 'Manage scratchpads: /sp [list|new|attach|reset|view|remove|tree|fork|save|detach|clear-history|notes] [name]',
+    description: 'Manage scratchpads: /sp [list|new|attach|reset|view|remove|tree|fork|save|detach|clear-history|notes|evict] [name]',
     getArgumentCompletions: (prefix: string) => {
       // Split on whitespace but preserve whether the prefix ends with a space
       // (trailing space = user typed the verb and hit space, ready for name completion).
@@ -119,11 +144,22 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               ctx.ui.notify('No scratchpads yet. Use /sp new <name> to create one.', 'info');
               return;
             }
+            // Task D: render idle-age column for warm entries. Compute `now` once so
+            // every row shares the same baseline.
+            const now = Date.now();
+            // Pad name column so the age column lines up. Cold entries have no age.
+            const maxNameLen = all.reduce((m, n) => Math.max(m, n.length), 0);
             const lines = all.map((n) => {
               const l = liveByName.get(n);
               const state = l?.live ? '● live' : '○ cold';
               const marker = n === cur ? ' (current)' : '';
-              return `  ${state}  ${n}${marker}`;
+              let age = '';
+              if (l?.live) {
+                age = l.hasActiveCell ? 'active' : formatRelativeAge(now - l.lastUsedAt);
+              }
+              const namePadded = age ? n.padEnd(maxNameLen) : n;
+              const ageCol = age ? `  ${age}` : '';
+              return `  ${state}  ${namePadded}${ageCol}${marker}`;
             });
             ctx.ui.notify(['scratchpads:', ...lines].join('\n'), 'info');
             return;
@@ -139,6 +175,7 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               current_name: name,
               attached_at: new Date().toISOString(),
             });
+            persistWorkspacePointer(deps, name);
             ctx.ui.notify(`created scratchpad: ${name} (now current)`, 'info');
             return;
           }
@@ -148,6 +185,16 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               return;
             }
             validateName(name);
+            // Slash-command path is strict: error on typo instead of silently auto-creating
+            // (the LLM-tool path via cw_scratchpad action=exec stays permissive).
+            const metaPath = join(deps.rootDir(), name, 'meta.json');
+            if (!existsSync(metaPath)) {
+              ctx.ui.notify(
+                `scratchpad not found: ${name}. Use /sp new ${name} to create it.`,
+                'error',
+              );
+              return;
+            }
             const forceFlag = parts.includes('--force-takeover');
             const reasonIdx = parts.indexOf('--reason');
             const reasonArg = reasonIdx >= 0 ? joinQuotedArg(parts, reasonIdx + 1) : null;
@@ -191,6 +238,7 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               current_name: name,
               attached_at: new Date().toISOString(),
             });
+            persistWorkspacePointer(deps, name);
             ctx.ui.notify(`attached to scratchpad: ${name}`, 'info');
 
             // §2 + §4 banners (1g2):
@@ -242,6 +290,21 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
               deps.setCurrentName(null);
             }
             ctx.ui.notify(`removed scratchpad: ${name}`, 'info');
+            return;
+          }
+          case 'evict': {
+            if (!name) { ctx.ui.notify('Usage: /sp evict <name> [--force]', 'error'); return; }
+            const force = parts.includes('--force');
+            validateName(name);
+            try {
+              const { interrupted } = await deps.getManager().evict(name, { force });
+              const msg = interrupted
+                ? `interrupted active cell and evicted ${name}`
+                : `evicted ${name} (still on disk; /sp attach ${name} to re-warm)`;
+              ctx.ui.notify(msg, 'info');
+            } catch (e) {
+              ctx.ui.notify((e as Error).message, 'error');
+            }
             return;
           }
           case 'tree': {

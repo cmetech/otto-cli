@@ -108,6 +108,7 @@ export function registerScratchpadTool(pi: ExtensionAPI, deps: ScratchpadToolDep
       'Use action="exec" to run TypeScript code in the current scratchpad. State persists across calls.',
       'The cell body is wrapped in (async () => { ... })(). let/const/var are local to the cell. To persist, assign to globalThis.foo = ...',
       'For DuckDB tables that survive across Otto sessions, use `await otto.duckdb.connect()`. For ephemeral in-memory, use `DuckDB.DuckDBInstance.create(":memory:")`.',
+      'For polars→DuckDB: prefer `otto.duckdb.registerDf(name, df)` over manual API discovery. If inference picks the wrong column type, pass `{ schema: { col: \'TYPE\' } }` as the third argument. Falls back to polars\' own SQL (`df.sql(...)`) for one-off aggregations.',
       'Pre-bound libs available in every cell: polars, DuckDB, ExcelJS, dateFns, lodash, zod, axios. No imports needed.',
       'Use otto.collectors.list() to discover data sources and otto.collectors.open(uri) to load one.',
       'The `name` parameter defaults to the currently attached scratchpad. Omit it unless you want to operate on a different one (this does NOT switch the user attachment).',

@@ -37,6 +37,7 @@ export interface ScratchpadInfo {
   name: string;
   live: boolean;
   lastUsedAt: number;
+  hasActiveCell: boolean; // Task D: true iff warm AND a cell is currently executing
 }
 
 interface Entry {
@@ -368,6 +369,42 @@ export class ScratchpadManager {
     }
   }
 
+  /**
+   * Task D: Release a warm kernel's process+memory while preserving on-disk state
+   * (kernel.db, namespace.json, cells.jsonl, meta.json, lock.json). Cold-restart
+   * happens on the next attach.
+   *
+   * Without --force: refuses if a cell is mid-execution. With --force: cancels the
+   * active cell via runtime.cancel() (SIGINT → SIGTERM → SIGKILL escalation handled
+   * internally by ChildProcessRuntime). Post-cancel the kernel is dead, so we skip
+   * the snapshot — the next attach replays from cells.jsonl.
+   */
+  async evict(name: string, opts: { force?: boolean } = {}): Promise<{ interrupted: boolean }> {
+    this.assertNotDisposed();
+    const entry = this.entries.get(name);
+    if (!entry || !entry.runtime) {
+      throw new Error(`scratchpad ${name} is not warm (already cold)`);
+    }
+    if (entry.runtime.hasActiveCell) {
+      if (!opts.force) {
+        throw new Error(`cannot evict ${name}: cell is running (use --force to interrupt)`);
+      }
+      // --force: cancel via existing SIGINT → SIGTERM → SIGKILL escalation in
+      // ChildProcessRuntime.cancel(). After cancel resolves the runtime is dead,
+      // so snapshotThenDispose would fail. Skip the snapshot and flip the entry
+      // to cold (runtime=null) like snapshotThenDispose would have. The session
+      // lock remains held so /sp list still shows the (cold) entry and the next
+      // attach cold-restarts from cells.jsonl.
+      const rt = entry.runtime;
+      await rt.cancel();
+      try { await rt.dispose(); } catch { /* already dead — best-effort cleanup */ }
+      if (entry.runtime === rt) entry.runtime = null;
+      return { interrupted: true };
+    }
+    await this.snapshotThenDispose(name, entry);
+    return { interrupted: false };
+  }
+
   async setLeaf(name: string, id: number): Promise<void> {
     this.assertNotDisposed();
     // Verify the scratchpad exists on disk (works for both warm and cold).
@@ -564,6 +601,7 @@ export class ScratchpadManager {
       releaseLock(dir); // don't leak the lock if spawn fails
       throw err;
     }
+    this.writeMeta(name); // refresh: kernel.db is now on disk; payloadSize + kernel_db.present become accurate (Task E / Issue #2)
     const entry: Entry = { runtime, lock, lastUsedAt: this.now(), archive: new CellArchive(dir, this.now), kernelAtCellId: null };
     this.entries.set(name, entry);
     this.ingestRecoveryNotesOnAttach(name, entry);
@@ -577,6 +615,7 @@ export class ScratchpadManager {
       name,
       live: e.runtime !== null,
       lastUsedAt: e.lastUsedAt,
+      hasActiveCell: e.runtime?.hasActiveCell ?? false,
     }));
   }
 

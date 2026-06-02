@@ -24,6 +24,35 @@ This changelog starts from the `open-gsd/gsd-pi` ownership baseline. Earlier pro
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-01
+
+_Co-worker scratchpad Phase 1.5 polish wave: typing `otto` in a workspace where you previously attached a scratchpad now auto-restores it without `--resume`; `/sp evict` and idle-age display land; `otto.duckdb.registerDf` drops polars→DuckDB from ~8 LLM cells to 2._
+
+### Added
+
+- **Workspace-pointer auto-restore (Issue #6).** New `~/.otto/scratchpads/_workspaces/<sha256-16>.json` keyed on git toplevel (else cwd). On `session_start`, when no per-session sidecar matches, falls back to the workspace pointer. The spec's canonical day-2 RCA scenario now works without `--resume` — typing `otto` in the same workspace surfaces `attached to <name> (from workspace, last used <relative>)`. 7-day staleness threshold; cross-workspace isolation; restored scratchpads cold-restart from disk via Phase 1's existing snapshot path.
+- **`/sp list` idle-age column (Issue #4).** Warm entries now show `active` (cell running) or `idle Xm` / `idle Xh` / `idle Xd` (floored minutes/hours/days since last use). Cold entries unchanged.
+- **`/sp evict <name> [--force]` slash command (Issue #4).** Releases a warm kernel without deleting the scratchpad — on-disk state (kernel.db, namespace.json, cells.jsonl) remains for cold-restart on next attach. Refuses on active cell unless `--force`. `--force` reuses the existing `runtime.cancel()` SIGINT→SIGTERM→SIGKILL escalation; skips snapshot since the kernel is dead post-cancel.
+- **`otto.duckdb.registerDf(name, input, opts?)` (Issue #1).** Duck-typed input detection for polars DataFrames, Arrow Tables, and arrays of records. First-10-rows null-walk schema inference covers sparse leading rows. Optional `opts.schema` override (accepts `Record<string, type>` or `Array<[col, type]>`). All-or-nothing semantics: partial-row failure drops the partial table so retries don't hit "Table already exists." Per-column failure attribution in error messages. `cw_scratchpad` `promptGuidelines` updated so the LLM reaches for the helper instead of API discovery — polars→DuckDB drops from ~8 cells to 2.
+- **Stale sidecar GC on init (Issue #67).** `sweepStaleSidecars` runs once at `session_start`. Deletes foreign-session sidecars where the referenced scratchpad is gone OR sidecar mtime is > 7 days old. Per-file try/catch isolation; current session's sidecar always protected.
+
+### Changed
+
+- **`/sp attach <name>` errors on typo (Issue #5).** Previously, `/sp attach <typo>` silently spawned a phantom scratchpad. Now errors with `scratchpad not found: <name>. Use /sp new <name> to create it.` Library `manager.getOrAttach` and the LLM tool path (`cw_scratchpad` action=exec) remain permissive — the asymmetry is intentional (LLM-passed names should auto-create; user-typed names should fail loud).
+- **Session sidecar filename format (Issue #66).** Renamed from `<sessionId>.json` to `sidecar_<sessionId>.json` for visual scan and `sidecar_*` glob. Old-format files become inert orphans (the sweep ignores anything without the `sidecar_` prefix). Users upgrading can manually `rm ~/.otto/scratchpads/_sessions/*.json` once if they want a clean slate; otherwise old files are harmless and persistent.
+- **`ScratchpadInfo` interface gains `hasActiveCell: boolean`.** Workspace-private package change with two internal consumers; no out-of-tree breakage.
+
+### Fixed
+
+- **`meta.json` on fresh `/sp new` reflects post-spawn disk state (Issue #2).** Previously showed `kernel_db.present: false` and `size_bytes: 0` because the initial `writeMeta` fired before `kernel.db` existed on disk. Added a second `writeMeta` call after `spawnRuntime` succeeds; the first call still preserves the lock-acquire side-effect.
+
+### Notes
+
+- Phase 1.5 closes the open known-issues backlog from `docs/superpowers/notes/2026-06-01-coworker-phase-1-known-issues.md` (Issues #1, #2, #4, #5, #6) and GH #66, #67.
+- Five follow-up items filed as #68–#72 for post-merge polish (workspace-pointer GC, `/sp evict <current>` sidecar question, `formatRelativeAge`/`hasActiveCell` overlap, `detectWorkspaceRoot` memoization, and dual-`writeMeta` doc comment).
+- Issue #3 (LLM "ask if unsure" reliability) remains accepted as inherent LLM behavior; revisited in Phase 6 (NOC persona polish).
+- See the Phase 1.5 re-verify section in `docs/superpowers/notes/2026-06-01-coworker-phase-1-human-tests.md` for the 11-scenario sign-off checklist.
+
 ## [1.1.1] - 2026-05-29
 
 _Windows `otto update` no longer emits EPERM cleanup warnings or leaves orphan `.otto-*` staging dirs._

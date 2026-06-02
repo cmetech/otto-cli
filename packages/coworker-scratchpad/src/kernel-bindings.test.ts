@@ -1,9 +1,11 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm } from 'node:fs/promises';
+import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { buildDataLibBindings } from './kernel-bindings.js';
+import { AuditLog, type AuditRecord } from '@otto/coworker-utils';
+import { buildDataLibBindings, redactForJournal } from './kernel-bindings.js';
 import { ChildProcessRuntime } from './child-process-runtime.js';
 
 describe('kernel-bindings', () => {
@@ -132,5 +134,55 @@ describe('otto.duckdb.registerDf (Task F)', () => {
     // Sum of clean retry batch — proves both that the first-call table was DROPped
     // (otherwise CREATE TABLE here would fail) and that the retry persisted rows.
     assert.equal(Number(result[0]![0]), 15);
+  });
+});
+
+describe('kernel-bindings — secret redaction (Phase 2 Task 14)', () => {
+  it('redacts secret patterns in stdout before journaling and emits one audit record per hit', async () => {
+    const auditPath = join(mkdtempSync(join(tmpdir(), 'kb-audit-')), 'audit.jsonl');
+    const audit = new AuditLog({ path: auditPath });
+    // AKIA + 16 [A-Z0-9] chars — matches the aws_access_key_id pattern.
+    const raw = 'before AKIAABCDEFGHIJKLMNOP after';
+    const result = redactForJournal(raw, {
+      audit,
+      sessionId: 's',
+      scratchpadName: 'sp',
+      pid: 1,
+      cellId: 'c1',
+    });
+    assert.equal(result, 'before [REDACTED:aws_access_key_id] after');
+    const records: AuditRecord[] = [];
+    for await (const r of audit.read({ producer: 'secret-scanner' })) records.push(r);
+    assert.equal(records.length, 1);
+    const rec = records[0]!;
+    assert.equal(rec.action, 'redact');
+    assert.equal(rec.severity, 'warn');
+    assert.equal(rec.scratchpadName, 'sp');
+    assert.equal(rec.sessionId, 's');
+    assert.equal(rec.pid, 1);
+    // Detail must carry kind/offset/length/cell_id and NOT include the secret value or preview.
+    assert.equal(rec.detail.kind, 'aws_access_key_id');
+    assert.equal(rec.detail.cell_id, 'c1');
+    assert.equal(rec.detail.offset, 'before '.length);
+    assert.equal(rec.detail.length, 'AKIAABCDEFGHIJKLMNOP'.length);
+    assert.equal('preview' in rec.detail, false);
+    // Defense-in-depth: the serialized record must not contain the raw secret substring.
+    assert.equal(JSON.stringify(rec).includes('AKIAABCDEFGHIJKLMNOP'), false);
+  });
+
+  it('returns input unchanged when no secrets present and writes no audit record', async () => {
+    const auditPath = join(mkdtempSync(join(tmpdir(), 'kb-audit-clean-')), 'audit.jsonl');
+    const audit = new AuditLog({ path: auditPath });
+    const out = redactForJournal('hello world', {
+      audit,
+      sessionId: 's',
+      scratchpadName: 'sp',
+      pid: 1,
+      cellId: 'c1',
+    });
+    assert.equal(out, 'hello world');
+    const records: AuditRecord[] = [];
+    for await (const r of audit.read({ producer: 'secret-scanner' })) records.push(r);
+    assert.equal(records.length, 0);
   });
 });

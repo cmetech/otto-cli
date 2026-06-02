@@ -2,10 +2,12 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, 
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import type { CredentialInjector } from '@otto/coworker-vault';
+import type { AuditLog } from '@otto/coworker-utils';
 import { ChildProcessRuntime, type ChildProcessRuntimeOptions } from './child-process-runtime.js';
 import { acquireLock, releaseLock, type LockInfo } from './scratchpad-lock.js';
 import { CellArchive, type CellEntry } from './cell-archive.js';
 import { projectTree, validateLeafId } from './cell-tree.js';
+import { redactForJournal } from './kernel-bindings.js';
 import type { RecoveryNote, SnapshotResult } from './kernel-protocol.js';
 
 type RecoveryNoteEntry = RecoveryNote & { at: string };
@@ -33,6 +35,17 @@ export interface ScratchpadManagerOptions {
    * meta.bindings list. Absent => runtime spawns with no OTTO_DS_* env vars.
    */
   injector?: CredentialInjector;
+  /**
+   * Phase 2 Task 14: optional audit sink for SecretScanner redactions on
+   * cell-output journal writes. When provided, every cell run's stdout is
+   * scanned BEFORE archive.append and emits one `producer: 'secret-scanner'`
+   * record per hit. Absent => redaction is a no-op (backward compat).
+   *
+   * Wiring contract: the caller is expected to pass the SAME AuditLog instance
+   * held by the CredentialInjector so secret-scanner records appear alongside
+   * vault inject/inject-skipped records in a single audit stream.
+   */
+  audit?: AuditLog;
 }
 
 export interface AttachOptions {
@@ -96,6 +109,7 @@ export class ScratchpadManager {
   protected readonly runtimeOptions: Omit<ChildProcessRuntimeOptions, 'workspace'>;
   protected readonly forkExitTimeoutMs: number;
   protected readonly injector: CredentialInjector | undefined;
+  protected readonly audit: AuditLog | undefined;
   protected disposed = false;
   private sweepTimer: NodeJS.Timeout | null = null;
 
@@ -109,6 +123,7 @@ export class ScratchpadManager {
     this.sessionId = options.sessionId;
     this.forkExitTimeoutMs = options.forkExitTimeoutMs ?? FORK_EXIT_TIMEOUT_MS;
     this.injector = options.injector;
+    this.audit = options.audit;
     this.sweepTimer = setInterval(() => { void this.evictIdle(); }, options.sweepIntervalMs ?? DEFAULT_SWEEP_MS);
     this.sweepTimer.unref();
   }
@@ -397,16 +412,28 @@ export class ScratchpadManager {
     const runtime = await this.getOrAttach(name, opts);
     const entry = this.entries.get(name)!;
     entry.lastUsedAt = this.now();
+    // Phase 2 Task 14: forecast the id the archive will assign to this cell so
+    // any secret-scanner audit records carry the same cell_id the journal entry
+    // will get. archive.lastId may be null for an empty archive (id 1 is next).
+    const nextCellId = (entry.archive.lastId ?? 0) + 1;
     try {
       const result = await runtime.runCell(code);
-      entry.archive.append({ code, ok: true, value: result.value, stdout: result.stdout });
+      // Phase 2 Task 14: live TUI output is UPSTREAM — `result` flows back to
+      // the tool unchanged for display. Only the journal copy of stdout is
+      // passed through redactForJournal. When no audit is plumbed, redaction
+      // is a pass-through (backward compat).
+      const journalStdout = this.redactStdout(result.stdout, name, nextCellId);
+      entry.archive.append({ code, ok: true, value: result.value, stdout: journalStdout });
       entry.kernelAtCellId = entry.archive.lastId;
       this.writeMeta(name);
       return result;
     } catch (err) {
       const e = err as Error;
       try {
-        entry.archive.append({ code, ok: false, error: { name: e.name, message: e.message }, stdout: '' });
+        // Phase 2 Task 14: redact the error message too — cell exceptions can
+        // embed user data in `e.message`. stdout is empty in this branch.
+        const journalErrMsg = this.redactStdout(e.message, name, nextCellId);
+        entry.archive.append({ code, ok: false, error: { name: e.name, message: journalErrMsg }, stdout: '' });
         entry.kernelAtCellId = entry.archive.lastId;
         this.writeMeta(name);
       } catch {
@@ -414,6 +441,22 @@ export class ScratchpadManager {
       }
       throw err;
     }
+  }
+
+  /**
+   * Phase 2 Task 14: redact known-secret patterns from a cell-output string
+   * before journaling. No-op (pass-through) when no AuditLog is configured —
+   * the manager was constructed in test/legacy mode without vault wiring.
+   */
+  private redactStdout(raw: string, scratchpadName: string, cellId: number): string {
+    if (!this.audit) return raw;
+    return redactForJournal(raw, {
+      audit: this.audit,
+      sessionId: this.sessionId ?? '',
+      scratchpadName,
+      pid: process.pid,
+      cellId: String(cellId),
+    });
   }
 
   /**

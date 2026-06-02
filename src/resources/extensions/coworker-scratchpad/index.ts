@@ -1,9 +1,10 @@
 import { existsSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import type { ExtensionAPI, ExtensionContext } from '@otto/pi-coding-agent';
-import { ScratchpadManager, type DataLoadDrawer } from '@otto/coworker-scratchpad';
+import { ScratchpadManager, type DataLoadDrawer, type ArtifactCreateDrawer } from '@otto/coworker-scratchpad';
 import { getScratchpadsRoot } from '../_coworker-paths.js';
 import { getMemoryRecorder } from '../coworker-memory/index.js';
+import { getArtifactStore } from '../coworker-artifacts/index.js';
 import { registerSpCommand } from './sp-command.js';
 import { registerScratchpadTool } from './scratchpad-tool.js';
 import { sessionSidecarPath, readSessionSidecar, deleteSessionSidecar, sweepStaleSidecars } from './session-sidecar.js';
@@ -83,6 +84,11 @@ export default function coworkerScratchpadExtension(pi: ExtensionAPI): void {
         workspace: workspaceCwd,
         root,
         sessionId: sessionId ?? 'default',
+        // Phase 4 Task 11/12: lazy getter for the artifact store — returns null
+        // before artifacts session_start or after session_shutdown. Cross-pillar
+        // wiring is one-way (scratchpad → artifacts), so activator load order
+        // is indifferent.
+        getArtifactStore,
         // Phase 3.1 Task 4: production hop into memory. `getMemoryRecorder()` is
         // called lazily on each event so activator load order is indifferent —
         // returns null before memory session_start or after session_shutdown,
@@ -101,6 +107,21 @@ export default function coworkerScratchpadExtension(pi: ExtensionAPI): void {
             schema: drawer.schema ?? undefined,
             turnId: '',
           }).catch(() => { /* silent: file loads are frequent; failures visible in /audit */ });
+        },
+        // Phase 4 Task 12: production hop into memory for artifact-create events.
+        // Mirrors the onDataLoad pattern: lazy recorder lookup, silent failures
+        // (spec §3.9). drawer.artifact_kind is the actual artifact kind
+        // (e.g. 'report'); drawer.kind is the discriminator literal 'artifact'.
+        onArtifactCreate: (drawer: ArtifactCreateDrawer, scratchpadName: string): void => {
+          const recorder = getMemoryRecorder();
+          if (!recorder) return;
+          void recorder.recordArtifact({
+            scratchpadName,
+            slug: drawer.slug,
+            kind: drawer.artifact_kind,
+            uri: drawer.uri,
+            turnId: '',
+          }).catch(() => { /* silent per spec §3.9 */ });
         },
       });
     }

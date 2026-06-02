@@ -19,6 +19,7 @@ export {
   type RecoveryNote,
   type StartupErrorEvent,
   type DataLoadDrawer,
+  type ArtifactCreateDrawer,
   type ReadyEvent,
   type DataLoadEvent,
   type ProgressEvent,

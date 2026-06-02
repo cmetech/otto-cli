@@ -8,7 +8,7 @@ import { acquireLock, releaseLock, type LockInfo } from './scratchpad-lock.js';
 import { CellArchive, type CellEntry } from './cell-archive.js';
 import { projectTree, validateLeafId } from './cell-tree.js';
 import { redactForJournal } from './kernel-bindings.js';
-import type { RecoveryNote, SnapshotResult } from './kernel-protocol.js';
+import type { DataLoadDrawer, RecoveryNote, SnapshotResult } from './kernel-protocol.js';
 
 type RecoveryNoteEntry = RecoveryNote & { at: string };
 
@@ -46,6 +46,15 @@ export interface ScratchpadManagerOptions {
    * vault inject/inject-skipped records in a single audit stream.
    */
   audit?: AuditLog;
+  /**
+   * Phase 3 Task 19: cross-pillar hook for the memory pillar's MemoryRecorder.
+   * Invoked once per `otto.collectors.open(...).load()` call inside a cell,
+   * with the kernel's `DataLoadDrawer` and the scratchpad name that produced it.
+   * The manager fans this through every spawn of every scratchpad (the callback
+   * is closure-bound to the name at spawn time, so multi-scratchpad sessions
+   * route loads to the correct room). Absent => data_load events are dropped.
+   */
+  onDataLoad?: (drawer: DataLoadDrawer, scratchpadName: string) => void;
 }
 
 export interface AttachOptions {
@@ -110,6 +119,7 @@ export class ScratchpadManager {
   protected readonly forkExitTimeoutMs: number;
   protected readonly injector: CredentialInjector | undefined;
   protected readonly audit: AuditLog | undefined;
+  protected readonly onDataLoad: ((drawer: DataLoadDrawer, scratchpadName: string) => void) | undefined;
   protected disposed = false;
   private sweepTimer: NodeJS.Timeout | null = null;
 
@@ -124,6 +134,7 @@ export class ScratchpadManager {
     this.forkExitTimeoutMs = options.forkExitTimeoutMs ?? FORK_EXIT_TIMEOUT_MS;
     this.injector = options.injector;
     this.audit = options.audit;
+    this.onDataLoad = options.onDataLoad;
     this.sweepTimer = setInterval(() => { void this.evictIdle(); }, options.sweepIntervalMs ?? DEFAULT_SWEEP_MS);
     this.sweepTimer.unref();
   }
@@ -400,10 +411,21 @@ export class ScratchpadManager {
   }
 
   private async spawnRuntime(name: string): Promise<ChildProcessRuntime> {
+    // Phase 3 Task 19: bridge the manager-level onDataLoad (which receives
+    // the scratchpad name) to the runtime-level onDataLoad (which doesn't).
+    // Closure-bound to `name` here so each spawned runtime tags its drawers
+    // with the correct scratchpad even when the manager is shared. If both
+    // the manager and runtimeOptions supply an onDataLoad, the manager's
+    // wins — runtimeOptions.onDataLoad never had a way to know the name.
+    const fanout = this.onDataLoad;
+    const onDataLoad = fanout
+      ? (drawer: DataLoadDrawer): void => fanout(drawer, name)
+      : this.runtimeOptions.onDataLoad;
     const rt = new ChildProcessRuntime({
       workspace: this.workspace,
       scratchpadDir: this.dirFor(name),
       ...this.runtimeOptions,
+      onDataLoad,
       // Phase 2 Task 13: env-injection wiring. Injector + bindings are read
       // fresh on every spawn so cold-restarts and re-attaches see the latest
       // bindings list. scratchpadName + sessionId stamp the injector's audit

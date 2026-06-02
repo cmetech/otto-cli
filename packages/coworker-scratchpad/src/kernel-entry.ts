@@ -179,6 +179,21 @@ const ottoArtifact = {
     };
     const resp = await rpcRequest<ArtifactCreateResponse>(req);
     if (resp.ok === false) throw new Error(`artifact_create failed: ${resp.error}`);
+    // Broadcast artifact_create event so the manager can call recordArtifact
+    // into memory (Phase 4 Task 12 closure: getMemoryRecorder()?.recordArtifact).
+    // Without this, Layer B is silent for artifacts.
+    send({
+      type: 'event',
+      event: 'artifact_create',
+      drawer: {
+        kind: 'artifact',
+        slug: resp.slug,
+        artifact_kind: kind,
+        uri: resp.uri,
+        primary_path: resp.primary_path,
+        created_at: new Date().toISOString(),
+      },
+    });
     return makeArtifactProxy({
       slug: resp.slug,
       uri: resp.uri,
@@ -316,41 +331,51 @@ async function main(): Promise<void> {
   }
   send({ type: 'event', event: 'ready', recovery_notes: recoveryNotes });
 
-  for await (const raw of readNdjson(stdin)) {
-    if (trace) process.stderr.write(`[kernel←] ${JSON.stringify(raw)}\n`);
-    // Phase 4 Task 9 — route artifact RPC responses to the pending map before
-    // falling through to the existing run/snapshot request dispatch.
-    if (tryRouteRpcResponse(raw)) continue;
-    const req = raw as KernelRequest;
-    if (req.type === 'snapshot') {
-      if (scratchpadDir === undefined) {
-        send({ id: req.id, type: 'snapshot_result', ok: true, skipped: [], snapshotted_at: new Date().toISOString() });
+  try {
+    for await (const raw of readNdjson(stdin)) {
+      if (trace) process.stderr.write(`[kernel←] ${JSON.stringify(raw)}\n`);
+      // Phase 4 Task 9 — route artifact RPC responses to the pending map before
+      // falling through to the existing run/snapshot request dispatch.
+      if (tryRouteRpcResponse(raw)) continue;
+      const req = raw as KernelRequest;
+      if (req.type === 'snapshot') {
+        if (scratchpadDir === undefined) {
+          send({ id: req.id, type: 'snapshot_result', ok: true, skipped: [], snapshotted_at: new Date().toISOString() });
+          continue;
+        }
+        try {
+          const { skipped, snapshotted_at } = writeNamespaceSnapshot(scratchpadDir);
+          send({ id: req.id, type: 'snapshot_result', ok: true, skipped, snapshotted_at });
+        } catch (err) {
+          const e = err as Error;
+          send({ id: req.id, type: 'snapshot_result', ok: false, error: { name: e.name, message: e.message } });
+        }
         continue;
       }
+      if (req.type !== 'run') continue;
+      let res: ResultResponse;
       try {
-        const { skipped, snapshotted_at } = writeNamespaceSnapshot(scratchpadDir);
-        send({ id: req.id, type: 'snapshot_result', ok: true, skipped, snapshotted_at });
+        const { value, stdout: out } = await runCell(req.code);
+        res = { id: req.id, type: 'result', ok: true, value: toSerializable(value), stdout: out };
       } catch (err) {
         const e = err as Error;
-        send({ id: req.id, type: 'snapshot_result', ok: false, error: { name: e.name, message: e.message } });
+        res = {
+          id: req.id,
+          type: 'result',
+          ok: false,
+          error: { name: e.name, message: e.message, stack: e.stack },
+        };
       }
-      continue;
+      send(res);
     }
-    if (req.type !== 'run') continue;
-    let res: ResultResponse;
-    try {
-      const { value, stdout: out } = await runCell(req.code);
-      res = { id: req.id, type: 'result', ok: true, value: toSerializable(value), stdout: out };
-    } catch (err) {
-      const e = err as Error;
-      res = {
-        id: req.id,
-        type: 'result',
-        ok: false,
-        error: { name: e.name, message: e.message, stack: e.stack },
-      };
+  } finally {
+    // Phase 4 Task 9 review fix — if stdin closes (manager died / EOF) while
+    // RPCs are still in flight, reject them so awaiting cells fail fast
+    // instead of hanging until SIGKILL.
+    for (const [, p] of pendingRpc) {
+      p.reject(new Error('kernel: stdin closed with pending RPC'));
     }
-    send(res);
+    pendingRpc.clear();
   }
 }
 

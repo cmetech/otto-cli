@@ -78,3 +78,24 @@ describe('MemoryRecorder', () => {
     await c.backend.close();
   });
 });
+
+describe('MemoryRecorder.recordArtifact (Phase 4 Task 8)', () => {
+  it('writes a kind:artifact drawer with slug/kind/uri JSON content', async () => {
+    const c = await ctx();
+    const recorder = new MemoryRecorder({
+      backend: c.backend, scanner: c.scanner, audit: c.audit,
+      writeWing: 'global', currentScratchpadName: () => null,
+    });
+    await recorder.recordArtifact({
+      scratchpadName: 'p1', slug: 'rca-1', kind: 'report',
+      uri: 'artifact://rca-1', turnId: 't1',
+    });
+    const r = await c.backend.recall({ query: 'rca', kind: 'artifact' });
+    assert.equal(r.length, 1);
+    const parsed = JSON.parse(r[0]!.drawer.content);
+    assert.equal(parsed.slug, 'rca-1');
+    assert.equal(parsed.uri, 'artifact://rca-1');
+    assert.equal(r[0]!.drawer.room, 'p1');
+    await c.backend.close();
+  });
+});

@@ -2,7 +2,7 @@
 export type Wing = string;
 export type Room = string;
 
-export const DRAWER_KINDS = ['turn', 'paste', 'file_load', 'ticket', 'email', 'rca', 'note'] as const;
+export const DRAWER_KINDS = ['turn', 'paste', 'file_load', 'ticket', 'email', 'rca', 'note', 'artifact'] as const;
 export type DrawerKind = typeof DRAWER_KINDS[number];
 
 export const LAYER_A_KINDS = ['profile', 'rule', 'lesson'] as const;

@@ -22,8 +22,8 @@
     "zod": "^4.4.3"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "build:publish": "tsc -p tsconfig.publish.json"
+    "build": "tsc -p tsconfig.json && node -e \"const fs=require('fs');const path=require('path');const src='src/engines';const dst='dist/engines';fs.mkdirSync(dst,{recursive:true});for(const f of fs.readdirSync(src))if(f.endsWith('.yaml')||f.endsWith('.yml'))fs.copyFileSync(path.join(src,f),path.join(dst,f));\"",
+    "build:publish": "tsc -p tsconfig.publish.json && node -e \"const fs=require('fs');const path=require('path');const src='src/engines';const dst='dist/engines';fs.mkdirSync(dst,{recursive:true});for(const f of fs.readdirSync(src))if(f.endsWith('.yaml')||f.endsWith('.yml'))fs.copyFileSync(path.join(src,f),path.join(dst,f));\""
   },
   "files": ["dist"]
 }

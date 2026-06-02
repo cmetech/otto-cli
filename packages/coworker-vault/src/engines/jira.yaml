@@ -1,0 +1,17 @@
+schema_version: 1
+id: jira
+label: Jira
+description: Atlassian Jira Cloud / Server via Basic auth (email + API token)
+fields:
+  - name: url
+    label: "Instance URL (e.g. https://yourorg.atlassian.net)"
+    secret: false
+    required: true
+  - name: email
+    label: "Atlassian account email"
+    secret: false
+    required: true
+  - name: token
+    label: "API token (from id.atlassian.com → Account → Security)"
+    secret: true
+    required: true

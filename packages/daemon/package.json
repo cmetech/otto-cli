@@ -1,6 +1,6 @@
 {
   "name": "@otto-build/daemon",
-  "version": "1.2.0",
+  "version": "1.2.4",
   "description": "OTTO daemon — background process for project monitoring and Discord integration",
   "license": "MIT",
   "repository": {

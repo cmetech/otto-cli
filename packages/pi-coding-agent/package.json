@@ -1,6 +1,6 @@
 {
   "name": "@otto/pi-coding-agent",
-  "version": "1.2.0",
+  "version": "1.2.4",
   "description": "Coding agent CLI (vendored from pi-mono)",
   "type": "module",
   "otto": {

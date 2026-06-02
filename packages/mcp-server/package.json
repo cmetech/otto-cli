@@ -1,6 +1,6 @@
 {
   "name": "@otto-build/mcp-server",
-  "version": "1.2.0",
+  "version": "1.2.4",
   "description": "MCP server exposing OTTO orchestration tools for compatible clients",
   "license": "MIT",
   "otto": {

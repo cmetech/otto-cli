@@ -45,14 +45,14 @@ export class LayerAStore {
       ? `- (${entry.ts}) ${entry.text}\n`
       : `## ${entry.ts}\n${entry.text}\n\n`;
     const newBody = (body && !body.endsWith('\n') ? body + '\n' : body) + addition;
-    const newFile = this.composeFile(entry.kind, newBody, entry.ts);
+    const newFile = this.composeFile(entry.kind, newBody, entry.ts, entry.source);
     const tmp = `${path}.tmp`;
     writeFileSync(tmp, newFile, { mode: 0o600 });
     chmodSync(tmp, 0o600);
     renameSync(tmp, path);
     this.opts.audit.append({
       _schema: 1, ts: new Date().toISOString(), producer: 'memory', action: 'write-layer-a',
-      detail: { scope: this.opts.scope, kind: entry.kind, source: entry.source, byte_count: entry.text.length },
+      detail: { scope: this.opts.scope, kind: entry.kind, source: entry.source, byte_count: Buffer.byteLength(entry.text, 'utf8') },
     });
   }
 
@@ -79,10 +79,10 @@ export class LayerAStore {
     }
   }
 
-  private composeFile(kind: LayerAKind, body: string, ts: string): string {
-    const fm = { schema_version: 1, last_modified_at: ts, source: 'user' as const };
+  private composeFile(kind: LayerAKind, body: string, ts: string, source: LayerAEntry['source']): string {
+    const fm = { schema_version: 1, last_modified_at: ts, source };
     const fmStr = stringifyYaml(fm).trimEnd();
     const header = `---\n${fmStr}\n---\n\n# ${TITLE_FOR[kind]}\n\n`;
-    return header + body.replace(new RegExp(`^# ${TITLE_FOR[kind]}\\n\\n?`), '');
+    return header + body.replace(new RegExp(`^\\n?# ${TITLE_FOR[kind]}\\n\\n?`), '');
   }
 }

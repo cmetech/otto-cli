@@ -1,12 +1,12 @@
 // packages/coworker-memory/src/layer-a-store.test.ts
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { AuditLog, SecretScanner } from '@otto/coworker-utils';
 import { LayerAStore } from './layer-a-store.js';
-import { LayerAWriteBlocked } from './errors.js';
+import { LayerAWriteBlocked, MemoryEntryMalformed } from './errors.js';
 
 function ctx() {
   const root = mkdtempSync(join(tmpdir(), 'la-'));
@@ -63,5 +63,23 @@ describe('LayerAStore', () => {
     const rows: { action: string }[] = [];
     for await (const r of c.audit.read({ producer: 'memory', action: 'write-layer-a' })) rows.push(r as never);
     assert.equal(rows.length, 1);
+  });
+  it('re-appending to the same kind does not duplicate the title heading', async () => {
+    const c = ctx();
+    const store = new LayerAStore({ scopeDir: c.dir, scope: 'workspace', audit: c.audit, scanner: c.scanner });
+    await store.append({ kind: 'lesson', text: 'first lesson', source: 'user', ts: '2026-06-02T10:00:00Z' });
+    await store.append({ kind: 'lesson', text: 'second lesson', source: 'user', ts: '2026-06-02T10:05:00Z' });
+    const raw = readFileSync(join(c.dir, 'lessons.md'), 'utf8');
+    const titleCount = (raw.match(/^# Lessons$/gm) ?? []).length;
+    assert.equal(titleCount, 1, 'duplicate title heading after re-append');
+    assert.match(raw, /first lesson/);
+    assert.match(raw, /second lesson/);
+  });
+  it('read throws MemoryEntryMalformed on unterminated frontmatter', async () => {
+    const c = ctx();
+    mkdirSync(c.dir, { recursive: true, mode: 0o700 });
+    writeFileSync(join(c.dir, 'rules.md'), '---\nbroken-yaml: [\n', { mode: 0o600 });
+    const store = new LayerAStore({ scopeDir: c.dir, scope: 'workspace', audit: c.audit, scanner: c.scanner });
+    await assert.rejects(() => store.read('rule'), MemoryEntryMalformed);
   });
 });

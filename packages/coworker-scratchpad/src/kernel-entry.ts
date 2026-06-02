@@ -8,7 +8,7 @@ import type { DataSource, DataSourceRef } from '@otto/coworker-types';
 import { DefaultCollectorRegistry } from './collector-registry.js';
 import { FileCollector } from './file-collector.js';
 import type { KernelEvent, KernelRequest, ResultResponse, SnapshotResult, RecoveryNote, SkippedKey } from './kernel-protocol.js';
-import { buildDataLibBindings } from './kernel-bindings.js';
+import { buildDataLibBindings, attachRegisterDf } from './kernel-bindings.js';
 import { encodeNamespace, decodeNamespace } from './namespace-codec.js';
 
 const workspace = argv[2] ?? process.cwd();
@@ -126,6 +126,7 @@ function toSerializable(value: unknown): unknown {
 async function openKernelDb(dir: string): Promise<void> {
   try {
     const instance = await DuckDBInstance.create(join(dir, 'kernel.db'));
+    attachRegisterDf(instance);
     otto.duckdb = instance;
   } catch (err) {
     const e = err as Error;

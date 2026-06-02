@@ -899,3 +899,21 @@ describe('ScratchpadManager (atomic meta writes — 1g3)', () => {
     assert.equal(existsSync(`${path}.tmp`), false, 'no .tmp leak after writeMetaAtomic');
   });
 });
+
+describe('ScratchpadManager attach meta freshness (Task E)', () => {
+  it('meta.json after /sp new reflects post-spawn disk state (kernel_db.present + size_bytes)', async () => {
+    const workspace = await mkdtemp(join(tmpdir(), 'sp-ws-'));
+    const root = await mkdtemp(join(tmpdir(), 'sp-root-'));
+    const mgr = new ScratchpadManager({ workspace, root, sessionId: 's', sweepIntervalMs: 1_000_000 });
+    try {
+      await mgr.getOrAttach('fresh'); // simulates /sp new path
+      const meta = JSON.parse(readFileSync(join(root, 'fresh', 'meta.json'), 'utf8')) as { kernel_db: { present: boolean }, size_bytes: number };
+      assert.equal(meta.kernel_db.present, true, 'kernel.db should be reflected after spawn');
+      assert.ok(meta.size_bytes > 0, `size_bytes should be > 0; got ${meta.size_bytes}`);
+    } finally {
+      await mgr.disposeAll();
+      await rm(workspace, { recursive: true, force: true });
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+});

@@ -564,6 +564,7 @@ export class ScratchpadManager {
       releaseLock(dir); // don't leak the lock if spawn fails
       throw err;
     }
+    this.writeMeta(name); // refresh: kernel.db is now on disk; payloadSize + kernel_db.present become accurate (Task E / Issue #2)
     const entry: Entry = { runtime, lock, lastUsedAt: this.now(), archive: new CellArchive(dir, this.now), kernelAtCellId: null };
     this.entries.set(name, entry);
     this.ingestRecoveryNotesOnAttach(name, entry);

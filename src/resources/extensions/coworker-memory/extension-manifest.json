@@ -1,0 +1,13 @@
+{
+  "id": "coworker-memory",
+  "name": "Co-worker Memory",
+  "version": "1.0.0",
+  "description": "Layered memory: Layer A (markdown rules/lessons) + Layer B (verbatim SQLite drawers) with /memory commands and memorize/recall tools",
+  "tier": "bundled",
+  "requires": { "platform": ">=2.29.0" },
+  "provides": {
+    "tools": ["memorize", "recall"],
+    "commands": ["memory"],
+    "hooks": ["session_start", "session_shutdown"]
+  }
+}

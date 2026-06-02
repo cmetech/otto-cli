@@ -31,6 +31,10 @@ const KNOWN_BOUND_KEYS = new Set([
   'zod',
   'axios',
   'Date',
+  // Phase 2 Task 13: process is bound so cells can read OTTO_DS_* env vars
+  // injected by CredentialInjector. Filtered from namespace snapshots.
+  'process',
+  'Buffer',
 ]);
 
 const registry = new DefaultCollectorRegistry();
@@ -94,6 +98,12 @@ const sandbox: Record<string, unknown> = {
   // Bind the host Date so that v8-deserialized Date objects (from namespace restore)
   // pass `instanceof Date` checks inside the vm context (cross-realm fix).
   Date,
+  // Phase 2 Task 13: cells need process.env to read OTTO_DS_* vault-injected
+  // env vars. Bind the host process directly; vm sandbox isolation otherwise
+  // hides Node globals. Buffer is bound alongside since cells frequently
+  // base64-encode credentials (e.g. Basic auth from env vars).
+  process,
+  Buffer,
 };
 const context = vm.createContext(sandbox);
 

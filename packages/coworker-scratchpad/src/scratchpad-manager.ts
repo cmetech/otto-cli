@@ -1,6 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import type { CredentialInjector } from '@otto/coworker-vault';
 import { ChildProcessRuntime, type ChildProcessRuntimeOptions } from './child-process-runtime.js';
 import { acquireLock, releaseLock, type LockInfo } from './scratchpad-lock.js';
 import { CellArchive, type CellEntry } from './cell-archive.js';
@@ -26,6 +27,12 @@ export interface ScratchpadManagerOptions {
   runtimeOptions?: Omit<ChildProcessRuntimeOptions, 'workspace'>;
   sessionId?: string;
   forkExitTimeoutMs?: number;
+  /**
+   * Phase 2 Task 13: optional vault credential injector. When provided, each
+   * spawned ChildProcessRuntime receives the injector + the scratchpad's
+   * meta.bindings list. Absent => runtime spawns with no OTTO_DS_* env vars.
+   */
+  injector?: CredentialInjector;
 }
 
 export interface AttachOptions {
@@ -88,6 +95,7 @@ export class ScratchpadManager {
   protected readonly now: () => number;
   protected readonly runtimeOptions: Omit<ChildProcessRuntimeOptions, 'workspace'>;
   protected readonly forkExitTimeoutMs: number;
+  protected readonly injector: CredentialInjector | undefined;
   protected disposed = false;
   private sweepTimer: NodeJS.Timeout | null = null;
 
@@ -100,6 +108,7 @@ export class ScratchpadManager {
     this.runtimeOptions = options.runtimeOptions ?? {};
     this.sessionId = options.sessionId;
     this.forkExitTimeoutMs = options.forkExitTimeoutMs ?? FORK_EXIT_TIMEOUT_MS;
+    this.injector = options.injector;
     this.sweepTimer = setInterval(() => { void this.evictIdle(); }, options.sweepIntervalMs ?? DEFAULT_SWEEP_MS);
     this.sweepTimer.unref();
   }
@@ -308,11 +317,35 @@ export class ScratchpadManager {
     return n;
   }
 
+  /**
+   * Phase 2 Task 13: read meta.bindings from disk so each fresh spawn picks up
+   * the current binding set (bindings can change between attaches via /sp use).
+   * Returns [] if meta.json doesn't exist or doesn't have a v4 bindings array.
+   */
+  private readBindings(name: string): string[] {
+    const path = this.metaPath(name);
+    if (!existsSync(path)) return [];
+    try {
+      const cur = JSON.parse(readFileSync(path, 'utf8')) as { bindings?: unknown };
+      return Array.isArray(cur.bindings) ? (cur.bindings as string[]) : [];
+    } catch {
+      return [];
+    }
+  }
+
   private async spawnRuntime(name: string): Promise<ChildProcessRuntime> {
     const rt = new ChildProcessRuntime({
       workspace: this.workspace,
       scratchpadDir: this.dirFor(name),
       ...this.runtimeOptions,
+      // Phase 2 Task 13: env-injection wiring. Injector + bindings are read
+      // fresh on every spawn so cold-restarts and re-attaches see the latest
+      // bindings list. scratchpadName + sessionId stamp the injector's audit
+      // records so /audit can attribute each inject to a scratchpad+session.
+      injector: this.injector,
+      bindings: this.readBindings(name),
+      scratchpadName: name,
+      sessionId: this.sessionId ?? '',
     });
     await rt.start();
     return rt;

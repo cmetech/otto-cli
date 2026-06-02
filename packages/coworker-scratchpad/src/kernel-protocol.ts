@@ -88,8 +88,95 @@ export interface StartupErrorEvent {
   kind: string;
   error: { name: string; message: string; stack?: string };
 }
-export type KernelEvent = ReadyEvent | DataLoadEvent | ProgressEvent | StartupErrorEvent;
+// Phase 4 Task 9 — artifact RPC + event
 
+// Layer-B drawer payload recorded when a cell creates an artifact. Mirrors the
+// shape of DataLoadDrawer; persisted to memory by the manager (Task 10).
+export interface ArtifactCreateDrawer {
+  kind: 'artifact';
+  slug: string;
+  artifact_kind: string; // 'report' in v1
+  uri: string;
+  primary_path: string;
+  created_at: string;
+}
+
+// Kernel→manager request to create an artifact. Manager constructs the
+// ArtifactStore and writes the response back to kernel stdin.
+export interface ArtifactCreateRequest {
+  type: 'request';
+  request: 'artifact_create';
+  id: string;
+  kind: string; // 'report'
+  name: string;
+}
+export interface ArtifactCreateResponseOk {
+  type: 'response';
+  request: 'artifact_create';
+  id: string;
+  ok: true;
+  slug: string;
+  uri: string;
+  primary_path: string;
+}
+export interface ArtifactCreateResponseErr {
+  type: 'response';
+  request: 'artifact_create';
+  id: string;
+  ok: false;
+  error: string;
+}
+export type ArtifactCreateResponse = ArtifactCreateResponseOk | ArtifactCreateResponseErr;
+
+// Kernel→manager request to write files into an existing artifact dir.
+export interface ArtifactUpdateRequest {
+  type: 'request';
+  request: 'artifact_update';
+  id: string;
+  slug: string;
+  files: Array<{ path: string; content: string }>;
+}
+export interface ArtifactUpdateResponseOk {
+  type: 'response';
+  request: 'artifact_update';
+  id: string;
+  ok: true;
+  files_touched: string[];
+}
+export interface ArtifactUpdateResponseErr {
+  type: 'response';
+  request: 'artifact_update';
+  id: string;
+  ok: false;
+  error: string;
+}
+export type ArtifactUpdateResponse = ArtifactUpdateResponseOk | ArtifactUpdateResponseErr;
+
+// Event the kernel emits after a successful artifact_create RPC so the manager
+// can record the drawer into memory (mirrors DataLoadEvent).
+export interface ArtifactCreateEvent {
+  type: 'event';
+  event: 'artifact_create';
+  drawer: ArtifactCreateDrawer;
+}
+
+export type KernelRpcRequest = ArtifactCreateRequest | ArtifactUpdateRequest;
+export type KernelRpcResponse = ArtifactCreateResponse | ArtifactUpdateResponse;
+
+export type KernelEvent =
+  | ReadyEvent
+  | DataLoadEvent
+  | ProgressEvent
+  | StartupErrorEvent
+  | ArtifactCreateEvent;
+
+// Note: KernelFrame intentionally does NOT include KernelRpcRequest /
+// KernelRpcResponse. Task 10 will widen the manager-side dispatch (in
+// child-process-runtime.ts) to handle RPC frames; until then, keeping the
+// union narrow preserves the existing narrowing on `frame.id` / `frame.ok` /
+// `frame.value`. RPC frames are routed via explicit type-guard checks
+// (isArtifactCreateRequest, isArtifactUpdateRequest, isKernelRpcResponse)
+// against `unknown` at the boundary.
 export type KernelFrame = ResultResponse | KernelEvent | SnapshotResult;
 
 export function isDataLoadEvent(frame: KernelFrame): frame is DataLoadEvent {
@@ -106,4 +193,39 @@ export function isStartupErrorEvent(frame: KernelFrame): frame is StartupErrorEv
 
 export function isSnapshotResult(frame: KernelFrame): frame is SnapshotResult {
   return frame.type === 'snapshot_result';
+}
+
+export function isArtifactCreateEvent(frame: unknown): frame is ArtifactCreateEvent {
+  if (typeof frame !== 'object' || frame === null) return false;
+  const f = frame as { type?: unknown; event?: unknown };
+  return f.type === 'event' && f.event === 'artifact_create';
+}
+
+export function isArtifactCreateRequest(frame: unknown): frame is ArtifactCreateRequest {
+  if (typeof frame !== 'object' || frame === null) return false;
+  const f = frame as { type?: unknown; request?: unknown };
+  return f.type === 'request' && f.request === 'artifact_create';
+}
+
+export function isArtifactUpdateRequest(frame: unknown): frame is ArtifactUpdateRequest {
+  if (typeof frame !== 'object' || frame === null) return false;
+  const f = frame as { type?: unknown; request?: unknown };
+  return f.type === 'request' && f.request === 'artifact_update';
+}
+
+export function isArtifactCreateResponse(frame: unknown): frame is ArtifactCreateResponse {
+  if (typeof frame !== 'object' || frame === null) return false;
+  const f = frame as { type?: unknown; request?: unknown };
+  return f.type === 'response' && f.request === 'artifact_create';
+}
+
+export function isArtifactUpdateResponse(frame: unknown): frame is ArtifactUpdateResponse {
+  if (typeof frame !== 'object' || frame === null) return false;
+  const f = frame as { type?: unknown; request?: unknown };
+  return f.type === 'response' && f.request === 'artifact_update';
+}
+
+/** True for any `{type:'response'}` frame addressed to the kernel. */
+export function isKernelRpcResponse(frame: unknown): frame is KernelRpcResponse {
+  return isArtifactCreateResponse(frame) || isArtifactUpdateResponse(frame);
 }

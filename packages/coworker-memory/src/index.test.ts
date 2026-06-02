@@ -1,14 +1,21 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import * as memory from './index.js';
 
-describe('coworker-memory (phase 0 scaffold)', () => {
-  it('barrel imports without throwing', async () => {
-    const mod = await import('./index.js');
-    assert.ok(mod, 'module namespace should load');
+describe('@otto/coworker-memory barrel', () => {
+  it('exports the key surface', () => {
+    assert.equal(typeof memory.LocalSqliteBackend, 'function');
+    assert.equal(typeof memory.LayerAStore, 'function');
+    assert.equal(typeof memory.MemoryRecorder, 'function');
+    assert.equal(typeof memory.resolveWorkspaceId, 'function');
+    assert.equal(typeof memory.resolveScope, 'function');
+    assert.equal(typeof memory.detectPaste, 'function');
+    assert.equal(typeof memory.formatRecall, 'function');
+    assert.equal(typeof memory.buildLayerAContext, 'function');
+    assert.equal(typeof memory.applyPersonaSeed, 'function');
   });
-
-  it('exposes no runtime exports yet', async () => {
-    const mod = await import('./index.js');
-    assert.deepEqual(Object.keys(mod), [], 'phase 0 scaffold should have an empty barrel');
+  it('exports error classes', () => {
+    assert.equal(typeof memory.LayerAWriteBlocked, 'function');
+    assert.equal(typeof memory.RecallQueryMalformed, 'function');
   });
 });

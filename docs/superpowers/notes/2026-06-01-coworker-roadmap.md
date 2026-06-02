@@ -1,7 +1,7 @@
 # Otto Co-worker — Roadmap and Out-of-Scope Reference
 
 **Source of truth:** `docs/superpowers/specs/2026-05-30-otto-coworker-design.md` (§ 8 phasing, § 9 out-of-scope).
-**Last updated:** 2026-06-02 (Phase 0 + Phase 1 + Phase 2 + Phase 3 complete).
+**Last updated:** 2026-06-02 (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 3.1 complete).
 
 This document summarizes every phase of the Otto co-worker initiative — what each phase delivers, what's complete, and what each currently-out-of-scope item would bring if implemented later.
 
@@ -127,6 +127,30 @@ After Phase 6, a fresh `npm install otto` should drop a user into this scenario 
 **Note (2026-06-02):** Phase 3 ships Layers A + B with the `LocalSqliteBackend` (FTS5/BM25). Layer C entity graph, ACC, Cerebellum, Consolidator, weekly digest, vector embeddings, and `HostedBackend` remain Phase 5. Cross-pillar: scratchpad's `FileCollector` loads land as `kind:'file_load'` drawers; scratchpad exposes `currentScratchpadName` so memory rooms align with active investigations. **Task 20 (auto-retain user-turn wiring) and the production extension activator hop for Task 19 are deferred to Phase 3.1** because the `coworker-memory` extension lacks a production activator (same gap as Phase 2 vault). The seam exists at `pi-coding-agent`'s `before_agent_start` + `agent_start` events; the recorder is complete and unit-tested at the API level.
 
 **Dependencies:** Phase 0 (memory package shell, types).
+
+---
+
+### Phase 3.1 — Production activators (week 7) — COMPLETE
+
+**Branch:** `feat/coworker-phase-3.1-activators` (merged to main as commit `<TBD merge sha>` on 2026-06-DD).
+**Spec:** `docs/superpowers/specs/2026-06-02-coworker-phase-3.1-activators-design.md`.
+**Plan:** `docs/superpowers/plans/2026-06-02-coworker-phase-3.1-activators.md`.
+
+**Pillar:** wires the three coworker extensions (memory, vault, scratchpad) to Otto's `ExtensionAPI` via three default-export activators with direct cross-imports (no shared bus, no combined entry).
+
+**What it ships:**
+- Phase 2's "Phase 2.1+ deferral" closed — `/connect`, `/datasource`, `/audit` slash-command registration now lives in the vault activator.
+- Phase 3 Task 20 closure — auto-retain user turns via `before_agent_start` + `agent_start` event pair on `MemoryRecorder.recordTurn`.
+- Phase 3 Task 19 production hop — scratchpad `onDataLoad → MemoryRecorder.recordFileLoad` callback now registered at the extension activation layer.
+- Pre-existing test-glob gap surfaced in Phase 3 Task 23 — coworker extension test files now in `test:unit:compiled` glob (+198 tests in main suite).
+
+**Locked decisions** (per spec §3): hardcoded `scopeMode: 'per-project-tagged'`; persona seeding helpers stay in place but activator does not invoke them in v1; init failures log + disable that pillar; `recordTurn` failures notify once per Otto process then silent.
+
+**Milestone:** automated activator integration test at `packages/coworker-memory/src/activator-integration.test.ts` proves the wiring at the API layer. Live TUI smoke walkthrough remains pending (both `2026-06-02-phase-2-vault-smoke.md` and `2026-06-02-phase-3-memory-smoke.md` carry explicit PENDING placeholders).
+
+**Dependencies:** Phase 2 (vault activation surface), Phase 3 (memory recorder).
+
+> **Note (2026-06-DD):** Phase 4 (Cerebellum / ACC / Consolidator / weekly digest / Layer C entity graph per parent design spec §17) is the next phase. No Phase 3.2 currently planned.
 
 ---
 

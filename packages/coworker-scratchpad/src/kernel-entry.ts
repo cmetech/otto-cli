@@ -7,7 +7,20 @@ import { writeNdjson, readNdjson } from '@otto/coworker-utils';
 import type { DataSource, DataSourceRef } from '@otto/coworker-types';
 import { DefaultCollectorRegistry } from './collector-registry.js';
 import { FileCollector } from './file-collector.js';
-import type { KernelEvent, KernelRequest, ResultResponse, SnapshotResult, RecoveryNote, SkippedKey } from './kernel-protocol.js';
+import type {
+  KernelEvent,
+  KernelRequest,
+  ResultResponse,
+  SnapshotResult,
+  RecoveryNote,
+  SkippedKey,
+  ArtifactCreateRequest,
+  ArtifactCreateResponse,
+  ArtifactUpdateRequest,
+  ArtifactUpdateResponse,
+  KernelRpcRequest,
+} from './kernel-protocol.js';
+import { isKernelRpcResponse } from './kernel-protocol.js';
 import { buildDataLibBindings, attachRegisterDf } from './kernel-bindings.js';
 import { encodeNamespace, decodeNamespace } from './namespace-codec.js';
 
@@ -45,9 +58,46 @@ process.on('SIGINT', () => {
   // kernel; the parent escalates to SIGTERM/SIGKILL to actually stop a hung kernel.
 });
 
-function send(frame: KernelEvent | ResultResponse | SnapshotResult): void {
+function send(frame: KernelEvent | ResultResponse | SnapshotResult | KernelRpcRequest): void {
   if (trace) process.stderr.write(`[kernel→] ${JSON.stringify(frame)}\n`);
   void writeNdjson(stdout, frame);
+}
+
+// Phase 4 Task 9 — RPC plumbing for otto.artifact.
+// The kernel sends `{type:'request',...}` frames over stdout and awaits the
+// matching `{type:'response',...}` frame on stdin. The main loop routes
+// response frames to this pending map before falling through to the
+// existing run/snapshot request handling.
+interface PendingRpc {
+  resolve: (value: unknown) => void;
+  reject: (err: Error) => void;
+}
+const pendingRpc = new Map<string, PendingRpc>();
+let nextRpcId = 1;
+
+function newRpcId(): string {
+  return `art-${process.pid}-${nextRpcId++}`;
+}
+
+function rpcRequest<TResp>(payload: KernelRpcRequest): Promise<TResp> {
+  return new Promise<TResp>((resolve, reject) => {
+    pendingRpc.set(payload.id, {
+      resolve: resolve as (value: unknown) => void,
+      reject,
+    });
+    send(payload);
+  });
+}
+
+// Returns true when the frame was consumed as an RPC response.
+function tryRouteRpcResponse(frame: unknown): boolean {
+  if (!isKernelRpcResponse(frame)) return false;
+  const p = pendingRpc.get(frame.id);
+  if (!p) return true; // unknown id — silently drop; nothing to do
+  pendingRpc.delete(frame.id);
+  if (frame.ok === false) p.reject(new Error(frame.error));
+  else p.resolve(frame);
+  return true;
 }
 
 const ottoCollectors = {
@@ -85,7 +135,94 @@ const ottoCollectors = {
   },
 };
 
-const otto: Record<string, unknown> = { collectors: ottoCollectors };
+// Phase 4 Task 9 — otto.artifact binding (RPC over stdio).
+// `create` and `update` block the cell on a parent-side response; the manager
+// handles the FS work and writes the artifact_create event back to memory.
+interface ArtifactHandleProxy {
+  slug: string;
+  uri: string;
+  primaryPath: string;
+  update(files: Array<{ path: string; content: string }>): Promise<{ files_touched: string[] }>;
+}
+
+function makeArtifactProxy(args: { slug: string; uri: string; primaryPath: string }): ArtifactHandleProxy {
+  return {
+    slug: args.slug,
+    uri: args.uri,
+    primaryPath: args.primaryPath,
+    async update(files): Promise<{ files_touched: string[] }> {
+      const req: ArtifactUpdateRequest = {
+        type: 'request',
+        request: 'artifact_update',
+        id: newRpcId(),
+        slug: args.slug,
+        files,
+      };
+      const resp = await rpcRequest<ArtifactUpdateResponse>(req);
+      if (resp.ok === false) throw new Error(`artifact_update failed: ${resp.error}`);
+      return { files_touched: resp.files_touched };
+    },
+  };
+}
+
+const ottoArtifact = {
+  async create(kind: string, name: string): Promise<ArtifactHandleProxy> {
+    if (kind !== 'report') {
+      throw new Error(`unsupported artifact kind: ${kind}. v1 ships only 'report'.`);
+    }
+    const req: ArtifactCreateRequest = {
+      type: 'request',
+      request: 'artifact_create',
+      id: newRpcId(),
+      kind,
+      name,
+    };
+    const resp = await rpcRequest<ArtifactCreateResponse>(req);
+    if (resp.ok === false) throw new Error(`artifact_create failed: ${resp.error}`);
+    // Broadcast artifact_create event so the manager can call recordArtifact
+    // into memory (Phase 4 Task 12 closure: getMemoryRecorder()?.recordArtifact).
+    // Without this, Layer B is silent for artifacts.
+    send({
+      type: 'event',
+      event: 'artifact_create',
+      drawer: {
+        kind: 'artifact',
+        slug: resp.slug,
+        artifact_kind: kind,
+        uri: resp.uri,
+        primary_path: resp.primary_path,
+        created_at: new Date().toISOString(),
+      },
+    });
+    return makeArtifactProxy({
+      slug: resp.slug,
+      uri: resp.uri,
+      primaryPath: resp.primary_path,
+    });
+  },
+
+  async spillIfLarge(
+    value: unknown,
+    opts?: { thresholdBytes?: number; name?: string },
+  ): Promise<ArtifactHandleProxy | null> {
+    const threshold = opts?.thresholdBytes ?? 10_240;
+    let serialized: string;
+    try {
+      serialized = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+    } catch {
+      serialized = String(value);
+    }
+    if (Buffer.byteLength(serialized, 'utf8') < threshold) return null;
+    const name =
+      opts?.name ??
+      `cell-output-${new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-')}`;
+    const handle = await ottoArtifact.create('report', name);
+    await handle.update([{ path: 'report.md', content: serialized }]);
+    return handle;
+  },
+};
+
+const otto: Record<string, unknown> = { collectors: ottoCollectors, artifact: ottoArtifact };
 const sandbox: Record<string, unknown> = {
   otto,
   ...buildDataLibBindings(),
@@ -194,38 +331,59 @@ async function main(): Promise<void> {
   }
   send({ type: 'event', event: 'ready', recovery_notes: recoveryNotes });
 
-  for await (const raw of readNdjson(stdin)) {
-    if (trace) process.stderr.write(`[kernel←] ${JSON.stringify(raw)}\n`);
-    const req = raw as KernelRequest;
-    if (req.type === 'snapshot') {
-      if (scratchpadDir === undefined) {
-        send({ id: req.id, type: 'snapshot_result', ok: true, skipped: [], snapshotted_at: new Date().toISOString() });
+  try {
+    for await (const raw of readNdjson(stdin)) {
+      if (trace) process.stderr.write(`[kernel←] ${JSON.stringify(raw)}\n`);
+      // Phase 4 Task 9 — route artifact RPC responses to the pending map before
+      // falling through to the existing run/snapshot request dispatch.
+      if (tryRouteRpcResponse(raw)) continue;
+      const req = raw as KernelRequest;
+      if (req.type === 'snapshot') {
+        if (scratchpadDir === undefined) {
+          send({ id: req.id, type: 'snapshot_result', ok: true, skipped: [], snapshotted_at: new Date().toISOString() });
+          continue;
+        }
+        try {
+          const { skipped, snapshotted_at } = writeNamespaceSnapshot(scratchpadDir);
+          send({ id: req.id, type: 'snapshot_result', ok: true, skipped, snapshotted_at });
+        } catch (err) {
+          const e = err as Error;
+          send({ id: req.id, type: 'snapshot_result', ok: false, error: { name: e.name, message: e.message } });
+        }
         continue;
       }
-      try {
-        const { skipped, snapshotted_at } = writeNamespaceSnapshot(scratchpadDir);
-        send({ id: req.id, type: 'snapshot_result', ok: true, skipped, snapshotted_at });
-      } catch (err) {
-        const e = err as Error;
-        send({ id: req.id, type: 'snapshot_result', ok: false, error: { name: e.name, message: e.message } });
-      }
-      continue;
+      if (req.type !== 'run') continue;
+      // Phase 4 Task 10 fix — `runCell` may issue an artifact RPC and await its
+      // response. The response arrives over stdin, which means the main loop
+      // MUST keep iterating to route it via tryRouteRpcResponse. Awaiting
+      // runCell inline would deadlock the kernel against its own RPC. Fire it
+      // off; runCell sends its own result frame. The manager already serializes
+      // cell submissions, so there's no concurrency to worry about.
+      void (async (): Promise<void> => {
+        let res: ResultResponse;
+        try {
+          const { value, stdout: out } = await runCell(req.code);
+          res = { id: req.id, type: 'result', ok: true, value: toSerializable(value), stdout: out };
+        } catch (err) {
+          const e = err as Error;
+          res = {
+            id: req.id,
+            type: 'result',
+            ok: false,
+            error: { name: e.name, message: e.message, stack: e.stack },
+          };
+        }
+        send(res);
+      })();
     }
-    if (req.type !== 'run') continue;
-    let res: ResultResponse;
-    try {
-      const { value, stdout: out } = await runCell(req.code);
-      res = { id: req.id, type: 'result', ok: true, value: toSerializable(value), stdout: out };
-    } catch (err) {
-      const e = err as Error;
-      res = {
-        id: req.id,
-        type: 'result',
-        ok: false,
-        error: { name: e.name, message: e.message, stack: e.stack },
-      };
+  } finally {
+    // Phase 4 Task 9 review fix — if stdin closes (manager died / EOF) while
+    // RPCs are still in flight, reject them so awaiting cells fail fast
+    // instead of hanging until SIGKILL.
+    for (const [, p] of pendingRpc) {
+      p.reject(new Error('kernel: stdin closed with pending RPC'));
     }
-    send(res);
+    pendingRpc.clear();
   }
 }
 

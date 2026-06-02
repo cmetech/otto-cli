@@ -396,3 +396,42 @@ describe('coworker-scratchpad onDataLoad closure shape (Phase 3.1 Task 4)', () =
     assert.equal(calls[0].scratchpadName, 'p2');
   });
 });
+
+describe('scratchpad activator — onArtifactCreate closure (Phase 4 Task 12)', () => {
+  it('closure with null recorder does not throw', () => {
+    const getRec = (): null => null;
+    const drawer = {
+      kind: 'artifact' as const, slug: 'rca-1', artifact_kind: 'report',
+      uri: 'artifact://rca-1', primary_path: '/x/report.md', created_at: 't',
+    };
+    const onArtifactCreate = (d: typeof drawer, name: string): void => {
+      const rec = getRec();
+      if (!rec) return;
+    };
+    assert.doesNotThrow(() => onArtifactCreate(drawer, 'p1'));
+  });
+  it('closure with recorder calls recordArtifact with translated args', async () => {
+    const calls: Array<{ scratchpadName: string; slug: string; kind: string; uri: string }> = [];
+    const recorder = {
+      recordArtifact: async (args: { scratchpadName: string; slug: string; kind: string; uri: string; turnId: string }) => {
+        calls.push({ scratchpadName: args.scratchpadName, slug: args.slug, kind: args.kind, uri: args.uri });
+      },
+    };
+    const drawer = {
+      kind: 'artifact' as const, slug: 'rca-1', artifact_kind: 'report',
+      uri: 'artifact://rca-1', primary_path: '/x/report.md', created_at: 't',
+    };
+    const onArtifactCreate = (d: typeof drawer, name: string): void => {
+      void recorder.recordArtifact({
+        scratchpadName: name, slug: d.slug, kind: d.artifact_kind, uri: d.uri, turnId: '',
+      }).catch(() => {});
+    };
+    onArtifactCreate(drawer, 'p1');
+    await new Promise(r => setImmediate(r));
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0]!.scratchpadName, 'p1');
+    assert.equal(calls[0]!.slug, 'rca-1');
+    assert.equal(calls[0]!.kind, 'report');
+    assert.equal(calls[0]!.uri, 'artifact://rca-1');
+  });
+});

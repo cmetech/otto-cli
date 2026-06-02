@@ -1,0 +1,13 @@
+{
+  "id": "coworker-artifacts",
+  "name": "Co-worker Artifacts",
+  "version": "1.0.0",
+  "description": "Workspace-scoped artifact store: artifact://<slug> URIs, /artifacts slash, list_artifacts + open_artifact tools",
+  "tier": "bundled",
+  "requires": { "platform": ">=2.29.0" },
+  "provides": {
+    "tools": ["list_artifacts", "open_artifact"],
+    "commands": ["artifacts"],
+    "hooks": ["session_start", "session_shutdown"]
+  }
+}

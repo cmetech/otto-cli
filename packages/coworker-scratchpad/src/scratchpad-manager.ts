@@ -3,12 +3,13 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import type { CredentialInjector } from '@otto/coworker-vault';
 import type { AuditLog } from '@otto/coworker-utils';
+import type { ArtifactKind, ArtifactStore } from '@otto/coworker-artifacts';
 import { ChildProcessRuntime, type ChildProcessRuntimeOptions } from './child-process-runtime.js';
 import { acquireLock, releaseLock, type LockInfo } from './scratchpad-lock.js';
 import { CellArchive, type CellEntry } from './cell-archive.js';
 import { projectTree, validateLeafId } from './cell-tree.js';
 import { redactForJournal } from './kernel-bindings.js';
-import type { DataLoadDrawer, RecoveryNote, SnapshotResult } from './kernel-protocol.js';
+import type { ArtifactCreateDrawer, DataLoadDrawer, RecoveryNote, SnapshotResult } from './kernel-protocol.js';
 
 type RecoveryNoteEntry = RecoveryNote & { at: string };
 
@@ -55,6 +56,24 @@ export interface ScratchpadManagerOptions {
    * route loads to the correct room). Absent => data_load events are dropped.
    */
   onDataLoad?: (drawer: DataLoadDrawer, scratchpadName: string) => void;
+  /**
+   * Phase 4 Task 10: cross-pillar hook for the memory pillar's MemoryRecorder.
+   * Invoked once per `otto.artifact.create(...)` call inside a cell, with the
+   * kernel's `ArtifactCreateDrawer` and the scratchpad name that produced it.
+   * Closure-bound to the name at spawn time (same pattern as onDataLoad), so
+   * multi-scratchpad sessions route artifact events to the correct room.
+   * Absent => artifact_create events are dropped (memory stays silent).
+   */
+  onArtifactCreate?: (drawer: ArtifactCreateDrawer, scratchpadName: string) => void;
+  /**
+   * Phase 4 Task 10: lazy accessor for the ArtifactStore. The manager calls
+   * this each time it services an artifact RPC so the resolution sees the
+   * current extension activation state (callers can flip the store on/off as
+   * the artifacts extension activates/deactivates). When this returns null the
+   * RPC fails fast with "artifacts unavailable" — the kernel surfaces the
+   * error to the cell. Absent => RPC always fails (no artifact store wired).
+   */
+  getArtifactStore?: () => ArtifactStore | null;
 }
 
 export interface AttachOptions {
@@ -120,6 +139,8 @@ export class ScratchpadManager {
   protected readonly injector: CredentialInjector | undefined;
   protected readonly audit: AuditLog | undefined;
   protected readonly onDataLoad: ((drawer: DataLoadDrawer, scratchpadName: string) => void) | undefined;
+  protected readonly onArtifactCreate: ((drawer: ArtifactCreateDrawer, scratchpadName: string) => void) | undefined;
+  protected readonly getArtifactStore: (() => ArtifactStore | null) | undefined;
   protected disposed = false;
   private sweepTimer: NodeJS.Timeout | null = null;
 
@@ -135,6 +156,8 @@ export class ScratchpadManager {
     this.injector = options.injector;
     this.audit = options.audit;
     this.onDataLoad = options.onDataLoad;
+    this.onArtifactCreate = options.onArtifactCreate;
+    this.getArtifactStore = options.getArtifactStore;
     this.sweepTimer = setInterval(() => { void this.evictIdle(); }, options.sweepIntervalMs ?? DEFAULT_SWEEP_MS);
     this.sweepTimer.unref();
   }
@@ -421,11 +444,47 @@ export class ScratchpadManager {
     const onDataLoad = fanout
       ? (drawer: DataLoadDrawer): void => fanout(drawer, name)
       : this.runtimeOptions.onDataLoad;
+    // Phase 4 Task 10: mirror the onDataLoad fan-out pattern for artifact_create.
+    // Closure-binds the scratchpad name so multi-pad sessions tag drawers correctly.
+    const fanArtifactCreate = this.onArtifactCreate;
+    const onArtifactCreate = fanArtifactCreate
+      ? (drawer: ArtifactCreateDrawer): void => fanArtifactCreate(drawer, name)
+      : this.runtimeOptions.onArtifactCreate;
+    // Phase 4 Task 10: parent-side RPC handlers backed by the ArtifactStore.
+    // Both handlers look up the store lazily through getArtifactStore() so the
+    // host can toggle availability without re-spawning the kernel. When the
+    // store is unavailable we throw — the runtime converts the throw into an
+    // `ok:false` response frame so the awaiting cell rejects cleanly.
+    const getStore = this.getArtifactStore;
+    const handleArtifactCreate = getStore
+      ? async (req: { kind: string; name: string }): Promise<{ slug: string; uri: string; primary_path: string }> => {
+          const store = getStore();
+          if (!store) throw new Error('artifacts unavailable');
+          const handle = await store.create(req.kind as ArtifactKind, req.name);
+          return {
+            slug: handle.slug,
+            uri: handle.uri,
+            primary_path: handle.primaryPath,
+          };
+        }
+      : this.runtimeOptions.handleArtifactCreate;
+    const handleArtifactUpdate = getStore
+      ? async (req: { slug: string; files: Array<{ path: string; content: string }> }): Promise<{ files_touched: string[] }> => {
+          const store = getStore();
+          if (!store) throw new Error('artifacts unavailable');
+          const handle = await store.get(req.slug);
+          if (!handle) throw new Error(`unknown artifact: ${req.slug}`);
+          return await store.update(handle, req.files);
+        }
+      : this.runtimeOptions.handleArtifactUpdate;
     const rt = new ChildProcessRuntime({
       workspace: this.workspace,
       scratchpadDir: this.dirFor(name),
       ...this.runtimeOptions,
       onDataLoad,
+      onArtifactCreate,
+      handleArtifactCreate,
+      handleArtifactUpdate,
       // Phase 2 Task 13: env-injection wiring. Injector + bindings are read
       // fresh on every spawn so cold-restarts and re-attaches see the latest
       // bindings list. scratchpadName + sessionId stamp the injector's audit

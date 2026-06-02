@@ -51,6 +51,19 @@ export class MemoryRecorder {
     });
   }
 
+  async recordArtifact(args: {
+    scratchpadName: string; slug: string; kind: string; uri: string;
+    turnId: string;
+  }): Promise<Drawer> {
+    const content = JSON.stringify({
+      slug: args.slug, kind: args.kind, uri: args.uri,
+    });
+    return this.writeDrawer({
+      wing: this.opts.writeWing, room: args.scratchpadName, kind: 'artifact',
+      content, metadata: { turn_id: args.turnId, scratchpad: args.scratchpadName },
+    });
+  }
+
   private async writeDrawer(input: Omit<Drawer, 'id' | 'created_at' | 'redacted'>): Promise<Drawer> {
     const hits = this.opts.scanner.scan(input.content);
     let content = input.content;

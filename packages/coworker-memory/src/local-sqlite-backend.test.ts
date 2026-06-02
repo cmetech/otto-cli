@@ -16,7 +16,7 @@ describe('LocalSqliteBackend', () => {
     const st = await be.status();
     assert.equal(st.ready, true);
     assert.equal(st.drawer_count, 0);
-    assert.equal(st.schema_version, 1);
+    assert.equal(st.schema_version, 2);
     await be.close();
   });
   it('retain + recall round-trip; result includes snippet with <mark>', async () => {
@@ -85,6 +85,26 @@ describe('LocalSqliteBackend', () => {
     assert.equal(d.redacted, true);
     const r = await be.recall({ query: 'REDACTED' });
     assert.equal(r[0]!.drawer.redacted, true);
+    await be.close();
+  });
+});
+
+describe('Local backend migrations (Phase 4 Task 8)', () => {
+  it('migration 002 lets us insert kind:artifact', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'be-mig-'));
+    const be = new LocalSqliteBackend({ dbPath: join(dir, 'layer-b.db') });
+    await be.open();
+    const st = await be.status();
+    assert.equal(st.schema_version, 2);
+    const drawer = await be.retain({
+      wing: 'g', room: 'r', kind: 'artifact',
+      content: JSON.stringify({ slug: 'rca-1', kind: 'report', uri: 'artifact://rca-1' }),
+      metadata: { scratchpad: 'p1' }, redacted: false,
+    });
+    assert.equal(drawer.kind, 'artifact');
+    const r = await be.recall({ query: 'rca', kind: 'artifact' });
+    assert.equal(r.length, 1);
+    assert.equal(r[0]!.drawer.kind, 'artifact');
     await be.close();
   });
 });

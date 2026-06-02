@@ -3,8 +3,26 @@ import process from 'node:process';
 import { writeNdjson, readNdjson } from '@otto/coworker-utils';
 import type { CredentialInjector } from '@otto/coworker-vault';
 import { filterEnv, kernelExecArgv, resolveKernelEntry } from './kernel-spawn.js';
-import { isDataLoadEvent, isProgressEvent, isStartupErrorEvent, isSnapshotResult } from './kernel-protocol.js';
-import type { DataLoadDrawer, KernelFrame, RecoveryNote, SnapshotResult } from './kernel-protocol.js';
+import {
+  isDataLoadEvent,
+  isProgressEvent,
+  isStartupErrorEvent,
+  isSnapshotResult,
+  isArtifactCreateEvent,
+  isArtifactCreateRequest,
+  isArtifactUpdateRequest,
+} from './kernel-protocol.js';
+import type {
+  ArtifactCreateDrawer,
+  ArtifactCreateRequest,
+  ArtifactCreateResponse,
+  ArtifactUpdateRequest,
+  ArtifactUpdateResponse,
+  DataLoadDrawer,
+  KernelFrame,
+  RecoveryNote,
+  SnapshotResult,
+} from './kernel-protocol.js';
 
 export interface CellResult {
   value: unknown;
@@ -38,6 +56,28 @@ export interface ChildProcessRuntimeOptions {
    * Empty string is a valid no-session value.
    */
   sessionId?: string;
+  /**
+   * Phase 4 Task 10: Layer-B fan-out for artifact_create events. The kernel
+   * emits one of these after every successful otto.artifact.create RPC; the
+   * runtime forwards the drawer to this callback so the manager can record it
+   * into memory. Absent => artifact_create events are dropped.
+   */
+  onArtifactCreate?: (drawer: ArtifactCreateDrawer) => void;
+  /**
+   * Phase 4 Task 10: parent-side handler for `artifact_create` RPC requests.
+   * The runtime calls this when it sees an `{type:'request', request:'artifact_create'}`
+   * frame on the child's stdout and writes the resolved response (or an error
+   * frame) back to the child's stdin. If absent, the request is rejected with
+   * "artifacts unavailable" so the cell fails fast instead of hanging.
+   */
+  handleArtifactCreate?: (req: { kind: string; name: string }) =>
+    Promise<{ slug: string; uri: string; primary_path: string }>;
+  /**
+   * Phase 4 Task 10: parent-side handler for `artifact_update` RPC requests.
+   * Mirror of handleArtifactCreate for the update path.
+   */
+  handleArtifactUpdate?: (req: { slug: string; files: Array<{ path: string; content: string }> }) =>
+    Promise<{ files_touched: string[] }>;
 }
 
 interface Pending {
@@ -152,6 +192,7 @@ export class ChildProcessRuntime {
             this.rejectReady(err);
           }
           else if (isDataLoadEvent(frame)) this.options.onDataLoad?.(frame.drawer);
+          else if (isArtifactCreateEvent(frame)) this.options.onArtifactCreate?.(frame.drawer);
           else if (isProgressEvent(frame)) this.resetInactivity();
           continue;
         }
@@ -163,6 +204,20 @@ export class ChildProcessRuntime {
           }
           continue;
         }
+        // Phase 4 Task 10: artifact RPC requests originate from the kernel and
+        // are serviced by the manager via handleArtifactCreate/Update. Handle
+        // before the result-fallthrough — these frames carry a string `id`
+        // (kernel mints `art-<pid>-<seq>`) and would otherwise be miskeyed
+        // against the numeric `pending` map.
+        if (isArtifactCreateRequest(frame)) {
+          void this.handleArtifactCreateRpc(frame);
+          continue;
+        }
+        if (isArtifactUpdateRequest(frame)) {
+          void this.handleArtifactUpdateRpc(frame);
+          continue;
+        }
+        if (frame.type !== 'result') continue; // defensive: unknown frame shape
         const p = this.pending.get(frame.id);
         if (!p) continue;
         clearTimeout(p.totalTimer);
@@ -299,6 +354,83 @@ export class ChildProcessRuntime {
       return { id, type: 'snapshot_result', ok: false, error: { name: e.name, message: e.message } };
     }
     return result;
+  }
+
+  /**
+   * Phase 4 Task 10: service an `artifact_create` RPC request from the kernel.
+   * Calls the manager-supplied handler (if any), serializes the result into a
+   * `{type:'response', request:'artifact_create'}` frame, and writes it back
+   * to the child's stdin. Errors are surfaced to the kernel as `ok:false`
+   * frames so the awaiting cell rejects cleanly rather than hanging.
+   */
+  private async handleArtifactCreateRpc(req: ArtifactCreateRequest): Promise<void> {
+    const child = this.child;
+    if (!child) return;
+    let resp: ArtifactCreateResponse;
+    try {
+      const handler = this.options.handleArtifactCreate;
+      if (!handler) throw new Error('artifacts unavailable');
+      const result = await handler({ kind: req.kind, name: req.name });
+      resp = {
+        type: 'response',
+        request: 'artifact_create',
+        id: req.id,
+        ok: true,
+        slug: result.slug,
+        uri: result.uri,
+        primary_path: result.primary_path,
+      };
+    } catch (err) {
+      const e = err as Error;
+      resp = {
+        type: 'response',
+        request: 'artifact_create',
+        id: req.id,
+        ok: false,
+        error: e.message,
+      };
+    }
+    try {
+      await writeNdjson(child.stdin, resp);
+    } catch {
+      // child died between request and response — exit handler fails pending cells.
+    }
+  }
+
+  /**
+   * Phase 4 Task 10: service an `artifact_update` RPC request. Mirror of
+   * handleArtifactCreateRpc for the update path.
+   */
+  private async handleArtifactUpdateRpc(req: ArtifactUpdateRequest): Promise<void> {
+    const child = this.child;
+    if (!child) return;
+    let resp: ArtifactUpdateResponse;
+    try {
+      const handler = this.options.handleArtifactUpdate;
+      if (!handler) throw new Error('artifacts unavailable');
+      const result = await handler({ slug: req.slug, files: req.files });
+      resp = {
+        type: 'response',
+        request: 'artifact_update',
+        id: req.id,
+        ok: true,
+        files_touched: result.files_touched,
+      };
+    } catch (err) {
+      const e = err as Error;
+      resp = {
+        type: 'response',
+        request: 'artifact_update',
+        id: req.id,
+        ok: false,
+        error: e.message,
+      };
+    }
+    try {
+      await writeNdjson(child.stdin, resp);
+    } catch {
+      // child died between request and response — exit handler fails pending cells.
+    }
   }
 
   private rejectActive(id: number | null, message: string): void {

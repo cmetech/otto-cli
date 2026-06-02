@@ -8,7 +8,8 @@ import process from 'node:process';
 import { spawn } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { ScratchpadManager, ForkKernelHangError } from './scratchpad-manager.js';
-import type { DataLoadDrawer } from './kernel-protocol.js';
+import type { ArtifactCreateDrawer, DataLoadDrawer } from './kernel-protocol.js';
+import { ArtifactStore } from '@otto/coworker-artifacts';
 
 let workspace: string;
 let root: string;
@@ -1158,5 +1159,185 @@ describe('ScratchpadManager — onDataLoad fan-out (Phase 3 Task 19)', () => {
     assert.ok(betaEv, 'beta event present');
     assert.equal(alphaEv!.uri, u1);
     assert.equal(betaEv!.uri, u2);
+  });
+});
+
+describe('ScratchpadManager — onArtifactCreate fan-out + artifact RPC (Phase 4 Task 10)', () => {
+  // Cross-pillar seam: the kernel calls otto.artifact.create(...) which fires
+  // an RPC the manager services via ArtifactStore, and afterwards emits an
+  // artifact_create event the manager bridges through onArtifactCreate. This
+  // suite covers both the RPC plumbing (handleArtifactCreate/Update) and the
+  // event fan-out path (onArtifactCreate).
+  let workspace: string;
+  let root: string;
+  let mgr: ScratchpadManager;
+  const delay = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+  beforeEach(async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'sp-artifact-ws-'));
+    await mkdir(join(workspace, '.otto', 'inputs'), { recursive: true });
+    root = await mkdtemp(join(tmpdir(), 'sp-artifact-root-'));
+  });
+  afterEach(async () => {
+    await mgr?.disposeAll();
+    await rm(workspace, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('forwards artifact_create drawers to onArtifactCreate with the scratchpad name', async () => {
+    const store = new ArtifactStore({ workspaceDir: workspace });
+    const events: Array<{ drawer: ArtifactCreateDrawer; scratchpadName: string }> = [];
+    mgr = new ScratchpadManager({
+      workspace,
+      root,
+      sessionId: 'sess-art',
+      sweepIntervalMs: 1_000_000,
+      onArtifactCreate: (drawer, scratchpadName) => events.push({ drawer, scratchpadName }),
+      getArtifactStore: () => store,
+    });
+
+    await mgr.runCell(
+      'pad-a',
+      `const h = await otto.artifact.create('report', 'demo'); return h.slug;`,
+    );
+
+    // artifact_create arrives as a kernel event AFTER the RPC roundtrip; allow drain.
+    await delay(50);
+
+    assert.equal(events.length, 1, 'exactly one artifact_create event expected');
+    const ev = events[0]!;
+    assert.equal(ev.scratchpadName, 'pad-a', 'scratchpadName closure-bound at spawn time');
+    assert.equal(ev.drawer.kind, 'artifact');
+    assert.equal(ev.drawer.artifact_kind, 'report');
+    assert.equal(typeof ev.drawer.slug, 'string');
+    assert.ok(ev.drawer.uri.startsWith('artifact://'));
+    assert.ok(ev.drawer.primary_path.endsWith('report.md'));
+  });
+
+  it('routes artifact creations from different scratchpads to the correct name', async () => {
+    const store = new ArtifactStore({ workspaceDir: workspace });
+    const events: Array<{ name: string; slug: string }> = [];
+    mgr = new ScratchpadManager({
+      workspace,
+      root,
+      sessionId: 'sess-art-2',
+      sweepIntervalMs: 1_000_000,
+      onArtifactCreate: (drawer, scratchpadName) =>
+        events.push({ name: scratchpadName, slug: drawer.slug }),
+      getArtifactStore: () => store,
+    });
+
+    await mgr.runCell('alpha', `await otto.artifact.create('report', 'one');`);
+    await mgr.runCell('beta', `await otto.artifact.create('report', 'two');`);
+    await delay(50);
+
+    assert.equal(events.length, 2);
+    const alphaEv = events.find((e) => e.name === 'alpha');
+    const betaEv = events.find((e) => e.name === 'beta');
+    assert.ok(alphaEv, 'alpha event present');
+    assert.ok(betaEv, 'beta event present');
+    assert.ok(alphaEv!.slug.startsWith('one'));
+    assert.ok(betaEv!.slug.startsWith('two'));
+  });
+
+  it('handleArtifactCreate calls store.create and returns slug+uri+primary_path', async () => {
+    const store = new ArtifactStore({ workspaceDir: workspace });
+    mgr = new ScratchpadManager({
+      workspace,
+      root,
+      sessionId: 'sess-art-3',
+      sweepIntervalMs: 1_000_000,
+      getArtifactStore: () => store,
+    });
+
+    const { value } = await mgr.runCell(
+      'pad-rpc',
+      `const h = await otto.artifact.create('report', 'rpc-demo'); return { slug: h.slug, uri: h.uri, primary: h.primaryPath };`,
+    );
+    const res = value as { slug: string; uri: string; primary: string };
+    assert.ok(res.slug.startsWith('rpc-demo'));
+    assert.equal(res.uri, `artifact://${res.slug}`);
+    assert.ok(res.primary.endsWith('report.md'));
+    // And the store actually persisted it.
+    const handle = await store.get(res.slug);
+    assert.ok(handle, 'artifact persisted to store');
+  });
+
+  it('handleArtifactCreate rejects with "artifacts unavailable" if getArtifactStore returns null', async () => {
+    mgr = new ScratchpadManager({
+      workspace,
+      root,
+      sessionId: 'sess-art-4',
+      sweepIntervalMs: 1_000_000,
+      getArtifactStore: () => null,
+    });
+
+    await assert.rejects(
+      () => mgr.runCell('pad-null', `await otto.artifact.create('report', 'nope');`),
+      /artifacts unavailable/,
+    );
+  });
+
+  it('handleArtifactCreate rejects with "artifacts unavailable" if no getArtifactStore wired', async () => {
+    mgr = new ScratchpadManager({
+      workspace,
+      root,
+      sessionId: 'sess-art-5',
+      sweepIntervalMs: 1_000_000,
+    });
+
+    await assert.rejects(
+      () => mgr.runCell('pad-noopt', `await otto.artifact.create('report', 'nope');`),
+      /artifacts unavailable/,
+    );
+  });
+
+  it('handleArtifactUpdate writes files via store.update and returns files_touched', async () => {
+    const store = new ArtifactStore({ workspaceDir: workspace });
+    mgr = new ScratchpadManager({
+      workspace,
+      root,
+      sessionId: 'sess-art-6',
+      sweepIntervalMs: 1_000_000,
+      getArtifactStore: () => store,
+    });
+
+    const { value } = await mgr.runCell(
+      'pad-upd',
+      `const h = await otto.artifact.create('report', 'updates');
+       const r = await h.update([{ path: 'report.md', content: '# hi' }]);
+       return r.files_touched;`,
+    );
+    const touched = value as string[];
+    assert.deepEqual(touched, ['report.md']);
+  });
+
+  it('handleArtifactUpdate rejects when the underlying store cannot find the slug', async () => {
+    // Drive a unit-level test against the spawnRuntime closure: spy a store that
+    // returns null from get() so the handler throws "unknown artifact".
+    const fakeStore = {
+      create: async () => ({ slug: 'dummy', uri: 'artifact://dummy', primaryPath: '/tmp/x' }),
+      get: async () => null,
+      update: async () => ({ files_touched: [] }),
+    } as unknown as ArtifactStore;
+    mgr = new ScratchpadManager({
+      workspace,
+      root,
+      sessionId: 'sess-art-7',
+      sweepIntervalMs: 1_000_000,
+      getArtifactStore: () => fakeStore,
+    });
+
+    // Force the spawnRuntime path to expose its handlers via attaching one
+    // runtime and then invoking the wired handler directly through the
+    // ChildProcessRuntime options. We grab the runtime, then build a fake
+    // request frame and round-trip it through the options object.
+    const rt = await mgr.getOrAttach('pad-bad');
+    const opts = (rt as unknown as { options: { handleArtifactUpdate?: (r: { slug: string; files: Array<{ path: string; content: string }> }) => Promise<{ files_touched: string[] }> } }).options;
+    assert.ok(opts.handleArtifactUpdate, 'handleArtifactUpdate wired');
+    await assert.rejects(
+      () => opts.handleArtifactUpdate!({ slug: 'does-not-exist', files: [{ path: 'x.md', content: 'y' }] }),
+      /unknown artifact: does-not-exist/,
+    );
   });
 });

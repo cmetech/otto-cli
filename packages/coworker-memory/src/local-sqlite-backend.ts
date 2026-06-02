@@ -38,12 +38,23 @@ export class LocalSqliteBackend implements MemoryBackend {
   }
 
   async open(): Promise<void> {
+    if (this.db) return;
     mkdirSync(dirname(this.path), { recursive: true, mode: 0o700 });
     try {
       this.db = new Database(this.path);
       this.db.pragma(`busy_timeout = ${this.busyTimeoutMs}`);
-      const initSql = readFileSync(join(migrationDir(), '001-init.sql'), 'utf8');
-      this.db.exec(initSql);
+      const dir = migrationDir();
+      const migrations = [
+        { version: 1, file: '001-init.sql' },
+        { version: 2, file: '002-artifact-kind.sql' },
+      ];
+      const userVersion = this.db.pragma('user_version', { simple: true }) as number;
+      for (const m of migrations) {
+        if (userVersion < m.version) {
+          const sql = readFileSync(join(dir, m.file), 'utf8');
+          this.db.exec(sql);
+        }
+      }
     } catch (err) {
       throw new BackendUnavailable(`open failed: ${(err as Error).message}`);
     }

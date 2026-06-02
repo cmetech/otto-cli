@@ -1,7 +1,7 @@
 # Otto Co-worker — Roadmap and Out-of-Scope Reference
 
 **Source of truth:** `docs/superpowers/specs/2026-05-30-otto-coworker-design.md` (§ 8 phasing, § 9 out-of-scope).
-**Last updated:** 2026-06-02 (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 3.1 complete).
+**Last updated:** 2026-06-02 (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 3.1 + Phase 4 complete).
 
 This document summarizes every phase of the Otto co-worker initiative — what each phase delivers, what's complete, and what each currently-out-of-scope item would bring if implemented later.
 
@@ -154,20 +154,27 @@ After Phase 6, a fresh `npm install otto` should drop a user into this scenario 
 
 ---
 
-### Phase 4 — otto-artifacts (week 7)
+### Phase 4 — otto-artifacts — COMPLETE
 
-**Pillar:** generated outputs as durable, first-class objects.
+**Branch:** `feat/coworker-phase-4-artifacts` (merged to main as commit `<TBD merge sha>` on 2026-06-DD).
+**Spec:** `docs/superpowers/specs/2026-06-02-coworker-phase-4-artifacts-design.md`.
+**Plan:** `docs/superpowers/plans/2026-06-02-coworker-phase-4-artifacts.md`.
 
-**What it ships:**
-- `@otto/coworker-artifacts` graduates from stub.
-- `artifact://<id>` URI resolver — every artifact gets a stable URL.
-- Output-spill threshold (large cell outputs auto-spill from inline → artifact store).
-- Two-turn provenance: the artifact records which user prompt + which agent turn produced it; later edits chain.
-- Markdown is the v1 format (HTML / PDF are out-of-scope for v1; see below).
+Graduated `@otto/coworker-artifacts` from stub to workspace-scoped store. Ships:
+- Markdown-only `report` artifact kind.
+- Atomic `ArtifactStore` (slug derivation + collision suffix; tmp+rename writes; 0o700/0o600 modes).
+- Pure-function `resolveArtifactUri()` and `renderReadme()` helpers.
+- Append-only `provenance.json` with per-turn entries.
+- Production activator at first commit — `/artifacts list|show|remove`, `list_artifacts` + `open_artifact` LLM tools, `getArtifactStore()` cross-pillar getter.
+- Kernel-side `otto.artifact.create()` + `spillIfLarge()` bindings (RPC over NDJSON stdio).
+- Scratchpad manager `onArtifactCreate` fan-out → memory `recordArtifact` drawer.
+- Memory migration 002: `'artifact'` added to `DRAWER_KINDS` (CHECK constraint table rebuild).
 
-**Milestone:** "Draft the RCA from yesterday's cells" produces a markdown artifact at `artifact://abc123` with full provenance; user can `cat artifact://abc123` later.
+Locked decisions per spec §3: workbook + dataset kinds deferred; URI resolver is pure function; activator ships with package; spill is explicit (10 KB default threshold); provenance is append-only.
 
-**Dependencies:** Phase 1 (scratchpad cell output is the primary input), Phase 3 (memory needs to reference artifacts by URI).
+Live TUI smoke walkthrough is pending (`2026-06-02-phase-4-artifacts-smoke.md` PENDING placeholder); automated integration tests at `packages/coworker-artifacts/src/artifacts-integration.test.ts` prove the wiring at the API + disk layer.
+
+> **Note (2026-06-DD):** Phase 5 (Layer C entity graph + ACC + Cerebellum + Consolidator + daily digest) is unblocked — depends on Phase 3 + Phase 4 per roadmap. Phase 4 closes one of the two prereqs.
 
 ---
 

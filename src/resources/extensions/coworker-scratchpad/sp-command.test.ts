@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { registerSpCommand, type SpDeps } from './sp-command.js';
+import { registerSpCommand, createCurrentScratchpadProvider, type SpDeps } from './sp-command.js';
 import { ScratchpadBusyError } from '@otto/coworker-scratchpad';
 
 interface StubEntry {
@@ -806,6 +806,31 @@ describe('sp-command dispatch (stubbed manager)', () => {
       };
       await pi.commands.get('sp')!.handler('fork p1 p2', ctx);
       assert.deepEqual(readMetaFromDisk(root, 'p2').bindings, ['jira:prod']);
+    });
+  });
+
+  describe('/sp — currentScratchpadName accessor (Phase 3)', () => {
+    // Phase 3 Task 18: memory's MemoryRecorder needs to know which scratchpad
+    // is currently attached for the given session to derive the default Room.
+    // The accessor reads the Phase 1 per-session sidecar; returns null when
+    // nothing is attached or any IO error occurs.
+    it('returns name when attached', async () => {
+      const { pi, ctx } = wire();
+      const getCurrent = createCurrentScratchpadProvider({ scratchpadsRoot: root });
+      // /sp new writes the session sidecar (see sp-command.ts:233).
+      await pi.commands.get('sp')!.handler('new p1', ctx);
+      assert.equal(getCurrent('sess-1'), 'p1');
+    });
+
+    it('returns null when no scratchpad attached', async () => {
+      // No /sp new or attach was performed -> sidecar file does not exist.
+      const getCurrent = createCurrentScratchpadProvider({ scratchpadsRoot: root });
+      assert.equal(getCurrent('sess-1'), null);
+    });
+
+    it('returns null for empty sessionId', async () => {
+      const getCurrent = createCurrentScratchpadProvider({ scratchpadsRoot: root });
+      assert.equal(getCurrent(''), null);
     });
   });
 });

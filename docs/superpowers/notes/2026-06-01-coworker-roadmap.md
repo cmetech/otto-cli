@@ -1,7 +1,7 @@
 # Otto Co-worker — Roadmap and Out-of-Scope Reference
 
 **Source of truth:** `docs/superpowers/specs/2026-05-30-otto-coworker-design.md` (§ 8 phasing, § 9 out-of-scope).
-**Last updated:** 2026-06-01 (Phase 0 + Phase 1 complete).
+**Last updated:** 2026-06-02 (Phase 0 + Phase 1 + Phase 2 + Phase 3 complete).
 
 This document summarizes every phase of the Otto co-worker initiative — what each phase delivers, what's complete, and what each currently-out-of-scope item would bring if implemented later.
 
@@ -109,7 +109,7 @@ After Phase 6, a fresh `npm install otto` should drop a user into this scenario 
 
 ---
 
-### Phase 3 — otto-memory A+B + backend interface (weeks 5–6)
+### Phase 3 — otto-memory A+B + backend interface (weeks 5–6) — COMPLETE
 
 **Pillar:** read-path memory (verbatim recall).
 
@@ -123,6 +123,8 @@ After Phase 6, a fresh `npm install otto` should drop a user into this scenario 
 - `noEmbeddings: true` (Phase 3 is exact-match recall only; embeddings deferred — see out-of-scope).
 
 **Milestone:** Day-2 verbatim recall — paste a long incident note on Monday, ask Otto on Tuesday "what did the on-call say about the load balancer?" → exact words come back.
+
+**Note (2026-06-02):** Phase 3 ships Layers A + B with the `LocalSqliteBackend` (FTS5/BM25). Layer C entity graph, ACC, Cerebellum, Consolidator, weekly digest, vector embeddings, and `HostedBackend` remain Phase 5. Cross-pillar: scratchpad's `FileCollector` loads land as `kind:'file_load'` drawers; scratchpad exposes `currentScratchpadName` so memory rooms align with active investigations. **Task 20 (auto-retain user-turn wiring) and the production extension activator hop for Task 19 are deferred to Phase 3.1** because the `coworker-memory` extension lacks a production activator (same gap as Phase 2 vault). The seam exists at `pi-coding-agent`'s `before_agent_start` + `agent_start` events; the recorder is complete and unit-tested at the API level.
 
 **Dependencies:** Phase 0 (memory package shell, types).
 

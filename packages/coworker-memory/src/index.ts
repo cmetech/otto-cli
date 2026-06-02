@@ -1,1 +1,12 @@
-export {};
+export * from './types.js';
+export * from './errors.js';
+export * from './memory-backend.js';
+export * from './workspace-id.js';
+export * from './scope-resolver.js';
+export * from './paste-detector.js';
+export * from './layer-a-store.js';
+export * from './local-sqlite-backend.js';
+export * from './memory-recorder.js';
+export * from './recall-formatter.js';
+export * from './context-injection.js';
+export * from './persona-seed.js';

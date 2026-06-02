@@ -6,7 +6,9 @@ import { tmpdir, hostname } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
 import { spawn } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { ScratchpadManager, ForkKernelHangError } from './scratchpad-manager.js';
+import type { DataLoadDrawer } from './kernel-protocol.js';
 
 let workspace: string;
 let root: string;
@@ -1070,5 +1072,91 @@ describe('ScratchpadManager — bindings (Phase 2)', () => {
     };
     assert.equal(migrated.schema_version, 4);
     assert.deepEqual(migrated.bindings, []);
+  });
+});
+
+describe('ScratchpadManager — onDataLoad fan-out (Phase 3 Task 19)', () => {
+  // Cross-pillar seam: the kernel emits a data_load event for every
+  // otto.collectors.open(uri).load() call. ChildProcessRuntime surfaces it via
+  // onDataLoad (per-spawn). The manager bridges that callback so callers see
+  // {drawer, scratchpadName} — the shape MemoryRecorder.recordFileLoad needs.
+  let workspace: string;
+  let root: string;
+  let mgr: ScratchpadManager;
+  const delay = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+  beforeEach(async () => {
+    workspace = await mkdtemp(join(tmpdir(), 'sp-onload-ws-'));
+    await mkdir(join(workspace, '.otto', 'inputs'), { recursive: true });
+    root = await mkdtemp(join(tmpdir(), 'sp-onload-root-'));
+  });
+  afterEach(async () => {
+    await mgr?.disposeAll();
+    await rm(workspace, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('forwards data_load drawers to onDataLoad with the scratchpad name', async () => {
+    const inputs = join(workspace, '.otto', 'inputs');
+    await writeFile(join(inputs, 'a.csv'), 'x,y\n1,2\n');
+    const uri = pathToFileURL(join(inputs, 'a.csv')).href;
+
+    const events: Array<{ drawer: DataLoadDrawer; scratchpadName: string }> = [];
+    mgr = new ScratchpadManager({
+      workspace,
+      root,
+      sessionId: 'sess-onload',
+      sweepIntervalMs: 1_000_000,
+      onDataLoad: (drawer, scratchpadName) => events.push({ drawer, scratchpadName }),
+    });
+
+    await mgr.runCell(
+      'pad-x',
+      `return await (await otto.collectors.open(${JSON.stringify(uri)})).load();`,
+    );
+
+    // data_load arrives as a kernel event; allow the IPC loop to drain.
+    await delay(50);
+
+    assert.equal(events.length, 1, 'exactly one data_load event expected');
+    const ev = events[0]!;
+    assert.equal(ev.scratchpadName, 'pad-x', 'scratchpadName closure-bound at spawn time');
+    assert.equal(ev.drawer.kind, 'data_load');
+    assert.equal(ev.drawer.collector, 'file');
+    assert.equal(ev.drawer.uri, uri);
+    assert.equal(ev.drawer.bytes, 8);
+    assert.equal(ev.drawer.schema, null);
+    // rows_loaded is null for a buffer/string payload (not an array).
+    assert.equal(ev.drawer.rows_loaded, null);
+  });
+
+  it('routes loads from different scratchpads to the correct name', async () => {
+    const inputs = join(workspace, '.otto', 'inputs');
+    await writeFile(join(inputs, 'one.csv'), 'a,b\n');
+    await writeFile(join(inputs, 'two.csv'), 'c,d\n');
+    const u1 = pathToFileURL(join(inputs, 'one.csv')).href;
+    const u2 = pathToFileURL(join(inputs, 'two.csv')).href;
+
+    const events: Array<{ name: string; uri: string }> = [];
+    mgr = new ScratchpadManager({
+      workspace,
+      root,
+      sessionId: 'sess-onload-2',
+      sweepIntervalMs: 1_000_000,
+      onDataLoad: (drawer, scratchpadName) => events.push({ name: scratchpadName, uri: drawer.uri }),
+    });
+
+    await mgr.runCell('alpha', `await (await otto.collectors.open(${JSON.stringify(u1)})).load();`);
+    await mgr.runCell('beta', `await (await otto.collectors.open(${JSON.stringify(u2)})).load();`);
+    await delay(50);
+
+    assert.equal(events.length, 2);
+    // Order isn't guaranteed across kernels but each event's name must match its URI.
+    const alphaEv = events.find((e) => e.name === 'alpha');
+    const betaEv = events.find((e) => e.name === 'beta');
+    assert.ok(alphaEv, 'alpha event present');
+    assert.ok(betaEv, 'beta event present');
+    assert.equal(alphaEv!.uri, u1);
+    assert.equal(betaEv!.uri, u2);
   });
 });

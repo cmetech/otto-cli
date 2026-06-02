@@ -16,9 +16,20 @@
       "import": "./dist/index.js"
     }
   },
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "build:publish": "tsc -p tsconfig.publish.json"
+  "dependencies": {
+    "@otto/coworker-utils": "*",
+    "better-sqlite3": "^11.7.0",
+    "uuid": "^11.0.0",
+    "yaml": "^2.8.2"
   },
-  "files": ["dist"]
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node -e \"const fs=require('fs');const path=require('path');const src='src/migrations';const dst='dist/migrations';fs.mkdirSync(dst,{recursive:true});for(const f of fs.readdirSync(src))if(f.endsWith('.sql'))fs.copyFileSync(path.join(src,f),path.join(dst,f));\"",
+    "build:publish": "tsc -p tsconfig.publish.json && node -e \"const fs=require('fs');const path=require('path');const src='src/migrations';const dst='dist/migrations';fs.mkdirSync(dst,{recursive:true});for(const f of fs.readdirSync(src))if(f.endsWith('.sql'))fs.copyFileSync(path.join(src,f),path.join(dst,f));\""
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13"
+  }
 }

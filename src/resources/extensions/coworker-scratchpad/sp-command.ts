@@ -6,7 +6,7 @@ import type { ScratchpadManager, RecoveryNote } from '@otto/coworker-scratchpad'
 import { LocalDataVault } from '@otto/coworker-vault';
 import { validateName, readCellsJsonl, readPersistedLeaf } from './helpers.js';
 import { projectTree, formatTreeText } from '@otto/coworker-scratchpad';
-import { sessionSidecarPath, writeSessionSidecar, deleteSessionSidecar } from './session-sidecar.js';
+import { sessionSidecarPath, writeSessionSidecar, deleteSessionSidecar, readSessionSidecar } from './session-sidecar.js';
 import { detectWorkspaceRoot } from './workspace-root.js';
 import { workspaceHash, workspacePointerPath, writeWorkspacePointer, type WorkspacePointer } from './workspace-pointer.js';
 import { showRecoveryNotesBanner, showDivergenceBanner, formatNoteLine } from './attach-banners.js';
@@ -568,4 +568,35 @@ export function registerSpCommand(pi: ExtensionAPI, deps: SpDeps): void {
       }
     },
   });
+}
+
+/**
+ * Phase 3 Task 18: exposes a session→scratchpad-name lookup for cross-pillar
+ * consumers (memory's MemoryRecorder uses this to derive the default Room).
+ *
+ * Reads the per-session sidecar written by /sp new and /sp attach. Returns
+ * null when no scratchpad is currently attached for `sessionId`, when
+ * `sessionId` is empty/undefined, or on any IO/parse error — callers must
+ * tolerate null (the caller-side fallback is "use workspace as Room").
+ *
+ * Decoupled from `SpDeps` so consumers outside the slash-command lifecycle
+ * (e.g. recorders constructed at extension activation) can call it without
+ * holding a reference to the scratchpad manager.
+ *
+ * Note on the sidecar reader's actual signature: `readSessionSidecar(path)`
+ * takes a fully-resolved path, not `{scratchpadsRoot, sessionId}`. We compose
+ * with `sessionSidecarPath(rootDir, sessionId)` to bridge.
+ */
+export function createCurrentScratchpadProvider(opts: {
+  scratchpadsRoot: string;
+}): (sessionId: string) => string | null {
+  return (sessionId: string) => {
+    if (!sessionId) return null;
+    try {
+      const sidecar = readSessionSidecar(sessionSidecarPath(opts.scratchpadsRoot, sessionId));
+      return sidecar?.current_name ?? null;
+    } catch {
+      return null;
+    }
+  };
 }

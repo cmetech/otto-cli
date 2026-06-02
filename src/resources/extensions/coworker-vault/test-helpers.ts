@@ -4,6 +4,8 @@
 // (eventually) cross-extension integration tests. Captures every command +
 // tool registration + event handler so tests can fire lifecycle events and
 // inspect ui.notify calls.
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import type {
   ExtensionAPI, ExtensionContext, ExtensionCommandContext, RegisteredCommand,
   SessionStartEvent, SessionShutdownEvent, BeforeAgentStartEvent, AgentStartEvent,
@@ -41,11 +43,11 @@ export function makeFakeApi(): FakeApi {
   } as unknown as ExtensionContext['ui'];
 
   const ctx = {
-    cwd: '/tmp',
+    cwd: tmpdir(),
     hasUI: true,
     ui,
     sessionManager: {
-      getSessionFile: (): string | undefined => '/tmp/session.jsonl',
+      getSessionFile: (): string | undefined => join(tmpdir(), 'session.jsonl'),
     },
     isIdle: (): boolean => true,
     abort: (): void => {},

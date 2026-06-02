@@ -280,3 +280,119 @@ describe('coworker-scratchpad restore precedence (Task A)', () => {
     assert.equal(result.notice, null);
   });
 });
+
+// Phase 3.1 Task 4: closure-shape lock for the scratchpad onDataLoad hop.
+// The activator wires `new ScratchpadManager({ onDataLoad })` to a closure that
+// reads getMemoryRecorder() lazily and forwards (drawer, scratchpadName) into
+// recorder.recordFileLoad(...). These tests replicate that closure inline so
+// the contract is verified independently of the activator wiring (which is
+// exercised by the Task 5 integration test).
+describe('coworker-scratchpad onDataLoad closure shape (Phase 3.1 Task 4)', () => {
+  type DrawerLite = {
+    kind: 'data_load';
+    collector: string;
+    uri: string;
+    bytes: number | null;
+    rows_loaded: number | null;
+    loaded_at: string;
+    schema: null;
+  };
+  type RecorderLike = {
+    recordFileLoad: (args: {
+      scratchpadName: string; collector: string; uri: string;
+      bytes: number; rows_loaded?: number; schema?: object; turnId: string;
+    }) => Promise<unknown>;
+  };
+
+  function makeClosure(getRecorder: () => RecorderLike | null) {
+    return (drawer: DrawerLite, scratchpadName: string): void => {
+      const recorder = getRecorder();
+      if (!recorder) return;
+      void recorder.recordFileLoad({
+        scratchpadName,
+        collector: drawer.collector,
+        uri: drawer.uri,
+        bytes: drawer.bytes ?? 0,
+        rows_loaded: drawer.rows_loaded ?? undefined,
+        schema: drawer.schema ?? undefined,
+        turnId: '',
+      }).catch(() => { /* silent: file loads are frequent; failures visible in /audit */ });
+    };
+  }
+
+  function makeDrawer(overrides: Partial<DrawerLite> = {}): DrawerLite {
+    return {
+      kind: 'data_load',
+      collector: 'file',
+      uri: 'file:///tmp/data.csv',
+      bytes: 1234,
+      rows_loaded: 10,
+      loaded_at: new Date().toISOString(),
+      schema: null,
+      ...overrides,
+    };
+  }
+
+  it('does not throw and does not call recordFileLoad when recorder is null', () => {
+    let called = 0;
+    const onDataLoad = makeClosure(() => null);
+    // No assertion on recorder.recordFileLoad — recorder is null. Just ensure no throw.
+    assert.doesNotThrow(() => onDataLoad(makeDrawer(), 'p1'));
+    assert.equal(called, 0);
+  });
+
+  it('calls recordFileLoad with translated args when recorder is present', async () => {
+    const calls: Array<Parameters<RecorderLike['recordFileLoad']>[0]> = [];
+    const recorder: RecorderLike = {
+      recordFileLoad: async (args) => { calls.push(args); return { id: 'd1' }; },
+    };
+    const onDataLoad = makeClosure(() => recorder);
+    const drawer = makeDrawer({ collector: 'http', uri: 'https://x/y.json', bytes: 555, rows_loaded: 7 });
+    onDataLoad(drawer, 'p1');
+    // Allow the floating promise to resolve.
+    await new Promise((r) => setImmediate(r));
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].scratchpadName, 'p1');
+    assert.equal(calls[0].collector, 'http');
+    assert.equal(calls[0].uri, 'https://x/y.json');
+    assert.equal(calls[0].bytes, 555);
+    assert.equal(calls[0].rows_loaded, 7);
+    assert.equal(calls[0].schema, undefined);
+    assert.equal(calls[0].turnId, '');
+  });
+
+  it('swallows recordFileLoad rejection silently (no unhandled rejection)', async () => {
+    const recorder: RecorderLike = {
+      recordFileLoad: async () => { throw new Error('backend offline'); },
+    };
+    const onDataLoad = makeClosure(() => recorder);
+    // Track unhandled rejections to assert none escape.
+    const seen: unknown[] = [];
+    const handler = (r: unknown): void => { seen.push(r); };
+    process.on('unhandledRejection', handler);
+    try {
+      assert.doesNotThrow(() => onDataLoad(makeDrawer(), 'p1'));
+      // Allow microtasks + tick for unhandled rejection detection.
+      await new Promise((r) => setImmediate(r));
+      await new Promise((r) => setImmediate(r));
+      assert.equal(seen.length, 0, 'no unhandled rejection should escape');
+    } finally {
+      process.off('unhandledRejection', handler);
+    }
+  });
+
+  it('maps null bytes to 0 and null rows_loaded to undefined', async () => {
+    const calls: Array<Parameters<RecorderLike['recordFileLoad']>[0]> = [];
+    const recorder: RecorderLike = {
+      recordFileLoad: async (args) => { calls.push(args); return { id: 'd1' }; },
+    };
+    const onDataLoad = makeClosure(() => recorder);
+    const drawer = makeDrawer({ bytes: null, rows_loaded: null });
+    onDataLoad(drawer, 'p2');
+    await new Promise((r) => setImmediate(r));
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].bytes, 0);
+    assert.equal(calls[0].rows_loaded, undefined);
+    assert.equal(calls[0].scratchpadName, 'p2');
+  });
+});

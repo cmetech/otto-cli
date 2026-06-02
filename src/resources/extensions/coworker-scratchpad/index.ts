@@ -1,18 +1,15 @@
 import { existsSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join, basename } from 'node:path';
 import type { ExtensionAPI, ExtensionContext } from '@otto/pi-coding-agent';
-import { ScratchpadManager } from '@otto/coworker-scratchpad';
+import { ScratchpadManager, type DataLoadDrawer } from '@otto/coworker-scratchpad';
+import { getScratchpadsRoot } from '../_coworker-paths.js';
+import { getMemoryRecorder } from '../coworker-memory/index.js';
 import { registerSpCommand } from './sp-command.js';
 import { registerScratchpadTool } from './scratchpad-tool.js';
 import { sessionSidecarPath, readSessionSidecar, deleteSessionSidecar, sweepStaleSidecars } from './session-sidecar.js';
 import { detectWorkspaceRoot } from './workspace-root.js';
 import { workspaceHash, workspacePointerPath, readWorkspacePointer, isPointerFresh } from './workspace-pointer.js';
 import { formatRelativeAge } from './format-age.js';
-
-function deriveScratchpadRoot(): string {
-  return process.env.OTTO_SCRATCHPAD_ROOT ?? join(homedir(), '.otto', 'scratchpads');
-}
 
 function deriveSessionId(ctx: ExtensionContext): string {
   const file = ctx.sessionManager.getSessionFile() as string | undefined;
@@ -77,7 +74,7 @@ export default function coworkerScratchpadExtension(pi: ExtensionAPI): void {
   let workspaceCwd: string | null = null;
   let sessionId: string | null = null;
   let currentName: string | null = null;
-  const root = deriveScratchpadRoot();
+  const root = getScratchpadsRoot();
 
   const getManager = (): ScratchpadManager => {
     if (!manager) {
@@ -86,6 +83,25 @@ export default function coworkerScratchpadExtension(pi: ExtensionAPI): void {
         workspace: workspaceCwd,
         root,
         sessionId: sessionId ?? 'default',
+        // Phase 3.1 Task 4: production hop into memory. `getMemoryRecorder()` is
+        // called lazily on each event so activator load order is indifferent —
+        // returns null before memory session_start or after session_shutdown,
+        // which is the correct no-op signal. Failures are swallowed silently
+        // (spec §3.8): file loads are frequent and a memory backend hiccup must
+        // not break the kernel runtime; surfaces in /audit instead.
+        onDataLoad: (drawer: DataLoadDrawer, scratchpadName: string): void => {
+          const recorder = getMemoryRecorder();
+          if (!recorder) return;
+          void recorder.recordFileLoad({
+            scratchpadName,
+            collector: drawer.collector,
+            uri: drawer.uri,
+            bytes: drawer.bytes ?? 0,
+            rows_loaded: drawer.rows_loaded ?? undefined,
+            schema: drawer.schema ?? undefined,
+            turnId: '',
+          }).catch(() => { /* silent: file loads are frequent; failures visible in /audit */ });
+        },
       });
     }
     return manager;

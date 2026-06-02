@@ -1,18 +1,14 @@
 import { existsSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join, basename } from 'node:path';
 import type { ExtensionAPI, ExtensionContext } from '@otto/pi-coding-agent';
 import { ScratchpadManager } from '@otto/coworker-scratchpad';
+import { getScratchpadsRoot } from '../_coworker-paths.js';
 import { registerSpCommand } from './sp-command.js';
 import { registerScratchpadTool } from './scratchpad-tool.js';
 import { sessionSidecarPath, readSessionSidecar, deleteSessionSidecar, sweepStaleSidecars } from './session-sidecar.js';
 import { detectWorkspaceRoot } from './workspace-root.js';
 import { workspaceHash, workspacePointerPath, readWorkspacePointer, isPointerFresh } from './workspace-pointer.js';
 import { formatRelativeAge } from './format-age.js';
-
-function deriveScratchpadRoot(): string {
-  return process.env.OTTO_SCRATCHPAD_ROOT ?? join(homedir(), '.otto', 'scratchpads');
-}
 
 function deriveSessionId(ctx: ExtensionContext): string {
   const file = ctx.sessionManager.getSessionFile() as string | undefined;
@@ -77,7 +73,7 @@ export default function coworkerScratchpadExtension(pi: ExtensionAPI): void {
   let workspaceCwd: string | null = null;
   let sessionId: string | null = null;
   let currentName: string | null = null;
-  const root = deriveScratchpadRoot();
+  const root = getScratchpadsRoot();
 
   const getManager = (): ScratchpadManager => {
     if (!manager) {

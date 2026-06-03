@@ -1,7 +1,7 @@
 # Otto Co-worker — Roadmap and Out-of-Scope Reference
 
 **Source of truth:** `docs/superpowers/specs/2026-05-30-otto-coworker-design.md` (§ 8 phasing, § 9 out-of-scope).
-**Last updated:** 2026-06-02 (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 3.1 + Phase 4 complete).
+**Last updated:** 2026-06-02 (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 3.1 + Phase 4 + Phase 4.5 complete).
 
 This document summarizes every phase of the Otto co-worker initiative — what each phase delivers, what's complete, and what each currently-out-of-scope item would bring if implemented later.
 
@@ -175,6 +175,20 @@ Locked decisions per spec §3: workbook + dataset kinds deferred; URI resolver i
 Live TUI smoke walkthrough is pending (`2026-06-02-phase-4-artifacts-smoke.md` PENDING placeholder); automated integration tests at `packages/coworker-artifacts/src/artifacts-integration.test.ts` prove the wiring at the API + disk layer.
 
 > **Note (2026-06-DD):** Phase 5 (Layer C entity graph + ACC + Cerebellum + Consolidator + daily digest) is unblocked — depends on Phase 3 + Phase 4 per roadmap. Phase 4 closes one of the two prereqs.
+
+---
+
+### Phase 4.5 — Subagent-scratchpad scoping — COMPLETE
+
+**Branch:** `feat/coworker-phase-4.5-subagent-scratchpad` (merged to main as `<TBD merge sha>` on 2026-06-DD).
+**Spec:** `docs/superpowers/specs/2026-06-02-coworker-phase-4.5-subagent-scratchpad-design.md`.
+**Plan:** `docs/superpowers/plans/2026-06-02-coworker-phase-4.5-subagent-scratchpad.md`.
+
+Subagent dispatcher auto-mints a dedicated scratchpad per child process (`subagent-<agent>-<6-hex>`); child `pi` reads `OTTO_SUBAGENT_SCRATCHPAD` env var at `session_start` and force-attaches before any sidecar/pointer restore. Scratchpads persist after subagent exit; parent inspects via `/sp attach <name>`. Run records track `scratchpad_name`. Artifacts + memory drawers flow up to workspace level as before; subagent drawers tagged `room=subagent-<id>` for filtering.
+
+Locked decisions per spec §3: auto-mint (no caller override); persistent lifecycle; env-var discovery; no extra return handoff. ~320 LOC delta, 5 tasks.
+
+Live TUI smoke walkthrough is pending (`2026-06-02-phase-4.5-subagent-scratchpad-smoke.md` PENDING placeholder); automated unit tests at `src/resources/extensions/{subagent,coworker-scratchpad}/*.test.ts` prove the wiring at the unit layer.
 
 ---
 

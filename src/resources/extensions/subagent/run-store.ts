@@ -12,6 +12,7 @@ export interface SubagentChildArtifact {
 	index: number;
 	agent: string;
 	trackingName?: string;
+	scratchpadName?: string;
 	task: string;
 	status: SubagentRunStatus;
 	exitCode?: number;
@@ -186,7 +187,7 @@ export function createInitialRunRecord(input: {
 	mode: SubagentRunMode;
 	contextMode: "fresh" | "fork";
 	cwd: string;
-	children: Array<{ agent: string; trackingName?: string; task: string; cwd?: string }>;
+	children: Array<{ agent: string; trackingName?: string; scratchpadName?: string; task: string; cwd?: string }>;
 	now?: string;
 }): SubagentRunRecord {
 	const now = input.now ?? new Date().toISOString();
@@ -203,6 +204,7 @@ export function createInitialRunRecord(input: {
 			index,
 			agent: child.agent,
 			trackingName: child.trackingName,
+			scratchpadName: child.scratchpadName,
 			task: child.task,
 			cwd: child.cwd,
 			status: "queued",

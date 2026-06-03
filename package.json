@@ -196,11 +196,11 @@
   },
   "optionalDependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.2.83",
-    "@cmetech/otto-engine-darwin-arm64": "1.2.0",
-    "@cmetech/otto-engine-darwin-x64": "1.2.0",
-    "@cmetech/otto-engine-linux-arm64-gnu": "1.2.0",
-    "@cmetech/otto-engine-linux-x64-gnu": "1.2.0",
-    "@cmetech/otto-engine-win32-x64-msvc": "1.2.0",
+    "@cmetech/otto-engine-darwin-arm64": "1.2.4",
+    "@cmetech/otto-engine-darwin-x64": "1.2.4",
+    "@cmetech/otto-engine-linux-arm64-gnu": "1.2.4",
+    "@cmetech/otto-engine-linux-x64-gnu": "1.2.4",
+    "@cmetech/otto-engine-win32-x64-msvc": "1.2.4",
     "fsevents": "~2.3.3",
     "koffi": "^2.9.0"
   },

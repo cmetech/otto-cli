@@ -1,5 +1,6 @@
 // OTTO + Subagent launch contract and child process safety helpers.
 
+import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { SessionManager } from "@otto/pi-coding-agent";
@@ -7,6 +8,26 @@ import type { AgentConfig } from "./agents.js";
 
 export const SUBAGENT_CHILD_ENV_VAR = "OTTO_SUBAGENT_CHILD";
 export const SUBAGENT_CHILD_ENV_VALUE = "1";
+export const SUBAGENT_SCRATCHPAD_ENV_VAR = "OTTO_SUBAGENT_SCRATCHPAD";
+
+const MAX_SCRATCHPAD_AGENT_PART = 32;
+
+export function mintSubagentScratchpadName(agentName: string): string {
+	const hex = crypto.randomBytes(3).toString("hex");
+	// Sanitize: NFKD + strip combining marks + lowercase + non-[a-z0-9] → '-' + collapse + trim.
+	let sanitized = agentName
+		.normalize("NFKD")
+		.replace(/[̀-ͯ]/g, "")
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/-+/g, "-")
+		.replace(/^-+|-+$/g, "");
+	if (sanitized.length > MAX_SCRATCHPAD_AGENT_PART) {
+		sanitized = sanitized.slice(0, MAX_SCRATCHPAD_AGENT_PART).replace(/-+$/, "");
+	}
+	if (!sanitized) return `subagent-${hex}`;
+	return `subagent-${sanitized}-${hex}`;
+}
 
 export type SubagentContextMode = "fresh" | "fork";
 
@@ -30,6 +51,7 @@ export interface SubagentLaunchInput {
 	session?: SubagentSessionArgs;
 	cwd?: string;
 	defaultCwd: string;
+	scratchpadName?: string;
 }
 
 export interface SubagentLaunchPlan {
@@ -43,16 +65,31 @@ export function isSubagentChildProcess(env: NodeJS.ProcessEnv = process.env): bo
 	return env[SUBAGENT_CHILD_ENV_VAR] === SUBAGENT_CHILD_ENV_VALUE;
 }
 
-export function buildSubagentProcessEnv(env: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
-	return {
+export function buildSubagentProcessEnv(
+	env: NodeJS.ProcessEnv = process.env,
+	scratchpadName?: string,
+): NodeJS.ProcessEnv {
+	const next: NodeJS.ProcessEnv = {
 		...env,
 		[SUBAGENT_CHILD_ENV_VAR]: SUBAGENT_CHILD_ENV_VALUE,
 	};
+	if (scratchpadName) {
+		next[SUBAGENT_SCRATCHPAD_ENV_VAR] = scratchpadName;
+	}
+	return next;
 }
 
 export function buildShellEnvAssignments(env: NodeJS.ProcessEnv = process.env): string[] {
-	const value = env[SUBAGENT_CHILD_ENV_VAR];
-	return value ? [`${SUBAGENT_CHILD_ENV_VAR}=${JSON.stringify(value)}`] : [];
+	const out: string[] = [];
+	const childValue = env[SUBAGENT_CHILD_ENV_VAR];
+	if (childValue) {
+		out.push(`${SUBAGENT_CHILD_ENV_VAR}=${JSON.stringify(childValue)}`);
+	}
+	const scratchpadValue = env[SUBAGENT_SCRATCHPAD_ENV_VAR];
+	if (scratchpadValue) {
+		out.push(`${SUBAGENT_SCRATCHPAD_ENV_VAR}=${JSON.stringify(scratchpadValue)}`);
+	}
+	return out;
 }
 
 export function buildSubagentProcessArgs(
@@ -124,7 +161,7 @@ export function createSubagentLaunchPlan(input: SubagentLaunchInput): SubagentLa
 			input.modelOverride,
 			session,
 		),
-		env: buildSubagentProcessEnv(),
+		env: buildSubagentProcessEnv(process.env, input.scratchpadName),
 		cwd: input.cwd ?? input.defaultCwd,
 		session,
 	};

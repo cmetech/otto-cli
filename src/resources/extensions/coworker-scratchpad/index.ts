@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import type { ExtensionAPI, ExtensionContext } from '@otto/pi-coding-agent';
 import { ScratchpadManager, type DataLoadDrawer, type ArtifactCreateDrawer } from '@otto/coworker-scratchpad';
@@ -70,6 +70,39 @@ export function tryRestoreCurrentName(
   return { name: null, notice: null };
 }
 
+const SUBAGENT_NAME_REGEX = /^subagent-[a-z0-9-]+$/;
+
+/**
+ * Phase 4.5: When the OTTO_SUBAGENT_SCRATCHPAD env var is set, force-attach
+ * to the named scratchpad (creating it if needed) BEFORE the sidecar/pointer
+ * restore path runs. Idempotent: re-running with same name attaches without
+ * overwriting existing state.
+ */
+export function forceSubagentAttach(name: string, scratchpadsRoot: string): { ok: true } | { ok: false; reason: string } {
+  if (!SUBAGENT_NAME_REGEX.test(name) || name.length > 80) {
+    return { ok: false, reason: `invalid subagent scratchpad name: ${name}` };
+  }
+  const dir = join(scratchpadsRoot, name);
+  try {
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true, mode: 0o700 });
+    }
+    const metaPath = join(dir, 'meta.json');
+    if (!existsSync(metaPath)) {
+      const meta = {
+        name,
+        schema_version: 1,
+        created_at: new Date().toISOString(),
+        source: 'subagent-dispatch',
+      };
+      writeFileSync(metaPath, JSON.stringify(meta, null, 2), { mode: 0o600 });
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, reason: (err as Error).message };
+  }
+}
+
 export default function coworkerScratchpadExtension(pi: ExtensionAPI): void {
   let manager: ScratchpadManager | null = null;
   let workspaceCwd: string | null = null;
@@ -139,6 +172,20 @@ export default function coworkerScratchpadExtension(pi: ExtensionAPI): void {
   pi.on('session_start', async (_event, ctx) => {
     workspaceCwd = ctx.cwd;
     sessionId = deriveSessionId(ctx);
+
+    // Phase 4.5: force-attach to subagent scratchpad if OTTO_SUBAGENT_SCRATCHPAD is set.
+    const subagentName = process.env.OTTO_SUBAGENT_SCRATCHPAD;
+    if (subagentName) {
+      const result = forceSubagentAttach(subagentName, root);
+      if (result.ok) {
+        currentName = subagentName;
+        ctx.ui.notify(`attached to ${subagentName} (subagent dispatch)`, 'info');
+        try { sweepStaleSidecars(root, sessionId, Date.now()); } catch { /* silent */ }
+        return;
+      }
+      ctx.ui.notify(`subagent scratchpad attach failed: ${result.reason}; continuing without`, 'warning');
+      // fall through to normal restore
+    }
 
     const restore = tryRestoreCurrentName(root, sessionId, ctx.cwd ?? process.cwd(), Date.now());
     if (restore.name) {

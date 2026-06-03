@@ -9,6 +9,8 @@ import coworkerScratchpadExtension, { tryRestoreCurrentName } from './index.js';
 import { sessionSidecarPath, writeSessionSidecar } from './session-sidecar.js';
 import { workspaceHash, workspacePointerPath, writeWorkspacePointer } from './workspace-pointer.js';
 import { detectWorkspaceRoot } from './workspace-root.js';
+import { readFileSync } from 'node:fs';
+import { makeFakeApi, fireSessionStart } from '../coworker-vault/test-helpers.js';
 
 // Minimal pi.ExtensionAPI stub — captures registrations and lets us fire session_start/session_shutdown.
 interface StubPi {
@@ -433,5 +435,80 @@ describe('scratchpad activator — onArtifactCreate closure (Phase 4 Task 12)', 
     assert.equal(calls[0]!.slug, 'rca-1');
     assert.equal(calls[0]!.kind, 'report');
     assert.equal(calls[0]!.uri, 'artifact://rca-1');
+  });
+});
+
+describe('coworker-scratchpad activator — OTTO_SUBAGENT_SCRATCHPAD force-attach (Phase 4.5)', () => {
+  const ORIGINAL_SCRATCH = process.env.OTTO_SCRATCHPAD_ROOT;
+  const ORIGINAL_SUB = process.env.OTTO_SUBAGENT_SCRATCHPAD;
+
+  function cleanup(): void {
+    if (ORIGINAL_SCRATCH !== undefined) process.env.OTTO_SCRATCHPAD_ROOT = ORIGINAL_SCRATCH;
+    else delete process.env.OTTO_SCRATCHPAD_ROOT;
+    if (ORIGINAL_SUB !== undefined) process.env.OTTO_SUBAGENT_SCRATCHPAD = ORIGINAL_SUB;
+    else delete process.env.OTTO_SUBAGENT_SCRATCHPAD;
+  }
+
+  it('env var set + scratchpad missing → creates dir + meta.json + attaches', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'sub-att-'));
+    process.env.OTTO_SCRATCHPAD_ROOT = root;
+    process.env.OTTO_SUBAGENT_SCRATCHPAD = 'subagent-rca-analyst-abc123';
+    try {
+      const api = makeFakeApi();
+      coworkerScratchpadExtension(api.api);
+      await fireSessionStart(api, { cwd: mkdtempSync(join(tmpdir(), 'sub-ws-')) });
+      assert.ok(existsSync(join(root, 'subagent-rca-analyst-abc123', 'meta.json')),
+        'expected scratchpad dir + meta.json created');
+      const notice = api.notifyCalls.find((c) => /subagent dispatch/.test(c.message));
+      assert.ok(notice, 'expected subagent-dispatch attach notice');
+    } finally { cleanup(); }
+  });
+
+  it('env var set + scratchpad already exists → attaches without recreating', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'sub-att2-'));
+    const name = 'subagent-rca-analyst-def456';
+    mkdirSync(join(root, name), { recursive: true, mode: 0o700 });
+    writeFileSync(
+      join(root, name, 'meta.json'),
+      JSON.stringify({ name, schema_version: 1, sentinel: true }),
+      { mode: 0o600 },
+    );
+    process.env.OTTO_SCRATCHPAD_ROOT = root;
+    process.env.OTTO_SUBAGENT_SCRATCHPAD = name;
+    try {
+      const api = makeFakeApi();
+      coworkerScratchpadExtension(api.api);
+      await fireSessionStart(api, { cwd: mkdtempSync(join(tmpdir(), 'sub-ws-')) });
+      const meta = JSON.parse(readFileSync(join(root, name, 'meta.json'), 'utf8'));
+      assert.equal(meta.sentinel, true, 'existing meta.json must NOT be overwritten');
+    } finally { cleanup(); }
+  });
+
+  it('env var unset → existing restore logic runs unchanged (regression)', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'sub-att3-'));
+    process.env.OTTO_SCRATCHPAD_ROOT = root;
+    delete process.env.OTTO_SUBAGENT_SCRATCHPAD;
+    try {
+      const api = makeFakeApi();
+      coworkerScratchpadExtension(api.api);
+      await fireSessionStart(api, { cwd: mkdtempSync(join(tmpdir(), 'sub-ws-')) });
+      const subagentNotice = api.notifyCalls.find((c) => /subagent dispatch/.test(c.message));
+      assert.equal(subagentNotice, undefined);
+    } finally { cleanup(); }
+  });
+
+  it('env var set to invalid name → warn + fall through; no force-attach', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'sub-att4-'));
+    process.env.OTTO_SCRATCHPAD_ROOT = root;
+    process.env.OTTO_SUBAGENT_SCRATCHPAD = 'NOT-a-valid_subagent_name';
+    try {
+      const api = makeFakeApi();
+      coworkerScratchpadExtension(api.api);
+      await fireSessionStart(api, { cwd: mkdtempSync(join(tmpdir(), 'sub-ws-')) });
+      const warn = api.notifyCalls.find((c) => c.level === 'warning' && /subagent scratchpad/.test(c.message));
+      assert.ok(warn, 'expected warning about invalid subagent scratchpad name');
+      assert.equal(existsSync(join(root, 'NOT-a-valid_subagent_name')), false,
+        'invalid name must NOT result in a created dir');
+    } finally { cleanup(); }
   });
 });

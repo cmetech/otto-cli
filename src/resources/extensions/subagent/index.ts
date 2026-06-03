@@ -44,6 +44,7 @@ import {
 	buildSubagentProcessArgs,
 	createSubagentLaunchPlan,
 	isSubagentChildProcess,
+	mintSubagentScratchpadName,
 	type SubagentContextMode,
 	type SubagentSessionArgs,
 } from "./launch.js";
@@ -208,6 +209,7 @@ interface UsageStats {
 interface SingleResult {
 	agent: string;
 	trackingName?: string;
+	scratchpadName?: string;
 	agentSource: "user" | "project" | "unknown";
 	task: string;
 	exitCode: number;
@@ -359,6 +361,7 @@ function resultToChildArtifact(result: SingleResult, index: number, cwd?: string
 		index,
 		agent: result.agent,
 		trackingName: result.trackingName,
+		scratchpadName: result.scratchpadName,
 		task: result.task,
 		status: running ? "running" : resultStatus(result),
 		exitCode: result.exitCode,
@@ -486,6 +489,8 @@ async function runSingleAgent(
 			tmpPromptDir = tmp.dir;
 			tmpPromptPath = tmp.filePath;
 		}
+		const scratchpadName = mintSubagentScratchpadName(agent.name);
+		currentResult.scratchpadName = scratchpadName;
 		const launch = createSubagentLaunchPlan({
 			agent,
 			task,
@@ -496,6 +501,7 @@ async function runSingleAgent(
 			session: sessionOverride,
 			cwd,
 			defaultCwd,
+			scratchpadName,
 		});
 		if (launch.session.mode === "fork") currentResult.sessionFile = launch.session.sessionFile;
 		let wasAborted = false;
@@ -638,6 +644,8 @@ async function runSingleAgentInCmuxSplit(
 
 		const bundledPaths = ((process.env.OTTO_BUNDLED_EXTENSION_PATHS ?? process.env.OTTO_BUNDLED_EXTENSION_PATHS) ?? "").split(path.delimiter).map((s) => s.trim()).filter(Boolean);
 		const extensionArgs = bundledPaths.flatMap((p) => ["--extension", p]);
+		const scratchpadName = mintSubagentScratchpadName(agent.name);
+		currentResult.scratchpadName = scratchpadName;
 		const launch = createSubagentLaunchPlan({
 			agent,
 			task,
@@ -648,6 +656,7 @@ async function runSingleAgentInCmuxSplit(
 			session: sessionOverride,
 			cwd,
 			defaultCwd,
+			scratchpadName,
 		});
 		if (launch.session.mode === "fork") currentResult.sessionFile = launch.session.sessionFile;
 		const processArgs = [(process.env.OTTO_BIN_PATH ?? process.env.OTTO_BIN_PATH)!, ...extensionArgs, ...launch.args];

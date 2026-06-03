@@ -12,8 +12,12 @@ import {
 import type { AgentConfig } from './agents.js';
 
 const STUB_AGENT: AgentConfig = {
-  name: 'rca-analyst', label: 'RCA Analyst', description: '', systemPrompt: 'x',
-} as AgentConfig;
+  name: 'rca-analyst',
+  description: '',
+  systemPrompt: 'x',
+  source: 'project',
+  filePath: '/tmp/rca-analyst.md',
+};
 
 describe('mintSubagentScratchpadName', () => {
   it('produces subagent-<agent>-<6hex> for simple input', () => {

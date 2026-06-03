@@ -50,27 +50,34 @@ try {
   npmCacheDir = mkdtempSync(join(tmpdir(), 'validate-pack-npm-cache-'));
   mkdirSync(npmCacheDir, { recursive: true });
 
-  // --- Guard: @otto/* workspace packages must not have @otto/* cross-deps ---
-  // (@otto-build/* packages CAN depend on each other — e.g., mcp-server depends
-  // on rpc-client — because they are both published to the registry.)
-  console.log('==> Checking workspace packages for @otto/* cross-deps...');
+  // --- Guard: workspace packages must not reference unbundled @otto*/* deps ---
+  // Both @otto/* and @otto-build/* live inside the @cmetech/otto tarball (root
+  // `files` ships packages/*; postinstall link-workspace-packages.cjs creates
+  // node_modules/@otto[-build]/* symlinks). A cross-dep is only unsafe if the
+  // target isn't a linkable bundled package — that's the case that 404s at
+  // install time. Cross-deps between linkable packages resolve via postinstall
+  // and are exercised by the pack-install-resolve smoke test below.
+  console.log('==> Checking workspace packages for unbundled @otto*/* cross-deps...');
+  const linkablePackageNames = new Set(getLinkablePackages().map((p) => p.packageName));
   let crossFailed = false;
 
-  for (const ws of getCorePackages()) {
+  for (const ws of getLinkablePackages()) {
     const pkg = JSON.parse(readFileSync(ws.packageJsonPath, 'utf8'));
-    const deps = Object.keys(pkg.dependencies || {}).filter(d => d.startsWith('@otto/'));
-    if (deps.length) {
-      console.log(`    LEAKED in ${ws.dir}: ${deps.join(', ')}`);
+    const bogus = Object.keys(pkg.dependencies || {})
+      .filter((d) => d.startsWith('@otto/') || d.startsWith('@otto-build/'))
+      .filter((d) => !linkablePackageNames.has(d));
+    if (bogus.length) {
+      console.log(`    LEAKED in ${ws.dir}: ${bogus.join(', ')} (not a linkable bundled package)`);
       crossFailed = true;
     }
   }
 
   if (crossFailed) {
-    console.log('ERROR: Workspace packages have @otto/* cross-dependencies.');
+    console.log('ERROR: Workspace packages reference @otto*/* deps that are not bundled.');
     console.log('    These cause 404s when npm resolves them from the registry.');
     process.exit(1);
   }
-  console.log('    No @otto/* cross-dependencies.');
+  console.log('    No unbundled @otto*/* cross-dependencies.');
 
   // --- Pack tarball ---
   console.log('==> Packing tarball...');

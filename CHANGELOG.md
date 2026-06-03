@@ -24,6 +24,40 @@ This changelog starts from the `open-gsd/gsd-pi` ownership baseline. Earlier pro
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-06-02
+
+_Co-worker pillars go live: persistent memory (Layer A rules/lessons + Layer B verbatim drawers with FTS5 recall), workspace-scoped artifact store with `artifact://` URIs and two-turn provenance, vault's `/connect` `/datasource` `/audit` slash surface, and per-subagent dedicated scratchpads. Day-2 milestone — paste an incident note Monday → recall the exact words Tuesday — works end-to-end._
+
+### Added
+
+- **`@otto/coworker-memory` Layer A + Layer B (Phase 3).** Workspace-scoped SQLite store at `<workspace>/.otto/memory/layer-b.db` with FTS5 BM25 ranking + WAL journaling; markdown Layer A files at `<workspace>/.otto/memory/{profile,rules,lessons}.md` with YAML frontmatter and atomic writes. Three scoping modes (global, per-project, per-project-tagged). SecretScanner split policy: Layer A blocks writes containing secrets (`LayerAWriteBlocked`); Layer B redacts (`[REDACTED:<kind>]`) and sets `redacted:true`. Persona-seed helper for one-shot bootstrap from `<persona>/memory-seed/`.
+- **Production activators wire memory + vault + scratchpad to Otto's `ExtensionAPI` (Phase 3.1).** Vault's `/connect <engine> <name>` interactive wizard, `/datasource list|remove|test`, and `/audit [--producer|--action|--limit|--since|--engine|--severity]` now register at extension activation — first time these are reachable in a live chat. Memory activator captures `event.prompt` in `before_agent_start`, calls `recorder.recordTurn(...)` in `agent_start` (one-time warning on failure, then silent). `/memory note <text>` appends a workspace lesson; `/memory status` reports `workspace_wing`, `drawer_count`, db path; `/memory clear --wing <w> --confirm` deletes drawers. `memorize` and `recall` LLM tools are model-callable. Layer A injects into the system prompt on `session_start` (3000-token cap; sections sorted profile → rules → lessons → truncate lowest-priority on overflow).
+- **`/memory show` + `/memory recall` slash surface (closes #73).** `/memory show [profile|rules|lessons] [--scope workspace|global]` dumps Layer A markdown inline; defaults to all three for per-project-tagged scope (workspace first, then global). `/memory recall <query> [--kind|--room|--wing|--limit|--days_back]` searches Layer B drawers directly from chat without going through the model's tool call. Memory command tab-completion lists all 8 subcommands.
+- **`@otto/coworker-artifacts` workspace-scoped store (Phase 4).** `report` artifact kind (markdown v1; workbook + dataset deferred). `ArtifactStore` with slug derivation (`deriveSlug` lowercase ASCII kebab, max 64 chars) + collision suffixing (`-2`, `-3`, … up to 100). Atomic writes (tmp → chmod → rename), mode 0o700 dir / 0o600 files. `DirSnapshot` (nanosecond mtime + size_bytes) drives per-turn `files_touched` via before/after diff. Append-only `provenance.json` records `{ts, action: create|update, turn_id, agent_turn_id?, user_prompt, scratchpad_name?, files_touched}` per turn. Deterministic `README.md` re-renders on every save. `resolveArtifactUri(uri, workspaceDir)` validates `^artifact://[a-z0-9][a-z0-9-]*[a-z0-9]$|^artifact://[a-z0-9]$`, rejects `..` traversal + length > 64 + non-ASCII. Production activator registers `/artifacts list|show|remove --confirm` (flag-order-agnostic) + `list_artifacts` + `open_artifact` LLM tools. Kernel-side `otto.artifact.create(kind, name)` + `otto.artifact.spillIfLarge(value, opts?)` (10 KB default threshold) via bidirectional NDJSON RPC over stdio. `kind:'artifact'` drawer in memory (migration 002 rebuilds the `drawers.kind` CHECK constraint) tagged with the scratchpad name as `room`, so `/memory recall <q> --kind artifact` finds them.
+- **Subagent-scratchpad scoping (Phase 4.5).** Subagent dispatcher mints `subagent-<sanitized-agent>-<6-hex>` per child process; the spawned `pi` reads `OTTO_SUBAGENT_SCRATCHPAD` env var at `session_start` and force-attaches before sidecar/pointer restore (validated against `^subagent-[a-z0-9-]+$`, max 80 chars). Scratchpads persist after subagent exit — parent can `/sp attach subagent-<id>` post-hoc to inspect kernel state, cells, namespace globals. Failure (invalid name, disk error) emits a warning and falls through to normal restore; never crashes `session_start`.
+
+### Changed
+
+- **Memory backend `local-sqlite-backend` runs migrations conditionally.** `open()` checks `PRAGMA user_version` and applies `001-init.sql` (if version < 1) then `002-artifact-kind.sql` (if version < 2). Migration 002 rebuilds the `drawers` table with `'artifact'` added to the kind CHECK and re-runs FTS5 contentless-rowid alignment.
+- **Memory drawer kinds vocabulary** now includes `'artifact'`. Existing kinds (`turn`, `paste`, `file_load`, `ticket`, `email`, `rca`, `note`) unchanged.
+- **`/memory` command** description is a sentence; `getArgumentCompletions` lists all 8 subcommands with one-line descriptions of each.
+- **Audit log gains three new producers**: `memory` (write-layer-a, write-drawer, redact, block, recall, seed-applied), `vault` (set, remove, test, inject, inject-skipped — Phase 2 already had these but now reachable via slash), and `artifacts` (write, remove). All land in the shared `~/.otto/audit.jsonl`.
+
+### Fixed
+
+- **Strict-tsc compatibility for activator tool registrations.** `api.registerTool<TParams, TDetails>(...)` generics are explicit union types so success-vs-error result shapes both satisfy `AgentToolResult<TDetails>`. Caught at Phase 3.1 build-gate; not at test-compile (which uses esbuild). All Phase 3.1 + Phase 4 + Phase 4.5 activators carry the pattern.
+- **Strict `pi` kernel-entry main loop no longer deadlocks on artifact RPC.** `await runCell(req.code)` inside the `for await (const raw of readNdjson(stdin))` loop blocked the iterator from receiving its own RPC responses. Now fire-and-forget; manager already serializes cell submissions.
+- **Memory migration 002 rebuilds FTS5 triggers + virtual-table rowids** after the `drawers` table rename. Without this, `recall()` on existing v1 databases would return zero results post-upgrade.
+- **Memory recorder `byte_count` audit field** now uses `Buffer.byteLength(content, 'utf8')` instead of character count.
+- **`LayerAStore` write-then-read round-trip preserves the section heading** on subsequent appends. Title-dedup regex tolerates leading newline left by frontmatter split.
+- **`optionalDependencies.@cmetech/otto-engine-*` pins synced to root version.** `version-sync.test.ts` asserts equality on every build; root publish would fail npm resolution otherwise.
+
+### Notes
+
+- Phase 5 (Layer C entity graph + ACC + Cerebellum + Consolidator + daily digest + `memory://` URI resolver) is the next phase — depends on Phase 3 + Phase 4 (both shipped here). Phase 6 (NOC persona bundle, integration testing, time-to-first-artifact < 5 min) follows.
+- Smoke checklists for the four shipped phases live at `docs/superpowers/notes/2026-06-02-{phase-2-vault,phase-3-memory,phase-4-artifacts,phase-4.5-subagent-scratchpad}-smoke.md`. Each carries a PENDING verified-live placeholder — fill in after end-to-end TUI walkthrough.
+- Spec + plan artifacts at `docs/superpowers/specs/2026-06-02-*` and `docs/superpowers/plans/2026-06-02-*` for every phase shipped here.
+
 ## [1.2.0] - 2026-06-01
 
 _Co-worker scratchpad Phase 1.5 polish wave: typing `otto` in a workspace where you previously attached a scratchpad now auto-restores it without `--resume`; `/sp evict` and idle-age display land; `otto.duckdb.registerDf` drops polars→DuckDB from ~8 LLM cells to 2._

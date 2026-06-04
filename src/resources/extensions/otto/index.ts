@@ -112,6 +112,11 @@ export default function Otto(pi: ExtensionAPI): void {
     const dim    = ANSI_DIM;
     const reset  = ANSI_RESET;
 
+    // When a TUI is rendering, raw stderr writes race with the welcome banner
+    // and overwrite the prompt area. Route status through `ctx.ui.setStatus`
+    // instead, and only fall back to stderr for headless/RPC modes.
+    const hasUI = ctx?.hasUI === true;
+
     // ── Gateway connection probe (preserved from Phase 1 Task 6) ──
     const gwUrl = process.env.OTTO_GATEWAY_URL?.trim();
     if (gwUrl) {
@@ -122,13 +127,25 @@ export default function Otto(pi: ExtensionAPI): void {
         clearTimeout(timer);
         const ok = r.ok;
         const host = new URL(gwUrl).host;
-        process.stderr.write(`  ${yellow}gateway:${reset} ${ok ? green : dim}routed → ${host}${reset}\n`);
+        if (hasUI) {
+          ctx?.ui.setStatus("otto-gateway", ok ? `Gateway → ${host}` : `Gateway → ${host} (down)`);
+        } else {
+          process.stderr.write(`  ${yellow}gateway:${reset} ${ok ? green : dim}routed → ${host}${reset}\n`);
+        }
       } catch {
         const host = new URL(gwUrl).host;
-        process.stderr.write(`  ${yellow}gateway:${reset} ${dim}routed → ${host} (unreachable)${reset}\n`);
+        if (hasUI) {
+          ctx?.ui.setStatus("otto-gateway", `Gateway → ${host} (unreachable)`);
+        } else {
+          process.stderr.write(`  ${yellow}gateway:${reset} ${dim}routed → ${host} (unreachable)${reset}\n`);
+        }
       }
     } else {
-      process.stderr.write(`  ${yellow}gateway:${reset} ${dim}direct (no OTTO_GATEWAY_URL set)${reset}\n`);
+      if (hasUI) {
+        ctx?.ui.setStatus("otto-gateway", undefined);
+      } else {
+        process.stderr.write(`  ${yellow}gateway:${reset} ${dim}direct (no OTTO_GATEWAY_URL set)${reset}\n`);
+      }
     }
 
     // ── LangFlow connection probe ──
@@ -138,16 +155,22 @@ export default function Otto(pi: ExtensionAPI): void {
     const lfHost = new URL(lfUrl).host;
     if (langflowDisabled) {
       ctx?.ui.setStatus("otto-langflow", undefined);
-      process.stderr.write(`  ${yellow}langflow:${reset} ${dim}disabled (${lfHost})${reset}\n`);
+      if (!hasUI) {
+        process.stderr.write(`  ${yellow}langflow:${reset} ${dim}disabled (${lfHost})${reset}\n`);
+      }
     } else {
       const lfClient = getLangFlowClient();
       const lfVersion = await lfClient.getVersion();
       if (lfVersion) {
         ctx?.ui.setStatus("otto-langflow", `LangFlow ok v${lfVersion.version}`);
-        process.stderr.write(`  ${yellow}langflow:${reset} ${green}connected${reset} ${dim}(v${lfVersion.version} @ ${lfHost})${reset}\n`);
+        if (!hasUI) {
+          process.stderr.write(`  ${yellow}langflow:${reset} ${green}connected${reset} ${dim}(v${lfVersion.version} @ ${lfHost})${reset}\n`);
+        }
       } else {
         ctx?.ui.setStatus("otto-langflow", "LangFlow offline");
-        process.stderr.write(`  ${yellow}langflow:${reset} ${dim}offline (${lfHost})${reset}\n`);
+        if (!hasUI) {
+          process.stderr.write(`  ${yellow}langflow:${reset} ${dim}offline (${lfHost})${reset}\n`);
+        }
       }
     }
   });

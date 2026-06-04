@@ -68,7 +68,7 @@ function truncateMessage(msg: string, maxLen: number): string {
  */
 export function buildHealthLines(data: HealthWidgetData, width?: number): string[] {
   if (data.projectState === "none") {
-    return ["  OTTO  No project loaded — cd into a project, then run /otto init"];
+    return ["  No project loaded — cd into a project, then run /otto init"];
   }
 
   if (data.projectState === "initialized") {

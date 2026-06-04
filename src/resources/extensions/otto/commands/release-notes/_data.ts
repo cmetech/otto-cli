@@ -33,13 +33,21 @@ export interface ReleaseNotesManifest {
 
 export const RELEASE_NOTES_MANIFEST: ReleaseNotesManifest = {
 	truncated: false,
-	total: 16,
+	total: 17,
 	oldestBundled: '1.0.0',
-	newestBundled: '1.3.0',
+	newestBundled: '1.3.1',
 	historyUrl: 'https://github.com/cmetech/otto-cli/blob/main/CHANGELOG.md',
 };
 
 export const RELEASE_NOTES: ReleaseNote[] = [
+	{
+		version: '1.3.1',
+		date: '2026-06-04',
+		headline: 'Windows-install hotfix on top of 1.3.0: the vendored xlsx tarball now ships pre-extracted via `bundleDependencies`, working around an npm bug that prevented `file:` deps in published global packages from resolving on Windows.',
+		fixed: [
+			'**`npm i -g @cmetech/otto@1.3.0` failed on Windows** with `npm warn tarball … seems to be corrupted` followed by `ENOENT … \\vendor\\xlsx-0.20.3.tgz`. Root cause: npm\'s `file:` protocol resolution for deps inside a globally-installed published package is broken on Windows — the inner tarball never gets read even though it ships correctly inside the outer `@cmetech/otto` tarball (byte-identical SHA-256 verified). Switched from `file:`-based vendoring to `bundleDependencies: ["xlsx"]`, which ships the pre-extracted `node_modules/xlsx/` directory (26 files) directly inside the published `@cmetech/otto` tarball. End-user installs no longer go through the `file:` resolver — npm sees `xlsx` already populated in `node_modules` and skips dep resolution entirely. The `file:vendor/xlsx-0.20.3.tgz` dep spec is preserved so local dev installs still work; the SHA-drift guard test and prepublish verifier are unchanged. SheetJS is pure JavaScript (`os: any`, `cpu: any`, no native bindings) so one bundled copy works on Windows / Linux / macOS.',
+		],
+	},
 	{
 		version: '1.3.0',
 		date: '2026-06-03',

@@ -24,6 +24,14 @@ This changelog starts from the `open-gsd/gsd-pi` ownership baseline. Earlier pro
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-06-04
+
+_Windows-install hotfix on top of 1.3.0: the vendored xlsx tarball now ships pre-extracted via `bundleDependencies`, working around an npm bug that prevented `file:` deps in published global packages from resolving on Windows._
+
+### Fixed
+
+- **`npm i -g @cmetech/otto@1.3.0` failed on Windows** with `npm warn tarball … seems to be corrupted` followed by `ENOENT … \vendor\xlsx-0.20.3.tgz`. Root cause: npm's `file:` protocol resolution for deps inside a globally-installed published package is broken on Windows — the inner tarball never gets read even though it ships correctly inside the outer `@cmetech/otto` tarball (byte-identical SHA-256 verified). Switched from `file:`-based vendoring to `bundleDependencies: ["xlsx"]`, which ships the pre-extracted `node_modules/xlsx/` directory (26 files) directly inside the published `@cmetech/otto` tarball. End-user installs no longer go through the `file:` resolver — npm sees `xlsx` already populated in `node_modules` and skips dep resolution entirely. The `file:vendor/xlsx-0.20.3.tgz` dep spec is preserved so local dev installs still work; the SHA-drift guard test and prepublish verifier are unchanged. SheetJS is pure JavaScript (`os: any`, `cpu: any`, no native bindings) so one bundled copy works on Windows / Linux / macOS.
+
 ## [1.3.0] - 2026-06-03
 
 _Restores xlsx capability in scratchpad cells via SheetJS Community Edition, replacing the 1.2.6 removal of `exceljs`. Vendored install means `npm i -g @cmetech/otto` remains a single command with no outbound CDN reach._

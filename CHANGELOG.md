@@ -24,7 +24,7 @@ This changelog starts from the `open-gsd/gsd-pi` ownership baseline. Earlier pro
 
 ## [Unreleased]
 
-## [1.3.0] - YYYY-MM-DD
+## [1.3.0] - 2026-06-03
 
 _Restores xlsx capability in scratchpad cells via SheetJS Community Edition, replacing the 1.2.6 removal of `exceljs`. Vendored install means `npm i -g @cmetech/otto` remains a single command with no outbound CDN reach._
 

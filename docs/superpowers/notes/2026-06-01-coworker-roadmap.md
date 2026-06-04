@@ -1,7 +1,7 @@
 # Otto Co-worker — Roadmap and Out-of-Scope Reference
 
 **Source of truth:** `docs/superpowers/specs/2026-05-30-otto-coworker-design.md` (§ 8 phasing, § 9 out-of-scope).
-**Last updated:** 2026-06-02 (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 3.1 + Phase 4 + Phase 4.5 complete).
+**Last updated:** 2026-06-02 (Phase 0 + Phase 1 + Phase 2 + Phase 3 + Phase 3.1 + Phase 4 + Phase 4.5 complete) + 1.3.0 xlsx-restoration via SheetJS CE.
 
 This document summarizes every phase of the Otto co-worker initiative — what each phase delivers, what's complete, and what each currently-out-of-scope item would bring if implemented later.
 
@@ -250,24 +250,26 @@ Phases 2 + 3 are independent. Phase 4 can overlap the back half of phase 5.
 
 ---
 
+## Resolved out-of-scope items
+
+These entries were previously listed under § Out-of-scope but have since been promoted into a real release.
+
+### xlsx capability in scratchpad
+
+**Status:** Resolved on the 1.3.0 release date.
+
+**Shipped:** SheetJS Community Edition bound as `XLSX` in the scratchpad cell sandbox. Vendored at `vendor/xlsx-0.20.3.tgz` so end-user installs do not reach `cdn.sheetjs.com`. CE → Pro upgrade path documented in `vendor/README.md`.
+
+**Spec:** `docs/superpowers/specs/2026-06-03-sheetjs-ce-binding-design.md`
+**Plan:** `docs/superpowers/plans/2026-06-03-sheetjs-ce-binding.md`
+
+---
+
 ## Out-of-scope reference (§ 9)
 
 These are intentionally deferred from the v1 roadmap. Each entry below describes:
 1. **What it is** today (often a stub interface).
 2. **What implementing it would bring** if a future phase picks it up.
-
-### xlsx capability in scratchpad (replacement for dropped ExcelJS)
-
-**Today:** The scratchpad cell sandbox pre-binds `polars`, `DuckDB`, `dateFns`, `lodash`, `zod`, `axios`. As of 1.2.6, the previously-bound `ExcelJS` library is **removed** — its transitive dep chain (`glob@7`, `inflight`, `rimraf@2`, `fstream`, `lodash.isequal`) carried deprecated/CVE-flagged packages, and upstream `exceljs` is unmaintained (last commit Jan 2024; latest stable `4.4.0` is the same one we had in 1.2.4). Cell code that did `new ExcelJS.Workbook()` now fails fast with `ReferenceError: ExcelJS is not defined`.
-
-**What restoring it would bring:** `.xlsx` read/write inside scratchpad cells — the analyst can ingest a vendor spreadsheet, transform it via polars/DuckDB, and emit a polished xlsx report without leaving the kernel.
-
-**Candidate libraries (decide at implementation time):**
-- **`xlsx-populate@1.21.0`** (recommended) — MIT, active, clean deps (`cfb`, `sax`, `jszip`, `lodash`). Closest API analog to ExcelJS for `Workbook` / `Sheet` semantics. Last release Feb 2024.
-- **`xlsx` (SheetJS)** — *not viable from the public npm registry.* `0.18.5` is the last public release (March 2023) and has CVE-2023-30533 (prototype pollution); subsequent fixes live only on SheetJS's private CDN. Avoid unless we vendor from CDN.
-- **`read-excel-file` + `write-excel-file`** — two small focused libs, clean deps, active. Lower API ceiling than `xlsx-populate`.
-
-**Cost:** small. One new dep, a binding in `kernel-bindings.ts`, two test updates, and prompt-string updates in `scratchpad-tool.ts`. Drop-in by inverse of the 1.2.6 removal commit.
 
 ### Vector embeddings / hybrid recall (LanceDB)
 

@@ -24,6 +24,14 @@ This changelog starts from the `open-gsd/gsd-pi` ownership baseline. Earlier pro
 
 ## [Unreleased]
 
+## [1.3.0] - YYYY-MM-DD
+
+_Restores xlsx capability in scratchpad cells via SheetJS Community Edition, replacing the 1.2.6 removal of `exceljs`. Vendored install means `npm i -g @cmetech/otto` remains a single command with no outbound CDN reach._
+
+### Added
+
+- **SheetJS Community Edition (`XLSX`) bound in scratchpad cells.** Restores the xlsx read/write capability dropped in 1.2.6 with the removal of `exceljs`. The SheetJS CE tarball is vendored at `vendor/xlsx-0.20.3.tgz` (SHA-256 verified at prepublish by `scripts/verify-vendored-xlsx.mjs` and at unit-test time by `src/tests/vendor-xlsx.test.ts`), so there is no outbound CDN reach at install time — `npm i -g @cmetech/otto` remains the single command for compliance/air-gapped environments. Cells now write `const wb = XLSX.utils.book_new(); …` (SheetJS canonical API; ExcelJS-style `new Workbook()` calls from pre-1.2.6 cells continue to ReferenceError). CE → Pro upgrade path is documented in `vendor/README.md`: drop a Pro tarball, swap the `file:` reference, regenerate the lockfile — no code change required; the `XLSX` binding name stays.
+
 ## [1.2.6] - 2026-06-03
 
 _Second Windows-install hotfix on top of 1.2.5: better-sqlite3 native install no longer requires Visual Studio on Node 24, and the entire exceljs transitive-dep chain (glob@7 / inflight / rimraf@2 / fstream / lodash.isequal) is removed at the source by dropping the library itself._

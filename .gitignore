@@ -67,6 +67,8 @@ vendor/
 !packages/pi-coding-agent/src/core/export-html/vendor/**
 !src/resources/extensions/analyst/vendor/
 !src/resources/extensions/analyst/vendor/**
+!/vendor/
+!/vendor/**
 
 # OS/editor junk
 .DS_Store

@@ -24,6 +24,18 @@ This changelog starts from the `open-gsd/gsd-pi` ownership baseline. Earlier pro
 
 ## [Unreleased]
 
+## [1.2.6] - 2026-06-03
+
+_Second Windows-install hotfix on top of 1.2.5: better-sqlite3 native install no longer requires Visual Studio on Node 24, and the entire exceljs transitive-dep chain (glob@7 / inflight / rimraf@2 / fstream / lodash.isequal) is removed at the source by dropping the library itself._
+
+### Fixed
+
+- **`better-sqlite3` install fails on Windows + Node 24** with `gyp ERR! find VS / Could not find any Visual Studio installation to use`. The pinned `^11.7.0` from 1.2.5 has no prebuilt binary for `NODE_MODULE_VERSION 137` (Node 24), so npm fell through to `node-gyp rebuild`, which requires a C++ toolchain. Bumped to `^12.10.0` in both root `dependencies` and `packages/coworker-memory/package.json`; v12.10.0 ships a `v137-win32-x64` prebuild that installs cleanly.
+
+### Removed
+
+- **`exceljs@4.4.0` dropped from the scratchpad data-lib bindings.** Upstream is dormant (last commit Jan 2024) and the package's transitive deps generate eight `npm warn deprecated` messages on every install — `glob@7.2.3` (CVE), `inflight@1.0.6` (memory leak), `rimraf@2.7.1`, `fstream@1.0.12`, `lodash.isequal@4.5.0`, plus old `uuid@8/9` chains. Removed from `package.json`, `packages/coworker-scratchpad/src/kernel-bindings.ts` import + spread, `kernel-entry.ts` binding-names list, and both test files; the LLM-facing tool description in `src/resources/extensions/coworker-scratchpad/scratchpad-tool.ts` no longer claims `ExcelJS` as a pre-bound lib. Cell code that depended on `new ExcelJS.Workbook()` now throws `ReferenceError`. xlsx-capability replacement (likely `xlsx-populate@1.21.0`) is tracked in `docs/superpowers/notes/2026-06-01-coworker-roadmap.md` § Out-of-scope.
+
 ## [1.2.5] - 2026-06-03
 
 _Windows-install hotfix: silences three startup errors that fired the first time `otto` launched after a global npm install, and stops the otto extension from racing the TUI welcome banner with raw stderr writes._

@@ -9,9 +9,9 @@ import { buildDataLibBindings, redactForJournal } from './kernel-bindings.js';
 import { ChildProcessRuntime } from './child-process-runtime.js';
 
 describe('kernel-bindings', () => {
-  it('exposes all seven pre-bound data libraries', () => {
+  it('exposes all six pre-bound data libraries', () => {
     const b = buildDataLibBindings();
-    for (const key of ['polars', 'DuckDB', 'ExcelJS', 'dateFns', 'lodash', 'zod', 'axios']) {
+    for (const key of ['polars', 'DuckDB', 'dateFns', 'lodash', 'zod', 'axios']) {
       assert.ok(key in b, `missing binding: ${key}`);
       assert.notEqual(b[key], undefined, `binding is undefined: ${key}`);
     }
@@ -24,7 +24,6 @@ describe('kernel-bindings', () => {
     assert.equal(typeof b.dateFns.format, 'function');
     assert.equal(typeof b.lodash.chunk, 'function');
     assert.equal(typeof b.axios.get, 'function');
-    assert.equal(typeof b.ExcelJS.Workbook, 'function');
   });
 });
 

@@ -1,5 +1,4 @@
 import pl from 'nodejs-polars';
-import ExcelJS from 'exceljs';
 import lodash from 'lodash';
 import axios from 'axios';
 import { z } from 'zod';
@@ -11,12 +10,16 @@ import { SecretScanner, type AuditLog, type AuditRecord } from '@otto/coworker-u
 /**
  * The data libraries pre-bound into every scratchpad cell's vm sandbox.
  * DuckDB is bound as an in-memory-capable lib here; on-disk kernel.db wiring is 1d2.
+ *
+ * Note: ExcelJS was removed in 1.2.6 — its transitive deps (glob@7, inflight,
+ * rimraf@2, fstream, lodash.isequal) are deprecated with known vulnerabilities
+ * and exceljs is no longer maintained upstream. xlsx-populate is the candidate
+ * replacement; tracked in docs/superpowers/notes/2026-06-01-coworker-roadmap.md.
  */
 export function buildDataLibBindings(): Record<string, unknown> {
   return {
     polars: pl,
     DuckDB,
-    ExcelJS,
     dateFns,
     lodash,
     zod: z,

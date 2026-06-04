@@ -38,7 +38,6 @@ const KNOWN_BOUND_KEYS = new Set([
   'clearInterval',
   'polars',
   'DuckDB',
-  'ExcelJS',
   'dateFns',
   'lodash',
   'zod',

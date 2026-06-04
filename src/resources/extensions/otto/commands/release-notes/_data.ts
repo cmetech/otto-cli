@@ -33,13 +33,21 @@ export interface ReleaseNotesManifest {
 
 export const RELEASE_NOTES_MANIFEST: ReleaseNotesManifest = {
 	truncated: false,
-	total: 17,
+	total: 18,
 	oldestBundled: '1.0.0',
-	newestBundled: '1.3.1',
+	newestBundled: '1.3.2',
 	historyUrl: 'https://github.com/cmetech/otto-cli/blob/main/CHANGELOG.md',
 };
 
 export const RELEASE_NOTES: ReleaseNote[] = [
+	{
+		version: '1.3.2',
+		date: '2026-06-04',
+		headline: 'Windows-TUI hotfix on top of 1.3.1: launching `otto` no longer paints three stacked welcome banners on Windows. The CLI rendered correctly all along — it just looked broken because cursor-relative differential updates drifted out of alignment.',
+		fixed: [
+			'**Stacked TUI frames on Windows launch.** `otto` on Windows (PowerShell inside Windows Terminal) painted the welcome banner three times in scrollback instead of updating one frame in place. Root cause traced to `packages/pi-tui/src/tui.ts`: the differential render path uses *relative* cursor movement (`\\x1b[N A/B`) which depends on `hardwareCursorRow` matching the actual terminal cursor row. The welcome screen\'s full-width yellow rule (`\'─\'.repeat(termWidth)` at `src/welcome-screen.ts:192`) is the canonical auto-wrap edge case; Windows ConPTY\'s cursor-state after writing exactly `termWidth` chars differs from xterm\'s "pending wrap" semantic, so each render drifts the tracked cursor by one row. After ~3 async-driven re-renders during cold-start (workflow\'s `session_start` handler has 5+ `await` boundaries, each potentially scheduling a render), drift compounds and subsequent updates write to wrong rows — the previous frame stays visible. Two pi-tui changes resolve it: (1) re-enable DEC 2026 synchronized output on Windows — modern Windows Terminal supports it and the prior `platform !== "win32"` guard predated that; (2) force `fullRender(true)` (absolute-positioned clear + repaint) for all non-first renders on Windows, bypassing the cursor-relative differential path entirely. Trade-off: tiny additional write traffic per render, hidden by synchronized output. Opt-outs: `PI_DISABLE_SYNC_OUTPUT=1` and `PI_DISABLE_WIN32_FULL_REDRAW=1` for terminals that mis-handle either change.',
+		],
+	},
 	{
 		version: '1.3.1',
 		date: '2026-06-04',

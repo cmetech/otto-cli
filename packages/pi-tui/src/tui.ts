@@ -311,8 +311,20 @@ export class TUI extends Container {
 	private previousViewportTop = 0; // Track previous viewport top for resize-aware cursor moves
 	private fullRedrawCount = 0;
 	private stopped = false;
-	private readonly useSynchronizedOutput =
-		process.platform !== "win32" && process.env.PI_DISABLE_SYNC_OUTPUT !== "1";
+	// DEC mode 2026 (synchronized output). Modern Windows Terminal supports it; the
+	// previous `platform !== "win32"` guard predates that and is no longer needed.
+	// Opt-out via PI_DISABLE_SYNC_OUTPUT=1 if running in a terminal that mis-handles
+	// the sequence (it then renders as a no-op or visible garbage).
+	private readonly useSynchronizedOutput = process.env.PI_DISABLE_SYNC_OUTPUT !== "1";
+	// On Windows ConPTY, the differential render path is sensitive to cursor-row
+	// drift from auto-wrap differences with xterm. The cumulative effect of
+	// async-driven re-renders (each session_start `await` boundary schedules a new
+	// render) is visibly stacked frames in scrollback. Forcing fullRender for all
+	// non-first renders trades a tiny perf cost for a stable, in-place frame.
+	// Opt-out via PI_DISABLE_WIN32_FULL_REDRAW=1 once the underlying cursor drift
+	// is fixed in the differential path.
+	private readonly forceFullRedrawOnWindows =
+		process.platform === "win32" && process.env.PI_DISABLE_WIN32_FULL_REDRAW !== "1";
 	private _lastRenderedComponents: string[] | null = null;
 	// Whether the previous frame composited overlays onto the screen. When true,
 	// the next frame must redraw even if component output is byte-identical —
@@ -811,6 +823,18 @@ export class TUI extends Container {
 		if (this.previousLines.length === 0 && !widthChanged && !heightChanged) {
 			logRedraw("first render");
 			fullRender(false);
+			return;
+		}
+
+		// Windows ConPTY: bypass the cursor-relative differential path on every
+		// non-first render. Combined with synchronized output (DEC 2026), the
+		// terminal sees a single atomic `clear+repaint` per render — the user no
+		// longer sees stacked frames in scrollback caused by cumulative cursor
+		// drift from async-driven session_start re-renders. See the
+		// `forceFullRedrawOnWindows` field declaration for the opt-out env var.
+		if (this.forceFullRedrawOnWindows) {
+			logRedraw("forceFullRedrawOnWindows");
+			fullRender(true);
 			return;
 		}
 

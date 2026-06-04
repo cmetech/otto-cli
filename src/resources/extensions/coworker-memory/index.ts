@@ -22,7 +22,7 @@ import { runRecall, type RecallToolArgs } from './recall-tool.js';
 import { runMemoryCommand } from './memory-command.js';
 import { onSessionShutdown } from './session-hooks.js';
 import { createCurrentScratchpadProvider } from '../coworker-scratchpad/sp-command.js';
-import { getCoworkerGlobalDir, getScratchpadsRoot } from '../_coworker-paths.js';
+import { getCoworkerGlobalDir, getScratchpadsRoot } from '../shared/coworker-paths.js';
 
 export { createMemoryBundle };
 export type { MemoryBundle, MemoryBundleOptions };

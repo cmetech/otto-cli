@@ -14,7 +14,7 @@ import {
   runDatasourceTest,
 } from './datasource-command.js';
 import { runAudit, type AuditQuery } from './audit-command.js';
-import { getCoworkerGlobalDir } from '../_coworker-paths.js';
+import { getCoworkerGlobalDir } from '../shared/coworker-paths.js';
 
 export { createVaultBundle };
 export type { VaultBundle, VaultBundleOptions };

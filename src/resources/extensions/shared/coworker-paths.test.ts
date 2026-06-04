@@ -2,12 +2,12 @@ import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { getCoworkerGlobalDir, getScratchpadsRoot } from './_coworker-paths.js';
+import { getCoworkerGlobalDir, getScratchpadsRoot } from './coworker-paths.js';
 
 const ORIGINAL_GLOBAL = process.env.OTTO_COWORKER_GLOBAL_DIR;
 const ORIGINAL_SCRATCH = process.env.OTTO_SCRATCHPAD_ROOT;
 
-describe('_coworker-paths', () => {
+describe('coworker-paths', () => {
   before(() => {
     delete process.env.OTTO_COWORKER_GLOBAL_DIR;
     delete process.env.OTTO_SCRATCHPAD_ROOT;

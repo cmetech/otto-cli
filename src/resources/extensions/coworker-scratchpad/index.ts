@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import type { ExtensionAPI, ExtensionContext } from '@otto/pi-coding-agent';
 import { ScratchpadManager, type DataLoadDrawer, type ArtifactCreateDrawer } from '@otto/coworker-scratchpad';
-import { getScratchpadsRoot } from '../_coworker-paths.js';
+import { getScratchpadsRoot } from '../shared/coworker-paths.js';
 import { getMemoryRecorder } from '../coworker-memory/index.js';
 import { getArtifactStore } from '../coworker-artifacts/index.js';
 import { registerSpCommand } from './sp-command.js';

@@ -1,6 +1,6 @@
 {
   "name": "@otto/native",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Native Rust bindings for OTTO — high-performance native modules via N-API",
   "type": "commonjs",
   "otto": {

@@ -24,6 +24,18 @@ This changelog starts from the `open-gsd/gsd-pi` ownership baseline. Earlier pro
 
 ## [Unreleased]
 
+## [1.2.5] - 2026-06-03
+
+_Windows-install hotfix: silences three startup errors that fired the first time `otto` launched after a global npm install, and stops the otto extension from racing the TUI welcome banner with raw stderr writes._
+
+### Fixed
+
+- **`_coworker-paths.js` "Extension does not export a valid factory function".** The shared helper module sat at the top of `src/resources/extensions/` so the pi-coding-agent extension discovery (`discoverExtensionsInDir`) walked it as an extension candidate. Moved to `src/resources/extensions/shared/coworker-paths.{ts,test.ts}` (subdir is skipped by `resolveExtensionEntries` because it has no `index.ts`/`package.json`). The three coworker-{memory,scratchpad,vault}/index.ts importers were updated in lockstep.
+- **`Cannot find module 'better-sqlite3'` on global install.** `better-sqlite3` was declared only in `packages/coworker-memory/package.json`. Because npm only resolves the root manifest for end users of a published tarball, the native module was never installed and `@otto/coworker-memory`'s eager re-export of `local-sqlite-backend.js` blew up at first import. Hoisted `better-sqlite3@^11.7.0` into root `dependencies`.
+- **`/audit` slash-command conflict between coworker-vault and slash-commands.** Both extensions registered the same id; the vault command (the real Phase 2 reader) supersedes, but the conflict warning fired every launch. Renamed the slash-commands command to `/audit-codebase` (file + manifest + dispatch updated).
+- **Otto session_start bled raw stderr into the TUI welcome banner.** The gateway + langflow probes wrote ANSI-colored status lines directly to `process.stderr` while the pi TUI was still painting; on Windows the rendered output collided with the yellow `─` rule and overwrote the prompt area. Now routes status through `ctx.ui.setStatus("otto-gateway"|"otto-langflow", ...)` when `ctx.hasUI` is true; falls back to stderr only in headless/RPC modes.
+- **Duplicate "OTTO" brand on the no-project landing.** The `gsd-health` widget's no-project line began with `"  OTTO  No project loaded — …"`, which appeared alongside the ASCII OTTO logo in the welcome header — looking like the brand was loading twice. Dropped the `OTTO ` prefix; the header already brands the session.
+
 ## [1.2.4] - 2026-06-02
 
 _Co-worker pillars go live: persistent memory (Layer A rules/lessons + Layer B verbatim drawers with FTS5 recall), workspace-scoped artifact store with `artifact://` URIs and two-turn provenance, vault's `/connect` `/datasource` `/audit` slash surface, and per-subagent dedicated scratchpads. Day-2 milestone — paste an incident note Monday → recall the exact words Tuesday — works end-to-end._

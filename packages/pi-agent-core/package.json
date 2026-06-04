@@ -1,6 +1,6 @@
 {
   "name": "@otto/pi-agent-core",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "General-purpose agent core (vendored from pi-mono)",
   "type": "module",
   "otto": {

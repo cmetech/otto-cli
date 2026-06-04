@@ -1,6 +1,6 @@
 {
   "name": "@cmetech/otto-engine-win32-x64-msvc",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "OTTO native package (engine + bundled ripgrep & fd) for win32-x64-msvc",
   "os": [
     "win32"

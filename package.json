@@ -34,6 +34,7 @@
     "dist",
     "packages",
     "pkg",
+    "vendor",
     "src/resources",
     "scripts/postinstall.js",
     "scripts/install.js",
@@ -180,6 +181,7 @@
     "sql.js": "^1.14.1",
     "strip-ansi": "^7.1.0",
     "undici": "^7.24.2",
+    "xlsx": "file:vendor/xlsx-0.20.3.tgz",
     "yaml": "^2.8.2",
     "zod": "^4.4.3"
   },

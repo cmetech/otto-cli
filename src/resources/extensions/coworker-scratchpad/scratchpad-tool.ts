@@ -90,18 +90,18 @@ export function registerScratchpadTool(pi: ExtensionAPI, deps: ScratchpadToolDep
     name: 'cw_scratchpad',
     label: 'Co-worker scratchpad',
     description:
-      'USE FOR: loading or analyzing files (CSV, JSON, Parquet), tabular data manipulation with polars or DuckDB, multi-step data exploration where state should persist across turns, or anything that calls otto.collectors. ' +
+      'USE FOR: loading or analyzing files (CSV, JSON, Parquet, XLSX), tabular data manipulation with polars or DuckDB, multi-step data exploration where state should persist across turns, or anything that calls otto.collectors. ' +
       'DO NOT USE FOR: simple arithmetic, lookups answerable from reasoning alone, pure prose, code review, or one-off calculations with no file or data source involved. ' +
       'IF the user explicitly names this tool ("use cw_scratchpad", "run this in the scratchpad", "exec a cell"), use it regardless of the rules above. ' +
       'IF UNSURE whether a request belongs here, ASK the user once: "Do you want me to run this in cw_scratchpad so you can inspect the cells via /sp view, or answer inline?" Wait for their reply before deciding. ' +
       'Runs TypeScript cells in a persistent JS kernel scoped to a named scratchpad. State persists across cells via globalThis.* and across Otto sessions via on-disk kernel.db + namespace.json. ' +
-      'Pre-bound libs in every cell: polars, DuckDB, dateFns, lodash, zod, axios. otto.collectors.{list,open} enumerates and loads data sources. ' +
+      'Pre-bound libs in every cell: polars, DuckDB, XLSX, dateFns, lodash, zod, axios. otto.collectors.{list,open} enumerates and loads data sources. ' +
       'Actions: exec (run a TypeScript cell), view (return the last N cells). ' +
       'Distinct from the analyst extension\'s SQL-only `scratchpad` tool — this one runs arbitrary TypeScript.',
     promptSnippet:
-      'cw_scratchpad — run TypeScript cells in a persistent JS kernel. USE for files (CSV/JSON/Parquet), polars/DuckDB analysis, otto.collectors, or multi-step data work. NOT for arithmetic or pure prose. If unsure, ASK the user first.',
+      'cw_scratchpad — run TypeScript cells in a persistent JS kernel. USE for files (CSV/JSON/Parquet/XLSX), polars/DuckDB analysis, otto.collectors, or multi-step data work. NOT for arithmetic or pure prose. If unsure, ASK the user first.',
     promptGuidelines: [
-      'Trigger criteria: the request involves loading a file (CSV/JSON/Parquet/etc.), querying tabular data via polars or DuckDB, calling otto.collectors, or building state that must survive across turns.',
+      'Trigger criteria: the request involves loading a file (CSV/JSON/Parquet/XLSX/etc.), querying tabular data via polars or DuckDB, calling otto.collectors, or building state that must survive across turns.',
       'Skip the tool for: trivial arithmetic, lookups you can answer from reasoning, prose generation, code review, and pure-explanation tasks.',
       'If the user names the tool explicitly (e.g. "use cw_scratchpad", "in the scratchpad", "exec a cell"), always honor that request and skip the unsure-prompt.',
       'IF UNSURE whether a request fits the trigger criteria, ask the user once before deciding: "Do you want me to run this in cw_scratchpad (you can inspect the cells via /sp view) or answer inline?" Wait for the user\'s reply before either calling the tool or answering inline.',
@@ -109,7 +109,7 @@ export function registerScratchpadTool(pi: ExtensionAPI, deps: ScratchpadToolDep
       'The cell body is wrapped in (async () => { ... })(). let/const/var are local to the cell. To persist, assign to globalThis.foo = ...',
       'For DuckDB tables that survive across Otto sessions, use `await otto.duckdb.connect()`. For ephemeral in-memory, use `DuckDB.DuckDBInstance.create(":memory:")`.',
       'For polars→DuckDB: prefer `otto.duckdb.registerDf(name, df)` over manual API discovery. If inference picks the wrong column type, pass `{ schema: { col: \'TYPE\' } }` as the third argument. Falls back to polars\' own SQL (`df.sql(...)`) for one-off aggregations.',
-      'Pre-bound libs available in every cell: polars, DuckDB, dateFns, lodash, zod, axios. No imports needed.',
+      'Pre-bound libs available in every cell: polars, DuckDB, XLSX, dateFns, lodash, zod, axios. No imports needed.',
       'Use otto.collectors.list() to discover data sources and otto.collectors.open(uri) to load one.',
       'The `name` parameter defaults to the currently attached scratchpad. Omit it unless you want to operate on a different one (this does NOT switch the user attachment).',
       'A returned string that looks markdown-shaped will appear in the response as text/markdown automatically. Return a markdown table or heading to render it.',

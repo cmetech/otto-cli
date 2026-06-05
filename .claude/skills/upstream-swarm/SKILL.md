@@ -105,7 +105,7 @@ Loop until `nextActions(ledger, caps)` returns `[]`:
    | Action kind | What to run |
    |---|---|
    | `start-fix` | Dispatch a subagent to run `upstream-fix --single-issue <N>`; on done record `fix-ok`/`fix-failed`. |
-   | `poll-ci` | `gh pr checks <prNumber> --json name,bucket`; on all required green → `ci-green`; on red → classify, retry or quarantine. |
+   | `poll-ci` | `node poll-pr-checks.mjs <prNumber>` — ONE non-blocking HTTP poll. Returns `{state: pass\|pending\|fail, pending, blocking, informationalReds}` evaluated against the required-checks allowlist. On `pass` → `ci-green`. On `fail` → classify, retry or quarantine. On `pending` → NO transition; scheduler re-emits `poll-ci` next tick. The orchestrator paces ticks (e.g. `ScheduleWakeup` ~4 min) when the only outstanding work is `awaiting-ci`. **Never** invoke `gh pr checks --watch` — it serializes the swarm to one PR at a time and defeats the `prWindow` cap. |
    | `run-local-gate` | `trial-merge` + `run-gates.mjs full` in a worktree at origin/main. On pass → `local-gate-pending` (becomes refute-pending via state). |
    | `run-refute` | `buildInputBundle` then dispatch 4 lens subagents in parallel (Workflow `parallel(LENS_NAMES.map(lens => () => agent(prompt(lens, bundle), {schema: VERDICT_SCHEMA})))`); apply `tallyVerdicts`; record. |
    | `merge-pr` | `merge-pr.mjs <N> --auto --refute-verdict approve --refute-reason "..."`. Severity routing for `feature`/`critical-stability` happens at fix-ok→pending-human-review (skip merge). |

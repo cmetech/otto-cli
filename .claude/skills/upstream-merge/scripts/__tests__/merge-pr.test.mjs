@@ -25,6 +25,29 @@ test("never passes bypass flags", () => {
   assert.ok(!/--admin|--no-verify|--bypass/.test(mergeCall));
 });
 
+test("polls for mergeCommit.oid when GitHub lags after merge", () => {
+  let views = 0;
+  const sleeps = [];
+  const ghRunner = (args) => {
+    if (args[1] === "view") {
+      views += 1;
+      return JSON.stringify({ mergeCommit: views >= 2 ? { oid: "feedface99" } : null });
+    }
+    return "";
+  };
+  const r = mergePr({ number: 64, ghRunner, sleep: (ms) => sleeps.push(ms) });
+  assert.equal(r.sha, "feedfac");
+  assert.equal(views, 2);
+  assert.deepEqual(sleeps, [1000]); // slept once between the two view polls
+});
+
+test("returns null sha when mergeCommit never populates within budget", () => {
+  const ghRunner = (args) => (args[1] === "view" ? JSON.stringify({ mergeCommit: null }) : "");
+  const r = mergePr({ number: 64, ghRunner, attempts: 3, sleep: () => {} });
+  assert.equal(r.merged, true);
+  assert.equal(r.sha, null);
+});
+
 test("rejects a non-integer PR number", () => {
   assert.throws(() => mergePr({ number: "64; rm -rf /", ghRunner: () => "" }), /integer/);
 });

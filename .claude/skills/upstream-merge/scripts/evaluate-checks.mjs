@@ -32,14 +32,14 @@ export function evaluateChecks(checks, allowlist) {
     const bucket = byName.get(name);
     if (bucket === undefined) blocking.push({ name, reason: "required check missing" });
     else if (bucket === "pending") pending.push(name);
-    else if (bucket === "pass") { /* ok */ }
+    else if (bucket === "pass" || bucket === "skipping") { /* ok */ }
     else blocking.push({ name, reason: `required check ${bucket}` });
   }
   for (const name of conditional) {
     const bucket = byName.get(name);
     if (bucket === undefined) continue; // conditional checks may not run for this PR
     if (bucket === "pending") pending.push(name);
-    else if (bucket === "pass") { /* ok */ }
+    else if (bucket === "pass" || bucket === "skipping") { /* ok */ }
     else blocking.push({ name, reason: `conditional check ${bucket}` });
   }
 

@@ -1,0 +1,10 @@
+{
+  "requiredChecks": [
+    "build",
+    "test-unit",
+    "test-packages",
+    "fast-gates",
+    "cargo audit",
+    "npm audit (.)"
+  ]
+}

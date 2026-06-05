@@ -1,0 +1,12 @@
+[
+  {
+    "number": 53,
+    "severity": "nice-to-have-fix",
+    "type": "cherry-pick-candidate",
+    "sha": "baf4028",
+    "guidancePath": ".planning/upstream-audits/guidance/baf4028.md",
+    "targetFiles": [
+      "packages/pi-coding-agent/src/modes/interactive/components/config-selector.ts"
+    ]
+  }
+]

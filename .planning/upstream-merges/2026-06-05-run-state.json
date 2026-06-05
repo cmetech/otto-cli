@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "date": "2026-06-05",
+  "prs": {
+    "74": {
+      "headRef": "integration/upstream-fix-2026-06-05",
+      "isDraft": false,
+      "status": "merged",
+      "checks": {
+        "pass": true,
+        "pending": [],
+        "blocking": [],
+        "informationalReds": [
+          "integration-tests",
+          "e2e",
+          "docker-e2e"
+        ]
+      },
+      "localGate": {
+        "pass": true,
+        "note": "9742/9742 pass after vendor copy + symlink fixes; full suite + verify:pr both green"
+      },
+      "mergeSha": "c622c39",
+      "reason": null
+    }
+  }
+}

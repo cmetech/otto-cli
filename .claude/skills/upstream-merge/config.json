@@ -3,7 +3,9 @@
     "build",
     "test-unit",
     "test-packages",
-    "fast-gates",
+    "fast-gates"
+  ],
+  "conditionalChecks": [
     "cargo audit",
     "npm audit (.)"
   ]

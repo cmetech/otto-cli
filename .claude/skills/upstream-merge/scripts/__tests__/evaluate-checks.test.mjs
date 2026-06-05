@@ -4,7 +4,13 @@ import { evaluateChecks, loadAllowlist } from "../evaluate-checks.mjs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
+// Legacy flat shape — still supported (treats all entries as required).
 const ALLOW = ["build", "test-unit", "test-packages", "fast-gates", "cargo audit", "npm audit (.)"];
+// New split shape — required vs conditional (path-conditional CI checks).
+const SPLIT = {
+  required: ["build", "test-unit", "test-packages", "fast-gates"],
+  conditional: ["cargo audit", "npm audit (.)"],
+};
 
 // Mirrors PR #64: all required green; 3 fail + 1 cancel + 1 skipping are NOT required.
 const PR64 = [
@@ -47,16 +53,38 @@ test("a pending required check triggers wait, not pass", () => {
   assert.deepEqual(r.pending, ["test-unit"]);
 });
 
-test("a missing required check blocks", () => {
+test("a missing required check blocks (flat allowlist)", () => {
   const checks = PR64.filter((c) => c.name !== "cargo audit");
   const r = evaluateChecks(checks, ALLOW);
   assert.equal(r.pass, false);
   assert.ok(r.blocking.some((b) => b.name === "cargo audit" && /missing/.test(b.reason)));
 });
 
-test("loadAllowlist reads requiredChecks from config.json", () => {
+test("split allowlist: missing CONDITIONAL check does not block (path-conditional CI)", () => {
+  // Simulates PR #74: no lock-file changes → cargo audit / npm audit (.) don't run.
+  const checks = PR64.filter((c) => c.name !== "cargo audit" && c.name !== "npm audit (.)");
+  const r = evaluateChecks(checks, SPLIT);
+  assert.equal(r.pass, true);
+  assert.equal(r.blocking.length, 0);
+});
+
+test("split allowlist: a present CONDITIONAL check that fails still blocks", () => {
+  const checks = PR64.map((c) => (c.name === "cargo audit" ? { ...c, bucket: "fail" } : c));
+  const r = evaluateChecks(checks, SPLIT);
+  assert.equal(r.pass, false);
+  assert.ok(r.blocking.some((b) => b.name === "cargo audit" && /conditional check fail/.test(b.reason)));
+});
+
+test("split allowlist: missing REQUIRED check still blocks", () => {
+  const checks = PR64.filter((c) => c.name !== "build");
+  const r = evaluateChecks(checks, SPLIT);
+  assert.equal(r.pass, false);
+  assert.ok(r.blocking.some((b) => b.name === "build" && /missing/.test(b.reason)));
+});
+
+test("loadAllowlist reads requiredChecks + conditionalChecks from config.json", () => {
   const here = dirname(fileURLToPath(import.meta.url));
   const cfg = join(here, "..", "..", "config.json");
   const allow = loadAllowlist(cfg);
-  assert.deepEqual(allow, ALLOW);
+  assert.deepEqual(allow, SPLIT);
 });

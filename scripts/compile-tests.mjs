@@ -310,6 +310,11 @@ async function main() {
   const distTestDistDir = join(DIST_TEST_DIR, 'dist');
   await copyAssets(rootDistDir, distTestDistDir);
 
+  // vendor/ holds vendored tarballs (e.g. xlsx) referenced by tests that resolve
+  // <ROOT>/vendor/* from dist-test/src/tests/. Without this copy, vendor-xlsx
+  // drift-guard tests fail with ENOENT on dist-test/vendor/xlsx-*.tgz.
+  await copyAssets(join(ROOT, 'vendor'), join(DIST_TEST_DIR, 'vendor'));
+
   // Post-process: rewrite .ts import specifiers to .js in all compiled JS files.
   // esbuild with bundle:false preserves original specifiers; Node can't load .ts.
   const compiledJsFiles = await collectFiles(DIST_TEST_DIR, ['.js']);

@@ -14,7 +14,7 @@
 
 import { execSync, spawnSync, exec as execCb } from 'child_process'
 import { createHash, randomUUID } from 'crypto'
-import { chmodSync, copyFileSync, createWriteStream, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'fs'
+import { chmodSync, copyFileSync, createWriteStream, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, unlinkSync, writeFileSync } from 'fs'
 import { createRequire } from 'module'
 import { arch, homedir, platform } from 'os'
 import { dirname, resolve, join } from 'path'
@@ -529,6 +529,13 @@ function copyBundledTools() {
     const src = join(nativePkgDir, `${tool}${binExt}`)
     const dst = join(dest, `${tool}${binExt}`)
     if (existsSync(src)) {
+      // If dst is a pre-existing symlink (e.g. user points it at a Homebrew
+      // install), copyFileSync follows the link and tries to write the target,
+      // which EACCES on system-owned paths like /opt/homebrew/bin. Unlink the
+      // symlink so we replace it with a fresh regular file in the bin dir.
+      try {
+        if (lstatSync(dst).isSymbolicLink()) unlinkSync(dst)
+      } catch { /* dst doesn't exist — fine */ }
       copyFileSync(src, dst)
       if (platform() !== 'win32') {
         chmodSync(dst, 0o755)

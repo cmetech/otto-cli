@@ -7,6 +7,8 @@
  */
 
 import { execFileSync } from "node:child_process";
+import { readFileSync, existsSync } from "node:fs";
+import { resolve, isAbsolute } from "node:path";
 
 export const LENS_NAMES = [
   "upstream-alignment",
@@ -69,13 +71,65 @@ function riskFromLabels(labels = []) {
   const l = labels.find((x) => (x.name ?? "").startsWith("conflict-risk:"));
   return l ? l.name.slice("conflict-risk:".length) : null;
 }
+function upstreamKeyFromLabels(labels = []) {
+  const l = labels.find((x) => (x.name ?? "").startsWith("upstream:"));
+  return l ? l.name.slice("upstream:".length) : null;
+}
+
+/**
+ * Resolve the local filesystem path to the upstream repo for an issue.
+ * The upstream SHA in `git show <sha>` only exists in the sibling upstream
+ * repo (e.g. `../pi`), not in otto-cli — so refute panels that try to
+ * fetch it from cwd will silently get empty context. This helper:
+ *
+ *   1. Reads the live upstream-sync config (default
+ *      `.planning/upstream-sync-config.json`).
+ *   2. Picks the upstream key from the issue's `upstream:<key>` label
+ *      (e.g. `upstream:pi-dev` → `pi-dev`).
+ *   3. Returns `config.upstreams[key].path` resolved against `repoRoot`.
+ *
+ * Throws if any step fails — silent fallback is what got us here.
+ *
+ * @returns {string} absolute path to the upstream repo
+ */
+export function resolveUpstreamRoot({ labels, configPath, repoRoot = process.cwd() }) {
+  if (!configPath) configPath = resolve(repoRoot, ".planning", "upstream-sync-config.json");
+  if (!existsSync(configPath)) throw new Error(`upstream-sync config missing at ${configPath}`);
+  const cfg = JSON.parse(readFileSync(configPath, "utf-8"));
+  const key = upstreamKeyFromLabels(labels);
+  if (!key) throw new Error(`issue has no upstream:<key> label; cannot resolve upstream root`);
+  const entry = cfg.upstreams?.[key];
+  if (!entry?.path) throw new Error(`upstream-sync config has no upstreams.${key}.path`);
+  const path = isAbsolute(entry.path) ? entry.path : resolve(repoRoot, entry.path);
+  if (!existsSync(path)) throw new Error(`upstream root not found on disk: ${path} (config key: ${key})`);
+  return path;
+}
 
 /** Materialize the input bundle shared across all four lenses. One I/O round. */
-export function buildInputBundle({ prNumber, issueNumber, upstreamSha, repo = "cmetech/otto-cli", ghRunner = defaultGhRunner, gitRunner = defaultGitRunner }) {
+export function buildInputBundle({
+  prNumber,
+  issueNumber,
+  upstreamSha,
+  repo = "cmetech/otto-cli",
+  ghRunner = defaultGhRunner,
+  gitRunner = defaultGitRunner,
+  upstreamRoot,
+  configPath,
+  repoRoot = process.cwd(),
+}) {
   const prView = JSON.parse(ghRunner(["pr", "view", String(prNumber), "--repo", repo, "--json", "number,title,body,headRefOid"]));
   const prDiff = ghRunner(["pr", "diff", String(prNumber), "--repo", repo]);
   const issueView = JSON.parse(ghRunner(["issue", "view", String(issueNumber), "--repo", repo, "--json", "number,body,labels"]));
-  const upstreamShow = gitRunner(["show", upstreamSha]);
+  // Resolve the upstream repo path automatically from the issue's
+  // `upstream:<key>` label + .planning/upstream-sync-config.json, unless
+  // the caller explicitly overrides `upstreamRoot`. The default gitRunner
+  // would otherwise run `git show <upstreamSha>` in the otto-cli repo,
+  // where the SHA does not exist — yielding silent failure for the panel.
+  const resolvedRoot = upstreamRoot ?? resolveUpstreamRoot({ labels: issueView.labels, configPath, repoRoot });
+  const upstreamShow = gitRunner(["-C", resolvedRoot, "show", upstreamSha]);
+  if (!upstreamShow || !upstreamShow.trim()) {
+    throw new Error(`empty git show output for ${upstreamSha} in ${resolvedRoot} — refute panel cannot evaluate without upstream context`);
+  }
   return {
     prNumber,
     prTitle: prView.title,
@@ -85,6 +139,7 @@ export function buildInputBundle({ prNumber, issueNumber, upstreamSha, repo = "c
     issueNumber,
     issueBody: issueView.body,
     upstreamSha,
+    upstreamRoot: resolvedRoot,
     upstreamShow,
     severity: severityFromLabels(issueView.labels),
     conflictRisk: riskFromLabels(issueView.labels),

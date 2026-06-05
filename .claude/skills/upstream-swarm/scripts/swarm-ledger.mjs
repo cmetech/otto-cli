@@ -22,8 +22,14 @@ export const VALID_TRANSITIONS = {
   "approved": ["merged"],
   "refuted": ["quarantined"],
   "merged": [],
-  "pending-human-review": [],
-  "quarantined": [],
+  // `pending-human-review` and `quarantined` were terminal in v1 — a
+  // resumable swarm needs a way to re-attempt an issue once the human has
+  // fixed the underlying cause (e.g. rebased away contamination, repaired
+  // a flaky test). `selected` puts the issue back at the head of the
+  // queue without losing audit history (retryCount / refute / reason are
+  // preserved on the issue record).
+  "pending-human-review": ["selected"],
+  "quarantined": ["selected"],
   "skipped": ["selected"],
   "fix-failed": ["retrying", "quarantined"],
   "retrying": ["fixing"],

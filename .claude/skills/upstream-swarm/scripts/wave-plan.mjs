@@ -52,11 +52,25 @@ function parseArgv(argv) {
   return { inPath, maxWaveSize, outPath };
 }
 
+/**
+ * Accept either a flat array of issues OR a select-issues.mjs output object
+ * ({autoTier, humanTier, needsTriage}). Only autoTier flows through the
+ * scheduler's pipelined waves; humanTier issues skip Phase B–C entirely
+ * (they go straight to pending-human-review) and needsTriage issues are
+ * skipped with a comment. See SKILL.md "Phase A — selection".
+ */
+export function extractWaveCandidates(parsed) {
+  if (Array.isArray(parsed)) return parsed;
+  if (parsed && Array.isArray(parsed.autoTier)) return parsed.autoTier;
+  throw new Error("wave-plan input must be an array or {autoTier:[]}");
+}
+
 if (process.argv[1] && new URL(import.meta.url).pathname === process.argv[1]) {
   try {
     const { inPath, maxWaveSize, outPath } = parseArgv(process.argv.slice(2));
     if (!inPath) throw new Error("Usage: node wave-plan.mjs <selected-issues.json> [--max-wave-size N] [--out <path>]");
-    const issues = JSON.parse(readFileSync(inPath, "utf-8"));
+    const parsed = JSON.parse(readFileSync(inPath, "utf-8"));
+    const issues = extractWaveCandidates(parsed);
     const plan = planWaves(issues, { maxWaveSize });
     const out = { waves: plan.length, total: issues.length, plan };
     if (outPath) { mkdirSync(dirname(outPath), { recursive: true }); writeFileSync(outPath, JSON.stringify(out, null, 2) + "\n"); }

@@ -5,15 +5,29 @@
  * CLI: node baseline-gate.mjs --workdir <dir> --log <path> [--base origin/main]
  */
 import { execFileSync } from "node:child_process";
-import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { mkdirSync, symlinkSync, existsSync } from "node:fs";
+import { dirname, resolve, dirname as pdir } from "node:path";
 import { fileURLToPath } from "node:url";
-import { dirname as pdir, resolve } from "node:path";
 
 const HERE = pdir(fileURLToPath(import.meta.url));
 const RUN_GATES = resolve(HERE, "..", "..", "upstream-fix", "scripts", "run-gates.mjs");
+const REPO_ROOT = resolve(HERE, "..", "..", "..", "..");
 
 function defaultWorktreeRunner(args) { return { status: 0, stdout: execFileSync("git", args, { encoding: "utf-8" }), stderr: "" }; }
+
+function defaultProvisionDeps({ workdir }) {
+  // The fresh worktree has no node_modules. Symlink the repo root's
+  // node_modules into it so `npm test` / `npm run verify:pr` can resolve
+  // deps without paying a full `npm ci` per swarm run. Same filesystem,
+  // same lock at origin/main vs HEAD in 99% of cases; correctness comes
+  // from the lock being unchanged between root and base. If you ever
+  // break this assumption, swap to `npm ci --prefer-offline --no-audit`.
+  const src = resolve(REPO_ROOT, "node_modules");
+  const dest = resolve(workdir, "node_modules");
+  if (!existsSync(src)) throw new Error(`repo-root node_modules missing at ${src}; run npm ci first`);
+  if (existsSync(dest)) return; // resume / nested call
+  symlinkSync(src, dest, "dir");
+}
 
 async function defaultGateRunner({ workdir, logPath }) {
   // Dynamic import so unit tests don't require run-gates on disk.
@@ -21,10 +35,12 @@ async function defaultGateRunner({ workdir, logPath }) {
   return runGate({ gate: "full", cwd: workdir, logPath });
 }
 
-export function runBaselineGate({ workdir, logPath, base = "origin/main", worktreeRunner = defaultWorktreeRunner, gateRunner = defaultGateRunner }) {
+export function runBaselineGate({ workdir, logPath, base = "origin/main", worktreeRunner = defaultWorktreeRunner, provisionDeps = defaultProvisionDeps, gateRunner = defaultGateRunner }) {
   mkdirSync(dirname(logPath), { recursive: true });
   // Create a detached worktree at base.
   worktreeRunner(["worktree", "add", "--detach", workdir, base]);
+  // Provision node_modules so the gate can actually run.
+  provisionDeps({ workdir });
   // gateRunner may be sync (tests) or async (real). Normalize.
   const out = gateRunner({ workdir, logPath });
   if (out && typeof out.then === "function") {

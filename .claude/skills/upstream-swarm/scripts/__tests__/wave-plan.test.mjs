@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { planWaves } from "../wave-plan.mjs";
+import { planWaves, extractWaveCandidates } from "../wave-plan.mjs";
 
 test("single wave when all issues are file-disjoint", () => {
   const issues = [
@@ -63,4 +63,24 @@ test("issue with no targetFiles still gets its own wave slot (treats as fully di
   const plan = planWaves(issues, { maxWaveSize: 3 });
   assert.equal(plan.length, 1);
   assert.equal(plan[0].length, 2);
+});
+
+test("extractWaveCandidates returns flat arrays unchanged", () => {
+  const arr = [{ number: 1, targetFiles: ["a.ts"] }];
+  assert.equal(extractWaveCandidates(arr), arr);
+});
+
+test("extractWaveCandidates pulls autoTier from select-issues output (ignores human/needsTriage)", () => {
+  const parsed = {
+    autoTier: [{ number: 1, targetFiles: ["a.ts"] }],
+    humanTier: [{ number: 2, targetFiles: ["b.ts"] }],
+    needsTriage: [{ number: 3, targetFiles: ["c.ts"] }],
+  };
+  const out = extractWaveCandidates(parsed);
+  assert.deepEqual(out.map((i) => i.number), [1]);
+});
+
+test("extractWaveCandidates throws on shapes that are neither", () => {
+  assert.throws(() => extractWaveCandidates({}));
+  assert.throws(() => extractWaveCandidates(null));
 });

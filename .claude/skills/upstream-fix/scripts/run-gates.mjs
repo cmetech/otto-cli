@@ -28,7 +28,11 @@ function defaultRunner(cmd, args, cwd) {
 }
 
 // The `full` gate chains two heavy commands; all others are single commands.
-const FULL_STEPS = [["npm", "test"], ["npm", "run", "verify:pr"]];
+// Order matters: `verify:pr` runs `build:core` first, which populates the
+// gitignored `packages/*/dist/` artifacts that several unit tests load via
+// dynamic import (e.g. extension-load-perf.test.ts). Running `npm test`
+// before the build leaves those dist files missing and the suite red.
+const FULL_STEPS = [["npm", "run", "verify:pr"], ["npm", "test"]];
 
 export function runGate({ gate, cwd, logPath, targetFiles = [], testFile = null, runner = defaultRunner }) {
   // Build the ordered list of [cmd, ...args] steps this gate runs.

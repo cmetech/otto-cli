@@ -14,6 +14,7 @@ test("returns pass when run-gates returns pass", async () => {
       workdir: dir,
       logPath: join(dir, "baseline.log"),
       worktreeRunner: (args) => ({ status: 0, stdout: "worktree created", stderr: "" }),
+      provisionDeps: () => {},
       gateRunner: () => ({ pass: true, failTail: "" }),
     });
     assert.equal(r.pass, true);
@@ -28,6 +29,7 @@ test("returns pass:false + failTail when run-gates returns fail", () => {
       workdir: dir,
       logPath: join(dir, "baseline.log"),
       worktreeRunner: () => ({ status: 0, stdout: "", stderr: "" }),
+      provisionDeps: () => {},
       gateRunner: () => ({ pass: false, failTail: "AssertionError: foo\n2 failures" }),
     });
     assert.equal(r.pass, false);
@@ -43,7 +45,20 @@ test("uses a fresh worktree at origin/main by default", () => {
     logPath: "/tmp/x/baseline.log",
     base: "origin/main",
     worktreeRunner: (args) => { observed = args; return { status: 0 }; },
+    provisionDeps: () => {},
     gateRunner: () => ({ pass: true, failTail: "" }),
   });
   assert.ok(observed.includes("origin/main"), "worktree should be created at origin/main");
+});
+
+test("provisions deps after worktree creation, before running the gate", () => {
+  const order = [];
+  runBaselineGate({
+    workdir: "/tmp/x",
+    logPath: "/tmp/x/baseline.log",
+    worktreeRunner: () => { order.push("worktree"); return { status: 0 }; },
+    provisionDeps: () => { order.push("provision"); },
+    gateRunner: () => { order.push("gate"); return { pass: true, failTail: "" }; },
+  });
+  assert.deepEqual(order, ["worktree", "provision", "gate"]);
 });

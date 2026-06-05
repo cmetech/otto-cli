@@ -82,6 +82,23 @@ test("split allowlist: missing REQUIRED check still blocks", () => {
   assert.ok(r.blocking.some((b) => b.name === "build" && /missing/.test(b.reason)));
 });
 
+test("a `skipping` required check counts as pass (workflow path-filter said skip)", () => {
+  // Docs-only PRs trigger workflow-level path filters that skip heavy jobs.
+  // `skipping` is GitHub's signal that the workflow decided not to run, not a
+  // failure. Treating it as pass avoids false-positive blocks on docs PRs.
+  const checks = PR64.map((c) => (c.name === "build" || c.name === "test-unit" || c.name === "test-packages") ? { ...c, bucket: "skipping" } : c);
+  const r = evaluateChecks(checks, SPLIT);
+  assert.equal(r.pass, true, JSON.stringify(r));
+  assert.equal(r.blocking.length, 0);
+});
+
+test("a `skipping` conditional check also counts as pass", () => {
+  const checks = PR64.map((c) => (c.name === "cargo audit") ? { ...c, bucket: "skipping" } : c);
+  const r = evaluateChecks(checks, SPLIT);
+  assert.equal(r.pass, true);
+  assert.equal(r.blocking.length, 0);
+});
+
 test("loadAllowlist reads requiredChecks + conditionalChecks from config.json", () => {
   const here = dirname(fileURLToPath(import.meta.url));
   const cfg = join(here, "..", "..", "config.json");

@@ -1,0 +1,11 @@
+{
+  "autoMergeSeverities": ["nice-to-have-fix"],
+  "humanReviewSeverities": ["feature", "critical-stability"],
+  "defaultCaps": {
+    "fixConcurrency": 3,
+    "prWindow": 10,
+    "refuteConcurrency": 5,
+    "maxWaveSize": 3
+  },
+  "abortThreshold": 5
+}

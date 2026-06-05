@@ -54,6 +54,12 @@ of issues*. Therefore:
 
 ## Phase A — Plan (deterministic, up front)
 
+**`--single-issue` mode override.** When `--single-issue <N>` is set,
+select-issues filters to exactly that number; plan-lanes returns one lane
+with one issue; worktree-setup uses `singleIssueBranch(N, sha)` from
+`single-issue-mode.mjs`; integration uses `singleIssueIntegrationBranch`
+(same branch); PR title uses `singleIssuePrTitle`.
+
 1. **Resolve the filter** from the invocation (e.g. `--severity critical-stability`,
    `--issues 62,63`, `--all`). Set `DATE=$(date +%F)` and
    `DIR=.planning/upstream-fixes`.
@@ -236,6 +242,12 @@ RETURN CONTRACT — output ONE line per issue, NOTHING else (no diffs, no logs):
 - `--resume` — idempotent re-run from the ledger; skips `status:applied`.
 - `--severity | --type | --label | --issues | --all` — selection groupings (Task 3).
 - `--guidance-dir <dir>` — alternate guidance directory.
+- `--single-issue <N>` — short-circuit planning to exactly one issue. The
+  fix runs on its own per-issue branch `fix/upstream-issue-<N>-<sha>`,
+  opens exactly one PR titled
+  `fix(upstream): <subject> (closes #N)`, and skips the bundled-integration
+  step entirely. Used by the `upstream-swarm` orchestrator. Composable
+  with `--auto-merge` to hand the PR straight to `upstream-merge --auto`.
 
 ## References
 

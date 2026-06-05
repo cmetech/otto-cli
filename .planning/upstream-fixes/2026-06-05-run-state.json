@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "date": "2026-06-05",
+  "filter": "--issues 53",
+  "integrationBranch": "integration/upstream-fix-2026-06-05",
+  "prUrl": "https://github.com/cmetech/otto-cli/pull/74",
+  "finalSuite": {
+    "pass": false,
+    "note": "9730 pass / 3 fail — all pre-existing baseline rot (EACCES rg copy, missing local vendor/xlsx tarball); zero new failures from #53"
+  },
+  "lanes": {
+    "1": {
+      "issues": [
+        "53"
+      ],
+      "files": [
+        "packages/pi-coding-agent/src/modes/interactive/components/config-selector.ts"
+      ],
+      "branch": "fix/upstream-lane-1",
+      "worktree": ".worktrees/upstream-fix-lane-1",
+      "status": "done"
+    }
+  },
+  "issues": {
+    "53": {
+      "lane": 1,
+      "sha": "baf4028",
+      "guidancePath": ".planning/upstream-audits/guidance/baf4028.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/components/config-selector.ts"
+      ],
+      "status": "resolved",
+      "commitSha": "8458839",
+      "touchedFiles": [],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": null,
+      "reviewerReason": null,
+      "reason": "honor item.metadata.baseDir in getResourcePattern + regression test"
+    }
+  }
+}

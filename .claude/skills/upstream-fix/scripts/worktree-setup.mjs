@@ -14,10 +14,18 @@ function branchExists(branch, gitRunner) {
   catch { return false; }
 }
 
-export function setupWorktree({ laneId, base = "main", gitRunner = defaultGitRunner }) {
+export function setupWorktree({ laneId, base = "origin/main", gitRunner = defaultGitRunner, fetch = true }) {
   const branch = `fix/upstream-lane-${laneId}`;
   const worktree = `.worktrees/upstream-fix-lane-${laneId}`;
   if (!SAFE.test(base) || !SAFE.test(branch)) throw new Error(`unsafe base/branch name: ${base} / ${branch}`);
+
+  // Always fetch first when basing off a remote ref so the worktree picks up
+  // the latest origin state. Prevents local-main contamination — see
+  // preflight-clean-main.mjs in upstream-swarm/scripts for the swarm-level
+  // guard. The fetch is cheap; skip it via fetch:false in unit tests.
+  if (fetch && base.startsWith("origin/")) {
+    gitRunner(["fetch", "origin", "--prune"]);
+  }
 
   if (branchExists(branch, gitRunner)) {
     gitRunner(["worktree", "add", worktree, branch]);

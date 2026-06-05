@@ -88,6 +88,41 @@ Fold one compact verdict line per PR into the ledger via `recordVerdict`. If a
 failure needs inspection, dispatch a subagent or read the on-disk log with a
 **bounded** line range — never `cat` a whole log.
 
+## Phase B.5 — Refute panel (only under `--auto`)
+
+When invoked without `--auto`, the human IS the refute step — skip Phase B.5.
+Under `--auto`, after Phase B confirms both signals green, dispatch the
+multi-lens refute panel before any merge:
+
+1. Build the shared input bundle once per PR:
+   ```sh
+   node -e "import('./.claude/skills/upstream-merge/scripts/refute-panel.mjs').then(async m => {
+     const b = m.buildInputBundle({ prNumber: PR, issueNumber: ISSUE, upstreamSha: SHA });
+     console.log(JSON.stringify(b));
+   })"
+   ```
+2. Dispatch 4 lens subagents in parallel via `agent()` (Workflow tool) or
+   the equivalent fan-out primitive. Each lens uses `agentType: "general-purpose"`
+   and a schema-forced output (see `refute-panel.mjs` for the schema).
+3. Apply `tallyVerdicts` to get the panel verdict.
+4. If REFUTE: post the consolidated comment via `gh pr comment`, label the
+   issue `status:needs-human`, do NOT merge. Record `refuteVerdict` and
+   `refuteReason` in the ledger.
+5. If APPROVE: proceed to Phase C with `--refute-verdict approve`.
+
+Lens prompts live in `refute-panel.mjs`. Each lens is given the bundle and
+asked one question (upstream-alignment / scope-discipline / test-quality /
+blast-radius). Schema:
+
+```json
+{
+  "verdict": "approve" | "refute" | "abstain",
+  "confidence": 0.0-1.0,
+  "reason": "<= 200 chars",
+  "blocking": boolean
+}
+```
+
 ## Phase C — Merge (per PR with a passing verdict)
 
 1. **Human gate (default).** Present the verdict via `AskUserQuestion` (required
@@ -95,7 +130,8 @@ failure needs inspection, dispatch a subagent or read the on-disk log with a
    Under `--auto`, skip the prompt.
 2. **Merge.**
    ```sh
-   node .claude/skills/upstream-merge/scripts/merge-pr.mjs <n> --repo cmetech/otto-cli
+   node .claude/skills/upstream-merge/scripts/merge-pr.mjs <n> --repo cmetech/otto-cli \
+     ${AUTO:+--auto --refute-verdict $REFUTE_VERDICT}
    ```
    Record `mergeSha` + status `merged` via `recordMerge`.
 3. **Post-merge.** Verify the PR's linked issues are closed (`upstream-fix`
@@ -115,6 +151,9 @@ failure needs inspection, dispatch a subagent or read the on-disk log with a
 ## Flags
 
 - `--auto` / `--yes` — skip the human merge gate.
+- `--auto-refute` — implies `--auto` AND runs Phase B.5 refute panel
+  before each merge. The swarm orchestrator always passes this; humans
+  invoking `upstream-merge` directly normally do not.
 - `--dry-run` — select + confirm, merge nothing.
 - `--resume` — idempotent re-run from the ledger; already-`merged` PRs skipped.
 - `--filter <glob>` — override the default head-branch filter.

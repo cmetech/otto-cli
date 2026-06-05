@@ -107,3 +107,58 @@ test("VALID_TRANSITIONS allows fix-ok → pending-human-review (severity routing
 test("VALID_TRANSITIONS includes the skip→selected re-entry edge", () => {
   assert.ok((VALID_TRANSITIONS["skipped"] ?? []).includes("selected"));
 });
+
+// -----------------------------------------------------------------------
+// Recovery edges: quarantined / pending-human-review → selected
+// Autonomous swarm runs need a documented re-attempt path. Both states
+// were terminal in v1, which forced hand-edits to recover. Re-entry to
+// `selected` puts the issue back at the queue head while preserving
+// retryCount / refute / reason audit fields on the issue record.
+// -----------------------------------------------------------------------
+
+test("VALID_TRANSITIONS allows quarantined → selected (operator re-attempt)", () => {
+  assert.ok((VALID_TRANSITIONS["quarantined"] ?? []).includes("selected"));
+});
+
+test("VALID_TRANSITIONS allows pending-human-review → selected (after human resolves blocker)", () => {
+  assert.ok((VALID_TRANSITIONS["pending-human-review"] ?? []).includes("selected"));
+});
+
+test("recordTransition: quarantined → selected preserves retryCount and refute audit fields", () => {
+  const dir = tmp();
+  const path = join(dir, "state.json");
+  initSwarmLedger(path, { date: "2026-06-05", filter: "x", issues: [{ number: 42, severity: "nice-to-have-fix", sha: "abc" }] });
+  // Walk through retry + quarantine, then re-attempt.
+  recordTransition(path, 42, "planning");
+  recordTransition(path, 42, "fixing");
+  recordTransition(path, 42, "fix-failed");
+  recordRetry(path, 42, "transient CI flake");
+  recordTransition(path, 42, "fixing");
+  recordTransition(path, 42, "fix-failed");
+  recordTransition(path, 42, "quarantined", { reason: "retry cap hit" });
+  // Operator's recovery action:
+  recordTransition(path, 42, "selected", { reason: "human resolved upstream flake" });
+  const issue = readLedger(path).issues["42"];
+  assert.equal(issue.state, "selected");
+  assert.equal(issue.retryCount, 1, "retryCount must persist across re-attempt");
+  assert.equal(issue.retryReason, "transient CI flake", "retryReason must persist for audit");
+  assert.equal(issue.reason, "human resolved upstream flake");
+});
+
+test("recordTransition: pending-human-review → selected (severity:feature re-tier example)", () => {
+  const dir = tmp();
+  const path = join(dir, "state.json");
+  initSwarmLedger(path, { date: "2026-06-05", filter: "x", issues: [{ number: 99, severity: "feature", sha: "def" }] });
+  recordTransition(path, 99, "planning");
+  recordTransition(path, 99, "fixing");
+  recordTransition(path, 99, "fix-ok", { prNumber: 200 });
+  recordTransition(path, 99, "pending-human-review");
+  recordTransition(path, 99, "selected", { reason: "re-classified to nice-to-have-fix" });
+  const issue = readLedger(path).issues["99"];
+  assert.equal(issue.state, "selected");
+  assert.equal(issue.prNumber, 200, "prNumber audit must persist");
+});
+
+test("merged stays a true dead-end (no recovery edge)", () => {
+  assert.deepEqual(VALID_TRANSITIONS["merged"], [], "merged must remain terminal");
+});

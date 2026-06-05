@@ -51,3 +51,56 @@ test("returns null sha when mergeCommit never populates within budget", () => {
 test("rejects a non-integer PR number", () => {
   assert.throws(() => mergePr({ number: "64; rm -rf /", ghRunner: () => "" }), /integer/);
 });
+
+test("auto mode merges when refute verdict is approve", () => {
+  const calls = [];
+  const r = mergePr({
+    number: 99,
+    auto: true,
+    refuteVerdict: "approve",
+    ghRunner: (args) => { calls.push(args); return args[1] === "merge" ? "" : JSON.stringify({ mergeCommit: { oid: "abcdef1234" } }); },
+    sleep: () => {},
+  });
+  assert.equal(r.merged, true);
+  assert.equal(r.sha, "abcdef1");
+  assert.ok(calls.some((c) => c[0] === "pr" && c[1] === "merge"), "expected gh pr merge invocation");
+});
+
+test("auto mode refuses to merge when refute verdict is refute", () => {
+  const calls = [];
+  const r = mergePr({
+    number: 99,
+    auto: true,
+    refuteVerdict: "refute",
+    refuteReason: "scope-discipline refuted",
+    ghRunner: (args) => { calls.push(args); return ""; },
+    sleep: () => {},
+  });
+  assert.equal(r.merged, false);
+  assert.equal(r.blockedBy, "refute");
+  assert.match(r.reason, /scope-discipline/);
+  assert.ok(!calls.some((c) => c[0] === "pr" && c[1] === "merge"), "must NOT call gh pr merge");
+});
+
+test("auto mode refuses to merge when refute verdict is missing (fail-safe)", () => {
+  const calls = [];
+  const r = mergePr({
+    number: 99,
+    auto: true,
+    ghRunner: (args) => { calls.push(args); return ""; },
+    sleep: () => {},
+  });
+  assert.equal(r.merged, false);
+  assert.equal(r.blockedBy, "refute-missing");
+  assert.ok(!calls.some((c) => c[0] === "pr" && c[1] === "merge"), "must NOT call gh pr merge without a refute verdict");
+});
+
+test("non-auto mode still merges without consulting refute verdict (backward compatible)", () => {
+  const r = mergePr({
+    number: 99,
+    ghRunner: (args) => args[1] === "merge" ? "" : JSON.stringify({ mergeCommit: { oid: "deadbee1234" } }),
+    sleep: () => {},
+  });
+  assert.equal(r.merged, true);
+  assert.equal(r.sha, "deadbee");
+});

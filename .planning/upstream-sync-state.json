@@ -7,7 +7,9 @@
       "lastReportPath": "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/.planning/upstream-audits/2026-05-30-pi-dev-audit.md"
     },
     "gsd-pi": {
-      "lastAnalyzedCommit": "v1.0.1"
+      "lastAnalyzedCommit": "ed811bc5c5f36af152b4837f0f06fd09d5e3e18c",
+      "lastAnalyzedAt": "2026-06-05T21:53:09.702Z",
+      "lastReportPath": "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/.planning/upstream-audits/2026-06-05-gsd-pi-audit.md"
     }
   }
 }

@@ -37,9 +37,20 @@ issue, one merge-line per merged issue. Resume reads the durable ledger.
 
 ## Phase A — Pre-flight + selection (deterministic, up front)
 
-1. **Baseline gate.** Run the full local gate against `origin/main`:
+1. **Clean-main preflight.** Refuse to run if local `main` is ahead of
+   `origin/main` — those unpushed commits would otherwise leak into every
+   per-issue PR opened by the swarm:
    ```sh
    DATE=$(date +%F); DIR=.planning/upstream-swarms
+   node .claude/skills/upstream-swarm/scripts/preflight-clean-main.mjs
+   ```
+   On `clean:false` (exit 2), STOP — print the printed `message` (which
+   names the offending commit count + the recovery command) and exit
+   non-zero. Resuming requires the operator to push, stash, or reset
+   local main first.
+
+2. **Baseline gate.** Run the full local gate against `origin/main`:
+   ```sh
    node .claude/skills/upstream-swarm/scripts/baseline-gate.mjs \
      --workdir .worktrees/upstream-swarm-baseline \
      --log $DIR/$DATE-baseline-gate.log
@@ -48,7 +59,7 @@ issue, one merge-line per merged issue. Resume reads the durable ledger.
    write a baseline-rot report and exit non-zero. Resuming requires the
    baseline rot to be addressed.
 
-2. **Select + partition.** Pull all open `status:triaged` cherry-pick
+3. **Select + partition.** Pull all open `status:triaged` cherry-pick
    candidates and split into auto-tier (`severity:nice-to-have-fix`) and
    human-tier (`severity:feature`, `severity:critical-stability`):
    ```sh
@@ -61,14 +72,14 @@ issue, one merge-line per merged issue. Resume reads the durable ledger.
    Phase B–C and go straight to "pending-human-review" after fix opens
    the PR.
 
-3. **Plan waves.** Greedy file-disjoint partitioning capped at `--max-wave-size`:
+4. **Plan waves.** Greedy file-disjoint partitioning capped at `--max-wave-size`:
    ```sh
    node .claude/skills/upstream-swarm/scripts/wave-plan.mjs \
      $DIR/$DATE-selected.json --max-wave-size 3 \
      --out $DIR/$DATE-waves.json
    ```
 
-4. **Initialize the ledger** (skip on `--resume`):
+5. **Initialize the ledger** (skip on `--resume`):
    ```sh
    node -e "import('./.claude/skills/upstream-swarm/scripts/swarm-ledger.mjs').then(m => {
      const fs = require('fs');

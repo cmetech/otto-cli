@@ -98,6 +98,12 @@ test("recordRetry refuses to retry past the hard cap of 1", () => {
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
+test("VALID_TRANSITIONS allows fix-ok → pending-human-review (severity routing path)", () => {
+  const allowed = VALID_TRANSITIONS["fix-ok"];
+  assert.ok(allowed.includes("awaiting-ci"), "auto-tier path must remain");
+  assert.ok(allowed.includes("pending-human-review"), "human-tier path must be allowed");
+});
+
 test("VALID_TRANSITIONS includes the skip→selected re-entry edge", () => {
   assert.ok((VALID_TRANSITIONS["skipped"] ?? []).includes("selected"));
 });

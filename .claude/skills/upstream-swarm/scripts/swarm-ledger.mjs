@@ -12,7 +12,7 @@ export const VALID_TRANSITIONS = {
   "selected": ["planning", "skipped"],
   "planning": ["fixing", "skipped"],
   "fixing": ["fix-ok", "fix-failed"],
-  "fix-ok": ["awaiting-ci"],
+  "fix-ok": ["awaiting-ci", "pending-human-review"],
   "awaiting-ci": ["ci-green", "ci-red"],
   "ci-green": ["local-gate-pending"],
   "ci-red": ["retrying", "quarantined"],

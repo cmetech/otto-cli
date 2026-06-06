@@ -1,0 +1,631 @@
+{
+  "autoTier": [
+    {
+      "number": 352,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "243147a",
+      "guidancePath": ".planning/upstream-audits/guidance/243147a.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-recovery.ts",
+        "src/resources/extensions/workflow/tests/auto-recovery.test.ts",
+        "src/tests/mcp-server.test.ts"
+      ]
+    },
+    {
+      "number": 348,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9477a62",
+      "guidancePath": ".planning/upstream-audits/guidance/9477a62.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/root-write-leak-guard.ts",
+        "src/resources/extensions/workflow/tests/root-write-leak-guard.test.ts"
+      ]
+    },
+    {
+      "number": 347,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "934515a",
+      "guidancePath": ".planning/upstream-audits/guidance/934515a.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/agent-session.ts",
+        "packages/pi-coding-agent/src/core/agent-session-command-errors.test.ts (new file)"
+      ]
+    },
+    {
+      "number": 342,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "2ff3dec",
+      "guidancePath": ".planning/upstream-audits/guidance/2ff3dec.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/google-shared.ts",
+        "packages/pi-ai/src/providers/google-shared.test.ts"
+      ]
+    },
+    {
+      "number": 341,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "814999d",
+      "guidancePath": ".planning/upstream-audits/guidance/814999d.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/workflow-mcp.ts",
+        "src/resources/extensions/workflow/tests/workflow-mcp.test.ts"
+      ]
+    },
+    {
+      "number": 340,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "b56c483",
+      "guidancePath": ".planning/upstream-audits/guidance/b56c483.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/auto-post-unit.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/quick.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/uok-gitops-wiring.test.ts"
+      ]
+    },
+    {
+      "number": 336,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "298a513",
+      "guidancePath": ".planning/upstream-audits/guidance/298a513.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-model-selection.ts",
+        "src/resources/extensions/workflow/tests/auto-model-selection.test.ts"
+      ]
+    },
+    {
+      "number": 333,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "ad376fe",
+      "guidancePath": ".planning/upstream-audits/guidance/ad376fe.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/codebase-generator.ts"
+      ]
+    },
+    {
+      "number": 329,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "7b1ff8c",
+      "guidancePath": ".planning/upstream-audits/guidance/7b1ff8c.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/verification-gate.ts",
+        "src/resources/extensions/workflow/tests/verification-gate.test.ts"
+      ]
+    },
+    {
+      "number": 328,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "2c2b925",
+      "guidancePath": ".planning/upstream-audits/guidance/2c2b925.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-verification.ts",
+        "src/resources/extensions/workflow/tests/post-exec-retry-bypass.test.ts"
+      ]
+    },
+    {
+      "number": 322,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9849f0a",
+      "guidancePath": ".planning/upstream-audits/guidance/9849f0a.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/cli/list-models.ts",
+        "packages/pi-coding-agent/src/cli/__tests__/list-models.test.ts (new file)"
+      ]
+    },
+    {
+      "number": 307,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "91c18da",
+      "guidancePath": ".planning/upstream-audits/guidance/91c18da.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/markdown-renderer.ts",
+        "src/resources/extensions/workflow/tests/planning-crossval.test.ts"
+      ]
+    },
+    {
+      "number": 304,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9814712",
+      "guidancePath": ".planning/upstream-audits/guidance/9814712.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/state-reconciliation/drift/stale-render.ts"
+      ]
+    },
+    {
+      "number": 303,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "5754851",
+      "guidancePath": ".planning/upstream-audits/guidance/5754851.md",
+      "targetFiles": [
+        "package.json",
+        "package-lock.json"
+      ]
+    },
+    {
+      "number": 300,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "8bb2905",
+      "guidancePath": ".planning/upstream-audits/guidance/8bb2905.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/prompts/complete-slice.md",
+        "src/resources/extensions/workflow/tests/prompt-contracts.test.ts"
+      ]
+    },
+    {
+      "number": 298,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "72748c0",
+      "guidancePath": ".planning/upstream-audits/guidance/72748c0.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/preferences.ts",
+        "src/resources/extensions/workflow/rule-registry.ts",
+        "src/resources/extensions/workflow/tests/rule-registry.test.ts (extend)"
+      ]
+    },
+    {
+      "number": 291,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "ad688c3",
+      "guidancePath": ".planning/upstream-audits/guidance/ad688c3.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/mistral.ts"
+      ]
+    },
+    {
+      "number": 289,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "89c71c2",
+      "guidancePath": ".planning/upstream-audits/guidance/89c71c2.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/google-shared.ts",
+        "packages/pi-ai/test/google-shared-convert-tools.test.ts (new)"
+      ]
+    },
+    {
+      "number": 283,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "34e06be",
+      "guidancePath": ".planning/upstream-audits/guidance/34e06be.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/mistral.ts"
+      ]
+    },
+    {
+      "number": 282,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "91a9ca3",
+      "guidancePath": ".planning/upstream-audits/guidance/91a9ca3.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/mistral.ts"
+      ]
+    },
+    {
+      "number": 280,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "aadeaa4",
+      "guidancePath": ".planning/upstream-audits/guidance/aadeaa4.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/controllers/chat-controller.ts",
+        "packages/pi-coding-agent/src/core/chat-controller-ordering.test.ts"
+      ]
+    },
+    {
+      "number": 278,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "7448d89",
+      "guidancePath": ".planning/upstream-audits/guidance/7448d89.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/components/tool-execution.ts",
+        "packages/pi-coding-agent/src/core/chat-controller-ordering.test.ts"
+      ]
+    },
+    {
+      "number": 276,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "b136f0f",
+      "guidancePath": ".planning/upstream-audits/guidance/b136f0f.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/packages/pi-coding-agent/src/modes/interactive/components/tool-execution.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/packages/pi-coding-agent/src/modes/interactive/components/chat-turn-connect.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/packages/pi-coding-agent/src/modes/interactive/components/__tests__/tool-execution.test.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/packages/pi-coding-agent/src/modes/interactive/components/chat-turn-connect.test.ts (new)"
+      ]
+    },
+    {
+      "number": 273,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "3b39057",
+      "guidancePath": ".planning/upstream-audits/guidance/3b39057.md",
+      "targetFiles": [
+        "packages/pi-ai/scripts/generate-models.ts"
+      ]
+    },
+    {
+      "number": 267,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9ee21a9",
+      "guidancePath": ".planning/upstream-audits/guidance/9ee21a9.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/memory-store.ts"
+      ]
+    },
+    {
+      "number": 266,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "2198b98",
+      "guidancePath": ".planning/upstream-audits/guidance/2198b98.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/knowledge-projection.ts",
+        "src/resources/extensions/workflow/tests/knowledge-backfill-projection.test.ts (NEW)"
+      ]
+    },
+    {
+      "number": 265,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "584f887",
+      "guidancePath": ".planning/upstream-audits/guidance/584f887.md",
+      "targetFiles": [
+        "scripts/install.js",
+        "scripts/postinstall.js",
+        "src/tests/postinstall.test.ts"
+      ]
+    },
+    {
+      "number": 252,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "c0649d3",
+      "guidancePath": ".planning/upstream-audits/guidance/c0649d3.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/bootstrap/register-extension.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/register-extension-guard.test.ts"
+      ]
+    },
+    {
+      "number": 242,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "824f73b",
+      "guidancePath": ".planning/upstream-audits/guidance/824f73b.md",
+      "targetFiles": [
+        "scripts/run-package-tests.cjs"
+      ]
+    },
+    {
+      "number": 233,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "496f798",
+      "guidancePath": ".planning/upstream-audits/guidance/496f798.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/tools/validate-milestone.ts",
+        "src/resources/extensions/workflow/tests/validate-milestone-write-order.test.ts"
+      ]
+    },
+    {
+      "number": 228,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "2a75f7f",
+      "guidancePath": ".planning/upstream-audits/guidance/2a75f7f.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto.ts",
+        "src/resources/extensions/workflow/tests/session-model-override.test.ts"
+      ]
+    },
+    {
+      "number": 222,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "c4d3996",
+      "guidancePath": ".planning/upstream-audits/guidance/c4d3996.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/auto-worktree.ts"
+      ]
+    },
+    {
+      "number": 199,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "c2f6d35",
+      "guidancePath": ".planning/upstream-audits/guidance/c2f6d35.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/milestone-actions.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/park-milestone.test.ts"
+      ]
+    },
+    {
+      "number": 182,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "8368025",
+      "guidancePath": ".planning/upstream-audits/guidance/8368025.md",
+      "targetFiles": [
+        ".github/workflows/npm-publish.yml"
+      ]
+    },
+    {
+      "number": 174,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "7a4a8a3",
+      "guidancePath": ".planning/upstream-audits/guidance/7a4a8a3.md",
+      "targetFiles": [
+        "scripts/validate-pack.js"
+      ]
+    },
+    {
+      "number": 173,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "892cab0",
+      "guidancePath": ".planning/upstream-audits/guidance/892cab0.md",
+      "targetFiles": [
+        "scripts/validate-pack.js"
+      ]
+    },
+    {
+      "number": 171,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "82e6398",
+      "guidancePath": ".planning/upstream-audits/guidance/82e6398.md",
+      "targetFiles": [
+        "scripts/validate-pack.js"
+      ]
+    },
+    {
+      "number": 169,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "871910a",
+      "guidancePath": ".planning/upstream-audits/guidance/871910a.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/tests/dist-redirect.mjs"
+      ]
+    },
+    {
+      "number": 160,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "85a4cb0",
+      "guidancePath": ".planning/upstream-audits/guidance/85a4cb0.md",
+      "targetFiles": [
+        "scripts/validate-pack.sh"
+      ]
+    },
+    {
+      "number": 150,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "e2544a9",
+      "guidancePath": ".planning/upstream-audits/guidance/e2544a9.md",
+      "targetFiles": [
+        "src/resources/extensions/context7/index.ts",
+        "src/resources/extensions/search-the-web/native-search.ts",
+        "src/tests/native-search.test.ts"
+      ]
+    },
+    {
+      "number": 138,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "97d4ddb",
+      "guidancePath": ".planning/upstream-audits/guidance/97d4ddb.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto/phases.ts",
+        "src/resources/extensions/workflow/tests/auto-loop.test.ts"
+      ]
+    },
+    {
+      "number": 126,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "5d3c33d",
+      "guidancePath": ".planning/upstream-audits/guidance/5d3c33d.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-post-unit.ts",
+        "src/resources/extensions/workflow/tests/post-unit-retry-on-orchestrator-bridge.test.ts (NEW)"
+      ]
+    },
+    {
+      "number": 125,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "769998a",
+      "guidancePath": ".planning/upstream-audits/guidance/769998a.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto/phases.ts",
+        "src/resources/extensions/workflow/user-input-boundary.ts",
+        "src/resources/extensions/workflow/tests/user-input-boundary.test.ts (new)"
+      ]
+    },
+    {
+      "number": 121,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "7b944da",
+      "guidancePath": ".planning/upstream-audits/guidance/7b944da.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/openai-responses-shared.ts",
+        "packages/pi-ai/test/openai-responses-foreign-toolcall-id.test.ts (new)"
+      ]
+    },
+    {
+      "number": 115,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9502332",
+      "guidancePath": ".planning/upstream-audits/guidance/9502332.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repository-registry.ts",
+        "src/resources/extensions/workflow/tests/repository-registry.test.ts"
+      ]
+    },
+    {
+      "number": 106,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "c5057c9",
+      "guidancePath": ".planning/upstream-audits/guidance/c5057c9.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/state-reconciliation/index.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/state-reconciliation-drift.test.ts"
+      ]
+    },
+    {
+      "number": 99,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "2c830cd",
+      "guidancePath": ".planning/upstream-audits/guidance/2c830cd.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-verification.ts",
+        "src/resources/extensions/workflow/tests/post-exec-retry-bypass.test.ts"
+      ]
+    },
+    {
+      "number": 95,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "83f54b1",
+      "guidancePath": ".planning/upstream-audits/guidance/83f54b1.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts",
+        "src/resources/extensions/workflow/tests/project-relocation-recovery.test.ts (new)"
+      ]
+    },
+    {
+      "number": 93,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "8aaf7fa",
+      "guidancePath": ".planning/upstream-audits/guidance/8aaf7fa.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts",
+        "src/resources/extensions/workflow/tests/project-relocation-recovery.test.ts"
+      ]
+    },
+    {
+      "number": 91,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9a20e26",
+      "guidancePath": ".planning/upstream-audits/guidance/9a20e26.md",
+      "targetFiles": [
+        "packages/mcp-server/src/server.ts",
+        "packages/mcp-server/src/session-manager.ts",
+        "packages/mcp-server/src/workflow-tools.ts",
+        "packages/mcp-server/src/mcp-server.test.ts",
+        "packages/mcp-server/src/workflow-tools.test.ts"
+      ]
+    },
+    {
+      "number": 90,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9171fc3",
+      "guidancePath": ".planning/upstream-audits/guidance/9171fc3.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/worktree-state-projection.ts",
+        "src/resources/extensions/workflow/tests/worktree-state-projection.test.ts"
+      ]
+    }
+  ],
+  "humanTier": [
+    {
+      "number": 345,
+      "severity": "critical-stability",
+      "type": "cherry-pick-candidate",
+      "sha": "fc39cdc",
+      "guidancePath": ".planning/upstream-audits/guidance/fc39cdc.md",
+      "targetFiles": [
+        "src/resources/extensions/ollama/model-capabilities.ts",
+        "src/resources/extensions/ollama/ollama-discovery.ts",
+        "src/resources/extensions/ollama/tests/model-capabilities.test.ts",
+        "src/resources/extensions/ollama/tests/ollama-discovery-priority.test.ts (new)"
+      ]
+    },
+    {
+      "number": 343,
+      "severity": "critical-stability",
+      "type": "cherry-pick-candidate",
+      "sha": "58227e0",
+      "guidancePath": ".planning/upstream-audits/guidance/58227e0.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/crash-log.ts",
+        "src/resources/extensions/workflow/tests/crash-handler-secondary.test.ts"
+      ]
+    },
+    {
+      "number": 326,
+      "severity": "feature",
+      "type": "cherry-pick-candidate",
+      "sha": "941b208",
+      "guidancePath": ".planning/upstream-audits/guidance/941b208.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/preferences-models.ts",
+        "src/resources/extensions/workflow/preferences-types.ts",
+        "src/resources/extensions/workflow/tests/model-unittype-mapping.test.ts"
+      ]
+    },
+    {
+      "number": 285,
+      "severity": "feature",
+      "type": "cherry-pick-candidate",
+      "sha": "90652ad",
+      "guidancePath": ".planning/upstream-audits/guidance/90652ad.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/components/tool-execution.ts",
+        "packages/pi-coding-agent/src/modes/interactive/controllers/chat-controller.ts",
+        "packages/pi-coding-agent/src/core/chat-controller-ordering.test.ts"
+      ]
+    }
+  ],
+  "needsTriage": [
+    {
+      "number": 52,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "b3ed545",
+      "guidancePath": ".planning/upstream-audits/guidance/b3ed545.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 47,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "2e1f07b",
+      "guidancePath": ".planning/upstream-audits/guidance/2e1f07b.md",
+      "targetFiles": [],
+      "needsTriage": true
+    }
+  ]
+}

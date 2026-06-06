@@ -1,0 +1,87 @@
+{
+  "waves": 6,
+  "total": 6,
+  "plan": [
+    [
+      {
+        "number": 90,
+        "severity": "nice-to-have-fix",
+        "type": "cherry-pick-candidate",
+        "sha": "9171fc3",
+        "guidancePath": ".planning/upstream-audits/guidance/9171fc3.md",
+        "targetFiles": [
+          "src/resources/extensions/workflow/worktree-state-projection.ts",
+          "src/resources/extensions/workflow/tests/worktree-state-projection.test.ts"
+        ]
+      }
+    ],
+    [
+      {
+        "number": 91,
+        "severity": "nice-to-have-fix",
+        "type": "cherry-pick-candidate",
+        "sha": "9a20e26",
+        "guidancePath": ".planning/upstream-audits/guidance/9a20e26.md",
+        "targetFiles": [
+          "packages/mcp-server/src/server.ts",
+          "packages/mcp-server/src/session-manager.ts",
+          "packages/mcp-server/src/workflow-tools.ts",
+          "packages/mcp-server/src/mcp-server.test.ts",
+          "packages/mcp-server/src/workflow-tools.test.ts"
+        ]
+      }
+    ],
+    [
+      {
+        "number": 93,
+        "severity": "nice-to-have-fix",
+        "type": "cherry-pick-candidate",
+        "sha": "8aaf7fa",
+        "guidancePath": ".planning/upstream-audits/guidance/8aaf7fa.md",
+        "targetFiles": [
+          "src/resources/extensions/workflow/repo-identity.ts",
+          "src/resources/extensions/workflow/tests/project-relocation-recovery.test.ts"
+        ]
+      }
+    ],
+    [
+      {
+        "number": 95,
+        "severity": "nice-to-have-fix",
+        "type": "cherry-pick-candidate",
+        "sha": "83f54b1",
+        "guidancePath": ".planning/upstream-audits/guidance/83f54b1.md",
+        "targetFiles": [
+          "src/resources/extensions/workflow/repo-identity.ts",
+          "src/resources/extensions/workflow/tests/project-relocation-recovery.test.ts (new)"
+        ]
+      }
+    ],
+    [
+      {
+        "number": 99,
+        "severity": "nice-to-have-fix",
+        "type": "cherry-pick-candidate",
+        "sha": "2c830cd",
+        "guidancePath": ".planning/upstream-audits/guidance/2c830cd.md",
+        "targetFiles": [
+          "src/resources/extensions/workflow/auto-verification.ts",
+          "src/resources/extensions/workflow/tests/post-exec-retry-bypass.test.ts"
+        ]
+      }
+    ],
+    [
+      {
+        "number": 106,
+        "severity": "nice-to-have-fix",
+        "type": "cherry-pick-candidate",
+        "sha": "c5057c9",
+        "guidancePath": ".planning/upstream-audits/guidance/c5057c9.md",
+        "targetFiles": [
+          "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/state-reconciliation/index.ts",
+          "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/state-reconciliation-drift.test.ts"
+        ]
+      }
+    ]
+  ]
+}

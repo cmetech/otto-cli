@@ -1,0 +1,245 @@
+{
+  "version": 1,
+  "date": "2026-06-05",
+  "filter": "supervised-10-issue",
+  "startedAt": null,
+  "baselineGate": null,
+  "waves": [],
+  "issues": {
+    "90": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "9171fc3",
+      "targetFiles": [
+        "src/resources/extensions/workflow/worktree-state-projection.ts",
+        "src/resources/extensions/workflow/tests/worktree-state-projection.test.ts"
+      ],
+      "state": "merged",
+      "retryCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 370,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/370",
+      "checks": {
+        "informationalReds": [
+          "e2e",
+          "docker-e2e",
+          "integration-tests",
+          "triage"
+        ]
+      },
+      "localGate": {
+        "pass": true
+      },
+      "refute": {
+        "panelVerdict": "approve",
+        "approves": 4,
+        "refutes": 0,
+        "abstains": 0
+      },
+      "mergeSha": "955b9c1",
+      "reason": "auto-tier fix-ok; commit=8fdc141 branch=fix/upstream-issue-90-9171fc3"
+    },
+    "91": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "9a20e26",
+      "targetFiles": [
+        "packages/mcp-server/src/server.ts",
+        "packages/mcp-server/src/session-manager.ts",
+        "packages/mcp-server/src/workflow-tools.ts",
+        "packages/mcp-server/src/mcp-server.test.ts",
+        "packages/mcp-server/src/workflow-tools.test.ts"
+      ],
+      "state": "quarantined",
+      "retryCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": null,
+      "prUrl": null,
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "confidence gate: workflow-tools.ts port requires missing prepareSaveGateResultArguments helper not present in otto-cli; split-scope decision needs human triage"
+    },
+    "93": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "8aaf7fa",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts",
+        "src/resources/extensions/workflow/tests/project-relocation-recovery.test.ts"
+      ],
+      "state": "quarantined",
+      "retryCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": null,
+      "prUrl": null,
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "defensive-only; otto ensureWorkflowSymlink already syncs marker post-recovery — no failing regression possible"
+    },
+    "95": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "83f54b1",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts",
+        "src/resources/extensions/workflow/tests/project-relocation-recovery.test.ts (new)"
+      ],
+      "state": "quarantined",
+      "retryCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": null,
+      "prUrl": null,
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "same divergence as #93: otto markerHasState already gates stale-marker recovery in resolveExternalPathWithRecovery"
+    },
+    "99": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "2c830cd",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-verification.ts",
+        "src/resources/extensions/workflow/tests/post-exec-retry-bypass.test.ts"
+      ],
+      "state": "merged",
+      "retryCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 371,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/371",
+      "checks": {
+        "informationalReds": [
+          "e2e",
+          "integration-tests",
+          "docker-e2e",
+          "triage"
+        ]
+      },
+      "localGate": {
+        "pass": true
+      },
+      "refute": {
+        "panelVerdict": "approve",
+        "approves": 4,
+        "refutes": 0,
+        "abstains": 0
+      },
+      "mergeSha": "d5cb5a6",
+      "reason": "auto-tier fix-ok; commit=7f020e2"
+    },
+    "106": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "c5057c9",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/state-reconciliation/index.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/state-reconciliation-drift.test.ts"
+      ],
+      "state": "quarantined",
+      "retryCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": null,
+      "prUrl": null,
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "otto reconcileBeforeDispatch missing upstream blockers[] + handler.blocker() API; not a reorder, would require infrastructure port"
+    },
+    "285": {
+      "severity": "feature",
+      "conflictRisk": null,
+      "sha": "90652ad",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/components/tool-execution.ts",
+        "packages/pi-coding-agent/src/modes/interactive/controllers/chat-controller.ts",
+        "packages/pi-coding-agent/src/core/chat-controller-ordering.test.ts"
+      ],
+      "state": "pending-human-review",
+      "retryCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 372,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/372",
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "human-tier feature; PR opened, routing to pending-human-review"
+    },
+    "326": {
+      "severity": "feature",
+      "conflictRisk": null,
+      "sha": "941b208",
+      "targetFiles": [
+        "src/resources/extensions/workflow/preferences-models.ts",
+        "src/resources/extensions/workflow/preferences-types.ts",
+        "src/resources/extensions/workflow/tests/model-unittype-mapping.test.ts"
+      ],
+      "state": "pending-human-review",
+      "retryCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 373,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/373",
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "human-tier feature; PR opened"
+    },
+    "343": {
+      "severity": "critical-stability",
+      "conflictRisk": null,
+      "sha": "58227e0",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/crash-log.ts",
+        "src/resources/extensions/workflow/tests/crash-handler-secondary.test.ts"
+      ],
+      "state": "pending-human-review",
+      "retryCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 374,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/374",
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "human-tier critical-stability; PR opened"
+    },
+    "345": {
+      "severity": "critical-stability",
+      "conflictRisk": null,
+      "sha": "fc39cdc",
+      "targetFiles": [
+        "src/resources/extensions/ollama/model-capabilities.ts",
+        "src/resources/extensions/ollama/ollama-discovery.ts",
+        "src/resources/extensions/ollama/tests/model-capabilities.test.ts",
+        "src/resources/extensions/ollama/tests/ollama-discovery-priority.test.ts (new)"
+      ],
+      "state": "pending-human-review",
+      "retryCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 375,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/375",
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "human-tier critical-stability; PR opened"
+    }
+  }
+}

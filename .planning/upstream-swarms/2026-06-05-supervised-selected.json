@@ -1,0 +1,124 @@
+{
+  "autoTier": [
+    {
+      "number": 106,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "c5057c9",
+      "guidancePath": ".planning/upstream-audits/guidance/c5057c9.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/state-reconciliation/index.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/state-reconciliation-drift.test.ts"
+      ]
+    },
+    {
+      "number": 99,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "2c830cd",
+      "guidancePath": ".planning/upstream-audits/guidance/2c830cd.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-verification.ts",
+        "src/resources/extensions/workflow/tests/post-exec-retry-bypass.test.ts"
+      ]
+    },
+    {
+      "number": 95,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "83f54b1",
+      "guidancePath": ".planning/upstream-audits/guidance/83f54b1.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts",
+        "src/resources/extensions/workflow/tests/project-relocation-recovery.test.ts (new)"
+      ]
+    },
+    {
+      "number": 93,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "8aaf7fa",
+      "guidancePath": ".planning/upstream-audits/guidance/8aaf7fa.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts",
+        "src/resources/extensions/workflow/tests/project-relocation-recovery.test.ts"
+      ]
+    },
+    {
+      "number": 91,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9a20e26",
+      "guidancePath": ".planning/upstream-audits/guidance/9a20e26.md",
+      "targetFiles": [
+        "packages/mcp-server/src/server.ts",
+        "packages/mcp-server/src/session-manager.ts",
+        "packages/mcp-server/src/workflow-tools.ts",
+        "packages/mcp-server/src/mcp-server.test.ts",
+        "packages/mcp-server/src/workflow-tools.test.ts"
+      ]
+    },
+    {
+      "number": 90,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9171fc3",
+      "guidancePath": ".planning/upstream-audits/guidance/9171fc3.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/worktree-state-projection.ts",
+        "src/resources/extensions/workflow/tests/worktree-state-projection.test.ts"
+      ]
+    }
+  ],
+  "humanTier": [
+    {
+      "number": 345,
+      "severity": "critical-stability",
+      "type": "cherry-pick-candidate",
+      "sha": "fc39cdc",
+      "guidancePath": ".planning/upstream-audits/guidance/fc39cdc.md",
+      "targetFiles": [
+        "src/resources/extensions/ollama/model-capabilities.ts",
+        "src/resources/extensions/ollama/ollama-discovery.ts",
+        "src/resources/extensions/ollama/tests/model-capabilities.test.ts",
+        "src/resources/extensions/ollama/tests/ollama-discovery-priority.test.ts (new)"
+      ]
+    },
+    {
+      "number": 343,
+      "severity": "critical-stability",
+      "type": "cherry-pick-candidate",
+      "sha": "58227e0",
+      "guidancePath": ".planning/upstream-audits/guidance/58227e0.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/crash-log.ts",
+        "src/resources/extensions/workflow/tests/crash-handler-secondary.test.ts"
+      ]
+    },
+    {
+      "number": 326,
+      "severity": "feature",
+      "type": "cherry-pick-candidate",
+      "sha": "941b208",
+      "guidancePath": ".planning/upstream-audits/guidance/941b208.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/preferences-models.ts",
+        "src/resources/extensions/workflow/preferences-types.ts",
+        "src/resources/extensions/workflow/tests/model-unittype-mapping.test.ts"
+      ]
+    },
+    {
+      "number": 285,
+      "severity": "feature",
+      "type": "cherry-pick-candidate",
+      "sha": "90652ad",
+      "guidancePath": ".planning/upstream-audits/guidance/90652ad.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/components/tool-execution.ts",
+        "packages/pi-coding-agent/src/modes/interactive/controllers/chat-controller.ts",
+        "packages/pi-coding-agent/src/core/chat-controller-ordering.test.ts"
+      ]
+    }
+  ],
+  "needsTriage": []
+}

@@ -72,7 +72,10 @@ issue, one merge-line per merged issue. Resume reads the durable ledger.
    Phase B–C and go straight to "pending-human-review" after fix opens
    the PR.
 
-4. **Plan waves.** Greedy file-disjoint partitioning capped at `--max-wave-size`:
+4. **Plan waves.** Greedy file-disjoint partitioning capped at
+   `--max-wave-size`. **Note:** wave size only constrains the bundle
+   passed into each fix lane; it does NOT cap how many lanes can run at
+   once. Use `--fix-concurrency` for that (see Flags below).
    ```sh
    node .claude/skills/upstream-swarm/scripts/wave-plan.mjs \
      $DIR/$DATE-selected.json --max-wave-size 3 \
@@ -142,13 +145,39 @@ Loop until `nextActions(ledger, caps)` returns `[]`:
 ## Flags
 
 - `--filter <expr>` — override default `--label type:cherry-pick-candidate`.
-- `--fix-concurrency N` (default 3).
-- `--pr-window N` (default 10).
-- `--refute-concurrency N` (default 5).
-- `--max-wave-size N` (default 3).
+- `--fix-concurrency N` (default 3). Scheduler back-pressure: how many
+  `start-fix` actions can be live at once. **This is the lever that
+  serializes fix lanes** — pass `--fix-concurrency 1` for a supervised
+  batch where you want one fix subagent to complete before the next
+  starts. The scheduler reads this from the caps object; the orchestrator
+  must include it when calling `scheduler.mjs`.
+- `--pr-window N` (default 10). Cap on the number of issues simultaneously
+  occupying any "open PR" state (`awaiting-ci`, `ci-green`, `local-gate-pending`,
+  `refute-pending`, `approved`, `pending-human-review`, …). Prevents the
+  swarm from drowning the merge queue.
+- `--refute-concurrency N` (default 5). Cap on parallel refute panels
+  (each panel itself fans out to 4 lens subagents).
+- `--max-wave-size N` (default 3). Feeds **only** `wave-plan.mjs`'s
+  file-disjoint partitioning — it caps how many issues go in one wave's
+  fix bundle. It does **NOT** bind the scheduler. Lowering it to 1 will
+  not force sequential fix lanes; use `--fix-concurrency 1` for that.
 - `--dry-run` — Phase A only; opens no PRs.
 - `--skip-baseline-gate` — explicit opt-out (RARE; documented).
 - `--resume` — re-enter Phase B from the existing ledger.
+
+### Supervised batch (worked example)
+
+A supervised run that processes ten specific issues one fix at a time,
+while still pipelining CI / refute / merge stages freely:
+
+```sh
+# Caps passed to scheduler.mjs on every tick:
+'{"fixConcurrency":1,"prWindow":10,"refuteConcurrency":5,"maxWaveSize":1}'
+```
+
+`fixConcurrency:1` is the load-bearing knob. `maxWaveSize:1` is harmless
+but doesn't substitute for it. The other caps stay at default so PRs in
+`awaiting-ci` / `refute-pending` / `approved` continue to make progress.
 
 ## References
 

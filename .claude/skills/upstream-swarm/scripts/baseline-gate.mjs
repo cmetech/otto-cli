@@ -5,9 +5,10 @@
  * CLI: node baseline-gate.mjs --workdir <dir> --log <path> [--base origin/main]
  */
 import { execFileSync } from "node:child_process";
-import { mkdirSync, symlinkSync, existsSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 import { dirname, resolve, dirname as pdir } from "node:path";
 import { fileURLToPath } from "node:url";
+import { provisionWorktreeNodeModules } from "./worktree-node-modules.mjs";
 
 const HERE = pdir(fileURLToPath(import.meta.url));
 const RUN_GATES = resolve(HERE, "..", "..", "upstream-fix", "scripts", "run-gates.mjs");
@@ -16,17 +17,11 @@ const REPO_ROOT = resolve(HERE, "..", "..", "..", "..");
 function defaultWorktreeRunner(args) { return { status: 0, stdout: execFileSync("git", args, { encoding: "utf-8" }), stderr: "" }; }
 
 function defaultProvisionDeps({ workdir }) {
-  // The fresh worktree has no node_modules. Symlink the repo root's
-  // node_modules into it so `npm test` / `npm run verify:pr` can resolve
-  // deps without paying a full `npm ci` per swarm run. Same filesystem,
-  // same lock at origin/main vs HEAD in 99% of cases; correctness comes
-  // from the lock being unchanged between root and base. If you ever
-  // break this assumption, swap to `npm ci --prefer-offline --no-audit`.
-  const src = resolve(REPO_ROOT, "node_modules");
-  const dest = resolve(workdir, "node_modules");
-  if (!existsSync(src)) throw new Error(`repo-root node_modules missing at ${src}; run npm ci first`);
-  if (existsSync(dest)) return; // resume / nested call
-  symlinkSync(src, dest, "dir");
+  // Same filesystem, same lock at origin/main vs HEAD in 99% of cases;
+  // correctness comes from the lock being unchanged between root and
+  // base. If you ever break this assumption, swap to
+  // `npm ci --prefer-offline --no-audit`.
+  provisionWorktreeNodeModules(workdir, REPO_ROOT);
 }
 
 async function defaultGateRunner({ workdir, logPath }) {

@@ -66,12 +66,25 @@ export function pollPrChecks({ prNumber, repo = "cmetech/otto-cli", configPath, 
   // Map the evaluate-checks shape (which conflates pending and blocking
   // under `pass:false`) into a state with stable semantics for the
   // scheduler:
-  //   - any blocking      → "fail"   (drives ci-red)
-  //   - else any pending  → "pending" (re-poll next tick; no transition)
-  //   - else              → "pass"   (drives ci-green)
+  //   - real blocking (anything other than "required check missing", OR
+  //     missing checks with no pending checks alongside)
+  //                                  → "fail"    (drives ci-red)
+  //   - any pending — including pending alongside missing checks that
+  //     are matrix-children of the pending job (fresh-PR matrix race)
+  //                                  → "pending" (re-poll next tick; no transition)
+  //   - else                         → "pass"    (drives ci-green)
+  //
+  // Why the matrix-race carve-out: GitHub's check-runs API only
+  // surfaces checks once their workflow run has been created. A matrix
+  // job (e.g. test-unit, test-packages) that depends on a build job
+  // doesn't appear at all until build completes. Treating "missing
+  // required check" as `fail` while `build` is still pending would
+  // quarantine every fresh PR.
+  const realBlocking = verdict.blocking.filter((b) => b.reason !== "required check missing");
   let state;
-  if (verdict.blocking.length > 0) state = "fail";
+  if (realBlocking.length > 0) state = "fail";
   else if (verdict.pending.length > 0) state = "pending";
+  else if (verdict.blocking.length > 0) state = "fail";
   else state = "pass";
   return {
     state,

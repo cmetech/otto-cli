@@ -143,6 +143,53 @@ test("state:error when gh returns non-JSON (rate limit HTML, etc.)", () => {
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
+test("state:pending when matrix children are missing but their gating job is still pending (fresh-PR race)", () => {
+  // GitHub's check-runs API does not surface a matrix child until its
+  // upstream job (e.g. build) completes. evaluateChecks correctly
+  // reports test-unit/test-packages as `blocking: required check missing`
+  // — but if `build` is still pending, the right semantic is "wait, not
+  // dead." Before this carve-out, every fresh PR was quarantined on
+  // its first poll.
+  const { path, dir } = configFile(ALLOWLIST);
+  try {
+    const r = pollPrChecks({
+      prNumber: 370,
+      configPath: path,
+      ghRunner: fakeGh([
+        { name: "build", bucket: "pending", state: "IN_PROGRESS" },
+        // test-unit and test-packages not yet registered — they're
+        // matrix children of build.
+        { name: "fast-gates", bucket: "pass", state: "COMPLETED" },
+        { name: "triage", bucket: "fail", state: "COMPLETED" },
+      ]),
+    });
+    assert.equal(r.state, "pending", "should re-poll, not quarantine, while matrix gate is in flight");
+    assert.ok(r.pending.includes("build"));
+    // The matrix children are still listed as `blocking` from
+    // evaluateChecks — the carve-out is at the state level only, so the
+    // caller can still inspect them if it cares.
+    assert.ok(r.blocking.find((b) => b.name === "test-unit"));
+    assert.ok(r.blocking.find((b) => b.name === "test-packages"));
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("state:fail when a real blocking check (cancel / fail) co-occurs with pending — pending does NOT shield real reds", () => {
+  const { path, dir } = configFile(ALLOWLIST);
+  try {
+    const r = pollPrChecks({
+      prNumber: 370,
+      configPath: path,
+      ghRunner: fakeGh([
+        { name: "build", bucket: "fail", state: "COMPLETED" },
+        { name: "test-unit", bucket: "pending", state: "IN_PROGRESS" },
+        { name: "test-packages", bucket: "pass", state: "COMPLETED" },
+        { name: "fast-gates", bucket: "pass", state: "COMPLETED" },
+      ]),
+    });
+    assert.equal(r.state, "fail", "real reds always win over pending");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
 test("does NOT block — the runner is called exactly once per poll (no --watch)", () => {
   const { path, dir } = configFile(ALLOWLIST);
   try {

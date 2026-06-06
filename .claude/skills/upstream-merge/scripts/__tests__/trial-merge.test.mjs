@@ -12,9 +12,11 @@ function recorder(opts = {}) {
   return { runner, calls };
 }
 
+function noopProvisionDeps() { /* no-op for unit tests */ }
+
 test("clean merge fetches, adds detached worktree at base, merges PR head", () => {
   const { runner, calls } = recorder();
-  const r = trialMerge({ prNumber: 64, headRef: "integration/upstream-fix-2026-05-30", gitRunner: runner });
+  const r = trialMerge({ prNumber: 64, headRef: "integration/upstream-fix-2026-05-30", gitRunner: runner, provisionDeps: noopProvisionDeps });
   assert.equal(r.conflict, false);
   assert.equal(r.merged, true);
   assert.equal(r.worktree, ".worktrees/upstream-merge-pr-64");
@@ -25,7 +27,7 @@ test("clean merge fetches, adds detached worktree at base, merges PR head", () =
 
 test("conflict aborts the merge and reports conflict:true", () => {
   const { runner, calls } = recorder({ failOn: "merge --no-ff" });
-  const r = trialMerge({ prNumber: 64, headRef: "integration/upstream-fix-2026-05-30", gitRunner: runner });
+  const r = trialMerge({ prNumber: 64, headRef: "integration/upstream-fix-2026-05-30", gitRunner: runner, provisionDeps: noopProvisionDeps });
   assert.equal(r.merged, false);
   assert.equal(r.conflict, true);
   assert.ok(calls.some((c) => c.includes("merge --abort")));
@@ -33,5 +35,32 @@ test("conflict aborts the merge and reports conflict:true", () => {
 
 test("rejects unsafe ref names", () => {
   const { runner } = recorder();
-  assert.throws(() => trialMerge({ prNumber: 64, headRef: "evil; rm -rf /", gitRunner: runner }), /unsafe/);
+  assert.throws(
+    () => trialMerge({ prNumber: 64, headRef: "evil; rm -rf /", gitRunner: runner, provisionDeps: noopProvisionDeps }),
+    /unsafe/,
+  );
+});
+
+test("provisions node_modules after worktree add, before merge", () => {
+  const { runner, calls } = recorder();
+  const provisionCalls = [];
+  const provisionDeps = ({ workdir }) => {
+    provisionCalls.push({ workdir, snapshotAtCall: [...calls] });
+  };
+  trialMerge({ prNumber: 99, headRef: "fix/upstream-issue-99-2c830cd", gitRunner: runner, provisionDeps });
+  assert.equal(provisionCalls.length, 1, "provisionDeps called exactly once");
+  assert.equal(provisionCalls[0].workdir, ".worktrees/upstream-merge-pr-99");
+  // provisionDeps must run AFTER the worktree exists but BEFORE the merge,
+  // so the merge itself can resolve any node tooling it needs.
+  const snapshot = provisionCalls[0].snapshotAtCall;
+  assert.ok(snapshot.some((c) => c.includes("worktree add --detach")), "worktree was added before provision");
+  assert.ok(!snapshot.some((c) => c.includes("merge --no-ff")), "merge had not yet happened when provision was called");
+});
+
+test("respects provisionDeps:false (opt-out for callers that npm ci themselves)", () => {
+  const { runner } = recorder();
+  let called = false;
+  // Passing the literal `false` should skip provisioning entirely.
+  trialMerge({ prNumber: 100, headRef: "fix/x", gitRunner: runner, provisionDeps: false });
+  assert.equal(called, false, "no provisionDeps invocation");
 });

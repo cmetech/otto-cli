@@ -223,6 +223,7 @@ export interface ModelConfig {
   completion?: string;
   validation?: string;
   subagent?: string;
+  uat?: string;
 }
 
 /**
@@ -238,6 +239,7 @@ export interface ModelConfigV2 {
   completion?: string | PhaseModelConfig;
   validation?: string | PhaseModelConfig;
   subagent?: string | PhaseModelConfig;
+  uat?: string | PhaseModelConfig;
 }
 
 /** Normalized model selection with resolved fallbacks */

@@ -57,22 +57,28 @@ async function enrichModel(info: OllamaModelInfo, deps: ClientDeps): Promise<Dis
 	const caps = getModelCapabilities(info.name);
 	const parameterSize = info.details?.parameter_size ?? "";
 
-	// /api/tags doesn't include context length; /api/show does via "{arch}.context_length" in model_info.
+	// /api/tags doesn't include context length; /api/show does via "{arch}.context_length"
+	// in model_info. Call /api/show unconditionally so its value can override a stale
+	// KNOWN_MODELS entry — see the priority resolution below.
 	let showContextWindow: number | undefined;
-	if (caps.contextWindow === undefined) {
-		try {
-			const showData = await deps.showModel(info.name);
-			showContextWindow = extractContextFromModelInfo(showData.model_info);
-		} catch (err) {
-			// non-fatal: fall through to estimate
-			if ((process.env.OTTO_DEBUG ?? process.env.OTTO_DEBUG)) console.warn(`[ollama] /api/show failed for ${info.name}:`, err instanceof Error ? err.message : String(err));
-		}
+	try {
+		const showData = await deps.showModel(info.name);
+		showContextWindow = extractContextFromModelInfo(showData.model_info);
+	} catch (err) {
+		// non-fatal: fall through to table/estimate
+		if ((process.env.OTTO_DEBUG ?? process.env.OTTO_DEBUG)) console.warn(`[ollama] /api/show failed for ${info.name}:`, err instanceof Error ? err.message : String(err));
 	}
 
-	// Determine context window: known table > /api/show > estimate from param size > default
+	// Determine context window: /api/show (authoritative ollama metadata) >
+	// known table (fallback for old ollama versions / network failure) >
+	// estimate from parameter size > default. Earlier priority order put
+	// known table first, but the table fell behind reality on several
+	// model families (deepseek-v4-* missing, minimax-m2.7 1048576 vs
+	// real 196608). /api/show is the source of truth when reachable;
+	// the table only fills the gap when it isn't.
 	const contextWindow =
-		caps.contextWindow ??
 		showContextWindow ??
+		caps.contextWindow ??
 		(parameterSize ? estimateContextFromParams(parameterSize) : 8192);
 
 	// Determine max tokens: known table > fraction of context > default
@@ -87,6 +93,16 @@ async function enrichModel(info: OllamaModelInfo, deps: ClientDeps): Promise<Dis
 	// Detect reasoning from known table
 	const reasoning = caps.reasoning ?? false;
 
+	// Sync num_ctx with the authoritative contextWindow. When /api/show
+	// wins, the table's static num_ctx would otherwise be stale and sent
+	// on every chat request — the very drift this priority flip was
+	// designed to eliminate. Keep all other ollamaOptions (num_gpu,
+	// sampling params, keep_alive) from the table.
+	const ollamaOptions =
+		showContextWindow !== undefined
+			? { ...caps.ollamaOptions, num_ctx: showContextWindow }
+			: caps.ollamaOptions;
+
 	return {
 		id: info.name,
 		name: humanizeModelName(info.name),
@@ -97,7 +113,7 @@ async function enrichModel(info: OllamaModelInfo, deps: ClientDeps): Promise<Dis
 		maxTokens,
 		sizeBytes: info.size,
 		parameterSize,
-		ollamaOptions: caps.ollamaOptions,
+		ollamaOptions,
 	};
 }
 

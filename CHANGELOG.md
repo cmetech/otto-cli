@@ -24,6 +24,23 @@ This changelog starts from the `open-gsd/gsd-pi` ownership baseline. Earlier pro
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-06-08
+
+_Maintenance patch rolling up six upstream-ported fixes that landed on `main` since 1.3.2: TUI rendering on JetBrains terminals, pattern-resolution basedir, project-root artifact placement when running inside worktrees, verification-pause diagnostics, per-PID crash-log isolation, and Ollama context-window trust._
+
+### Fixed
+
+- **JetBrains terminal capabilities.** TUI rendering now provides the correct capability set when running under JetBrains' embedded terminal (`packages/pi-tui`), eliminating layout glitches reported on IntelliJ / WebStorm / GoLand. Closes #31 (ported via PR #77).
+- **Pattern basedir resolution.** Pattern lookups now resolve against the correct base directory, restoring expected matching behavior for relative glob patterns. Closes #53 (ported via PR #74).
+- **Project root artifacts in worktrees.** Workflow runs invoked from a `git worktree` now project root-level artifacts (lockfile, configs, generated files) into the worktree itself instead of leaking into the primary checkout. Closes #90 (PR #370).
+- **Verification pause message shows failing check.** When a workflow pauses after an execution step, the message now surfaces *which* check failed instead of a generic pause string, dramatically shortening the debug loop. Closes #99 (PR #371).
+- **Crash logs append to single per-PID file.** Crash diagnostics now append to one file per process rather than fragmenting across multiple files, making post-mortem inspection coherent. Closes #343 (PR #374).
+- **Ollama `/api/show` context + `num_ctx` sync.** The Ollama integration now trusts the model's reported context window from `/api/show`, keeps `num_ctx` in lockstep, and corrects `KNOWN_MODELS` drift — preventing silent truncation when a model's real context exceeds the hard-coded table. Closes #345 (PR #375).
+
+### Notes
+
+- Internal: upstream-swarm orchestrator skill + autonomy hardening (PRs #75, #76, #78, #79, #80, #81, #82) landed in this window but are tooling-only and have no runtime impact for end users.
+
 ## [1.3.2] - 2026-06-04
 
 _Windows-TUI hotfix on top of 1.3.1: launching `otto` no longer paints three stacked welcome banners on Windows. The CLI rendered correctly all along — it just looked broken because cursor-relative differential updates drifted out of alignment._

@@ -18,9 +18,9 @@ test("creates missing labels and reports existing", async () => {
   const result = await ensureLabels({ targetRepo: "foo/bar", ghRunner });
   assert.equal(result.existing.length, 2);
   assert.ok(result.existing.includes("upstream:pi-dev"));
-  assert.equal(result.created.length, 17); // 19 total - 2 existing
+  assert.equal(result.created.length, 21); // 23 total - 2 existing
   assert.equal(result.errors.length, 0);
-  assert.equal(createCalls.length, 17);
+  assert.equal(createCalls.length, 21);
   // Verify a specific created label
   assert.ok(createCalls.includes("severity:critical-security"));
 });
@@ -37,16 +37,18 @@ test("captures create errors without aborting", async () => {
     throw new Error("unexpected");
   };
   const result = await ensureLabels({ targetRepo: "foo/bar", ghRunner });
-  assert.equal(result.created.length, 18); // 19 - 1 failed
+  assert.equal(result.created.length, 22); // 23 - 1 failed
   assert.equal(result.errors.length, 1);
   assert.match(result.errors[0].error, /rate limited/);
 });
 
 test("returns all-existing when every label is present", async () => {
-  // 19 labels exact taxonomy
+  // 23 labels exact taxonomy
   const all = [
     "upstream:pi-dev", "upstream:gsd-pi",
     "type:cherry-pick-candidate", "type:port-required", "type:do-not-port",
+    "fix-strategy:direct-merge", "fix-strategy:adapted-port",
+    "fix-strategy:essence-reimplement", "fix-strategy:not-needed",
     "severity:critical-security", "severity:critical-stability",
     "severity:nice-to-have-fix", "severity:feature",
     "conflict-risk:none", "conflict-risk:low", "conflict-risk:medium", "conflict-risk:high",
@@ -58,7 +60,25 @@ test("returns all-existing when every label is present", async () => {
     throw new Error("should not create anything");
   };
   const result = await ensureLabels({ targetRepo: "foo/bar", ghRunner });
-  assert.equal(result.existing.length, 19);
+  assert.equal(result.existing.length, 23);
   assert.equal(result.created.length, 0);
   assert.equal(result.errors.length, 0);
+});
+
+test("taxonomy includes the four fix-strategy:* labels", async () => {
+  const created = [];
+  const ghRunner = (args) => {
+    if (args[0] === "label" && args[1] === "list") return "";
+    if (args[0] === "label" && args[1] === "create") { created.push(args[2]); return ""; }
+    return "";
+  };
+  await ensureLabels({ targetRepo: "cmetech/otto-cli", ghRunner });
+  for (const name of [
+    "fix-strategy:direct-merge",
+    "fix-strategy:adapted-port",
+    "fix-strategy:essence-reimplement",
+    "fix-strategy:not-needed",
+  ]) {
+    assert.ok(created.includes(name), `expected ${name} to be created`);
+  }
 });

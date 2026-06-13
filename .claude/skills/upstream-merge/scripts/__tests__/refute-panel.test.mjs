@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { tallyVerdicts, formatRefuteComment, LENS_NAMES } from "../refute-panel.mjs";
+import { tallyVerdicts, formatRefuteComment, LENS_NAMES, buildInputBundle } from "../refute-panel.mjs";
 
 const A = (lens, verdict, reason = "ok") => ({ lens, verdict, reason, confidence: 0.9, blocking: verdict === "refute" });
 
@@ -268,4 +268,38 @@ test("buildInputBundle honors explicit upstreamRoot override (skips label resolu
     assert.equal(gitCalls[0][1], "/abs/override/path");
     assert.equal(bundle.upstreamRoot, "/abs/override/path");
   } finally { rmSync(repoRoot, { recursive: true, force: true }); rmSync(join(repoRoot, "..", "pi"), { recursive: true, force: true }); }
+});
+
+test("buildInputBundle carries fixStrategy from the issue's labels", () => {
+  const ghRunner = (args) => {
+    if (args[0] === "pr" && args[1] === "view") return JSON.stringify({ number: 5, title: "t", body: "b", headRefOid: "sha" });
+    if (args[0] === "pr" && args[1] === "diff") return "diff";
+    if (args[0] === "issue" && args[1] === "view") {
+      return JSON.stringify({ number: 9, body: "ib", labels: [
+        { name: "upstream:pi-dev" }, { name: "severity:critical-stability" },
+        { name: "fix-strategy:essence-reimplement" },
+      ] });
+    }
+    return "";
+  };
+  const gitRunner = () => "commit show output";
+  const bundle = buildInputBundle({
+    prNumber: 5, issueNumber: 9, upstreamSha: "abc1234",
+    ghRunner, gitRunner, upstreamRoot: "/tmp/pi",
+  });
+  assert.equal(bundle.fixStrategy, "essence-reimplement");
+});
+
+test("buildInputBundle fixStrategy is null when no fix-strategy label", () => {
+  const ghRunner = (args) => {
+    if (args[0] === "pr" && args[1] === "view") return JSON.stringify({ number: 5, title: "t", body: "b", headRefOid: "sha" });
+    if (args[0] === "pr" && args[1] === "diff") return "diff";
+    if (args[0] === "issue" && args[1] === "view") return JSON.stringify({ number: 9, body: "ib", labels: [{ name: "upstream:pi-dev" }] });
+    return "";
+  };
+  const bundle = buildInputBundle({
+    prNumber: 5, issueNumber: 9, upstreamSha: "abc1234",
+    ghRunner, gitRunner: () => "show", upstreamRoot: "/tmp/pi",
+  });
+  assert.equal(bundle.fixStrategy, null);
 });

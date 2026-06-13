@@ -57,36 +57,45 @@ picks it up, the analysis is already done, so the job is *confirm and apply*, no
 *start from scratch*. That means every filed candidate carries an **otto-cli
 implementation guidance** section answering:
 
-1. **Target file(s)** — the actual otto-cli path(s) the change maps to (after the
-   rename/restructure), or "no equivalent exists" if the code path is absent.
-2. **Divergence** — has otto-cli's version of this code already diverged from
-   upstream? Will a clean cherry-pick apply, or is a manual port required?
-3. **Concrete edits** — the specific change(s) to make, precise enough to apply
-   with confidence.
-4. **Verdict** — one of three values, plus any caveats:
-   - `cherry-pick` — paths align, applies clean.
-   - `manual-port` — diverged / renamed / restructured; needs a hand port.
-   - `do-not-port` — superseded or reverted upstream; should NOT be applied.
+1. **Upstream intent / root cause** — what bug or behavior was upstream fixing?
+   (Not "what the diff does" — *why* it exists.)
+2. **Fork relevance** — is that problem present in *our* hard fork given our
+   customizations? `yes` / `partial` / `no`, with reasoning. A `no` is the
+   positive justification for `not-needed`.
+3. **Fix strategy** — one of the four values below (machine-readable first line).
+4. **Divergence** — how otto-cli's code differs from upstream here.
+5. **Concrete approach** — exact edits for `direct-merge`/`adapted-port`; a design
+   sketch (**Essence to preserve** + how to realize it in our code) for
+   `essence-reimplement`.
 
-### The machine-readable `verdict:` line (REQUIRED)
+### The machine-readable `strategy:` line (REQUIRED)
 
-The verdict is not just prose — it drives the issue's `type:*` label. Each
-guidance file's **first line** must be a literal, machine-readable verdict:
+Each guidance file's **first line** must be a literal, machine-readable strategy:
 
 ```
-verdict: cherry-pick      # or: manual-port  |  do-not-port
+strategy: essence-reimplement   # direct-merge | adapted-port | essence-reimplement | not-needed
 ```
 
-`run-audit.mjs` parses this line (`verdict:\s*(cherry-pick|manual-port|do-not-port)`,
-backticks optional) and the parsed value is **authoritative** over the
-deterministic, risk-based label: `cherry-pick` → `type:cherry-pick-candidate`,
-`manual-port` → `type:port-required`, `do-not-port` → `type:do-not-port`. Only
-when the line is absent does the script fall back to risk-based labeling
-(HIGH → `type:port-required`, else `type:cherry-pick-candidate`). This is why a
-commit can be labeled correctly as `type:do-not-port` even though the
-deterministic classifier would have called it a cherry-pick candidate — write
-the `verdict:` line and the analysis wins. Restate the verdict in a human
-heading below if you like; only the first-line form is parsed.
+`run-audit.mjs` validates the guidance via `parse-guidance.mjs` (schema: the four
+sections above must be present; `essence-reimplement` must state **Essence to
+preserve**). A missing/malformed *new-format* file **fails the run fast** and names
+the offending path — repair it, or re-run with `--skip-guidance-check`
+(audit/dry-run only) to file placeholder issues.
+
+**The four strategies (fork-divergence-aware):**
+
+- `direct-merge` — cherry-pick / `git am -3` applies clean. → `type:cherry-pick-candidate`
+- `adapted-port` — same fix, transcribed to our renamed/restructured paths. → `type:port-required`
+- `essence-reimplement` — diverged in *behavior*; the patch won't apply; re-solve
+  the upstream root cause in our code (requires **Essence to preserve**). → `type:port-required`
+- `not-needed` — the problem does not exist in our fork (justified by
+  `Fork relevance: no`). → `type:do-not-port`
+
+The parsed strategy drives **two** labels: the new `fix-strategy:*` dimension and
+(for routing back-compat) the existing `type:*` label. **Back-compat:** a legacy
+`verdict:` line is grandfathered — `cherry-pick → direct-merge`,
+`manual-port → adapted-port`, `do-not-port → not-needed` — and legacy files skip
+section enforcement. New guidance uses `strategy:`.
 
 ### Two-stage workflow for a real (issue-filing) run
 
@@ -97,18 +106,19 @@ code reading against the otto-cli tree. So a real run is two stages:
    candidate sha, read the upstream diff (`git -C ../pi show <sha>`), locate the
    otto-cli equivalent, and write the guidance as markdown to
    `.planning/upstream-audits/guidance/<sha7>.md`. Parallelize across subagents
-   for large batches. The four guidance points above are the required structure.
+   for large batches. The five required sections above are the required structure.
 
 2. **File.** Run the orchestrator *without* `--dry-run`. It reads
-   `guidance/<sha7>.md` for each candidate, embeds it plus the upstream diff into
-   the issue body, and files. Any candidate **missing** a guidance file is filed
-   with an explicit "⚠️ Not yet analyzed" banner and `Analyzed | no` in its
-   classification table, and the orchestrator prints a count of un-analyzed
-   issues at the end. Treat a non-zero un-analyzed count as a gap to fill, not a
-   normal outcome.
+   `guidance/<sha7>.md` for each candidate, **validates it against the schema**,
+   embeds it plus the upstream diff into the issue body, and files. A candidate
+   with **missing or malformed** guidance **aborts the run** (naming the path) so
+   no thin issue is filed — author the guidance and re-run, or pass
+   `--skip-guidance-check` to deliberately file placeholders.
 
 `--no-diff` suppresses diff embedding (smaller bodies); `--guidance-dir` points
-at an alternate guidance directory.
+at an alternate guidance directory. `--revalidate-do-not-port` prints a JSON
+manifest of existing `type:do-not-port` issues to re-examine against the new
+`Fork relevance` criterion (no relabeling).
 
 ### Context budget: finishing a batch in one context window
 
@@ -129,8 +139,8 @@ the guidance loop is what burns context. Run a batch like this:
    (`Agent` tool, parallel). Each subagent reads the upstream diffs
    (`git -C <path> show <sha>`) and the otto-cli source *in its own context*,
    writes `.planning/upstream-audits/guidance/<sha7>.md` (first line
-   `verdict: …`), and **returns only one line per sha** to the controller:
-   `<sha7> <verdict> <target-file-or-"none">`. The controller never sees a diff
+   `strategy: …`), and **returns only one line per sha** to the controller:
+   `<sha7> <strategy> <target-file-or-"none">`. The controller never sees a diff
    or a source file — only the one-liners. This is the single biggest lever.
 
 3. **Never echo diffs or rendered issue bodies into the conversation.** The
@@ -187,7 +197,7 @@ For each invocation, follow these steps in order. Each step invokes a specific s
 
 These are the only places the LLM contributes prose. Everything else is deterministic script output.
 
-- **otto-cli implementation guidance (the important one)**: for every candidate that will be filed, perform the per-commit analysis described under "Implementation-grade issues" and write it to `.planning/upstream-audits/guidance/<sha7>.md`. This is what turns an issue from a triage pointer into something the implementation phase can confirm-and-apply. The four required points: target file(s), divergence, concrete edits, and a machine-readable `verdict:` first line (`cherry-pick` | `manual-port` | `do-not-port`) — see "The machine-readable `verdict:` line" above; it drives the issue's `type:*` label. Filing without guidance produces a "⚠️ Not yet analyzed" issue — acceptable only as a deliberate triage-only pass.
+- **otto-cli implementation guidance (the important one)**: for every candidate that will be filed, perform the per-commit analysis described under "Implementation-grade issues" and write it to `.planning/upstream-audits/guidance/<sha7>.md`. This is what turns an issue from a triage pointer into something the implementation phase can confirm-and-apply. The five required sections: upstream intent / root cause, fork relevance, fix strategy, divergence, and concrete approach — with a machine-readable `strategy:` first line (`direct-merge` | `adapted-port` | `essence-reimplement` | `not-needed`) — see "The machine-readable `strategy:` line" above; it drives the issue's `fix-strategy:*` and `type:*` labels. Missing or malformed guidance aborts the run — pass `--skip-guidance-check` only to deliberately file placeholders.
 
 - **PR review-thread summarization**: when `fetch-pr-context.mjs` returns a PR with reviews/comments, build-issue-payload.mjs renders a generic "Review highlights" section using only flat label/state info. The agent (controller) may enrich this by reading the fetched JSON and writing a 3-5 line excerpt of the most informative review threads into the issue body BEFORE invoking `scripts/file-issue.mjs`. This is optional — in fully scripted mode (e.g., a scheduled CI run), the payload uses the raw flat info.
 

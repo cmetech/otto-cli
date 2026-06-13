@@ -136,6 +136,18 @@ PROTOCOL per issue (all four gates are mandatory):
      gh issue comment <num> --repo cmetech/otto-cli --body "<concrete concern>"
    and record the issue as unresolved (see RETURN). Move to the next issue.
 
+0b. STRATEGY. Determine the fix-strategy for this issue:
+    - If the issue carries a `fix-strategy:*` label, use it.
+    - Else read the guidance file's first line (`strategy: <value>`), or a
+      grandfathered `verdict:` line.
+    - Else (pre-Phase-2 issue, no strategy): CLASSIFY INLINE — from the upstream
+      diff + the actual otto-cli source, pick exactly one of `direct-merge`,
+      `adapted-port`, `essence-reimplement`, `not-needed`, and set the label:
+        gh issue edit <num> --repo cmetech/otto-cli --add-label fix-strategy:<value>
+      For `essence-reimplement`, write a one-line **Essence to preserve** note in
+      your issue comment (the root cause + the property that must hold in our code).
+    The strategy decides how the REGRESSION TEST and the reviewer gate are judged.
+
 1. REGRESSION TEST. Write a node:test `*.test.ts` co-located with the source you
    will change. Confirm it FAILS against current behaviour:
      node .claude/skills/_common/scripts/run-gates.mjs regression \
@@ -145,6 +157,11 @@ PROTOCOL per issue (all four gates are mandatory):
    (If a runtime regression test is genuinely impossible — e.g. pure
    packaging/metadata — record a justification in your return line; such issues
    need explicit reviewer approval later.)
+   For `essence-reimplement` there is usually **no upstream test that maps** — you
+   MUST AUTHOR a regression test that pins the **root cause in our code** (the
+   Essence to preserve), not a transcription of an upstream test. It MUST fail
+   before your fix and pass after. This is the anchor that keeps an essence port
+   from landing without a real failing-then-passing gate.
 
 2. BUILD GATE:
      node .claude/skills/_common/scripts/run-gates.mjs build \
@@ -177,8 +194,15 @@ RETURN CONTRACT — output ONE line per issue, NOTHING else (no diffs, no logs):
 
    - Read the committed diff: `git -C <worktree> show <commitSha>`
    - Read the issue + guidance for upstream intent.
-   - Judge: does the diff correctly and completely fix the described problem,
-     without regressions or scope creep? (Catch "passes tests but wrong/incomplete".)
+   - Determine the issue's `fix-strategy:*` (label or guidance).
+   - Judge by strategy:
+     - `direct-merge` / `adapted-port`: does the diff faithfully apply/transcribe
+       the upstream change to the correct otto-cli files, without regressions or
+       scope creep? (Catch "passes tests but wrong/incomplete".)
+     - `essence-reimplement`: **does this address the upstream ROOT CAUSE** in our
+       diverged code? The upstream diff is a reference for *intent*, NOT a target
+       to match — do not reject for failing to mirror the diff; reject if the root
+       cause is not actually resolved or the regression test does not pin it.
 
    RETURN exactly one line:
      approve <one-line rationale>

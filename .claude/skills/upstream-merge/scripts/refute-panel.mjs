@@ -9,6 +9,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve, isAbsolute } from "node:path";
+import { strategyFromLabels } from "../../_common/scripts/fix-strategy.mjs";
 
 export const LENS_NAMES = [
   "upstream-alignment",
@@ -143,6 +144,7 @@ export function buildInputBundle({
     upstreamShow,
     severity: severityFromLabels(issueView.labels),
     conflictRisk: riskFromLabels(issueView.labels),
+    fixStrategy: strategyFromLabels(issueView.labels),
   };
 }
 

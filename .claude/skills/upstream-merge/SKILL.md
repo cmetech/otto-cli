@@ -114,6 +114,13 @@ Lens prompts live in `refute-panel.mjs`. Each lens is given the bundle and
 asked one question (upstream-alignment / scope-discipline / test-quality /
 blast-radius). Schema:
 
+**`upstream-alignment` strategy branch.** When `bundle.fixStrategy` is
+`essence-reimplement`, judge **alignment to the upstream INTENT / root cause**,
+NOT diff-fidelity — otto-cli has diverged in behavior, so the PR will (correctly)
+not mirror the upstream diff. Refute only if the PR fails to resolve the documented
+root cause. For `direct-merge` / `adapted-port`, judge fidelity to the upstream
+change as before.
+
 ```json
 {
   "verdict": "approve" | "refute" | "abstain",

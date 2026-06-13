@@ -87,3 +87,28 @@ test("refute selection is also severity-ordered", () => {
   const refutes = actions.filter((a) => a.kind === "run-refute").map((a) => a.issueNumber);
   assert.deepEqual(refutes, [21]);
 });
+
+test("emits quarantine-timeout for an active-fix issue over the wall-clock budget", () => {
+  const now = 1_000_000;
+  const ledger = { issues: {
+    1: { state: "fixing", fixStartedAt: now - 50_000 },
+    2: { state: "planning", fixStartedAt: now - 5_000 },
+  } };
+  const caps = { fixConcurrency: 3, prWindow: 10, refuteConcurrency: 5, issueTimeoutMs: 30_000 };
+  const actions = nextActions(ledger, caps, now);
+  const timeouts = actions.filter((a) => a.kind === "quarantine-timeout").map((a) => a.issueNumber);
+  assert.deepEqual(timeouts, [1]);
+});
+
+test("no timeout when caps.issueTimeoutMs is unset or now is null", () => {
+  const ledger = { issues: { 1: { state: "fixing", fixStartedAt: 1 } } };
+  assert.equal(nextActions(ledger, { fixConcurrency: 3, prWindow: 10, refuteConcurrency: 5 }, 9_999_999).filter((a) => a.kind === "quarantine-timeout").length, 0);
+  assert.equal(nextActions(ledger, { fixConcurrency: 3, prWindow: 10, refuteConcurrency: 5, issueTimeoutMs: 1 }, null).filter((a) => a.kind === "quarantine-timeout").length, 0);
+});
+
+test("awaiting-ci is NOT subject to the fix timeout", () => {
+  const now = 1_000_000;
+  const ledger = { issues: { 1: { state: "awaiting-ci", fixStartedAt: now - 10_000_000, prNumber: 101 } } };
+  const caps = { fixConcurrency: 3, prWindow: 10, refuteConcurrency: 5, issueTimeoutMs: 30_000 };
+  assert.equal(nextActions(ledger, caps, now).filter((a) => a.kind === "quarantine-timeout").length, 0);
+});

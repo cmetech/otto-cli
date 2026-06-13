@@ -162,3 +162,21 @@ test("recordTransition: pending-human-review → selected (severity:feature re-t
 test("merged stays a true dead-end (no recovery edge)", () => {
   assert.deepEqual(VALID_TRANSITIONS["merged"], [], "merged must remain terminal");
 });
+
+test("VALID_TRANSITIONS allows active fix states to be quarantined on timeout", () => {
+  assert.ok((VALID_TRANSITIONS["fixing"] ?? []).includes("quarantined"));
+  assert.ok((VALID_TRANSITIONS["planning"] ?? []).includes("quarantined"));
+  assert.ok((VALID_TRANSITIONS["retrying"] ?? []).includes("quarantined"));
+});
+
+test("initSwarmLedger seeds fixStartedAt = null on each issue", async () => {
+  const { mkdtempSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const dir = mkdtempSync(join(tmpdir(), "swl-"));
+  try {
+    const path = join(dir, "led.json");
+    const led = initSwarmLedger(path, { date: "2026-06-13", filter: {}, issues: [{ number: 5 }] });
+    assert.equal(led.issues["5"].fixStartedAt, null);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});

@@ -41,7 +41,7 @@ function countByState(ledger, predicate) {
   return n;
 }
 
-export function nextActions(ledger, caps) {
+export function nextActions(ledger, caps, now = null) {
   const actions = [];
   const fixesInFlight = countByState(ledger, (s) => IN_FLIGHT_FIX_STATES.has(s));
   const openPrs = countByState(ledger, (s) => OPEN_PR_STATES.has(s));
@@ -56,6 +56,19 @@ export function nextActions(ledger, caps) {
     .sort(bySeverityThenNumber)
     .slice(0, startCap);
   for (const [number] of startable) actions.push({ kind: "start-fix", issueNumber: Number(number) });
+
+  // 1b. Per-issue circuit-breaker: an active-fix issue over its wall-clock
+  // budget is quarantined so a stuck lane cannot block the swarm. Disabled
+  // when now is unknown, no budget is set, or the issue was never stamped.
+  if (now != null && caps.issueTimeoutMs) {
+    for (const [number, issue] of Object.entries(ledger.issues)) {
+      if (!IN_FLIGHT_FIX_STATES.has(issue.state)) continue;
+      if (!issue.fixStartedAt) continue;
+      if (now - issue.fixStartedAt > caps.issueTimeoutMs) {
+        actions.push({ kind: "quarantine-timeout", issueNumber: Number(number), reason: `issue-timeout (>${caps.issueTimeoutMs}ms in ${issue.state})` });
+      }
+    }
+  }
 
   // 2. Poll CI for awaiting-ci issues.
   for (const [number, issue] of Object.entries(ledger.issues)) {
@@ -87,7 +100,7 @@ if (process.argv[1] && new URL(import.meta.url).pathname === process.argv[1]) {
   try {
     const ledger = JSON.parse(process.argv[2] ?? "{\"issues\":{}}");
     const caps = JSON.parse(process.argv[3] ?? "{\"fixConcurrency\":3,\"prWindow\":10,\"refuteConcurrency\":5}");
-    process.stdout.write(JSON.stringify(nextActions(ledger, caps), null, 2) + "\n");
+    process.stdout.write(JSON.stringify(nextActions(ledger, caps, Date.now()), null, 2) + "\n");
   } catch (err) {
     process.stderr.write(JSON.stringify({ error: err.message ?? String(err) }) + "\n");
     process.exit(1);

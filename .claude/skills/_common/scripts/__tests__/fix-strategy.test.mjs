@@ -91,3 +91,12 @@ test("parseStrategy returns null strategy when neither line is present", () => {
 test("parseStrategy ignores an invalid strategy value on the first line", () => {
   assert.deepEqual(parseStrategy("strategy: wibble"), { strategy: null, source: null });
 });
+
+test("parseStrategy handles mixed-case strategy and verdict (i flag + toLowerCase)", () => {
+  assert.deepEqual(parseStrategy("strategy: ESSENCE-Reimplement"), { strategy: "essence-reimplement", source: "strategy" });
+  assert.deepEqual(parseStrategy("verdict: Manual-Port"), { strategy: "adapted-port", source: "verdict" });
+});
+
+test("parseStrategy tolerates no space after the colon", () => {
+  assert.equal(parseStrategy("strategy:direct-merge").strategy, "direct-merge");
+});

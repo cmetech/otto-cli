@@ -9,6 +9,7 @@ import {
   recordTransition,
   recordRetry,
   VALID_TRANSITIONS,
+  readRefuteVerdict,
 } from "../swarm-ledger.mjs";
 
 function tmp() { return mkdtempSync(join(tmpdir(), "us-ledger-")); }
@@ -204,4 +205,16 @@ test("initSwarmLedger seeds an empty abortStreak", async () => {
     const led = initSwarmLedger(path, { date: "d", filter: {}, issues: [] });
     assert.deepEqual(led.abortStreak, { signature: null, count: 0 });
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("readRefuteVerdict returns the recorded panel verdict, or null when absent", () => {
+  const ledger = { issues: {
+    7: { state: "approved", refute: { tally: { panelVerdict: "approve" } } },
+    8: { state: "selected" },
+    9: { state: "approved", refute: { tally: {} } },
+  } };
+  assert.equal(readRefuteVerdict(ledger, 7), "approve");
+  assert.equal(readRefuteVerdict(ledger, 8), null);
+  assert.equal(readRefuteVerdict(ledger, 9), null);
+  assert.equal(readRefuteVerdict(ledger, 999), null);
 });

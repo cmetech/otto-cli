@@ -101,7 +101,8 @@ test("a `skipping` conditional check also counts as pass", () => {
 
 test("loadAllowlist reads requiredChecks + conditionalChecks from config.json", () => {
   const here = dirname(fileURLToPath(import.meta.url));
-  const cfg = join(here, "..", "..", "config.json");
+  // Config stays under upstream-merge; from _common/scripts/__tests__ that's three up.
+  const cfg = join(here, "..", "..", "..", "upstream-merge", "config.json");
   const allow = loadAllowlist(cfg);
   assert.deepEqual(allow, SPLIT);
 });

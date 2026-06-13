@@ -31,7 +31,7 @@
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
-import { evaluateChecks, loadAllowlist } from "../../upstream-merge/scripts/evaluate-checks.mjs";
+import { evaluateChecks, loadAllowlist } from "../../_common/scripts/evaluate-checks.mjs";
 
 function defaultGhRunner(args) {
   return execFileSync("gh", args, { encoding: "utf-8", maxBuffer: 16 * 1024 * 1024 });

@@ -66,7 +66,7 @@ For each queued PR, in order:
    Draft / `CONFLICTING` / not `MERGEABLE` ⇒ record `blocked` (reason), skip.
 2. **GitHub checks.** Poll until checks settle (no `pending`), then evaluate the allowlist:
    ```sh
-   node .claude/skills/upstream-merge/scripts/evaluate-checks.mjs <n> --repo cmetech/otto-cli
+   node .claude/skills/_common/scripts/evaluate-checks.mjs <n> --repo cmetech/otto-cli
    ```
    `gh pr checks` exits non-zero when not all green; capture stdout regardless
    (e.g. `... || true` around a stdout capture) — the JSON verdict is what matters.

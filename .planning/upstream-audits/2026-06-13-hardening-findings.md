@@ -44,10 +44,26 @@ Confirmed-by-direct-read already (pre-Phase-0):
 ## Confirmed backlog (output)
 | Finding | Status | Evidence | Target phase |
 |---|---|---|---|
-| Cross-skill import cycle | confirmed | trial-merge.mjs:18, poll-pr-checks.mjs:34, select-issues.mjs:12 | (pre-Phase-0) |
-| Ledger duplication | confirmed | ledger.mjs:10-18, merge-ledger.mjs:9-17, swarm-ledger.mjs:38-46 | (pre-Phase-0) |
-| Inverted rebase classifier | debunked | transient-classifier.mjs (rebase→transient only when mainShaChanged && conflictMarkers) | n/a |
-| Missing-guidance is silent | confirmed | run-audit.mjs:304-320; build-issue-payload.mjs:201-214,271 | Phase 2 |
-| Verdict-line parse fragility | confirmed | run-audit.mjs:146-150,305; build-issue-payload.mjs:95-97 | Phase 2 |
-| Fuzzy dedup | debunked | dedup-check.mjs:64 literal-trailer post-filter | n/a |
-| PR-context cache no-expiry | confirmed | fetch-pr-context.mjs:53-62 (no TTL/mtime check) | Phase 5 |
+| Cross-skill import cycle | confirmed | trial-merge.mjs:18, poll-pr-checks.mjs:34, swarm/select-issues.mjs:12 | Phase 1 |
+| Ledger duplication (3×) | confirmed | fix/ledger.mjs:10-18, merge-ledger.mjs:9-17, swarm-ledger.mjs:38-46 | Phase 1 |
+| Rebase classifier "inverted" | debunked | transient-classifier.mjs:50-53 (only transient when mainShaChanged && conflictMarkers) | — |
+| cherry-pick: missing-guidance is silent | confirmed | run-audit.mjs:320, build-issue-payload.mjs:201-214,271 | Phase 2 |
+| cherry-pick: verdict-parse fragility (scans whole file, silent risk-based fallback on no-match) | confirmed | run-audit.mjs:146-150, build-issue-payload.mjs:95-97 | Phase 2 |
+| cherry-pick: fuzzy dedup | debunked | dedup-check.mjs:64-65 literal `sha=<short>` trailer post-filter already mitigates | — (P5 theoretical note: 7-char prefix collision) |
+| cherry-pick: PR-context cache no-TTL | confirmed | fetch-pr-context.mjs:53-62 | Phase 5 |
+| fix: non-idempotent issue update (duplicate comment on re-run; gh close/label are CLI-idempotent) | confirmed | issue-update.mjs:24-32 | Phase 3 |
+| fix: worktree leak on failure | confirmed | SKILL.md:236-237 | Phase 1 (covered by registry) |
+| fix: reviewer rejection is terminal | confirmed | SKILL.md:187-188,230-231; ledger.mjs:54-70 | Phase 5 |
+| fix: status:applied resume gap (merge outside skill → re-selected) | confirmed | select-issues.mjs:19,71 | Phase 3 |
+| fix: ledger versioning absent | confirmed | ledger.mjs:21,10-13 | Phase 1 (covered by base-ledger) |
+| merge: stale trial-merge on resume | debunked | merge-ledger.mjs:29,46-53; SKILL.md:158,61-85 (resume re-runs gate; only skips merged) | — |
+| merge: hardcoded allowlist, no drift check | confirmed | evaluate-checks.mjs:53-59 | Phase 5 |
+| merge: refute field loss (no refute field in ledger; SKILL.md writes to nonexistent field) | confirmed | refute-panel.mjs:155; merge-ledger.mjs:22-30,46-52; SKILL.md:110 | Phase 5 |
+| merge: no retry/escalate for blocked PRs | confirmed | SKILL.md:151-159; merge-ledger.mjs:25,50 | Phase 5 |
+| swarm: abort-streak is prose-only (no script implements it) | confirmed | SKILL.md:122-126 (only reference) | Phase 4 |
+| swarm: baseline-gate worktree leak | confirmed | baseline-gate.mjs:36,43-45,65; SKILL.md:139-140 | Phase 1 (covered by registry) |
+| swarm: transition validation "not enforced" | debunked | swarm-ledger.mjs:85-88,99-101 (validates + throws before mutating) | — |
+| swarm: rebase-retry policy (mechanics correct; blind-replay retry questionable) | reclassified | transient-classifier.mjs:50-53; RETRY_CAP=1 swarm-ledger.mjs:9 | Phase 4 (policy) |
+| swarm: PR polling not adaptive (poll is non-blocking; gap = scheduler re-emits un-batched poll-ci per tick, no backoff) | reclassified | poll-pr-checks.mjs:54; scheduler.mjs:46-48 | Phase 4 |
+| swarm: wave packing greedy (no affinity) | confirmed | wave-plan.mjs:15-43 | Phase 5 (deferrable) |
+| swarm: refute-gate vs missing field | debunked | merge-pr.mjs:16-27 (reads CLI arg not ledger); scheduler.mjs:64-65; swarm-ledger.mjs:21-22 (state machine gates) | — (P5 nicety) |

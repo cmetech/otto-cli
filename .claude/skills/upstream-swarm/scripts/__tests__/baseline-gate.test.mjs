@@ -56,9 +56,40 @@ test("provisions deps after worktree creation, before running the gate", () => {
   runBaselineGate({
     workdir: "/tmp/x",
     logPath: "/tmp/x/baseline.log",
-    worktreeRunner: () => { order.push("worktree"); return { status: 0 }; },
+    worktreeRunner: (args) => {
+      // Both the force-remove and the add are "worktree" ops; track both so
+      // the ordering assertion remains meaningful.
+      order.push("worktree:" + args[1]);
+      return { status: 0 };
+    },
     provisionDeps: () => { order.push("provision"); },
     gateRunner: () => { order.push("gate"); return { pass: true, failTail: "" }; },
   });
-  assert.deepEqual(order, ["worktree", "provision", "gate"]);
+  // remove precedes add, add precedes provision, provision precedes gate.
+  assert.ok(order[0] === "worktree:remove", "force-remove must come first");
+  assert.ok(order[1] === "worktree:add",    "add must come second");
+  assert.equal(order[2], "provision");
+  assert.equal(order[3], "gate");
+});
+
+test("runBaselineGate force-removes a leaked worktree before re-adding", async () => {
+  const calls = [];
+  const worktreeRunner = (args) => {
+    calls.push(args.join(" "));
+    if (args[1] === "remove") throw new Error("fatal: ... is not a working tree"); // clean run: nothing to remove
+    return { status: 0, stdout: "", stderr: "" };
+  };
+  const r = await runBaselineGate({
+    workdir: ".worktrees/upstream-swarm-baseline",
+    logPath: "/tmp/x.log",
+    worktreeRunner,
+    provisionDeps: () => {},
+    gateRunner: () => ({ pass: true, failTail: "" }),
+  });
+  assert.equal(r.pass, true);
+  const removeIdx = calls.findIndex((c) => c.startsWith("worktree remove"));
+  const addIdx = calls.findIndex((c) => c.startsWith("worktree add"));
+  assert.ok(removeIdx >= 0, "must attempt a remove");
+  assert.ok(removeIdx < addIdx, "remove must precede add");
+  assert.ok(calls[removeIdx].includes("--force"), "remove must be --force");
 });

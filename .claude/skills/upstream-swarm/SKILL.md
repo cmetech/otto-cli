@@ -150,9 +150,11 @@ Loop until `nextActions(ledger, caps)` returns `[]`:
 
 2. Worktree hygiene: remove every `.worktrees/upstream-fix-issue-*` and
    `.worktrees/upstream-merge-pr-*` directory on terminal-state. The
-   baseline worktree at `.worktrees/upstream-swarm-baseline` is removed
-   only on the baseline gate's success path; leave it on failure for
-   inspection.
+   The baseline worktree at `.worktrees/upstream-swarm-baseline` is removed on the
+   gate's success path; on failure it is left for inspection but the next run (or
+   `--resume`) force-removes it before re-creating, so a leaked baseline worktree
+   no longer blocks a re-run. It is also tracked in the worktree registry, so
+   `--clean-worktrees` prunes it by TTL.
 
 3. Final exit: 0 if no issues quarantined; non-zero (with summary) if any
    are.

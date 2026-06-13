@@ -22,6 +22,8 @@
  *                       no report, no state, no commit. For cheap dispatch.
  *   --no-issue-context  skip the linked PR/issue fetch (faster, less accurate).
  *   --refresh-cache     bypass _cache/ and re-fetch PR/issue context.
+ *   --cache-age-warning <days>  emit a stderr warning when a cached PR/issue context
+ *                          is older than <days> days (uses cache file mtime).
  *   --from <commit>     override the starting commit for this run.
  *   --no-commit         file/advance state but skip the closing git commit.
  *   --skip-guidance-check  bypass fail-fast guidance schema validation
@@ -74,6 +76,7 @@ function parseArgs(argv) {
     manifest: false,
     noIssueContext: false,
     refreshCache: false,
+    cacheAgeWarningMs: null,
     noCommit: false,
     from: null,
     guidanceDir: DEFAULT_GUIDANCE_DIR,
@@ -88,6 +91,7 @@ function parseArgs(argv) {
     else if (a === "--manifest") flags.manifest = true;
     else if (a === "--no-issue-context") flags.noIssueContext = true;
     else if (a === "--refresh-cache") flags.refreshCache = true;
+    else if (a === "--cache-age-warning") flags.cacheAgeWarningMs = Number(argv[++i]) * 86_400_000;
     else if (a === "--no-commit") flags.noCommit = true;
     else if (a === "--from") flags.from = argv[++i];
     else if (a === "--guidance-dir") flags.guidanceDir = argv[++i];
@@ -279,7 +283,9 @@ async function scanUpstream(name, upstream, cfg, ledger, compiledRubric, compile
             ghRepo: upstream.ghRepo,
             refNum: parseInt(ref, 10),
             refreshCache: flags.refreshCache,
+            cacheAgeWarningMs: flags.cacheAgeWarningMs,
           });
+          if (ctx.warning) console.error(ctx.warning);
           if (ctx.kind === "pr") prContext = ctx;
           else issueContexts.push(ctx);
         } catch {

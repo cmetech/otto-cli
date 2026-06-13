@@ -24,6 +24,10 @@
  *   --refresh-cache     bypass _cache/ and re-fetch PR/issue context.
  *   --from <commit>     override the starting commit for this run.
  *   --no-commit         file/advance state but skip the closing git commit.
+ *   --skip-guidance-check  bypass fail-fast guidance schema validation
+ *                          (audit/dry-run only; files placeholder issues).
+ *   --revalidate-do-not-port  re-surface existing type:do-not-port issues for a
+ *                          fresh Fork-relevance check (handler added in a later task).
  *
  * Exit codes: 0 = success, 1 = preflight or fatal error.
  */
@@ -46,6 +50,8 @@ import { buildIssuePayload } from "./build-issue-payload.mjs";
 import { dedupCheck } from "./dedup-check.mjs";
 import { fileIssue } from "./file-issue.mjs";
 import { writeReport } from "./write-report.mjs";
+import { validateGuidance } from "./parse-guidance.mjs";
+import { parseStrategy } from "../../_common/scripts/fix-strategy.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const AUDIT_OUTPUT_DIR = ".planning/upstream-audits";
@@ -71,6 +77,8 @@ function parseArgs(argv) {
     from: null,
     guidanceDir: DEFAULT_GUIDANCE_DIR,
     embedDiff: true,
+    skipGuidanceCheck: false,
+    revalidateDoNotPort: false,
   };
   let upstream = null;
   for (let i = 0; i < argv.length; i++) {
@@ -83,6 +91,8 @@ function parseArgs(argv) {
     else if (a === "--from") flags.from = argv[++i];
     else if (a === "--guidance-dir") flags.guidanceDir = argv[++i];
     else if (a === "--no-diff") flags.embedDiff = false;
+    else if (a === "--skip-guidance-check") flags.skipGuidanceCheck = true;
+    else if (a === "--revalidate-do-not-port") flags.revalidateDoNotPort = true;
     else if (a.startsWith("--")) throw new Error(`Unknown flag: ${a}`);
     else upstream = a;
   }
@@ -139,14 +149,22 @@ function readGuidance(guidanceDir, sha) {
 }
 
 /**
- * Extract the machine-readable verdict from a guidance file. Matches a
- * `verdict: <value>` line (optionally inside a heading / backticks), value ∈
- * {cherry-pick, manual-port, do-not-port}. Returns null when absent.
+ * Resolve the fix-strategy for a candidate, failing fast on invalid guidance.
+ * Real runs require valid guidance; --dry-run (scan stage) and
+ * --skip-guidance-check bypass the fail-fast and best-effort parse instead.
  */
-function parseVerdict(guidanceText) {
-  if (!guidanceText) return null;
-  const m = guidanceText.match(/verdict:\s*`?(cherry-pick|manual-port|do-not-port)`?/i);
-  return m ? m[1].toLowerCase() : null;
+export function resolveStrategy({ guidanceText, guidancePath, flags = {} }) {
+  if (flags.dryRun || flags.skipGuidanceCheck) {
+    return { strategy: parseStrategy(guidanceText).strategy };
+  }
+  const result = validateGuidance(guidanceText, { path: guidancePath });
+  if (!result.valid) {
+    throw new Error(
+      `Guidance validation failed:\n  - ${result.errors.join("\n  - ")}\n` +
+        `Author/repair the guidance file, or re-run with --skip-guidance-check (audit/dry-run only).`,
+    );
+  }
+  return { strategy: result.strategy };
 }
 
 /** Capture the upstream patch, bounded to MAX_DIFF_LINES for body sanity. */
@@ -301,8 +319,14 @@ async function scanUpstream(name, upstream, cfg, ledger, compiledRubric, compile
     }
 
     // vi. payload (enriched with agent-authored otto-cli guidance + upstream diff)
+    const sha7g = commit.sha.slice(0, 7);
+    const guidancePath = join(flags.guidanceDir, `${sha7g}.md`);
     const implementationGuidance = readGuidance(flags.guidanceDir, commit.sha);
-    const verdict = parseVerdict(implementationGuidance);
+    const { strategy } = resolveStrategy({
+      guidanceText: implementationGuidance,
+      guidancePath,
+      flags,
+    });
     const diff = flags.embedDiff ? readDiff(upstream.path, commit.sha) : null;
     const payload = buildIssuePayload({
       commit,
@@ -315,7 +339,7 @@ async function scanUpstream(name, upstream, cfg, ledger, compiledRubric, compile
       heavyFiles,
       implementationGuidance,
       diff,
-      verdict,
+      strategy,
     });
     if (!implementationGuidance) runData.unanalyzed = (runData.unanalyzed ?? 0) + 1;
 
@@ -453,7 +477,10 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err.message);
-  process.exit(1);
-});
+// Only run main when executed directly (not when imported by tests).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
+}

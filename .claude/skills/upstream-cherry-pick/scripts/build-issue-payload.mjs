@@ -15,6 +15,8 @@
  * Output: { title, body, labels }
  */
 
+import { strategyToLabel, strategyToTypeLabel } from "../../_common/scripts/fix-strategy.mjs";
+
 // ---------------------------------------------------------------------------
 // Emoji map
 // ---------------------------------------------------------------------------
@@ -72,37 +74,34 @@ function buildTitle({ commit, classification, upstream }) {
 // Labels builder  §11.1
 // ---------------------------------------------------------------------------
 
-/** Map a machine-readable verdict to its type:* label, or null if absent/unknown. */
-function verdictToTypeLabel(verdict) {
-  switch ((verdict ?? "").toLowerCase().trim()) {
-    case "cherry-pick":
-      return "type:cherry-pick-candidate";
-    case "manual-port":
-      return "type:port-required";
-    case "do-not-port":
-      return "type:do-not-port";
-    default:
-      return null;
-  }
+/** Map a strategy to its type:* label (routing back-compat), or null. */
+function typeLabelFor(strategy) {
+  return strategyToTypeLabel(strategy);
 }
 
-function buildLabels({ classification, conflictRisk, upstream, verdict }) {
+function buildLabels({ classification, conflictRisk, upstream, strategy }) {
   const severityKebab = toKebab(classification.severity);
   const riskKebab = toKebab(conflictRisk.risk);
 
-  // The analyzed verdict, when present, is authoritative over the deterministic
+  // The analyzed strategy, when present, is authoritative over the deterministic
   // risk-based fallback (HIGH → port-required, else cherry-pick-candidate).
   const typeLabel =
-    verdictToTypeLabel(verdict) ??
+    typeLabelFor(strategy) ??
     (conflictRisk.risk === "HIGH" ? "type:port-required" : "type:cherry-pick-candidate");
 
-  return [
+  const labels = [
     `upstream:${upstream.name}`,
     typeLabel,
     `severity:${severityKebab}`,
     `conflict-risk:${riskKebab}`,
     "status:triaged",
   ];
+
+  // New audits set both type:* (routing) and fix-strategy:* (fork-divergence).
+  const stratLabel = strategyToLabel(strategy);
+  if (stratLabel) labels.push(stratLabel);
+
+  return labels;
 }
 
 // ---------------------------------------------------------------------------
@@ -225,16 +224,42 @@ function renderUpstreamDiff({ diff }) {
 }
 
 // ---------------------------------------------------------------------------
+// Fix strategy section builder
+// ---------------------------------------------------------------------------
+
+const STRATEGY_BLURB = {
+  "direct-merge": "Cherry-pick / `git am -3` applies clean. Apply the upstream change; the reviewer checks fidelity to the upstream diff.",
+  "adapted-port": "Same fix, transcribed to our renamed/restructured paths. The reviewer checks fidelity to the upstream diff against the mapped files.",
+  "essence-reimplement": "otto-cli has diverged in **behavior** — the upstream patch will not apply. **Re-solve the upstream root cause in our code; do not transcribe the diff.** The reviewer gate checks *\"does this address the upstream root cause?\"*, and the fix must author a root-cause regression test.",
+  "not-needed": "The problem does not exist in our fork (justified by `Fork relevance: no`). Close without porting.",
+};
+
+function renderFixStrategy({ strategy }) {
+  if (!strategy) return "";
+  const blurb = STRATEGY_BLURB[strategy] ?? "";
+  let out = `\n## Fix strategy\n\n**\`fix-strategy:${strategy}\`** — ${blurb}\n`;
+  if (strategy === "essence-reimplement") {
+    out +=
+      "\n> ⚠️ **Essence to preserve.** This is a re-solve, not a transcribe. The " +
+      "upstream diff is a reference for *intent*, not a target to match. Read the " +
+      "guidance above for the documented essence (root cause + the property that " +
+      "must hold), implement it the otto-cli way, and pin it with a new regression " +
+      "test against our code.\n";
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Body builder  §11.3
 // ---------------------------------------------------------------------------
 
-function buildBody({ commit, classification, conflictRisk, upstream, prContext, issueContexts, ccUser, heavyFiles, implementationGuidance, diff, verdict }) {
+function buildBody({ commit, classification, conflictRisk, upstream, prContext, issueContexts, ccUser, heavyFiles, implementationGuidance, diff, strategy }) {
   const today = new Date().toISOString().slice(0, 10);
   const sha7 = shortSha(commit.sha);
   const severityKebab = toKebab(classification.severity);
   const riskKebab = toKebab(conflictRisk.risk);
   const typeLabel =
-    verdictToTypeLabel(verdict) ??
+    typeLabelFor(strategy) ??
     (conflictRisk.risk === "HIGH" ? "type:port-required" : "type:cherry-pick-candidate");
 
   const subjectDisplay = truncateSubject(commit.subject ?? "");
@@ -245,6 +270,7 @@ function buildBody({ commit, classification, conflictRisk, upstream, prContext, 
   const fileCount = (commit.touchedFiles ?? []).length;
   const guidanceSection = renderImplementationGuidance({ implementationGuidance });
   const diffSection = renderUpstreamDiff({ diff });
+  const fixStrategySection = renderFixStrategy({ strategy });
   const analyzed = Boolean((implementationGuidance ?? "").trim());
 
   const upgradeSection =
@@ -260,7 +286,7 @@ function buildBody({ commit, classification, conflictRisk, upstream, prContext, 
 ## otto-cli implementation guidance
 
 ${guidanceSection}
-${diffSection}
+${diffSection}${fixStrategySection}
 ## Classification
 
 | Field | Value |
@@ -329,10 +355,10 @@ export function buildIssuePayload({
   heavyFiles = null,
   implementationGuidance = null,
   diff = null,
-  verdict = null,
+  strategy = null,
 }) {
   const title = buildTitle({ commit, classification, upstream });
-  const labels = buildLabels({ classification, conflictRisk, upstream, verdict });
+  const labels = buildLabels({ classification, conflictRisk, upstream, strategy });
   const body = buildBody({
     commit,
     classification,
@@ -344,7 +370,7 @@ export function buildIssuePayload({
     heavyFiles,
     implementationGuidance,
     diff,
-    verdict,
+    strategy,
   });
 
   return { title, body, labels };

@@ -488,3 +488,87 @@ test("diff is embedded in a collapsible details block when provided", () => {
   assert.ok(body.includes("<summary>Upstream diff"), "diff details summary present");
   assert.ok(body.includes("+added line"), "diff content rendered");
 });
+
+// ---------------------------------------------------------------------------
+// Phase 2: fix-strategy label + body section
+// ---------------------------------------------------------------------------
+
+test("strategy adds the fix-strategy:* label (labels become 6) and drives type", () => {
+  const { labels } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("CRITICAL_STABILITY"),
+    conflictRisk: makeRisk("LOW", "touches pi-*"),
+    upstream,
+    ccUser: "@claude",
+    strategy: "essence-reimplement",
+  });
+  assert.ok(labels.includes("fix-strategy:essence-reimplement"), `Got: ${labels}`);
+  assert.ok(labels.includes("type:port-required"), `Got: ${labels}`);
+  assert.equal(labels.length, 6, `Expected 6 labels, got ${labels.length}: ${labels}`);
+});
+
+test("strategy not-needed routes type:do-not-port", () => {
+  const { labels } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("NICE_TO_HAVE_FIX"),
+    conflictRisk: makeRisk("HIGH", "heavy"),
+    upstream,
+    ccUser: "@claude",
+    strategy: "not-needed",
+  });
+  assert.ok(labels.includes("fix-strategy:not-needed"), `Got: ${labels}`);
+  assert.ok(labels.includes("type:do-not-port"), `Got: ${labels}`);
+  assert.ok(!labels.includes("type:port-required"), `Got: ${labels}`);
+});
+
+test("no strategy → 5 labels, risk-based type (back-compat unchanged)", () => {
+  const { labels } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("FEATURE"),
+    conflictRisk: makeRisk("MEDIUM", "reason"),
+    upstream,
+    ccUser: "@claude",
+  });
+  assert.equal(labels.length, 5, `Got: ${labels}`);
+  assert.ok(!labels.some((l) => l.startsWith("fix-strategy:")), `Got: ${labels}`);
+});
+
+test("body renders a Fix strategy heading when strategy present", () => {
+  const { body } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("CRITICAL_STABILITY"),
+    conflictRisk: makeRisk("LOW", "touches pi-*"),
+    upstream,
+    ccUser: "@claude",
+    strategy: "adapted-port",
+    implementationGuidance: "strategy: adapted-port\n\nTranscribe the guard.",
+  });
+  assert.ok(body.includes("## Fix strategy"), "Fix strategy heading present");
+  assert.ok(body.includes("fix-strategy:adapted-port"), "strategy value shown");
+});
+
+test("essence-reimplement renders an 'Essence to preserve' callout", () => {
+  const { body } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("CRITICAL_STABILITY"),
+    conflictRisk: makeRisk("LOW", "x"),
+    upstream,
+    ccUser: "@claude",
+    strategy: "essence-reimplement",
+    implementationGuidance: "strategy: essence-reimplement\n\n**Essence to preserve:** atomic write.",
+  });
+  assert.ok(body.includes("## Fix strategy"), "heading present");
+  assert.ok(/Essence to preserve/i.test(body), "essence callout present");
+  assert.ok(/re-solve|root cause/i.test(body), "callout signals re-solve, not transcribe");
+});
+
+test("no strategy → no Fix strategy heading (back-compat)", () => {
+  const { body } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("FEATURE"),
+    conflictRisk: makeRisk(),
+    upstream,
+    ccUser: "@claude",
+  });
+  assert.ok(!body.includes("## Fix strategy"), "no strategy section when strategy absent");
+});

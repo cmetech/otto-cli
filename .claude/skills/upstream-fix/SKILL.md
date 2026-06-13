@@ -70,6 +70,12 @@ with one issue; worktree-setup uses `singleIssueBranch(N, sha)` from
    ```
    Read only the printed `{ count, needsTriage, path }`. A non-zero `needsTriage`
    means some issues lack resolvable target files — they are reported, not fixed.
+
+   On `--resume`, add `--exclude-applied`: select-issues then asks GitHub whether
+   each candidate open issue has a **linked merged PR** and drops those — so a fix
+   that already landed (including merged out-of-band, where `status:applied` was
+   never set by the skill) is not re-selected. The printed `excludedApplied` count
+   reports how many were dropped.
 3. **Plan lanes:**
    ```sh
    node .claude/skills/upstream-fix/scripts/plan-lanes.mjs \
@@ -83,8 +89,9 @@ with one issue; worktree-setup uses `singleIssueBranch(N, sha)` from
    `lanes.json`, with `integrationBranch = integration/upstream-fix-$DATE`. (Use a
    one-off `node -e` that imports `initLedger`, or add the records via the CLI.)
    On `--resume`, skip init — the ledger already exists; issues already
-   `status:applied` are skipped automatically by the scheduler (their lanes are
-   `merged`).
+   `status:applied` are skipped by the scheduler, and selection additionally
+   drops any open issue with a linked merged PR (`--exclude-applied`), covering
+   fixes merged outside the skill.
 
 ## Phase B — Fix lanes (agentic, ≤3 in flight)
 
@@ -251,6 +258,10 @@ RETURN CONTRACT — output ONE line per issue, NOTHING else (no diffs, no logs):
        --comment "Applied in <commitSha> (PR <prUrl>)." --close
      ```
      Set ledger issue status `applied`.
+   `issue-update.mjs` is idempotent: a re-run skips the duplicate "Applied in …"
+   comment and does not re-close an already-closed issue (it reports
+   `comment-skipped` / `close-skipped`), so resuming Phase D never throws or
+   double-comments.
    - Unresolved/rejected: leave open, keep `status:triaged`, comment the blocker
      (no `--close`).
 2. **Report:**
@@ -263,7 +274,8 @@ RETURN CONTRACT — output ONE line per issue, NOTHING else (no diffs, no logs):
 ## Flags
 
 - `--dry-run` — select + plan lanes, print the plan, do no work.
-- `--resume` — idempotent re-run from the ledger; skips `status:applied`.
+- `--resume` — idempotent re-run from the ledger; skips `status:applied` and
+  (via `--exclude-applied` selection) any issue with a linked merged PR.
 - `--severity | --type | --label | --issues | --all` — selection groupings (Task 3).
 - `--guidance-dir <dir>` — alternate guidance directory.
 - `--single-issue <N>` — short-circuit planning to exactly one issue. The

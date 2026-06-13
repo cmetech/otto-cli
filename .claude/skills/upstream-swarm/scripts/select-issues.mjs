@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * select-issues.mjs — fetch triaged issues + partition by severity tier.
- * Wraps upstream-fix/scripts/select-issues.mjs and applies the swarm's
+ * Wraps _common/scripts/select-issues.mjs and applies the swarm's
  * autoMergeSeverities / humanReviewSeverities config to split records.
  *
  * CLI: node select-issues.mjs --config <path> [--filter "<query>"] [--out <path>]
@@ -9,7 +9,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { selectIssues as fixSelect } from "../../upstream-fix/scripts/select-issues.mjs";
+import { selectIssues as fixSelect } from "../../_common/scripts/select-issues.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_CONFIG = resolve(HERE, "..", "config.json");

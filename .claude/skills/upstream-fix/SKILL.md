@@ -65,7 +65,7 @@ with one issue; worktree-setup uses `singleIssueBranch(N, sha)` from
    `DIR=.planning/upstream-fixes`.
 2. **Select issues:**
    ```sh
-   node .claude/skills/upstream-fix/scripts/select-issues.mjs <filter> \
+   node .claude/skills/_common/scripts/select-issues.mjs <filter> \
      --out $DIR/$DATE-selected-issues.json
    ```
    Read only the printed `{ count, needsTriage, path }`. A non-zero `needsTriage`

@@ -23,7 +23,7 @@ test("CI-flake → auto retry → merge", () => {
     let ciFlakeDone = false;
     const transitions = {
       "start-fix": (n) => { recordTransition(path, n, "planning"); recordTransition(path, n, "fixing"); recordTransition(path, n, "fix-ok", { prNumber: n + 100 }); recordTransition(path, n, "awaiting-ci"); },
-      "poll-ci": (n) => {
+      "poll-ci-batch": (n) => {
         if (!ciFlakeDone) {
           // First time: ci-red, classify as transient, retry.
           recordTransition(path, n, "ci-red");
@@ -48,7 +48,10 @@ test("CI-flake → auto retry → merge", () => {
       for (const [num, i] of Object.entries(ledger.issues)) if (i.state === "fixing" && i.retryCount === 1) fixingFollowup(Number(num));
       const acts = nextActions(readLedger(path), CAPS);
       if (!acts.length) break;
-      for (const a of acts) transitions[a.kind](a.issueNumber);
+      for (const a of acts) {
+        const nums = a.kind === "poll-ci-batch" ? a.issueNumbers : [a.issueNumber];
+        for (const n of nums) transitions[a.kind](n);
+      }
     }
     const led = readLedger(path);
     assert.equal(led.issues["1"].state, "merged");
@@ -65,7 +68,7 @@ test("persistent CI red → retry fails → quarantine", () => {
     let attempts = 0;
     const transitions = {
       "start-fix": (n) => { recordTransition(path, n, "planning"); recordTransition(path, n, "fixing"); recordTransition(path, n, "fix-ok", { prNumber: n + 100 }); recordTransition(path, n, "awaiting-ci"); },
-      "poll-ci": (n) => {
+      "poll-ci-batch": (n) => {
         attempts += 1;
         recordTransition(path, n, "ci-red");
         const c = classifyFailure({ stage: "ci", firstRunRed: true, rerunGreen: false });
@@ -85,7 +88,10 @@ test("persistent CI red → retry fails → quarantine", () => {
     for (let tick = 0; tick < 100; tick++) {
       const acts = nextActions(readLedger(path), CAPS);
       if (!acts.length) break;
-      for (const a of acts) transitions[a.kind](a.issueNumber);
+      for (const a of acts) {
+        const nums = a.kind === "poll-ci-batch" ? a.issueNumbers : [a.issueNumber];
+        for (const n of nums) transitions[a.kind](n);
+      }
     }
     const led = readLedger(path);
     assert.equal(led.issues["1"].state, "quarantined");

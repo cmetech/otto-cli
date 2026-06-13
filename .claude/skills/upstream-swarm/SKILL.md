@@ -107,8 +107,9 @@ Loop until `nextActions(ledger, caps)` returns `[]`:
 
    | Action kind | What to run |
    |---|---|
-   | `start-fix` | Dispatch a subagent to run `upstream-fix --single-issue <N>`; on done record `fix-ok`/`fix-failed`. |
-   | `poll-ci` | `node poll-pr-checks.mjs <prNumber>` — ONE non-blocking HTTP poll. Returns `{state: pass\|pending\|fail, pending, blocking, informationalReds}` evaluated against the required-checks allowlist. On `pass` → `ci-green`. On `fail` → classify, retry or quarantine. On `pending` → NO transition; scheduler re-emits `poll-ci` next tick. The orchestrator paces ticks (e.g. `ScheduleWakeup` ~4 min) when the only outstanding work is `awaiting-ci`. **Never** invoke `gh pr checks --watch` — it serializes the swarm to one PR at a time and defeats the `prWindow` cap. |
+   | `start-fix` | Transition `selected → planning` recording `fixStartedAt: <now ms>` (the per-issue timeout clock), then dispatch a subagent to run `upstream-fix --single-issue <N>`; on done record `fix-ok`/`fix-failed`. |
+   | `quarantine-timeout` | The issue exceeded `issueTimeoutMs` in an active fix state (stuck lane). Transition it `→ quarantined` (reason from the action), free the lane, comment the issue with the timeout note, and feed the timeout into the abort-streak detector (step 4). |
+   | `poll-ci-batch` | For each PR in `issueNumbers`, run `node poll-pr-checks.mjs <prNumber>` — ONE non-blocking HTTP poll each. The scheduler has already applied per-issue exponential backoff (it only lists PRs whose backoff interval has elapsed), so add no delay of your own. On a PR's `pass` → `ci-green`; on `fail` → classify, retry or quarantine; on `pending` → **no state transition**, but update that issue's ledger fields `lastPolledAt = <now ms>` and increment `pollNoChangeCount` so the next tick backs off. On any state change reset `pollNoChangeCount` to 0. **Never** `gh pr checks --watch`. |
    | `run-local-gate` | `trial-merge` + `run-gates.mjs full` in a worktree at origin/main. On pass → `local-gate-pending` (becomes refute-pending via state). |
    | `run-refute` | `buildInputBundle` then dispatch 4 lens subagents in parallel (Workflow `parallel(LENS_NAMES.map(lens => () => agent(prompt(lens, bundle), {schema: VERDICT_SCHEMA})))`); apply `tallyVerdicts`; record. The bundle carries `bundle.fixStrategy` from the issue's `fix-strategy:*` label — the `upstream-alignment` lens is strategy-aware (`essence-reimplement` judges intent/root-cause alignment, not diff-fidelity); see the full branch definition in `.claude/skills/upstream-merge/SKILL.md`. |
    | `merge-pr` | `merge-pr.mjs <N> --auto --refute-verdict approve --refute-reason "..."`. Severity routing for `feature`/`critical-stability` happens at fix-ok→pending-human-review (skip merge). |
@@ -119,11 +120,25 @@ Loop until `nextActions(ledger, caps)` returns `[]`:
    If `real`, transition to `quarantined`, post a comment on the issue
    with the failure log path, label `status:needs-human`.
 
-4. Track an `abortStreak` counter. If 5 consecutive `quarantined` events
-   share the same root-cause signature (e.g. same failTail prefix),
-   STOP — record a swarm-abort report, do not start any new fixes,
-   exit non-zero. Resume requires `--resume` and a human-resolved root
-   cause.
+   For `stage:"rebase"` the classifier needs `touchedFilesDisjoint` — compute it as
+   *(our `targetFiles`) ∩ (files changed by the new origin/main commits) = ∅*. A
+   transient rebase retry MUST **re-fetch `origin/main` and rebase the lane onto the
+   new tip** — never replay the cached patch into the same conflicting region (a
+   blind replay re-hits the identical conflict). If the touched files overlap the new
+   commits the classifier returns `real`; quarantine for a manual rebase.
+
+4. **Abort-streak detection.** On every `quarantined` event (including
+   `quarantine-timeout`), compute a structured signature and record it:
+   ```sh
+   SIG=$(node .claude/skills/upstream-swarm/scripts/abort-streak.mjs signature \
+     '{"stage":"<stage>","failTail":"<first lines of the gate log>"}')
+   ```
+   then call `recordQuarantineSignature(ledger, SIG, { threshold })` (threshold =
+   `config.json.abortThreshold`, default 5). When it returns `{abort:true}` —
+   `threshold` consecutive quarantines share the **same** root-cause signature —
+   STOP: record a swarm-abort report, start no new fixes, exit non-zero. A
+   *different* signature resets the streak. Recovery: resolve the root cause, then
+   `node abort-streak.mjs reset <ledger>` (or `--reset-abort-counter`) and `--resume`.
 
 ## Phase C — Report + cleanup
 
@@ -161,6 +176,12 @@ Loop until `nextActions(ledger, caps)` returns `[]`:
   file-disjoint partitioning — it caps how many issues go in one wave's
   fix bundle. It does **NOT** bind the scheduler. Lowering it to 1 will
   not force sequential fix lanes; use `--fix-concurrency 1` for that.
+- `--issue-timeout <ms>` (default 1800000 = 30 min). Per-issue wall-clock budget
+  for active fix states (`planning`/`fixing`/`retrying`); on breach the issue is
+  quarantined and its lane freed. Passed to the scheduler as `caps.issueTimeoutMs`.
+- `--reset-abort-counter` — clear the abort-streak counter
+  (`node abort-streak.mjs reset <ledger>`) before resuming, after a human has
+  resolved the recurring root cause.
 - `--dry-run` — Phase A only; opens no PRs.
 - `--skip-baseline-gate` — explicit opt-out (RARE; documented).
 - `--resume` — re-enter Phase B from the existing ledger.
@@ -171,13 +192,16 @@ A supervised run that processes ten specific issues one fix at a time,
 while still pipelining CI / refute / merge stages freely:
 
 ```sh
-# Caps passed to scheduler.mjs on every tick:
-'{"fixConcurrency":1,"prWindow":10,"refuteConcurrency":5,"maxWaveSize":1}'
+# Caps passed to scheduler.mjs on every tick (3rd arg = Date.now()):
+'{"fixConcurrency":1,"prWindow":10,"refuteConcurrency":5,"maxWaveSize":1,"issueTimeoutMs":1800000,"basePollMs":60000,"maxPollMs":480000,"pollBackoffAfter":1}'
 ```
 
 `fixConcurrency:1` is the load-bearing knob. `maxWaveSize:1` is harmless
 but doesn't substitute for it. The other caps stay at default so PRs in
 `awaiting-ci` / `refute-pending` / `approved` continue to make progress.
+The scheduler also receives the current wall-clock time as a 3rd argument
+(`Date.now()`) — the CLI injects this so `issueTimeoutMs`/`basePollMs`/
+`maxPollMs`/`pollBackoffAfter` can be applied correctly on each tick.
 
 ## References
 

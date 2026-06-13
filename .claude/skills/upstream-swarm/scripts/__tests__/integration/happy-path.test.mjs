@@ -23,7 +23,7 @@ const CAPS = { fixConcurrency: 3, prWindow: 10, refuteConcurrency: 5 };
 function runHappyPathLoop(path) {
   const happyTransitions = {
     "start-fix": (n) => { recordTransition(path, n, "planning"); recordTransition(path, n, "fixing"); recordTransition(path, n, "fix-ok", { prNumber: n + 100 }); recordTransition(path, n, "awaiting-ci"); },
-    "poll-ci": (n) => recordTransition(path, n, "ci-green"),
+    "poll-ci-batch": (n) => recordTransition(path, n, "ci-green"),
     "run-local-gate": (n) => recordTransition(path, n, "local-gate-pending"),
     "run-refute": (n) => { recordTransition(path, n, "refute-pending"); recordTransition(path, n, "approved", { refute: { tally: { panelVerdict: "approve" } } }); },
     "merge-pr": (n) => recordTransition(path, n, "merged", { mergeSha: `sha${n}` }),
@@ -33,7 +33,10 @@ function runHappyPathLoop(path) {
     const ledger = readLedger(path);
     const acts = nextActions(ledger, CAPS);
     if (!acts.length) return tick;
-    for (const a of acts) happyTransitions[a.kind](a.issueNumber);
+    for (const a of acts) {
+      const nums = a.kind === "poll-ci-batch" ? a.issueNumbers : [a.issueNumber];
+      for (const n of nums) happyTransitions[a.kind](n);
+    }
   }
   throw new Error("loop did not terminate");
 }

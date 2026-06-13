@@ -10,8 +10,8 @@ const RETRY_CAP = 1;
 
 export const VALID_TRANSITIONS = {
   "selected": ["planning", "skipped"],
-  "planning": ["fixing", "skipped"],
-  "fixing": ["fix-ok", "fix-failed"],
+  "planning": ["fixing", "skipped", "quarantined"],
+  "fixing": ["fix-ok", "fix-failed", "quarantined"],
   "fix-ok": ["awaiting-ci", "pending-human-review"],
   "awaiting-ci": ["ci-green", "ci-red"],
   "ci-green": ["local-gate-pending"],
@@ -32,11 +32,11 @@ export const VALID_TRANSITIONS = {
   "quarantined": ["selected"],
   "skipped": ["selected"],
   "fix-failed": ["retrying", "quarantined"],
-  "retrying": ["fixing"],
+  "retrying": ["fixing", "quarantined"],
 };
 
 export function initSwarmLedger(path, { date, filter, issues }) {
-  const ledger = { version: SCHEMA_VERSION, date, filter, startedAt: null, baselineGate: null, waves: [], issues: {} };
+  const ledger = { version: SCHEMA_VERSION, date, filter, startedAt: null, baselineGate: null, waves: [], abortStreak: { signature: null, count: 0 }, issues: {} };
   for (const i of issues) {
     ledger.issues[String(i.number)] = {
       severity: i.severity ?? null,
@@ -45,6 +45,9 @@ export function initSwarmLedger(path, { date, filter, issues }) {
       targetFiles: i.targetFiles ?? [],
       state: "selected",
       retryCount: 0,
+      fixStartedAt: null,
+      lastPolledAt: null,
+      pollNoChangeCount: 0,
       retryReason: null,
       wave: null,
       prNumber: null,

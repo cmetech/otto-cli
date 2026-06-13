@@ -55,8 +55,19 @@ test("skill-level uncaught exception → abort", () => {
   assert.equal(r.category, "abort");
 });
 
-test("rebase conflict because main moved → transient", () => {
-  const r = classifyFailure({ stage: "rebase", mainShaChanged: true, conflictMarkers: true });
+test("rebase conflict, main moved, touched files DISJOINT from new commits → transient", () => {
+  const r = classifyFailure({ stage: "rebase", mainShaChanged: true, conflictMarkers: true, touchedFilesDisjoint: true });
   assert.equal(r.category, "transient");
   assert.match(r.reason, /rebase/);
+});
+
+test("rebase conflict where our touched files OVERLAP the new commits → real (no blind retry)", () => {
+  const r = classifyFailure({ stage: "rebase", mainShaChanged: true, conflictMarkers: true, touchedFilesDisjoint: false });
+  assert.equal(r.category, "real");
+  assert.match(r.reason, /touched files|manual/i);
+});
+
+test("rebase failure without main moving → real", () => {
+  const r = classifyFailure({ stage: "rebase", mainShaChanged: false, conflictMarkers: true, touchedFilesDisjoint: true });
+  assert.equal(r.category, "real");
 });

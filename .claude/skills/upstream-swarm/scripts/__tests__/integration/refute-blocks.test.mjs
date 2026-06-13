@@ -23,7 +23,7 @@ test("issue #2 refuted → quarantined; #1 and #3 merge", () => {
 
     const transitions = {
       "start-fix": (n) => { recordTransition(path, n, "planning"); recordTransition(path, n, "fixing"); recordTransition(path, n, "fix-ok", { prNumber: n + 100 }); recordTransition(path, n, "awaiting-ci"); },
-      "poll-ci": (n) => recordTransition(path, n, "ci-green"),
+      "poll-ci-batch": (n) => recordTransition(path, n, "ci-green"),
       "run-local-gate": (n) => recordTransition(path, n, "local-gate-pending"),
       "run-refute": (n) => {
         recordTransition(path, n, "refute-pending");
@@ -39,7 +39,10 @@ test("issue #2 refuted → quarantined; #1 and #3 merge", () => {
     for (let tick = 0; tick < 100; tick++) {
       const acts = nextActions(readLedger(path), CAPS);
       if (!acts.length) break;
-      for (const a of acts) transitions[a.kind](a.issueNumber);
+      for (const a of acts) {
+        const nums = a.kind === "poll-ci-batch" ? a.issueNumbers : [a.issueNumber];
+        for (const n of nums) transitions[a.kind](n);
+      }
     }
     const led = readLedger(path);
     assert.equal(led.issues["1"].state, "merged");

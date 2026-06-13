@@ -78,7 +78,7 @@ For each queued PR, in order:
    ```sh
    node .claude/skills/upstream-merge/scripts/trial-merge.mjs <n> <headRef>
    ( cd <worktree> && npm ci )   # the cost of the two-signal choice; deps must exist in the worktree
-   node .claude/skills/upstream-fix/scripts/run-gates.mjs full \
+   node .claude/skills/_common/scripts/run-gates.mjs full \
      --cwd <worktree> --log $DIR/$DATE-gate-logs/pr-<n>-full.log
    ```
    `pass:true` required; else record `blocked` (reason "local full suite red"),
@@ -137,7 +137,7 @@ blast-radius). Schema:
 3. **Post-merge.** Verify the PR's linked issues are closed (`upstream-fix`
    closes them at PR-creation, normally a no-op). If any remain open:
    ```sh
-   node .claude/skills/upstream-fix/scripts/issue-update.mjs <issue> --repo cmetech/otto-cli \
+   node .claude/skills/_common/scripts/issue-update.mjs <issue> --repo cmetech/otto-cli \
      --comment "Merged in <mergeSha>." --close
    ```
 

@@ -1,24 +1,13 @@
 #!/usr/bin/env node
 /**
- * ledger.mjs — run-state ledger primitives (source of truth on disk).
- * As module: import { initLedger, readLedger, writeLedger, recordIssueResult,
- *   setLaneStatus, setIssueStatus } from "./ledger.mjs"
+ * ledger.mjs — upstream-fix run-state ledger. Read/write primitives come from
+ * _common/base-ledger.mjs; this module owns the fix-specific init and record API.
  */
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
-
-export function readLedger(path) {
-  if (!existsSync(path)) return null;
-  return JSON.parse(readFileSync(path, "utf-8"));
-}
-
-export function writeLedger(path, data) {
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, JSON.stringify(data, null, 2) + "\n");
-}
+import { readLedger, writeLedger, SCHEMA_VERSION } from "../../_common/scripts/base-ledger.mjs";
+export { readLedger, writeLedger };
 
 export function initLedger(path, { date, filter, integrationBranch, lanes, issues }) {
-  const ledger = { version: 1, date, filter, integrationBranch, prUrl: null, finalSuite: null, lanes: {}, issues: {} };
+  const ledger = { version: SCHEMA_VERSION, date, filter, integrationBranch, prUrl: null, finalSuite: null, lanes: {}, issues: {} };
   for (const lane of lanes) {
     ledger.lanes[String(lane.id)] = {
       issues: lane.issues.map(String),

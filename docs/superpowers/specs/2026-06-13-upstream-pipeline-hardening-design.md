@@ -234,14 +234,12 @@ The fix subagent reads `fix-strategy` and acts accordingly:
 This makes the four-confidence-gate reviewer divergence-aware instead of
 diff-matching, which is the core of porting to a hard fork correctly.
 
-### 2.5 Robust dedup (carried here from cherry-pick)
+### 2.5 Robust dedup — DROPPED (debunked in Phase 0)
 
-`dedup-check.mjs`: the `sha=<short> in:body` full-text search tokenizes and
-false-matches prose mentions; the current post-filter on the literal
-`sha=<short>` trailer is fragile. Move to an exact-phrase search
-(`--search '"[sha=<short>]"'`) as the canonical match, keep the trailer
-post-filter as a guard. Test: an issue that merely mentions a sha in prose is not
-treated as the tracking issue.
+The candidate "fuzzy dedup" finding was debunked: `dedup-check.mjs:64-65` already
+post-filters on the literal `sha=<short>` trailer (the d98504e fix), so a prose
+mention cannot cause a false dedup. No work needed. (Residual P5 note: a 7-char
+SHA-prefix collision is theoretically possible but astronomically unlikely.)
 
 No porting resumes until Phase 2 lands — it is the gate that makes ported fixes
 *correct for our fork*, not just *present*.
@@ -250,21 +248,28 @@ No porting resumes until Phase 2 lands — it is the gate that makes ported fixe
 
 Scope = Phase-0-confirmed correctness items not covered by Phase 2:
 
-1. **Idempotent issue lifecycle** (`_common/issue-update.mjs`). Query issue state
-   before close/label/comment; skip redundant ops; never exit non-zero on an
-   already-applied action. Lets `upstream-fix` Phase D and `upstream-merge`
-   re-run on resume without throwing. Test: re-run against an already-closed issue
-   succeeds as a no-op.
-2. **Merge re-gates on resume** (`upstream-merge`). A blocked PR's local
-   trial-merge result is cached in the ledger and never re-run on `--resume`, so a
-   transient flake permanently blocks a good PR. Add a `localGateRunAt` timestamp;
-   on resume, if older than a TTL, re-run the local gate before honoring the
-   cached verdict. Test: stale-failed gate is re-run, passes, PR proceeds.
+1. **Idempotent issue lifecycle** (`_common/issue-update.mjs`). The real defect is
+   the **duplicate comment** on re-run: `gh issue close` and label edits are
+   already CLI-idempotent, but the comment op posts a fresh "Applied in ..."
+   comment every re-run. Add a skip-if-already-commented guard (query existing
+   comments / issue state before posting); skip redundant ops; never exit non-zero
+   on an already-applied action. Lets `upstream-fix` Phase D and `upstream-merge`
+   re-run on resume without throwing or duplicating. Test: re-run against an
+   already-closed issue succeeds as a no-op and posts no second comment.
+2. **Fix `status:applied` resume gap** (`select-issues.mjs:71`). `--resume`
+   re-selects an issue merged outside the skill (the `status:applied` label is
+   never set because the skill's Phase D labelling is the only writer). Add a guard
+   (e.g. cross-check merged PRs / a local applied-ledger) so resume does not re-fix
+   already-merged issues. Test: an issue whose PR merged out-of-band is excluded on
+   `--resume`.
 
-Items NOT in this phase (verify in Phase 0, likely reclassified): the rebase
-classifier (debunked). If Phase 0 finds the rebase-conflict→transient→retry
-*policy* questionable (a pure conflict rarely self-heals on retry), reclassify it
-as a Phase 4 scaling/policy decision, not a bug.
+Items NOT in this phase (verified in Phase 0): the rebase classifier (debunked)
+and the merge re-gate-on-resume item (debunked — the local gate is write-only
+report state that resume already re-runs, so a transient flake does not
+permanently block a good PR). If Phase 0 finds the
+rebase-conflict→transient→retry *policy* questionable (a pure conflict rarely
+self-heals on retry), reclassify it as a Phase 4 scaling/policy decision, not a
+bug.
 
 ## Phase 4 — Scaling
 
@@ -275,15 +280,27 @@ as a Phase 4 scaling/policy decision, not a bug.
 2. **Per-issue timeout / circuit-breaker.** A stuck fix lane blocks the whole
    swarm. Add a per-issue wall-clock budget; on breach, quarantine the issue and
    free the lane. Expose `--issue-timeout`.
-3. **Adaptive PR polling** (`poll-pr-checks.mjs`). Currently N sequential
-   `gh pr checks` per tick. Batch by status and apply exponential backoff (double
-   the interval after K consecutive no-change polls, capped). Reduces GitHub API
-   pressure at the 10-open-PR ceiling.
-4. **Structured abort-streak detection.** Replace the raw `failTail` string
-   comparison with a structured signature (stage + error class + first failing
-   line). Count consecutive *identical signatures*, not consecutive quarantines.
-   Add `--reset-abort-counter` so recovery does not require hand-editing the
-   ledger.
+3. **Adaptive PR polling.** `poll-pr-checks.mjs` is already non-blocking and makes
+   a single `gh pr checks` call per invocation — that is not the gap. The real gap
+   is `scheduler.mjs:46-48`, which re-emits one un-batched `poll-ci` action per
+   `awaiting-ci` issue every tick with no backoff (each its own `gh` subprocess).
+   Batch those polls by status and apply exponential backoff (double the interval
+   after K consecutive no-change polls, capped). Reduces GitHub API pressure at the
+   10-open-PR ceiling.
+4. **Structured abort-streak detection.** Abort-streak is currently **prose-only in
+   SKILL.md (no script implements it)** — `grep abortStreak` hits SKILL.md only, so
+   the actual abort behavior is undefined. Phase 4 must **implement** abort-streak
+   detection as a real script (not merely refine prose): replace the described raw
+   `failTail` string comparison with a structured signature (stage + error class +
+   first failing line) and count consecutive *identical signatures*, not
+   consecutive quarantines. Add `--reset-abort-counter` so recovery does not
+   require hand-editing the ledger.
+5. **Rebase-retry policy** (reclassified from Phase 0). `transient-classifier.mjs`
+   mechanics are correct (rebase is transient only when
+   `mainShaChanged && conflictMarkers`). The open question is *policy*: decide
+   whether a rebase-conflict should retry at all — a blind replay of the same diff
+   rarely self-heals — and ensure the retry path **re-rebases** onto the new main
+   tip rather than replaying the cached patch into the same conflicting region.
 
 ## Phase 5 — Nice-to-haves
 
@@ -300,10 +317,25 @@ as a Phase 4 scaling/policy decision, not a bug.
 4. **Baseline-gate auto-cleanup** (`upstream-swarm`). A failed baseline gate
    leaves `.worktrees/upstream-swarm-baseline` behind with no documented cleanup;
    wire it into the Phase-1 worktree registry and offer cleanup on `--resume`.
-5. **Smarter wave bundling** (`wave-plan.mjs`) — *deferrable / optional.* Replace
+5. **Allowlist-drift validation** (`upstream-merge`, `evaluate-checks.mjs:53-59`).
+   The required-checks allowlist is a static `config.json`; nothing queries the
+   live GitHub branch-protection set, so the allowlist silently drifts as CI checks
+   are added/removed. Warn when an allowlisted check disappears from CI or a newly
+   required check appears.
+6. **Retry/escalate for blocked PRs** (`upstream-merge`). A `blocked` PR is
+   terminal: there is no `--retry <pr>` / `--unblock`, and `--resume` skips only
+   `merged`. Add a targeted retry/escalate path so a blocked PR can be re-gated
+   without re-running the whole selection or hand-editing the ledger.
+7. **Smarter wave bundling** (`wave-plan.mjs`) — *deferrable / optional.* Replace
    greedy file-disjoint packing with file-affinity clustering so related fixes
    bundle into a wave and test together. Largest effort, lowest urgency; may be
    dropped.
+8. **Swarm refute-gate read-back** (defense-in-depth). The swarm merge action
+   currently passes a hardcoded `--refute-verdict approve` because the state
+   machine gates `merge-pr` on the `approved` state. Read the literal `approve`
+   back from `ledger.issues[n].refute.tally.panelVerdict` instead of relying solely
+   on the state machine + CLI arg, so an out-of-band `merge-pr` cannot supply
+   `approve` without a recorded verdict.
 
 ## Testing & Guardrails
 

@@ -65,7 +65,7 @@ with one issue; worktree-setup uses `singleIssueBranch(N, sha)` from
    `DIR=.planning/upstream-fixes`.
 2. **Select issues:**
    ```sh
-   node .claude/skills/upstream-fix/scripts/select-issues.mjs <filter> \
+   node .claude/skills/_common/scripts/select-issues.mjs <filter> \
      --out $DIR/$DATE-selected-issues.json
    ```
    Read only the printed `{ count, needsTriage, path }`. A non-zero `needsTriage`
@@ -138,7 +138,7 @@ PROTOCOL per issue (all four gates are mandatory):
 
 1. REGRESSION TEST. Write a node:test `*.test.ts` co-located with the source you
    will change. Confirm it FAILS against current behaviour:
-     node .claude/skills/upstream-fix/scripts/run-gates.mjs regression \
+     node .claude/skills/_common/scripts/run-gates.mjs regression \
        --cwd <worktree> --log <DIR>/<DATE>-gate-logs/lane-<n>-<num>-reg-before.log \
        --test-file <relpath-to-test>
    It MUST fail now. Apply the fix. Re-run the same gate; it MUST pass.
@@ -147,12 +147,12 @@ PROTOCOL per issue (all four gates are mandatory):
    need explicit reviewer approval later.)
 
 2. BUILD GATE:
-     node .claude/skills/upstream-fix/scripts/run-gates.mjs build \
+     node .claude/skills/_common/scripts/run-gates.mjs build \
        --cwd <worktree> --log <...>-build.log --files <targetFiles csv>
    Must return pass:true.
 
 3. TARGETED SUITE GATE:
-     node .claude/skills/upstream-fix/scripts/run-gates.mjs targeted \
+     node .claude/skills/_common/scripts/run-gates.mjs targeted \
        --cwd <worktree> --log <...>-targeted.log --files <targetFiles csv>
    Must return pass:true.
 
@@ -201,7 +201,7 @@ RETURN CONTRACT — output ONE line per issue, NOTHING else (no diffs, no logs):
 
 3. **Final full suite** on the integration branch (controller runs this once):
    ```sh
-   node .claude/skills/upstream-fix/scripts/run-gates.mjs full \
+   node .claude/skills/_common/scripts/run-gates.mjs full \
      --cwd . --log $DIR/$DATE-gate-logs/final.log
    ```
    The `full` gate chains `npm test` → `npm run verify:pr` through the log
@@ -222,7 +222,7 @@ RETURN CONTRACT — output ONE line per issue, NOTHING else (no diffs, no logs):
 1. **Lifecycle (per issue):**
    - Applied (merged + reviewer-approved + final suite green):
      ```sh
-     node .claude/skills/upstream-fix/scripts/issue-update.mjs <num> --repo cmetech/otto-cli \
+     node .claude/skills/_common/scripts/issue-update.mjs <num> --repo cmetech/otto-cli \
        --add-label status:applied --remove-label status:triaged --remove-label status:in-progress \
        --comment "Applied in <commitSha> (PR <prUrl>)." --close
      ```

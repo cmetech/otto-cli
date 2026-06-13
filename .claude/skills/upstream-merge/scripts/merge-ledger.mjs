@@ -1,23 +1,13 @@
 #!/usr/bin/env node
 /**
- * merge-ledger.mjs — run-state ledger for upstream-merge (source of truth on disk).
- * As module: import { initMergeLedger, readLedger, writeLedger, recordVerdict, recordMerge } from "./merge-ledger.mjs"
+ * merge-ledger.mjs — upstream-merge run-state ledger. Read/write come from
+ * _common/base-ledger.mjs; this module owns the merge-specific API.
  */
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
-
-export function readLedger(path) {
-  if (!existsSync(path)) return null;
-  return JSON.parse(readFileSync(path, "utf-8"));
-}
-
-export function writeLedger(path, data) {
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, JSON.stringify(data, null, 2) + "\n");
-}
+import { readLedger, writeLedger, SCHEMA_VERSION } from "../../_common/scripts/base-ledger.mjs";
+export { readLedger, writeLedger };
 
 export function initMergeLedger(path, { date, prs }) {
-  const ledger = { version: 1, date, prs: {} };
+  const ledger = { version: SCHEMA_VERSION, date, prs: {} };
   for (const pr of prs) {
     ledger.prs[String(pr.number)] = {
       headRef: pr.headRef ?? null,

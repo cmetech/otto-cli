@@ -8,7 +8,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { dirname, resolve, dirname as pdir } from "node:path";
 import { fileURLToPath } from "node:url";
-import { provisionWorktreeNodeModules } from "./worktree-node-modules.mjs";
+import { provisionWorktreeNodeModules, registerWorktree } from "../../_common/scripts/worktree.mjs";
 
 const HERE = pdir(fileURLToPath(import.meta.url));
 const RUN_GATES = resolve(HERE, "..", "..", "upstream-fix", "scripts", "run-gates.mjs");
@@ -34,6 +34,8 @@ export function runBaselineGate({ workdir, logPath, base = "origin/main", worktr
   mkdirSync(dirname(logPath), { recursive: true });
   // Create a detached worktree at base.
   worktreeRunner(["worktree", "add", "--detach", workdir, base]);
+  try { registerWorktree(".planning/upstream-swarms/.worktree-registry.json", { path: workdir, owner: "swarm-baseline", createdAt: Date.now() }); }
+  catch { /* best-effort */ }
   // Provision node_modules so the gate can actually run.
   provisionDeps({ workdir });
   // gateRunner may be sync (tests) or async (real). Normalize.

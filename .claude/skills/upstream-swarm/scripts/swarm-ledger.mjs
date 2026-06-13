@@ -3,8 +3,8 @@
  * swarm-ledger.mjs — durable state-machine ledger for upstream-swarm.
  * As module: import { initSwarmLedger, readLedger, recordTransition, recordRetry, VALID_TRANSITIONS } from "./swarm-ledger.mjs"
  */
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { readLedger, writeLedger, validateTransition, SCHEMA_VERSION } from "../../_common/scripts/base-ledger.mjs";
+export { readLedger, writeLedger };
 
 const RETRY_CAP = 1;
 
@@ -35,18 +35,8 @@ export const VALID_TRANSITIONS = {
   "retrying": ["fixing"],
 };
 
-export function readLedger(path) {
-  if (!existsSync(path)) return null;
-  return JSON.parse(readFileSync(path, "utf-8"));
-}
-
-export function writeLedger(path, data) {
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, JSON.stringify(data, null, 2) + "\n");
-}
-
 export function initSwarmLedger(path, { date, filter, issues }) {
-  const ledger = { version: 1, date, filter, startedAt: null, baselineGate: null, waves: [], issues: {} };
+  const ledger = { version: SCHEMA_VERSION, date, filter, startedAt: null, baselineGate: null, waves: [], issues: {} };
   for (const i of issues) {
     ledger.issues[String(i.number)] = {
       severity: i.severity ?? null,
@@ -82,10 +72,7 @@ function mutateIssue(path, number, fn) {
 
 export function recordTransition(path, number, nextState, payload = {}) {
   return mutateIssue(path, number, (issue) => {
-    const allowed = VALID_TRANSITIONS[issue.state] ?? [];
-    if (!allowed.includes(nextState)) {
-      throw new Error(`invalid transition: ${issue.state} → ${nextState} for issue #${number}`);
-    }
+    validateTransition(issue.state, nextState, VALID_TRANSITIONS, `issue #${number}`);
     issue.state = nextState;
     for (const [k, v] of Object.entries(payload)) issue[k] = v;
   });
@@ -96,10 +83,7 @@ export function recordRetry(path, number, reason) {
     if (issue.retryCount >= RETRY_CAP) {
       throw new Error(`retry cap exceeded for issue #${number}`);
     }
-    const allowed = VALID_TRANSITIONS[issue.state] ?? [];
-    if (!allowed.includes("retrying")) {
-      throw new Error(`invalid transition: ${issue.state} → retrying for issue #${number}`);
-    }
+    validateTransition(issue.state, "retrying", VALID_TRANSITIONS, `issue #${number}`);
     issue.state = "retrying";
     issue.retryCount += 1;
     issue.retryReason = reason;

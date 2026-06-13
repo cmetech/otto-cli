@@ -69,7 +69,9 @@ export function fetchAndEvaluate({ prNumber, repo = "cmetech/otto-cli", configPa
 function parseArgv(argv) {
   const prNumber = argv[0];
   const here = dirname(fileURLToPath(import.meta.url));
-  let configPath = join(here, "..", "config.json");
+  // Allowlist config stays under upstream-merge even though this module now
+  // lives in _common; re-anchor from _common/scripts → upstream-merge/config.json.
+  let configPath = join(here, "..", "..", "upstream-merge", "config.json");
   let repo = "cmetech/otto-cli";
   for (let i = 1; i < argv.length; i++) {
     if (argv[i] === "--config") configPath = argv[++i];

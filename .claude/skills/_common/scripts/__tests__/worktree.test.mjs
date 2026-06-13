@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { provisionWorktreeNodeModules } from "../worktree-node-modules.mjs";
+import { provisionWorktreeNodeModules } from "../worktree.mjs";
 
 function fakeFs({ srcExists = true, destExists = false } = {}) {
   const symlinkCalls = [];

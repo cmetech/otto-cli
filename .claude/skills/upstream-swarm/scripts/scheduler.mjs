@@ -20,6 +20,21 @@ const OPEN_PR_STATES = new Set([
   "pending-human-review",
 ]);
 
+// Severity tiers for scheduling priority (lower = ship first). Issues without a
+// known severity sort last, then by number — preserving FIFO for untagged work.
+const SEVERITY_RANK = {
+  "critical-security": 0,
+  "critical-stability": 1,
+  "feature": 2,
+  "nice-to-have-fix": 3,
+};
+function severityRank(sev) {
+  return SEVERITY_RANK[sev] ?? 99;
+}
+function bySeverityThenNumber([na, a], [nb, b]) {
+  return (severityRank(a.severity) - severityRank(b.severity)) || (Number(na) - Number(nb));
+}
+
 function countByState(ledger, predicate) {
   let n = 0;
   for (const i of Object.values(ledger.issues)) if (predicate(i.state)) n++;
@@ -38,7 +53,7 @@ export function nextActions(ledger, caps) {
   const startCap = Math.min(fixSlack, prSlack);
   const startable = Object.entries(ledger.issues)
     .filter(([, i]) => i.state === "selected")
-    .sort(([a], [b]) => Number(a) - Number(b))
+    .sort(bySeverityThenNumber)
     .slice(0, startCap);
   for (const [number] of startable) actions.push({ kind: "start-fix", issueNumber: Number(number) });
 
@@ -56,7 +71,7 @@ export function nextActions(ledger, caps) {
   const refuteSlack = Math.max(0, caps.refuteConcurrency - refutesInFlight);
   const refutable = Object.entries(ledger.issues)
     .filter(([, i]) => i.state === "local-gate-pending")
-    .sort(([a], [b]) => Number(a) - Number(b))
+    .sort(bySeverityThenNumber)
     .slice(0, refuteSlack);
   for (const [number] of refutable) actions.push({ kind: "run-refute", issueNumber: Number(number) });
 

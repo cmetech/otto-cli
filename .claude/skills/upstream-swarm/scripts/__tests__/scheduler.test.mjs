@@ -64,3 +64,26 @@ test("counts in-flight fixes correctly: fixing / retrying counts toward fixConcu
   // 2 already in-flight (fixing + retrying), cap is 3 → only 1 more start-fix.
   assert.equal(actions.filter((a) => a.kind === "start-fix").length, 1);
 });
+
+test("start-fix is ordered by severity tier, then number within a tier", () => {
+  const ledger = { issues: {
+    10: { state: "selected", severity: "nice-to-have-fix" },
+    11: { state: "selected", severity: "critical-stability" },
+    12: { state: "selected", severity: "feature" },
+    13: { state: "selected", severity: "critical-security" },
+    14: { state: "selected", severity: "critical-stability" },
+  } };
+  const actions = nextActions(ledger, { fixConcurrency: 5, prWindow: 10, refuteConcurrency: 5 });
+  const order = actions.filter((a) => a.kind === "start-fix").map((a) => a.issueNumber);
+  assert.deepEqual(order, [13, 11, 14, 12, 10]);
+});
+
+test("refute selection is also severity-ordered", () => {
+  const ledger = { issues: {
+    20: { state: "local-gate-pending", severity: "nice-to-have-fix" },
+    21: { state: "local-gate-pending", severity: "critical-stability" },
+  } };
+  const actions = nextActions(ledger, { fixConcurrency: 3, prWindow: 10, refuteConcurrency: 1 });
+  const refutes = actions.filter((a) => a.kind === "run-refute").map((a) => a.issueNumber);
+  assert.deepEqual(refutes, [21]);
+});

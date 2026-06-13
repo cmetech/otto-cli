@@ -147,6 +147,8 @@ change as before.
    node .claude/skills/_common/scripts/issue-update.mjs <issue> --repo cmetech/otto-cli \
      --comment "Merged in <mergeSha>." --close
    ```
+   This is idempotent — re-running skips the duplicate "Merged in …" comment and
+   will not re-close an already-closed issue.
 
 ## Phase D — Report + cleanup
 

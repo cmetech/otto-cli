@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * worktree-node-modules.mjs — provision a worktree's node_modules by
+ * worktree.mjs — provision a worktree's node_modules by
  * symlinking the repo root's installation.
  *
  * Why: a fresh `git worktree add` produces an empty checkout. Gates that

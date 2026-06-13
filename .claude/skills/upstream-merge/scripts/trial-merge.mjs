@@ -15,7 +15,7 @@
 import { execFileSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { provisionWorktreeNodeModules } from "../../upstream-swarm/scripts/worktree-node-modules.mjs";
+import { provisionWorktreeNodeModules } from "../../_common/scripts/worktree.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, "..", "..", "..", "..");

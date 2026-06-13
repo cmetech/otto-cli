@@ -33,6 +33,7 @@ export function initLedger(path, { date, filter, integrationBranch, lanes, issue
       gates: { regression: null, build: null, targeted: null },
       reviewer: null,
       reviewerReason: null,
+      reviewerRejectionCount: 0,
       reason: null,
     };
   }
@@ -56,6 +57,26 @@ export function recordIssueResult(path, { number, status, commitSha = null, touc
 
 export function setIssueStatus(path, number, status, extra = {}) {
   return recordIssueResult(path, { number, status, ...extra });
+}
+
+/**
+ * Record a Phase-C reviewer rejection. The first rejection is recoverable:
+ * increment the count, set the issue back to `fixing` for one re-dispatch with
+ * the reviewer's reason. A second rejection is terminal (`rejected`).
+ * @returns {{ retry: boolean, issue: object }}
+ */
+export function recordReviewerRejection(path, number, reason, { cap = 1 } = {}) {
+  const ledger = readLedger(path);
+  if (!ledger) throw new Error(`ledger not found at ${path}`);
+  const iss = ledger.issues[String(number)];
+  if (!iss) throw new Error(`unknown issue #${number} in ledger`);
+  iss.reviewerRejectionCount = (iss.reviewerRejectionCount ?? 0) + 1;
+  iss.reviewerReason = reason;
+  const retry = iss.reviewerRejectionCount <= cap;
+  iss.status = retry ? "fixing" : "rejected";
+  if (!retry) iss.reviewer = "reject";
+  writeLedger(path, ledger);
+  return { retry, issue: iss };
 }
 
 export function setLaneStatus(path, laneId, status) {

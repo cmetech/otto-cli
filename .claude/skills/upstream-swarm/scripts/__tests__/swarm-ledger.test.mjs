@@ -193,3 +193,15 @@ test("initSwarmLedger seeds polling backoff fields", async () => {
     assert.equal(led.issues["5"].pollNoChangeCount, 0);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+test("initSwarmLedger seeds an empty abortStreak", async () => {
+  const { mkdtempSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const dir = mkdtempSync(join(tmpdir(), "swl-"));
+  try {
+    const path = join(dir, "led.json");
+    const led = initSwarmLedger(path, { date: "d", filter: {}, issues: [] });
+    assert.deepEqual(led.abortStreak, { signature: null, count: 0 });
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});

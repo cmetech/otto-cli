@@ -36,7 +36,7 @@ export const VALID_TRANSITIONS = {
 };
 
 export function initSwarmLedger(path, { date, filter, issues }) {
-  const ledger = { version: SCHEMA_VERSION, date, filter, startedAt: null, baselineGate: null, waves: [], issues: {} };
+  const ledger = { version: SCHEMA_VERSION, date, filter, startedAt: null, baselineGate: null, waves: [], abortStreak: { signature: null, count: 0 }, issues: {} };
   for (const i of issues) {
     ledger.issues[String(i.number)] = {
       severity: i.severity ?? null,

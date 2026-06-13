@@ -52,6 +52,7 @@ import { fileIssue } from "./file-issue.mjs";
 import { writeReport } from "./write-report.mjs";
 import { validateGuidance } from "./parse-guidance.mjs";
 import { parseStrategy } from "../../_common/scripts/fix-strategy.mjs";
+import { revalidateDoNotPort } from "./revalidate-do-not-port.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const AUDIT_OUTPUT_DIR = ".planning/upstream-audits";
@@ -443,6 +444,12 @@ async function main() {
   const compiledRules = compileRules(cfg.applicability?.notApplicable);
 
   const preflight = runPreflight();
+
+  if (flags.revalidateDoNotPort) {
+    const manifest = revalidateDoNotPort({ targetRepo: cfg.targetRepo });
+    process.stdout.write(JSON.stringify({ count: manifest.length, manifest }, null, 2) + "\n");
+    return;
+  }
 
   const names = only ? [only] : Object.keys(cfg.upstreams);
   const manifests = {};

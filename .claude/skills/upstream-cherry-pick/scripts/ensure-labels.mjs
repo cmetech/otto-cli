@@ -21,6 +21,11 @@ const LABEL_TAXONOMY = [
   { name: "type:cherry-pick-candidate", color: "0e8a16", description: "Mechanical cherry-pick from upstream" },
   { name: "type:port-required", color: "d93f0b", description: "Manual port required (high conflict-risk)" },
   { name: "type:do-not-port", color: "e11d21", description: "Superseded/reverted upstream — do not port" },
+  // Fix-strategy (fork-divergence-aware port mode; coexists with type:*)
+  { name: "fix-strategy:direct-merge", color: "0e8a16", description: "Cherry-pick / git am -3 applies clean" },
+  { name: "fix-strategy:adapted-port", color: "fbca04", description: "Same fix, transcribed to renamed/restructured paths" },
+  { name: "fix-strategy:essence-reimplement", color: "d93f0b", description: "Diverged in behavior; re-solve the upstream root cause" },
+  { name: "fix-strategy:not-needed", color: "e11d21", description: "Problem does not exist in our fork" },
   // Severity
   { name: "severity:critical-security", color: "b60205", description: "Critical security fix" },
   { name: "severity:critical-stability", color: "d93f0b", description: "Critical stability fix (crash, data-loss, regression)" },
@@ -42,9 +47,9 @@ const LABEL_TAXONOMY = [
 ];
 
 // Sanity check at module load time — catches taxonomy drift
-if (LABEL_TAXONOMY.length !== 19) {
+if (LABEL_TAXONOMY.length !== 23) {
   throw new Error(
-    `LABEL_TAXONOMY must have exactly 19 entries, found ${LABEL_TAXONOMY.length}`,
+    `LABEL_TAXONOMY must have exactly 23 entries, found ${LABEL_TAXONOMY.length}`,
   );
 }
 

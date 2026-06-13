@@ -235,7 +235,7 @@ const STRATEGY_BLURB = {
 };
 
 function renderFixStrategy({ strategy }) {
-  if (!strategy) return "";
+  if (!strategy || !STRATEGY_BLURB[strategy]) return "";
   const blurb = STRATEGY_BLURB[strategy] ?? "";
   let out = `\n## Fix strategy\n\n**\`fix-strategy:${strategy}\`** — ${blurb}\n`;
   if (strategy === "essence-reimplement") {

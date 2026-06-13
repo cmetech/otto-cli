@@ -572,3 +572,17 @@ test("no strategy → no Fix strategy heading (back-compat)", () => {
   });
   assert.ok(!body.includes("## Fix strategy"), "no strategy section when strategy absent");
 });
+
+test("invalid-but-truthy strategy renders no Fix strategy heading and no fix-strategy label", () => {
+  const { body, labels } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("FEATURE"),
+    conflictRisk: makeRisk("LOW", "x"),
+    upstream,
+    ccUser: "@claude",
+    strategy: "garbage-not-a-real-strategy",
+  });
+  assert.ok(!body.includes("## Fix strategy"), "no heading for invalid strategy");
+  assert.ok(!labels.some((l) => l.startsWith("fix-strategy:")), `Got: ${labels}`);
+  assert.equal(labels.length, 5, `Got: ${labels}`);
+});

@@ -52,10 +52,16 @@ and scale on a clean base so every change lands once.
   before writing fixes.
 - **Phase 1 — `_common/` foundation.** Extract shared code; break the
   skill↔skill cycles. Behavior-preserving refactor.
-- **Phase 2 — Correctness fixes.** Confirmed bugs, on the clean base.
-- **Phase 3 — Scaling.** Prioritization, timeouts, adaptive polling, structured
+- **Phase 2 — Fork-divergence-aware fix analysis.** The highest-value theme:
+  make the pipeline understand *intent*, assess *relevance to our hard fork*, and
+  classify *how* to port (direct / adapted / essence / not-needed) — and represent
+  that on the issue. Absorbs the cherry-pick correctness items (a richer required
+  schema subsumes the old "fail-fast on missing guidance" and verdict validation).
+- **Phase 3 — Other correctness fixes.** Remaining confirmed bugs, on the clean
+  base.
+- **Phase 4 — Scaling.** Prioritization, timeouts, adaptive polling, structured
   abort detection.
-- **Phase 4 — Nice-to-haves.** Lower-leverage polish; the largest item
+- **Phase 5 — Nice-to-haves.** Lower-leverage polish; the largest item
   (smarter wave bundling) is explicitly deferrable.
 
 **Document structure:** this single design spec, then **one implementation plan
@@ -144,9 +150,105 @@ Acceptance: zero `../../upstream-*/scripts/` imports remain (only
 `../../_common/scripts/`); full suite green; no behavior change observable from
 the SKILL.md entry points.
 
-## Phase 2 — Correctness fixes
+## Phase 2 — Fork-divergence-aware fix analysis
 
-Scope = Phase-0-confirmed correctness items. Initial confirmed/expected set:
+The central insight: **otto-cli is a hard fork, not a mirror.** A useful upstream
+fix may not apply — the code path may be renamed, restructured, or behaviorally
+customized away. The pipeline must understand *what upstream was trying to fix*,
+decide *whether that problem exists in our fork*, and port the **essence** of the
+fix when the patch itself cannot be applied. The current pipeline classifies this
+only *mechanically* (`cherry-pick` = paths align, `manual-port` = paths don't),
+which conflates "transcribe to a renamed file" with "we've diverged in behavior,
+re-solve the root cause." This phase makes the analysis intent-first and
+fork-divergence-aware, and represents the result on the issue so the implementer
+acts in the right mode.
+
+### 2.1 Required guidance schema (enforced)
+
+Every port candidate's guidance file must contain these sections; the audit
+fails-fast (subsuming the old "fail-fast on missing guidance" item) if any
+required section is missing or malformed, unless `--skip-guidance-check`
+(audit/dry-run only):
+
+1. **Upstream intent / root cause** — what bug or behavior was upstream fixing?
+   (Not "what the diff does" — *why* it exists.)
+2. **Fork relevance** — is that problem present in *our* hard fork given our
+   customizations? `yes` / `partial` / `no`, with reasoning. A `no` here is the
+   positive justification for `not-needed` (replaces today's bare "doesn't apply").
+3. **Fix strategy** — one of the four values in §2.2 (machine-readable first line,
+   replacing the bare `verdict:` line; see §2.3).
+4. **Divergence** — how otto-cli's code differs from upstream here.
+5. **Concrete approach** — exact edits for `direct-merge`/`adapted-port`; a design
+   sketch (the *essence to preserve* + how to realize it in our code) for
+   `essence-reimplement`.
+
+Validation replaces the old single-line verdict parse: the strategy line must be
+present and well-formed, and the required sections must exist, or the run errors
+with the offending file path.
+
+### 2.2 Fix-strategy taxonomy
+
+Replaces the mechanical 3-way verdict. Machine-readable on the guidance file's
+first line: `strategy: <value>`.
+
+- `direct-merge` — cherry-pick / `git am -3` applies clean.
+- `adapted-port` — same fix, transcribed to our renamed/restructured paths
+  (today's `manual-port`).
+- `essence-reimplement` — we've diverged in *behavior*; the patch won't apply;
+  re-solve the upstream root cause in our code. Requires an **"Essence to
+  preserve"** statement.
+- `not-needed` — the problem does not exist in our fork (today's `do-not-port`),
+  justified by a `Fork relevance: no`.
+
+Back-compat: the parser accepts the legacy `verdict:` line and maps
+`cherry-pick → direct-merge`, `manual-port → adapted-port`,
+`do-not-port → not-needed`; new guidance uses `strategy:`.
+
+### 2.3 Label dimension & issue representation
+
+Add a new label dimension **`fix-strategy:{direct-merge,adapted-port,essence-reimplement,not-needed}`**
+*alongside* the existing `type:*` labels (added to `ensure-labels.mjs` + its
+tests; taxonomy count updated in `init-scaffold.test.mjs`). The two dimensions
+coexist:
+
+- New audits set both `type:*` (kept for routing back-compat) and `fix-strategy:*`.
+- The ~283 already-filed issues are **not** mass-relabeled; `fix-strategy:*` is
+  backfilled lazily when an issue is picked up for porting (the implementer reads
+  the guidance, sets the strategy label).
+
+`build-issue-payload.mjs` surfaces the strategy prominently in the body (its own
+heading, not just a table row), and renders an explicit **"Essence to preserve"**
+callout block when `strategy: essence-reimplement`, so the issue itself signals
+"re-solve," not "transcribe."
+
+### 2.4 `upstream-fix` branches on strategy
+
+The fix subagent reads `fix-strategy` and acts accordingly:
+
+- `direct-merge` / `adapted-port` — apply / transcribe the upstream change; the
+  reviewer checks fidelity to the upstream diff.
+- `essence-reimplement` — implement to the documented intent; the **reviewer gate
+  checks "does this address the upstream root cause?"** rather than "does it match
+  the upstream diff?" (the diff is not the spec here — the intent is).
+
+This makes the four-confidence-gate reviewer divergence-aware instead of
+diff-matching, which is the core of porting to a hard fork correctly.
+
+### 2.5 Robust dedup (carried here from cherry-pick)
+
+`dedup-check.mjs`: the `sha=<short> in:body` full-text search tokenizes and
+false-matches prose mentions; the current post-filter on the literal
+`sha=<short>` trailer is fragile. Move to an exact-phrase search
+(`--search '"[sha=<short>]"'`) as the canonical match, keep the trailer
+post-filter as a guard. Test: an issue that merely mentions a sha in prose is not
+treated as the tracking issue.
+
+No porting resumes until Phase 2 lands — it is the gate that makes ported fixes
+*correct for our fork*, not just *present*.
+
+## Phase 3 — Other correctness fixes
+
+Scope = Phase-0-confirmed correctness items not covered by Phase 2:
 
 1. **Idempotent issue lifecycle** (`_common/issue-update.mjs`). Query issue state
    before close/label/comment; skip redundant ops; never exit non-zero on an
@@ -158,31 +260,13 @@ Scope = Phase-0-confirmed correctness items. Initial confirmed/expected set:
    transient flake permanently blocks a good PR. Add a `localGateRunAt` timestamp;
    on resume, if older than a TTL, re-run the local gate before honoring the
    cached verdict. Test: stale-failed gate is re-run, passes, PR proceeds.
-3. **cherry-pick fail-fast on missing guidance.** Today a missing guidance file
-   files the issue with an `Analyzed | no` banner and the run still succeeds —
-   invisible at batch scale. Add a preflight that lists selected shas without
-   guidance and exits non-zero unless `--skip-guidance-check` (audit/dry-run).
-   Test: a selected sha with no guidance file aborts a real (non-dry) run.
-4. **cherry-pick verdict-line validation.** `parseVerdict` reads the guidance
-   file's first line; a header/comment before it silently downgrades to a
-   risk-based label. Validate the `verdict:` line is present and well-formed;
-   error with the offending file path otherwise. Test: malformed verdict line
-   produces a clear error, not a silent mislabel.
-5. **Robust dedup** (`dedup-check.mjs`). The `sha=<short> in:body` full-text
-   search tokenizes and false-matches prose mentions; the current post-filter on
-   the literal `sha=<short>` trailer is fragile. Move to an exact-phrase search
-   (`--search '"[sha=<short>]"'`) as the canonical match, keep the trailer
-   post-filter as a guard. Test: an issue that merely mentions a sha in prose is
-   not treated as the tracking issue.
 
 Items NOT in this phase (verify in Phase 0, likely reclassified): the rebase
 classifier (debunked). If Phase 0 finds the rebase-conflict→transient→retry
 *policy* questionable (a pure conflict rarely self-heals on retry), reclassify it
-as a Phase 3 scaling/policy decision, not a bug.
+as a Phase 4 scaling/policy decision, not a bug.
 
-No porting resumes until Phase 2 lands.
-
-## Phase 3 — Scaling
+## Phase 4 — Scaling
 
 1. **Severity-ordered swarm scheduling.** Today the scheduler is FIFO by issue
    number; there is no way to ship the 4 critical issues first. Order the work
@@ -201,7 +285,7 @@ No porting resumes until Phase 2 lands.
    Add `--reset-abort-counter` so recovery does not require hand-editing the
    ledger.
 
-## Phase 4 — Nice-to-haves
+## Phase 5 — Nice-to-haves
 
 1. **cherry-pick PR-context cache TTL.** `_cache/pr-*.json` never expires; add a
    `fetchedAt` + age warning and an optional `--cache-age-warning`.
@@ -250,3 +334,17 @@ No porting resumes until Phase 2 lands.
 - **Open:** does `upstream-cherry-pick`'s state file migration to `base-ledger`
   belong in Phase 1 (decoupling) or deferred (it has no cross-skill import)?
   Tentatively Phase 1 for consistency; reconfirm during planning.
+- **The 147 existing `do-not-port` issues were classified mechanically** (paths
+  don't align / reverted upstream), *before* the intent-first model. Some may
+  actually be `essence-reimplement` — the upstream patch was inapplicable, but the
+  underlying bug still affects our fork. Phase 2 does **not** mandate a mass
+  re-audit, but it should add a lightweight `--revalidate-do-not-port` pass (or
+  document the recipe) so these can be re-examined against the new `Fork
+  relevance` criterion when capacity allows. Flag in the spec, decide scope at
+  Phase 2 planning.
+- **Essence-reimplement weakens the regression-test gate's anchor.** For
+  `direct-merge`/`adapted-port`, the upstream test ports over as the regression
+  gate. For `essence-reimplement` there may be no upstream test that maps —
+  the implementer must *author* a regression test that pins the root cause in our
+  code. Phase 2 must make this explicit in the fix-subagent contract, or
+  essence ports can land without a real failing-then-passing gate.

@@ -220,6 +220,7 @@ These are the only places the LLM contributes prose. Everything else is determin
 - `--manifest` — classify and score, then print a compact JSON list of file-worthy candidates (`sha`, `severity`, `conflictRisk`, `hasGuidance`, `subject`) to stdout and exit. No diff read, payload build, dedup, report, state advance, or commit. Banners go to stderr so stdout is clean JSON. Single upstream → flat array; all upstreams → object keyed by name. Use it to drive cheap subagent dispatch (see "Context budget" above).
 - `--no-issue-context` — skip the linked-PR/issue fetching step. Faster but reduces classifier accuracy.
 - `--refresh-cache` — force re-fetch of all PR/issue contexts (bypasses `_cache/`).
+- `--cache-age-warning <days>` — warn (non-blocking) when a served `_cache/` PR/issue context is older than `<days>` (by file mtime); suggests `--refresh-cache`.
 - `--from <commit>` — override the starting commit/tag for this run (ignores stored state).
 - `--no-commit` — file issues and advance state, but skip the closing git commit.
 - `--guidance-dir <dir>` — directory of agent-authored `<sha7>.md` otto-cli analysis files to embed in issues (default `.planning/upstream-audits/guidance`).

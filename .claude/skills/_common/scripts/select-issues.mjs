@@ -2,7 +2,9 @@
 /**
  * select-issues.mjs — query cmetech/otto-cli issues by filter, resolve each to
  * a compact fix record (number, severity, type, sha, guidancePath, targetFiles).
- * Writes <date>-selected-issues.json; prints { count, needsTriage, path }.
+ * Writes <date>-selected-issues.json; prints { count, needsTriage, excludedApplied, path }.
+ * Pass --exclude-applied to skip issues whose fix already merged out-of-band
+ * (detected via GitHub GraphQL timeline — fail-open, never drops unmerged work).
  */
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
@@ -44,6 +46,39 @@ function shaFromBody(body) {
   return m ? m[1].slice(0, 7) : null;
 }
 
+/** gh args for a GraphQL query over an issue's timeline → linked PR merge state. */
+export function buildAppliedCheckArgs(number, repo = DEFAULT_REPO) {
+  const [owner, name] = repo.split("/");
+  const query =
+    "query($owner:String!,$name:String!,$num:Int!){repository(owner:$owner,name:$name){issue(number:$num){" +
+    "timelineItems(first:50,itemTypes:[CROSS_REFERENCED_EVENT,CONNECTED_EVENT,CLOSED_EVENT]){nodes{__typename " +
+    "... on CrossReferencedEvent{source{__typename ... on PullRequest{merged}}} " +
+    "... on ConnectedEvent{subject{__typename ... on PullRequest{merged}}} " +
+    "... on ClosedEvent{closer{__typename ... on PullRequest{merged}}}}}}}}";
+  return ["api", "graphql", "-f", `query=${query}`, "-f", `owner=${owner}`, "-f", `name=${name}`, "-F", `num=${number}`];
+}
+
+/** True iff any timeline node references a MERGED pull request. */
+export function parseAppliedFromGraphql(jsonText) {
+  let data;
+  try { data = JSON.parse(jsonText || "{}"); } catch { return false; }
+  const nodes = data?.data?.repository?.issue?.timelineItems?.nodes ?? [];
+  for (const n of nodes) {
+    const pr = n?.source ?? n?.subject ?? n?.closer ?? null;
+    if (pr && pr.merged === true) return true;
+  }
+  return false;
+}
+
+/** Ask GitHub whether issue #number already has a linked merged PR (fail-open). */
+export function isIssueApplied({ number, repo = DEFAULT_REPO, ghRunner = defaultGhRunner }) {
+  try {
+    return parseAppliedFromGraphql(ghRunner(buildAppliedCheckArgs(number, repo)));
+  } catch {
+    return false; // a failed check must NOT exclude — never skip genuinely unmerged work
+  }
+}
+
 function severityFromLabels(labels) {
   const l = labels.find((x) => x.name.startsWith("severity:"));
   return l ? l.name.slice("severity:".length) : null;
@@ -54,7 +89,7 @@ function typeFromLabels(labels) {
   return l ? l.name.slice("type:".length) : null;
 }
 
-export function selectIssues({ filter, repo = DEFAULT_REPO, ghRunner = defaultGhRunner, guidanceDir = DEFAULT_GUIDANCE_DIR, outPath }) {
+export function selectIssues({ filter, repo = DEFAULT_REPO, ghRunner = defaultGhRunner, guidanceDir = DEFAULT_GUIDANCE_DIR, outPath, excludeApplied = false }) {
   const raw = ghRunner(buildSearchArgs(filter, repo));
   let issues = JSON.parse(raw);
   if (!Array.isArray(issues)) issues = [];
@@ -65,10 +100,15 @@ export function selectIssues({ filter, repo = DEFAULT_REPO, ghRunner = defaultGh
   }
 
   const records = [];
+  let excludedApplied = 0;
   for (const i of issues) {
     const labels = (i.labels ?? []).map((l) => (typeof l === "string" ? { name: l } : l));
     const names = labels.map((l) => l.name);
     if (names.includes(EXCLUDE_TYPE) || names.includes(EXCLUDE_STATUS)) continue;
+    if (excludeApplied && isIssueApplied({ number: i.number, repo, ghRunner })) {
+      excludedApplied += 1;
+      continue;
+    }
 
     const sha = shaFromBody(i.body);
     // Resolve guidance: prefer the sha-derived path under guidanceDir (canonical),
@@ -95,11 +135,11 @@ export function selectIssues({ filter, repo = DEFAULT_REPO, ghRunner = defaultGh
     mkdirSync(dirname(outPath), { recursive: true });
     writeFileSync(outPath, JSON.stringify(records, null, 2) + "\n");
   }
-  return { count: records.filter((r) => !r.needsTriage).length, needsTriage: records.filter((r) => r.needsTriage).length, path: outPath, records };
+  return { count: records.filter((r) => !r.needsTriage).length, needsTriage: records.filter((r) => r.needsTriage).length, excludedApplied, path: outPath, records };
 }
 
 function parseArgv(argv) {
-  const filter = {}; let outPath = null; let guidanceDir = DEFAULT_GUIDANCE_DIR;
+  const filter = {}; let outPath = null; let guidanceDir = DEFAULT_GUIDANCE_DIR; let excludeApplied = false;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--all") filter.all = true;
@@ -109,15 +149,16 @@ function parseArgv(argv) {
     else if (a === "--issues") filter.issues = argv[++i].split(",").map((s) => s.trim());
     else if (a === "--out") outPath = argv[++i];
     else if (a === "--guidance-dir") guidanceDir = argv[++i];
+    else if (a === "--exclude-applied") excludeApplied = true;
   }
-  return { filter, outPath, guidanceDir };
+  return { filter, outPath, guidanceDir, excludeApplied };
 }
 
 if (process.argv[1] && new URL(import.meta.url).pathname === process.argv[1]) {
   try {
-    const { filter, outPath, guidanceDir } = parseArgv(process.argv.slice(2));
-    const r = selectIssues({ filter, guidanceDir, outPath });
-    process.stdout.write(JSON.stringify({ count: r.count, needsTriage: r.needsTriage, path: r.path }, null, 2) + "\n");
+    const { filter, outPath, guidanceDir, excludeApplied } = parseArgv(process.argv.slice(2));
+    const r = selectIssues({ filter, guidanceDir, outPath, excludeApplied });
+    process.stdout.write(JSON.stringify({ count: r.count, needsTriage: r.needsTriage, excludedApplied: r.excludedApplied, path: r.path }, null, 2) + "\n");
   } catch (err) {
     process.stderr.write(JSON.stringify({ error: err.message ?? String(err) }) + "\n");
     process.exit(1);

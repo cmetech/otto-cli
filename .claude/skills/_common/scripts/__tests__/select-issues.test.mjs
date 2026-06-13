@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { selectIssues, parseGuidanceTargets, buildSearchArgs } from "../select-issues.mjs";
+import { selectIssues, parseGuidanceTargets, buildSearchArgs, buildAppliedCheckArgs, parseAppliedFromGraphql } from "../select-issues.mjs";
 
 function tmp() { return mkdtempSync(join(tmpdir(), "uf-select-")); }
 
@@ -80,5 +80,89 @@ test("selectIssues --issues filters to the requested numbers post-fetch", () => 
     assert.equal(result.count, 1);
     const written = JSON.parse(readFileSync(out, "utf-8")).filter((r) => !r.needsTriage);
     assert.equal(written[0].number, 63);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("buildAppliedCheckArgs targets the gh graphql API with owner/name/num", () => {
+  const args = buildAppliedCheckArgs(63, "cmetech/otto-cli");
+  assert.equal(args[0], "api");
+  assert.equal(args[1], "graphql");
+  assert.ok(args.some((a) => a === "owner=cmetech"), `args: ${args}`);
+  assert.ok(args.some((a) => a === "name=otto-cli"), `args: ${args}`);
+  assert.ok(args.some((a) => a === "num=63"), `args: ${args}`);
+  assert.ok(args.some((a) => /^query=/.test(a)), "carries a graphql query");
+});
+
+test("parseAppliedFromGraphql is true when a linked PR is merged", () => {
+  const json = JSON.stringify({
+    data: { repository: { issue: { timelineItems: { nodes: [
+      { __typename: "CrossReferencedEvent", source: { __typename: "PullRequest", merged: true } },
+    ] } } } },
+  });
+  assert.equal(parseAppliedFromGraphql(json), true);
+});
+
+test("parseAppliedFromGraphql is false when no linked PR is merged", () => {
+  const json = JSON.stringify({
+    data: { repository: { issue: { timelineItems: { nodes: [
+      { __typename: "CrossReferencedEvent", source: { __typename: "PullRequest", merged: false } },
+      { __typename: "ConnectedEvent", subject: { __typename: "Issue" } },
+    ] } } } },
+  });
+  assert.equal(parseAppliedFromGraphql(json), false);
+});
+
+test("parseAppliedFromGraphql tolerates empty / malformed payloads", () => {
+  assert.equal(parseAppliedFromGraphql("{}"), false);
+  assert.equal(parseAppliedFromGraphql(""), false);
+  assert.equal(parseAppliedFromGraphql("not json"), false);
+});
+
+test("selectIssues excludeApplied drops issues with a linked merged PR (incl. out-of-band)", () => {
+  const dir = tmp();
+  try {
+    const gdir = join(dir, "guidance");
+    mkdirSync(gdir, { recursive: true });
+    writeFileSync(join(gdir, "ce0e801.md"), "strategy: adapted-port\n\n## Target file(s)\n\n- `a.ts`\n");
+    writeFileSync(join(gdir, "4b4641c.md"), "strategy: adapted-port\n\n## Target file(s)\n\n- `b.ts`\n");
+    const fakeIssues = [
+      { number: 63, title: "x", labels: [{ name: "type:port-required" }], body: "[sha=ce0e801]" },
+      { number: 11, title: "w", labels: [{ name: "type:port-required" }], body: "[sha=4b4641c]" },
+    ];
+    const mergedFor = new Set([63]);
+    const ghRunner = (args) => {
+      if (args[0] === "issue" && args[1] === "list") return JSON.stringify(fakeIssues);
+      if (args[0] === "api" && args[1] === "graphql") {
+        const numArg = args.find((a) => /^num=/.test(a)) ?? "";
+        const num = Number(numArg.slice("num=".length));
+        return JSON.stringify({
+          data: { repository: { issue: { timelineItems: { nodes: [
+            { __typename: "CrossReferencedEvent", source: { __typename: "PullRequest", merged: mergedFor.has(num) } },
+          ] } } } },
+        });
+      }
+      return "";
+    };
+    const out = join(dir, "selected.json");
+    const result = selectIssues({ filter: { all: true }, ghRunner, guidanceDir: gdir, outPath: out, excludeApplied: true });
+    const kept = result.records.map((r) => r.number).sort();
+    assert.deepEqual(kept, [11], `kept: ${kept}`);
+    assert.equal(result.excludedApplied, 1);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("selectIssues without excludeApplied makes no graphql calls (back-compat)", () => {
+  const dir = tmp();
+  try {
+    const gdir = join(dir, "guidance");
+    mkdirSync(gdir, { recursive: true });
+    writeFileSync(join(gdir, "ce0e801.md"), "strategy: adapted-port\n\n## Target file(s)\n\n- `a.ts`\n");
+    let graphqlCalls = 0;
+    const ghRunner = (args) => {
+      if (args[0] === "api") graphqlCalls++;
+      return JSON.stringify([{ number: 63, title: "x", labels: [{ name: "type:port-required" }], body: "[sha=ce0e801]" }]);
+    };
+    selectIssues({ filter: { all: true }, ghRunner, guidanceDir: gdir, outPath: join(dir, "s.json") });
+    assert.equal(graphqlCalls, 0);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

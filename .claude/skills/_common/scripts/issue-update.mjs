@@ -12,6 +12,22 @@ function defaultGhRunner(args) { return execFileSync("gh", args, { encoding: "ut
 export function updateIssue({ number, repo = DEFAULT_REPO, addLabels = [], removeLabels = [], comment = null, close = false, ghRunner = defaultGhRunner }) {
   const actions = [];
 
+  // Idempotency pre-check: one read of state + comments, only when a comment or
+  // close is requested (label edits are already gh-idempotent). A failed read
+  // falls through to best-effort so the pre-check never blocks the op.
+  let state = null;
+  let existingComments = [];
+  if (comment || close) {
+    try {
+      const view = JSON.parse(ghRunner(["issue", "view", String(number), "--repo", repo, "--json", "state,comments"]) || "{}");
+      state = view.state ?? null; // "OPEN" | "CLOSED"
+      existingComments = Array.isArray(view.comments) ? view.comments : [];
+    } catch {
+      state = null;
+      existingComments = [];
+    }
+  }
+
   if (addLabels.length || removeLabels.length) {
     const args = ["issue", "edit", String(number), "--repo", repo];
     for (const l of addLabels) args.push("--add-label", l);
@@ -22,13 +38,22 @@ export function updateIssue({ number, repo = DEFAULT_REPO, addLabels = [], remov
   }
 
   if (comment) {
-    ghRunner(["issue", "comment", String(number), "--repo", repo, "--body", comment]);
-    actions.push("comment");
+    const already = existingComments.some((c) => (c.body ?? "").trim() === comment.trim());
+    if (already) {
+      actions.push("comment-skipped");
+    } else {
+      ghRunner(["issue", "comment", String(number), "--repo", repo, "--body", comment]);
+      actions.push("comment");
+    }
   }
 
   if (close) {
-    ghRunner(["issue", "close", String(number), "--repo", repo]);
-    actions.push("close");
+    if (state === "CLOSED") {
+      actions.push("close-skipped");
+    } else {
+      ghRunner(["issue", "close", String(number), "--repo", repo]);
+      actions.push("close");
+    }
   }
 
   return { number, actions };

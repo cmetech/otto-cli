@@ -60,6 +60,43 @@ export function loadAllowlist(configPath) {
 
 function defaultGhRunner(args) { return execFileSync("gh", args, { encoding: "utf-8", maxBuffer: 16 * 1024 * 1024 }); }
 
+/**
+ * Compare the required-checks allowlist against the LIVE branch-protection
+ * required contexts, both directions. Pure.
+ *   missingFromCi — allowlisted `required` checks no longer required upstream
+ *                   (stale allowlist entry).
+ *   unguarded     — live-required checks absent from required ∪ conditional
+ *                   (we'd merge without gating them).
+ * `liveContexts === null` ⇒ branch protection unavailable ⇒ checked:false.
+ */
+export function checkAllowlistDrift({ allowlist, liveContexts }) {
+  if (!Array.isArray(liveContexts)) {
+    return { checked: false, warnings: ["branch protection unavailable — allowlist-drift check skipped"], missingFromCi: [], unguarded: [] };
+  }
+  const required = Array.isArray(allowlist) ? allowlist : (allowlist.required ?? []);
+  const conditional = Array.isArray(allowlist) ? [] : (allowlist.conditional ?? []);
+  const guarded = new Set([...required, ...conditional]);
+  const live = new Set(liveContexts);
+  const missingFromCi = required.filter((c) => !live.has(c));
+  const unguarded = liveContexts.filter((c) => !guarded.has(c));
+  const warnings = [
+    ...missingFromCi.map((c) => `allowlisted required check "${c}" is no longer in branch protection — remove it from config.requiredChecks`),
+    ...unguarded.map((c) => `branch protection requires "${c}" but it is not in the allowlist — add it to config.requiredChecks`),
+  ];
+  return { checked: true, warnings, missingFromCi, unguarded };
+}
+
+/** Fetch the live required-status-check contexts for a branch (null on no protection). */
+export function fetchBranchProtection({ repo = "cmetech/otto-cli", branch = "main", ghRunner = defaultGhRunner }) {
+  try {
+    const raw = ghRunner(["api", `repos/${repo}/branches/${branch}/protection/required_status_checks`, "--jq", ".contexts"]);
+    const v = JSON.parse(raw || "null");
+    return Array.isArray(v) ? v : null;
+  } catch {
+    return null; // unprotected branch / no access → drift check skips
+  }
+}
+
 export function fetchAndEvaluate({ prNumber, repo = "cmetech/otto-cli", configPath, ghRunner = defaultGhRunner }) {
   const raw = ghRunner(["pr", "checks", String(prNumber), "--repo", repo, "--json", "name,bucket,state"]);
   const checks = JSON.parse(raw);

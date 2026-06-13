@@ -57,6 +57,16 @@ Progress lives in the ledger; `--resume` reconstructs everything.
    ```sh
    node -e "import('./.claude/skills/upstream-merge/scripts/merge-ledger.mjs').then(m=>m.initMergeLedger('$DIR/$DATE-run-state.json',{date:'$DATE',prs:require('./$DIR/$DATE-selected-prs.json')}))"
    ```
+5. **Allowlist-drift check (once, non-blocking).** Before gating, compare the
+   required-checks allowlist to live branch protection:
+   ```sh
+   node -e "import('./.claude/skills/_common/scripts/evaluate-checks.mjs').then(m => {
+     const live = m.fetchBranchProtection({ repo: 'cmetech/otto-cli' });
+     const cfg = m.loadAllowlist('.claude/skills/upstream-merge/config.json');
+     for (const w of m.checkAllowlistDrift({ allowlist: cfg, liveContexts: live }).warnings) console.error('⚠️ ' + w);
+   })"
+   ```
+   Print any warnings and continue — drift is informational, never a merge blocker.
 
 ## Phase B — Confirm (per PR, sequential)
 

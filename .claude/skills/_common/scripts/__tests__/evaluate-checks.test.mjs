@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { evaluateChecks, loadAllowlist } from "../evaluate-checks.mjs";
+import { evaluateChecks, loadAllowlist, checkAllowlistDrift, fetchBranchProtection } from "../evaluate-checks.mjs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -105,4 +105,36 @@ test("loadAllowlist reads requiredChecks + conditionalChecks from config.json", 
   const cfg = join(here, "..", "..", "..", "upstream-merge", "config.json");
   const allow = loadAllowlist(cfg);
   assert.deepEqual(allow, SPLIT);
+});
+
+test("checkAllowlistDrift flags stale allowlist entries and newly-required checks", () => {
+  const allowlist = { required: ["build", "test-unit", "old-check"], conditional: ["security-audit"] };
+  const liveContexts = ["build", "test-unit", "test-packages"];
+  const r = checkAllowlistDrift({ allowlist, liveContexts });
+  assert.equal(r.checked, true);
+  assert.deepEqual(r.missingFromCi, ["old-check"]);
+  assert.deepEqual(r.unguarded, ["test-packages"]);
+  assert.ok(r.warnings.some((w) => /old-check/.test(w)));
+  assert.ok(r.warnings.some((w) => /test-packages/.test(w)));
+});
+
+test("checkAllowlistDrift reports no drift when in sync (conditional checks don't count as unguarded)", () => {
+  const allowlist = { required: ["build"], conditional: ["security-audit"] };
+  const r = checkAllowlistDrift({ allowlist, liveContexts: ["build"] });
+  assert.deepEqual(r.missingFromCi, []);
+  assert.deepEqual(r.unguarded, []);
+  assert.deepEqual(r.warnings, []);
+});
+
+test("checkAllowlistDrift skips gracefully when branch protection is unavailable", () => {
+  const r = checkAllowlistDrift({ allowlist: { required: ["build"] }, liveContexts: null });
+  assert.equal(r.checked, false);
+  assert.ok(r.warnings.some((w) => /unavailable|skipped/i.test(w)));
+});
+
+test("fetchBranchProtection returns contexts array, null on error", () => {
+  const ok = fetchBranchProtection({ ghRunner: () => JSON.stringify(["build", "test-unit"]) });
+  assert.deepEqual(ok, ["build", "test-unit"]);
+  const errd = fetchBranchProtection({ ghRunner: () => { throw new Error("404"); } });
+  assert.equal(errd, null);
 });

@@ -4,6 +4,7 @@
  * CLI: node worktree-setup.mjs <laneId> [base]
  */
 import { execFileSync } from "node:child_process";
+import { registerWorktree } from "../../_common/scripts/worktree.mjs";
 
 const SAFE = /^[A-Za-z0-9._\/-]+$/;
 
@@ -14,7 +15,7 @@ function branchExists(branch, gitRunner) {
   catch { return false; }
 }
 
-export function setupWorktree({ laneId, base = "origin/main", gitRunner = defaultGitRunner, fetch = true }) {
+export function setupWorktree({ laneId, base = "origin/main", gitRunner = defaultGitRunner, fetch = true, registryPath = ".planning/upstream-fixes/.worktree-registry.json" }) {
   const branch = `fix/upstream-lane-${laneId}`;
   const worktree = `.worktrees/upstream-fix-lane-${laneId}`;
   if (!SAFE.test(base) || !SAFE.test(branch)) throw new Error(`unsafe base/branch name: ${base} / ${branch}`);
@@ -32,6 +33,8 @@ export function setupWorktree({ laneId, base = "origin/main", gitRunner = defaul
   } else {
     gitRunner(["worktree", "add", worktree, "-b", branch, base]);
   }
+  try { registerWorktree(registryPath, { path: worktree, owner: `fix-lane-${laneId}`, createdAt: Date.now() }); }
+  catch { /* registry is best-effort; never block worktree creation */ }
   return { worktree, branch };
 }
 

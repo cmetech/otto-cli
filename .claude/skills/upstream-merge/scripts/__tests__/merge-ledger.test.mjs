@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { initMergeLedger, readLedger, recordVerdict, recordMerge } from "../merge-ledger.mjs";
+import { initMergeLedger, readLedger, recordVerdict, recordMerge, recordRefute } from "../merge-ledger.mjs";
 
 function tmp() { return mkdtempSync(join(tmpdir(), "um-ledger-")); }
 
@@ -42,5 +42,30 @@ test("recordVerdict throws on unknown PR", () => {
     const path = join(dir, "state.json");
     initMergeLedger(path, { date: "2026-05-31", prs: [] });
     assert.throws(() => recordVerdict(path, 999, { status: "confirmed" }), /unknown PR/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("initMergeLedger seeds refute = null and recordRefute persists all lenses + tally", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ml-refute-"));
+  try {
+    const path = join(dir, "led.json");
+    initMergeLedger(path, { date: "2026-06-13", prs: [{ number: 9, headRef: "x" }] });
+    assert.equal(readLedger(path).prs["9"].refute, null);
+
+    const verdicts = [
+      { lens: "upstream-alignment", verdict: "approve", confidence: 0.9, reason: "ok", blocking: false },
+      { lens: "scope-discipline", verdict: "abstain", confidence: 0.2, reason: "n/a", blocking: false },
+      { lens: "test-quality", verdict: "approve", confidence: 0.8, reason: "good", blocking: false },
+      { lens: "blast-radius", verdict: "approve", confidence: 0.7, reason: "small", blocking: false },
+    ];
+    const tally = { panelVerdict: "approve", approves: 3, refutes: 0, abstains: 1, reason: "3 approve / 1 abstain / 0 refute" };
+    recordRefute(path, 9, { panelVerdict: "approve", verdicts, tally });
+
+    const pr = readLedger(path).prs["9"];
+    assert.equal(pr.refute.panelVerdict, "approve");
+    assert.equal(pr.refute.verdicts.length, 4);
+    assert.equal(pr.refute.verdicts[0].confidence, 0.9);
+    assert.equal(pr.refute.verdicts[0].blocking, false);
+    assert.equal(pr.refute.tally.abstains, 1);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

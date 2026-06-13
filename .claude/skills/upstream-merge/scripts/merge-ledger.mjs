@@ -15,6 +15,7 @@ export function initMergeLedger(path, { date, prs }) {
       status: "queued",        // queued | confirmed | merged | blocked | skipped
       checks: null,            // evaluateChecks() result
       localGate: null,         // { pass, failTail }
+      refute: null,            // full refute-panel outcome: { panelVerdict, verdicts, tally, reason }
       mergeSha: null,
       reason: null,
     };
@@ -39,6 +40,18 @@ export function recordVerdict(path, number, { status = null, checks = null, loca
     if (checks !== null) pr.checks = checks;
     if (localGate !== null) pr.localGate = localGate;
     if (reason !== null) pr.reason = reason;
+  });
+}
+
+/**
+ * Persist the full refute-panel outcome for a PR: the consolidated panel
+ * verdict plus every lens's { lens, verdict, confidence, reason, blocking }
+ * and the tally — so confidence/blocking/per-lens detail survive for
+ * forensics and reporting (not just a flattened string).
+ */
+export function recordRefute(path, number, { panelVerdict = null, verdicts = [], tally = null, reason = null }) {
+  return mutatePr(path, number, (pr) => {
+    pr.refute = { panelVerdict, verdicts, tally, reason };
   });
 }
 

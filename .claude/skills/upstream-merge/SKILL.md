@@ -106,8 +106,11 @@ multi-lens refute panel before any merge:
    and a schema-forced output (see `refute-panel.mjs` for the schema).
 3. Apply `tallyVerdicts` to get the panel verdict.
 4. If REFUTE: post the consolidated comment via `gh pr comment`, label the
-   issue `status:needs-human`, do NOT merge. Record `refuteVerdict` and
-   `refuteReason` in the ledger.
+   issue `status:needs-human`, do NOT merge.
+   Record the full panel outcome via `recordRefute(path, <pr>, { panelVerdict,
+   verdicts, tally })` — every lens's `{lens, verdict, confidence, reason,
+   blocking}` and the tally are persisted (not a flattened string), so a blocked
+   merge is fully auditable.
 5. If APPROVE: proceed to Phase C with `--refute-verdict approve`.
 
 Lens prompts live in `refute-panel.mjs`. Each lens is given the bundle and

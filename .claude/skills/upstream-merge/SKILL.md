@@ -178,6 +178,11 @@ change as before.
   invoking `upstream-merge` directly normally do not.
 - `--dry-run` — select + confirm, merge nothing.
 - `--resume` — idempotent re-run from the ledger; already-`merged` PRs skipped.
+- `--retry <prs>` — targeted re-gate of one or more **blocked** PRs (comma list).
+  For each, `requeuePr(path, <pr>, { reason })` resets it `blocked → queued` and
+  clears stale gate state, then the normal Phase B gates re-run for just those
+  PRs (`select-prs --issues <prs>`). A PR that blocks again stays `blocked` — a
+  human then labels it `status:needs-human`. Already-`merged` PRs are refused.
 - `--filter <glob>` — override the default head-branch filter.
 
 ## References

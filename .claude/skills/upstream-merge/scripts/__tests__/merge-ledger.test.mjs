@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { initMergeLedger, readLedger, recordVerdict, recordMerge, recordRefute } from "../merge-ledger.mjs";
+import { initMergeLedger, readLedger, recordVerdict, recordMerge, recordRefute, requeuePr } from "../merge-ledger.mjs";
 
 function tmp() { return mkdtempSync(join(tmpdir(), "um-ledger-")); }
 
@@ -67,5 +67,30 @@ test("initMergeLedger seeds refute = null and recordRefute persists all lenses +
     assert.equal(pr.refute.verdicts[0].confidence, 0.9);
     assert.equal(pr.refute.verdicts[0].blocking, false);
     assert.equal(pr.refute.tally.abstains, 1);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("requeuePr resets a blocked PR to queued and clears stale gate fields", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ml-retry-"));
+  try {
+    const path = join(dir, "led.json");
+    initMergeLedger(path, { date: "d", prs: [{ number: 9, headRef: "x" }] });
+    recordVerdict(path, 9, { status: "blocked", checks: { pass: false }, localGate: { pass: false }, reason: "ci red" });
+
+    const pr = requeuePr(path, 9, { reason: "manual retry" });
+    assert.equal(pr.status, "queued");
+    assert.equal(pr.checks, null);
+    assert.equal(pr.localGate, null);
+    assert.equal(pr.reason, "manual retry");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("requeuePr refuses to reset an already-merged PR", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ml-retry2-"));
+  try {
+    const path = join(dir, "led.json");
+    initMergeLedger(path, { date: "d", prs: [{ number: 9, headRef: "x" }] });
+    recordMerge(path, 9, { status: "merged", mergeSha: "abc1234" });
+    assert.throws(() => requeuePr(path, 9, { reason: "nope" }), /merged/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

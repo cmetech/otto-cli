@@ -62,6 +62,21 @@ export function recordMerge(path, number, { status = "merged", mergeSha = null }
   });
 }
 
+/**
+ * Reset a non-merged PR back to `queued` for a targeted re-gate (`--retry`),
+ * clearing stale gate state so the re-run starts clean. Refuses on `merged`
+ * (merging is irreversible — never re-gate a landed PR).
+ */
+export function requeuePr(path, number, { reason = "manual retry" } = {}) {
+  return mutatePr(path, number, (pr) => {
+    if (pr.status === "merged") throw new Error(`PR #${number} is already merged — cannot requeue`);
+    pr.status = "queued";
+    pr.checks = null;
+    pr.localGate = null;
+    pr.reason = reason;
+  });
+}
+
 if (process.argv[1] && new URL(import.meta.url).pathname === process.argv[1]) {
   const path = process.argv[2];
   if (!path) { process.stderr.write(JSON.stringify({ error: "Usage: node merge-ledger.mjs <ledger-path>" }) + "\n"); process.exit(1); }

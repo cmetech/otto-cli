@@ -26,11 +26,41 @@ test("backpressure: no new fixes when prWindow is full", () => {
   assert.equal(actions.filter((a) => a.kind === "start-fix").length, 0);
 });
 
-test("polls CI for awaiting-ci issues (one poll-ci action each)", () => {
+test("batches awaiting-ci polls into one poll-ci-batch action (no clock → all due)", () => {
   const ledger = led({ 1: "awaiting-ci", 2: "awaiting-ci" });
   const actions = nextActions(ledger, CAPS);
-  const polls = actions.filter((a) => a.kind === "poll-ci");
-  assert.equal(polls.length, 2);
+  const batches = actions.filter((a) => a.kind === "poll-ci-batch");
+  assert.equal(batches.length, 1);
+  assert.deepEqual(batches[0].issueNumbers.sort((x, y) => x - y), [1, 2]);
+  assert.equal(actions.filter((a) => a.kind === "poll-ci").length, 0, "no un-batched poll-ci");
+});
+
+test("backoff: a recently-polled issue with no-change history is not yet due", () => {
+  const now = 1_000_000;
+  const caps = { fixConcurrency: 3, prWindow: 10, refuteConcurrency: 5, basePollMs: 60_000, maxPollMs: 480_000, pollBackoffAfter: 1 };
+  const ledger = { issues: {
+    1: { state: "awaiting-ci", lastPolledAt: now - 10_000, pollNoChangeCount: 3 },
+    2: { state: "awaiting-ci", lastPolledAt: now - 500_000, pollNoChangeCount: 3 },
+  } };
+  const actions = nextActions(ledger, caps, now);
+  const batch = actions.find((a) => a.kind === "poll-ci-batch");
+  assert.deepEqual(batch.issueNumbers, [2]);
+});
+
+test("backoff: interval is capped at maxPollMs", () => {
+  const now = 10_000_000;
+  const caps = { fixConcurrency: 3, prWindow: 10, refuteConcurrency: 5, basePollMs: 60_000, maxPollMs: 480_000, pollBackoffAfter: 1 };
+  const ledger = { issues: {
+    1: { state: "awaiting-ci", lastPolledAt: now - 480_001, pollNoChangeCount: 20 },
+    2: { state: "awaiting-ci", lastPolledAt: now - 479_000, pollNoChangeCount: 20 },
+  } };
+  const batch = nextActions(ledger, caps, now).find((a) => a.kind === "poll-ci-batch");
+  assert.deepEqual(batch.issueNumbers, [1]);
+});
+
+test("no poll-ci-batch action when nothing is awaiting-ci", () => {
+  const actions = nextActions(led({ 1: "ci-green" }), CAPS);
+  assert.equal(actions.filter((a) => a.kind === "poll-ci-batch").length, 0);
 });
 
 test("kicks local-gate on ci-green issues", () => {

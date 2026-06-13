@@ -4,7 +4,7 @@
  * Given the durable ledger and caps, returns the actions the runtime
  * should execute this tick. Pure; safe to call repeatedly.
  *
- * Action kinds: start-fix, poll-ci, run-local-gate, run-refute, merge-pr
+ * Action kinds: start-fix, quarantine-timeout, poll-ci-batch, run-local-gate, run-refute, merge-pr
  */
 
 const IN_FLIGHT_FIX_STATES = new Set(["planning", "fixing", "retrying"]);
@@ -70,10 +70,20 @@ export function nextActions(ledger, caps, now = null) {
     }
   }
 
-  // 2. Poll CI for awaiting-ci issues.
+  // 2. Poll CI — one batched action, gated by per-issue exponential backoff.
+  const basePollMs = caps.basePollMs ?? 60_000;
+  const maxPollMs = caps.maxPollMs ?? 480_000;
+  const shiftAfter = caps.pollBackoffAfter ?? 1; // start doubling after K no-change polls
+  const duePolls = [];
   for (const [number, issue] of Object.entries(ledger.issues)) {
-    if (issue.state === "awaiting-ci") actions.push({ kind: "poll-ci", issueNumber: Number(number) });
+    if (issue.state !== "awaiting-ci") continue;
+    const noChange = issue.pollNoChangeCount ?? 0;
+    const shift = Math.max(0, noChange - shiftAfter + 1);
+    const interval = Math.min(basePollMs * 2 ** shift, maxPollMs);
+    const due = now == null || (now - (issue.lastPolledAt ?? 0)) >= interval;
+    if (due) duePolls.push(Number(number));
   }
+  if (duePolls.length) actions.push({ kind: "poll-ci-batch", issueNumbers: duePolls });
 
   // 3. Local gate on ci-green.
   for (const [number, issue] of Object.entries(ledger.issues)) {

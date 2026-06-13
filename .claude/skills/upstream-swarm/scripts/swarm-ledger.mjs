@@ -46,6 +46,8 @@ export function initSwarmLedger(path, { date, filter, issues }) {
       state: "selected",
       retryCount: 0,
       fixStartedAt: null,
+      lastPolledAt: null,
+      pollNoChangeCount: 0,
       retryReason: null,
       wave: null,
       prNumber: null,

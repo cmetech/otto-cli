@@ -5,7 +5,11 @@
     "fixConcurrency": 3,
     "prWindow": 10,
     "refuteConcurrency": 5,
-    "maxWaveSize": 3
+    "maxWaveSize": 3,
+    "issueTimeoutMs": 1800000,
+    "basePollMs": 60000,
+    "maxPollMs": 480000,
+    "pollBackoffAfter": 1
   },
   "abortThreshold": 5
 }

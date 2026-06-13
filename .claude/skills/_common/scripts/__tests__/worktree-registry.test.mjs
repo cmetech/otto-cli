@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, mkdirSync, existsSync } from "node:fs";
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { registerWorktree, readRegistry, pruneWorktrees } from "../worktree.mjs";
@@ -14,6 +14,19 @@ test("registerWorktree records an entry and is idempotent per path", () => {
     const entries = readRegistry(reg);
     assert.equal(entries.length, 1);
     assert.equal(entries[0].createdAt, 2000);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("readRegistry returns [] for valid-but-non-array JSON", () => {
+  const dir = mkdtempSync(join(tmpdir(), "wt-"));
+  try {
+    const objReg = join(dir, "obj.json");
+    writeFileSync(objReg, JSON.stringify({}));
+    assert.deepEqual(readRegistry(objReg), []);
+
+    const nullReg = join(dir, "null.json");
+    writeFileSync(nullReg, "null");
+    assert.deepEqual(readRegistry(nullReg), []);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 

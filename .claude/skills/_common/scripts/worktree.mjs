@@ -18,7 +18,7 @@
  *     own resolved path so this helper doesn't have to know about the
  *     skill directory layout.
  */
-import { symlinkSync, existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { symlinkSync, existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, statSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { execFileSync } from "node:child_process";
 
@@ -49,8 +49,31 @@ export function provisionWorktreeNodeModules(workdir, repoRoot, opts = {}) {
 
 export function readRegistry(registryPath) {
   if (!existsSync(registryPath)) return [];
-  try { return JSON.parse(readFileSync(registryPath, "utf-8")); }
+  try { const v = JSON.parse(readFileSync(registryPath, "utf-8")); return Array.isArray(v) ? v : []; }
   catch { return []; }
+}
+
+// Cross-process lock around the registry read-modify-write. mkdir is atomic:
+// creation fails with EEXIST if the dir already exists. Breaks a stale lock
+// left by a crashed process; gives up after maxWaitMs rather than hang a lane.
+function withRegistryLock(registryPath, fn, { staleMs = 10_000, retryMs = 25, maxWaitMs = 5000 } = {}) {
+  const lockDir = registryPath + ".lock";
+  const start = Date.now();
+  for (;;) {
+    try { mkdirSync(lockDir); break; }
+    catch (err) {
+      if (err.code !== "EEXIST") throw err;
+      // Break a stale lock left by a crashed process.
+      try { if (Date.now() - statSync(lockDir).mtimeMs > staleMs) { rmSync(lockDir, { recursive: true, force: true }); continue; } } catch { /* race on stat; retry */ }
+      if (Date.now() - start > maxWaitMs) { // give up waiting; proceed unlocked rather than hang the lane
+        try { return fn(); } finally { /* no lock to release */ }
+      }
+      // busy-wait briefly (synchronous; these are short-lived CLI processes)
+      const until = Date.now() + retryMs; while (Date.now() < until) { /* spin */ }
+      continue;
+    }
+  }
+  try { return fn(); } finally { try { rmSync(lockDir, { recursive: true, force: true }); } catch { /* best effort */ } }
 }
 
 function writeRegistry(registryPath, entries) {
@@ -61,12 +84,16 @@ function writeRegistry(registryPath, entries) {
 // Record (or update) a worktree entry keyed by absolute path.
 export function registerWorktree(registryPath, { path, owner, createdAt }) {
   const abs = resolve(path);
-  const entries = readRegistry(registryPath).filter((e) => resolve(e.path) !== abs);
-  entries.push({ path: abs, owner, createdAt });
-  writeRegistry(registryPath, entries);
-  return entries;
+  return withRegistryLock(registryPath, () => {
+    const entries = readRegistry(registryPath).filter((e) => resolve(e.path) !== abs);
+    entries.push({ path: abs, owner, createdAt });
+    writeRegistry(registryPath, entries);
+    return entries;
+  });
 }
 
+// Assumes CWD is inside the target repo for `git worktree remove`; the rmSync
+// fallback uses the absolute stored path so removal still works out of-tree.
 function defaultRemover(path) {
   // Best-effort: ask git to remove the worktree, then delete the dir.
   try { execFileSync("git", ["worktree", "remove", "--force", path], { encoding: "utf-8" }); }

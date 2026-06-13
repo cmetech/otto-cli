@@ -48,7 +48,17 @@ export function classifyFailure(ctx) {
       return { category: "real", reason: "regression gate failure" };
     }
     case "rebase": {
-      if (ctx.mainShaChanged && ctx.conflictMarkers) return { category: "transient", reason: "rebase conflict (main moved)" };
+      // A rebase conflict only merits a transient retry when main moved AND our
+      // touched files are disjoint from the new commits — then the conflict is
+      // contextual and a re-rebase onto the new tip will likely apply. If our
+      // own files overlap the new commits, a blind replay won't self-heal:
+      // route to `real` so it quarantines for a manual rebase.
+      if (ctx.mainShaChanged && ctx.conflictMarkers && ctx.touchedFilesDisjoint) {
+        return { category: "transient", reason: "rebase conflict (main moved, touched files disjoint — re-rebase)" };
+      }
+      if (ctx.mainShaChanged && ctx.conflictMarkers) {
+        return { category: "real", reason: "rebase conflict in our touched files — manual rebase needed" };
+      }
       return { category: "real", reason: "rebase failure" };
     }
     case "swarm": {

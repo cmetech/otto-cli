@@ -14,6 +14,7 @@ test("baseline gate red → swarm must abort before any issue work", () => {
       workdir: join(dir, "wt"),
       logPath: join(dir, "baseline.log"),
       worktreeRunner: () => ({ status: 0, stdout: "" }),
+      provisionDeps: () => {}, // DI: skip the real node_modules symlink (matches the unit + sibling integration tests)
       gateRunner: () => ({ pass: false, failTail: "vendor xlsx tarball missing\nENOENT dist-test/vendor/xlsx-0.20.3.tgz" }),
     });
     assert.equal(r.pass, false);

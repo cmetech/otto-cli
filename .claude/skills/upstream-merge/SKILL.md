@@ -57,6 +57,16 @@ Progress lives in the ledger; `--resume` reconstructs everything.
    ```sh
    node -e "import('./.claude/skills/upstream-merge/scripts/merge-ledger.mjs').then(m=>m.initMergeLedger('$DIR/$DATE-run-state.json',{date:'$DATE',prs:require('./$DIR/$DATE-selected-prs.json')}))"
    ```
+5. **Allowlist-drift check (once, non-blocking).** Before gating, compare the
+   required-checks allowlist to live branch protection:
+   ```sh
+   node -e "import('./.claude/skills/_common/scripts/evaluate-checks.mjs').then(m => {
+     const live = m.fetchBranchProtection({ repo: 'cmetech/otto-cli' });
+     const cfg = m.loadAllowlist('.claude/skills/upstream-merge/config.json');
+     for (const w of m.checkAllowlistDrift({ allowlist: cfg, liveContexts: live }).warnings) console.error('⚠️ ' + w);
+   })"
+   ```
+   Print any warnings and continue — drift is informational, never a merge blocker.
 
 ## Phase B — Confirm (per PR, sequential)
 
@@ -106,8 +116,11 @@ multi-lens refute panel before any merge:
    and a schema-forced output (see `refute-panel.mjs` for the schema).
 3. Apply `tallyVerdicts` to get the panel verdict.
 4. If REFUTE: post the consolidated comment via `gh pr comment`, label the
-   issue `status:needs-human`, do NOT merge. Record `refuteVerdict` and
-   `refuteReason` in the ledger.
+   issue `status:needs-human`, do NOT merge.
+   Record the full panel outcome via `recordRefute(path, <pr>, { panelVerdict,
+   verdicts, tally })` — every lens's `{lens, verdict, confidence, reason,
+   blocking}` and the tally are persisted (not a flattened string), so a blocked
+   merge is fully auditable.
 5. If APPROVE: proceed to Phase C with `--refute-verdict approve`.
 
 Lens prompts live in `refute-panel.mjs`. Each lens is given the bundle and
@@ -165,6 +178,11 @@ change as before.
   invoking `upstream-merge` directly normally do not.
 - `--dry-run` — select + confirm, merge nothing.
 - `--resume` — idempotent re-run from the ledger; already-`merged` PRs skipped.
+- `--retry <prs>` — targeted re-gate of one or more **blocked** PRs (comma list).
+  For each, `requeuePr(path, <pr>, { reason })` resets it `blocked → queued` and
+  clears stale gate state, then the normal Phase B gates re-run for just those
+  PRs (`select-prs --issues <prs>`). A PR that blocks again stays `blocked` — a
+  human then labels it `status:needs-human`. Already-`merged` PRs are refused.
 - `--filter <glob>` — override the default head-branch filter.
 
 ## References

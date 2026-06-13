@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { initLedger, readLedger, writeLedger, recordIssueResult, setLaneStatus } from "../ledger.mjs";
+import { initLedger, readLedger, writeLedger, recordIssueResult, setLaneStatus, recordReviewerRejection } from "../ledger.mjs";
 
 function tmp() { return mkdtempSync(join(tmpdir(), "uf-ledger-")); }
 
@@ -62,5 +62,25 @@ test("setLaneStatus updates lane and preserves issues", () => {
     setLaneStatus(path, 2, "in-progress");
     assert.equal(readLedger(path).lanes["2"].status, "in-progress");
     assert.equal(readLedger(path).issues["7"].status, "pending");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("recordReviewerRejection retries once then is terminal", () => {
+  const dir = mkdtempSync(join(tmpdir(), "uf-led-rej-"));
+  try {
+    const path = join(dir, "led.json");
+    initLedger(path, { date: "d", filter: {}, integrationBranch: "b", lanes: [{ id: 1, issues: [9], files: ["a.ts"] }], issues: [{ number: 9, targetFiles: ["a.ts"] }] });
+    assert.equal(readLedger(path).issues["9"].reviewerRejectionCount, 0);
+
+    const first = recordReviewerRejection(path, 9, "regression test does not pin the bug");
+    assert.equal(first.retry, true);
+    assert.equal(first.issue.reviewerRejectionCount, 1);
+    assert.equal(first.issue.status, "fixing");
+    assert.equal(first.issue.reviewerReason, "regression test does not pin the bug");
+
+    const second = recordReviewerRejection(path, 9, "still wrong");
+    assert.equal(second.retry, false);
+    assert.equal(second.issue.reviewerRejectionCount, 2);
+    assert.equal(second.issue.status, "rejected");
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

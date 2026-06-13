@@ -81,6 +81,11 @@ export function recordTransition(path, number, nextState, payload = {}) {
   });
 }
 
+/** Read the recorded refute panel verdict for an issue (null if not recorded). */
+export function readRefuteVerdict(ledger, number) {
+  return ledger?.issues?.[String(number)]?.refute?.tally?.panelVerdict ?? null;
+}
+
 export function recordRetry(path, number, reason) {
   return mutateIssue(path, number, (issue) => {
     if (issue.retryCount >= RETRY_CAP) {

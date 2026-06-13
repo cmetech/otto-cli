@@ -32,6 +32,10 @@ async function defaultGateRunner({ workdir, logPath }) {
 
 export function runBaselineGate({ workdir, logPath, base = "origin/main", worktreeRunner = defaultWorktreeRunner, provisionDeps = defaultProvisionDeps, gateRunner = defaultGateRunner }) {
   mkdirSync(dirname(logPath), { recursive: true });
+  // Idempotent: a prior failed gate may have left this worktree on disk
+  // (it's deliberately kept for inspection). Force-remove it first so the
+  // add below doesn't throw "worktree already exists". Best-effort.
+  try { worktreeRunner(["worktree", "remove", "--force", workdir]); } catch { /* nothing to remove */ }
   // Create a detached worktree at base.
   worktreeRunner(["worktree", "add", "--detach", workdir, base]);
   try { registerWorktree(".planning/upstream-swarms/.worktree-registry.json", { path: workdir, owner: "swarm-baseline", createdAt: Date.now() }); }

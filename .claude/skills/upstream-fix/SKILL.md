@@ -215,8 +215,13 @@ RETURN CONTRACT — output ONE line per issue, NOTHING else (no diffs, no logs):
      approve <one-line rationale>
      reject  <one-line concrete reason>
    ```
-   Fold the verdict into the ledger (set `reviewer`/`reviewerReason`; on `reject`
-   set issue status `rejected`). A reject excludes that commit from integration.
+   Fold the verdict into the ledger. On `approve`, set `reviewer`/`reviewerReason`.
+   On `reject`, call `recordReviewerRejection(path, <num>, <reason>)`: the FIRST
+   reject is auto-recoverable — it returns `{retry:true}`, sets the issue back to
+   `fixing`, and you **re-dispatch the fix subagent once** with the reviewer's
+   reason quoted (re-run the regression/build/targeted gates, then re-review). A
+   SECOND reject returns `{retry:false}` and is terminal (`rejected`) — exclude
+   that commit from integration. `reviewerRejectionCount` is tracked in the ledger.
 
 2. **Integration.** Create `integration/upstream-fix-$DATE` off `main`. For each
    lane with ≥1 approved issue, in lane order, **post-hoc overlap check then merge:**

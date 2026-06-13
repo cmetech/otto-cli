@@ -112,7 +112,7 @@ Loop until `nextActions(ledger, caps)` returns `[]`:
    | `poll-ci-batch` | For each PR in `issueNumbers`, run `node poll-pr-checks.mjs <prNumber>` — ONE non-blocking HTTP poll each. The scheduler has already applied per-issue exponential backoff (it only lists PRs whose backoff interval has elapsed), so add no delay of your own. On a PR's `pass` → `ci-green`; on `fail` → classify, retry or quarantine; on `pending` → **no state transition**, but update that issue's ledger fields `lastPolledAt = <now ms>` and increment `pollNoChangeCount` so the next tick backs off. On any state change reset `pollNoChangeCount` to 0. **Never** `gh pr checks --watch`. |
    | `run-local-gate` | `trial-merge` + `run-gates.mjs full` in a worktree at origin/main. On pass → `local-gate-pending` (becomes refute-pending via state). |
    | `run-refute` | `buildInputBundle` then dispatch 4 lens subagents in parallel (Workflow `parallel(LENS_NAMES.map(lens => () => agent(prompt(lens, bundle), {schema: VERDICT_SCHEMA})))`); apply `tallyVerdicts`; record. The bundle carries `bundle.fixStrategy` from the issue's `fix-strategy:*` label — the `upstream-alignment` lens is strategy-aware (`essence-reimplement` judges intent/root-cause alignment, not diff-fidelity); see the full branch definition in `.claude/skills/upstream-merge/SKILL.md`. |
-   | `merge-pr` | `merge-pr.mjs <N> --auto --refute-verdict approve --refute-reason "..."`. Severity routing for `feature`/`critical-stability` happens at fix-ok→pending-human-review (skip merge). |
+   | `merge-pr` | Read the recorded panel verdict — `V=readRefuteVerdict(ledger, N)` — and pass it through: `merge-pr.mjs <N> --auto --refute-verdict "$V" --refute-reason "..."`. If `V !== "approve"` (or null), do NOT merge — this read-back means an out-of-band merge can't supply `approve` without the panel having recorded it (the state machine still gates `merge-pr` on the `approved` state; this is defense-in-depth). Severity routing for `feature`/`critical-stability` happens at fix-ok→pending-human-review (skip merge). |
 
 3. On any failure, run `classifyFailure({stage, ...})` from
    `transient-classifier.mjs`. If `transient` and retryCount < 1, call
@@ -150,9 +150,11 @@ Loop until `nextActions(ledger, caps)` returns `[]`:
 
 2. Worktree hygiene: remove every `.worktrees/upstream-fix-issue-*` and
    `.worktrees/upstream-merge-pr-*` directory on terminal-state. The
-   baseline worktree at `.worktrees/upstream-swarm-baseline` is removed
-   only on the baseline gate's success path; leave it on failure for
-   inspection.
+   The baseline worktree at `.worktrees/upstream-swarm-baseline` is removed on the
+   gate's success path; on failure it is left for inspection but the next run (or
+   `--resume`) force-removes it before re-creating, so a leaked baseline worktree
+   no longer blocks a re-run. It is also tracked in the worktree registry, so
+   `--clean-worktrees` prunes it by TTL.
 
 3. Final exit: 0 if no issues quarantined; non-zero (with summary) if any
    are.

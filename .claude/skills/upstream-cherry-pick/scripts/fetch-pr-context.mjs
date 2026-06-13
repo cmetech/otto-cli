@@ -9,7 +9,7 @@
  *        Returns { kind: "pr"|"issue", data: object, fromCache: bool }
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 /**
@@ -33,9 +33,12 @@ function defaultGhRunner(args) {
  *   refNum: number,
  *   cacheDir?: string,
  *   refreshCache?: boolean,
- *   ghRunner?: (args: string[]) => string
+ *   ghRunner?: (args: string[]) => string,
+ *   now?: number,
+ *   cacheAgeWarningMs?: number|null,
+ *   mtimeOf?: (path: string) => number
  * }} opts
- * @returns {Promise<{ kind: "pr"|"issue", data: object, fromCache: boolean }>}
+ * @returns {Promise<{ kind: "pr"|"issue", data: object, fromCache: boolean, ageMs: number|null, stale: boolean, warning: string|null }>}
  */
 export async function fetchPrContext({
   ghRepo,
@@ -43,21 +46,33 @@ export async function fetchPrContext({
   cacheDir = ".planning/upstream-audits/_cache",
   refreshCache = false,
   ghRunner = defaultGhRunner,
+  now = Date.now(),
+  cacheAgeWarningMs = null,
+  mtimeOf = (p) => statSync(p).mtimeMs,
 }) {
   const repoSlug = ghRepo.replace("/", "__");
   const repoDir = join(cacheDir, repoSlug);
   const prCachePath = join(repoDir, `pr-${refNum}.json`);
   const issueCachePath = join(repoDir, `issue-${refNum}.json`);
 
+  const staleness = (path) => {
+    if (!cacheAgeWarningMs) return { ageMs: null, stale: false, warning: null };
+    const ageMs = now - mtimeOf(path);
+    if (ageMs > cacheAgeWarningMs) {
+      return { ageMs, stale: true, warning: `cached context for #${refNum} (${ghRepo}) is ${Math.round(ageMs / 86_400_000)}d old — pass --refresh-cache to refetch` };
+    }
+    return { ageMs, stale: false, warning: null };
+  };
+
   // Cache hit: return cached file if refreshCache is false and either cache file exists
   if (!refreshCache) {
     if (existsSync(prCachePath)) {
       const data = JSON.parse(readFileSync(prCachePath, "utf-8"));
-      return { kind: "pr", data, fromCache: true };
+      return { kind: "pr", data, fromCache: true, ...staleness(prCachePath) };
     }
     if (existsSync(issueCachePath)) {
       const data = JSON.parse(readFileSync(issueCachePath, "utf-8"));
-      return { kind: "issue", data, fromCache: true };
+      return { kind: "issue", data, fromCache: true, ...staleness(issueCachePath) };
     }
   }
 
@@ -96,7 +111,7 @@ export async function fetchPrContext({
   const cachePath = kind === "pr" ? prCachePath : issueCachePath;
   writeFileSync(cachePath, JSON.stringify(data, null, 2) + "\n", "utf-8");
 
-  return { kind, data, fromCache: false };
+  return { kind, data, fromCache: false, ageMs: 0, stale: false, warning: null };
 }
 
 // CLI mode
@@ -105,18 +120,21 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const ghRepo = args[0];
   const refNum = parseInt(args[1], 10);
   const refreshCache = args.includes("--refresh-cache");
+  const cawIdx = args.indexOf("--cache-age-warning");
+  const cacheAgeWarningMs = cawIdx >= 0 ? Number(args[cawIdx + 1]) * 86_400_000 : null;
 
   if (!ghRepo || !refNum || isNaN(refNum)) {
     process.stderr.write(
       JSON.stringify({
-        error: "Usage: node fetch-pr-context.mjs <ghRepo> <refNum> [--refresh-cache]",
+        error: "Usage: node fetch-pr-context.mjs <ghRepo> <refNum> [--refresh-cache] [--cache-age-warning <days>]",
       }) + "\n",
     );
     process.exit(1);
   }
 
   try {
-    const result = await fetchPrContext({ ghRepo, refNum, refreshCache });
+    const result = await fetchPrContext({ ghRepo, refNum, refreshCache, cacheAgeWarningMs });
+    if (result.warning) process.stderr.write(result.warning + "\n");
     process.stdout.write(JSON.stringify(result, null, 2) + "\n");
   } catch (err) {
     process.stderr.write(JSON.stringify({ error: err.message }) + "\n");

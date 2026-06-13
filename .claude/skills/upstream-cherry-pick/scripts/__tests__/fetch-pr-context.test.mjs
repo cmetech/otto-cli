@@ -112,3 +112,55 @@ test("throws when both PR and issue calls fail", async () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("a cache hit older than cacheAgeWarningMs is flagged stale with a warning", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "fpc-stale-"));
+  try {
+    const ghRepo = "earendil-works/pi";
+    const repoDir = join(dir, ghRepo.replace("/", "__"));
+    mkdirSync(repoDir, { recursive: true });
+    writeFileSync(join(repoDir, "pr-7.json"), JSON.stringify({ title: "cached" }) + "\n");
+    const now = 1_000_000_000_000;
+    const r = await fetchPrContext({
+      ghRepo, refNum: 7, cacheDir: dir,
+      ghRunner: () => { throw new Error("must not fetch on a cache hit"); },
+      now,
+      cacheAgeWarningMs: 1000,
+      mtimeOf: () => now - 5000,
+    });
+    assert.equal(r.fromCache, true);
+    assert.equal(r.stale, true);
+    assert.equal(r.ageMs, 5000);
+    assert.match(r.warning, /stale|old|cache/i);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("a fresh cache hit is not stale", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "fpc-fresh-"));
+  try {
+    const ghRepo = "earendil-works/pi";
+    const repoDir = join(dir, ghRepo.replace("/", "__"));
+    mkdirSync(repoDir, { recursive: true });
+    writeFileSync(join(repoDir, "pr-7.json"), JSON.stringify({ title: "cached" }) + "\n");
+    const now = 1_000_000_000_000;
+    const r = await fetchPrContext({
+      ghRepo, refNum: 7, cacheDir: dir, ghRunner: () => { throw new Error("no fetch"); },
+      now, cacheAgeWarningMs: 100_000, mtimeOf: () => now - 5000,
+    });
+    assert.equal(r.stale, false);
+    assert.equal(r.warning ?? null, null);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("no cacheAgeWarningMs → never stale (back-compat)", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "fpc-nocfg-"));
+  try {
+    const ghRepo = "earendil-works/pi";
+    const repoDir = join(dir, ghRepo.replace("/", "__"));
+    mkdirSync(repoDir, { recursive: true });
+    writeFileSync(join(repoDir, "pr-7.json"), JSON.stringify({ title: "cached" }) + "\n");
+    const r = await fetchPrContext({ ghRepo, refNum: 7, cacheDir: dir, ghRunner: () => { throw new Error("no fetch"); } });
+    assert.equal(r.fromCache, true);
+    assert.equal(r.stale ?? false, false);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});

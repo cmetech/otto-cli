@@ -1304,6 +1304,8 @@ function modelSupportsAdaptiveThinking(modelId: string): boolean {
 		|| modelId.includes("opus-4.6")
 		|| modelId.includes("opus-4-7")
 		|| modelId.includes("opus-4.7")
+		|| modelId.includes("opus-4-8")
+		|| modelId.includes("opus-4.8")
 		|| modelId.includes("sonnet-4-6")
 		|| modelId.includes("sonnet-4.6")
 		|| modelId.includes("sonnet-4-7")
@@ -1324,7 +1326,10 @@ function mapThinkingLevelToAnthropicEffort(level: ThinkingLevel | undefined, mod
 		case "high":
 			return "high";
 		case "xhigh":
-			if (modelId.includes("opus-4-7") || modelId.includes("opus-4.7")) return "xhigh";
+			if (
+				modelId.includes("opus-4-7") || modelId.includes("opus-4.7")
+				|| modelId.includes("opus-4-8") || modelId.includes("opus-4.8")
+			) return "xhigh";
 			if (modelId.includes("opus-4-6") || modelId.includes("opus-4.6")) return "max";
 			return "high";
 		default:
@@ -1429,7 +1434,7 @@ export function buildSdkOptions(
 		disallowedTools,
 		...(allowedTools.length > 0 ? { allowedTools } : {}),
 		...(filteredMcpServers ? { mcpServers: filteredMcpServers } : {}),
-		betas: (modelId.includes("sonnet") || modelId.includes("opus-4-7") || modelId.includes("opus-4.7")) ? ["context-1m-2025-08-07"] : [],
+		betas: (modelId.includes("sonnet") || modelId.includes("opus-4-7") || modelId.includes("opus-4.7") || modelId.includes("opus-4-8") || modelId.includes("opus-4.8")) ? ["context-1m-2025-08-07"] : [],
 		...(thinkingConfig ?? {}),
 		...(effort ? { effort } : {}),
 		...sdkExtraOptions,

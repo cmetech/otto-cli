@@ -672,6 +672,11 @@ async function generateModels() {
 			candidate.cost.cacheWrite = 6.25;
 			candidate.contextWindow = 1000000;
 		}
+		if (candidate.provider === "amazon-bedrock" && candidate.id.includes("anthropic.claude-opus-4-8")) {
+			candidate.cost.cacheRead = 0.5;
+			candidate.cost.cacheWrite = 6.25;
+			candidate.contextWindow = 1000000;
+		}
 		if (candidate.provider === "amazon-bedrock" && candidate.id.includes("anthropic.claude-sonnet-4-6")) {
 			candidate.contextWindow = 1000000;
 		}
@@ -771,11 +776,53 @@ async function generateModels() {
 		});
 	}
 
+	// Add missing EU Opus 4.8 profile
+	if (!allModels.some((m) => m.provider === "amazon-bedrock" && m.id === "eu.anthropic.claude-opus-4-8")) {
+		allModels.push({
+			id: "eu.anthropic.claude-opus-4-8",
+			name: "Claude Opus 4.8 (EU)",
+			api: "bedrock-converse-stream",
+			provider: "amazon-bedrock",
+			baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
+			reasoning: true,
+			input: ["text", "image"],
+			cost: {
+				input: 5,
+				output: 25,
+				cacheRead: 0.5,
+				cacheWrite: 6.25,
+			},
+			contextWindow: 1000000,
+			maxTokens: 128000,
+		});
+	}
+
 	// Add missing Claude Opus 4.6
 	if (!allModels.some(m => m.provider === "anthropic" && m.id === "claude-opus-4-6")) {
 		allModels.push({
 			id: "claude-opus-4-6",
 			name: "Claude Opus 4.6",
+			api: "anthropic-messages",
+			baseUrl: "https://api.anthropic.com",
+			provider: "anthropic",
+			reasoning: true,
+			input: ["text", "image"],
+			cost: {
+				input: 5,
+				output: 25,
+				cacheRead: 0.5,
+				cacheWrite: 6.25,
+			},
+			contextWindow: 1000000,
+			maxTokens: 128000,
+		});
+	}
+
+	// Add missing Claude Opus 4.8
+	if (!allModels.some(m => m.provider === "anthropic" && m.id === "claude-opus-4-8")) {
+		allModels.push({
+			id: "claude-opus-4-8",
+			name: "Claude Opus 4.8",
 			api: "anthropic-messages",
 			baseUrl: "https://api.anthropic.com",
 			provider: "anthropic",

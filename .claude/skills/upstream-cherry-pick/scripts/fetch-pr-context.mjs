@@ -94,7 +94,11 @@ export async function fetchPrContext({
       const stdout = ghRunner([
         "issue", "view", String(refNum),
         "--repo", ghRepo,
-        "--json", "title,body,state,labels,comments",
+        // stateReason is required by the Phase 6 supersession `upstream-closed`
+        // rule (and apply-context-upgrades Rule 5) to distinguish a not-planned/
+        // wontfix/duplicate close from a completed one — without it those rules
+        // can never fire.
+        "--json", "title,body,state,stateReason,labels,comments",
       ]);
       data = JSON.parse(stdout);
       kind = "issue";

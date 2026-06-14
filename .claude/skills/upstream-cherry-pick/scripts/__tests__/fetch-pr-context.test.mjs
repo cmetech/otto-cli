@@ -113,6 +113,26 @@ test("throws when both PR and issue calls fail", async () => {
   }
 });
 
+test("issue fetch requests stateReason (Phase 6 upstream-closed rule depends on it)", async () => {
+  const dir = makeTmp();
+  try {
+    const calls = [];
+    const ghRunner = (args) => {
+      calls.push(args);
+      if (args[0] === "pr") throw new Error("not a pull request");
+      return JSON.stringify({ title: "closed dup", state: "CLOSED", stateReason: "not-planned", labels: [] });
+    };
+    const result = await fetchPrContext({ ghRepo: "foo/bar", refNum: 7, cacheDir: dir, ghRunner });
+    assert.equal(result.kind, "issue");
+    assert.equal(result.data.stateReason, "not-planned");
+    const issueCall = calls.find((a) => a[0] === "issue");
+    const jsonIdx = issueCall.indexOf("--json");
+    assert.ok(issueCall[jsonIdx + 1].split(",").includes("stateReason"), `issue --json must request stateReason, got: ${issueCall[jsonIdx + 1]}`);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("a cache hit older than cacheAgeWarningMs is flagged stale with a warning", async () => {
   const dir = mkdtempSync(join(tmpdir(), "fpc-stale-"));
   try {

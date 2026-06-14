@@ -30,3 +30,18 @@ test("resolveAlignment only resolves for feature severity", () => {
   assert.equal(resolveAlignment({ severity: "NICE_TO_HAVE_FIX", guidanceText: guidance }), null);
   assert.equal(resolveAlignment({ severity: "FEATURE", guidanceText: "strategy: adapted-port\n" }), null);
 });
+
+import { parseArgs } from "../run-audit.mjs";
+
+test("parseArgs recognizes --sweep and its --revalidate-open alias", () => {
+  assert.equal(parseArgs(["--sweep"]).flags.sweep, true);
+  assert.equal(parseArgs(["--revalidate-open"]).flags.sweep, true);
+  assert.equal(parseArgs([]).flags.sweep, false);
+});
+
+test("parseArgs still parses an upstream name + an existing flag", () => {
+  const { upstream, flags } = parseArgs(["pi-dev", "--dry-run"]);
+  assert.equal(upstream, "pi-dev");
+  assert.equal(flags.dryRun, true);
+  assert.equal(flags.sweep, false);
+});

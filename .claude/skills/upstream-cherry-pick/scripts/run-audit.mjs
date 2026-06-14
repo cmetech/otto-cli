@@ -56,6 +56,8 @@ import { validateGuidance } from "./parse-guidance.mjs";
 import { parseStrategy } from "../../_common/scripts/fix-strategy.mjs";
 import { parseAlignment, isFeatureSeverity } from "../../_common/scripts/alignment.mjs";
 import { revalidateDoNotPort } from "./revalidate-do-not-port.mjs";
+import { sweepBacklog } from "./sweep-backlog.mjs";
+import { writeSweepReport } from "./write-sweep-report.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const AUDIT_OUTPUT_DIR = ".planning/upstream-audits";
@@ -71,7 +73,7 @@ const SECTION_BY_SEV = {
 
 // ─── arg parsing ─────────────────────────────────────────────────────────────
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const flags = {
     dryRun: false,
     manifest: false,
@@ -84,6 +86,7 @@ function parseArgs(argv) {
     embedDiff: true,
     skipGuidanceCheck: false,
     revalidateDoNotPort: false,
+    sweep: false,
   };
   let upstream = null;
   for (let i = 0; i < argv.length; i++) {
@@ -99,6 +102,7 @@ function parseArgs(argv) {
     else if (a === "--no-diff") flags.embedDiff = false;
     else if (a === "--skip-guidance-check") flags.skipGuidanceCheck = true;
     else if (a === "--revalidate-do-not-port") flags.revalidateDoNotPort = true;
+    else if (a === "--sweep" || a === "--revalidate-open") flags.sweep = true;
     else if (a.startsWith("--")) throw new Error(`Unknown flag: ${a}`);
     else upstream = a;
   }
@@ -489,6 +493,22 @@ async function main() {
   if (flags.revalidateDoNotPort) {
     const manifest = revalidateDoNotPort({ targetRepo: cfg.targetRepo });
     process.stdout.write(JSON.stringify({ count: manifest.length, manifest }, null, 2) + "\n");
+    return;
+  }
+
+  if (flags.sweep) {
+    const runData = await sweepBacklog({ cfg, dryRun: flags.dryRun });
+    const date = new Date().toISOString().slice(0, 10);
+    const reportPath = writeSweepReport({ outputDir: AUDIT_OUTPUT_DIR, runData, date });
+    console.error(
+      `\n=== backlog sweep${flags.dryRun ? " (dry-run)" : ""} ===\n` +
+        `  scanned: ${runData.scanned}\n` +
+        `  superseded (auto-tagged): ${runData.superseded.length}\n` +
+        `  advisory (rewritten, not tagged): ${runData.advisory.length}\n` +
+        `  feature issues for alignment re-check: ${runData.features.length}\n` +
+        `  report: ${reportPath}`,
+    );
+    process.stdout.write(JSON.stringify(runData, null, 2) + "\n");
     return;
   }
 

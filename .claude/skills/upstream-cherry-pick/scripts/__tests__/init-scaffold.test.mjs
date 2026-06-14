@@ -86,6 +86,24 @@ test("interactive uses promptUser injection", async () => {
   }
 });
 
+test("interactive lineage entries carry an explicit role + inspiration repos registered", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "ucp-init-"));
+  try {
+    const promptUser = async ({ message, default: def }) => {
+      if (message.match(/\[Y\/n\]/)) return "y"; // track each default lineage repo
+      if (message.match(/\[y\/N\]/)) return "n"; // don't add more
+      return def ?? "";
+    };
+    const result = await initScaffold({ cwd: dir, nonInteractive: false, promptUser, ghRunner: () => "" });
+    const cfg = JSON.parse(readFileSync(result.configPath, "utf-8"));
+    assert.equal(cfg.upstreams["pi-dev"].role, "lineage");
+    assert.equal(cfg.upstreams["gsd-pi"].role, "lineage");
+    assert.equal(cfg.upstreams["hermes-agent"].role, "inspiration");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test("overwrite flag allows clobbering existing config", async () => {
   const dir = mkdtempSync(join(tmpdir(), "ucp-init-"));
   try {

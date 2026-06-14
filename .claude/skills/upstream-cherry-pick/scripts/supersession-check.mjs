@@ -20,9 +20,7 @@
  * always makes the final call.
  */
 import { execFileSync } from "node:child_process";
-
-// Same closed-as-unwanted reasons as apply-context-upgrades.mjs Rule 5.
-const SKIP_STATE_REASON_RE = /^(not.planned|wontfix|duplicate)/i;
+import { isClosedAsUnwanted } from "../../_common/scripts/issue-state.mjs";
 
 function defaultGitRunner(args) {
   return execFileSync("git", args, { encoding: "utf-8", maxBuffer: 32 * 1024 * 1024 });
@@ -76,11 +74,7 @@ export function detectRewritten({ repoPath, sha, files = [], gitRunner = default
  */
 export function detectUpstreamClosed({ issueContexts = [] }) {
   if (!issueContexts.length) return { hit: false };
-  const all = issueContexts.every((ctx) => {
-    const d = ctx.data ?? ctx;
-    return (d.state ?? "").toUpperCase() === "CLOSED" && SKIP_STATE_REASON_RE.test(d.stateReason ?? "");
-  });
-  if (!all) return { hit: false };
+  if (!issueContexts.every(isClosedAsUnwanted)) return { hit: false };
   const d0 = issueContexts[0].data ?? issueContexts[0];
   return { hit: true, stateReason: d0.stateReason ?? "CLOSED" };
 }

@@ -21,6 +21,15 @@ description: >
 
 Safe to run as a background subagent — produces durable artifacts (gh issues + report file). No interactive prompts after `--init`.
 
+## Repo roles — lineage vs inspiration
+
+Each upstream in `.planning/upstream-sync-config.json` has a **`role`** (see `docs/OTTO-ALIGNMENT.md` §4):
+
+- **`role: "lineage"`** — `pi` (`../pi`), `gsd-pi` (`../gsd-pi`). Our maintenance stream. The audit scans these for bugs/stability/security/perf/correctness/dependency fixes (always-port) and feature candidates (run through the alignment fit-check below). **These are the only repos the audit and sweep touch.**
+- **`role: "inspiration"`** — `hermes-agent`, `anton`, `mempalace` (local siblings). A curated **reference library** read while *designing* a co-worker feature. **Never audited, never cherry-picked** (Anton is AGPL-3.0 — reimplement the idea, don't vendor the source). Absent `role` defaults to `lineage` for back-compat.
+
+`run-audit.mjs` iterates lineage repos only; naming an inspiration repo (`node run-audit.mjs hermes-agent`) errors.
+
 ## Quickest path — the orchestrator
 
 For a normal scan, run the bundled orchestrator instead of hand-driving each
@@ -199,6 +208,8 @@ These are the only places the LLM contributes prose. Everything else is determin
 
 - **otto-cli implementation guidance (the important one)**: for every candidate that will be filed, perform the per-commit analysis described under "Implementation-grade issues" and write it to `.planning/upstream-audits/guidance/<sha7>.md`. This is what turns an issue from a triage pointer into something the implementation phase can confirm-and-apply. The five required sections: upstream intent / root cause, fork relevance, fix strategy, divergence, and concrete approach — with a machine-readable `strategy:` first line (`direct-merge` | `adapted-port` | `essence-reimplement` | `not-needed`) — see "The machine-readable `strategy:` line" above; it drives the issue's `fix-strategy:*` and `type:*` labels. Missing or malformed guidance aborts the run — pass `--skip-guidance-check` only to deliberately file placeholders.
 
+- **Alignment fit-check (features only)**: for a candidate classified `severity:feature`, judge its strategic fit against `docs/OTTO-ALIGNMENT.md` §5 and record it in the guidance file's optional `## Alignment` section with a machine-readable `alignment: <core|adjacent|out-of-scope>` line + a one-line reason citing the criterion. `core` → normal port flow; `adjacent` → defer; `out-of-scope` → surface for a human to close. **Bug/stability/security/perf/correctness/dependency fixes skip this — alignment is N/A.** When torn, prefer `adjacent` (defer, don't reject). `run-audit.mjs` reads the verdict and applies the `alignment:*` label; **nothing is auto-closed**.
+
 - **PR review-thread summarization**: when `fetch-pr-context.mjs` returns a PR with reviews/comments, build-issue-payload.mjs renders a generic "Review highlights" section using only flat label/state info. The agent (controller) may enrich this by reading the fetched JSON and writing a 3-5 line excerpt of the most informative review threads into the issue body BEFORE invoking `scripts/file-issue.mjs`. This is optional — in fully scripted mode (e.g., a scheduled CI run), the payload uses the raw flat info.
 
 - **UNCLASSIFIED commits' "manual triage" notes**: the report lists each unclassified commit. Optionally, the agent may add a one-line note per commit (e.g., "this looks feature-adjacent but in a touched area — may be worth manual review"). Without these notes, the report just lists subjects.
@@ -213,6 +224,16 @@ These are the only places the LLM contributes prose. Everything else is determin
 - **State file update** at `.planning/upstream-sync-state.json` — advances `lastAnalyzedCommit`.
 - **Commit** on the current branch including the report + state file.
 
+## Backlog hygiene sweep (`--sweep`)
+
+`node run-audit.mjs --sweep` (alias `--revalidate-open`) walks **open** actionable issues (`type:port-required` + `type:cherry-pick-candidate`, excluding `status:applied`/`status:superseded`) and, per issue, runs three deterministic **Class-A** checks in the issue's lineage repo:
+
+1. **reverted** — a later commit reverts the sha → **auto-tag `status:superseded`** + evidence comment.
+2. **upstream-closed** — the linked upstream issue(s) closed as not-planned/wontfix/duplicate → **auto-tag `status:superseded`** + evidence comment.
+3. **rewritten** — later commits touched the same files → **advisory only** (reported, *not* tagged — least precise signal).
+
+It also lists open **feature** issues for an **alignment re-check** — you re-judge each against the current `docs/OTTO-ALIGNMENT.md` and (re)apply `alignment:*` via `_common/scripts/issue-update.mjs`. Output: `.planning/upstream-audits/<date>-backlog-sweep.md`. **No issue is ever closed by the tool** — every verdict is a label + evidence comment for a human. Add `--dry-run` to detect without mutating. Class B (fork-state re-check) and Class C (within-backlog clustering) are deferred.
+
 ## Flags
 
 - `--init` — scaffold config, state, and labels (first run). Calls `scripts/init-scaffold.mjs` (see Task 19).
@@ -225,6 +246,7 @@ These are the only places the LLM contributes prose. Everything else is determin
 - `--no-commit` — file issues and advance state, but skip the closing git commit.
 - `--guidance-dir <dir>` — directory of agent-authored `<sha7>.md` otto-cli analysis files to embed in issues (default `.planning/upstream-audits/guidance`).
 - `--no-diff` — do not embed the upstream diff in issue bodies (smaller bodies).
+- `--sweep` / `--revalidate-open` — run the backlog-hygiene supersession sweep (see "Backlog hygiene sweep"). Combine with `--dry-run` to detect without tagging.
 
 ## Background execution
 

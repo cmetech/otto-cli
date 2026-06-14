@@ -80,3 +80,20 @@ test("a file with neither strategy nor verdict line is invalid", () => {
   assert.equal(r.valid, false);
   assert.ok(r.errors.some((e) => /strategy:.*verdict:|machine-readable/i.test(e)));
 });
+
+test("validateGuidance exposes an optional alignment verdict when present", () => {
+  const withAlignment = FULL
+    .replace("strategy: essence-reimplement", "strategy: adapted-port")
+    .replace(/\*\*Essence to preserve:\*\* .*/i, "Transcribe the guard.")
+    + "\n## Alignment\n\nalignment: adjacent\n\nReason: no current persona home.\n";
+  const r = validateGuidance(withAlignment, { path: "g/x.md" });
+  assert.equal(r.valid, true, `errors: ${r.errors}`);
+  assert.equal(r.alignment, "adjacent");
+});
+
+test("validateGuidance leaves alignment null when no Alignment section exists", () => {
+  const r = validateGuidance(FULL, { path: "g/x.md" });
+  assert.equal(r.alignment, null);
+  // alignment is OPTIONAL — its absence is not a validation error
+  assert.equal(r.valid, true);
+});

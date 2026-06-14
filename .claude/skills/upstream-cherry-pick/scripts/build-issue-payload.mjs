@@ -16,6 +16,7 @@
  */
 
 import { strategyToLabel, strategyToTypeLabel } from "../../_common/scripts/fix-strategy.mjs";
+import { alignmentToLabel, isFeatureSeverity } from "../../_common/scripts/alignment.mjs";
 
 // ---------------------------------------------------------------------------
 // Emoji map
@@ -79,7 +80,7 @@ function typeLabelFor(strategy) {
   return strategyToTypeLabel(strategy);
 }
 
-function buildLabels({ classification, conflictRisk, upstream, strategy }) {
+function buildLabels({ classification, conflictRisk, upstream, strategy, alignment }) {
   const severityKebab = toKebab(classification.severity);
   const riskKebab = toKebab(conflictRisk.risk);
 
@@ -100,6 +101,12 @@ function buildLabels({ classification, conflictRisk, upstream, strategy }) {
   // New audits set both type:* (routing) and fix-strategy:* (fork-divergence).
   const stratLabel = strategyToLabel(strategy);
   if (stratLabel) labels.push(stratLabel);
+
+  // Alignment fit-check label — feature candidates only (Phase 6 §3).
+  if (isFeatureSeverity(classification.severity)) {
+    const alignLabel = alignmentToLabel(alignment);
+    if (alignLabel) labels.push(alignLabel);
+  }
 
   return labels;
 }
@@ -250,10 +257,30 @@ function renderFixStrategy({ strategy }) {
 }
 
 // ---------------------------------------------------------------------------
+// Alignment section builder (Phase 6 §3)
+// ---------------------------------------------------------------------------
+
+const ALIGNMENT_BLURB = {
+  core: "advances the co-worker direction → port.",
+  adjacent: "useful but off the critical path → defer.",
+  "out-of-scope": "coding-assistant-only or ethos-conflicting → surface for a human to close.",
+};
+
+function renderAlignment({ classification, alignment }) {
+  if (!isFeatureSeverity(classification.severity)) return "";
+  const blurb = ALIGNMENT_BLURB[alignment];
+  if (!blurb) return "";
+  return (
+    `\n## Alignment\n\n**\`alignment:${alignment}\`** — ${blurb} ` +
+    "See `docs/OTTO-ALIGNMENT.md` §5. Advisory — a human makes the final call; nothing is auto-closed.\n"
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Body builder  §11.3
 // ---------------------------------------------------------------------------
 
-function buildBody({ commit, classification, conflictRisk, upstream, prContext, issueContexts, ccUser, heavyFiles, implementationGuidance, diff, strategy }) {
+function buildBody({ commit, classification, conflictRisk, upstream, prContext, issueContexts, ccUser, heavyFiles, implementationGuidance, diff, strategy, alignment }) {
   const today = new Date().toISOString().slice(0, 10);
   const sha7 = shortSha(commit.sha);
   const severityKebab = toKebab(classification.severity);
@@ -271,6 +298,7 @@ function buildBody({ commit, classification, conflictRisk, upstream, prContext, 
   const guidanceSection = renderImplementationGuidance({ implementationGuidance });
   const diffSection = renderUpstreamDiff({ diff });
   const fixStrategySection = renderFixStrategy({ strategy });
+  const alignmentSection = renderAlignment({ classification, alignment });
   const analyzed = Boolean((implementationGuidance ?? "").trim());
 
   const upgradeSection =
@@ -286,7 +314,7 @@ function buildBody({ commit, classification, conflictRisk, upstream, prContext, 
 ## otto-cli implementation guidance
 
 ${guidanceSection}
-${diffSection}${fixStrategySection}
+${diffSection}${fixStrategySection}${alignmentSection}
 ## Classification
 
 | Field | Value |
@@ -356,9 +384,10 @@ export function buildIssuePayload({
   implementationGuidance = null,
   diff = null,
   strategy = null,
+  alignment = null,
 }) {
   const title = buildTitle({ commit, classification, upstream });
-  const labels = buildLabels({ classification, conflictRisk, upstream, strategy });
+  const labels = buildLabels({ classification, conflictRisk, upstream, strategy, alignment });
   const body = buildBody({
     commit,
     classification,
@@ -371,6 +400,7 @@ export function buildIssuePayload({
     implementationGuidance,
     diff,
     strategy,
+    alignment,
   });
 
   return { title, body, labels };

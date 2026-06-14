@@ -58,3 +58,44 @@ test("parseConfig validates upstream entries", () => {
     unlinkSync(tmpPath);
   }
 });
+
+test("parseConfig defaults absent role to lineage and preserves an explicit role", () => {
+  const tmpPath = join(__dirname, "..", "__fixtures__", "_tmp-roles.json");
+  writeFileSync(
+    tmpPath,
+    JSON.stringify({
+      version: 1,
+      targetRepo: "cmetech/otto-cli",
+      upstreams: {
+        "pi-dev": { path: "../pi", ghRepo: "earendil-works/pi", branch: "main" },
+        "hermes-agent": { path: "../hermes-agent", ghRepo: "inspiration/hermes-agent", role: "inspiration" },
+      },
+      classifier: { securityRegex: ".", stabilityRegex: ".", skipPrefixes: [] },
+    }),
+  );
+  try {
+    const cfg = parseConfig(tmpPath);
+    assert.equal(cfg.upstreams["pi-dev"].role, "lineage"); // back-compat default
+    assert.equal(cfg.upstreams["hermes-agent"].role, "inspiration");
+  } finally {
+    unlinkSync(tmpPath);
+  }
+});
+
+test("parseConfig rejects an unknown role value", () => {
+  const tmpPath = join(__dirname, "..", "__fixtures__", "_tmp-bad-role.json");
+  writeFileSync(
+    tmpPath,
+    JSON.stringify({
+      version: 1,
+      targetRepo: "cmetech/otto-cli",
+      upstreams: { "x": { path: "../x", ghRepo: "a/b", role: "bogus" } },
+      classifier: { securityRegex: ".", stabilityRegex: ".", skipPrefixes: [] },
+    }),
+  );
+  try {
+    assert.throws(() => parseConfig(tmpPath), /role.*lineage.*inspiration|invalid role/i);
+  } finally {
+    unlinkSync(tmpPath);
+  }
+});

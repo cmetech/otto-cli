@@ -56,6 +56,12 @@ export function parseConfig(path = DEFAULT_CONFIG_PATH) {
       }
       u.branch ??= "main";
       u.label ??= u.ghRepo;
+      u.role ??= "lineage";
+      if (u.role !== "lineage" && u.role !== "inspiration") {
+        throw new Error(
+          `upstream ${name}: invalid role "${u.role}" (must be "lineage" or "inspiration")`,
+        );
+      }
     }
   }
 

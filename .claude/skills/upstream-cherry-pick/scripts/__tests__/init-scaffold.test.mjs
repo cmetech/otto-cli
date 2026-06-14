@@ -34,9 +34,9 @@ test("nonInteractive writes config + state + creates labels", async () => {
     const state = JSON.parse(readFileSync(statePath, "utf-8"));
     assert.equal(state.upstreams["pi-dev"].lastAnalyzedCommit, "v0.75.4");
     assert.equal(state.upstreams["gsd-pi"].lastAnalyzedCommit, "v1.0.1");
-    // Labels: 23 create calls
+    // Labels: 27 create calls
     const createCalls = ghCalls.filter((a) => a[0] === "label" && a[1] === "create");
-    assert.equal(createCalls.length, 23);
+    assert.equal(createCalls.length, 27);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -120,6 +120,29 @@ test("returned paths match written files", async () => {
     assert.ok(existsSync(result.configPath), "configPath must exist");
     assert.ok(existsSync(result.statePath), "statePath must exist");
     assert.ok(result.labelsResult, "labelsResult must be present");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("nonInteractive seeds lineage roles and the three inspiration repos", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "ucp-init-"));
+  try {
+    const result = await initScaffold({ cwd: dir, nonInteractive: true, ghRunner: () => "" });
+    const cfg = JSON.parse(readFileSync(result.configPath, "utf-8"));
+    // Lineage repos carry an explicit role
+    assert.equal(cfg.upstreams["pi-dev"].role, "lineage");
+    assert.equal(cfg.upstreams["gsd-pi"].role, "lineage");
+    // Inspiration repos are registered, reference-only
+    assert.equal(cfg.upstreams["hermes-agent"].role, "inspiration");
+    assert.equal(cfg.upstreams["anton"].role, "inspiration");
+    assert.equal(cfg.upstreams["mempalace"].role, "inspiration");
+    // State seeds lineage commits only — inspiration repos are not audited
+    const state = JSON.parse(readFileSync(result.statePath, "utf-8"));
+    assert.ok(state.upstreams["pi-dev"]);
+    assert.ok(state.upstreams["gsd-pi"]);
+    assert.equal(state.upstreams["hermes-agent"], undefined);
+    assert.equal(state.upstreams["anton"], undefined);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

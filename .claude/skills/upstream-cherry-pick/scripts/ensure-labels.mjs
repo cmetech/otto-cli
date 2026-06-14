@@ -42,14 +42,19 @@ const LABEL_TAXONOMY = [
   { name: "status:in-plan", color: "a2eeef", description: "Port plan in progress" },
   { name: "status:in-progress", color: "1d76db", description: "Cherry-pick or port underway" },
   { name: "status:applied", color: "5319e7", description: "Cherry-pick or port applied" },
+  { name: "status:superseded", color: "cfd3d7", description: "Stale — reverted/closed upstream; do not port (Phase 6 sweep)" },
   // Tag
   { name: "claude-pickup", color: "7057ff", description: "Opt-in for autonomous Claude handling" },
+  // Alignment (OTTO-ALIGNMENT.md fit-check; feature candidates only — Phase 6 §3)
+  { name: "alignment:core", color: "0e8a16", description: "Advances the co-worker direction — port (OTTO-ALIGNMENT §5)" },
+  { name: "alignment:adjacent", color: "fbca04", description: "Useful but off the critical path — defer (OTTO-ALIGNMENT §5)" },
+  { name: "alignment:out-of-scope", color: "e11d21", description: "Coding-assistant-only or ethos-conflicting — surface for a human (OTTO-ALIGNMENT §5)" },
 ];
 
 // Sanity check at module load time — catches taxonomy drift
-if (LABEL_TAXONOMY.length !== 23) {
+if (LABEL_TAXONOMY.length !== 27) {
   throw new Error(
-    `LABEL_TAXONOMY must have exactly 23 entries, found ${LABEL_TAXONOMY.length}`,
+    `LABEL_TAXONOMY must have exactly 27 entries, found ${LABEL_TAXONOMY.length}`,
   );
 }
 

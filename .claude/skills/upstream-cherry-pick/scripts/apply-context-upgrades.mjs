@@ -15,11 +15,12 @@
  * Output: { severity, upgradeReason? }
  */
 
+import { isClosedAsUnwanted } from "../../_common/scripts/issue-state.mjs";
+
 const SECURITY_LABEL_RE = /^(security|cve|vulnerab)/i;
 const STABILITY_LABEL_RE = /^(regression|priority\/critical|p0|p1|severity:high|crash|data.loss|hotfix|backport)/i;
 const STABILITY_BODY_RE = /(production|users affected|blocks startup|unrecoverable|all users)/i;
 const BACKPORT_COMMENT_RE = /(backport to|backport this)/i;
-const SKIP_STATE_REASON_RE = /^(not.planned|wontfix|duplicate)/i;
 const BUG_LABEL_RE = /^bug/i;
 const ENHANCEMENT_LABEL_RE = /^enhancement/i;
 
@@ -110,11 +111,7 @@ export function applyContextUpgrades({ firstPass, prContext, issueContexts }) {
 
   // Rule 5 — SKIP when all linked issues are closed with not-planned/wontfix/duplicate
   if (issues.length > 0) {
-    const allSkippable = issues.every((issue) => {
-      const state = (issue.data?.state ?? "").toUpperCase();
-      const reason = issue.data?.stateReason ?? "";
-      return state === "CLOSED" && SKIP_STATE_REASON_RE.test(reason);
-    });
+    const allSkippable = issues.every(isClosedAsUnwanted);
     if (allSkippable) {
       const reason = issues[0].data?.stateReason ?? "CLOSED";
       return {

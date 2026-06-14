@@ -275,6 +275,7 @@ export async function initScaffold({
             ghRepo,
             branch,
             label: defaults.label,
+            role: defaults.role ?? "lineage",
           };
           stateUpstreams[name] = { lastAnalyzedCommit: startCommit };
         }

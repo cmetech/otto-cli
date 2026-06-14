@@ -50,6 +50,23 @@ export function extractSha(issue) {
   return fromTitle ? fromTitle[1].slice(0, 7) : null;
 }
 
+/**
+ * Resolve a git `--numstat` path field to its post-rename path. numstat renders
+ * renames as `old => new` or with a brace group `pre/{old => new}/post`; binary
+ * and normal rows pass through unchanged. Using the new path keeps the rewritten
+ * detector's `git log -- <files>` query pointed at paths that still exist.
+ */
+export function numstatNewPath(pathField) {
+  if (!pathField || !pathField.includes("=>")) return pathField;
+  const braced = pathField.match(/^(.*)\{(.*?) => (.*?)\}(.*)$/);
+  if (braced) {
+    const [, pre, , newMid, post] = braced;
+    return (pre + newMid.trim() + post).replace(/\/{2,}/g, "/");
+  }
+  const parts = pathField.split("=>");
+  return parts[parts.length - 1].trim();
+}
+
 /** Read the upstream name from the `upstream:<name>` label. */
 export function upstreamNameOf(issue) {
   for (const n of labelNames(issue.labels)) {
@@ -120,7 +137,11 @@ export async function sweepBacklog({
     } catch { /* sha not in repo — detectors just won't hit */ }
     try {
       const numstat = gitRunner(["-C", up.path, "show", sha, "--numstat", "--format="]);
-      files = numstat.split("\n").map((l) => l.trim().split("\t")[2]).filter(Boolean);
+      files = numstat
+        .split("\n")
+        .map((l) => l.trim().split("\t")[2])
+        .filter(Boolean)
+        .map(numstatNewPath);
     } catch { /* no files — rewritten won't hit */ }
 
     // upstream-closed: fetch the linked upstream issue contexts.

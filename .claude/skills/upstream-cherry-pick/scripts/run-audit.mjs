@@ -54,6 +54,7 @@ import { fileIssue } from "./file-issue.mjs";
 import { writeReport } from "./write-report.mjs";
 import { validateGuidance } from "./parse-guidance.mjs";
 import { parseStrategy } from "../../_common/scripts/fix-strategy.mjs";
+import { parseAlignment, isFeatureSeverity } from "../../_common/scripts/alignment.mjs";
 import { revalidateDoNotPort } from "./revalidate-do-not-port.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -125,6 +126,35 @@ function compileRules(notApplicable) {
     matchAny: r.matchAny && compileGroup(r.matchAny),
     matchAll: r.matchAll && compileGroup(r.matchAll),
   }));
+}
+
+// ─── role-aware upstream selection (Phase 6 §1) ───────────────────────────────
+
+/** Lineage repos only — inspiration repos are reference-only, never audited. */
+export function selectLineageNames(cfg) {
+  return Object.keys(cfg.upstreams).filter(
+    (n) => (cfg.upstreams[n].role ?? "lineage") === "lineage",
+  );
+}
+
+/** Throw if `name` is unknown or not a lineage (auditable) repo. */
+export function assertAuditable(cfg, name) {
+  const u = cfg.upstreams[name];
+  if (!u) {
+    throw new Error(`Unknown upstream "${name}". Known: ${Object.keys(cfg.upstreams).join(", ")}`);
+  }
+  const role = u.role ?? "lineage";
+  if (role !== "lineage") {
+    throw new Error(
+      `"${name}" is role:${role} (reference-only) — not audited or cherry-picked. ` +
+        `Lineage repos: ${selectLineageNames(cfg).join(", ")}`,
+    );
+  }
+}
+
+/** File-time alignment verdict for a candidate — feature severity only (§3.1). */
+export function resolveAlignment({ severity, guidanceText }) {
+  return isFeatureSeverity(severity) ? parseAlignment(guidanceText).alignment : null;
 }
 
 // ─── git helpers ─────────────────────────────────────────────────────────────
@@ -334,6 +364,10 @@ async function scanUpstream(name, upstream, cfg, ledger, compiledRubric, compile
       guidancePath,
       flags,
     });
+    const alignment = resolveAlignment({
+      severity: classification.severity,
+      guidanceText: implementationGuidance,
+    });
     const diff = flags.embedDiff ? readDiff(upstream.path, commit.sha) : null;
     const payload = buildIssuePayload({
       commit,
@@ -347,6 +381,7 @@ async function scanUpstream(name, upstream, cfg, ledger, compiledRubric, compile
       implementationGuidance,
       diff,
       strategy,
+      alignment,
     });
     if (!implementationGuidance) runData.unanalyzed = (runData.unanalyzed ?? 0) + 1;
 
@@ -457,11 +492,11 @@ async function main() {
     return;
   }
 
-  const names = only ? [only] : Object.keys(cfg.upstreams);
+  if (only) assertAuditable(cfg, only);
+  const names = only ? [only] : selectLineageNames(cfg);
   const manifests = {};
   for (const name of names) {
     const upstream = cfg.upstreams[name];
-    if (!upstream) throw new Error(`Unknown upstream "${name}". Known: ${Object.keys(cfg.upstreams).join(", ")}`);
 
     console.error(`\n=== ${name}${flags.manifest ? " (manifest)" : flags.dryRun ? " (dry-run)" : ""} ===`);
     const summary = await scanUpstream(name, upstream, cfg, ledger, compiledRubric, compiledRules, preflight, flags);

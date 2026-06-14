@@ -1,6 +1,48 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { selectActionableIssues, extractSha, upstreamNameOf, sweepBacklog } from "../sweep-backlog.mjs";
+import { selectActionableIssues, extractSha, upstreamNameOf, sweepBacklog, numstatNewPath } from "../sweep-backlog.mjs";
+
+test("numstatNewPath resolves git rename rows to the post-rename path", () => {
+  // normal + binary rows pass through unchanged
+  assert.equal(numstatNewPath("src/a.ts"), "src/a.ts");
+  assert.equal(numstatNewPath(""), "");
+  // simple rename
+  assert.equal(numstatNewPath("old.ts => new.ts"), "new.ts");
+  // braced rename with a common prefix and suffix
+  assert.equal(numstatNewPath("src/{old => new}/file.ts"), "src/new/file.ts");
+  // braced rename adding a directory (empty old segment)
+  assert.equal(numstatNewPath("src/{ => sub}/file.ts"), "src/sub/file.ts");
+  // braced rename removing a directory (empty new segment) collapses the slash
+  assert.equal(numstatNewPath("src/{old => }/file.ts"), "src/file.ts");
+});
+
+test("sweep passes post-rename paths to the rewritten detector", async () => {
+  const issues = [{
+    number: 30,
+    title: "[upstream/pi-dev] x [sha=cab1234]",
+    body: "[sha=cab1234]",
+    labels: [{ name: "upstream:pi-dev" }, { name: "type:port-required" }],
+  }];
+  const seenFileArgs = [];
+  const ghRunner = (args) => (args[1] === "list" ? JSON.stringify(issues) : "");
+  const gitRunner = (args) => {
+    const s = args.join(" ");
+    if (s.includes("--format=%s%n%b")) return "rename it\n\n\n";
+    if (s.includes("--numstat")) return "2\t1\tsrc/{old => new}/file.ts\n";
+    if (s.includes("--oneline")) { seenFileArgs.push(args.slice(args.indexOf("--") + 1)); return "later edit\n"; }
+    return "";
+  };
+  const res = await sweepBacklog({
+    cfg: {
+      targetRepo: "cmetech/otto-cli",
+      upstreams: { "pi-dev": { path: "../pi", ghRepo: "earendil-works/pi", role: "lineage" } },
+    },
+    ghRunner, gitRunner, fetchContext: async () => { throw new Error("x"); }, issueUpdater: () => ({}),
+  });
+  assert.equal(res.advisory.length, 1);
+  // the rewritten git-log query received the resolved new path, not the raw "old => new" string
+  assert.ok(seenFileArgs.flat().includes("src/new/file.ts"), `git log got: ${JSON.stringify(seenFileArgs)}`);
+});
 
 test("selectActionableIssues keeps port-required/cherry-pick-candidate and drops applied/superseded", () => {
   const issues = [

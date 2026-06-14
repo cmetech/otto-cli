@@ -11,6 +11,7 @@
  * --skip-guidance-check.
  */
 import { parseStrategy } from "../../_common/scripts/fix-strategy.mjs";
+import { parseAlignment } from "../../_common/scripts/alignment.mjs";
 
 /** The four required human sections (the strategy line is validated separately). */
 export const REQUIRED_SECTIONS = [
@@ -29,7 +30,7 @@ export const REQUIRED_SECTIONS = [
 export function validateGuidance(text, { path } = {}) {
   const at = path ? ` (${path})` : "";
   if (!text || !text.trim()) {
-    return { strategy: null, source: null, valid: false, errors: [`guidance missing or empty${at}`] };
+    return { strategy: null, source: null, alignment: null, valid: false, errors: [`guidance missing or empty${at}`] };
   }
 
   const { strategy, source } = parseStrategy(text);
@@ -49,5 +50,6 @@ export function validateGuidance(text, { path } = {}) {
     }
   }
 
-  return { strategy, source, valid: errors.length === 0, errors };
+  const { alignment } = parseAlignment(text);
+  return { strategy, source, alignment, valid: errors.length === 0, errors };
 }

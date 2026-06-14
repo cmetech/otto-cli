@@ -8,7 +8,8 @@
       "remoteUrl": "https://github.com/earendil-works/pi.git",
       "ghRepo": "earendil-works/pi",
       "branch": "main",
-      "label": "earendil-works/pi (pi-dev)"
+      "label": "earendil-works/pi (pi-dev)",
+      "role": "lineage"
     }
   },
   "issueFiling": {

@@ -586,3 +586,46 @@ test("invalid-but-truthy strategy renders no Fix strategy heading and no fix-str
   assert.ok(!labels.some((l) => l.startsWith("fix-strategy:")), `Got: ${labels}`);
   assert.equal(labels.length, 5, `Got: ${labels}`);
 });
+
+// ---------------------------------------------------------------------------
+// Alignment fit-check (Phase 6 §3) — feature-gated
+// ---------------------------------------------------------------------------
+
+test("feature candidate with alignment gets the alignment:* label + Alignment heading", () => {
+  const { body, labels } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("FEATURE"),
+    conflictRisk: makeRisk("NONE", "no pi paths"),
+    upstream,
+    ccUser: "@claude",
+    alignment: "adjacent",
+  });
+  assert.ok(labels.includes("alignment:adjacent"), `labels: ${labels}`);
+  assert.match(body, /## Alignment/);
+  assert.match(body, /alignment:adjacent/);
+  assert.match(body, /OTTO-ALIGNMENT\.md/);
+});
+
+test("non-feature candidate never gets an alignment label even if one is passed", () => {
+  const { body, labels } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("NICE_TO_HAVE_FIX"),
+    conflictRisk: makeRisk(),
+    upstream,
+    ccUser: "@claude",
+    alignment: "out-of-scope", // must be ignored — alignment is N/A for fixes
+  });
+  assert.ok(!labels.some((l) => l.startsWith("alignment:")), `labels: ${labels}`);
+  assert.doesNotMatch(body, /## Alignment/);
+});
+
+test("feature candidate without an alignment verdict renders no alignment label", () => {
+  const { labels } = buildIssuePayload({
+    commit: makeCommit(),
+    classification: makeClassification("FEATURE"),
+    conflictRisk: makeRisk(),
+    upstream,
+    ccUser: "@claude",
+  });
+  assert.ok(!labels.some((l) => l.startsWith("alignment:")), `labels: ${labels}`);
+});

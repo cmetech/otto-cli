@@ -31,12 +31,42 @@ const DEFAULT_UPSTREAMS = {
     ghRepo: "earendil-works/pi",
     branch: "main",
     label: "earendil-works/pi (pi-dev)",
+    role: "lineage",
   },
   "gsd-pi": {
     path: "../gsd-pi",
     ghRepo: "open-gsd/gsd-pi",
     branch: "main",
     label: "open-gsd/gsd-pi",
+    role: "lineage",
+  },
+};
+
+// Reference-only sibling repos (OTTO-ALIGNMENT.md §4): cloned locally so
+// subagents can read their source while DESIGNING a co-worker feature, but
+// NEVER audited and NEVER cherry-picked. ghRepo is registration-only (these are
+// never gh-queried). Anton is AGPL-3.0 — reimplement the concept, don't vendor.
+const DEFAULT_INSPIRATION = {
+  "hermes-agent": {
+    path: "../hermes-agent",
+    ghRepo: "inspiration/hermes-agent",
+    branch: "main",
+    label: "Nous Research / hermes-agent (inspiration)",
+    role: "inspiration",
+  },
+  "anton": {
+    path: "../anton",
+    ghRepo: "mindsdb/anton",
+    branch: "main",
+    label: "MindsDB / anton (inspiration — AGPL-3.0, reimplement)",
+    role: "inspiration",
+  },
+  "mempalace": {
+    path: "../mempalace",
+    ghRepo: "inspiration/mempalace",
+    branch: "main",
+    label: "mempalace (inspiration)",
+    role: "inspiration",
   },
 };
 
@@ -173,7 +203,7 @@ export async function initScaffold({
       version: 1,
       targetRepo: DEFAULT_TARGET_REPO,
       divergenceLedger: DEFAULT_DIVERGENCE_LEDGER,
-      upstreams: { ...DEFAULT_UPSTREAMS },
+      upstreams: { ...DEFAULT_UPSTREAMS, ...DEFAULT_INSPIRATION },
       issueFiling: DEFAULT_ISSUE_FILING,
       classifier: DEFAULT_CLASSIFIER,
       applicability: {
@@ -248,6 +278,12 @@ export async function initScaffold({
           };
           stateUpstreams[name] = { lastAnalyzedCommit: startCommit };
         }
+      }
+
+      // Always register the reference-only inspiration repos (not prompted —
+      // they are never audited; the user can delete entries from the config).
+      for (const [name, defaults] of Object.entries(DEFAULT_INSPIRATION)) {
+        upstreams[name] = { ...defaults };
       }
 
       // Ask whether to add more upstreams

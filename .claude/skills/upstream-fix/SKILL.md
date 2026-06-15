@@ -55,10 +55,26 @@ of issues*. Therefore:
 ## Phase A — Plan (deterministic, up front)
 
 **`--single-issue` mode override.** When `--single-issue <N>` is set,
-select-issues filters to exactly that number; plan-lanes returns one lane
-with one issue; worktree-setup uses `singleIssueBranch(N, sha)` from
-`single-issue-mode.mjs`; integration uses `singleIssueIntegrationBranch`
-(same branch); PR title uses `singleIssuePrTitle`.
+select-issues filters to exactly that number (pass `--issues <N>`; there is
+no `--single-issue` flag on select-issues itself); plan-lanes returns one
+lane with one issue; integration uses `singleIssueIntegrationBranch` (same
+branch); PR title uses `singleIssuePrTitle`.
+
+**Collision-safety (parallel lanes).** When the swarm runs many
+`--single-issue` lanes at once, plan-lanes gives every lane `id=1`, so any
+artifact or worktree keyed on lane id or bare `$DATE` collides across lanes.
+Therefore in `--single-issue` mode you MUST namespace **per issue**, not per
+date:
+- **Worktree/branch:** call worktree-setup in single-issue mode —
+  `node .../worktree-setup.mjs --issue <N> --sha <sha> main` — which names the
+  worktree `.worktrees/upstream-fix-issue-<N>` and the branch
+  `singleIssueBranch(<N>, <sha>)` (`fix/upstream-issue-<N>-<sha>`). Do NOT pass
+  a positional lane id in this mode.
+- **Artifacts:** suffix every dated artifact path with `-issue-<N>` —
+  `$DIR/$DATE-issue-<N>-selected-issues.json`, `…-issue-<N>-lanes.json`,
+  `…-issue-<N>-run-state.json`, and the gate-logs subdir
+  `$DIR/$DATE-issue-<N>-gate-logs/`. This is what keeps two same-day lanes from
+  clobbering each other's selection/ledger state (see #384).
 
 1. **Resolve the filter** from the invocation (e.g. `--severity critical-stability`,
    `--issues 62,63`, `--all`). Set `DATE=$(date +%F)` and

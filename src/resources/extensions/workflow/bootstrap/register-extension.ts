@@ -29,6 +29,10 @@ import { BRAND } from "../strings.js";
 export { writeCrashLog } from "./crash-log.js";
 
 export function handleRecoverableExtensionProcessError(err: Error): boolean {
+  if (err.message.includes("ProcessTransport is not ready for writing")) {
+    process.stderr.write(`[otto] swallowed dead transport control write: ${err.message}\n`);
+    return true;
+  }
   if ((err as NodeJS.ErrnoException).code === "EPIPE") {
     const stdoutGone = process.stdout.destroyed || process.stdout.writableEnded;
     if (stdoutGone) {

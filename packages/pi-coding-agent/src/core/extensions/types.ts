@@ -1476,7 +1476,7 @@ export interface ExtensionAPI {
 	sendMessage<T = unknown>(
 		message: Pick<CustomMessage<T>, "customType" | "content" | "display" | "details">,
 		options?: { triggerTurn?: boolean; deliverAs?: "steer" | "followUp" | "nextTurn" },
-	): void;
+	): Promise<void>;
 
 	/**
 	 * Send a user message to the agent. Always triggers a turn.
@@ -1764,7 +1764,7 @@ export interface ExtensionActions {
 	sendMessage: <T = unknown>(
 		message: Pick<CustomMessage<T>, "customType" | "content" | "display" | "details">,
 		options?: { triggerTurn?: boolean; deliverAs?: "steer" | "followUp" | "nextTurn" },
-	) => void;
+	) => Promise<void>;
 	sendUserMessage: (
 		content: string | (TextContent | ImageContent)[],
 		options?: { deliverAs?: "steer" | "followUp" },

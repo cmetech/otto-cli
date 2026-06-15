@@ -51,7 +51,8 @@ bun.lock
 
 # ── Tarballs ──
 *.tgz
-# Allow the npm pack output for the runtime-local Dockerfile target,
-# which is exercised by tests/e2e/docker/runtime.e2e.test.ts.
-!gsd-pi-*.tgz
-!opengsd-gsd-pi-*.tgz
+# Allow the npm pack output for the runtime-local Dockerfile target, which is
+# exercised by tests/e2e/docker/runtime.e2e.test.ts. The package is @cmetech/otto,
+# so `npm pack` produces cmetech-otto-<version>.tgz (the old gsd-pi-* names are
+# dead post-fork).
+!cmetech-otto-*.tgz

@@ -36,6 +36,7 @@ import { debugLog } from "../debug-logger.js";
 import { resolveWorktreeProjectRoot, normalizeWorktreePathForCompare } from "../worktree-root.js";
 import { classifyProject } from "../detection.js";
 import { MergeConflictError } from "../git-service.js";
+import type { DispatchAction } from "../auto-dispatch.js";
 import { setCurrentPhase, clearCurrentPhase } from "../../shared/phase-state.js";
 import { pauseAutoForProviderError } from "../provider-error-pause.js";
 import { resumeAutoAfterProviderDelay } from "../bootstrap/provider-error-resume.js";
@@ -1380,6 +1381,13 @@ export async function runPreDispatch(
 
 // ─── runDispatch ──────────────────────────────────────────────────────────────
 
+function isUnhandledPhaseWarning(dispatchResult: DispatchAction): dispatchResult is Extract<DispatchAction, { action: "stop" }> {
+  return dispatchResult.action === "stop" &&
+    dispatchResult.level === "warning" &&
+    dispatchResult.matchedRule === "<no-match>" &&
+    /^Unhandled phase "/.test(dispatchResult.reason);
+}
+
 /**
  * Phase 3: Dispatch resolution — resolve next unit, stuck detection, pre-dispatch hooks.
  * Returns break/continue to control the loop, or next with IterationData on success.
@@ -1408,7 +1416,7 @@ export async function runDispatch(
       }) ? "true" : "false";
 
   debugLog("autoLoop", { phase: "dispatch-resolve", iteration: ic.iteration });
-  const dispatchResult = await deps.resolveDispatch({
+  let dispatchResult = await deps.resolveDispatch({
     basePath: s.basePath,
     mid,
     midTitle,
@@ -1420,6 +1428,34 @@ export async function runDispatch(
     sessionProvider: ctx.model?.provider,
     modelRegistry: ctx.modelRegistry as MinimalModelRegistry | undefined,
   });
+  // An "Unhandled phase" warning can be produced from a stale/cached state
+  // snapshot (e.g. after a reassessment rewrote the roadmap). Before pausing,
+  // invalidate caches, re-derive fresh state, and retry the resolve once — only
+  // pause if the fresh state still has no matching dispatch rule. See #350.
+  if (isUnhandledPhaseWarning(dispatchResult)) {
+    deps.invalidateAllCaches();
+    const freshState = await deps.deriveState(s.canonicalProjectRoot);
+    const freshMid = freshState.activeMilestone?.id ?? mid;
+    const freshMidTitle = freshState.activeMilestone?.title ?? freshMid ?? midTitle;
+    debugLog("autoLoop", {
+      phase: "dispatch-unhandled-phase-retry",
+      iteration: ic.iteration,
+      stalePhase: state.phase,
+      freshPhase: freshState.phase,
+    });
+    dispatchResult = await deps.resolveDispatch({
+      basePath: s.basePath,
+      mid: freshMid,
+      midTitle: freshMidTitle,
+      state: freshState,
+      prefs,
+      session: s,
+      structuredQuestionsAvailable,
+      sessionContextWindow: ctx.model?.contextWindow,
+      sessionProvider: ctx.model?.provider,
+      modelRegistry: ctx.modelRegistry as MinimalModelRegistry | undefined,
+    });
+  }
 
   if (dispatchResult.action === "stop") {
     deps.emitJournalEvent({ ts: new Date().toISOString(), flowId: ic.flowId, seq: ic.nextSeq(), eventType: "dispatch-stop", rule: dispatchResult.matchedRule, data: { reason: dispatchResult.reason } });

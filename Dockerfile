@@ -76,15 +76,15 @@ RUN npm install -g --ignore-scripts /tmp/otto.tgz \
     && rm /tmp/otto.tgz \
     && echo "--- /usr/local/bin ---" \
     && ls -la /usr/local/bin | grep -i otto || echo "(no otto entries in /usr/local/bin)" \
-    && echo "--- /usr/local/lib/node_modules/@openotto/otto ---" \
-    && ls -la /usr/local/lib/node_modules/@openotto/otto 2>/dev/null | head -10 \
-    && test -f /usr/local/lib/node_modules/@openotto/otto/dist/loader.js \
-    && node /usr/local/lib/node_modules/@openotto/otto/dist/loader.js --version
+    && echo "--- /usr/local/lib/node_modules/@cmetech/otto ---" \
+    && ls -la /usr/local/lib/node_modules/@cmetech/otto 2>/dev/null | head -10 \
+    && test -f /usr/local/lib/node_modules/@cmetech/otto/dist/loader.js \
+    && node /usr/local/lib/node_modules/@cmetech/otto/dist/loader.js --version
 
 WORKDIR /workspace
 
 # Invoke the loader directly. Avoids any dependency on the npm bin shim
 # being placed correctly in /usr/local/bin (which is platform/prefix
 # dependent and has been the source of spurious exit-127 failures).
-ENTRYPOINT ["node", "/usr/local/lib/node_modules/@openotto/otto/dist/loader.js"]
+ENTRYPOINT ["node", "/usr/local/lib/node_modules/@cmetech/otto/dist/loader.js"]
 CMD ["--help"]

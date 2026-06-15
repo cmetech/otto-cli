@@ -246,7 +246,11 @@ async function installChromium() {
   startSpinner('Installing Chromium...                    ')
   try {
     const result = await new Promise((res) => {
-      execCb('npx playwright install chromium', { timeout: 300_000 }, (error, stdout, stderr) => {
+      // Install BOTH the full Chromium and the chrome-headless-shell. Playwright
+      // 1.49+ treats them as separate downloads, and `chromium.launch({ headless:
+      // true })` (used by the browser-tools feature via ensureBrowser) needs the
+      // headless shell — installing only `chromium` leaves it missing on Linux.
+      execCb('npx playwright install chromium chromium-headless-shell', { timeout: 300_000 }, (error, stdout, stderr) => {
         res({ ok: !error, stdout: stdout || '', stderr: stderr || '', error })
       })
     })
@@ -258,7 +262,7 @@ async function installChromium() {
         .filter(l => !l.includes('npm warn') && !l.includes('npm WARN') && l.trim())
         .slice(-3)
         .join('; ')
-      printWarn('Chromium', meaningful || 'install failed — run npx playwright install chromium')
+      printWarn('Chromium', meaningful || 'install failed — run npx playwright install chromium chromium-headless-shell')
       return
     }
 

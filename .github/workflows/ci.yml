@@ -213,14 +213,6 @@ jobs:
         run: npm ci
 
       - uses: ./.github/actions/restore-ci-build-artifacts
-
-      # browser-tools integration tests launch a real headless Chromium via
-      # `chromium.launch({ headless: true })`, which uses Playwright's separate
-      # `chrome-headless-shell` binary. The npm postinstall installs the full
-      # Chromium but not the headless shell, so install it explicitly here.
-      - name: Install Playwright headless Chromium
-        run: npx playwright install --with-deps chromium
-
       - name: Run integration tests
         run: npm run test:integration
 

@@ -91,3 +91,34 @@ describe("DefaultPackageManager OTTO package contract", () => {
 		assert.ok(resolved.themes.some((r) => r.path.endsWith("mixed/themes/mixed-theme.json")));
 	});
 });
+
+describe("DefaultPackageManager npm install args", () => {
+	it("disables peer resolution for managed npm installs (#45)", async (t) => {
+		const { cwd, agentDir } = makeDirs("npm-install-args", t);
+		const settings = SettingsManager.create(cwd, agentDir);
+		const manager = new DefaultPackageManager({ cwd, agentDir, settingsManager: settings });
+
+		// runCommand / installNpm are private; expose typed signatures for the
+		// mock + direct call so we can assert install args without spawning npm.
+		type Internal = {
+			runCommand: (command: string, args: string[], options?: { cwd?: string; interactive?: boolean }) => Promise<void>;
+			installNpm: (s: { type: "npm"; spec: string; name: string; pinned: boolean }, scope: string, temporary: boolean) => Promise<void>;
+		};
+		const internal = manager as unknown as Internal;
+
+		const calls: { command: string; args: string[] }[] = [];
+		t.mock.method(internal, "runCommand", async (command: string, args: string[]) => {
+			calls.push({ command, args });
+		});
+
+		await internal.installNpm({ type: "npm", spec: "@acme/otto-demo", name: "@acme/otto-demo", pinned: false }, "user", false);
+
+		assert.equal(calls.length, 1);
+		assert.equal(calls[0]!.command, "npm");
+		assert.deepEqual(calls[0]!.args.slice(0, 2), ["install", "@acme/otto-demo"]);
+		assert.ok(
+			calls[0]!.args.includes("--legacy-peer-deps"),
+			`managed pi extensions resolve host APIs via loader aliases — peer resolution must be disabled. Got: ${calls[0]!.args.join(" ")}`,
+		);
+	});
+});

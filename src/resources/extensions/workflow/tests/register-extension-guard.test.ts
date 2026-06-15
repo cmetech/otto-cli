@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { existsSync, readdirSync, rmSync } from "node:fs";
+import { existsSync, rmSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 
 import { handleRecoverableExtensionProcessError } from "../bootstrap/register-extension.ts";
@@ -94,7 +94,7 @@ test("handleRecoverableExtensionProcessError leaves unrelated errors unhandled",
   assert.equal(handled, false);
 });
 
-test("handleRecoverableExtensionProcessError swallows EPIPE, warns, and writes crash log when stdout is alive", () => {
+test("handleRecoverableExtensionProcessError swallows EPIPE without writing a crash log", () => {
   const tmpHome = join(tmpdir(), `gsd-epipe-test-${randomUUID()}`);
   const origHome = process.env.OTTO_HOME;
   process.env.OTTO_HOME = tmpHome;
@@ -115,9 +115,9 @@ test("handleRecoverableExtensionProcessError swallows EPIPE, warns, and writes c
     );
     assert.equal(handled, true);
     assert.match(stderr, /swallowed EPIPE/);
+    assert.equal(stderr.includes("crash"), false);
     const crashDir = join(tmpHome, "crash");
-    assert.equal(existsSync(crashDir), true);
-    assert.equal(readdirSync(crashDir).some((f) => f.endsWith(".log")), true);
+    assert.equal(existsSync(crashDir), false);
   } finally {
     process.stderr.write = originalWrite;
     process.env.OTTO_HOME = origHome;

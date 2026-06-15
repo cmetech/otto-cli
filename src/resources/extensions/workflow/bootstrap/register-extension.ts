@@ -30,13 +30,12 @@ export { writeCrashLog } from "./crash-log.js";
 
 export function handleRecoverableExtensionProcessError(err: Error): boolean {
   if ((err as NodeJS.ErrnoException).code === "EPIPE") {
-    writeCrashLog(err, "EPIPE");
     const stdoutGone = process.stdout.destroyed || process.stdout.writableEnded;
     if (stdoutGone) {
       process.exit(0);
     }
     process.stderr.write(
-      `[otto] swallowed EPIPE (syscall=${(err as NodeJS.ErrnoException).syscall ?? "?"}); see ~/.otto/workflow/crash/ for details\n`,
+      `[otto] swallowed EPIPE (syscall=${(err as NodeJS.ErrnoException).syscall ?? "?"})\n`,
     );
     return true;
   }

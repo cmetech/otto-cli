@@ -76,6 +76,17 @@ date:
   `$DIR/$DATE-issue-<N>-gate-logs/`. This is what keeps two same-day lanes from
   clobbering each other's selection/ledger state (see #384).
 
+**Gate completion (no premature exit).** A `--single-issue` lane MUST run every
+gate — regression (fails-before/passes-after), build, targeted, **full suite**,
+and the **independent reviewer** — to completion *in-process* before opening the
+PR and emitting its result. NEVER background a gate (e.g. spawn a detached suite
+run) and then exit/report while it is still running: the lane can terminate with
+gates incomplete, leaving an un-pushed commit and a misleading "done" signal
+(observed 2026-06-15 — a lane reported "monitors armed, waiting" then died
+before reviewer + PR-open). The final report's `OUTCOME` and the run-state's
+`finalSuite`/`reviewer` fields must reflect gates that **actually finished**, not
+gates still in flight. PR-open is the last step, after all gates are green.
+
 1. **Resolve the filter** from the invocation (e.g. `--severity critical-stability`,
    `--issues 62,63`, `--all`). Set `DATE=$(date +%F)` and
    `DIR=.planning/upstream-fixes`.

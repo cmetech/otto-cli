@@ -1270,6 +1270,8 @@ test("hasImplementationArtifacts returns unknown for empty integration self-diff
 test("hasImplementationArtifacts uses milestone path history instead of rolling depth (#4699)", () => {
   const base = makeGitBase();
   try {
+    // Run on a milestone branch so the branch diff is non-empty on CI.
+    execFileSync("git", ["checkout", "-b", "milestone/M001"], { cwd: base, stdio: "ignore" });
     mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
     mkdirSync(join(base, "src"), { recursive: true });
     writeFileSync(join(base, "src", "feature.ts"), "export function feature() {}");
@@ -1286,6 +1288,35 @@ test("hasImplementationArtifacts uses milestone path history instead of rolling 
 
     const result = hasImplementationArtifacts(base, "M001");
     assert.equal(result, "present", "milestone evidence should not age out after 200 unrelated commits");
+  } finally {
+    cleanup(base);
+  }
+});
+
+test("hasImplementationArtifacts survives milestone-history git log output exceeding the default 1MB buffer (#352)", () => {
+  // Regression for the unbounded milestone-history scan: the `git log` that
+  // collects milestone-tagged commit bodies must not blow the child-process
+  // stdout buffer. Node's execFileSync default maxBuffer is 1MB; a milestone
+  // commit whose message body exceeds that overflows the scan, which then
+  // silently fails (ok:false) and milestone evidence reports as absent. The
+  // GIT_LOG_MAX_BUFFER (16MB) guard keeps the scan honest.
+  const base = makeGitBase();
+  try {
+    mkdirSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks"), { recursive: true });
+    mkdirSync(join(base, "src"), { recursive: true });
+    writeFileSync(join(base, "src", "feature.ts"), "export function feature() {}");
+    writeFileSync(join(base, ".otto/workflow", "milestones", "M001", "slices", "S01", "tasks", "T01-SUMMARY.md"), "# Summary");
+    execFileSync("git", ["add", "."], { cwd: base, stdio: "ignore" });
+    // ~1.3MB commit body — comfortably over the 1MB default execFileSync buffer
+    // and under the 16MB guard, so it only succeeds once maxBuffer is raised.
+    // Written to a file and passed via `-F` to avoid the OS arg-size limit.
+    const bigBody = "x".repeat(1_300_000);
+    const msgFile = join(base, "commit-msg.txt");
+    writeFileSync(msgFile, `feat: milestone implementation\n\nOTTO-Task: S01/T01\n\n${bigBody}`);
+    execFileSync("git", ["commit", "-F", msgFile], { cwd: base, stdio: "ignore" });
+
+    const result = hasImplementationArtifacts(base, "M001");
+    assert.equal(result, "present", "milestone-history scan must tolerate git log output larger than the default 1MB buffer");
   } finally {
     cleanup(base);
   }

@@ -32,6 +32,7 @@ import { extractSubagentAgentClasses } from "./subagent-input.js";
 import { approvalGateIdForUnit, isExplicitApprovalResponse, shouldPauseForUserApprovalQuestion } from "../user-input-boundary.js";
 import { resolveSkillManifest } from "../skill-manifest.js";
 import { getGuidedUnitContext } from "../guided-unit-context.js";
+import { detectNewSkills, formatSkillsXml, hasSkillSnapshot } from "../skill-discovery.js";
 
 let approvalQuestionAbortInFlight = false;
 
@@ -599,9 +600,23 @@ export function registerHooks(
       updateSnapshot(null);
     }
 
+    // When there is no project .otto/workflow root, buildBeforeAgentStartResult
+    // returns undefined — but that path also composes the discovered-skill block
+    // (newSkillsBlock) into its system prompt. Materialize that fallback here so
+    // skills discovered mid auto-mode survive even without a project workflow
+    // root. Mirrors system-context.ts's `formatSkillsXml(detectNewSkills())`. (#108)
+    let discoveredSkillsBase: string | undefined;
+    if (!workflowResult && hasSkillSnapshot()) {
+      const newSkills = detectNewSkills();
+      if (newSkills.length > 0) {
+        discoveredSkillsBase = `${event.systemPrompt}${formatSkillsXml(newSkills)}`;
+      }
+    }
+
     // Chain ecosystem handlers using pi's runner.ts chaining protocol:
     // each handler sees the systemPrompt mutated by prior handlers.
-    let currentSystemPrompt = workflowResult?.systemPrompt ?? event.systemPrompt;
+    let currentSystemPrompt =
+      workflowResult?.systemPrompt ?? discoveredSkillsBase ?? event.systemPrompt;
     // `any` because pi's BeforeAgentStartEventResult.message uses an internal
     // CustomMessage type that's not re-exported (see ecosystem/otto-extension-api.ts).
     let lastMessage: any = workflowResult?.message;

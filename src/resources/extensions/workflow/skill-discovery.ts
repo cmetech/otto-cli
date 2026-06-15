@@ -12,9 +12,19 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 
-/** Skills directories — skills.sh ecosystem + Claude Code official */
-const SKILLS_DIR = join(homedir(), ".agents", "skills");
-const CLAUDE_SKILLS_DIR = join(homedir(), ".claude", "skills");
+/**
+ * Skills directories — skills.sh ecosystem + Claude Code official.
+ * Resolved lazily (per call) rather than at module load so the home directory
+ * is read from the live environment. Module-load resolution froze the paths to
+ * whatever HOME was at import time, which broke discovery when HOME changes
+ * during a process (and made the behaviour untestable). (#108)
+ */
+function skillsDir(): string {
+  return join(homedir(), ".agents", "skills");
+}
+function claudeSkillsDir(): string {
+  return join(homedir(), ".claude", "skills");
+}
 
 export interface DiscoveredSkill {
   name: string;
@@ -112,8 +122,8 @@ function listSkillDirsFrom(dir: string): string[] {
 
 function listSkillDirs(): string[] {
   const names = new Set<string>();
-  for (const name of listSkillDirsFrom(SKILLS_DIR)) names.add(name);
-  for (const name of listSkillDirsFrom(CLAUDE_SKILLS_DIR)) names.add(name);
+  for (const name of listSkillDirsFrom(skillsDir())) names.add(name);
+  for (const name of listSkillDirsFrom(claudeSkillsDir())) names.add(name);
   return [...names];
 }
 
@@ -141,7 +151,7 @@ function parseSkillFrontmatter(path: string): { name?: string; description?: str
 }
 
 function resolveSkillMdPath(skillName: string): string | null {
-  for (const dir of [SKILLS_DIR, CLAUDE_SKILLS_DIR]) {
+  for (const dir of [skillsDir(), claudeSkillsDir()]) {
     const candidate = join(dir, skillName, "SKILL.md");
     if (existsSync(candidate)) return candidate;
   }

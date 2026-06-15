@@ -1200,7 +1200,10 @@ export class DefaultPackageManager implements PackageManager {
 	): Promise<void> {
 		const installRoot = this.getNpmInstallRoot(scope, temporary);
 		this.ensureNpmProject(installRoot);
-		await this.runCommand("npm", ["install", source.spec, "--prefix", installRoot], { interactive });
+		// Managed pi extensions resolve host pi APIs via loader aliases, so npm
+		// must not try to install/solve their `@earendil-works/pi-*` (or
+		// otto-equivalent) peer deps — disable peer resolution. (upstream 15f1dea)
+		await this.runCommand("npm", ["install", source.spec, "--prefix", installRoot, "--legacy-peer-deps"], { interactive });
 	}
 
 	private async uninstallNpm(

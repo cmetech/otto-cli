@@ -55,4 +55,13 @@ describe("isContextOverflow", () => {
 
 		assert.equal(isContextOverflow(message, 200000), false);
 	});
+
+	test("detects OpenRouter/Poolside maximum allowed input length errors (#1)", () => {
+		const message = makeAssistantMessage({
+			errorMessage:
+				"Provider returned error: Input length 131393 exceeds the maximum allowed input length of 131040 tokens.",
+		});
+
+		assert.equal(isContextOverflow(message, 131072), true);
+	});
 });

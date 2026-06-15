@@ -3,7 +3,9 @@ verdict: manual-port
 # 15f1dea — fix(coding-agent): disable managed extension peer resolution [CRITICAL]
 
 ## Target file(s)
-packages/pi-coding-agent/src/core/package-manager.ts (test: packages/pi-coding-agent/test/package-manager.test.ts)
+
+- `packages/pi-coding-agent/src/core/package-manager.ts`
+- `packages/pi-coding-agent/test/package-manager.test.ts`
 
 ## Divergence
 Diverged. Upstream centralizes install args in a `getNpmInstallArgs(specs, installRoot)` helper with bun/pnpm/npm branches; otto-cli has NO such method and NO multi-package-manager branching. otto-cli's `installNpm` (line ~1203) issues a single inline `npm install <spec> --prefix <installRoot>` with no `--legacy-peer-deps`. The upstream patch context won't apply — port the intent by hand.

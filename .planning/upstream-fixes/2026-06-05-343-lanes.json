@@ -1,0 +1,14 @@
+{
+  "lanes": [
+    {
+      "id": 1,
+      "issues": [
+        "343"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/bootstrap/crash-log.ts",
+        "src/resources/extensions/workflow/tests/crash-handler-secondary.test.ts"
+      ]
+    }
+  ]
+}

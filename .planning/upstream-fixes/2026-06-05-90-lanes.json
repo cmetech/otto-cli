@@ -1,0 +1,14 @@
+{
+  "lanes": [
+    {
+      "id": 1,
+      "issues": [
+        "90"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/worktree-state-projection.ts",
+        "src/resources/extensions/workflow/tests/worktree-state-projection.test.ts"
+      ]
+    }
+  ]
+}

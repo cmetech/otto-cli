@@ -1,0 +1,2018 @@
+[
+  {
+    "sha": "6c32ea4",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: sync engine package lockfile entries"
+  },
+  {
+    "sha": "6cddb44",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: wait for npm release tarball propagation"
+  },
+  {
+    "sha": "4ba1821",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: stabilize pack install integration test"
+  },
+  {
+    "sha": "138c104",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: publish prod native packages inline"
+  },
+  {
+    "sha": "0af8f0d",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: project root artifacts into worktrees"
+  },
+  {
+    "sha": "494e759",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: avoid root auto-commit during milestone recovery"
+  },
+  {
+    "sha": "0cf9338",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: avoid root auto-commit during milestone recovery"
+  },
+  {
+    "sha": "9171fc3",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: project root artifacts into worktrees"
+  },
+  {
+    "sha": "9a20e26",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(mcp): recover missing status and gate args"
+  },
+  {
+    "sha": "3166fca",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: preserve aliases in full tools mode"
+  },
+  {
+    "sha": "8aaf7fa",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): sync marker after state recovery"
+  },
+  {
+    "sha": "42290ba",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: preserve marker identity with repo metadata"
+  },
+  {
+    "sha": "83f54b1",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: ignore stale gsd identity markers"
+  },
+  {
+    "sha": "9b7f522",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): log repo identity remote failures"
+  },
+  {
+    "sha": "4619cd4",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): retry missing complete-slice replan artifact"
+  },
+  {
+    "sha": "6bef491",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): ignore nested SvelteKit types imports"
+  },
+  {
+    "sha": "2c830cd",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): Verification pause message hides actual failing check auto-mode post-exec pause message now surfaces the actual failing check category/target/message."
+  },
+  {
+    "sha": "e64a15e",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): SvelteKit './$types' imports falsely fail post-exec checks import-resolution post-exec checks now skip SvelteKit `./$types` generated modules."
+  },
+  {
+    "sha": "746d2d0",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): refresh reconciliation blocker snapshot"
+  },
+  {
+    "sha": "3d12ad5",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: fail closed on mixed persistent drift blockers"
+  },
+  {
+    "sha": "c7c5236",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): preserve drift blockers and orchestration retries"
+  },
+  {
+    "sha": "1d3af22",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: clear verification retry after closed dispatch skip"
+  },
+  {
+    "sha": "3bd7e05",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: add slice drift repair guidance"
+  },
+  {
+    "sha": "c5057c9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): prioritize reconciliation blockers"
+  },
+  {
+    "sha": "526ed30",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): Auto-mode stuck-loop re-dispatches already-completed execute-task units"
+  },
+  {
+    "sha": "8dd6272",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: preserve discovered skill prompt fallback"
+  },
+  {
+    "sha": "790d022",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: surface new skills when catalog reload fails"
+  },
+  {
+    "sha": "00dc06b",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: pause on orchestration drift errors"
+  },
+  {
+    "sha": "e723617",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: await extension sendMessage turns"
+  },
+  {
+    "sha": "36aab23",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(issue): [Bug]: Discord invite expired in readme and via bot"
+  },
+  {
+    "sha": "f14fe00",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: report terminal drift as blockers"
+  },
+  {
+    "sha": "49d3fc9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): resolve worktree registry root from checkout"
+  },
+  {
+    "sha": "9502332",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): Pytest command runs from wrong cwd in monorepo subproject setup corrected repository root resolution so verification executes in the intended subproject cwd."
+  },
+  {
+    "sha": "b1202a5",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(auto): avoid provider false positives from zero-tool prose"
+  },
+  {
+    "sha": "491ace3",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi-ai): remove duplicate response id normalization"
+  },
+  {
+    "sha": "8bf3530",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): complete-slice retries forever when gsd_replan_slice is the correct outcome"
+  },
+  {
+    "sha": "ad881f3",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): align drift checks for reopened artifacts"
+  },
+  {
+    "sha": "d8848f8",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): allow hook retries after finalization"
+  },
+  {
+    "sha": "7b944da",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(issue): fix(pi-ai): ensure unique OpenAI Responses message ids after cross-model thinking downgrade"
+  },
+  {
+    "sha": "a69a6e6",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi-ai): keep Bedrock lifecycle test out of src"
+  },
+  {
+    "sha": "1666efb",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): align reopen drift checks"
+  },
+  {
+    "sha": "cdb84a5",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): clear auto skill visibility after units"
+  },
+  {
+    "sha": "769998a",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): dedupe provider error guards"
+  },
+  {
+    "sha": "5d3c33d",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): [Bug]: retry_on post-unit hook stops auto-mode when same execute-task is re-dispatched"
+  },
+  {
+    "sha": "93b122d",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: preserve hook model overrides in orchestrator path"
+  },
+  {
+    "sha": "946baa7",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: align GSD drift artifact resolution"
+  },
+  {
+    "sha": "2e279e8",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): refresh skill discovery from disk"
+  },
+  {
+    "sha": "62edd1a",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: suppress missing origin repo identity warning"
+  },
+  {
+    "sha": "5de837f",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(issue): chore(pi-ai): regenerate Bedrock model registry for Opus 4.8 + port lifecycle validation test"
+  },
+  {
+    "sha": "3590fda",
+    "severity": "CRITICAL_SECURITY",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): UOK orchestrator bypasses pre_dispatch_hooks — policy injection never fires"
+  },
+  {
+    "sha": "f01c6f2",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): discuss-slice: gsd_summary_save not found — missing entry in AUTO_UNIT_SCOPED_TOOLS"
+  },
+  {
+    "sha": "3f5e830",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): Project with configured remote falls into first-time-init: getRemoteUrl() swallows transient git failures, flipping the identity hash"
+  },
+  {
+    "sha": "b8f0178",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): discardMilestone silently skips DB cleanup when MCP server holds WAL connection"
+  },
+  {
+    "sha": "ee99e91",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: avoid mocked timer in rate limit test"
+  },
+  {
+    "sha": "caf3b51",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: guard gsd drift recovery"
+  },
+  {
+    "sha": "97d4ddb",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): Zero-tool-call retries spin on provider error messages zero-tool-call completions with transient provider/rate-limit assistant messages now pause with backoff/auto-resume instead of immediate retry."
+  },
+  {
+    "sha": "e6fe6a6",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): reserve dialog frame rows in overlays"
+  },
+  {
+    "sha": "469bdcc",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: add scrolling to GSD dialogs"
+  },
+  {
+    "sha": "098b1ca",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): unify slash dialog borders"
+  },
+  {
+    "sha": "d01b984",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: remove TUI assistant background"
+  },
+  {
+    "sha": "f444bfb",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: ignore CLI auth sentinels in doctor routes"
+  },
+  {
+    "sha": "80fcfb5",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: enforce CLI readiness for external providers"
+  },
+  {
+    "sha": "319751c",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: check Google CLI provider binaries in doctor"
+  },
+  {
+    "sha": "71369f9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: gate all stranded work during auto bootstrap"
+  },
+  {
+    "sha": "b723db3",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: honor stranded work recovery gates"
+  },
+  {
+    "sha": "8f7f70a",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: block closeout resolution when git status is unavailable"
+  },
+  {
+    "sha": "3860c0c",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): allow setup flows outside git repos"
+  },
+  {
+    "sha": "e2544a9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(extensions): harden native tool edge cases"
+  },
+  {
+    "sha": "ddf34c0",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: align pnpm execpath detection"
+  },
+  {
+    "sha": "b8b6b33",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: tighten pnpm install detection"
+  },
+  {
+    "sha": "6b378c3",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: tighten pnpm install path detection"
+  },
+  {
+    "sha": "f696baf",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: collapse interactive tool output by default"
+  },
+  {
+    "sha": "16ce473",
+    "severity": "FEATURE",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "feat(gsd): add opt-in local notification bell"
+  },
+  {
+    "sha": "3fadba9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: preserve hook preference file precedence"
+  },
+  {
+    "sha": "257c577",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(web): avoid phantom SSE shutdown on beforeExit"
+  },
+  {
+    "sha": "37af7ad",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): repair dist-test node_modules for coverage"
+  },
+  {
+    "sha": "784be52",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(publish): remove @gsd/* from root dependencies to fix EUNSUPPORTEDPROTOCOL on install"
+  },
+  {
+    "sha": "85a4cb0",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: align shell pack validation daemon checks"
+  },
+  {
+    "sha": "aa77e48",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: validate opengsd external deps"
+  },
+  {
+    "sha": "587d2bb",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: harden npm pack validation"
+  },
+  {
+    "sha": "306f7b9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(publish): drop bundledDependencies to resolve E415 (537MB/85k files → 41MB/8.5k)"
+  },
+  {
+    "sha": "8f2fab5",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bootstrap): exit on EPIPE storm instead of swallowing in a tight loop"
+  },
+  {
+    "sha": "f71c585",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: cap R3b recovery retries"
+  },
+  {
+    "sha": "b3cdecc",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: prevent false-positive approval gate re-trigger after depth verification"
+  },
+  {
+    "sha": "95fb282",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: use pnpm camelCase package import setting"
+  },
+  {
+    "sha": "1e797bb",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: set package-import-method=copy to prevent hard-link E415 on npm publish"
+  },
+  {
+    "sha": "871910a",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(tests): only redirect relative .js to .ts when the .ts source exists"
+  },
+  {
+    "sha": "8e8a184",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: dereference pnpm symlinks when seeding global validate-pack deps"
+  },
+  {
+    "sha": "82e6398",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: seed all missing root externals in validate-pack global smoke"
+  },
+  {
+    "sha": "92b241e",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: seed bundled transitive deps in validate-pack global smoke"
+  },
+  {
+    "sha": "892cab0",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: drop MCP SDK runtime import from validate-pack global smoke"
+  },
+  {
+    "sha": "7a4a8a3",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: resolve hoisted openai path in validate-pack global smoke"
+  },
+  {
+    "sha": "4954d5c",
+    "severity": "CRITICAL_STABILITY",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: avoid OOM when seeding openai in validate-pack global smoke"
+  },
+  {
+    "sha": "2349bf2",
+    "severity": "FEATURE",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "feat: add Claude Opus 4.8 model support"
+  },
+  {
+    "sha": "1c5b97e",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: unlink pnpm symlinks before materializing bundled deps"
+  },
+  {
+    "sha": "54a4434",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: restore workspace:* root deps after prepack regression"
+  },
+  {
+    "sha": "3181463",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: resolve bundled deps on global install in validate-pack"
+  },
+  {
+    "sha": "7faba93",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: make validate-pack pass with pnpm workspace protocol"
+  },
+  {
+    "sha": "42e6828",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: restore green unit tests and validate-pack under pnpm"
+  },
+  {
+    "sha": "8368025",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: use pnpm cache in prerelease verify"
+  },
+  {
+    "sha": "2b7a93b",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: align dist-test resolution and package manifest with pnpm workspaces"
+  },
+  {
+    "sha": "9814e35",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(installer): materialize deps after global --ignore-scripts install"
+  },
+  {
+    "sha": "40397bc",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: use pnpm optional install flag"
+  },
+  {
+    "sha": "17db4b4",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi-ai): unblock build by removing @smithy/types import"
+  },
+  {
+    "sha": "d6332b6",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: account for context overhead in donut chart"
+  },
+  {
+    "sha": "fa9e598",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: satisfy SessionEntry types in context/usage extension tests"
+  },
+  {
+    "sha": "c5d2244",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: write context reports under project root"
+  },
+  {
+    "sha": "c06228f",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(install): bundle extension-critical deps for clean global installs"
+  },
+  {
+    "sha": "84fd49f",
+    "severity": "FEATURE",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "feat(gsd): add /gsd usage and /gsd context observability commands"
+  },
+  {
+    "sha": "7fe31b9",
+    "severity": "FEATURE",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "feat(gsd): wire unit-context-manifest skills policy into scoping"
+  },
+  {
+    "sha": "3bf8bcb",
+    "severity": "FEATURE",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "feat(gsd): scope skill catalog and trim duplicate prompt surfaces"
+  },
+  {
+    "sha": "ec6c5b9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(installer): show GSD-Pi wordmark only once during guided install"
+  },
+  {
+    "sha": "51fce9b",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): use GitHub-hosted runners for build-native npm publish"
+  },
+  {
+    "sha": "48917e6",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: resolve Windows npm global bin path"
+  },
+  {
+    "sha": "12bf6e7",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(packaging): merge global node_modules and refresh --help branding"
+  },
+  {
+    "sha": "afeb482",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): doctor-checks misses DB-present/filesystem-missing orphan state doctor runtime checks now report DB-row-present/filesystem-missing milestone drift as `orphan_milestone_db`."
+  },
+  {
+    "sha": "c2f6d35",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): discardMilestone skips DB cleanup when milestone dir is missing `discardMilestone` now cleans DB state even when milestone directory is already missing."
+  },
+  {
+    "sha": "d49e42f",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(packaging): resolve undici after npm global install"
+  },
+  {
+    "sha": "9c62334",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: resolve npm global root in validate pack"
+  },
+  {
+    "sha": "9ca6cee",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): avoid swallowing network ECONNRESET"
+  },
+  {
+    "sha": "756a298",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(branding): render block P and i in GSD-Pi wordmark"
+  },
+  {
+    "sha": "b0e79d9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(installer): prevent handoff timeout and spinner corruption"
+  },
+  {
+    "sha": "cfc3393",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(branding): narrow GSD-Pi wordmark for 80-column welcome layout"
+  },
+  {
+    "sha": "2676baf",
+    "severity": "FEATURE",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "feat(installer): redesign npx-primary guided install flow"
+  },
+  {
+    "sha": "0030bab",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(packaging): resolve @gsd/agent-core imports in pi-coding-agent re-exports"
+  },
+  {
+    "sha": "12808c4",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): use GitHub-hosted runners for npm publish provenance"
+  },
+  {
+    "sha": "adf25e0",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): pin dev publishes to stable engine packages on npm"
+  },
+  {
+    "sha": "47de708",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(test): satisfy strict null check in agent-shim test"
+  },
+  {
+    "sha": "2f23e8c",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: block direct workflow dispatch during validation"
+  },
+  {
+    "sha": "5d42199",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(test): satisfy strict null check in agent-shim test"
+  },
+  {
+    "sha": "a7c88fa",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(test): unblock coverage-report package test failures"
+  },
+  {
+    "sha": "933d0f8",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(test): unblock coverage-report package test failures"
+  },
+  {
+    "sha": "c838be8",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): keep diagnostics available during validation blocks"
+  },
+  {
+    "sha": "45b187f",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(test): unblock test-coverage job failures"
+  },
+  {
+    "sha": "cb0cb37",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(auto): complete-slice reopen handoff when DB is unavailable"
+  },
+  {
+    "sha": "d67ac2c",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): keep workspace links during dev version stamping"
+  },
+  {
+    "sha": "82313bf",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): stop integration tests from hanging on orphaned gsd subprocesses"
+  },
+  {
+    "sha": "400b3b2",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(worktree): restore JSONL marker cleanup in stash collision path"
+  },
+  {
+    "sha": "491219a",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): list /gsd memory in full help menu"
+  },
+  {
+    "sha": "c4d3996",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(worktree): dedupe stash-restore locals after main merge"
+  },
+  {
+    "sha": "7a8b793",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): remove unreachable empty-string blocklist entry"
+  },
+  {
+    "sha": "d5981c4",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(compaction): reframe prompts as state-snapshot handoff briefings"
+  },
+  {
+    "sha": "2f37735",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: block workflow starters during unmerged milestones"
+  },
+  {
+    "sha": "33f6971",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(e2e): clear deferred depth gate after ask_user_questions confirms"
+  },
+  {
+    "sha": "d869a93",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: block unmerged milestone dispatch aliases"
+  },
+  {
+    "sha": "2a75f7f",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: clear auto model override after stop"
+  },
+  {
+    "sha": "d004d80",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: avoid orphaning stale UAT renders"
+  },
+  {
+    "sha": "b34ec05",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): block new-project with unmerged milestones"
+  },
+  {
+    "sha": "5b0b2b9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): include memory in command description"
+  },
+  {
+    "sha": "ef22461",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): Stale `full_uat_md` in DB is not cleared when UAT files are deleted stale-render reconciliation now clears `full_uat_md` in DB when `UAT.md` is deleted from disk."
+  },
+  {
+    "sha": "496f798",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): Browser evidence gate scans UAT docs and misflags CLI milestones browser requirement detection no longer scans `slice.full_uat_md`, preventing UAT planning text from triggering the gate."
+  },
+  {
+    "sha": "0f91c12",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): /gsd auto can ignore selected/persisted non-Claude model and reroute to Claude-family model"
+  },
+  {
+    "sha": "f3f92f5",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): unmerged-milestone-guard blocks all /gsd commands including read-only diagnostics (forensics, capture, knowledge, prefs)"
+  },
+  {
+    "sha": "eebf5ed",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): /gsd memory missing from autocomplete catalog"
+  },
+  {
+    "sha": "97c2043",
+    "severity": "CRITICAL_STABILITY",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): Crash/hang at question & save gates: `ProcessTransport is not ready for writing` falls through guard to process.exit(1)"
+  },
+  {
+    "sha": "e829025",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: keep distinct discuss follow-up questions"
+  },
+  {
+    "sha": "386aac8",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): Plan-slice prompt lacks scope deliverable coverage audit — documents listed in CONTEXT.md Scope table get dropped"
+  },
+  {
+    "sha": "1fa61b0",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(ci): allow-source-grep for generated-models catalog formatting test"
+  },
+  {
+    "sha": "263527b",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: preserve chat turn bridges across tool rows"
+  },
+  {
+    "sha": "824f73b",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): run pi-ai vitest against packages/pi-ai/dist on Windows"
+  },
+  {
+    "sha": "08de82b",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): invoke vitest via node on Windows package tests"
+  },
+  {
+    "sha": "05441cf",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): recognize pi-ai vitest paths on Windows runners"
+  },
+  {
+    "sha": "a93a588",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(ci): split pi-ai node:test and vitest; fix smart-entry notification assert"
+  },
+  {
+    "sha": "47718b1",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): align tests with git preflight, discuss routing, and pi-ai vitest"
+  },
+  {
+    "sha": "503aec8",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(tests): satisfy extension typecheck for CI build"
+  },
+  {
+    "sha": "1c3366d",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(discuss): route new milestones to guided interview and suppress duplicate asks"
+  },
+  {
+    "sha": "6c02e43",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): complete-slice retry loop silently drops a reopened task via empty replan"
+  },
+  {
+    "sha": "adf07a7",
+    "severity": "CRITICAL_STABILITY",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): preserve crash exit cleanup semantics"
+  },
+  {
+    "sha": "4770ffb",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): Uncaught exception guards exit without releasing auto-mode locks unrecoverable guards now terminate via SIGTERM cleanup path and cleanup signal coverage now includes SIGBREAK."
+  },
+  {
+    "sha": "c0649d3",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): Windows pipe-closure errors not treated as recoverable broadened recoverable pipe-closure detection to include Windows EOF/connection-reset variants so they are swallowed like EPIPE."
+  },
+  {
+    "sha": "710e436",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(gsd): keep grep/find/ls available during guided discuss dispatches"
+  },
+  {
+    "sha": "36e6fcb",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: handle empty read args only for read tool"
+  },
+  {
+    "sha": "4e87c13",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): map requirements backlog when starting new milestone"
+  },
+  {
+    "sha": "5b3f9f2",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: address chat turn and shim review findings"
+  },
+  {
+    "sha": "10489bc",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: address PR bug detection findings"
+  },
+  {
+    "sha": "79b1330",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi-ai): use assert in normalize-tool-arguments test for tsc build"
+  },
+  {
+    "sha": "61de95d",
+    "severity": "FEATURE",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "feat(gsd): enhance requirements backlog handling and completion summaries"
+  },
+  {
+    "sha": "315b1a0",
+    "severity": "FEATURE",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "feat(gsd): implement quick branch inference and cleanup logic"
+  },
+  {
+    "sha": "1211a3e",
+    "severity": "FEATURE",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "feat(github-sync): enhance milestone closing logic and error handling"
+  },
+  {
+    "sha": "3218fd6",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: restore project artifact fallback"
+  },
+  {
+    "sha": "a1335b3",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): resolve milestone artifacts from worktree projections"
+  },
+  {
+    "sha": "8e01c98",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): Missing uninstall instructions in README added README uninstall steps for global package removal and local state cleanup."
+  },
+  {
+    "sha": "584f887",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): Fresh install is non-functional fixed install-mode detection so only real postinstall contexts use postinstall flow."
+  },
+  {
+    "sha": "2198b98",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): Projection doesn't filter superseeded rows KNOWLEDGE projection now filters out superseded memory rows."
+  },
+  {
+    "sha": "9ee21a9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): `capture_thought` never supersedes old rows capture path now supersedes prior active same-category memory rows with the same `structuredFields.sourceKnowledgeId`."
+  },
+  {
+    "sha": "99cf0f6",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: install deps for fast verification"
+  },
+  {
+    "sha": "ab29d50",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(agent-loop): restore consecutive tool validation failure cap"
+  },
+  {
+    "sha": "6ed0e54",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(ci): restore e2e fake LLM and truncateForSummary export"
+  },
+  {
+    "sha": "f51027e",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): verification-gate: pipes (|) in task-plan Verify commands are rejected as unsafe, causing false 'no-host-checks' pause"
+  },
+  {
+    "sha": "b202c4e",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(build): resolve pi bootstrap and agent-modes theme imports"
+  },
+  {
+    "sha": "3b39057",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(models): drop stale kimi-k2.5 metadata override in generator"
+  },
+  {
+    "sha": "47d740f",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: share tool argument normalization"
+  },
+  {
+    "sha": "9cfd12d",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: retry MCP smoke install failures"
+  },
+  {
+    "sha": "b136f0f",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: preserve connected tool turn rendering"
+  },
+  {
+    "sha": "d811e1c",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "MEDIUM",
+    "hasGuidance": false,
+    "subject": "fix(pi): unblock workspace install and pi boundary verification"
+  },
+  {
+    "sha": "7448d89",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: stabilize tool invocation matching"
+  },
+  {
+    "sha": "03465a4",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): merge completed milestones when ROADMAP projection is missing"
+  },
+  {
+    "sha": "aadeaa4",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi-coding-agent): keep identical parallel tool calls separate"
+  },
+  {
+    "sha": "d0a8a64",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi-ai): restore Google provider switch reports"
+  },
+  {
+    "sha": "91a9ca3",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi-ai): derive Mistral stream message type from request shape"
+  },
+  {
+    "sha": "34e06be",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi-ai): use singular Mistral stream message type export"
+  },
+  {
+    "sha": "4bbc7b2",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: external worktree state routing and tool argument normalization"
+  },
+  {
+    "sha": "90652ad",
+    "severity": "FEATURE",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "feat: enhance tool execution handling and improve component registration"
+  },
+  {
+    "sha": "89335bd",
+    "severity": "FEATURE",
+    "conflictRisk": "MEDIUM",
+    "hasGuidance": false,
+    "subject": "feat: enhance transcript rendering with connected user support"
+  },
+  {
+    "sha": "15bf5ca",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): report effective verdict after gate downgrade"
+  },
+  {
+    "sha": "3f4de05",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): avoid actor-scoped checkout token"
+  },
+  {
+    "sha": "89c71c2",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi-ai): restore Gemini 3 tool call signatures"
+  },
+  {
+    "sha": "faf7dbb",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: keep MCP and complex-schema tools available on Google providers"
+  },
+  {
+    "sha": "ad688c3",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi-ai): correct Mistral stream message type import"
+  },
+  {
+    "sha": "20e324d",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: harden pi overlay for Cloud Code Assist Claude tool schemas"
+  },
+  {
+    "sha": "b70e549",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: wait for workspace packages after publish"
+  },
+  {
+    "sha": "af968b9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi): export BuildSystemPromptOptions from system-prompt seam"
+  },
+  {
+    "sha": "718e1fe",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(pi): import bridge session types from @gsd/agent-core"
+  },
+  {
+    "sha": "eee1c61",
+    "severity": "FEATURE",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "feat(pi): gap closure, test confidence stack, verify:pi-boundary in CI"
+  },
+  {
+    "sha": "8ac970e",
+    "severity": "FEATURE",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "feat(pi): ADR-010 seam remediation phases A–F"
+  },
+  {
+    "sha": "72748c0",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): pre_dispatch_hooks and post_unit_hooks silently ignored in worktree isolation mode — resolvePreDispatchHooks/resolvePostUnitHooks drop basePath"
+  },
+  {
+    "sha": "e09d78f",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): checkoutBranchWithStashGuard fails when stash contains untracked files tracked on target branch"
+  },
+  {
+    "sha": "8bb2905",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): restore complete-slice isolation cues"
+  },
+  {
+    "sha": "2c3ac68",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): checkoutBranchWithStashGuard fails when stash contains untracked files tracked on target branch"
+  },
+  {
+    "sha": "e5af6d9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): worktree isolation: agent writes code to project root instead of worktree (missing path-rewriting instruction in prompts)"
+  },
+  {
+    "sha": "5754851",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): [Bug]: Unusuable, unresponsive, fresh install"
+  },
+  {
+    "sha": "9814712",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: repair descriptor roadmap renders"
+  },
+  {
+    "sha": "5a0af0a",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: detect stale worktree roadmaps in projection"
+  },
+  {
+    "sha": "f5b1c7c",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: resolve projected roadmap paths"
+  },
+  {
+    "sha": "91c18da",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): Artifact renderers use inconsistent gsdRoot vs gsdProjectionRoot when running inside a worktree causing stale-mirror verification failures"
+  },
+  {
+    "sha": "b77bc3a",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "MEDIUM",
+    "hasGuidance": false,
+    "subject": "fix: inline bridge session event shim"
+  },
+  {
+    "sha": "e21fd8e",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "MEDIUM",
+    "hasGuidance": false,
+    "subject": "fix: avoid agent-core build-order dependency"
+  },
+  {
+    "sha": "3356ef7",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "MEDIUM",
+    "hasGuidance": false,
+    "subject": "fix: narrow codeql-pr surfaced alerts"
+  },
+  {
+    "sha": "1903ad0",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: restore bridge service search handling"
+  },
+  {
+    "sha": "7b80cef",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: drop noisy codeql path hardening"
+  },
+  {
+    "sha": "5153a32",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: tighten project path allowlist"
+  },
+  {
+    "sha": "7c2930e",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "MEDIUM",
+    "hasGuidance": false,
+    "subject": "fix: clear remaining codeql blockers"
+  },
+  {
+    "sha": "7868f95",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "MEDIUM",
+    "hasGuidance": false,
+    "subject": "fix: harden codeql hotspots"
+  },
+  {
+    "sha": "9225bc2",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: unstick unit and portability CI"
+  },
+  {
+    "sha": "5a8d59c",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: stop repeated all-error tool loops"
+  },
+  {
+    "sha": "e2842bc",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "MEDIUM",
+    "hasGuidance": false,
+    "subject": "fix: restore test runtime compatibility across prompt and e2e paths"
+  },
+  {
+    "sha": "02dce21",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: bundle internal workspace packages for publish"
+  },
+  {
+    "sha": "293bafa",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: repair extension CI compatibility"
+  },
+  {
+    "sha": "3c61b31",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: narrow pi-tui secret scan ignore"
+  },
+  {
+    "sha": "9849f0a",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: filter discovered models by provider readiness"
+  },
+  {
+    "sha": "e69cf7d",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(agent-core): preserve compaction truncation tails"
+  },
+  {
+    "sha": "56c39cb",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: restore legacy session switch hooks"
+  },
+  {
+    "sha": "a759255",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi): restore GSD root-app shims for build:core (Phase 2b)"
+  },
+  {
+    "sha": "af9d27b",
+    "severity": "FEATURE",
+    "conflictRisk": "HIGH",
+    "hasGuidance": false,
+    "subject": "feat(pi): ADR-010 clean seam and vendor earendil-works/pi v0.75.5 (Phase 0–2)"
+  },
+  {
+    "sha": "941b208",
+    "severity": "FEATURE",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "feat(models): add dedicated uat model slot in preferences"
+  },
+  {
+    "sha": "a6d253f",
+    "severity": "FEATURE",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "feat: add gsd-mcp runtime binary"
+  },
+  {
+    "sha": "2c2b925",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): [Bug] execute-task re-dispatched after task is complete when verification gate fails with pre-existing errors"
+  },
+  {
+    "sha": "7b1ff8c",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): [Bug]: verification-gate treats 'bash: <cmd>' prefix as command name — exit 127 triggers 5× re-dispatch loop"
+  },
+  {
+    "sha": "4db61b9",
+    "severity": "FEATURE",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "feat: persist cloud gateway auth state"
+  },
+  {
+    "sha": "272f601",
+    "severity": "FEATURE",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "feat: add cloud MCP gateway local runtime"
+  },
+  {
+    "sha": "639c926",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): allow safe verify metacharacters"
+  },
+  {
+    "sha": "ad376fe",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(gsd): preserve codebase cache timestamp"
+  },
+  {
+    "sha": "3b08787",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: answer headless approval gates"
+  },
+  {
+    "sha": "29e71bd",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: detect opengsd pnpm workspace scope"
+  },
+  {
+    "sha": "298a513",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): ModelPolicyDispatchBlockedError: cross_provider:false blocks explicit unit model configs when previous unit ran on different provider"
+  },
+  {
+    "sha": "1a12db8",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(compaction): preserve history on empty summaries"
+  },
+  {
+    "sha": "be4a1e6",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: clean up remaining opengsd package references"
+  },
+  {
+    "sha": "8e663d2",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): Generated files ignore .gitignore rules smart staging now honors `.gitignore` for `.gsd` even when files were already tracked."
+  },
+  {
+    "sha": "b56c483",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): GitOps disabled still creates commits disabled GitOps now skips commit closeout paths instead of converting to commit mode."
+  },
+  {
+    "sha": "814999d",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix: dereference symlinks in findWorkflowCliFromAncestorPath"
+  },
+  {
+    "sha": "2ff3dec",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(pi-ai): normalize Claude tool schemas for Cloud Code Assist"
+  },
+  {
+    "sha": "58227e0",
+    "severity": "CRITICAL_STABILITY",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): Crash logs use unbounded per-call filenames crash logs now append to one per-PID file instead of creating timestamped files per call."
+  },
+  {
+    "sha": "066cee9",
+    "severity": "CRITICAL_STABILITY",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): Recoverable EPIPE events write crash logs EPIPE is handled as recoverable without writing crash artifacts."
+  },
+  {
+    "sha": "fc39cdc",
+    "severity": "CRITICAL_STABILITY",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ollama): trust /api/show context, sync num_ctx, and fix KNOWN_MODELS drift"
+  },
+  {
+    "sha": "78fb60d",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ollama): detect thinking capability from /api/show.capabilities"
+  },
+  {
+    "sha": "934515a",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "MEDIUM",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): Command error reporting omits stack traces extension command errors now include stack traces when available."
+  },
+  {
+    "sha": "9477a62",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): fileFingerprint crashes on dirty files over 2 GiB oversized dirty tracked files now avoid Node's readFileSync Buffer limit."
+  },
+  {
+    "sha": "7145ebb",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-3): Pre-dispatch break leaves ghost iterations open pre-dispatch break now finishes the open journal iteration."
+  },
+  {
+    "sha": "77e8cee",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): Unhandled-phase warnings pause instead of retrying fresh state unhandled-phase warnings now retry dispatch once with freshly derived state before pausing."
+  },
+  {
+    "sha": "f120a8b",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): pauseAuto aborts in-flight units after dispatch pre-dispatch health-gate pause is guarded against active units and covered by regression."
+  },
+  {
+    "sha": "243147a",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(test): stabilize CI coverage and implementation artifact detection (#84)"
+  },
+  {
+    "sha": "5ac9944",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(release): keep package-lock in sync with engine optionalDependencies"
+  },
+  {
+    "sha": "0bb223e",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): [Bug]: verification-gate splits task-plan verify on && — cd loses cwd, causing false failure + 5× re-dispatch loop"
+  },
+  {
+    "sha": "68e1b46",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-3): Upgrade docs omit uninstalling old global gsd-pi package updated upgrade troubleshooting to uninstall the old global `gsd-pi` package before installing `@opengsd/gsd-pi`."
+  },
+  {
+    "sha": "8c38b85",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): TUI crashes instead of handling missing native visibleWidth added a TUI-side JS visible-width fallback so render paths do not propagate native proxy throws."
+  },
+  {
+    "sha": "cbb3b69",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): Linux x64 native addon is unavailable after npm install pinned native engine optional dependencies to the package version and made publish/prepublish require matching engine packages."
+  },
+  {
+    "sha": "4fad086",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): allow build-native to publish engine packages at a target semver"
+  },
+  {
+    "sha": "db76d8b",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): Worker-lock self-collision / lock leak across orchestrator iterations milestone leases now tolerate same-process re-entry and pause cleanup releases the held lease."
+  },
+  {
+    "sha": "46896cb",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): Milestone lifecycle desync: `status` stays `planned` after all slices complete final slice completion now promotes planned milestones to active before validation."
+  },
+  {
+    "sha": "de5ac79",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): [Bug]: error on windows update from gsd-2"
+  },
+  {
+    "sha": "0b1917c",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(issue): gsd update no-ops on stale higher-versioned manifest → version-mismatch gate dead-locks (incomplete fix for #14)"
+  },
+  {
+    "sha": "c52d1f9",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-2): Wrong `unitType` string in estimate-based timeout scaling (`auto-timers.js`) changed estimate DB lookup to match the real `execute-task` unit type."
+  },
+  {
+    "sha": "ce5210c",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(bug-1): Cross-session recovery counter unconditionally reset at dispatch (`auto/phases.js`) preserved on-disk recovery attempts across fresh cross-session dispatches unless recovery ran in the current session."
+  },
+  {
+    "sha": "c60b69c",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): harden native engine bootstrap and npm publish verification"
+  },
+  {
+    "sha": "749e051",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): native fallbacks for e2e and omit web from CI artifacts"
+  },
+  {
+    "sha": "32b3042",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(ci): always build web host before validate-pack"
+  },
+  {
+    "sha": "2fbac97",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "LOW",
+    "hasGuidance": false,
+    "subject": "fix: replace leaked absolute developer paths in docs and test fixtures"
+  },
+  {
+    "sha": "28b86bc",
+    "severity": "NICE_TO_HAVE_FIX",
+    "conflictRisk": "NONE",
+    "hasGuidance": false,
+    "subject": "fix(auto): wire ScheduleWakeup continuation"
+  }
+]

@@ -1,0 +1,15 @@
+[
+  {
+    "number": 345,
+    "severity": "critical-stability",
+    "type": "cherry-pick-candidate",
+    "sha": "fc39cdc",
+    "guidancePath": ".planning/upstream-audits/guidance/fc39cdc.md",
+    "targetFiles": [
+      "src/resources/extensions/ollama/model-capabilities.ts",
+      "src/resources/extensions/ollama/ollama-discovery.ts",
+      "src/resources/extensions/ollama/tests/model-capabilities.test.ts",
+      "src/resources/extensions/ollama/tests/ollama-discovery-priority.test.ts (new)"
+    ]
+  }
+]

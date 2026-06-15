@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "date": "2026-06-05",
+  "filter": "--single-issue 326",
+  "integrationBranch": "fix/upstream-issue-326-941b208",
+  "prUrl": null,
+  "finalSuite": null,
+  "lanes": {
+    "1": {
+      "issues": [
+        "326"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/preferences-models.ts",
+        "src/resources/extensions/workflow/preferences-types.ts",
+        "src/resources/extensions/workflow/tests/model-unittype-mapping.test.ts"
+      ],
+      "branch": "fix/upstream-issue-326-941b208",
+      "worktree": ".worktrees/upstream-fix-issue-326",
+      "status": "pending"
+    }
+  },
+  "issues": {
+    "326": {
+      "lane": 1,
+      "sha": "941b208",
+      "guidancePath": ".planning/upstream-audits/guidance/941b208.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/preferences-models.ts",
+        "src/resources/extensions/workflow/preferences-types.ts",
+        "src/resources/extensions/workflow/tests/model-unittype-mapping.test.ts"
+      ],
+      "status": "pending",
+      "commitSha": null,
+      "touchedFiles": [],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": null,
+      "reviewerReason": null,
+      "reason": null
+    }
+  }
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "number": 175,
+    "severity": "critical-stability",
+    "type": "port-required",
+    "sha": "4954d5c",
+    "guidancePath": ".planning/upstream-audits/guidance/4954d5c.md",
+    "targetFiles": [
+      "scripts/validate-pack.js"
+    ]
+  }
+]

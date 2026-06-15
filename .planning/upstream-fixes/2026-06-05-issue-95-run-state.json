@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "date": "2026-06-05",
+  "filter": "--issues 95",
+  "integrationBranch": "fix/upstream-issue-95-83f54b1",
+  "prUrl": null,
+  "finalSuite": null,
+  "lanes": {
+    "1": {
+      "issues": [
+        "95"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/repo-identity.ts",
+        "src/resources/extensions/workflow/tests/project-relocation-recovery.test.ts (new)"
+      ],
+      "branch": "fix/upstream-issue-95-83f54b1",
+      "worktree": ".worktrees/upstream-fix-issue-95",
+      "status": "failed"
+    }
+  },
+  "issues": {
+    "95": {
+      "lane": 1,
+      "sha": "83f54b1",
+      "guidancePath": ".planning/upstream-audits/guidance/83f54b1.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts",
+        "src/resources/extensions/workflow/tests/project-relocation-recovery.test.ts (new)"
+      ],
+      "status": "unresolved",
+      "commitSha": null,
+      "touchedFiles": [],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": null,
+      "reviewerReason": null,
+      "reason": "needs-human: otto repo-identity.ts diverges; stale marker already gated by markerHasState in resolveExternalPathWithRecovery (same pattern as #93)"
+    }
+  }
+}

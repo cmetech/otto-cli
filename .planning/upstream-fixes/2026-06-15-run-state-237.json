@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": {
+    "issues": [
+      "237"
+    ],
+    "singleIssue": 237
+  },
+  "integrationBranch": "fix/upstream-issue-237-97c2043",
+  "prUrl": "https://github.com/cmetech/otto-cli/pull/383",
+  "finalSuite": {
+    "pass": true,
+    "note": "1 flake under parallel-lane CPU contention (e2e-smoke gsd --list-models 20s timeout); passes in isolation (ok 5, fail 0). Unrelated to #237 workflow-error-handling change."
+  },
+  "lanes": {
+    "1": {
+      "issues": [
+        "237"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/bootstrap/register-extension.ts",
+        "src/resources/extensions/workflow/tests/register-extension-guard.test.ts"
+      ],
+      "branch": "fix/upstream-issue-237-97c2043",
+      "worktree": ".worktrees/upstream-fix-issue-237",
+      "status": "done"
+    }
+  },
+  "issues": {
+    "237": {
+      "lane": 1,
+      "sha": "97c2043",
+      "guidancePath": ".planning/upstream-audits/guidance/97c2043.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-extension.ts",
+        "src/resources/extensions/workflow/tests/register-extension-guard.test.ts"
+      ],
+      "status": "resolved",
+      "commitSha": "8d7fc40",
+      "touchedFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-extension.ts",
+        "src/resources/extensions/workflow/tests/register-extension-guard.test.ts"
+      ],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": "approve",
+      "reviewerReason": "Faithful manual-port; [otto] guard at top, EPIPE writeCrashLog untouched, regression test pins behavior",
+      "reviewerRejectionCount": 0,
+      "reason": "Added early ProcessTransport-not-ready guard ([otto] brand) + regression test"
+    }
+  }
+}

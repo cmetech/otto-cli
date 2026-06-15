@@ -1,0 +1,15 @@
+{
+  "lanes": [
+    {
+      "id": 1,
+      "issues": [
+        "326"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/preferences-models.ts",
+        "src/resources/extensions/workflow/preferences-types.ts",
+        "src/resources/extensions/workflow/tests/model-unittype-mapping.test.ts"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+[
+  {
+    "number": 343,
+    "severity": "critical-stability",
+    "type": "cherry-pick-candidate",
+    "sha": "58227e0",
+    "guidancePath": ".planning/upstream-audits/guidance/58227e0.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/bootstrap/crash-log.ts",
+      "src/resources/extensions/workflow/tests/crash-handler-secondary.test.ts"
+    ]
+  }
+]

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": {
+    "issues": [
+      "175"
+    ]
+  },
+  "integrationBranch": "fix/upstream-issue-175-4954d5c",
+  "prUrl": null,
+  "finalSuite": null,
+  "lanes": {
+    "1": {
+      "issues": [
+        "175"
+      ],
+      "files": [
+        "scripts/validate-pack.js"
+      ],
+      "branch": "fix/upstream-issue-175-4954d5c",
+      "worktree": ".worktrees/upstream-fix-issue-175",
+      "status": "done"
+    }
+  },
+  "issues": {
+    "175": {
+      "lane": 1,
+      "sha": "4954d5c",
+      "guidancePath": ".planning/upstream-audits/guidance/4954d5c.md",
+      "targetFiles": [
+        "scripts/validate-pack.js"
+      ],
+      "status": "unresolved",
+      "commitSha": null,
+      "touchedFiles": [],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": null,
+      "reviewerReason": null,
+      "reviewerRejectionCount": 0,
+      "reason": "fix-strategy:not-needed — otto validate-pack.js never seeds openai in a global tree; OOM site not reached"
+    }
+  }
+}

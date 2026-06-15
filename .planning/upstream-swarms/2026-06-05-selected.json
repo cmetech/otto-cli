@@ -1,0 +1,36 @@
+{
+  "autoTier": [
+    {
+      "number": 31,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "4bbe295",
+      "guidancePath": ".planning/upstream-audits/guidance/4bbe295.md",
+      "targetFiles": [
+        "packages/pi-tui/src/terminal-image.ts (exists)",
+        "packages/pi-tui/test/terminal-image.test.ts (verify exists)"
+      ]
+    }
+  ],
+  "humanTier": [],
+  "needsTriage": [
+    {
+      "number": 52,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "b3ed545",
+      "guidancePath": ".planning/upstream-audits/guidance/b3ed545.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 47,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "2e1f07b",
+      "guidancePath": ".planning/upstream-audits/guidance/2e1f07b.md",
+      "targetFiles": [],
+      "needsTriage": true
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "date": "2026-06-06",
+  "filter": "--single-issue 345",
+  "integrationBranch": "fix/upstream-issue-345-fc39cdc",
+  "prUrl": null,
+  "finalSuite": null,
+  "lanes": {
+    "1": {
+      "issues": [
+        "345"
+      ],
+      "files": [
+        "src/resources/extensions/ollama/model-capabilities.ts",
+        "src/resources/extensions/ollama/ollama-discovery.ts",
+        "src/resources/extensions/ollama/tests/model-capabilities.test.ts",
+        "src/resources/extensions/ollama/tests/ollama-discovery-priority.test.ts (new)"
+      ],
+      "branch": "fix/upstream-issue-345-fc39cdc",
+      "worktree": ".worktrees/upstream-fix-issue-345",
+      "status": "pending"
+    }
+  },
+  "issues": {
+    "345": {
+      "lane": 1,
+      "sha": "fc39cdc",
+      "guidancePath": ".planning/upstream-audits/guidance/fc39cdc.md",
+      "targetFiles": [
+        "src/resources/extensions/ollama/model-capabilities.ts",
+        "src/resources/extensions/ollama/ollama-discovery.ts",
+        "src/resources/extensions/ollama/tests/model-capabilities.test.ts",
+        "src/resources/extensions/ollama/tests/ollama-discovery-priority.test.ts (new)"
+      ],
+      "status": "pending",
+      "commitSha": null,
+      "touchedFiles": [],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": null,
+      "reviewerReason": null,
+      "reason": null
+    }
+  }
+}

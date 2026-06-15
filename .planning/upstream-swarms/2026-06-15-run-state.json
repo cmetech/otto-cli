@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "severity:critical-stability",
+  "startedAt": null,
+  "baselineGate": null,
+  "waves": [],
+  "abortStreak": {
+    "signature": null,
+    "count": 0
+  },
+  "issues": {
+    "175": {
+      "severity": "critical-stability",
+      "conflictRisk": null,
+      "sha": "4954d5c",
+      "targetFiles": [
+        "scripts/validate-pack.js"
+      ],
+      "state": "skipped",
+      "retryCount": 0,
+      "fixStartedAt": 1781527508157,
+      "lastPolledAt": null,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": null,
+      "prUrl": null,
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "fix-strategy:not-needed — otto-cli validate-pack.js has no openai-in-global-tree path; upstream OOM site absent. Issue left OPEN, status:triaged, labeled not-needed, commented."
+    },
+    "237": {
+      "severity": "critical-stability",
+      "conflictRisk": null,
+      "sha": "97c2043",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-extension.ts",
+        "src/resources/extensions/workflow/tests/register-extension-guard.test.ts"
+      ],
+      "state": "pending-human-review",
+      "retryCount": 0,
+      "fixStartedAt": 1781527508157,
+      "lastPolledAt": null,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 383,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/383",
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "critical-stability → human-tier; PR open, awaits human review"
+    },
+    "344": {
+      "severity": "critical-stability",
+      "conflictRisk": null,
+      "sha": "066cee9",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-extension.ts (exists)",
+        "src/resources/extensions/workflow/tests/register-extension-guard.test.ts (exists)"
+      ],
+      "state": "pending-human-review",
+      "retryCount": 0,
+      "fixStartedAt": 1781527508157,
+      "lastPolledAt": null,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 382,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/382",
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "critical-stability → human-tier; PR open, awaits human review (locked invariant: never auto-merge critical-stability)"
+    }
+  }
+}

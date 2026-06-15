@@ -1,0 +1,19 @@
+{
+  "waves": 1,
+  "total": 1,
+  "plan": [
+    [
+      {
+        "number": 31,
+        "severity": "nice-to-have-fix",
+        "type": "cherry-pick-candidate",
+        "sha": "4bbe295",
+        "guidancePath": ".planning/upstream-audits/guidance/4bbe295.md",
+        "targetFiles": [
+          "packages/pi-tui/src/terminal-image.ts (exists)",
+          "packages/pi-tui/test/terminal-image.test.ts (verify exists)"
+        ]
+      }
+    ]
+  ]
+}

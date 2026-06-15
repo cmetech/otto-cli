@@ -209,18 +209,8 @@ jobs:
           node-version: '24'
           cache: 'npm'
 
-      # Skip the postinstall's bundled Chromium download: installing it can exceed
-      # the script's 300s budget here and leave an incomplete/orphaned install,
-      # which a parallel `playwright install` would then race. We install exactly
-      # the binary the browser-tools tests use — chrome-headless-shell, for
-      # chromium.launch({ headless: true }) — synchronously in the next step.
       - name: Install dependencies
         run: npm ci
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-
-      - name: Install Playwright headless Chromium (browser-tools tests)
-        run: npx playwright install chromium-headless-shell
 
       - uses: ./.github/actions/restore-ci-build-artifacts
       - name: Run integration tests

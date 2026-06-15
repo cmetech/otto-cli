@@ -9,10 +9,16 @@ import { BRAND } from "./strings.js";
 
 export type NotifyLevel = "info" | "success" | "warning" | "error";
 export type NotificationKind = "complete" | "error" | "budget" | "milestone" | "attention";
+export type NotificationBellKind = "question" | "stop" | "attention";
 
 interface NotificationCommand {
   file: string;
   args: string[];
+}
+
+interface BellStream {
+  isTTY?: boolean;
+  write(chunk: string): unknown;
 }
 
 /**
@@ -91,6 +97,42 @@ export function shouldSendDesktopNotification(
   }
 }
 
+export function shouldPlayNotificationBell(
+  kind: NotificationBellKind,
+  preferences: NotificationPreferences | undefined = loadEffectiveGSDPreferences()?.preferences.notifications,
+): boolean {
+  if (preferences?.enabled === false) return false;
+  if (preferences?.local_bell !== true) return false;
+
+  switch (kind) {
+    case "question":
+    case "stop":
+    case "attention":
+    default:
+      return preferences?.on_attention ?? true;
+  }
+}
+
+/**
+ * Play a local terminal bell for attention-critical events. This intentionally
+ * does not depend on desktop notification permissions or remote configuration.
+ */
+export function playNotificationBell(
+  kind: NotificationBellKind = "attention",
+  preferences: NotificationPreferences | undefined = loadEffectiveGSDPreferences()?.preferences.notifications,
+  stream: BellStream | null = resolveBellStream(),
+): boolean {
+  if (!shouldPlayNotificationBell(kind, preferences)) return false;
+  if (!stream) return false;
+
+  try {
+    stream.write("\x07");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Format a notification title that includes the project name for context.
  * Returns "<BRAND> — projectName" when a project name is available, otherwise just "<BRAND>".
@@ -153,4 +195,10 @@ function findExecutable(name: string): string | null {
   } catch {
     return null;
   }
+}
+
+function resolveBellStream(): BellStream | null {
+  if (process.stderr?.isTTY) return process.stderr;
+  if (process.stdout?.isTTY) return process.stdout;
+  return null;
 }

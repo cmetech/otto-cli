@@ -169,6 +169,8 @@ export function supportsAdaptiveThinking(modelId: string): boolean {
 		modelId.includes("opus-4.6") ||
 		modelId.includes("opus-4-7") ||
 		modelId.includes("opus-4.7") ||
+		modelId.includes("opus-4-8") ||
+		modelId.includes("opus-4.8") ||
 		modelId.includes("sonnet-4-6") ||
 		modelId.includes("sonnet-4.6") ||
 		modelId.includes("sonnet-4-7") ||
@@ -190,7 +192,12 @@ export function mapThinkingLevelToEffort(level: string | undefined, modelId: str
 		case "high":
 			return "high";
 		case "xhigh":
-			if (modelId.includes("opus-4-7") || modelId.includes("opus-4.7")) return "xhigh";
+			if (
+				modelId.includes("opus-4-7") ||
+				modelId.includes("opus-4.7") ||
+				modelId.includes("opus-4-8") ||
+				modelId.includes("opus-4.8")
+			) return "xhigh";
 			if (modelId.includes("opus-4-6") || modelId.includes("opus-4.6")) return "max";
 			return "high";
 		default:

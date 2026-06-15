@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 import { provisionWorktreeNodeModules, registerWorktree } from "../../_common/scripts/worktree.mjs";
 
 const HERE = pdir(fileURLToPath(import.meta.url));
-const RUN_GATES = resolve(HERE, "..", "..", "upstream-fix", "scripts", "run-gates.mjs");
+const RUN_GATES = resolve(HERE, "..", "..", "_common", "scripts", "run-gates.mjs");
 const REPO_ROOT = resolve(HERE, "..", "..", "..", "..");
 
 function defaultWorktreeRunner(args) { return { status: 0, stdout: execFileSync("git", args, { encoding: "utf-8" }), stderr: "" }; }

@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "date": "2026-06-05",
+  "filter": "--single-issue 91",
+  "integrationBranch": "fix/upstream-issue-91-9a20e26",
+  "prUrl": null,
+  "finalSuite": null,
+  "lanes": {
+    "1": {
+      "issues": [
+        "91"
+      ],
+      "files": [
+        "packages/mcp-server/src/server.ts",
+        "packages/mcp-server/src/session-manager.ts",
+        "packages/mcp-server/src/workflow-tools.ts",
+        "packages/mcp-server/src/mcp-server.test.ts",
+        "packages/mcp-server/src/workflow-tools.test.ts"
+      ],
+      "branch": "fix/upstream-issue-91-9a20e26",
+      "worktree": ".worktrees/upstream-fix-issue-91",
+      "status": "failed"
+    }
+  },
+  "issues": {
+    "91": {
+      "lane": 1,
+      "sha": "9a20e26",
+      "guidancePath": ".planning/upstream-audits/guidance/9a20e26.md",
+      "targetFiles": [
+        "packages/mcp-server/src/server.ts",
+        "packages/mcp-server/src/session-manager.ts",
+        "packages/mcp-server/src/workflow-tools.ts",
+        "packages/mcp-server/src/mcp-server.test.ts",
+        "packages/mcp-server/src/workflow-tools.test.ts"
+      ],
+      "status": "unresolved",
+      "commitSha": null,
+      "touchedFiles": [],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": null,
+      "reviewerReason": null,
+      "reason": "CONFIDENCE GATE — workflow-tools.ts part has structural divergence (missing prepareSaveGateResultArguments helper in otto); commented on issue for human triage"
+    }
+  }
+}

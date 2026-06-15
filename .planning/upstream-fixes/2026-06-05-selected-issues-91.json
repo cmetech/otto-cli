@@ -1,0 +1,16 @@
+[
+  {
+    "number": 91,
+    "severity": "nice-to-have-fix",
+    "type": "cherry-pick-candidate",
+    "sha": "9a20e26",
+    "guidancePath": ".planning/upstream-audits/guidance/9a20e26.md",
+    "targetFiles": [
+      "packages/mcp-server/src/server.ts",
+      "packages/mcp-server/src/session-manager.ts",
+      "packages/mcp-server/src/workflow-tools.ts",
+      "packages/mcp-server/src/mcp-server.test.ts",
+      "packages/mcp-server/src/workflow-tools.test.ts"
+    ]
+  }
+]

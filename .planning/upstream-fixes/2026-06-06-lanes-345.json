@@ -1,0 +1,16 @@
+{
+  "lanes": [
+    {
+      "id": 1,
+      "issues": [
+        "345"
+      ],
+      "files": [
+        "src/resources/extensions/ollama/model-capabilities.ts",
+        "src/resources/extensions/ollama/ollama-discovery.ts",
+        "src/resources/extensions/ollama/tests/model-capabilities.test.ts",
+        "src/resources/extensions/ollama/tests/ollama-discovery-priority.test.ts (new)"
+      ]
+    }
+  ]
+}

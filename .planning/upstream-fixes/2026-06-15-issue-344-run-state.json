@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "--single-issue 344",
+  "integrationBranch": "fix/upstream-issue-344-066cee9",
+  "prUrl": "https://github.com/cmetech/otto-cli/pull/382",
+  "finalSuite": {
+    "pass": true,
+    "note": "9744 passed, 1 failed (flaky perf-latency benchmark ADR-011 P3 #26 in progressive-planning.test, unrelated to EPIPE change; passes in isolation), 9 skipped."
+  },
+  "lanes": {
+    "1": {
+      "issues": [
+        "344"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/bootstrap/register-extension.ts",
+        "src/resources/extensions/workflow/tests/register-extension-guard.test.ts"
+      ],
+      "branch": "fix/upstream-issue-344-066cee9",
+      "worktree": ".worktrees/upstream-fix-issue-344",
+      "status": "done"
+    }
+  },
+  "issues": {
+    "344": {
+      "lane": 1,
+      "sha": "066cee9",
+      "guidancePath": ".planning/upstream-audits/guidance/066cee9.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-extension.ts",
+        "src/resources/extensions/workflow/tests/register-extension-guard.test.ts"
+      ],
+      "status": "approved",
+      "commitSha": "e1d3e79",
+      "touchedFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-extension.ts",
+        "src/resources/extensions/workflow/tests/register-extension-guard.test.ts"
+      ],
+      "gates": {
+        "regression": true,
+        "build": true,
+        "targeted": true
+      },
+      "reviewer": "approve",
+      "reviewerReason": "Faithful adapted-port of 066cee9; unconditional EPIPE writeCrashLog removed, stderr suffix trimmed, crash logging preserved, test flipped to assert no crash dir, no scope creep, 6/6 targeted green.",
+      "reviewerRejectionCount": 0,
+      "reason": null
+    }
+  }
+}

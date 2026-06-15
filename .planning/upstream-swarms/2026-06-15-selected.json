@@ -1,0 +1,57 @@
+{
+  "autoTier": [],
+  "humanTier": [
+    {
+      "number": 344,
+      "severity": "critical-stability",
+      "type": "port-required",
+      "sha": "066cee9",
+      "guidancePath": ".planning/upstream-audits/guidance/066cee9.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-extension.ts (exists)",
+        "src/resources/extensions/workflow/tests/register-extension-guard.test.ts (exists)"
+      ]
+    },
+    {
+      "number": 237,
+      "severity": "critical-stability",
+      "type": "port-required",
+      "sha": "97c2043",
+      "guidancePath": ".planning/upstream-audits/guidance/97c2043.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-extension.ts",
+        "src/resources/extensions/workflow/tests/register-extension-guard.test.ts"
+      ]
+    },
+    {
+      "number": 175,
+      "severity": "critical-stability",
+      "type": "port-required",
+      "sha": "4954d5c",
+      "guidancePath": ".planning/upstream-audits/guidance/4954d5c.md",
+      "targetFiles": [
+        "scripts/validate-pack.js"
+      ]
+    }
+  ],
+  "needsTriage": [
+    {
+      "number": 45,
+      "severity": "critical-stability",
+      "type": "port-required",
+      "sha": "15f1dea",
+      "guidancePath": ".planning/upstream-audits/guidance/15f1dea.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 1,
+      "severity": "critical-stability",
+      "type": "port-required",
+      "sha": "fa1180b",
+      "guidancePath": ".planning/upstream-audits/guidance/fa1180b.md",
+      "targetFiles": [],
+      "needsTriage": true
+    }
+  ]
+}

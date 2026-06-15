@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "date": "2026-06-14",
+  "prs": {
+    "377": {
+      "headRef": "integration/upstream-fix-2026-06-14",
+      "isDraft": false,
+      "status": "merged",
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": "91ea4184",
+      "reason": "merged after #378 lockfile resync unblocked the build gate"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+[
+  {
+    "number": 90,
+    "severity": "nice-to-have-fix",
+    "type": "cherry-pick-candidate",
+    "sha": "9171fc3",
+    "guidancePath": ".planning/upstream-audits/guidance/9171fc3.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/worktree-state-projection.ts",
+      "src/resources/extensions/workflow/tests/worktree-state-projection.test.ts"
+    ]
+  }
+]

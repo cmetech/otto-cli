@@ -1,0 +1,15 @@
+{
+  "lanes": [
+    {
+      "id": 1,
+      "issues": [
+        "285"
+      ],
+      "files": [
+        "packages/pi-coding-agent/src/modes/interactive/components/tool-execution.ts",
+        "packages/pi-coding-agent/src/modes/interactive/controllers/chat-controller.ts",
+        "packages/pi-coding-agent/src/core/chat-controller-ordering.test.ts"
+      ]
+    }
+  ]
+}

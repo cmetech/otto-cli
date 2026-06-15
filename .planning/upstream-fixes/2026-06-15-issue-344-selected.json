@@ -1,0 +1,13 @@
+[
+  {
+    "number": 344,
+    "severity": "critical-stability",
+    "type": "port-required",
+    "sha": "066cee9",
+    "guidancePath": ".planning/upstream-audits/guidance/066cee9.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/bootstrap/register-extension.ts (exists)",
+      "src/resources/extensions/workflow/tests/register-extension-guard.test.ts (exists)"
+    ]
+  }
+]

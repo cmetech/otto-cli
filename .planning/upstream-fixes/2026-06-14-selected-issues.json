@@ -1,0 +1,39 @@
+[
+  {
+    "number": 176,
+    "severity": "feature",
+    "type": "port-required",
+    "sha": "2349bf2",
+    "guidancePath": ".planning/upstream-audits/guidance/2349bf2.md",
+    "targetFiles": [
+      "packages/pi-ai/src/models/generated/anthropic.ts",
+      "packages/pi-ai/scripts/generate-models.ts",
+      "packages/pi-ai/src/providers/amazon-bedrock.ts",
+      "packages/pi-coding-agent/src/core/capability-patches.ts",
+      "packages/pi-coding-agent/src/core/model-resolver.ts",
+      "src/resources/extensions/claude-code-cli/models.ts",
+      "src/resources/extensions/claude-code-cli/stream-adapter.ts",
+      "src/resources/extensions/claude-code-cli/tests/stream-adapter.test.ts",
+      "src/resources/extensions/workflow/model-router.ts",
+      "src/resources/extensions/workflow/model-cost-table.ts",
+      "src/tests/startup-model-validation.test.ts"
+    ]
+  },
+  {
+    "number": 155,
+    "severity": "feature",
+    "type": "port-required",
+    "sha": "16ce473",
+    "guidancePath": ".planning/upstream-audits/guidance/16ce473.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/auto.ts (exists)",
+      "src/resources/extensions/workflow/commands-prefs-wizard.ts (verify)",
+      "src/resources/extensions/workflow/templates/PREFERENCES.md (verify)",
+      "src/resources/extensions/workflow/docs/preferences-reference.md (verify)",
+      "src/resources/extensions/workflow/tests/notifications.test.ts (verify exists)",
+      "src/resources/extensions/workflow/tests/preferences.test.ts (verify exists)",
+      "src/resources/extensions/workflow/tests/prefs-wizard-coverage.test.ts (verify exists)",
+      "src/resources/extensions/ask-user-questions.ts (verify; same path in otto if file exists)"
+    ]
+  }
+]

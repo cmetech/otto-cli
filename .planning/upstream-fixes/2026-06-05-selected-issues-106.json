@@ -1,0 +1,13 @@
+[
+  {
+    "number": 106,
+    "severity": "nice-to-have-fix",
+    "type": "cherry-pick-candidate",
+    "sha": "c5057c9",
+    "guidancePath": ".planning/upstream-audits/guidance/c5057c9.md",
+    "targetFiles": [
+      "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/state-reconciliation/index.ts",
+      "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/state-reconciliation-drift.test.ts"
+    ]
+  }
+]

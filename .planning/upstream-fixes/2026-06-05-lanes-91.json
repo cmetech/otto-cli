@@ -1,0 +1,17 @@
+{
+  "lanes": [
+    {
+      "id": 1,
+      "issues": [
+        "91"
+      ],
+      "files": [
+        "packages/mcp-server/src/server.ts",
+        "packages/mcp-server/src/session-manager.ts",
+        "packages/mcp-server/src/workflow-tools.ts",
+        "packages/mcp-server/src/mcp-server.test.ts",
+        "packages/mcp-server/src/workflow-tools.test.ts"
+      ]
+    }
+  ]
+}

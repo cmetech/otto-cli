@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "date": "2026-06-05",
+  "filter": "status:triaged",
+  "startedAt": null,
+  "baselineGate": null,
+  "waves": [],
+  "issues": {
+    "31": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "4bbe295",
+      "targetFiles": [
+        "packages/pi-tui/src/terminal-image.ts (exists)",
+        "packages/pi-tui/test/terminal-image.test.ts (verify exists)"
+      ],
+      "state": "merged",
+      "retryCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 77,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/77",
+      "checks": {
+        "required": [
+          "build",
+          "test-unit",
+          "test-packages",
+          "fast-gates"
+        ],
+        "allPass": true,
+        "nonRequiredFail": [
+          "e2e",
+          "docker-e2e",
+          "integration-tests",
+          "triage"
+        ]
+      },
+      "localGate": {
+        "pass": true,
+        "logPath": ".planning/upstream-swarms/2026-06-05-pr77-local-gate.log"
+      },
+      "refute": {
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.85,
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "blocking": false
+          }
+        ],
+        "tally": {
+          "panelVerdict": "approve",
+          "approves": 4,
+          "refutes": 0,
+          "abstains": 0,
+          "reason": "4 approve / 0 abstain / 0 refute"
+        }
+      },
+      "mergeSha": "fced63a",
+      "reason": "recovery: PR rebased to drop drive-by commits e7ec10c+2af9b48 (now PRs #78, #79); re-running refute"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "number": 285,
+    "severity": "feature",
+    "type": "cherry-pick-candidate",
+    "sha": "90652ad",
+    "guidancePath": ".planning/upstream-audits/guidance/90652ad.md",
+    "targetFiles": [
+      "packages/pi-coding-agent/src/modes/interactive/components/tool-execution.ts",
+      "packages/pi-coding-agent/src/modes/interactive/controllers/chat-controller.ts",
+      "packages/pi-coding-agent/src/core/chat-controller-ordering.test.ts"
+    ]
+  }
+]

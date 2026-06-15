@@ -1,0 +1,13 @@
+[
+  {
+    "number": 95,
+    "severity": "nice-to-have-fix",
+    "type": "cherry-pick-candidate",
+    "sha": "83f54b1",
+    "guidancePath": ".planning/upstream-audits/guidance/83f54b1.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/repo-identity.ts",
+      "src/resources/extensions/workflow/tests/project-relocation-recovery.test.ts (new)"
+    ]
+  }
+]

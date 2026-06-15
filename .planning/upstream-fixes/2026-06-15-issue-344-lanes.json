@@ -1,0 +1,14 @@
+{
+  "lanes": [
+    {
+      "id": 1,
+      "issues": [
+        "344"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/bootstrap/register-extension.ts (exists)",
+        "src/resources/extensions/workflow/tests/register-extension-guard.test.ts (exists)"
+      ]
+    }
+  ]
+}

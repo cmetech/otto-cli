@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "date": "2026-06-05",
+  "filter": "--single-issue 90",
+  "integrationBranch": "fix/upstream-issue-90-9171fc3",
+  "prUrl": null,
+  "finalSuite": null,
+  "lanes": {
+    "1": {
+      "issues": [
+        "90"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/worktree-state-projection.ts",
+        "src/resources/extensions/workflow/tests/worktree-state-projection.test.ts"
+      ],
+      "branch": "fix/upstream-issue-90-9171fc3",
+      "worktree": ".worktrees/upstream-fix-issue-90",
+      "status": "in-progress"
+    }
+  },
+  "issues": {
+    "90": {
+      "lane": 1,
+      "sha": "9171fc3",
+      "guidancePath": ".planning/upstream-audits/guidance/9171fc3.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/worktree-state-projection.ts",
+        "src/resources/extensions/workflow/tests/worktree-state-projection.test.ts"
+      ],
+      "status": "pending",
+      "commitSha": null,
+      "touchedFiles": [],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": null,
+      "reviewerReason": null,
+      "reason": null
+    }
+  }
+}

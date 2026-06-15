@@ -1,8 +1,10 @@
 /**
  * Local otto-gateway e2e.
  *
- * This intentionally fails fast when the local gateway is not running. It is
- * meant for gateway integration runs, not hermetic CI without otto-gateway.
+ * Meant for gateway integration runs (a local otto-gateway on OTTO_E2E_GATEWAY_URL).
+ * In a hermetic CI environment without the gateway these tests SKIP (via t.skip)
+ * rather than fail — the real assertions only run when the gateway answers 2xx.
+ * Mirrors the runtime-skip pattern in migration.e2e.test.ts.
  */
 
 import { describe, test } from "node:test";
@@ -23,13 +25,22 @@ function binaryAvailable(): { ok: boolean; reason?: string } {
 	return { ok: true };
 }
 
-async function assertGatewayRunning(): Promise<void> {
-	const res = await fetch(`${GATEWAY_URL.replace(/\/+$/, "")}/health`, { signal: AbortSignal.timeout(1500) });
-	assert.equal(
-		res.ok,
-		true,
-		`expected local otto-gateway health at ${GATEWAY_URL}/health to be 2xx, got ${res.status}`,
-	);
+/**
+ * Probe the local otto-gateway. Returns ok:false (with a reason) when it is not
+ * running or not healthy, so the e2e test skips rather than fails in CI without
+ * the gateway. Only a 2xx /health response lets the real assertions run.
+ */
+async function probeGateway(): Promise<{ ok: boolean; reason?: string }> {
+	let res: Response;
+	try {
+		res = await fetch(`${GATEWAY_URL.replace(/\/+$/, "")}/health`, { signal: AbortSignal.timeout(1500) });
+	} catch (err) {
+		return { ok: false, reason: `otto-gateway not running at ${GATEWAY_URL} (health probe failed: ${(err as Error).message})` };
+	}
+	if (!res.ok) {
+		return { ok: false, reason: `otto-gateway health at ${GATEWAY_URL}/health returned ${res.status}, expected 2xx` };
+	}
+	return { ok: true };
 }
 
 function gatewayLogOffset(): number {
@@ -60,7 +71,8 @@ describe("local otto-gateway e2e", () => {
 	const skipReason = avail.ok ? null : avail.reason;
 
 	test("headless OTTO routes chat through the local gateway", { skip: skipReason ?? false }, async (t) => {
-		await assertGatewayRunning();
+		const gw = await probeGateway();
+		if (!gw.ok) return t.skip(gw.reason);
 		const logOffset = gatewayLogOffset();
 		const project = createTmpProject();
 		t.after(project.cleanup);

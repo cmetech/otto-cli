@@ -4549,6 +4549,108 @@ test("autoLoop rejects complete-slice with 0 tool calls as context-exhausted (#2
   );
 });
 
+test("autoLoop pauses on zero-tool-call rate-limit assistant messages instead of immediate retry (#138)", async () => {
+  _resetPendingResolve();
+
+  const originalSetTimeout = globalThis.setTimeout;
+  const timers: Array<{ fn: () => void; delay: number }> = [];
+  globalThis.setTimeout = ((fn: () => void, delay?: number) => {
+    timers.push({ fn, delay: delay ?? 0 });
+    return 0 as unknown as ReturnType<typeof setTimeout>;
+  }) as typeof setTimeout;
+
+  try {
+    const ctx = makeMockCtx();
+    ctx.ui.setStatus = () => {};
+    ctx.sessionManager = { getSessionFile: () => "/tmp/session.json" };
+    const notifications: string[] = [];
+    ctx.ui.notify = (msg: string) => { notifications.push(msg); };
+    const pi = makeMockPi();
+
+    const s = makeLoopSession();
+
+    const mockLedger = {
+      version: 1,
+      projectStartedAt: Date.now(),
+      units: [] as any[],
+    };
+
+    const deps = makeMockDeps({
+      deriveState: async () => {
+        deps.callLog.push("deriveState");
+        return {
+          phase: "executing",
+          activeMilestone: { id: "M001", title: "Test", status: "active" },
+          activeSlice: { id: "S01", title: "Slice 1" },
+          activeTask: { id: "T01" },
+          registry: [{ id: "M001", status: "active" }],
+          blockers: [],
+        } as any;
+      },
+      resolveDispatch: async () => {
+        deps.callLog.push("resolveDispatch");
+        return {
+          action: "dispatch" as const,
+          unitType: "execute-task",
+          unitId: "M001/S01/T01",
+          prompt: "implement the feature",
+        };
+      },
+      closeoutUnit: async () => {
+        mockLedger.units.push({
+          type: "execute-task",
+          id: "M001/S01/T01",
+          startedAt: s.currentUnit?.startedAt ?? Date.now(),
+          toolCalls: 0,
+          assistantMessages: 1,
+          tokens: { input: 100, output: 100, total: 200, cacheRead: 0, cacheWrite: 0 },
+          cost: 0.05,
+        });
+      },
+      getLedger: () => mockLedger,
+    });
+
+    const loopPromise = autoLoop(ctx, pi, s, deps);
+
+    // Use the real setTimeout for test scheduling — only the loop's resume timer
+    // is captured. The agent_end message is a transient rate-limit error.
+    await new Promise((r) => originalSetTimeout(r, 50));
+    resolveAgentEnd(makeEvent([
+      {
+        role: "assistant",
+        content: [{ type: "text", text: "You've hit your limit · resets Jun 1 at 8am" }],
+      },
+    ]));
+
+    await loopPromise;
+
+    assert.ok(
+      deps.callLog.includes("pauseAuto"),
+      "rate-limit message should pause auto-mode",
+    );
+    assert.ok(
+      timers.some((timer) => timer.delay === 60_000),
+      "rate-limit message should schedule delayed auto-resume instead of immediate retry",
+    );
+    assert.ok(
+      notifications.some((msg) => msg.includes("Auto-resuming in 60s")),
+      "rate-limit pause should announce delayed resume",
+    );
+    assert.ok(
+      !notifications.some((msg) => msg.includes("context exhaustion")),
+      "rate-limit message should not be classified as context exhaustion",
+    );
+    const deriveCount = deps.callLog.filter((entry) => entry === "deriveState").length;
+    assert.equal(
+      deriveCount,
+      1,
+      "loop should pause after first iteration instead of redispatching",
+    );
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+});
+
 // ─── Worktree health check (#1833) ────────────────────────────────────────
 
 test("autoLoop stops when Worktree Safety finds no .git marker for execute-task (#1833)", async (t) => {

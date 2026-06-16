@@ -314,12 +314,12 @@ export function select({ filter, configPath, repo, guidanceDir, out, ledgerOut, 
     initSwarmLedger(ledgerOut, { date, filter: JSON.stringify(filterObj), issues: allIssues });
     ledger = ledgerOut;
   }
-  const waveCount = Array.isArray(waves) ? waves.length : (waves.waves ?? (waves.plan?.length ?? 0));
+  const waveCount = waves.length;
   return { totalAuto: part.totalAuto, totalHuman: part.totalHuman, totalNeedsTriage: part.totalNeedsTriage, waveCount, ledger };
 }
 ```
 
-NOTE on `waveCount`: in Step 1 you confirmed `planWaves`' return shape during Phase 1A planning notes — it returns `{ plan: [...], total, waves: <number> }`. The expression above reads `waves.waves` (the number) first. Verify against `wave-plan.mjs` and keep whichever field is the numeric count; do not guess — read the function.
+NOTE on `waveCount`: `planWaves` returns a plain array of waves (`Array<Array<{number, targetFiles}>>` — see `wave-plan.mjs`), so `waveCount` is simply `waves.length`. (An earlier draft hedged with an `Array.isArray(...) ? ... : (waves.waves ?? waves.plan?.length ?? 0)` fallback under the mistaken assumption that `planWaves` returned `{ plan, total, waves }`; that object-shape branch was dead and has been dropped.)
 
 - [ ] **Step 4: Register in `swarm-control.mjs`**
 

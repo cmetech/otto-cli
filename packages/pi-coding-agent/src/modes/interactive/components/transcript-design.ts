@@ -227,7 +227,7 @@ export function renderAssistantRail(
 		borderColor: railColor,
 		bodyColor: "assistantMessageText",
 	});
-	const renderedSurface = surface.map((line) => indent + theme.bg("customMessageBg", line));
+	const renderedSurface = surface.map((line) => indent + line);
 	if (!opts.connected) return renderedSurface;
 	return [`${indent}${theme.fg(railColor, "      ╰──────╮")}`, ...renderedSurface];
 }

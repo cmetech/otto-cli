@@ -40,3 +40,22 @@ test("dispatch feeds documented gate flags to the handler as the params gateForP
   assert.equal(received.targets, "a.ts");
   assert.equal(received.logDir, "/tmp/g");
 });
+
+test("documented multi-word flags map to the params each handler destructures", () => {
+  const cases = [
+    { flags: ["--ledger", "l", "--caps", "{}", "--now", "1"], expect: { ledger: "l", caps: "{}", now: "1" } },
+    { flags: ["--ledger", "l", "--out", "o"], expect: { ledger: "l", out: "o" } },
+    { flags: ["--ttl-hours", "12"], expect: { ttlHours: "12" } },
+    { flags: ["--skip-baseline", "--workdir", "w", "--log", "g"], expect: { skipBaseline: true, workdir: "w", log: "g" } },
+    { flags: ["--config-path", "c", "--guidance-dir", "d", "--ledger-out", "lo", "--max-wave-size", "3"],
+      expect: { configPath: "c", guidanceDir: "d", ledgerOut: "lo", maxWaveSize: "3" } },
+    { flags: ["--ledger", "l", "--issue", "5", "--state", "fix-ok", "--payload", "{}"],
+      expect: { ledger: "l", issue: "5", state: "fix-ok", payload: "{}" } },
+    { flags: ["--ledger", "l", "--signature", "s", "--threshold", "5"], expect: { ledger: "l", signature: "s", threshold: "5" } },
+    { flags: ["--pr", "400", "--issue", "5", "--ledger", "l", "--refute-reason", "ok"],
+      expect: { pr: "400", issue: "5", ledger: "l", refuteReason: "ok" } },
+  ];
+  for (const { flags, expect } of cases) {
+    assert.deepEqual(parseFlags(flags), expect, `flags ${flags.join(" ")}`);
+  }
+});

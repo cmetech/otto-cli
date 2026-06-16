@@ -23,7 +23,7 @@ export function parseFlags(args) {
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a.startsWith("--")) {
-      const key = a.slice(2);
+      const key = a.slice(2).replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
       const next = args[i + 1];
       if (next === undefined || next.startsWith("--")) { out[key] = true; }
       else { out[key] = next; i++; }

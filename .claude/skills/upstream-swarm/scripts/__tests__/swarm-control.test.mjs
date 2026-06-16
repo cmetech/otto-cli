@@ -22,3 +22,21 @@ test("KNOWN_COMMANDS lists the subcommands this plan ships", () => {
 test("parseFlags parses --k v pairs and boolean flags", () => {
   assert.deepEqual(parseFlags(["--pr", "400", "--branch", "fix/x", "--unattended"]), { pr: "400", branch: "fix/x", unattended: true });
 });
+
+test("parseFlags camelCases kebab flag keys", () => {
+  assert.deepEqual(
+    parseFlags(["--pr", "42", "--head-ref", "fix/b", "--targets", "a.ts,b.ts", "--log-dir", "/tmp/g"]),
+    { pr: "42", headRef: "fix/b", targets: "a.ts,b.ts", logDir: "/tmp/g" }
+  );
+});
+
+test("dispatch feeds documented gate flags to the handler as the params gateForPr reads", async () => {
+  let received = null;
+  const handlers = { gate: (args) => { received = parseFlags(args); return received; } };
+  await dispatch(["gate", "--pr", "400", "--head-ref", "fix/x", "--targets", "a.ts", "--log-dir", "/tmp/g"], handlers);
+  // gateForPr destructures { pr, headRef, targets, logDir } — all must be present:
+  assert.equal(received.pr, "400");
+  assert.equal(received.headRef, "fix/x");
+  assert.equal(received.targets, "a.ts");
+  assert.equal(received.logDir, "/tmp/g");
+});

@@ -37,6 +37,28 @@ const VERDICT_SCHEMA = {
   additionalProperties: true,
 }
 
+// Fix-lane result. WHY a schema: the fix lane is a full upstream-fix subagent;
+// without a schema, agent() returns its FINAL TEXT as a string — and that text
+// is often prose ("PR #403 is open, all gates passed…"), not the requested
+// JSON. The driver then reads res.outcome/res.prNumber off a string → always
+// undefined → every successful lane is mis-recorded fix-failed ("lane did not
+// open a PR"). Forcing this schema makes the runtime compel a StructuredOutput
+// object regardless of prose, exactly like the ctl {stdout} pattern.
+const FIX_RESULT_SCHEMA = {
+  type: 'object',
+  properties: {
+    issue: { type: 'integer' },
+    outcome: { type: 'string', enum: ['pr-opened', 'fix-failed', 'blocked'] },
+    prNumber: { type: ['integer', 'null'] },
+    prUrl: { type: ['string', 'null'] },
+    branch: { type: ['string', 'null'] },
+    gatesPassed: { type: 'boolean' },
+    notes: { type: 'string' },
+  },
+  required: ['outcome'],
+  additionalProperties: true,
+}
+
 // Validated ctl pattern: the agent's only job is to run the command and place
 // its COMPLETE stdout verbatim into `stdout`; the SCRIPT parses. Never give the
 // agent a loose object schema (it invents shape / wraps under stdout anyway).
@@ -58,6 +80,15 @@ const DIR = a.dir
 const DATE = a.date
 const GATELOG = a.gateLogDir ?? `${DIR}/${DATE}-gate-logs`
 const dryRun = a.dryRun === true
+// skipSelect: use the pre-seeded ledger at L and EXECUTE (preflight stays on,
+// select is skipped). For the supervised single-issue first live run, where
+// the default `select` would pull the WHOLE filtered backlog into the wave.
+const skipSelect = a.skipSelect === true
+// skipPreflight: skip the heavy baseline gate (full suite in a worktree). For a
+// CONTINUATION run that resumes a pre-seeded ledger mid-flight (e.g. driving an
+// already-open PR's CI→gate→refute→merge tail) where preflight already passed
+// this session. Never use for a first dispatch — preflight guards clean main.
+const skipPreflight = a.skipPreflight === true
 const MAX = a.maxTicks ?? 500
 
 // #6 pre-authorization: the gates (two signals + refute approve + severity
@@ -69,8 +100,8 @@ if (a.unattended !== true) {
 log('unattended run pre-authorized; gates remain the authorization (two signals + refute approve + severity routing)')
 
 phase('Preflight')
-if (dryRun) {
-  log('[dry-run] skipping preflight baseline gate')
+if (dryRun || skipPreflight) {
+  log(skipPreflight ? '[skip-preflight] resuming pre-seeded ledger; baseline gate skipped (continuation)' : '[dry-run] skipping preflight baseline gate')
 } else {
   const pre = await ctl(['preflight', '--workdir', `${DIR}/.baseline`, '--log', `${DIR}/${DATE}-baseline.log`], 'preflight')
   if (!pre.ok) {
@@ -82,6 +113,8 @@ if (dryRun) {
 phase('Select')
 if (dryRun) {
   log(`[dry-run] using pre-seeded ledger at ${L} (no select)`)
+} else if (skipSelect) {
+  log(`[skip-select] preflight ran; select skipped; executing against pre-seeded ledger at ${L}`)
 } else {
   const sel = await ctl(['select', '--filter', JSON.stringify(a.filter ?? { label: 'type:cherry-pick-candidate' }), '--out', `${DIR}/${DATE}-selected.json`, '--ledger-out', L, '--date', DATE, '--max-wave-size', '3'], 'select')
   log(`selected: auto=${sel.totalAuto} human=${sel.totalHuman} needsTriage=${sel.totalNeedsTriage} waves=${sel.waveCount}`)
@@ -116,7 +149,7 @@ while (tick++ < MAX) {
   await parallel((plan.fixes ?? []).map((f) => async () => {
     await ctl(['record', '--ledger', L, '--issue', String(f.issueNumber), '--state', 'planning'], `plan:${f.issueNumber}`)
     await ctl(['record', '--ledger', L, '--issue', String(f.issueNumber), '--state', 'fixing'], `fixing:${f.issueNumber}`)
-    const res = await agent(f.prompt, { label: `fix:${f.issueNumber}`, phase: 'Loop' })
+    const res = await agent(f.prompt, { label: `fix:${f.issueNumber}`, phase: 'Loop', schema: FIX_RESULT_SCHEMA })
     const pr = res?.prNumber
     const branch = res?.branch
     if (res?.outcome === 'pr-opened' && pr && branch) {

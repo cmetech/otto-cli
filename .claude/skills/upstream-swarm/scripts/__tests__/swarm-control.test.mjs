@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dispatch, KNOWN_COMMANDS } from "../swarm-control.mjs";
+import { dispatch, KNOWN_COMMANDS, parseFlags } from "../swarm-control.mjs";
 
 test("dispatch routes to a registered handler and returns its result", async () => {
   const calls = [];
@@ -17,4 +17,8 @@ test("dispatch throws a usage error for an unknown command", async () => {
 test("KNOWN_COMMANDS lists the subcommands this plan ships", () => {
   assert.ok(KNOWN_COMMANDS.includes("verify-fix"));
   assert.ok(KNOWN_COMMANDS.includes("gate"));
+});
+
+test("parseFlags parses --k v pairs and boolean flags", () => {
+  assert.deepEqual(parseFlags(["--pr", "400", "--branch", "fix/x", "--unattended"]), { pr: "400", branch: "fix/x", unattended: true });
 });

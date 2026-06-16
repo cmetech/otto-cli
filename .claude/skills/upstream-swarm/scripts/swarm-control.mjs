@@ -8,13 +8,28 @@
  */
 import { verifyFixArtifacts } from "./control-verify.mjs";
 import { gateForPr } from "./control-gate.mjs";
+import { tick, report, cleanup } from "./control-plan.mjs";
+import { preflight, select } from "./control-phase-a.mjs";
+import { record, retry, classify, abortCheck } from "./control-ledger.mjs";
+import { poll, merge } from "./control-pr.mjs";
 
-export const KNOWN_COMMANDS = ["verify-fix", "gate"];
+export const KNOWN_COMMANDS = ["verify-fix", "gate", "tick", "report", "cleanup", "preflight", "select", "record", "retry", "classify", "abort-check", "poll", "merge"];
 
 export function defaultHandlers() {
   return {
     "verify-fix": (args) => verifyFixArtifacts(parseFlags(args)),
     "gate": (args) => gateForPr(parseFlags(args)),
+    "tick": (args) => tick(parseFlags(args)),
+    "report": (args) => report(parseFlags(args)),
+    "cleanup": (args) => cleanup(parseFlags(args)),
+    "preflight": (args) => preflight(parseFlags(args)),
+    "select": (args) => select(parseFlags(args)),
+    "record": (args) => record(parseFlags(args)),
+    "retry": (args) => retry(parseFlags(args)),
+    "classify": (args) => classify(parseFlags(args)),
+    "abort-check": (args) => abortCheck(parseFlags(args)),
+    "poll": (args) => poll(parseFlags(args)),
+    "merge": (args) => merge(parseFlags(args)),
   };
 }
 

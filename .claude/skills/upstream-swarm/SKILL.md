@@ -12,8 +12,27 @@ work is routed to a human review queue.
 
 ## When to use
 
-- "Run the swarm." / "Port all the triaged issues."
+- "Run the swarm." / "Run a larger wave." / "Auto-port the triaged fixes." / "Port all the triaged issues."
 - `/upstream-swarm`, `/upstream-swarm --dry-run`, `/upstream-swarm --resume`.
+
+## Two ways to run (pick the right one)
+
+1. **Unattended driver (DEFAULT for "run the swarm" / "run a larger wave").** Launch
+   the tested `swarm-driver.mjs` Workflow — it loops the controller and fans out fix
+   lanes + refute panels for you. This is the hands-off path; use it unless the
+   operator explicitly wants to drive ticks by hand. **See "Unattended run (Workflow
+   driver)" below — that section, not Phase A/B/C, is the entry point.** Validated
+   end-to-end on a supervised live run (2026-06-16).
+2. **Manual agentic loop (supervised / interactive).** You orchestrate Phase A → B →
+   C tick-by-tick in the conversation. Use when the operator wants to watch and
+   intervene at each step, or to debug the controller. Phases A/B/C document this.
+
+**Resolve missing inputs before launching (both modes).** A human rarely supplies
+every parameter. For each input the operator did NOT specify, ask with
+`AskUserQuestion`, leading with the recommended option (see the parameter table in
+"Unattended run"). Never silently guess **scope** (which issues / filter) or
+**merge authorization** — confirm those. Sensible knobs (caps, timeout) may default
+without asking, but state what you used.
 
 ## Locked invariants (never violate)
 
@@ -140,33 +159,76 @@ Loop until `nextActions(ledger, caps)` returns `[]`:
    `node abort-streak.mjs reset <ledger>` (or `--reset-abort-counter`) and
    `--resume`.
 
-## Unattended run (Workflow driver)
+## Unattended run (Workflow driver) — DEFAULT entry for "run the swarm"
 
-For a fully hands-off run, a Workflow driver loops `swarm-control` and fans out
-fix lanes + refute panels as agents, calling the pure `driver-core.mjs` for
-every decision (action bucketing, fix-lane / lens prompts, controller argv,
-pre-auth). `driver-core` is unit-tested; its argv builders are verified through
-`swarm-control`'s real `dispatch()`.
+The hands-off path: launch the tested `swarm-driver.mjs` Workflow, which loops
+`swarm-control` and fans out fix lanes + refute panels as agents, calling the pure
+unit-tested `driver-core.mjs` for every decision. Validated end-to-end on a
+supervised live run (2026-06-16). Run these steps in order.
 
-- **#6 pre-authorization (two parts):**
-  1. The driver calls `driver-core.assertUnattendedAuthorized({ unattended })` —
-     it refuses to proceed unless the run is launched with `unattended: true`,
-     and returns an auditable note the driver logs.
-  2. The merge command must be permitted non-interactively. Because autonomous
-     merge-to-main is HIGH-stakes, this is a **per-operator local opt-in, NOT a
-     committed repo-wide grant**: the operator adds
-     `"Bash(node .claude/skills/upstream-swarm/scripts/swarm-control.mjs merge:*)"`
-     to their OWN `.claude/settings.local.json` (machine-local, gitignored)
-     before an unattended run. Do not commit this grant.
-- **The locked invariants remain the real authorization** (two signals + refute
-  `approve` + severity routing); the flag/permission only signal that no human
-  will click approve this run. `feature`/`critical-stability` still stop at
-  `pending-human-review`; only `nice-to-have-fix` auto-merges.
-- **The Workflow shell (`swarm-driver.mjs`) is built in Phase 2b** — an
-  interactive build validated by a live dry-run + a supervised first run on a
-  1-2 issue batch before trusting it on a large wave (the shell is not
-  unit-testable; its decision logic lives in the tested `driver-core`). See the
-  Phase 2 plan's Appendix for the reference scaffold.
+### Step 0 — Resolve run parameters (ASK for anything not given)
+
+For each input the operator did not specify, ask with `AskUserQuestion`, leading
+with the recommended option. **Never silently guess scope or merge authorization.**
+
+| Parameter | Recommended default | When to ask |
+|---|---|---|
+| **Scope / selection** | A **curated batch** of ~8–12 `nice-to-have-fix` issues that are small, **file-disjoint** across the set (lanes run in parallel), and have **no open prerequisite**. | ALWAYS surface the concrete issue list and get an explicit OK before seeding/launching. For a first/large run prefer curated over full-backlog. |
+| **Severity tier** | `nice-to-have-fix` only (these auto-merge; `feature`/`critical-stability` stop at `pending-human-review`). | Ask if the operator implied a broader port. |
+| **fixConcurrency** | `3` | Ask only if they hinted at a supervised/sequential run → then `1`. |
+| **issueTimeoutMs** | `2700000` (45 min) — **arms the hung-lane breaker.** Always include it in caps. | No; state the value you used. |
+| **Dry-run first** | For a large/unfamiliar batch, offer a `dryRun:true` Phase-A preview (one plan tick, no PRs) before the real run. | Ask for large batches. |
+
+Default caps to pass (merge the resolved knobs in):
+`{"fixConcurrency":3,"prWindow":10,"refuteConcurrency":5,"issueTimeoutMs":2700000,"basePollMs":60000,"maxPollMs":480000,"pollBackoffAfter":1}`
+
+### Step 1 — Preflight + authorization
+
+- Run `node .claude/skills/upstream-swarm/scripts/preflight-clean-main.mjs`; it must
+  be `clean:true` (local main == origin). If ahead, **STOP** and ask the operator
+  before pushing — unpushed commits leak into every PR.
+- Confirm the **#6 merge opt-in**: grep `.claude/settings.local.json` for
+  `swarm-control.mjs merge:*`. If absent, autonomous merges will not proceed — tell
+  the operator and offer to add it (per-operator, **gitignored, never commit** this
+  grant). The locked invariants remain the real authorization (two signals + refute
+  `approve` + severity routing); `assertUnattendedAuthorized` requires `unattended:true`.
+
+### Step 2 — Seed (curated) or let the driver select
+
+- **Curated batch (recommended):** seed a ledger with exactly the agreed issues —
+  `swarm-control select --filter '{"issues":["N1","N2",...]}' --out <DIR>/<DATE>-selected.json
+  --ledger-out <DIR>/<DATE>-run-state.json --date <DATE>` — then launch with
+  `skipSelect:true`. Verify the ledger holds those issues (`state:selected`, sha +
+  targetFiles set).
+- **Full filtered backlog:** launch WITHOUT `skipSelect` and pass `filter` in args; the
+  driver runs `select` (waved by `maxWaveSize`, bounded by `prWindow`). Use only when
+  the operator explicitly asks for the whole backlog — it can be 100+ issues.
+
+### Step 3 — Launch the driver
+
+Use the **Workflow tool**, `scriptPath` =
+`.claude/skills/upstream-swarm/workflows/swarm-driver.mjs`, args =
+`{ ledger:<path>, caps:"<json string from Step 0>", dir:".planning/upstream-swarms",
+   date:"<YYYY-MM-DD>", unattended:true, dryRun:<bool>, skipSelect:<bool>, maxTicks:50 }`.
+Watch with `/workflows`; narrate ticks; **be ready to `TaskStop`** (the timeout
+breaker is armed via `issueTimeoutMs`, but watch anyway).
+
+### Step 4 — Drain passes (the CI tail)
+
+One invocation **drains-on-empty between backoff-gated CI polls**, so it returns with
+lanes still in `awaiting-ci` — that's expected, not a failure. Wait for those PRs'
+required checks to go green (`swarm-control poll --pr <n>`; the `triage` check is
+informational and is ignored), then **re-invoke the SAME driver with
+`skipSelect:true, skipPreflight:true`** (the ledger persists) to push them through
+`ci-green → gate → refute → merge`. Repeat until every issue is `merged` or
+`quarantined`. A real many-in-flight wave keeps the loop busy and drains in fewer passes.
+
+### Step 5 — Report
+
+`swarm-control report` + `cleanup` (Phase C). Summarize merges and quarantines
+(refute reasons live in the ledger); a refute-quarantine is the gate working, not a bug.
+
+> Runbook companion (verbose, copy-paste commands): `.planning/upstream-swarms/2026-06-16-larger-wave-handoff.md`.
 
 ## Phase C — Report + cleanup
 

@@ -30,20 +30,27 @@ async function defaultGateRunner({ workdir, logPath }) {
   return runGate({ gate: "full", cwd: workdir, logPath });
 }
 
-export function runBaselineGate({ workdir, logPath, base = "origin/main", worktreeRunner = defaultWorktreeRunner, provisionDeps = defaultProvisionDeps, gateRunner = defaultGateRunner }) {
+export function runBaselineGate({ workdir, logPath, base = "origin/main", uniqueSuffix = String(process.pid), worktreeRunner = defaultWorktreeRunner, provisionDeps = defaultProvisionDeps, gateRunner = defaultGateRunner }) {
   mkdirSync(dirname(logPath), { recursive: true });
+  // Per-process worktree path. The Workflow runtime auto-retries a stalled
+  // ctl agent (e.g. the ~180s cold-start), which can spawn a SECOND baseline
+  // gate while the first is still running its suite. With a fixed workdir, the
+  // retry's `worktree remove --force` deletes the first's cwd mid-suite →
+  // `ENOENT: uv_cwd`. Suffixing the worktree with the process id makes the two
+  // invocations use distinct paths, so a retry never clobbers a live gate.
+  const wd = uniqueSuffix ? `${workdir}-${uniqueSuffix}` : workdir;
   // Idempotent: a prior failed gate may have left this worktree on disk
   // (it's deliberately kept for inspection). Force-remove it first so the
   // add below doesn't throw "worktree already exists". Best-effort.
-  try { worktreeRunner(["worktree", "remove", "--force", workdir]); } catch { /* nothing to remove */ }
+  try { worktreeRunner(["worktree", "remove", "--force", wd]); } catch { /* nothing to remove */ }
   // Create a detached worktree at base.
-  worktreeRunner(["worktree", "add", "--detach", workdir, base]);
-  try { registerWorktree(".planning/upstream-swarms/.worktree-registry.json", { path: workdir, owner: "swarm-baseline", createdAt: Date.now() }); }
+  worktreeRunner(["worktree", "add", "--detach", wd, base]);
+  try { registerWorktree(".planning/upstream-swarms/.worktree-registry.json", { path: wd, owner: "swarm-baseline", createdAt: Date.now() }); }
   catch { /* best-effort */ }
   // Provision node_modules so the gate can actually run.
-  provisionDeps({ workdir });
+  provisionDeps({ workdir: wd });
   // gateRunner may be sync (tests) or async (real). Normalize.
-  const out = gateRunner({ workdir, logPath });
+  const out = gateRunner({ workdir: wd, logPath });
   if (out && typeof out.then === "function") {
     // Async path
     return out.then((r) => ({ pass: r.pass, failTail: r.failTail ?? "", logPath }));

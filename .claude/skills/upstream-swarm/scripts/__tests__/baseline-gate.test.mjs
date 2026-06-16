@@ -72,6 +72,33 @@ test("provisions deps after worktree creation, before running the gate", () => {
   assert.equal(order[3], "gate");
 });
 
+test("isolates concurrent gates: distinct uniqueSuffix → distinct worktree paths (no clobber)", () => {
+  const adds = [];
+  const run = (suffix) => runBaselineGate({
+    workdir: ".worktrees/base", logPath: "/tmp/b.log", uniqueSuffix: suffix,
+    worktreeRunner: (args) => { if (args[1] === "add") adds.push(args[3]); return { status: 0 }; },
+    provisionDeps: () => {}, gateRunner: () => ({ pass: true, failTail: "" }),
+  });
+  run("100"); run("200");
+  assert.equal(adds.length, 2);
+  assert.notEqual(adds[0], adds[1], "a retried gate (different process) must not share the first's worktree");
+  assert.match(adds[0], /-100$/);
+  assert.match(adds[1], /-200$/);
+});
+
+test("runs the gate (and remove/provision) in the per-process worktree", () => {
+  let gateCwd = null, removed = null, provisioned = null;
+  runBaselineGate({
+    workdir: ".worktrees/base", logPath: "/tmp/b.log", uniqueSuffix: "77",
+    worktreeRunner: (args) => { if (args[1] === "remove") removed = args[3]; return { status: 0 }; },
+    provisionDeps: ({ workdir }) => { provisioned = workdir; },
+    gateRunner: ({ workdir }) => { gateCwd = workdir; return { pass: true, failTail: "" }; },
+  });
+  assert.match(gateCwd, /-77$/);
+  assert.match(removed, /-77$/);
+  assert.match(provisioned, /-77$/);
+});
+
 test("runBaselineGate force-removes a leaked worktree before re-adding", async () => {
   const calls = [];
   const worktreeRunner = (args) => {

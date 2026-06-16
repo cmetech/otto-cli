@@ -243,6 +243,16 @@ export interface MergeContext {
    * `false` for parallel callers, which never run with degraded isolation.
    */
   isolationDegraded?: boolean;
+  /**
+   * Force a specific merge mode instead of auto-detecting via
+   * `getIsolationMode`. Set to `"branch"` to recover through branch mode from
+   * the project root when no registered git worktree exists (e.g. a stale
+   * session-status marker dir). Without this, worktree-mode would run from the
+   * project root and `mergeMilestoneToMain` would auto-commit overlapping root
+   * files to the integration branch before the squash merge, fabricating a
+   * synthetic conflict (gsd-pi 494e759 / #88).
+   */
+  isolationModeOverride?: "branch";
   notify: NotifyCtx["notify"];
 }
 
@@ -1297,12 +1307,18 @@ export function mergeMilestoneStandalone(
     };
   }
 
-  const mode = getIsolationMode(originalBasePath || worktreeBasePath);
+  // Honour an explicit mode override before auto-detection. Parallel recovery
+  // from a stale worktree marker passes `isolationModeOverride: "branch"` so we
+  // merge through branch mode from the project root instead of letting
+  // worktree-mode auto-commit overlapping root files (gsd-pi 494e759 / #88).
+  const mode = mctx.isolationModeOverride
+    ?? getIsolationMode(originalBasePath || worktreeBasePath);
   debugLog("WorktreeLifecycle", {
     action: "mergeAndExit",
     milestoneId,
     mode,
     basePath: worktreeBasePath,
+    overridden: mctx.isolationModeOverride !== undefined,
   });
   emitJournalEvent(originalBasePath || worktreeBasePath, {
     ts: new Date().toISOString(),
@@ -1314,9 +1330,13 @@ export function mergeMilestoneStandalone(
 
   // #2625: If we are physically inside an auto-worktree, we MUST merge
   // regardless of the current isolation config. This prevents data loss
-  // when the default isolation mode changes between versions.
+  // when the default isolation mode changes between versions. An explicit
+  // branch-mode override (stale-marker recovery, #88) suppresses this so we
+  // never route a project-root path through worktree mode.
   const inWorktree =
-    lifecycleIsInAutoWorktree(deps, worktreeBasePath) && Boolean(originalBasePath);
+    mctx.isolationModeOverride !== "branch" &&
+    lifecycleIsInAutoWorktree(deps, worktreeBasePath) &&
+    Boolean(originalBasePath);
 
   if (mode === "none" && !inWorktree) {
     debugLog("WorktreeLifecycle", {

@@ -27,6 +27,42 @@ test("record applies a valid transition with payload", () => {
   assert.equal(readLedger(path).issues["5"].state, "fix-ok");
 });
 
+function tmpLedgerInState(state) {
+  const dir = mkdtempSync(join(tmpdir(), "ctl-led-"));
+  const path = join(dir, "ledger.json");
+  writeFileSync(path, JSON.stringify({
+    version: 1, date: "d", filter: "f", abortStreak: { signature: null, count: 0 },
+    issues: { "5": { state, severity: "nice-to-have-fix", retryCount: 0, targetFiles: [], prNumber: null, refute: null, fixStartedAt: null } },
+  }));
+  return path;
+}
+
+test("record stamps fixStartedAt from --now when transitioning to fixing (so the timeout breaker has a clock)", () => {
+  const path = tmpLedgerInState("planning");
+  const issue = record({ ledger: path, issue: "5", state: "fixing", now: 1234 });
+  assert.equal(issue.state, "fixing");
+  assert.equal(issue.fixStartedAt, 1234);
+  assert.equal(readLedger(path).issues["5"].fixStartedAt, 1234);
+});
+
+test("record stamps a numeric fixStartedAt (Date.now) when --now is omitted", () => {
+  const path = tmpLedgerInState("planning");
+  const before = Date.now();
+  const issue = record({ ledger: path, issue: "5", state: "fixing" });
+  assert.equal(typeof issue.fixStartedAt, "number");
+  assert.ok(issue.fixStartedAt >= before, "stamped with current time");
+});
+
+test("record does NOT overwrite an explicit payload.fixStartedAt, and only stamps on the fixing transition", () => {
+  const path = tmpLedgerInState("planning");
+  const issue = record({ ledger: path, issue: "5", state: "fixing", payload: JSON.stringify({ fixStartedAt: 999 }), now: 1234 });
+  assert.equal(issue.fixStartedAt, 999, "explicit payload wins");
+  // a non-fixing transition must not stamp fixStartedAt
+  const path2 = tmpLedgerInState("fixing");
+  const issue2 = record({ ledger: path2, issue: "5", state: "fix-ok", now: 5555 });
+  assert.equal(issue2.fixStartedAt, null, "no stamp on non-fixing transitions");
+});
+
 test("record rejects an illegal transition", () => {
   const path = tmpLedger();
   assert.throws(() => record({ ledger: path, issue: "5", state: "merged" }), /invalid transition/i);

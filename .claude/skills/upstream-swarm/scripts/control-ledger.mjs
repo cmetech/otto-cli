@@ -9,11 +9,19 @@ import { readLedger, writeLedger } from "./swarm-ledger.mjs";
 import { classifyFailure } from "./transient-classifier.mjs";
 import { computeSignature, recordQuarantineSignature } from "./abort-streak.mjs";
 
-export function record({ ledger, issue, state, payload }) {
+export function record({ ledger, issue, state, payload, now }) {
   if (!ledger) throw new Error("record requires --ledger <path>");
   if (issue == null) throw new Error("record requires --issue <n>");
   if (!state) throw new Error("record requires --state <nextState>");
   const payloadObj = typeof payload === "string" ? JSON.parse(payload) : (payload ?? {});
+  // Stamp the wall-clock start when a lane begins fixing, so the scheduler's
+  // per-issue timeout breaker (now - fixStartedAt > caps.issueTimeoutMs) has a
+  // clock. The Workflow driver's sandbox can't call Date.now(), so it relies on
+  // this controller process (which can) to stamp it. An explicit payload value
+  // wins; --now keeps it deterministic for tests.
+  if (state === "fixing" && payloadObj.fixStartedAt == null) {
+    payloadObj.fixStartedAt = now != null ? Number(now) : Date.now();
+  }
   return recordTransition(ledger, Number(issue), state, payloadObj);
 }
 

@@ -76,16 +76,18 @@ date:
   `$DIR/$DATE-issue-<N>-gate-logs/`. This is what keeps two same-day lanes from
   clobbering each other's selection/ledger state (see #384).
 
-**Gate completion (no premature exit).** A `--single-issue` lane MUST run every
-gate — regression (fails-before/passes-after), build, targeted, **full suite**,
-and the **independent reviewer** — to completion *in-process* before opening the
-PR and emitting its result. NEVER background a gate (e.g. spawn a detached suite
-run) and then exit/report while it is still running: the lane can terminate with
-gates incomplete, leaving an un-pushed commit and a misleading "done" signal
-(observed 2026-06-15 — a lane reported "monitors armed, waiting" then died
-before reviewer + PR-open). The final report's `OUTCOME` and the run-state's
-`finalSuite`/`reviewer` fields must reflect gates that **actually finished**, not
-gates still in flight. PR-open is the last step, after all gates are green.
+**Gate completion (no premature exit).** A `--single-issue` lane MUST run its
+in-lane gates — regression (fails-before/passes-after), build, targeted, and the
+**independent reviewer** — to completion *in-process* before pushing the branch
+and opening the PR. The lane does **NOT** run the full suite: that is the
+controller's job, run **once** in a fresh trial-merge worktree by
+`swarm-control.mjs gate` (the swarm invokes this as its local gate; a standalone
+single-issue run invokes it on the lane branch after PR-open). This keeps the
+lane subagent fast and in-budget — the multi-minute full suite was the cause of
+mid-gate subagent deaths (premature "done" signals with an un-pushed commit).
+NEVER background a gate. The lane's last in-process step is PR-open, after
+regression+build+targeted+reviewer are green; the full-suite verdict is recorded
+later by the controller, not the lane.
 
 1. **Resolve the filter** from the invocation (e.g. `--severity critical-stability`,
    `--issues 62,63`, `--all`). Set `DATE=$(date +%F)` and

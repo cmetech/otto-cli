@@ -1,0 +1,12 @@
+[
+  {
+    "number": 85,
+    "severity": "nice-to-have-fix",
+    "type": "port-required",
+    "sha": "4ba1821",
+    "guidancePath": ".planning/upstream-audits/guidance/4ba1821.md",
+    "targetFiles": [
+      "src/tests/integration/pack-install.test.ts"
+    ]
+  }
+]

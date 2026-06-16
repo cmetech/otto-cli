@@ -1,0 +1,13 @@
+[
+  {
+    "number": 114,
+    "severity": "nice-to-have-fix",
+    "type": "port-required",
+    "sha": "49d3fc9",
+    "guidancePath": ".planning/upstream-audits/guidance/49d3fc9.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/repository-registry.ts",
+      "src/resources/extensions/workflow/tests/repository-registry.test.ts"
+    ]
+  }
+]

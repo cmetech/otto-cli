@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "--single-issue 85",
+  "integrationBranch": "fix/upstream-issue-85-4ba1821",
+  "prUrl": "https://github.com/cmetech/otto-cli/pull/394",
+  "finalSuite": "pass",
+  "lanes": {
+    "1": {
+      "issues": [
+        "85"
+      ],
+      "files": [
+        "src/tests/integration/pack-install.test.ts"
+      ],
+      "branch": "fix/upstream-issue-85-4ba1821",
+      "worktree": ".worktrees/upstream-fix-issue-85",
+      "status": "done"
+    }
+  },
+  "issues": {
+    "85": {
+      "lane": 1,
+      "sha": "4ba1821",
+      "guidancePath": ".planning/upstream-audits/guidance/4ba1821.md",
+      "targetFiles": [
+        "src/tests/integration/pack-install.test.ts"
+      ],
+      "status": "resolved",
+      "commitSha": "74fd5943",
+      "touchedFiles": [
+        "src/tests/integration/pack-install.test.ts"
+      ],
+      "gates": {
+        "regression": "pass",
+        "build": "pass",
+        "targeted": "pass"
+      },
+      "reviewer": "approve",
+      "reviewerReason": "Faithful adapted-port of 4ba1821; justified omissions; all gates pass.",
+      "reviewerRejectionCount": 0,
+      "reason": null
+    }
+  }
+}

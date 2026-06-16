@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "--single-issue 349",
+  "integrationBranch": "fix/upstream-issue-349-7145ebb",
+  "prUrl": "https://github.com/cmetech/otto-cli/pull/390",
+  "finalSuite": {
+    "pass": true
+  },
+  "lanes": {
+    "1": {
+      "issues": [
+        "349"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/auto/loop.ts"
+      ],
+      "branch": "fix/upstream-issue-349-7145ebb",
+      "worktree": ".worktrees/upstream-fix-issue-349",
+      "status": "done"
+    }
+  },
+  "issues": {
+    "349": {
+      "lane": 1,
+      "sha": "7145ebb",
+      "guidancePath": ".planning/upstream-audits/guidance/7145ebb.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto/loop.ts"
+      ],
+      "status": "resolved",
+      "commitSha": "2599848",
+      "touchedFiles": [
+        "src/resources/extensions/workflow/auto/loop.ts",
+        "src/resources/extensions/workflow/tests/loop-predispatch-break-ghost-iterations.test.ts"
+      ],
+      "gates": {
+        "regression": true,
+        "build": true,
+        "targeted": true
+      },
+      "reviewer": "approve",
+      "reviewerReason": "adapted-port faithfully transcribes upstream finishIncompleteIteration insert; regression test pins root cause",
+      "reviewerRejectionCount": 0,
+      "reason": null
+    }
+  }
+}

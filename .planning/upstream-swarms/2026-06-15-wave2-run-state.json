@@ -1,0 +1,648 @@
+{
+  "version": 1,
+  "date": "2026-06-15-wave2",
+  "filter": "status:triaged",
+  "startedAt": null,
+  "baselineGate": null,
+  "waves": [],
+  "abortStreak": {
+    "signature": "refute|generic|test-quality refute: bindCore race-critical hunk lacks regression test",
+    "count": 1
+  },
+  "issues": {
+    "85": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "4ba1821",
+      "targetFiles": [
+        "src/tests/integration/pack-install.test.ts"
+      ],
+      "state": "merged",
+      "retryCount": 0,
+      "fixStartedAt": 1781562848178,
+      "lastPolledAt": 1781565526664,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": 0,
+      "prNumber": 394,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/394",
+      "checks": null,
+      "localGate": {
+        "pass": true
+      },
+      "refute": {
+        "tally": {
+          "panelVerdict": "approve",
+          "approves": 4,
+          "refutes": 0,
+          "abstains": 0,
+          "reason": "4 approve / 0 abstain / 0 refute"
+        },
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          }
+        ]
+      },
+      "mergeSha": "978c39c",
+      "reason": null
+    },
+    "88": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "494e759",
+      "targetFiles": [
+        "src/resources/extensions/workflow/parallel-merge.ts",
+        "src/resources/extensions/workflow/tests/integration/parallel-merge.test.ts"
+      ],
+      "state": "merged",
+      "retryCount": 1,
+      "fixStartedAt": 1781562848178,
+      "lastPolledAt": 1781565526664,
+      "pollNoChangeCount": 0,
+      "retryReason": "subagent interrupted mid-gate (transient); completing lane: finish full suite, push, open PR",
+      "wave": 0,
+      "prNumber": 395,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/395",
+      "checks": null,
+      "localGate": {
+        "pass": true
+      },
+      "refute": {
+        "tally": {
+          "panelVerdict": "approve",
+          "approves": 4,
+          "refutes": 0,
+          "abstains": 0,
+          "reason": "4 approve / 0 abstain / 0 refute"
+        },
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          }
+        ]
+      },
+      "mergeSha": "9eadd46",
+      "reason": "subagent died mid-full-suite before push/PR; clean local commit 9ee3cf54 present in lane"
+    },
+    "94": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "42290ba",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts"
+      ],
+      "state": "quarantined",
+      "retryCount": 0,
+      "fixStartedAt": 1781562848178,
+      "lastPolledAt": null,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": 0,
+      "prNumber": null,
+      "prUrl": null,
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "blocked on unported prerequisite #134 (sha 3f5e830, OPEN); commit 42290ba only applies atop the recovery block introduced by #134"
+    },
+    "98": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "6bef491",
+      "targetFiles": [
+        "src/resources/extensions/workflow/post-execution-checks.ts",
+        "src/resources/extensions/workflow/tests/post-execution-checks.test.ts"
+      ],
+      "state": "merged",
+      "retryCount": 1,
+      "fixStartedAt": 1781564397531,
+      "lastPolledAt": 1781566916941,
+      "pollNoChangeCount": 0,
+      "retryReason": "subagent interrupted mid-gate (transient); completing lane: finish full suite, push, open PR",
+      "wave": 1,
+      "prNumber": 397,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/397",
+      "checks": null,
+      "localGate": {
+        "pass": true
+      },
+      "refute": {
+        "tally": {
+          "panelVerdict": "approve",
+          "approves": 4,
+          "refutes": 0,
+          "abstains": 0,
+          "reason": "4 approve / 0 abstain / 0 refute"
+        },
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          }
+        ]
+      },
+      "mergeSha": "03b1d02",
+      "reason": "subagent died mid-full-suite before push/PR; clean local commit f0cbbd4c present in lane"
+    },
+    "107": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "526ed30",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto.ts"
+      ],
+      "state": "merged",
+      "retryCount": 0,
+      "fixStartedAt": 1781564397531,
+      "lastPolledAt": 1781565526664,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": 1,
+      "prNumber": 396,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/396",
+      "checks": null,
+      "localGate": {
+        "pass": true
+      },
+      "refute": {
+        "tally": {
+          "panelVerdict": "approve",
+          "approves": 4,
+          "refutes": 0,
+          "abstains": 0,
+          "reason": "4 approve / 0 abstain / 0 refute"
+        },
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          }
+        ]
+      },
+      "mergeSha": "1efb1bf",
+      "reason": null
+    },
+    "108": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "8dd6272",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-hooks.ts",
+        "src/resources/extensions/workflow/tests/workflow-mcp-auto-prep.test.ts"
+      ],
+      "state": "merged",
+      "retryCount": 0,
+      "fixStartedAt": 1781565526664,
+      "lastPolledAt": 1781566916941,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": 1,
+      "prNumber": 399,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/399",
+      "checks": null,
+      "localGate": {
+        "pass": true,
+        "note": "passed on isolated rerun; first run flaked under concurrent load (unrelated headless/list-models tests)"
+      },
+      "refute": {
+        "tally": {
+          "panelVerdict": "approve",
+          "approves": 4,
+          "refutes": 0,
+          "abstains": 0,
+          "reason": "4 approve / 0 abstain / 0 refute"
+        },
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          }
+        ]
+      },
+      "mergeSha": "bfd9cec",
+      "reason": null
+    },
+    "111": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "e723617",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/extensions/types.ts",
+        "packages/pi-coding-agent/src/core/extensions/loader.ts"
+      ],
+      "state": "quarantined",
+      "retryCount": 0,
+      "fixStartedAt": 1781565526664,
+      "lastPolledAt": 1781566916941,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": 2,
+      "prNumber": 398,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/398",
+      "checks": null,
+      "localGate": {
+        "pass": true
+      },
+      "refute": {
+        "tally": {
+          "panelVerdict": "refute",
+          "approves": 3,
+          "refutes": 1,
+          "abstains": 0,
+          "reason": "1 lens(es) refuted"
+        },
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.93,
+            "reason": "resolves root cause, adapted binding",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.92,
+            "reason": "all files trace to fix",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "refute",
+            "confidence": 0.6,
+            "reason": "bindCore race-critical hunk has no regression test; upstream integration test not ported",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.85,
+            "reason": "type-widening, no new race",
+            "blocking": false
+          }
+        ]
+      },
+      "mergeSha": null,
+      "reason": "refute panel: 1 lens(es) refuted — test-quality lens: bindCore promise-return hunk (PR-flagged race-critical) lacks a fail-before/pass-after regression test; port upstream agent-session integration test or add coverage before merge."
+    },
+    "114": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "49d3fc9",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repository-registry.ts",
+        "src/resources/extensions/workflow/tests/repository-registry.test.ts"
+      ],
+      "state": "merged",
+      "retryCount": 0,
+      "fixStartedAt": 1781566916941,
+      "lastPolledAt": null,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": 2,
+      "prNumber": 400,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/400",
+      "checks": null,
+      "localGate": {
+        "pass": true,
+        "note": "passed on isolated rerun; first run flaked under concurrent load (unrelated headless/list-models tests)"
+      },
+      "refute": {
+        "tally": {
+          "panelVerdict": "approve",
+          "approves": 4,
+          "refutes": 0,
+          "abstains": 0,
+          "reason": "4 approve / 0 abstain / 0 refute"
+        },
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          }
+        ]
+      },
+      "mergeSha": "88a6c8a",
+      "reason": null
+    },
+    "117": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "491ace3",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/openai-responses-shared.ts"
+      ],
+      "state": "quarantined",
+      "retryCount": 0,
+      "fixStartedAt": 1781566916941,
+      "lastPolledAt": null,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": 2,
+      "prNumber": null,
+      "prUrl": null,
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "not-needed: inline 64-char guard at openai-responses-shared.ts:174-175 is the SOLE id-length enforcer in otto; deleting it (as upstream did) would ship malformed >64-char ids. Recommend fix-strategy:not-needed + close-as-not-applicable."
+    },
+    "138": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "97d4ddb",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto/phases.ts",
+        "src/resources/extensions/workflow/tests/auto-loop.test.ts"
+      ],
+      "state": "merged",
+      "retryCount": 0,
+      "fixStartedAt": 1781566916941,
+      "lastPolledAt": 1781570088121,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": 3,
+      "prNumber": 401,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/401",
+      "checks": null,
+      "localGate": {
+        "pass": true
+      },
+      "refute": {
+        "tally": {
+          "panelVerdict": "approve",
+          "approves": 4,
+          "refutes": 0,
+          "abstains": 0,
+          "reason": "4 approve / 0 abstain / 0 refute"
+        },
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          }
+        ]
+      },
+      "mergeSha": "788e8a4",
+      "reason": null
+    },
+    "142": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "d01b984",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/components/transcript-design.ts",
+        "packages/pi-coding-agent/src/modes/interactive/components/__tests__/assistant-message-design.test.ts"
+      ],
+      "state": "merged",
+      "retryCount": 0,
+      "fixStartedAt": 1781570076952,
+      "lastPolledAt": 1781571662116,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": 3,
+      "prNumber": 402,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/402",
+      "checks": null,
+      "localGate": {
+        "pass": true
+      },
+      "refute": {
+        "tally": {
+          "panelVerdict": "approve",
+          "approves": 4,
+          "refutes": 0,
+          "abstains": 0,
+          "reason": "4 approve / 0 abstain / 0 refute"
+        },
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "approve",
+            "blocking": false
+          }
+        ]
+      },
+      "mergeSha": "17a7ff0",
+      "reason": null
+    },
+    "148": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "8f7f70a",
+      "targetFiles": [
+        "src/resources/extensions/workflow/closeout-recovery.ts",
+        "src/resources/extensions/workflow/tests/closeout-recovery.test.ts"
+      ],
+      "state": "quarantined",
+      "retryCount": 0,
+      "fixStartedAt": 1781570076952,
+      "lastPolledAt": null,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": 3,
+      "prNumber": null,
+      "prUrl": null,
+      "checks": null,
+      "localGate": null,
+      "refute": null,
+      "mergeSha": null,
+      "reason": "already-mitigated-by-divergence: otto short-circuits at listUnmergedGitPaths null-guard before the unguarded git-status call; regression cannot fail-before, four-gate protocol unsatisfiable. Recommend re-triage as already-fixed."
+    }
+  }
+}

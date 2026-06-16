@@ -1,0 +1,15 @@
+{
+  "issue": 142,
+  "sha": "d01b984",
+  "branch": "fix/upstream-issue-142-d01b984",
+  "worktree": ".worktrees/upstream-fix-issue-142",
+  "commit": "42cb451",
+  "status": "resolved",
+  "reviewer": "approve",
+  "finalSuite": {
+    "pass": true
+  },
+  "prNumber": 402,
+  "prUrl": "https://github.com/cmetech/otto-cli/pull/402",
+  "outcome": "pr-opened"
+}

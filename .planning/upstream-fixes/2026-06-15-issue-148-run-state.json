@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "--single-issue 148",
+  "integrationBranch": "fix/upstream-issue-148-8f7f70a",
+  "prUrl": null,
+  "finalSuite": null,
+  "lanes": {
+    "1": {
+      "issues": [
+        "148"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/closeout-recovery.ts",
+        "src/resources/extensions/workflow/tests/closeout-recovery.test.ts"
+      ],
+      "branch": "fix/upstream-issue-148-8f7f70a",
+      "worktree": ".worktrees/upstream-fix-issue-148",
+      "status": "done"
+    }
+  },
+  "issues": {
+    "148": {
+      "lane": 1,
+      "sha": "8f7f70a",
+      "guidancePath": ".planning/upstream-audits/guidance/8f7f70a.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/closeout-recovery.ts",
+        "src/resources/extensions/workflow/tests/closeout-recovery.test.ts"
+      ],
+      "status": "unresolved",
+      "commitSha": null,
+      "touchedFiles": [],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": null,
+      "reviewerReason": null,
+      "reviewerRejectionCount": 0,
+      "reason": "otto divergence already mitigates: listUnmergedGitPaths returns null on non-git root, short-circuiting before unguarded line-208 status call. Upstream try/catch fix redundant; regression test cannot fail-before. Re-triage as already-mitigated-by-divergence."
+    }
+  },
+  "singleIssue": 148
+}

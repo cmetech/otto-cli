@@ -1,0 +1,14 @@
+{
+  "lanes": [
+    {
+      "id": 1,
+      "issues": [
+        "142"
+      ],
+      "files": [
+        "packages/pi-coding-agent/src/modes/interactive/components/transcript-design.ts",
+        "packages/pi-coding-agent/src/modes/interactive/components/__tests__/assistant-message-design.test.ts"
+      ]
+    }
+  ]
+}

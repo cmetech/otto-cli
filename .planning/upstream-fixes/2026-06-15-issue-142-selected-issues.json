@@ -1,0 +1,13 @@
+[
+  {
+    "number": 142,
+    "severity": "nice-to-have-fix",
+    "type": "port-required",
+    "sha": "d01b984",
+    "guidancePath": ".planning/upstream-audits/guidance/d01b984.md",
+    "targetFiles": [
+      "packages/pi-coding-agent/src/modes/interactive/components/transcript-design.ts",
+      "packages/pi-coding-agent/src/modes/interactive/components/__tests__/assistant-message-design.test.ts"
+    ]
+  }
+]

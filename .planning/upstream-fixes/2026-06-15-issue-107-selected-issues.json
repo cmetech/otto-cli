@@ -1,0 +1,12 @@
+[
+  {
+    "number": 107,
+    "severity": "nice-to-have-fix",
+    "type": "port-required",
+    "sha": "526ed30",
+    "guidancePath": ".planning/upstream-audits/guidance/526ed30.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/auto.ts"
+    ]
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "number": 117,
+    "severity": "nice-to-have-fix",
+    "type": "port-required",
+    "sha": "491ace3",
+    "guidancePath": ".planning/upstream-audits/guidance/491ace3.md",
+    "targetFiles": [
+      "packages/pi-ai/src/providers/openai-responses-shared.ts"
+    ]
+  }
+]

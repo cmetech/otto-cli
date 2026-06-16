@@ -1,0 +1,38 @@
+{
+  "autoTier": [
+    {
+      "number": 352,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "243147a",
+      "guidancePath": ".planning/upstream-audits/guidance/243147a.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-recovery.ts",
+        "src/resources/extensions/workflow/tests/auto-recovery.test.ts",
+        "src/tests/mcp-server.test.ts"
+      ]
+    },
+    {
+      "number": 350,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "77e8cee",
+      "guidancePath": ".planning/upstream-audits/guidance/77e8cee.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto/phases.ts"
+      ]
+    },
+    {
+      "number": 349,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "7145ebb",
+      "guidancePath": ".planning/upstream-audits/guidance/7145ebb.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto/loop.ts"
+      ]
+    }
+  ],
+  "humanTier": [],
+  "needsTriage": []
+}

@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "--single-issue 98",
+  "integrationBranch": "fix/upstream-issue-98-6bef491",
+  "prUrl": null,
+  "finalSuite": null,
+  "lanes": {
+    "1": {
+      "issues": [
+        "98"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/post-execution-checks.ts",
+        "src/resources/extensions/workflow/tests/post-execution-checks.test.ts"
+      ],
+      "branch": "fix/upstream-lane-1",
+      "worktree": ".worktrees/upstream-fix-lane-1",
+      "status": "done"
+    }
+  },
+  "issues": {
+    "98": {
+      "lane": 1,
+      "sha": "6bef491",
+      "guidancePath": ".planning/upstream-audits/guidance/6bef491.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/post-execution-checks.ts",
+        "src/resources/extensions/workflow/tests/post-execution-checks.test.ts"
+      ],
+      "status": "resolved",
+      "commitSha": "f0cbbd4",
+      "touchedFiles": [
+        "src/resources/extensions/workflow/post-execution-checks.ts",
+        "src/resources/extensions/workflow/tests/post-execution-checks.test.ts"
+      ],
+      "gates": {
+        "regression": true,
+        "build": true,
+        "targeted": true
+      },
+      "reviewer": null,
+      "reviewerReason": null,
+      "reviewerRejectionCount": 0,
+      "reason": null
+    }
+  }
+}

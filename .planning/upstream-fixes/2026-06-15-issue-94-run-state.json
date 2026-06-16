@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "--single-issue 94",
+  "integrationBranch": "fix/upstream-issue-94-42290ba",
+  "prUrl": null,
+  "finalSuite": null,
+  "lanes": {
+    "1": {
+      "issues": [
+        "94"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/repo-identity.ts"
+      ],
+      "branch": "fix/upstream-lane-1",
+      "worktree": ".worktrees/upstream-fix-lane-1",
+      "status": "failed"
+    }
+  },
+  "issues": {
+    "94": {
+      "lane": 1,
+      "sha": "42290ba",
+      "guidancePath": ".planning/upstream-audits/guidance/42290ba.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts"
+      ],
+      "status": "unresolved",
+      "commitSha": null,
+      "touchedFiles": [],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": null,
+      "reviewerReason": null,
+      "reviewerRejectionCount": 0,
+      "reason": "Blocked on unported prerequisite #134 (sha=3f5e830); commit 42290ba is meaningless without the if(remoteUrl===null) recovery block #134 introduces."
+    }
+  }
+}

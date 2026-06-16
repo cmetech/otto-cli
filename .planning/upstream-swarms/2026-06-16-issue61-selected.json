@@ -1,0 +1,17 @@
+{
+  "autoTier": [
+    {
+      "number": 61,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "088987b",
+      "guidancePath": ".planning/upstream-audits/guidance/088987b.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/theme/theme.ts",
+        "packages/pi-coding-agent/test/theme-picker.test.ts (new)"
+      ]
+    }
+  ],
+  "humanTier": [],
+  "needsTriage": []
+}

@@ -32,6 +32,7 @@ bun.lock
 .bg-shell/
 .artifacts/
 .planning/upstream-audits/_cache/
+.planning/**/.worktree-registry.json
 .audits/
 .plans/
 docs/coherence-audit/

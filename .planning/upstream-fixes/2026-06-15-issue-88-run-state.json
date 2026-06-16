@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "--single-issue 88",
+  "integrationBranch": "fix/upstream-issue-88-494e759",
+  "prUrl": null,
+  "finalSuite": null,
+  "lanes": {
+    "1": {
+      "issues": [
+        "88"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/parallel-merge.ts",
+        "src/resources/extensions/workflow/tests/integration/parallel-merge.test.ts"
+      ],
+      "branch": "fix/upstream-issue-88-494e759",
+      "worktree": ".worktrees/upstream-fix-issue-88",
+      "status": "done"
+    }
+  },
+  "issues": {
+    "88": {
+      "lane": 1,
+      "sha": "494e759",
+      "guidancePath": ".planning/upstream-audits/guidance/494e759.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/parallel-merge.ts",
+        "src/resources/extensions/workflow/tests/integration/parallel-merge.test.ts"
+      ],
+      "status": "resolved",
+      "commitSha": "9ee3cf5",
+      "touchedFiles": [
+        "src/resources/extensions/workflow/parallel-merge.ts",
+        "src/resources/extensions/workflow/tests/integration/parallel-merge.test.ts",
+        "src/resources/extensions/workflow/worktree-lifecycle.ts"
+      ],
+      "gates": {
+        "regression": "pass",
+        "build": "pass",
+        "targeted": "pass"
+      },
+      "reviewer": "approve",
+      "reviewerReason": "faithful adapted-port; isolationModeOverride threaded correctly; regression test pins auto-commit subject; 22 tests pass; no scope creep",
+      "reviewerRejectionCount": 0,
+      "reason": null
+    }
+  }
+}

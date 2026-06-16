@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "--single-issue 108",
+  "integrationBranch": "fix/upstream-issue-108-8dd6272",
+  "prUrl": "https://github.com/cmetech/otto-cli/pull/399",
+  "finalSuite": {
+    "pass": true,
+    "failTail": ""
+  },
+  "lanes": {
+    "1": {
+      "issues": [
+        "108"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/bootstrap/register-hooks.ts",
+        "src/resources/extensions/workflow/tests/workflow-mcp-auto-prep.test.ts"
+      ],
+      "branch": "fix/upstream-issue-108-8dd6272",
+      "worktree": ".worktrees/upstream-fix-issue-108",
+      "status": "done"
+    }
+  },
+  "issues": {
+    "108": {
+      "lane": 1,
+      "sha": "8dd6272",
+      "guidancePath": ".planning/upstream-audits/guidance/8dd6272.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-hooks.ts",
+        "src/resources/extensions/workflow/tests/workflow-mcp-auto-prep.test.ts"
+      ],
+      "status": "approved",
+      "commitSha": "5c2066a",
+      "touchedFiles": [],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": "approve",
+      "reviewerReason": "root cause fixed; runner contract intact; lazy-homedir refactor in-scope; regression test non-tautological",
+      "reviewerRejectionCount": 0,
+      "reason": "materialize discovered-skill fallback in before_agent_start when no project workflow root"
+    }
+  },
+  "prNumber": 399
+}

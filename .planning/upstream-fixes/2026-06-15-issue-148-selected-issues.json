@@ -1,0 +1,13 @@
+[
+  {
+    "number": 148,
+    "severity": "nice-to-have-fix",
+    "type": "port-required",
+    "sha": "8f7f70a",
+    "guidancePath": ".planning/upstream-audits/guidance/8f7f70a.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/closeout-recovery.ts",
+      "src/resources/extensions/workflow/tests/closeout-recovery.test.ts"
+    ]
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "number": 111,
+    "severity": "nice-to-have-fix",
+    "type": "port-required",
+    "sha": "e723617",
+    "guidancePath": ".planning/upstream-audits/guidance/e723617.md",
+    "targetFiles": [
+      "packages/pi-coding-agent/src/core/extensions/types.ts",
+      "packages/pi-coding-agent/src/core/extensions/loader.ts"
+    ]
+  }
+]

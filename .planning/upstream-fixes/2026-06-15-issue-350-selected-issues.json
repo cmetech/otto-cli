@@ -1,0 +1,12 @@
+[
+  {
+    "number": 350,
+    "severity": "nice-to-have-fix",
+    "type": "port-required",
+    "sha": "77e8cee",
+    "guidancePath": ".planning/upstream-audits/guidance/77e8cee.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/auto/phases.ts"
+    ]
+  }
+]

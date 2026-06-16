@@ -1,0 +1,1640 @@
+{
+  "autoTier": [
+    {
+      "number": 365,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "c60b69c",
+      "guidancePath": ".planning/upstream-audits/guidance/c60b69c.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/.github/workflows/build-native.yml",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/.github/workflows/npm-publish.yml",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/scripts/verify-native-platform-packages.mjs (if present)",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/scripts/publish-engine-packages.sh (new)",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/tests/live-regression/run.ts (if present)"
+      ]
+    },
+    {
+      "number": 358,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "4fad086",
+      "guidancePath": ".planning/upstream-audits/guidance/4fad086.md",
+      "targetFiles": [
+        ".github/workflows/build-native.yml",
+        "scripts/publish-engine-packages.sh (does not exist in otto-cli)"
+      ]
+    },
+    {
+      "number": 348,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9477a62",
+      "guidancePath": ".planning/upstream-audits/guidance/9477a62.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/root-write-leak-guard.ts",
+        "src/resources/extensions/workflow/tests/root-write-leak-guard.test.ts"
+      ]
+    },
+    {
+      "number": 347,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "934515a",
+      "guidancePath": ".planning/upstream-audits/guidance/934515a.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/agent-session.ts",
+        "packages/pi-coding-agent/src/core/agent-session-command-errors.test.ts (new file)"
+      ]
+    },
+    {
+      "number": 342,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "2ff3dec",
+      "guidancePath": ".planning/upstream-audits/guidance/2ff3dec.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/google-shared.ts",
+        "packages/pi-ai/src/providers/google-shared.test.ts"
+      ]
+    },
+    {
+      "number": 341,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "814999d",
+      "guidancePath": ".planning/upstream-audits/guidance/814999d.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/workflow-mcp.ts",
+        "src/resources/extensions/workflow/tests/workflow-mcp.test.ts"
+      ]
+    },
+    {
+      "number": 340,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "b56c483",
+      "guidancePath": ".planning/upstream-audits/guidance/b56c483.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/auto-post-unit.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/quick.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/uok-gitops-wiring.test.ts"
+      ]
+    },
+    {
+      "number": 339,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "8e663d2",
+      "guidancePath": ".planning/upstream-audits/guidance/8e663d2.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/git-service.ts",
+        "src/resources/extensions/workflow/gitignore.ts",
+        "src/resources/extensions/workflow/tests/integration/gitignore-staging-2570.test.ts"
+      ]
+    },
+    {
+      "number": 337,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "1a12db8",
+      "guidancePath": ".planning/upstream-audits/guidance/1a12db8.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/compaction-orchestrator.test.ts (exists)",
+        "packages/pi-coding-agent/src/core/compaction/compaction.test.ts (exists)",
+        "src/resources/extensions/workflow/tests/prompt-step-ordering.test.ts (verify exists)"
+      ]
+    },
+    {
+      "number": 336,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "298a513",
+      "guidancePath": ".planning/upstream-audits/guidance/298a513.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-model-selection.ts",
+        "src/resources/extensions/workflow/tests/auto-model-selection.test.ts"
+      ]
+    },
+    {
+      "number": 334,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "3b08787",
+      "guidancePath": ".planning/upstream-audits/guidance/3b08787.md",
+      "targetFiles": [
+        "src/headless-answers.ts",
+        "src/headless.ts",
+        "src/resources/extensions/claude-code-cli/stream-adapter.ts",
+        "(NOT portable: src/resources/extensions/claude-code-cli/tests/stream-adapter.test.ts and gsd headless-answers test)"
+      ]
+    },
+    {
+      "number": 333,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "ad376fe",
+      "guidancePath": ".planning/upstream-audits/guidance/ad376fe.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/codebase-generator.ts"
+      ]
+    },
+    {
+      "number": 332,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "639c926",
+      "guidancePath": ".planning/upstream-audits/guidance/639c926.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/verification-gate.ts",
+        "src/resources/extensions/workflow/tests/verification-gate.test.ts (new)",
+        "src/resources/extensions/workflow/tests/pre-execution-checks.test.ts (extend)"
+      ]
+    },
+    {
+      "number": 329,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "7b1ff8c",
+      "guidancePath": ".planning/upstream-audits/guidance/7b1ff8c.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/verification-gate.ts",
+        "src/resources/extensions/workflow/tests/verification-gate.test.ts"
+      ]
+    },
+    {
+      "number": 328,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "2c2b925",
+      "guidancePath": ".planning/upstream-audits/guidance/2c2b925.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-verification.ts",
+        "src/resources/extensions/workflow/tests/post-exec-retry-bypass.test.ts"
+      ]
+    },
+    {
+      "number": 324,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "56c39cb",
+      "guidancePath": ".planning/upstream-audits/guidance/56c39cb.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/agent-session.ts",
+        "packages/pi-coding-agent/src/core/agent-session-abort-order.test.ts (or new file under tests/)"
+      ]
+    },
+    {
+      "number": 322,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9849f0a",
+      "guidancePath": ".planning/upstream-audits/guidance/9849f0a.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/cli/list-models.ts",
+        "packages/pi-coding-agent/src/cli/__tests__/list-models.test.ts (new file)"
+      ]
+    },
+    {
+      "number": 321,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "3c61b31",
+      "guidancePath": ".planning/upstream-audits/guidance/3c61b31.md",
+      "targetFiles": [
+        ".secretscanignore"
+      ]
+    },
+    {
+      "number": 320,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "293bafa",
+      "guidancePath": ".planning/upstream-audits/guidance/293bafa.md",
+      "targetFiles": [
+        "packages/pi-ai/src/index.ts (already exports transformMessagesWithReport — skip)",
+        "packages/pi-ai/src/providers/transform-messages.ts (already has WithReport variant — skip)",
+        "src/resources/extensions/workflow/tests/parallel-skill-prompt-integration.test.ts",
+        "src/resources/extensions/workflow/tests/provider-errors.test.ts",
+        "src/resources/extensions/workflow/tests/provider-switch-observer.test.ts",
+        "src/resources/extensions/workflow/tests/skill-activation.test.ts",
+        "src/resources/extensions/visual-brief/tests/visual-brief.test.ts"
+      ]
+    },
+    {
+      "number": 316,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "9225bc2",
+      "guidancePath": ".planning/upstream-audits/guidance/9225bc2.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/tools/read.ts",
+        "packages/pi-tui/src/utils.ts",
+        "scripts/compile-tests.mjs",
+        "src/tests/provider-equality-allowlist.test.ts",
+        "src/tests/resolve-ts-loader.test.ts"
+      ]
+    },
+    {
+      "number": 315,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "7868f95",
+      "guidancePath": ".planning/upstream-audits/guidance/7868f95.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/openai-completions.ts",
+        "packages/pi-coding-agent/src/core/package-manager.ts",
+        "packages/pi-coding-agent/src/modes/interactive/components/diff.ts",
+        "packages/pi-coding-agent/src/core/agent-session.ts",
+        "packages/pi-coding-agent/src/core/sdk.ts",
+        "gsd-agent-core/sdk.ts and pi-agent-core/harness/{env/nodejs,skills} → NO otto equivalents"
+      ]
+    },
+    {
+      "number": 314,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "7c2930e",
+      "guidancePath": ".planning/upstream-audits/guidance/7c2930e.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/package-manager.ts",
+        "packages/pi-coding-agent/src/utils/shell.ts",
+        "packages/pi-coding-agent/test/auth-storage.test.ts",
+        "packages/pi-coding-agent/test/model-registry.test.ts",
+        "packages/pi-tui/test/markdown.test.ts",
+        "scripts/vendor-pi.cjs (does not exist in otto)",
+        "scripts/fix-relative-core-imports.cjs, scripts/sync-agent-core-upstream.cjs (do not exist in otto)",
+        "src/web/bridge-service.ts (does not exist in otto)"
+      ]
+    },
+    {
+      "number": 310,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "3356ef7",
+      "guidancePath": ".planning/upstream-audits/guidance/3356ef7.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/agent-session.ts",
+        "packages/pi-tui/test/markdown.test.ts (otto path: see below)",
+        "src/web/bridge-service.ts (NOT present in otto-cli)"
+      ]
+    },
+    {
+      "number": 307,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "91c18da",
+      "guidancePath": ".planning/upstream-audits/guidance/91c18da.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/markdown-renderer.ts",
+        "src/resources/extensions/workflow/tests/planning-crossval.test.ts"
+      ]
+    },
+    {
+      "number": 305,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "5a0af0a",
+      "guidancePath": ".planning/upstream-audits/guidance/5a0af0a.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/markdown-renderer.ts",
+        "src/resources/extensions/workflow/tests/markdown-renderer.test.ts"
+      ]
+    },
+    {
+      "number": 304,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9814712",
+      "guidancePath": ".planning/upstream-audits/guidance/9814712.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/state-reconciliation/drift/stale-render.ts"
+      ]
+    },
+    {
+      "number": 303,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "5754851",
+      "guidancePath": ".planning/upstream-audits/guidance/5754851.md",
+      "targetFiles": [
+        "package.json",
+        "package-lock.json"
+      ]
+    },
+    {
+      "number": 301,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "2c3ac68",
+      "guidancePath": ".planning/upstream-audits/guidance/2c3ac68.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-worktree.ts",
+        "src/resources/extensions/workflow/tests/checkout-branch-stash-guard.test.ts"
+      ]
+    },
+    {
+      "number": 300,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "8bb2905",
+      "guidancePath": ".planning/upstream-audits/guidance/8bb2905.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/prompts/complete-slice.md",
+        "src/resources/extensions/workflow/tests/prompt-contracts.test.ts"
+      ]
+    },
+    {
+      "number": 298,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "72748c0",
+      "guidancePath": ".planning/upstream-audits/guidance/72748c0.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/preferences.ts",
+        "src/resources/extensions/workflow/rule-registry.ts",
+        "src/resources/extensions/workflow/tests/rule-registry.test.ts (extend)"
+      ]
+    },
+    {
+      "number": 294,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "af968b9",
+      "guidancePath": ".planning/upstream-audits/guidance/af968b9.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/packages/pi-coding-agent/src/core/extensions/types.ts"
+      ]
+    },
+    {
+      "number": 293,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "b70e549",
+      "guidancePath": ".planning/upstream-audits/guidance/b70e549.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/.github/workflows/build-native.yml"
+      ]
+    },
+    {
+      "number": 292,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "20e324d",
+      "guidancePath": ".planning/upstream-audits/guidance/20e324d.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/google-shared.ts",
+        "src/resources/extensions/workflow/bootstrap/agent-end-recovery.ts",
+        "src/resources/extensions/workflow/bootstrap/db-tools.ts",
+        "src/resources/extensions/workflow/bootstrap/memory-tools.ts",
+        "src/resources/extensions/workflow/error-classifier.ts",
+        "src/resources/extensions/workflow/planning-path-scope.ts",
+        "src/resources/extensions/workflow/pre-execution-checks.ts",
+        "src/resources/extensions/workflow/provider-error-guidance.ts (NEW)",
+        "src/resources/extensions/workflow/tests/claude-tool-schema-golden.test.ts (NEW)",
+        "src/resources/extensions/workflow/tests/plan-slice.test.ts (NEW)",
+        "src/resources/extensions/workflow/tests/provider-error-guidance.test.ts (NEW)",
+        "packages/pi-ai/test/google-shared-convert-tools.test.ts (NEW)"
+      ]
+    },
+    {
+      "number": 291,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "ad688c3",
+      "guidancePath": ".planning/upstream-audits/guidance/ad688c3.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/mistral.ts"
+      ]
+    },
+    {
+      "number": 290,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "faf7dbb",
+      "guidancePath": ".planning/upstream-audits/guidance/faf7dbb.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/provider-capabilities.ts",
+        "packages/pi-ai/src/providers/provider-capabilities.test.ts",
+        "packages/pi-coding-agent/src/core/tools/tool-compatibility-registry.ts",
+        "packages/pi-coding-agent/src/core/sdk-tool-filter.test.ts"
+      ]
+    },
+    {
+      "number": 289,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "89c71c2",
+      "guidancePath": ".planning/upstream-audits/guidance/89c71c2.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/google-shared.ts",
+        "packages/pi-ai/test/google-shared-convert-tools.test.ts (new)"
+      ]
+    },
+    {
+      "number": 287,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "15bf5ca",
+      "guidancePath": ".planning/upstream-audits/guidance/15bf5ca.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/commands-verdict.ts (exists; matches upstream pre-fix)",
+        "src/resources/extensions/workflow/tests/commands-verdict.test.ts (exists)"
+      ]
+    },
+    {
+      "number": 284,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "4bbc7b2",
+      "guidancePath": ".planning/upstream-audits/guidance/4bbc7b2.md",
+      "targetFiles": [
+        "packages/pi-ai/src/utils/normalize-tool-arguments.ts (NEW)",
+        "packages/pi-ai/src/utils/tests/normalize-tool-arguments.test.ts (NEW)",
+        "packages/pi-ai/src/utils/validation.ts",
+        "src/resources/extensions/workflow/repo-identity.ts",
+        "src/resources/extensions/workflow/worktree-root.ts",
+        "src/resources/extensions/workflow/worktree-manager.ts",
+        "src/resources/extensions/workflow/paths.ts",
+        "src/resources/extensions/workflow/workflow-projections.ts",
+        "src/resources/extensions/workflow/prompts/gate-evaluate.md",
+        "src/resources/extensions/workflow/tests/repo-identity-external-worktree.test.ts (NEW)",
+        "src/resources/extensions/workflow/tests/worktree-manager.test.ts",
+        "scripts/copy-resources.cjs"
+      ]
+    },
+    {
+      "number": 283,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "34e06be",
+      "guidancePath": ".planning/upstream-audits/guidance/34e06be.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/mistral.ts"
+      ]
+    },
+    {
+      "number": 282,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "91a9ca3",
+      "guidancePath": ".planning/upstream-audits/guidance/91a9ca3.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/mistral.ts"
+      ]
+    },
+    {
+      "number": 280,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "aadeaa4",
+      "guidancePath": ".planning/upstream-audits/guidance/aadeaa4.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/controllers/chat-controller.ts",
+        "packages/pi-coding-agent/src/core/chat-controller-ordering.test.ts"
+      ]
+    },
+    {
+      "number": 279,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "03465a4",
+      "guidancePath": ".planning/upstream-audits/guidance/03465a4.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/parallel-merge.ts (exists; identical error string at line 206)",
+        "src/resources/extensions/workflow/worktree-lifecycle.ts (exists)",
+        "src/resources/extensions/workflow/tests/milestone-merge-roadmap.test.ts (new)",
+        "src/resources/extensions/workflow/tests/commands-dispatcher-unmerged-milestone.test.ts (verify exists)",
+        "src/resources/extensions/workflow/tests/integration/parallel-merge.test.ts (verify exists)"
+      ]
+    },
+    {
+      "number": 278,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "7448d89",
+      "guidancePath": ".planning/upstream-audits/guidance/7448d89.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/components/tool-execution.ts",
+        "packages/pi-coding-agent/src/core/chat-controller-ordering.test.ts"
+      ]
+    },
+    {
+      "number": 276,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "b136f0f",
+      "guidancePath": ".planning/upstream-audits/guidance/b136f0f.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/packages/pi-coding-agent/src/modes/interactive/components/tool-execution.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/packages/pi-coding-agent/src/modes/interactive/components/chat-turn-connect.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/packages/pi-coding-agent/src/modes/interactive/components/__tests__/tool-execution.test.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/packages/pi-coding-agent/src/modes/interactive/components/chat-turn-connect.test.ts (new)"
+      ]
+    },
+    {
+      "number": 275,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "9cfd12d",
+      "guidancePath": ".planning/upstream-audits/guidance/9cfd12d.md",
+      "targetFiles": [
+        ".github/workflows/build-native.yml"
+      ]
+    },
+    {
+      "number": 274,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "47d740f",
+      "guidancePath": ".planning/upstream-audits/guidance/47d740f.md",
+      "targetFiles": [
+        "packages/pi-ai/src/utils/normalize-tool-arguments.ts (NEW — does not exist in otto)",
+        "packages/pi-ai/src/index.ts",
+        "packages/pi-coding-agent/src/modes/interactive/components/tool-execution.ts",
+        "packages/pi-coding-agent/src/modes/interactive/components/__tests__/tool-execution.test.ts"
+      ]
+    },
+    {
+      "number": 273,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "3b39057",
+      "guidancePath": ".planning/upstream-audits/guidance/3b39057.md",
+      "targetFiles": [
+        "packages/pi-ai/scripts/generate-models.ts"
+      ]
+    },
+    {
+      "number": 272,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "b202c4e",
+      "guidancePath": ".planning/upstream-audits/guidance/b202c4e.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/packages/pi-coding-agent/src/core/extensions/extension-upstream-types.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/packages/pi-coding-agent/src/modes/interactive/components/chat-turn-connect.test.ts (if/when b136f0f lands)"
+      ]
+    },
+    {
+      "number": 268,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "99cf0f6",
+      "guidancePath": ".planning/upstream-audits/guidance/99cf0f6.md",
+      "targetFiles": [
+        "package.json"
+      ]
+    },
+    {
+      "number": 267,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9ee21a9",
+      "guidancePath": ".planning/upstream-audits/guidance/9ee21a9.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/memory-store.ts"
+      ]
+    },
+    {
+      "number": 266,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "2198b98",
+      "guidancePath": ".planning/upstream-audits/guidance/2198b98.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/knowledge-projection.ts",
+        "src/resources/extensions/workflow/tests/knowledge-backfill-projection.test.ts (NEW)"
+      ]
+    },
+    {
+      "number": 265,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "584f887",
+      "guidancePath": ".planning/upstream-audits/guidance/584f887.md",
+      "targetFiles": [
+        "scripts/install.js",
+        "scripts/postinstall.js",
+        "src/tests/postinstall.test.ts"
+      ]
+    },
+    {
+      "number": 264,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "8e01c98",
+      "guidancePath": ".planning/upstream-audits/guidance/8e01c98.md",
+      "targetFiles": [
+        "INSTALL.md (preferred — README.md already points users to INSTALL.md for install/uninstall/troubleshoot)"
+      ]
+    },
+    {
+      "number": 263,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "a1335b3",
+      "guidancePath": ".planning/upstream-audits/guidance/a1335b3.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/paths.ts",
+        "src/resources/extensions/workflow/workspace.ts"
+      ]
+    },
+    {
+      "number": 253,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "710e436",
+      "guidancePath": ".planning/upstream-audits/guidance/710e436.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-hooks.ts",
+        "packages/pi-ai/src/utils/tool-shims.ts (DOES NOT EXIST in otto pi-ai — see below)",
+        "src/resources/extensions/workflow/tests/token-tool-gating.test.ts (new)"
+      ]
+    },
+    {
+      "number": 252,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "c0649d3",
+      "guidancePath": ".planning/upstream-audits/guidance/c0649d3.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/bootstrap/register-extension.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/register-extension-guard.test.ts"
+      ]
+    },
+    {
+      "number": 251,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "4770ffb",
+      "guidancePath": ".planning/upstream-audits/guidance/4770ffb.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-supervisor.ts",
+        "src/resources/extensions/workflow/tests/crash-handler-secondary.test.ts",
+        "src/resources/extensions/workflow/tests/signal-handlers.test.ts"
+      ]
+    },
+    {
+      "number": 249,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "6c02e43",
+      "guidancePath": ".planning/upstream-audits/guidance/6c02e43.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-post-unit.ts"
+      ]
+    },
+    {
+      "number": 248,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "1c3366d",
+      "guidancePath": ".planning/upstream-audits/guidance/1c3366d.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/guided-flow.ts",
+        "src/resources/extensions/workflow/prompts/discuss.md",
+        "src/resources/extensions/workflow/prompts/guided-discuss-milestone.md",
+        "src/resources/extensions/workflow/tests/guided-flow.test.ts",
+        "packages/pi-coding-agent/src/modes/interactive/controllers/chat-controller.ts",
+        "packages/pi-coding-agent/src/modes/interactive/controllers/chat-controller.test.ts",
+        "packages/pi-ai/scripts/generate-models.ts"
+      ]
+    },
+    {
+      "number": 242,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "824f73b",
+      "guidancePath": ".planning/upstream-audits/guidance/824f73b.md",
+      "targetFiles": [
+        "scripts/run-package-tests.cjs"
+      ]
+    },
+    {
+      "number": 234,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "0f91c12",
+      "guidancePath": ".planning/upstream-audits/guidance/0f91c12.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/tests/auto-milestone-target.test.ts (verify exists)"
+      ]
+    },
+    {
+      "number": 233,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "496f798",
+      "guidancePath": ".planning/upstream-audits/guidance/496f798.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/tools/validate-milestone.ts",
+        "src/resources/extensions/workflow/tests/validate-milestone-write-order.test.ts"
+      ]
+    },
+    {
+      "number": 228,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "2a75f7f",
+      "guidancePath": ".planning/upstream-audits/guidance/2a75f7f.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto.ts",
+        "src/resources/extensions/workflow/tests/session-model-override.test.ts"
+      ]
+    },
+    {
+      "number": 224,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "d5981c4",
+      "guidancePath": ".planning/upstream-audits/guidance/d5981c4.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/messages.ts",
+        "packages/pi-coding-agent/src/core/compaction/compaction.ts",
+        "packages/pi-coding-agent/src/core/compaction/utils.ts"
+      ]
+    },
+    {
+      "number": 222,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "c4d3996",
+      "guidancePath": ".planning/upstream-audits/guidance/c4d3996.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/auto-worktree.ts"
+      ]
+    },
+    {
+      "number": 219,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "82313bf",
+      "guidancePath": ".planning/upstream-audits/guidance/82313bf.md",
+      "targetFiles": [
+        ".github/workflows/ci.yml",
+        "package.json",
+        "src/tests/integration/child-process-guard.ts (new)",
+        "src/tests/integration/e2e-headless.test.ts",
+        "src/tests/integration/e2e-smoke.test.ts",
+        "src/tests/integration/pack-install.test.ts",
+        "src/web/bridge-service.ts (does not exist in otto)"
+      ]
+    },
+    {
+      "number": 209,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "adf25e0",
+      "guidancePath": ".planning/upstream-audits/guidance/adf25e0.md",
+      "targetFiles": [
+        "native/scripts/sync-platform-versions.cjs",
+        "scripts/lib/version-sync.cjs",
+        "scripts/__tests__/sync-platform-versions.test.mjs",
+        "scripts/__tests__/version-sync.test.mjs",
+        "scripts/verify-native-platform-packages.mjs"
+      ]
+    },
+    {
+      "number": 200,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "d49e42f",
+      "guidancePath": ".planning/upstream-audits/guidance/d49e42f.md",
+      "targetFiles": [
+        "scripts/link-workspace-packages.cjs",
+        "scripts/validate-pack.js",
+        "package.json"
+      ]
+    },
+    {
+      "number": 199,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "c2f6d35",
+      "guidancePath": ".planning/upstream-audits/guidance/c2f6d35.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/milestone-actions.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/park-milestone.test.ts"
+      ]
+    },
+    {
+      "number": 198,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "afeb482",
+      "guidancePath": ".planning/upstream-audits/guidance/afeb482.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/doctor-runtime-checks.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/doctor-types.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/doctor-orphan-milestone-4996.test.ts"
+      ]
+    },
+    {
+      "number": 197,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "12bf6e7",
+      "guidancePath": ".planning/upstream-audits/guidance/12bf6e7.md",
+      "targetFiles": [
+        "src/resource-loader.ts (exists; matches upstream pre-fix shape)",
+        "src/help-text.ts (exists; otto-branded)",
+        "src/tests/node-modules-symlink.test.ts (exists)",
+        "src/tests/provider-help-text.test.ts (exists)"
+      ]
+    },
+    {
+      "number": 190,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "c06228f",
+      "guidancePath": ".planning/upstream-audits/guidance/c06228f.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/package.json",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/packages/pi-coding-agent/src/core/extensions/loader.ts (if extension code uses the at-runtime alias path)",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/scripts/validate-pack.js (otto's analog of validate-pack)"
+      ]
+    },
+    {
+      "number": 189,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "c5d2244",
+      "guidancePath": ".planning/upstream-audits/guidance/c5d2244.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/commands-context.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/commands/handlers/core.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/commands-context.test.ts"
+      ]
+    },
+    {
+      "number": 184,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "9814e35",
+      "guidancePath": ".planning/upstream-audits/guidance/9814e35.md",
+      "targetFiles": [
+        "scripts/install/deps.js",
+        "scripts/link-workspace-packages.cjs",
+        "scripts/__tests__/installer-packaging.test.mjs"
+      ]
+    },
+    {
+      "number": 182,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "8368025",
+      "guidancePath": ".planning/upstream-audits/guidance/8368025.md",
+      "targetFiles": [
+        ".github/workflows/npm-publish.yml"
+      ]
+    },
+    {
+      "number": 180,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "7faba93",
+      "guidancePath": ".planning/upstream-audits/guidance/7faba93.md",
+      "targetFiles": [
+        "scripts/validate-pack.js",
+        "scripts/prepack-resolve-workspace.cjs (new)",
+        "scripts/postpack-restore-workspace.cjs (new)",
+        "scripts/lib/version-sync.cjs",
+        "package.json",
+        ".gitignore"
+      ]
+    },
+    {
+      "number": 174,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "7a4a8a3",
+      "guidancePath": ".planning/upstream-audits/guidance/7a4a8a3.md",
+      "targetFiles": [
+        "scripts/validate-pack.js"
+      ]
+    },
+    {
+      "number": 173,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "892cab0",
+      "guidancePath": ".planning/upstream-audits/guidance/892cab0.md",
+      "targetFiles": [
+        "scripts/validate-pack.js"
+      ]
+    },
+    {
+      "number": 171,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "82e6398",
+      "guidancePath": ".planning/upstream-audits/guidance/82e6398.md",
+      "targetFiles": [
+        "scripts/validate-pack.js"
+      ]
+    },
+    {
+      "number": 169,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "871910a",
+      "guidancePath": ".planning/upstream-audits/guidance/871910a.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/tests/dist-redirect.mjs"
+      ]
+    },
+    {
+      "number": 166,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "b3cdecc",
+      "guidancePath": ".planning/upstream-audits/guidance/b3cdecc.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/bootstrap/register-hooks.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/guided-flow.ts"
+      ]
+    },
+    {
+      "number": 164,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "8f2fab5",
+      "guidancePath": ".planning/upstream-audits/guidance/8f2fab5.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-extension.ts"
+      ]
+    },
+    {
+      "number": 162,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "587d2bb",
+      "guidancePath": ".planning/upstream-audits/guidance/587d2bb.md",
+      "targetFiles": [
+        "scripts/validate-pack.js",
+        "package.json (skip)",
+        "scripts/materialize-bundled-deps.cjs (does not exist in otto)",
+        "scripts/postpack-restore-workspace.cjs (does not exist in otto)",
+        "scripts/__tests__/installer-packaging.test.mjs (does not exist in otto)"
+      ]
+    },
+    {
+      "number": 161,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "aa77e48",
+      "guidancePath": ".planning/upstream-audits/guidance/aa77e48.md",
+      "targetFiles": [
+        "scripts/validate-pack.js",
+        "package.json"
+      ]
+    },
+    {
+      "number": 160,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "85a4cb0",
+      "guidancePath": ".planning/upstream-audits/guidance/85a4cb0.md",
+      "targetFiles": [
+        "scripts/validate-pack.sh"
+      ]
+    },
+    {
+      "number": 154,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "f696baf",
+      "guidancePath": ".planning/upstream-audits/guidance/f696baf.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/interactive-mode.ts",
+        "packages/pi-coding-agent/src/modes/interactive/interactive-mode-ordering.test.ts"
+      ]
+    },
+    {
+      "number": 153,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "6b378c3",
+      "guidancePath": ".planning/upstream-audits/guidance/6b378c3.md",
+      "targetFiles": [
+        "scripts/install/npm-global.js",
+        "src/update-check.ts",
+        "scripts/__tests__/installer-packaging.test.mjs (extend)",
+        "src/tests/update-cmd-diagnostics.test.ts (extend)"
+      ]
+    },
+    {
+      "number": 150,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "e2544a9",
+      "guidancePath": ".planning/upstream-audits/guidance/e2544a9.md",
+      "targetFiles": [
+        "src/resources/extensions/context7/index.ts",
+        "src/resources/extensions/search-the-web/native-search.ts",
+        "src/tests/native-search.test.ts"
+      ]
+    },
+    {
+      "number": 148,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "8f7f70a",
+      "guidancePath": ".planning/upstream-audits/guidance/8f7f70a.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/closeout-recovery.ts",
+        "src/resources/extensions/workflow/tests/closeout-recovery.test.ts"
+      ]
+    },
+    {
+      "number": 147,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "b723db3",
+      "guidancePath": ".planning/upstream-audits/guidance/b723db3.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/auto-start.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/auto-start-orphan-bootstrap.test.ts"
+      ]
+    },
+    {
+      "number": 146,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "71369f9",
+      "guidancePath": ".planning/upstream-audits/guidance/71369f9.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-start.ts",
+        "src/resources/extensions/workflow/tests/auto-start-orphan-bootstrap.test.ts (new or extend)"
+      ]
+    },
+    {
+      "number": 142,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "d01b984",
+      "guidancePath": ".planning/upstream-audits/guidance/d01b984.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/components/transcript-design.ts",
+        "packages/pi-coding-agent/src/modes/interactive/components/__tests__/assistant-message-design.test.ts"
+      ]
+    },
+    {
+      "number": 141,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "098b1ca",
+      "guidancePath": ".planning/upstream-audits/guidance/098b1ca.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/components/extension-editor.ts (exists, extends Container)",
+        "packages/pi-coding-agent/src/modes/interactive/components/extension-input.ts (exists)",
+        "packages/pi-coding-agent/src/modes/interactive/components/extension-selector.ts (exists)",
+        "packages/pi-coding-agent/src/modes/interactive/components/index.ts (verify export list)",
+        "packages/pi-coding-agent/src/modes/interactive/components/interactive-key-handling.test.ts (exists)",
+        "src/resources/extensions/get-secrets-from-user.ts (verify)",
+        "src/resources/extensions/workflow/config-overlay.ts (exists)",
+        "src/resources/extensions/workflow/context-overlay.ts (verify)",
+        "src/resources/extensions/workflow/dashboard-overlay.ts (exists, has own bordering)",
+        "src/resources/extensions/workflow/notification-overlay.ts (verify)",
+        "src/resources/extensions/workflow/parallel-monitor-overlay.ts (verify)",
+        "src/resources/extensions/workflow/queue-reorder-ui.ts (verify)",
+        "src/resources/extensions/workflow/tests/*.test.ts — six test files",
+        "src/resources/extensions/workflow/tests/tui-border-assertions.ts (NEW helper)"
+      ]
+    },
+    {
+      "number": 138,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "97d4ddb",
+      "guidancePath": ".planning/upstream-audits/guidance/97d4ddb.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto/phases.ts",
+        "src/resources/extensions/workflow/tests/auto-loop.test.ts"
+      ]
+    },
+    {
+      "number": 135,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "b8f0178",
+      "guidancePath": ".planning/upstream-audits/guidance/b8f0178.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/milestone-actions.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/park-milestone.test.ts"
+      ]
+    },
+    {
+      "number": 134,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "3f5e830",
+      "guidancePath": ".planning/upstream-audits/guidance/3f5e830.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts",
+        "src/resources/extensions/workflow/tests/repo-identity-worktree.test.ts"
+      ]
+    },
+    {
+      "number": 128,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "946baa7",
+      "guidancePath": ".planning/upstream-audits/guidance/946baa7.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-recovery.ts",
+        "src/resources/extensions/workflow/doctor-engine-checks.ts",
+        "src/resources/extensions/workflow/tests/auto-recovery.test.ts",
+        "src/resources/extensions/workflow/tests/doctor-scope-db-unavailable.test.ts"
+      ]
+    },
+    {
+      "number": 126,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "5d3c33d",
+      "guidancePath": ".planning/upstream-audits/guidance/5d3c33d.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-post-unit.ts",
+        "src/resources/extensions/workflow/tests/post-unit-retry-on-orchestrator-bridge.test.ts (NEW)"
+      ]
+    },
+    {
+      "number": 125,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "769998a",
+      "guidancePath": ".planning/upstream-audits/guidance/769998a.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto/phases.ts",
+        "src/resources/extensions/workflow/user-input-boundary.ts",
+        "src/resources/extensions/workflow/tests/user-input-boundary.test.ts (new)"
+      ]
+    },
+    {
+      "number": 121,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "7b944da",
+      "guidancePath": ".planning/upstream-audits/guidance/7b944da.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/openai-responses-shared.ts",
+        "packages/pi-ai/test/openai-responses-foreign-toolcall-id.test.ts (new)"
+      ]
+    },
+    {
+      "number": 118,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "8bf3530",
+      "guidancePath": ".planning/upstream-audits/guidance/8bf3530.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-post-unit.ts",
+        "src/resources/extensions/workflow/tests/complete-slice-reopen-handoff.test.ts"
+      ]
+    },
+    {
+      "number": 117,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "491ace3",
+      "guidancePath": ".planning/upstream-audits/guidance/491ace3.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/openai-responses-shared.ts"
+      ]
+    },
+    {
+      "number": 116,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "b1202a5",
+      "guidancePath": ".planning/upstream-audits/guidance/b1202a5.md",
+      "targetFiles": [
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/auto/phases.ts",
+        "/Users/coreyellis/code/github.com/cmetech/otto_app/otto-cli/src/resources/extensions/workflow/tests/auto-loop.test.ts"
+      ]
+    },
+    {
+      "number": 115,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "9502332",
+      "guidancePath": ".planning/upstream-audits/guidance/9502332.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repository-registry.ts",
+        "src/resources/extensions/workflow/tests/repository-registry.test.ts"
+      ]
+    },
+    {
+      "number": 114,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "49d3fc9",
+      "guidancePath": ".planning/upstream-audits/guidance/49d3fc9.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repository-registry.ts",
+        "src/resources/extensions/workflow/tests/repository-registry.test.ts"
+      ]
+    },
+    {
+      "number": 112,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "36aab23",
+      "guidancePath": ".planning/upstream-audits/guidance/36aab23.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/README.md (verify content; otto is rebranded)",
+        "(gsd Discord invite test has no otto equivalent)"
+      ]
+    },
+    {
+      "number": 111,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "e723617",
+      "guidancePath": ".planning/upstream-audits/guidance/e723617.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/extensions/types.ts",
+        "packages/pi-coding-agent/src/core/extensions/loader.ts"
+      ]
+    },
+    {
+      "number": 109,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "790d022",
+      "guidancePath": ".planning/upstream-audits/guidance/790d022.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/skill-discovery.ts",
+        "src/resources/extensions/workflow/bootstrap/register-hooks.ts",
+        "src/resources/extensions/workflow/tests/skill-discovery.test.ts (extend)"
+      ]
+    },
+    {
+      "number": 108,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "8dd6272",
+      "guidancePath": ".planning/upstream-audits/guidance/8dd6272.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-hooks.ts",
+        "src/resources/extensions/workflow/tests/workflow-mcp-auto-prep.test.ts"
+      ]
+    },
+    {
+      "number": 107,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "526ed30",
+      "guidancePath": ".planning/upstream-audits/guidance/526ed30.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto.ts"
+      ]
+    },
+    {
+      "number": 101,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "746d2d0",
+      "guidancePath": ".planning/upstream-audits/guidance/746d2d0.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/state-reconciliation/index.ts",
+        "src/resources/extensions/workflow/tests/state-reconciliation-drift.test.ts (extend)"
+      ]
+    },
+    {
+      "number": 98,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "6bef491",
+      "guidancePath": ".planning/upstream-audits/guidance/6bef491.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/post-execution-checks.ts",
+        "src/resources/extensions/workflow/tests/post-execution-checks.test.ts"
+      ]
+    },
+    {
+      "number": 96,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "9b7f522",
+      "guidancePath": ".planning/upstream-audits/guidance/9b7f522.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts"
+      ]
+    },
+    {
+      "number": 94,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "42290ba",
+      "guidancePath": ".planning/upstream-audits/guidance/42290ba.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts"
+      ]
+    },
+    {
+      "number": 89,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "0cf9338",
+      "guidancePath": ".planning/upstream-audits/guidance/0cf9338.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/tests/integration/parallel-merge.test.ts (exists)"
+      ]
+    },
+    {
+      "number": 88,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "494e759",
+      "guidancePath": ".planning/upstream-audits/guidance/494e759.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/parallel-merge.ts",
+        "src/resources/extensions/workflow/tests/integration/parallel-merge.test.ts"
+      ]
+    },
+    {
+      "number": 87,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "0af8f0d",
+      "guidancePath": ".planning/upstream-audits/guidance/0af8f0d.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/tests/worktree-state-projection.test.ts (exists)"
+      ]
+    },
+    {
+      "number": 85,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "4ba1821",
+      "guidancePath": ".planning/upstream-audits/guidance/4ba1821.md",
+      "targetFiles": [
+        "src/tests/integration/pack-install.test.ts"
+      ]
+    },
+    {
+      "number": 61,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "088987b",
+      "guidancePath": ".planning/upstream-audits/guidance/088987b.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/theme/theme.ts",
+        "packages/pi-coding-agent/test/theme-picker.test.ts (new)"
+      ]
+    },
+    {
+      "number": 57,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "11c3da4",
+      "guidancePath": ".planning/upstream-audits/guidance/11c3da4.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/amazon-bedrock.ts",
+        "packages/pi-ai/test/bedrock-thinking-payload.test.ts (E2E test, gated on creds)"
+      ]
+    },
+    {
+      "number": 55,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "bf56a86",
+      "guidancePath": ".planning/upstream-audits/guidance/bf56a86.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/package-manager.ts (real equivalent of upstream packages/coding-agent/src/core/package-manager.ts)",
+        "packages/pi-coding-agent/test/package-manager.test.ts (test)",
+        "README.md / docs/packages.md are upstream-relative doc files; skip unless otto-cli ships them."
+      ]
+    },
+    {
+      "number": 33,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "493efd4",
+      "guidancePath": ".planning/upstream-audits/guidance/493efd4.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/openai-codex-responses.ts (exists, diverged)",
+        "packages/pi-ai/src/providers/simple-options.ts (exists; no websocket/timeout fields yet)",
+        "packages/pi-ai/src/types.ts (exists; StreamOptions lacks websocketConnectTimeoutMs/timeoutMs)",
+        "packages/pi-coding-agent/src/core/sdk.ts, settings-manager.ts (exist) — plumb the new setting",
+        "packages/pi-coding-agent/docs/settings.md (verify)"
+      ]
+    },
+    {
+      "number": 27,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "7c02a55",
+      "guidancePath": ".planning/upstream-audits/guidance/7c02a55.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/openai-codex-responses.ts (exists, diverged)",
+        "packages/pi-ai/src/utils/abort-signals.ts (does NOT exist — new file to create)",
+        "Test: packages/pi-ai/test/openai-codex-stream.test.ts (verify exists)"
+      ]
+    }
+  ],
+  "humanTier": [],
+  "needsTriage": [
+    {
+      "number": 110,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "00dc06b",
+      "guidancePath": ".planning/upstream-audits/guidance/00dc06b.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 62,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "4b4641c",
+      "guidancePath": ".planning/upstream-audits/guidance/4b4641c.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 58,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "f953067",
+      "guidancePath": ".planning/upstream-audits/guidance/f953067.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 51,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "7002c68",
+      "guidancePath": ".planning/upstream-audits/guidance/7002c68.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 50,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "42379a3",
+      "guidancePath": ".planning/upstream-audits/guidance/42379a3.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 49,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "c85dbb1",
+      "guidancePath": ".planning/upstream-audits/guidance/c85dbb1.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 44,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "c5181a2",
+      "guidancePath": ".planning/upstream-audits/guidance/c5181a2.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 42,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "e007fcd",
+      "guidancePath": ".planning/upstream-audits/guidance/e007fcd.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 40,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "fc8a155",
+      "guidancePath": ".planning/upstream-audits/guidance/fc8a155.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 38,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "8fb1e87",
+      "guidancePath": ".planning/upstream-audits/guidance/8fb1e87.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 37,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "4402100",
+      "guidancePath": ".planning/upstream-audits/guidance/4402100.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 36,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "59ec800",
+      "guidancePath": ".planning/upstream-audits/guidance/59ec800.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 35,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "2531fc1",
+      "guidancePath": ".planning/upstream-audits/guidance/2531fc1.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 34,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "26f1e00",
+      "guidancePath": ".planning/upstream-audits/guidance/26f1e00.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 24,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "6ab62a0",
+      "guidancePath": ".planning/upstream-audits/guidance/6ab62a0.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 21,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "a29a790",
+      "guidancePath": ".planning/upstream-audits/guidance/a29a790.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 19,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "3e9f717",
+      "guidancePath": ".planning/upstream-audits/guidance/3e9f717.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 18,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "3f1ce9b",
+      "guidancePath": ".planning/upstream-audits/guidance/3f1ce9b.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 16,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "b64f3f5",
+      "guidancePath": ".planning/upstream-audits/guidance/b64f3f5.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 8,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "9d2bceb",
+      "guidancePath": ".planning/upstream-audits/guidance/9d2bceb.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 7,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "edd1212",
+      "guidancePath": ".planning/upstream-audits/guidance/edd1212.md",
+      "targetFiles": [],
+      "needsTriage": true
+    },
+    {
+      "number": 5,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "a36a132",
+      "guidancePath": ".planning/upstream-audits/guidance/a36a132.md",
+      "targetFiles": [],
+      "needsTriage": true
+    }
+  ]
+}

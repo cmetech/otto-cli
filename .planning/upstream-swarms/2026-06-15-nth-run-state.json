@@ -1,0 +1,196 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "severity:nice-to-have-fix label:status:triaged (supervised batch: 352,350,349)",
+  "startedAt": null,
+  "baselineGate": null,
+  "waves": [],
+  "abortStreak": {
+    "signature": null,
+    "count": 0
+  },
+  "issues": {
+    "349": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "7145ebb",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto/loop.ts"
+      ],
+      "state": "merged",
+      "retryCount": 0,
+      "fixStartedAt": 1781540907885,
+      "lastPolledAt": null,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 390,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/390",
+      "checks": "pass (informational reds: integration-tests, triage)",
+      "localGate": "pass",
+      "refute": {
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.95,
+            "reason": "Faithful adapted-port: PR head matches upstream 7145ebb finishIncompleteIteration insert; resolves #349 ghost-iteration root cause.",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.95,
+            "reason": "Exactly the 5-line insert + scoped regression test; no unrelated edits.",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "Test drives dev pre-dispatch break; asserts iteration-end parity + payload; fails pre-fix / passes post-fix (verified).",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.93,
+            "reason": "Mirrors 5 sibling break branches; emitIterationEnd idempotent; control flow unchanged.",
+            "blocking": false
+          }
+        ],
+        "tally": {
+          "panelVerdict": "approve",
+          "approves": 4,
+          "refutes": 0,
+          "abstains": 0,
+          "reason": "4 approve / 0 abstain / 0 refute"
+        }
+      },
+      "mergeSha": "1a99cdd",
+      "reason": null
+    },
+    "350": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "77e8cee",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto/phases.ts"
+      ],
+      "state": "merged",
+      "retryCount": 0,
+      "fixStartedAt": 1781541841659,
+      "lastPolledAt": null,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 391,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/391",
+      "checks": "pass (informational reds: integration-tests, triage)",
+      "localGate": "pass",
+      "refute": {
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.93,
+            "reason": "Predicate fields match otto auto-dispatch unhandled-phase warning; retry-once invalidate+rederive+re-resolve mirrors upstream 77e8cee.",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.93,
+            "reason": "One helper + bounded single-retry in runDispatch + dedicated test. No scope creep.",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.86,
+            "reason": "Fixture matches real DispatchAction stop-warning; pauses(fail) pre-fix, continues(pass) post-fix; behavioral asserts.",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.86,
+            "reason": "One-shot if (not loop); re-calls pure resolveDispatch only; invalidateAllCaches idempotent; predicate tightly scoped.",
+            "blocking": false
+          }
+        ],
+        "tally": {
+          "panelVerdict": "approve",
+          "approves": 4,
+          "refutes": 0,
+          "abstains": 0,
+          "reason": "4 approve / 0 abstain / 0 refute"
+        }
+      },
+      "mergeSha": "f64ed93",
+      "reason": null
+    },
+    "352": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "243147a",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto-recovery.ts",
+        "src/resources/extensions/workflow/tests/auto-recovery.test.ts",
+        "src/tests/mcp-server.test.ts"
+      ],
+      "state": "merged",
+      "retryCount": 0,
+      "fixStartedAt": 1781543170767,
+      "lastPolledAt": null,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 392,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/392",
+      "checks": "pass (informational reds: integration-tests, triage)",
+      "localGate": "pass",
+      "refute": {
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.93,
+            "reason": "Faithful adapted-port: 3 maxBuffer sites + #4699 branch fix + mcp specifier match upstream 243147a; gsd/→workflow rename; extra #352 test additive.",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.95,
+            "reason": "Diff maps 1:1 to guidance + in-scope #352 regression test; only deviations are legit path renames.",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "#352 test is real fails-before/passes-after (1.3MB body overflows 1MB default); #4699/mcp are CI-determinism fixes; no assertions weakened.",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "maxBuffer is a cap not preallocation; local to 3 milestone-scan sites; no other callers; test/import edits test-only.",
+            "blocking": false
+          }
+        ],
+        "tally": {
+          "panelVerdict": "approve",
+          "approves": 4,
+          "refutes": 0,
+          "abstains": 0,
+          "reason": "4 approve / 0 abstain / 0 refute"
+        }
+      },
+      "mergeSha": "9e46e88",
+      "reason": null
+    }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "autoTier": [
+    {
+      "number": 148,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "8f7f70a",
+      "guidancePath": ".planning/upstream-audits/guidance/8f7f70a.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/closeout-recovery.ts",
+        "src/resources/extensions/workflow/tests/closeout-recovery.test.ts"
+      ]
+    },
+    {
+      "number": 142,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "d01b984",
+      "guidancePath": ".planning/upstream-audits/guidance/d01b984.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/components/transcript-design.ts",
+        "packages/pi-coding-agent/src/modes/interactive/components/__tests__/assistant-message-design.test.ts"
+      ]
+    },
+    {
+      "number": 138,
+      "severity": "nice-to-have-fix",
+      "type": "cherry-pick-candidate",
+      "sha": "97d4ddb",
+      "guidancePath": ".planning/upstream-audits/guidance/97d4ddb.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto/phases.ts",
+        "src/resources/extensions/workflow/tests/auto-loop.test.ts"
+      ]
+    },
+    {
+      "number": 117,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "491ace3",
+      "guidancePath": ".planning/upstream-audits/guidance/491ace3.md",
+      "targetFiles": [
+        "packages/pi-ai/src/providers/openai-responses-shared.ts"
+      ]
+    },
+    {
+      "number": 114,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "49d3fc9",
+      "guidancePath": ".planning/upstream-audits/guidance/49d3fc9.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repository-registry.ts",
+        "src/resources/extensions/workflow/tests/repository-registry.test.ts"
+      ]
+    },
+    {
+      "number": 111,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "e723617",
+      "guidancePath": ".planning/upstream-audits/guidance/e723617.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/extensions/types.ts",
+        "packages/pi-coding-agent/src/core/extensions/loader.ts"
+      ]
+    },
+    {
+      "number": 108,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "8dd6272",
+      "guidancePath": ".planning/upstream-audits/guidance/8dd6272.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/bootstrap/register-hooks.ts",
+        "src/resources/extensions/workflow/tests/workflow-mcp-auto-prep.test.ts"
+      ]
+    },
+    {
+      "number": 107,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "526ed30",
+      "guidancePath": ".planning/upstream-audits/guidance/526ed30.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto.ts"
+      ]
+    },
+    {
+      "number": 98,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "6bef491",
+      "guidancePath": ".planning/upstream-audits/guidance/6bef491.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/post-execution-checks.ts",
+        "src/resources/extensions/workflow/tests/post-execution-checks.test.ts"
+      ]
+    },
+    {
+      "number": 94,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "42290ba",
+      "guidancePath": ".planning/upstream-audits/guidance/42290ba.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/repo-identity.ts"
+      ]
+    },
+    {
+      "number": 88,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "494e759",
+      "guidancePath": ".planning/upstream-audits/guidance/494e759.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/parallel-merge.ts",
+        "src/resources/extensions/workflow/tests/integration/parallel-merge.test.ts"
+      ]
+    },
+    {
+      "number": 85,
+      "severity": "nice-to-have-fix",
+      "type": "port-required",
+      "sha": "4ba1821",
+      "guidancePath": ".planning/upstream-audits/guidance/4ba1821.md",
+      "targetFiles": [
+        "src/tests/integration/pack-install.test.ts"
+      ]
+    }
+  ],
+  "humanTier": [],
+  "needsTriage": []
+}

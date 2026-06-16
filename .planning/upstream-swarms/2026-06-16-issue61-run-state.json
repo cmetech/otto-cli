@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "date": "2026-06-16",
+  "filter": "{\"issues\":[\"61\"]}",
+  "startedAt": null,
+  "baselineGate": null,
+  "waves": [],
+  "abortStreak": {
+    "signature": null,
+    "count": 0
+  },
+  "issues": {
+    "61": {
+      "severity": "nice-to-have-fix",
+      "conflictRisk": null,
+      "sha": "088987b",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/modes/interactive/theme/theme.ts",
+        "packages/pi-coding-agent/test/theme-picker.test.ts (new)"
+      ],
+      "state": "quarantined",
+      "retryCount": 0,
+      "fixStartedAt": null,
+      "lastPolledAt": null,
+      "pollNoChangeCount": 0,
+      "retryReason": null,
+      "wave": null,
+      "prNumber": 403,
+      "prUrl": "https://github.com/cmetech/otto-cli/pull/403",
+      "checks": null,
+      "localGate": {
+        "pass": true,
+        "verdict": "pass"
+      },
+      "refute": {
+        "tally": {
+          "panelVerdict": "refute",
+          "approves": 3,
+          "refutes": 1,
+          "abstains": 0,
+          "reason": "1 lens(es) refuted"
+        },
+        "verdicts": [
+          {
+            "lens": "upstream-alignment",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "Faithful adapted-port: core fix lists custom themes by content name via loadThemeFromPath().name; dedup/precedence/sort match upstream; built-in path:undefined adaptation matches otto convention; regression test pins it.",
+            "blocking": false
+          },
+          {
+            "lens": "scope-discipline",
+            "verdict": "approve",
+            "confidence": 0.95,
+            "reason": "Only the two target files touched (theme.ts + co-located new test). All edits confined to the three theme-listing functions serving the content-name fix; dedup refactor is upstream-justified collateral. No scope creep or out-of-target edits.",
+            "blocking": false
+          },
+          {
+            "lens": "test-quality",
+            "verdict": "approve",
+            "confidence": 0.9,
+            "reason": "Test writes foo.json with name:bar, asserts bar listed/foo absent + path mapping. Genuinely fails pre-fix (slice file-stem) passes post-fix. Real fs/env/loadThemeFromPath, not mocked. 2nd test pins path:undefined convention.",
+            "blocking": false
+          },
+          {
+            "lens": "blast-radius",
+            "verdict": "refute",
+            "confidence": 0.8,
+            "reason": "Picker now lists custom themes by content name, but setTheme/loadThemeJson still resolves customThemesDir/.json by name. A foo.json named 'bar' becomes unselectable (throws→silent fallback to dark)—regresses the very case it fixes. Resolver not updated.",
+            "blocking": true
+          }
+        ]
+      },
+      "mergeSha": null,
+      "reason": "refute panel: 1 lens(es) refuted"
+    }
+  }
+}

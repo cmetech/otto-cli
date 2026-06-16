@@ -1,0 +1,14 @@
+{
+  "lanes": [
+    {
+      "id": 1,
+      "issues": [
+        "114"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/repository-registry.ts",
+        "src/resources/extensions/workflow/tests/repository-registry.test.ts"
+      ]
+    }
+  ]
+}

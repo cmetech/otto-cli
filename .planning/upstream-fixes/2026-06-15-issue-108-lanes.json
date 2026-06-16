@@ -1,0 +1,14 @@
+{
+  "lanes": [
+    {
+      "id": 1,
+      "issues": [
+        "108"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/bootstrap/register-hooks.ts",
+        "src/resources/extensions/workflow/tests/workflow-mcp-auto-prep.test.ts"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "--single-issue 111",
+  "integrationBranch": "fix/upstream-issue-111-e723617",
+  "prUrl": "https://github.com/cmetech/otto-cli/pull/398",
+  "finalSuite": {
+    "pass": true,
+    "failTail": ""
+  },
+  "lanes": {
+    "1": {
+      "issues": [
+        "111"
+      ],
+      "files": [
+        "packages/pi-coding-agent/src/core/extensions/types.ts",
+        "packages/pi-coding-agent/src/core/extensions/loader.ts"
+      ],
+      "branch": "fix/upstream-issue-111-e723617",
+      "worktree": ".worktrees/upstream-fix-issue-111",
+      "status": "in-progress"
+    }
+  },
+  "issues": {
+    "111": {
+      "lane": 1,
+      "sha": "e723617",
+      "guidancePath": ".planning/upstream-audits/guidance/e723617.md",
+      "targetFiles": [
+        "packages/pi-coding-agent/src/core/extensions/types.ts",
+        "packages/pi-coding-agent/src/core/extensions/loader.ts"
+      ],
+      "status": "resolved",
+      "commitSha": "f254e27",
+      "touchedFiles": [
+        "packages/pi-coding-agent/src/core/agent-session.ts",
+        "packages/pi-coding-agent/src/core/extensions/loader.send-message.test.ts",
+        "packages/pi-coding-agent/src/core/extensions/loader.ts",
+        "packages/pi-coding-agent/src/core/extensions/types.ts",
+        "packages/pi-coding-agent/src/core/hooks-runner.test.ts"
+      ],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": "approve",
+      "reviewerReason": "manual-port faithfully applies API-shape change; extra edits required; regression test fails pre-fix passes post-fix",
+      "reviewerRejectionCount": 0,
+      "reason": "await extension sendMessage turns"
+    }
+  }
+}

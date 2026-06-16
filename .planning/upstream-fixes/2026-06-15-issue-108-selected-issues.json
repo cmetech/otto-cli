@@ -1,0 +1,13 @@
+[
+  {
+    "number": 108,
+    "severity": "nice-to-have-fix",
+    "type": "port-required",
+    "sha": "8dd6272",
+    "guidancePath": ".planning/upstream-audits/guidance/8dd6272.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/bootstrap/register-hooks.ts",
+      "src/resources/extensions/workflow/tests/workflow-mcp-auto-prep.test.ts"
+    ]
+  }
+]

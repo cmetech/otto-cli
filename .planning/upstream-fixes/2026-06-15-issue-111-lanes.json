@@ -1,0 +1,14 @@
+{
+  "lanes": [
+    {
+      "id": 1,
+      "issues": [
+        "111"
+      ],
+      "files": [
+        "packages/pi-coding-agent/src/core/extensions/types.ts",
+        "packages/pi-coding-agent/src/core/extensions/loader.ts"
+      ]
+    }
+  ]
+}

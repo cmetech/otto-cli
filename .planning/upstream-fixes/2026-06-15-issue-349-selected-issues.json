@@ -1,0 +1,12 @@
+[
+  {
+    "number": 349,
+    "severity": "nice-to-have-fix",
+    "type": "port-required",
+    "sha": "7145ebb",
+    "guidancePath": ".planning/upstream-audits/guidance/7145ebb.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/auto/loop.ts"
+    ]
+  }
+]

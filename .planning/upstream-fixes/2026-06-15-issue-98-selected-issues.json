@@ -1,0 +1,13 @@
+[
+  {
+    "number": 98,
+    "severity": "nice-to-have-fix",
+    "type": "port-required",
+    "sha": "6bef491",
+    "guidancePath": ".planning/upstream-audits/guidance/6bef491.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/post-execution-checks.ts",
+      "src/resources/extensions/workflow/tests/post-execution-checks.test.ts"
+    ]
+  }
+]

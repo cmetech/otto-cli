@@ -1,0 +1,12 @@
+[
+  {
+    "number": 94,
+    "severity": "nice-to-have-fix",
+    "type": "port-required",
+    "sha": "42290ba",
+    "guidancePath": ".planning/upstream-audits/guidance/42290ba.md",
+    "targetFiles": [
+      "src/resources/extensions/workflow/repo-identity.ts"
+    ]
+  }
+]

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "--single-issue 350",
+  "integrationBranch": "fix/upstream-issue-350-77e8cee",
+  "prUrl": "https://github.com/cmetech/otto-cli/pull/391",
+  "finalSuite": {
+    "pass": true,
+    "failTail": ""
+  },
+  "lanes": {
+    "1": {
+      "issues": [
+        "350"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/auto/phases.ts"
+      ],
+      "branch": "fix/upstream-issue-350-77e8cee",
+      "worktree": ".worktrees/upstream-fix-issue-350",
+      "status": "done"
+    }
+  },
+  "issues": {
+    "350": {
+      "lane": 1,
+      "sha": "77e8cee",
+      "guidancePath": ".planning/upstream-audits/guidance/77e8cee.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto/phases.ts"
+      ],
+      "status": "resolved",
+      "commitSha": "f759808",
+      "touchedFiles": [
+        "src/resources/extensions/workflow/auto/phases.ts",
+        "src/resources/extensions/workflow/tests/auto-phases-unhandled-phase-retry-350.test.ts"
+      ],
+      "gates": {
+        "regression": "pass",
+        "build": "pass",
+        "targeted": "pass"
+      },
+      "reviewer": null,
+      "reviewerReason": null,
+      "reviewerRejectionCount": 0,
+      "reason": null
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "lanes": [
+    {
+      "id": 1,
+      "issues": [
+        "88"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/parallel-merge.ts",
+        "src/resources/extensions/workflow/tests/integration/parallel-merge.test.ts"
+      ]
+    }
+  ]
+}

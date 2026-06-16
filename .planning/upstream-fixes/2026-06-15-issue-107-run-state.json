@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "date": "2026-06-15",
+  "filter": "--single-issue 107",
+  "integrationBranch": "fix/upstream-issue-107-526ed30",
+  "prUrl": "https://github.com/cmetech/otto-cli/pull/396",
+  "finalSuite": {
+    "pass": true,
+    "failTail": ""
+  },
+  "lanes": {
+    "1": {
+      "issues": [
+        "107"
+      ],
+      "files": [
+        "src/resources/extensions/workflow/auto.ts"
+      ],
+      "branch": "fix/upstream-lane-1",
+      "worktree": ".worktrees/upstream-fix-lane-1",
+      "status": "done"
+    }
+  },
+  "issues": {
+    "107": {
+      "lane": 1,
+      "sha": "526ed30",
+      "guidancePath": ".planning/upstream-audits/guidance/526ed30.md",
+      "targetFiles": [
+        "src/resources/extensions/workflow/auto.ts"
+      ],
+      "status": "resolved",
+      "commitSha": "d9b01bf",
+      "touchedFiles": [],
+      "gates": {
+        "regression": null,
+        "build": null,
+        "targeted": null
+      },
+      "reviewer": null,
+      "reviewerReason": null,
+      "reviewerRejectionCount": 0,
+      "reason": "auto-mode dispatch adapter skips re-dispatch of already-closed execute-task/complete-slice units"
+    }
+  },
+  "prNumber": 396
+}

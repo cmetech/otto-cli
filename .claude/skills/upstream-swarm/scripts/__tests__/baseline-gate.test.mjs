@@ -1,16 +1,22 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, mkdirSync } from "node:fs";
+import { mkdtempSync, rmSync, mkdirSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runBaselineGate } from "../baseline-gate.mjs";
 
 function tmp() { return mkdtempSync(join(tmpdir(), "baseline-gate-")); }
 
+// All gate calls register to a throwaway registry by default, so this unit
+// suite never pollutes the real .worktree-registry.json when it runs inside
+// the swarm's own baseline gate (a per-call registryPath still wins).
+const REG = join(mkdtempSync(join(tmpdir(), "bg-reg-")), "registry.json");
+const rbg = (opts) => runBaselineGate(Object.assign({ registryPath: REG }, opts));
+
 test("returns pass when run-gates returns pass", async () => {
   const dir = tmp();
   try {
-    const r = runBaselineGate({
+    const r = rbg({
       workdir: dir,
       logPath: join(dir, "baseline.log"),
       worktreeRunner: (args) => ({ status: 0, stdout: "worktree created", stderr: "" }),
@@ -25,7 +31,7 @@ test("returns pass when run-gates returns pass", async () => {
 test("returns pass:false + failTail when run-gates returns fail", () => {
   const dir = tmp();
   try {
-    const r = runBaselineGate({
+    const r = rbg({
       workdir: dir,
       logPath: join(dir, "baseline.log"),
       worktreeRunner: () => ({ status: 0, stdout: "", stderr: "" }),
@@ -40,7 +46,7 @@ test("returns pass:false + failTail when run-gates returns fail", () => {
 
 test("uses a fresh worktree at origin/main by default", () => {
   let observed = null;
-  runBaselineGate({
+  rbg({
     workdir: "/tmp/x",
     logPath: "/tmp/x/baseline.log",
     base: "origin/main",
@@ -53,7 +59,7 @@ test("uses a fresh worktree at origin/main by default", () => {
 
 test("provisions deps after worktree creation, before running the gate", () => {
   const order = [];
-  runBaselineGate({
+  rbg({
     workdir: "/tmp/x",
     logPath: "/tmp/x/baseline.log",
     worktreeRunner: (args) => {
@@ -74,7 +80,7 @@ test("provisions deps after worktree creation, before running the gate", () => {
 
 test("isolates concurrent gates: distinct uniqueSuffix → distinct worktree paths (no clobber)", () => {
   const adds = [];
-  const run = (suffix) => runBaselineGate({
+  const run = (suffix) => rbg({
     workdir: ".worktrees/base", logPath: "/tmp/b.log", uniqueSuffix: suffix,
     worktreeRunner: (args) => { if (args[1] === "add") adds.push(args[3]); return { status: 0 }; },
     provisionDeps: () => {}, gateRunner: () => ({ pass: true, failTail: "" }),
@@ -88,7 +94,7 @@ test("isolates concurrent gates: distinct uniqueSuffix → distinct worktree pat
 
 test("runs the gate (and remove/provision) in the per-process worktree", () => {
   let gateCwd = null, removed = null, provisioned = null;
-  runBaselineGate({
+  rbg({
     workdir: ".worktrees/base", logPath: "/tmp/b.log", uniqueSuffix: "77",
     worktreeRunner: (args) => { if (args[1] === "remove") removed = args[3]; return { status: 0 }; },
     provisionDeps: ({ workdir }) => { provisioned = workdir; },
@@ -99,6 +105,21 @@ test("runs the gate (and remove/provision) in the per-process worktree", () => {
   assert.match(provisioned, /-77$/);
 });
 
+test("registers to the injected registryPath (so tests/suites don't pollute the real registry)", () => {
+  const dir = tmp();
+  try {
+    const reg = join(dir, "registry.json");
+    rbg({
+      workdir: join(dir, "wt"), logPath: join(dir, "b.log"), registryPath: reg, uniqueSuffix: "1",
+      worktreeRunner: () => ({ status: 0 }), provisionDeps: () => {}, gateRunner: () => ({ pass: true, failTail: "" }),
+    });
+    assert.ok(existsSync(reg), "the injected registry receives the entry");
+    const entries = JSON.parse(readFileSync(reg, "utf-8"));
+    assert.equal(entries.length, 1);
+    assert.equal(entries[0].owner, "swarm-baseline");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
 test("runBaselineGate force-removes a leaked worktree before re-adding", async () => {
   const calls = [];
   const worktreeRunner = (args) => {
@@ -106,7 +127,7 @@ test("runBaselineGate force-removes a leaked worktree before re-adding", async (
     if (args[1] === "remove") throw new Error("fatal: ... is not a working tree"); // clean run: nothing to remove
     return { status: 0, stdout: "", stderr: "" };
   };
-  const r = await runBaselineGate({
+  const r = await rbg({
     workdir: ".worktrees/upstream-swarm-baseline",
     logPath: "/tmp/x.log",
     worktreeRunner,

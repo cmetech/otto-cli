@@ -30,7 +30,9 @@ async function defaultGateRunner({ workdir, logPath }) {
   return runGate({ gate: "full", cwd: workdir, logPath });
 }
 
-export function runBaselineGate({ workdir, logPath, base = "origin/main", uniqueSuffix = String(process.pid), worktreeRunner = defaultWorktreeRunner, provisionDeps = defaultProvisionDeps, gateRunner = defaultGateRunner }) {
+const DEFAULT_REGISTRY = ".planning/upstream-swarms/.worktree-registry.json";
+
+export function runBaselineGate({ workdir, logPath, base = "origin/main", uniqueSuffix = String(process.pid), registryPath = DEFAULT_REGISTRY, worktreeRunner = defaultWorktreeRunner, provisionDeps = defaultProvisionDeps, gateRunner = defaultGateRunner }) {
   mkdirSync(dirname(logPath), { recursive: true });
   // Per-process worktree path. The Workflow runtime auto-retries a stalled
   // ctl agent (e.g. the ~180s cold-start), which can spawn a SECOND baseline
@@ -45,7 +47,7 @@ export function runBaselineGate({ workdir, logPath, base = "origin/main", unique
   try { worktreeRunner(["worktree", "remove", "--force", wd]); } catch { /* nothing to remove */ }
   // Create a detached worktree at base.
   worktreeRunner(["worktree", "add", "--detach", wd, base]);
-  try { registerWorktree(".planning/upstream-swarms/.worktree-registry.json", { path: wd, owner: "swarm-baseline", createdAt: Date.now() }); }
+  try { registerWorktree(registryPath, { path: wd, owner: "swarm-baseline", createdAt: Date.now() }); }
   catch { /* best-effort */ }
   // Provision node_modules so the gate can actually run.
   provisionDeps({ workdir: wd });

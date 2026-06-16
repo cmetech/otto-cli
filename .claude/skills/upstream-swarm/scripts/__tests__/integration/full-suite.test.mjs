@@ -29,7 +29,7 @@ test("all public entry points are importable and minimally responsive", () => {
     const p = partitionBySeverity([{ number: 1, severity: "nice-to-have-fix", needsTriage: false }], { autoMergeSeverities: ["nice-to-have-fix"], humanReviewSeverities: ["feature"] });
     assert.equal(p.autoTier.length, 1);
 
-    const baseline = runBaselineGate({ workdir: dir, logPath: join(dir, "b.log"), worktreeRunner: () => ({ status: 0 }), gateRunner: () => ({ pass: true, failTail: "" }) });
+    const baseline = runBaselineGate({ workdir: dir, logPath: join(dir, "b.log"), registryPath: join(dir, "registry.json"), provisionDeps: () => {}, worktreeRunner: () => ({ status: 0 }), gateRunner: () => ({ pass: true, failTail: "" }) });
     assert.equal(baseline.pass, true);
 
     assert.deepEqual(nextActions(readLedger(path), { fixConcurrency: 1, prWindow: 10, refuteConcurrency: 5 }), [{ kind: "start-fix", issueNumber: 1 }]);

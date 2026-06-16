@@ -33,6 +33,13 @@ import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { evaluateChecks, loadAllowlist } from "../../_common/scripts/evaluate-checks.mjs";
 
+// Canonical required-checks allowlist (owned by upstream-merge). Used as the
+// default for BOTH the exported function and the CLI, so non-CLI callers — the
+// swarm-control `poll` subcommand / Workflow driver, which pass no --config —
+// get a real path instead of `undefined` (which made loadAllowlist throw
+// "path must be of type string", silently breaking the poll→ci-green path).
+const DEFAULT_CONFIG = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "upstream-merge", "config.json");
+
 function defaultGhRunner(args) {
   return execFileSync("gh", args, { encoding: "utf-8", maxBuffer: 16 * 1024 * 1024 });
 }
@@ -48,7 +55,7 @@ function defaultGhRunner(args) {
  * @param {function} [opts.ghRunner]
  * @returns {{state, pending, blocking, informationalReds}|{state:"error", message}}
  */
-export function pollPrChecks({ prNumber, repo = "cmetech/otto-cli", configPath, ghRunner = defaultGhRunner }) {
+export function pollPrChecks({ prNumber, repo = "cmetech/otto-cli", configPath = DEFAULT_CONFIG, ghRunner = defaultGhRunner }) {
   let raw;
   try {
     raw = ghRunner(["pr", "checks", String(prNumber), "--repo", repo, "--json", "name,bucket,state"]);
@@ -96,10 +103,9 @@ export function pollPrChecks({ prNumber, repo = "cmetech/otto-cli", configPath, 
 
 function parseArgv(argv) {
   const prNumber = argv[0];
-  const here = dirname(fileURLToPath(import.meta.url));
   // Default config lives under upstream-merge, since that's where the
-  // required-checks allowlist is canonically owned.
-  let configPath = resolve(here, "..", "..", "upstream-merge", "config.json");
+  // required-checks allowlist is canonically owned (shared with pollPrChecks).
+  let configPath = DEFAULT_CONFIG;
   let repo = "cmetech/otto-cli";
   for (let i = 1; i < argv.length; i++) {
     if (argv[i] === "--config") configPath = argv[++i];

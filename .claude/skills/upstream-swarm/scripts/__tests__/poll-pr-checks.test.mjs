@@ -206,3 +206,25 @@ test("does NOT block — the runner is called exactly once per poll (no --watch)
     assert.equal(calls, 1);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+test("configPath defaults to the canonical upstream-merge allowlist when omitted (controller/driver path)", () => {
+  // Regression: the swarm-control `poll` subcommand and the Workflow driver
+  // call pollPrChecks WITHOUT a configPath. Before the fix, configPath was
+  // undefined → loadAllowlist(undefined) → readFileSync(undefined) threw
+  // "path must be of type string", silently breaking poll→ci-green. The
+  // default must resolve to upstream-merge/config.json (build/test-unit/
+  // test-packages/fast-gates), so all-pass required checks → state "pass".
+  const r = pollPrChecks({
+    prNumber: 403,
+    // no configPath on purpose
+    ghRunner: fakeGh([
+      { name: "build", bucket: "pass", state: "COMPLETED" },
+      { name: "test-unit", bucket: "pass", state: "COMPLETED" },
+      { name: "test-packages", bucket: "pass", state: "COMPLETED" },
+      { name: "fast-gates", bucket: "pass", state: "COMPLETED" },
+      { name: "triage", bucket: "fail", state: "COMPLETED" }, // not required → informational
+    ]),
+  });
+  assert.equal(r.state, "pass");
+  assert.deepEqual(r.informationalReds, ["triage"]);
+});

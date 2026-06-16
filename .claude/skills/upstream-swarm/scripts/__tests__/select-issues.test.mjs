@@ -29,6 +29,18 @@ test("partitionBySeverity moves needsTriage to its own bucket", () => {
   assert.deepEqual(r.needsTriage.map((x) => x.number), [2]);
 });
 
+test("partitionBySeverity routes deferred (open prerequisite) out of the tiers (#7)", () => {
+  const records = [
+    { number: 1, severity: "nice-to-have-fix", needsTriage: false },
+    { number: 2, severity: "nice-to-have-fix", needsTriage: false, deferred: true, deferredReason: "open prerequisite(s): #134" },
+    { number: 3, severity: "nice-to-have-fix", needsTriage: true, deferred: true }, // deferred wins over needsTriage
+  ];
+  const r = partitionBySeverity(records, CONFIG);
+  assert.deepEqual(r.autoTier.map((x) => x.number), [1], "only the ready issue is in a tier");
+  assert.deepEqual(r.deferred.map((x) => x.number).sort(), [2, 3]);
+  assert.equal(r.needsTriage.length, 0, "a deferred issue is not double-counted as needsTriage");
+});
+
 test("unknown severity falls into humanTier (fail-safe)", () => {
   const records = [{ number: 1, severity: "mystery", needsTriage: false }];
   const r = partitionBySeverity(records, CONFIG);
@@ -45,5 +57,5 @@ test("missing severity (null) falls into humanTier", () => {
 
 test("empty input returns empty buckets", () => {
   const r = partitionBySeverity([], CONFIG);
-  assert.deepEqual(r, { autoTier: [], humanTier: [], needsTriage: [] });
+  assert.deepEqual(r, { autoTier: [], humanTier: [], needsTriage: [], deferred: [] });
 });

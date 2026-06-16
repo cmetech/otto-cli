@@ -3,9 +3,21 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { selectIssues, parseGuidanceTargets, buildSearchArgs, buildAppliedCheckArgs, parseAppliedFromGraphql } from "../select-issues.mjs";
+import { selectIssues, parseGuidanceTargets, buildSearchArgs, buildAppliedCheckArgs, parseAppliedFromGraphql, parseDependsOn, buildIssueStateArgs } from "../select-issues.mjs";
 
 function tmp() { return mkdtempSync(join(tmpdir(), "uf-select-")); }
+
+test("parseDependsOn extracts #N issue refs and hex sha refs from a depends-on directive", () => {
+  assert.deepEqual(parseDependsOn("depends-on: #134, #150"), { issues: [134, 150], shas: [] });
+  assert.deepEqual(parseDependsOn("Depends On: 03465a4"), { issues: [], shas: ["03465a4"] });
+  assert.deepEqual(parseDependsOn("blah\ndepends-on: #99 3f5e830 (apply together)\nmore"), { issues: [99], shas: ["3f5e830"] });
+  assert.deepEqual(parseDependsOn("no directive here, just prose depends on something"), { issues: [], shas: [] });
+  assert.deepEqual(parseDependsOn(""), { issues: [], shas: [] });
+});
+
+test("buildIssueStateArgs queries an issue's open/closed state", () => {
+  assert.deepEqual(buildIssueStateArgs(134, "cmetech/otto-cli"), ["issue", "view", "134", "--repo", "cmetech/otto-cli", "--json", "state"]);
+});
 
 test("buildSearchArgs maps --severity to a label filter", () => {
   const args = buildSearchArgs({ severity: "critical-stability" });
@@ -60,6 +72,39 @@ test("selectIssues excludes do-not-port and applied, flags missing-guidance as n
     assert.equal(sel[0].number, 63);
     assert.deepEqual(sel[0].targetFiles, ["packages/pi-coding-agent/src/modes/rpc/rpc-mode.ts"]);
     assert.equal(sel[0].sha, "ce0e801");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("selectIssues defers a candidate whose depends-on prerequisite is still OPEN (#7)", () => {
+  const dir = tmp();
+  try {
+    const gdir = join(dir, "guidance"); mkdirSync(gdir, { recursive: true });
+    writeFileSync(join(gdir, "ce0e801.md"), "verdict: manual-port\n\n## Target file(s)\n\n- `a.ts`\n");
+    const fakeIssues = [{ number: 63, title: "x", labels: [{ name: "type:port-required" }], body: "[sha=ce0e801]\ndepends-on: #134" }];
+    const ghRunner = (args) => {
+      if (args[0] === "issue" && args[1] === "list") return JSON.stringify(fakeIssues);
+      if (args[0] === "issue" && args[1] === "view") return JSON.stringify({ state: "OPEN" }); // #134 still open
+      return "[]";
+    };
+    const rec = selectIssues({ filter: { all: true }, ghRunner, guidanceDir: gdir }).records.find((r) => r.number === 63);
+    assert.equal(rec.deferred, true);
+    assert.match(rec.deferredReason, /#134/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("selectIssues does NOT defer when the depends-on prerequisite is CLOSED (#7)", () => {
+  const dir = tmp();
+  try {
+    const gdir = join(dir, "guidance"); mkdirSync(gdir, { recursive: true });
+    writeFileSync(join(gdir, "ce0e801.md"), "verdict: manual-port\n\n## Target file(s)\n\n- `a.ts`\n");
+    const fakeIssues = [{ number: 63, title: "x", labels: [{ name: "type:port-required" }], body: "[sha=ce0e801]\ndepends-on: #134" }];
+    const ghRunner = (args) => {
+      if (args[0] === "issue" && args[1] === "list") return JSON.stringify(fakeIssues);
+      if (args[0] === "issue" && args[1] === "view") return JSON.stringify({ state: "CLOSED" });
+      return "[]";
+    };
+    const rec = selectIssues({ filter: { all: true }, ghRunner, guidanceDir: gdir }).records.find((r) => r.number === 63);
+    assert.notEqual(rec.deferred, true);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 

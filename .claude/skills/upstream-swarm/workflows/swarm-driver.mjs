@@ -130,7 +130,7 @@ if (dryRun) {
   log(`[skip-select] preflight ran; select skipped; executing against pre-seeded ledger at ${L}`)
 } else {
   const sel = await ctl(['select', '--filter', JSON.stringify(a.filter ?? { label: 'type:cherry-pick-candidate' }), '--out', `${DIR}/${DATE}-selected.json`, '--ledger-out', L, '--date', DATE, '--max-wave-size', '3'], 'select')
-  log(`selected: auto=${sel.totalAuto} human=${sel.totalHuman} needsTriage=${sel.totalNeedsTriage} waves=${sel.waveCount}`)
+  log(`selected: auto=${sel.totalAuto} human=${sel.totalHuman} needsTriage=${sel.totalNeedsTriage} deferred=${sel.totalDeferred ?? 0} waves=${sel.waveCount}`)
 }
 
 phase('Loop')

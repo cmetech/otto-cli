@@ -40,5 +40,5 @@ export function select({ filter, configPath, repo, guidanceDir, out, ledgerOut, 
     ledger = ledgerOut;
   }
   const waveCount = waves.length;
-  return { totalAuto: part.totalAuto, totalHuman: part.totalHuman, totalNeedsTriage: part.totalNeedsTriage, waveCount, ledger };
+  return { totalAuto: part.totalAuto, totalHuman: part.totalHuman, totalNeedsTriage: part.totalNeedsTriage, totalDeferred: part.totalDeferred, waveCount, ledger };
 }

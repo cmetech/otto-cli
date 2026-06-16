@@ -46,6 +46,65 @@ function shaFromBody(body) {
   return m ? m[1].slice(0, 7) : null;
 }
 
+/**
+ * Parse a structured `depends-on:` directive (case-insensitive, `depends on`
+ * also accepted) into prerequisite refs: `#N` issue numbers and 7-40 hex shas.
+ * Parsing a directive stops at the first non-ref token, so trailing prose
+ * ("(apply together)") is ignored. Free-form prose without the directive yields
+ * nothing — this is deliberately a structured annotation, not NL inference.
+ */
+export function parseDependsOn(text) {
+  const out = { issues: [], shas: [] };
+  if (!text) return out;
+  const re = /depends[\s-]?on:\s*([^\n\r]+)/gi;
+  let m;
+  while ((m = re.exec(text))) {
+    for (const raw of m[1].split(/[,\s]+/)) {
+      const t = raw.trim().replace(/[.;]+$/, "");
+      if (!t) continue;
+      if (/^#\d+$/.test(t)) out.issues.push(Number(t.slice(1)));
+      else if (/^[0-9a-f]{7,40}$/i.test(t)) out.shas.push(t.toLowerCase());
+      else break; // end of the ref list for this directive
+    }
+  }
+  out.issues = [...new Set(out.issues)];
+  out.shas = [...new Set(out.shas)];
+  return out;
+}
+
+/** gh args for an issue's open/closed state. */
+export function buildIssueStateArgs(number, repo = DEFAULT_REPO) {
+  return ["issue", "view", String(number), "--repo", repo, "--json", "state"];
+}
+
+/** gh args searching open issues whose body references a given upstream sha. */
+export function buildShaOpenSearchArgs(sha, repo = DEFAULT_REPO) {
+  return ["issue", "list", "--repo", repo, "--state", "open", "--search", `sha=${sha} in:body`, "--json", "number"];
+}
+
+/**
+ * Which of an issue's prerequisites are still OPEN (so the dependent should be
+ * deferred this wave). Fail-OPEN: a gh error treats the prereq as resolved —
+ * the fix lane's own "blocked on unported prerequisite" guard is the backstop,
+ * and we never want a flaky check to wedge selection.
+ */
+export function openPrereqs({ dependsOn, repo = DEFAULT_REPO, ghRunner = defaultGhRunner }) {
+  const open = [];
+  for (const n of dependsOn.issues ?? []) {
+    try {
+      const state = JSON.parse(ghRunner(buildIssueStateArgs(n, repo)) || "{}").state;
+      if (state === "OPEN") open.push(`#${n}`);
+    } catch { /* fail-open: do not defer on a failed check */ }
+  }
+  for (const sha of dependsOn.shas ?? []) {
+    try {
+      const hits = JSON.parse(ghRunner(buildShaOpenSearchArgs(sha, repo)) || "[]");
+      if (Array.isArray(hits) && hits.length > 0) open.push(sha);
+    } catch { /* fail-open */ }
+  }
+  return open;
+}
+
 /** gh args for a GraphQL query over an issue's timeline → linked PR merge state. */
 export function buildAppliedCheckArgs(number, repo = DEFAULT_REPO) {
   const [owner, name] = repo.split("/");
@@ -118,6 +177,11 @@ export function selectIssues({ filter, repo = DEFAULT_REPO, ghRunner = defaultGh
     const guidancePath = candidates.find((p) => existsSync(p)) ?? candidates[0] ?? null;
     const targetFiles = guidancePath ? parseGuidanceTargets(guidancePath) : null;
 
+    // Dependency-aware selection (#7): parse a structured `depends-on:` directive
+    // from the issue body and its guidance; defer the candidate this wave if any
+    // prerequisite is still open. Only hits GitHub when a directive is present.
+    const guidanceText = guidancePath && existsSync(guidancePath) ? readFileSync(guidancePath, "utf-8") : "";
+    const dependsOn = parseDependsOn(`${i.body ?? ""}\n${guidanceText}`);
     const rec = {
       number: i.number,
       severity: severityFromLabels(labels),
@@ -125,9 +189,14 @@ export function selectIssues({ filter, repo = DEFAULT_REPO, ghRunner = defaultGh
       sha,
       guidancePath,
       targetFiles: targetFiles ?? [],
+      dependsOn,
     };
     // No resolvable target files → cannot place in a lane.
     if (!targetFiles || targetFiles.length === 0) rec.needsTriage = true;
+    if (dependsOn.issues.length || dependsOn.shas.length) {
+      const open = openPrereqs({ dependsOn, repo, ghRunner });
+      if (open.length) { rec.deferred = true; rec.deferredReason = `open prerequisite(s): ${open.join(", ")}`; }
+    }
     records.push(rec);
   }
 

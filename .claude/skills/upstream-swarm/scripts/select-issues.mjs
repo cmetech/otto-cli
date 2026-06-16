@@ -24,8 +24,12 @@ export function loadConfig(path = DEFAULT_CONFIG) {
  */
 export function partitionBySeverity(records, config) {
   const autoSet = new Set(config.autoMergeSeverities ?? []);
-  const result = { autoTier: [], humanTier: [], needsTriage: [] };
+  const result = { autoTier: [], humanTier: [], needsTriage: [], deferred: [] };
   for (const r of records) {
+    // #7: an issue with an open prerequisite is deferred this wave (it stays
+    // open for a later one). Checked first so it isn't double-counted as
+    // needsTriage when it also lacks resolvable targets.
+    if (r.deferred) { result.deferred.push(r); continue; }
     if (r.needsTriage) { result.needsTriage.push(r); continue; }
     if (r.severity && autoSet.has(r.severity)) result.autoTier.push(r);
     else result.humanTier.push(r);
@@ -39,9 +43,9 @@ export function selectAndPartition({ filter = {}, configPath = DEFAULT_CONFIG, r
   const part = partitionBySeverity(fixResult.records, config);
   if (outPath) {
     mkdirSync(dirname(outPath), { recursive: true });
-    writeFileSync(outPath, JSON.stringify({ autoTier: part.autoTier, humanTier: part.humanTier, needsTriage: part.needsTriage }, null, 2) + "\n");
+    writeFileSync(outPath, JSON.stringify({ autoTier: part.autoTier, humanTier: part.humanTier, needsTriage: part.needsTriage, deferred: part.deferred }, null, 2) + "\n");
   }
-  return { ...part, totalAuto: part.autoTier.length, totalHuman: part.humanTier.length, totalNeedsTriage: part.needsTriage.length };
+  return { ...part, totalAuto: part.autoTier.length, totalHuman: part.humanTier.length, totalNeedsTriage: part.needsTriage.length, totalDeferred: part.deferred.length };
 }
 
 function parseArgv(argv) {

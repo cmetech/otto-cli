@@ -7,9 +7,30 @@
  * distinguishes a load-induced flake from a real break, unless a changed target
  * file appears in the failure tail (suspicious → real without re-run).
  */
-import { basename, join } from "node:path";
+import { basename, join, dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { readFileSync, existsSync } from "node:fs";
 import { trialMerge as defaultTrialMerge } from "../../upstream-merge/scripts/trial-merge.mjs";
 import { runGate as defaultRunGate } from "../../_common/scripts/run-gates.mjs";
+
+const DEFAULT_FLAKY = resolve(dirname(fileURLToPath(import.meta.url)), "..", "flaky-tests.json");
+
+// Curated known-flaky test signatures. A gate failure matching one of these —
+// when it does NOT overlap the fix's target files (suspicious overlap is judged
+// first) — is treated as a flake instead of quarantining a good fix. Fail-open:
+// a missing/unparseable file yields [] (no allowlisting), never a throw.
+export function loadFlakyPatterns(path = DEFAULT_FLAKY) {
+  try {
+    if (!existsSync(path)) return [];
+    const json = JSON.parse(readFileSync(path, "utf-8"));
+    return Array.isArray(json.patterns) ? json.patterns.filter((p) => typeof p === "string" && p) : [];
+  } catch { return []; }
+}
+
+function tailMatchesFlaky(failTail, flakyPatterns) {
+  const tail = failTail ?? "";
+  return flakyPatterns.some((p) => tail.includes(p));
+}
 
 function toList(targets) {
   if (Array.isArray(targets)) return targets.filter(Boolean);
@@ -24,6 +45,7 @@ function isSuspiciousOverlap(failTail, targetList) {
 
 export function gateForPr({
   pr, headRef, targets, logDir, base = "origin/main",
+  flakyPatterns = loadFlakyPatterns(),
   trialMergeFn = defaultTrialMerge,
   runGateFn = defaultRunGate,
 }) {
@@ -45,6 +67,13 @@ export function gateForPr({
   const suspiciousOverlap = isSuspiciousOverlap(first.failTail, targetList);
   if (suspiciousOverlap) {
     return { pass: false, verdict: "real", failTail: first.failTail, worktree: tm.worktree, reran: false, suspiciousOverlap: true };
+  }
+
+  // #5 known-flaky allowlist: a failure matching a curated flaky signature (and
+  // already cleared of target-file overlap above) is a flake — skip the costly
+  // re-run and don't quarantine a good fix on a test we've chosen to distrust.
+  if (tailMatchesFlaky(first.failTail, flakyPatterns)) {
+    return { pass: true, verdict: "flake", failTail: "", worktree: tm.worktree, reran: false, suspiciousOverlap: false, flaky: true };
   }
 
   const tm2 = trialMergeFn({ prNumber, headRef, base });

@@ -1,0 +1,9 @@
+{
+  "_comment": "Curated allowlist of known-flaky test signatures (substring-matched against a gate/CI failTail). When the local gate fails ONLY on one of these AND the failure is disjoint from the fix's target files (no suspicious overlap), the gate classifies it as a flake instead of quarantining a good fix. Keep this list SHORT and specific — every entry is a test we've chosen to trust over the gate. Surfaced offenders from the dogfood runs: the headless stream-json and list-models probes (environment/credential-sensitive).",
+  "patterns": [
+    "headless --output-format",
+    "list-models",
+    "list models",
+    "lists available models"
+  ]
+}

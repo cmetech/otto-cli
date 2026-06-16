@@ -140,6 +140,34 @@ Loop until `nextActions(ledger, caps)` returns `[]`:
    `node abort-streak.mjs reset <ledger>` (or `--reset-abort-counter`) and
    `--resume`.
 
+## Unattended run (Workflow driver)
+
+For a fully hands-off run, a Workflow driver loops `swarm-control` and fans out
+fix lanes + refute panels as agents, calling the pure `driver-core.mjs` for
+every decision (action bucketing, fix-lane / lens prompts, controller argv,
+pre-auth). `driver-core` is unit-tested; its argv builders are verified through
+`swarm-control`'s real `dispatch()`.
+
+- **#6 pre-authorization (two parts):**
+  1. The driver calls `driver-core.assertUnattendedAuthorized({ unattended })` —
+     it refuses to proceed unless the run is launched with `unattended: true`,
+     and returns an auditable note the driver logs.
+  2. The merge command must be permitted non-interactively. Because autonomous
+     merge-to-main is HIGH-stakes, this is a **per-operator local opt-in, NOT a
+     committed repo-wide grant**: the operator adds
+     `"Bash(node .claude/skills/upstream-swarm/scripts/swarm-control.mjs merge:*)"`
+     to their OWN `.claude/settings.local.json` (machine-local, gitignored)
+     before an unattended run. Do not commit this grant.
+- **The locked invariants remain the real authorization** (two signals + refute
+  `approve` + severity routing); the flag/permission only signal that no human
+  will click approve this run. `feature`/`critical-stability` still stop at
+  `pending-human-review`; only `nice-to-have-fix` auto-merges.
+- **The Workflow shell (`swarm-driver.mjs`) is built in Phase 2b** — an
+  interactive build validated by a live dry-run + a supervised first run on a
+  1-2 issue batch before trusting it on a large wave (the shell is not
+  unit-testable; its decision logic lives in the tested `driver-core`). See the
+  Phase 2 plan's Appendix for the reference scaffold.
+
 ## Phase C — Report + cleanup
 
 1. Generate the rollup:

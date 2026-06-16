@@ -6,6 +6,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { record, retry } from "../control-ledger.mjs";
 import { readLedger } from "../swarm-ledger.mjs";
+import { classify, abortCheck } from "../control-ledger.mjs";
+import { writeLedger } from "../swarm-ledger.mjs";
 
 function tmpLedger() {
   const dir = mkdtempSync(join(tmpdir(), "ctl-led-"));
@@ -37,4 +39,25 @@ test("retry increments retryCount and moves to retrying", () => {
   const issue = retry({ ledger: path, issue: "5", reason: "transient" });
   assert.equal(issue.state, "retrying");
   assert.equal(issue.retryCount, 1);
+});
+
+test("classify returns category + signature for a local-gate real failure", () => {
+  const r = classify({ stage: "local-gate", failTail: "AssertionError: nope" });
+  assert.equal(r.category, "real");
+  assert.match(r.signature, /^local-gate\|/);
+});
+
+test("abort-check increments the streak and reports abort at threshold", () => {
+  const path = (() => {
+    const dir = mkdtempSync(join(tmpdir(), "ctl-abort-"));
+    const p = join(dir, "l.json");
+    writeFileSync(p, JSON.stringify({ version: 1, abortStreak: { signature: null, count: 0 }, issues: {} }));
+    return p;
+  })();
+  const sig = "local-gate|generic|x";
+  let r;
+  for (let i = 0; i < 3; i++) r = abortCheck({ ledger: path, signature: sig, threshold: "3" });
+  assert.equal(r.count, 3);
+  assert.equal(r.abort, true);
+  assert.equal(readLedger(path).abortStreak.count, 3);
 });

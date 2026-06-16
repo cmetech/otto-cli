@@ -10,8 +10,9 @@ import { verifyFixArtifacts } from "./control-verify.mjs";
 import { gateForPr } from "./control-gate.mjs";
 import { tick, report, cleanup } from "./control-plan.mjs";
 import { preflight, select } from "./control-phase-a.mjs";
+import { record, retry } from "./control-ledger.mjs";
 
-export const KNOWN_COMMANDS = ["verify-fix", "gate", "tick", "report", "cleanup", "preflight", "select"];
+export const KNOWN_COMMANDS = ["verify-fix", "gate", "tick", "report", "cleanup", "preflight", "select", "record", "retry"];
 
 export function defaultHandlers() {
   return {
@@ -22,6 +23,8 @@ export function defaultHandlers() {
     "cleanup": (args) => cleanup(parseFlags(args)),
     "preflight": (args) => preflight(parseFlags(args)),
     "select": (args) => select(parseFlags(args)),
+    "record": (args) => record(parseFlags(args)),
+    "retry": (args) => retry(parseFlags(args)),
   };
 }
 

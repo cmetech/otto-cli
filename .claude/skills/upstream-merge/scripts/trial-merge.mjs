@@ -22,7 +22,13 @@ const REPO_ROOT = resolve(HERE, "..", "..", "..", "..");
 
 const SAFE = /^[A-Za-z0-9._\/-]+$/;
 
-function defaultGitRunner(args) { return execFileSync("git", args, { encoding: "utf-8" }); }
+// Capture git's stderr (stdio[2]: "pipe") instead of inheriting it. `git
+// worktree add` prints "Preparing worktree (detached HEAD …)" to stderr;
+// inheriting it leaks that line into the stdout a JSON-contract caller (the
+// swarm-control `gate` subcommand) captures, which crashed the Workflow
+// driver's JSON.parse. Piping keeps it off the parent's streams (and it's
+// still surfaced via err.stderr if a git call throws).
+function defaultGitRunner(args) { return execFileSync("git", args, { encoding: "utf-8", stdio: ["ignore", "pipe", "pipe"] }); }
 
 function defaultProvisionDeps({ workdir }) {
   provisionWorktreeNodeModules(workdir, REPO_ROOT);
@@ -40,6 +46,10 @@ export function trialMerge({
   const worktree = `.worktrees/upstream-merge-pr-${prNumber}`;
 
   gitRunner(["fetch", "origin", "--prune"]);
+  // Idempotent: a prior gate (or a crashed run) may have left this worktree on
+  // disk, which would make `worktree add` throw "already exists" and fail every
+  // retry. Force-remove first (best-effort), mirroring baseline-gate.
+  try { gitRunner(["worktree", "remove", "--force", worktree]); } catch { /* nothing to remove */ }
   gitRunner(["worktree", "add", "--detach", worktree, base]);
   // Provision node_modules so the local gate can resolve dependencies
   // without a per-PR `npm ci`. Caller can opt out via provisionDeps: false.

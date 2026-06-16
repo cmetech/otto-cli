@@ -62,6 +62,19 @@ const FIX_RESULT_SCHEMA = {
 // Validated ctl pattern: the agent's only job is to run the command and place
 // its COMPLETE stdout verbatim into `stdout`; the SCRIPT parses. Never give the
 // agent a loose object schema (it invents shape / wraps under stdout anyway).
+// Robust against subprocess noise on stdout: some controller commands shell out
+// to git (e.g. `gate` → trial-merge → `git worktree add`, which prints
+// "Preparing worktree (detached HEAD …)") and that line can land ahead of the
+// JSON in the captured stdout. swarm-control's result is always a single JSON
+// OBJECT printed last, so slice from the first "{" to the last "}" before
+// parsing. (Verbatim JSON.parse on raw stdout crashed the whole workflow on the
+// gate tick — supervised-run finding.)
+const parseCtl = (stdout) => {
+  const txt = String(stdout ?? '')
+  const s = txt.indexOf('{')
+  const e = txt.lastIndexOf('}')
+  return JSON.parse(s >= 0 && e >= s ? txt.slice(s, e + 1) : txt)
+}
 const ctl = async (argv, label) => {
   const r = await agent(
     `Run EXACTLY this command from the repo root using the Bash tool, then return its result.\n` +
@@ -69,7 +82,7 @@ const ctl = async (argv, label) => {
     `Put the command's COMPLETE stdout, verbatim and unmodified (it is JSON), into the "stdout" field. Do not parse, summarize, reformat, or add anything. If the command exits non-zero, still capture whatever it printed.`,
     { label: label ?? `ctl:${argv[0]}`, schema: { type: 'object', properties: { stdout: { type: 'string' } }, required: ['stdout'], additionalProperties: true } }
   )
-  return JSON.parse(r.stdout)
+  return parseCtl(r.stdout)
 }
 
 // The Workflow runtime delivers `args` as a JSON string (not the object), so parse defensively.

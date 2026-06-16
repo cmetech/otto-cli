@@ -25,6 +25,22 @@ test("clean merge fetches, adds detached worktree at base, merges PR head", () =
   assert.ok(calls.some((c) => c.includes("merge --no-ff --no-edit origin/integration/upstream-fix-2026-05-30")));
 });
 
+test("idempotent: force-removes a stale worktree before add (so retries don't hit 'already exists')", () => {
+  const { runner, calls } = recorder();
+  trialMerge({ prNumber: 403, headRef: "fix/upstream-issue-61-088987b", gitRunner: runner, provisionDeps: noopProvisionDeps });
+  const removeIdx = calls.findIndex((c) => c.includes("worktree remove --force .worktrees/upstream-merge-pr-403"));
+  const addIdx = calls.findIndex((c) => c.includes("worktree add --detach .worktrees/upstream-merge-pr-403"));
+  assert.ok(removeIdx >= 0, "force-remove is attempted");
+  assert.ok(removeIdx < addIdx, "remove happens before add");
+});
+
+test("a throwing worktree-remove (nothing to remove) is swallowed, add still proceeds", () => {
+  const { runner, calls } = recorder({ failOn: "worktree remove" });
+  const r = trialMerge({ prNumber: 403, headRef: "fix/x", gitRunner: runner, provisionDeps: noopProvisionDeps });
+  assert.equal(r.conflict, false);
+  assert.ok(calls.some((c) => c.includes("worktree add --detach")), "add still runs after a failed remove");
+});
+
 test("conflict aborts the merge and reports conflict:true", () => {
   const { runner, calls } = recorder({ failOn: "merge --no-ff" });
   const r = trialMerge({ prNumber: 64, headRef: "integration/upstream-fix-2026-05-30", gitRunner: runner, provisionDeps: noopProvisionDeps });

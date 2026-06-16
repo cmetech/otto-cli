@@ -11,8 +11,9 @@ import { gateForPr } from "./control-gate.mjs";
 import { tick, report, cleanup } from "./control-plan.mjs";
 import { preflight, select } from "./control-phase-a.mjs";
 import { record, retry, classify, abortCheck } from "./control-ledger.mjs";
+import { poll, merge } from "./control-pr.mjs";
 
-export const KNOWN_COMMANDS = ["verify-fix", "gate", "tick", "report", "cleanup", "preflight", "select", "record", "retry", "classify", "abort-check"];
+export const KNOWN_COMMANDS = ["verify-fix", "gate", "tick", "report", "cleanup", "preflight", "select", "record", "retry", "classify", "abort-check", "poll", "merge"];
 
 export function defaultHandlers() {
   return {
@@ -27,6 +28,8 @@ export function defaultHandlers() {
     "retry": (args) => retry(parseFlags(args)),
     "classify": (args) => classify(parseFlags(args)),
     "abort-check": (args) => abortCheck(parseFlags(args)),
+    "poll": (args) => poll(parseFlags(args)),
+    "merge": (args) => merge(parseFlags(args)),
   };
 }
 

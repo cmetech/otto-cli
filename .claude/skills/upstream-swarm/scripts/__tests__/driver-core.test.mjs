@@ -109,6 +109,28 @@ test("lensPrompts returns one prompt per LENS_NAME, each referencing the bundle"
   assert.match(alignment.prompt, /essence-reimplement|root.cause|intent/i);
 });
 
+import { driverPlan } from "../driver-core.mjs";
+
+test("driverPlan builds prompts + argv from enriched actions", () => {
+  const enriched = [
+    { kind: "start-fix", issueNumber: 5, sha: "abc1234", targetFiles: ["a.ts"], prNumber: null, branch: "fix/upstream-issue-5-abc1234" },
+    { kind: "run-local-gate", issueNumber: 9, sha: "def5678", targetFiles: ["x.ts","y.ts"], prNumber: 400, branch: "fix/upstream-issue-9-def5678" },
+    { kind: "merge-pr", issueNumber: 11, sha: "aaa", targetFiles: [], prNumber: 402, branch: "fix/upstream-issue-11-aaa" },
+    { kind: "poll-ci-batch", issueNumbers: [7], issues: [{ issueNumber: 7, prNumber: 397 }] },
+    { kind: "quarantine-timeout", issueNumber: 12, reason: "issue-timeout" },
+    { kind: "run-refute", issueNumber: 10, sha: "bbb", targetFiles: ["z.ts"], prNumber: 398, branch: "fix/upstream-issue-10-bbb" },
+  ];
+  const plan = driverPlan(enriched, { gateLogDir: "/tmp/g", ledger: "L" });
+  assert.equal(plan.fixes.length, 1);
+  assert.equal(plan.fixes[0].issueNumber, 5);
+  assert.match(plan.fixes[0].prompt, /--single-issue 5/);
+  assert.deepEqual(plan.gates[0].argv, ["gate","--pr","400","--head-ref","fix/upstream-issue-9-def5678","--targets","x.ts,y.ts","--log-dir","/tmp/g"]);
+  assert.deepEqual(plan.merges[0].argv, ["merge","--pr","402","--issue","11","--ledger","L","--refute-reason","panel approve"]);
+  assert.deepEqual(plan.polls, [{ issueNumber: 7, prNumber: 397 }]);
+  assert.deepEqual(plan.quarantineTimeouts, [{ issueNumber: 12, reason: "issue-timeout" }]);
+  assert.equal(plan.refutes[0].prNumber, 398);
+});
+
 import { assertUnattendedAuthorized } from "../driver-core.mjs";
 
 test("assertUnattendedAuthorized passes only with explicit pre-auth", () => {

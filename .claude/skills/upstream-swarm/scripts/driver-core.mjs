@@ -58,6 +58,52 @@ export function retryArgv({ ledger, issue, reason }) {
   return ["retry", "--ledger", ledger, "--issue", s(issue), "--reason", reason];
 }
 
+/**
+ * driverPlan — PURE aggregator: turn enriched scheduler actions (from `tick`)
+ * into a ready-to-execute dispatch plan for the Workflow shell. Iterates once,
+ * switching on kind, and bins each action into the right bucket with its
+ * prompt / argv already built. No fs/shell.
+ */
+export function driverPlan(enrichedActions, { gateLogDir, ledger }) {
+  const plan = { fixes: [], quarantineTimeouts: [], polls: [], gates: [], refutes: [], merges: [] };
+  for (const a of enrichedActions ?? []) {
+    switch (a.kind) {
+      case "start-fix":
+        plan.fixes.push({
+          issueNumber: a.issueNumber,
+          prompt: fixLanePrompt({ number: a.issueNumber, sha: a.sha, targetFiles: a.targetFiles }),
+        });
+        break;
+      case "quarantine-timeout":
+        plan.quarantineTimeouts.push({ issueNumber: a.issueNumber, reason: a.reason });
+        break;
+      case "poll-ci-batch":
+        for (const i of a.issues ?? []) plan.polls.push({ issueNumber: i.issueNumber, prNumber: i.prNumber });
+        break;
+      case "run-local-gate":
+        plan.gates.push({
+          issueNumber: a.issueNumber,
+          prNumber: a.prNumber,
+          argv: gateArgv({ pr: a.prNumber, headRef: a.branch, targets: (a.targetFiles ?? []).join(","), logDir: gateLogDir }),
+        });
+        break;
+      case "run-refute":
+        plan.refutes.push({ issueNumber: a.issueNumber, prNumber: a.prNumber, sha: a.sha });
+        break;
+      case "merge-pr":
+        plan.merges.push({
+          issueNumber: a.issueNumber,
+          prNumber: a.prNumber,
+          argv: mergeArgv({ pr: a.prNumber, issue: a.issueNumber, ledger, refuteReason: "panel approve" }),
+        });
+        break;
+      default:
+        break; // unknown kinds ignored (the shell logs them)
+    }
+  }
+  return plan;
+}
+
 export function fixLanePrompt(issue) {
   const targets = (issue.targetFiles ?? []).join(", ");
   return [

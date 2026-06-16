@@ -39,6 +39,6 @@ export function select({ filter, configPath, repo, guidanceDir, out, ledgerOut, 
     initSwarmLedger(ledgerOut, { date, filter: JSON.stringify(filterObj), issues: allIssues });
     ledger = ledgerOut;
   }
-  const waveCount = Array.isArray(waves) ? waves.length : (waves.waves ?? (waves.plan?.length ?? 0));
+  const waveCount = waves.length;
   return { totalAuto: part.totalAuto, totalHuman: part.totalHuman, totalNeedsTriage: part.totalNeedsTriage, waveCount, ledger };
 }

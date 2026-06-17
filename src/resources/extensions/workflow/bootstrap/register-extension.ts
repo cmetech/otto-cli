@@ -28,36 +28,82 @@ import { BRAND } from "../strings.js";
 
 export { writeCrashLog } from "./crash-log.js";
 
+// Pipe-closed storm guard. A persistently-broken output pipe whose
+// `destroyed`/`writableEnded` flags never flip is still swallowed on every
+// write — a tight, progress-free CPU spin. If the pipe-closed error fires in a
+// tight loop the pipe is gone for good; count occurrences in a rolling window
+// and exit cleanly once a storm is detected.
+const EPIPE_STORM_THRESHOLD = 100;
+const EPIPE_STORM_WINDOW_MS = 10_000;
+let epipeCount = 0;
+let epipeWindowStart = 0;
+
+/** Write to stderr without ever re-throwing — stderr can EPIPE too, which would
+ *  re-enter this handler and re-loop. */
+function safeStderr(msg: string): void {
+  try {
+    process.stderr.write(msg);
+  } catch {
+    /* stderr is also broken; nothing we can do */
+  }
+}
+
+/** A peer closing the read end of a pipe mid-write surfaces differently per
+ *  platform: POSIX throws `EPIPE`; Windows throws `Error: write EOF` (or
+ *  `read EOF`) with no `code` set, from node:internal/stream_base_commons.
+ *  Both are the same logical condition and must be treated as recoverable —
+ *  otherwise the Windows EOF variant escapes to the uncaught-exception path and
+ *  crashes auto-mode workers mid-iteration. ECONNRESET is NOT included here: it
+ *  commonly comes from network sockets and is a real error that should surface
+ *  rather than be silently swallowed. */
+function isPipeClosedError(err: Error): boolean {
+  const errno = (err as NodeJS.ErrnoException).code;
+  if (errno === "EPIPE") return true;
+  return err.message.includes("write EOF") || err.message.includes("read EOF");
+}
+
 export function handleRecoverableExtensionProcessError(err: Error): boolean {
   if (err.message.includes("ProcessTransport is not ready for writing")) {
-    process.stderr.write(`[otto] swallowed dead transport control write: ${err.message}\n`);
+    safeStderr(`[otto] swallowed dead transport control write: ${err.message}\n`);
     return true;
   }
-  if ((err as NodeJS.ErrnoException).code === "EPIPE") {
+  if (isPipeClosedError(err)) {
+    const tag = (err as NodeJS.ErrnoException).code ?? "pipe-closed";
     const stdoutGone = process.stdout.destroyed || process.stdout.writableEnded;
     if (stdoutGone) {
       process.exit(0);
     }
-    process.stderr.write(
-      `[otto] swallowed EPIPE (syscall=${(err as NodeJS.ErrnoException).syscall ?? "?"})\n`,
+    const now = Date.now();
+    if (now - epipeWindowStart > EPIPE_STORM_WINDOW_MS) {
+      epipeWindowStart = now;
+      epipeCount = 0;
+    }
+    if (++epipeCount > EPIPE_STORM_THRESHOLD) {
+      safeStderr(
+        `[otto] ${tag} storm (${epipeCount} within ${EPIPE_STORM_WINDOW_MS}ms) — output pipe is gone; exiting.\n`,
+      );
+      process.exit(0);
+    }
+    safeStderr(
+      `[otto] swallowed ${tag} (syscall=${(err as NodeJS.ErrnoException).syscall ?? "?"})\n`,
     );
     return true;
   }
   if ((err as NodeJS.ErrnoException).code === "EIO") {
     const syscall = (err as NodeJS.ErrnoException).syscall;
     if (syscall === "read") {
-      process.stderr.write(`[otto] EIO: ${err.message}\n`);
+      safeStderr(`[otto] EIO: ${err.message}\n`);
       return true;
     }
   }
   if ((err as NodeJS.ErrnoException).code === "ENOENT") {
     const syscall = (err as NodeJS.ErrnoException).syscall;
     if (syscall?.startsWith("spawn")) {
-      process.stderr.write(`[otto] spawn ENOENT: ${(err as any).path ?? "unknown"} — command not found\n`);
+      safeStderr(`[otto] spawn ENOENT: ${(err as any).path ?? "unknown"} — command not found\n`);
       return true;
     }
     if (syscall === "uv_cwd") {
-      process.stderr.write(`[otto] ENOENT (${syscall}): ${err.message}\n`);
+      safeStderr(`[otto] ENOENT (${syscall}): ${err.message}\n`);
       return true;
     }
   }

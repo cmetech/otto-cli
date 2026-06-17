@@ -178,6 +178,38 @@ function unitActivityMentionsTool(basePath: string, unitType: string, unitId: st
   return false;
 }
 
+/**
+ * True when a complete-slice unit ended by intentionally handing off via
+ * `otto_task_reopen` / `otto_replan_slice` (seen either in the agent's end
+ * messages or in the unit's recorded activity). When this fires, auto-mode must
+ * NOT retry closeout against an empty replan — the agent has deliberately
+ * reopened/replanned the slice. See upstream 6c02e43.
+ */
+function completeSliceHandedOffViaReopenOrReplan(
+  unitType: string,
+  unitId: string,
+  agentEndMessages: unknown[] | undefined,
+  basePath: string,
+  canonicalProjectRoot: string,
+): boolean {
+  if (unitType !== "complete-slice") return false;
+  for (const toolName of ["otto_task_reopen", "otto_replan_slice"]) {
+    if (
+      agentEndMessagesIncludeSuccessfulToolResult(agentEndMessages, toolName) ||
+      agentEndMessagesIncludeToolCall(agentEndMessages, toolName) ||
+      agentEndMessagesMentionTool(agentEndMessages, toolName) ||
+      unitActivityMentionsTool(basePath, unitType, unitId, toolName) ||
+      unitActivityMentionsTool(canonicalProjectRoot, unitType, unitId, toolName)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** @internal Exposed for regression tests (issue #249). */
+export const _completeSliceHandedOffViaReopenOrReplanForTest = completeSliceHandedOffViaReopenOrReplan;
+
 function formatPreExecutionCheckDetail(check: PreExecutionCheckJSON): string {
   const category = check.category?.trim() || "unknown category";
   const target = check.target?.trim() || "unknown target";
@@ -1729,6 +1761,29 @@ export async function postUnitPreVerification(pctx: PostUnitContext, opts?: PreV
         const hasExpectedArtifact = resolveExpectedArtifactPath(s.currentUnit.type, s.currentUnit.id, verificationBasePath) !== null;
         if (hasExpectedArtifact) {
           const retryKey = `${s.currentUnit.type}:${s.currentUnit.id}`;
+          if (
+            completeSliceHandedOffViaReopenOrReplan(
+              s.currentUnit.type,
+              s.currentUnit.id,
+              opts?.agentEndMessages,
+              s.basePath,
+              s.canonicalProjectRoot,
+            )
+          ) {
+            s.pendingVerificationRetry = null;
+            s.verificationRetryCount.delete(retryKey);
+            s.verificationRetryFailureHashes.delete(retryKey);
+            debugLog("postUnit", {
+              phase: "artifact-verify-complete-slice-handoff",
+              unitType: s.currentUnit.type,
+              unitId: s.currentUnit.id,
+            });
+            ctx.ui.notify(
+              `complete-slice ${s.currentUnit.id} intentionally handed off via reopen/replan; continuing orchestration instead of retrying closeout.`,
+              "warning",
+            );
+            return "continue";
+          }
           const verificationFailureMarker = resolveVerificationFailureMarkerPath(s.currentUnit.type, s.currentUnit.id, s.basePath);
           if (verificationFailureMarker && existsSync(verificationFailureMarker)) {
             s.pendingVerificationRetry = null;

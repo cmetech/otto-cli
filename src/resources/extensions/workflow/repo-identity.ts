@@ -12,6 +12,7 @@ import { cpSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, re
 import { basename, dirname, join, resolve } from "node:path";
 import { workflowHome } from "./home.js";
 import { workflowDirUnder } from "./paths.js";
+import { logWarning } from "./workflow-logger.js";
 
 
 // ─── Repo Metadata ───────────────────────────────────────────────────────────
@@ -187,17 +188,53 @@ function isProjectGsd(workflowPath: string): boolean {
  * Get the git remote URL for "origin", or "" if no remote is configured.
  * Uses `git config` rather than `git remote get-url` for broader compat.
  */
-function getRemoteUrl(basePath: string): string {
+export function getRemoteUrl(basePath: string): string {
   try {
     return execFileSync("git", ["config", "--get", "remote.origin.url"], {
       cwd: basePath,
       encoding: "utf-8",
-      stdio: ["ignore", "pipe", "ignore"],
+      // Capture stderr so we can distinguish "no remote configured" /
+      // "not a git repo" (silent) from a genuine transient git failure.
+      stdio: ["ignore", "pipe", "pipe"],
       timeout: 5_000,
     }).trim();
-  } catch {
+  } catch (error) {
+    if (isExpectedRemoteLookupFailure(error)) {
+      // "no remote configured" / "not a git repo" — stay silent as before.
+      return "";
+    }
+
+    // Keep transient git failures distinct from "no remote configured".
+    logWarning("state", "repo-identity: failed to resolve remote.origin.url", {
+      basePath,
+      error: String((error as { message?: unknown })?.message ?? error),
+    });
     return "";
   }
+}
+
+/**
+ * True for the benign cases where `git config --get remote.origin.url` is
+ * expected to fail and should NOT be logged: no remote configured, the path is
+ * not a git repository, or a repository with no commits yet. Any other failure
+ * (e.g. git binary missing, permission/IO error, timeout) is transient and is
+ * surfaced via logWarning by the caller.
+ */
+function isExpectedRemoteLookupFailure(error: unknown): boolean {
+  const err = error as { status?: number; stderr?: Buffer | string } | null;
+  const stderr = err?.stderr ? String(err.stderr) : "";
+
+  // `git config --get` on a missing key exits 1 with empty stderr — this is the
+  // "no remote configured" case, which the original code intentionally
+  // swallowed.
+  if (err?.status === 1 && stderr.trim() === "") {
+    return true;
+  }
+
+  return (
+    /not a git repository/i.test(stderr) ||
+    /does not have any commits yet/i.test(stderr)
+  );
 }
 
 /**

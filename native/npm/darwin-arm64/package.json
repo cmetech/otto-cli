@@ -1,6 +1,6 @@
 {
   "name": "@cmetech/otto-engine-darwin-arm64",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "OTTO native package (engine + bundled ripgrep & fd) for darwin-arm64",
   "os": [
     "darwin"

@@ -527,8 +527,8 @@ export function createExtensionAPI(
 		},
 
 		// Action methods - delegate to shared runtime
-		sendMessage(message, options): void {
-			runtime.sendMessage(message, options);
+		sendMessage(message, options): Promise<void> {
+			return runtime.sendMessage(message, options);
 		},
 
 		sendUserMessage(content, options): void {

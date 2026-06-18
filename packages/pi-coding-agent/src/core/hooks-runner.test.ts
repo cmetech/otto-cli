@@ -28,7 +28,7 @@ function stubRuntime(): ExtensionRuntime {
     emitBeforeModelSelect: async () => undefined,
     emitAdjustToolSet: async () => undefined,
     emitExtensionEvent: async () => undefined,
-    sendMessage: () => {},
+    sendMessage: async () => {},
     sendUserMessage: () => {},
     retryLastTurn: () => {},
     appendEntry: () => {},
